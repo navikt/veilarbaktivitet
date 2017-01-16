@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>no.nav.fo</groupId>
+        <artifactId>veilarbaktivitet</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <packaging>ear</packaging>
+
+    <artifactId>veilarbaktivitet-ear</artifactId>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-app</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-ear-plugin</artifactId>
+                <version>2.10.1</version>
+                <configuration>
+                    <modules>
+                        <webModule>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>veilarbaktivitet-app</artifactId>
+                            <contextRoot>/veilarbaktivitet</contextRoot>
+                            <bundleFileName>veilarbaktivitet-app.war</bundleFileName>
+                        </webModule>
+                    </modules>
+                    <displayName>veilarbaktivitet</displayName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
