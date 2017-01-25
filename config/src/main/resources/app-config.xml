@@ -5,17 +5,40 @@
              http://maven.adeo.no/xsd/appconfig.xsd ">
 
     <name>veilarbaktivitet</name>
-    <artifacts>
-        <ear groupId="no.nav.fo" artifactId="veilarbaktivitet-ear"/>
-    </artifacts>
 
     <selftest>
         <path>/veilarbaktivitet/internal/selftest.json</path>
         <humanReadablePath>/veilarbaktivitet/internal/selftest</humanReadablePath>
     </selftest>
 
-    <loadBalancer>
-        <lbHealthMonitor type="HTTPS" isAliveUrl="veilarbaktivitet/internal/isAlive" interval="5" timeout="16"/>
-    </loadBalancer>
+    <artifacts>
+        <ear groupId="no.nav.fo" artifactId="veilarbaktivitet-ear"/>
+    </artifacts>
 
+    <resources>
+        <credential alias="srvveilarbaktivitet" mapToProperty="systembruker"/>
+        <applicationCertificate alias="srvveilarbaktivitet"/>
+        <datasource alias="veilarbaktivitetDataSource" jndi="java:jboss/jdbc/AktivitetDS">
+            <pool maxPoolSize="300" minPoolSize="0"/>
+        </datasource>
+        <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+    </resources>
+
+    <exposed-services>
+        <exposedSoap name="BehandleAktivitetsplanV1"
+                     path="/veilarbaktivitet/ws/Aktivitet"
+                     securityToken="SAML"
+                     wsdlGroupId="no.nav.tjenester"
+                     wsdlArtifactId="brukerdialog-behandleAktivitetsplan-v1-tjenestespesifikasjon"
+                     wsdlVersion="${behandleaktivitetsplan.tjenestespesifikasjon.version}">
+        </exposedSoap>
+    </exposed-services>
+
+    <security serviceUserResourceAlias="srvveilarbaktivitet">
+        <logins>
+            <saml/>
+        </logins>
+    </security>
+
+    <loadBalancer isAlive="veilarbaktivitet/internal/isAlive"/>
 </application>

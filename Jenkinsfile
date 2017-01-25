@@ -39,6 +39,23 @@ node {
             sh "git tag -a ${version} -m ${version} HEAD && git push --tags"
         }
     }
+
+    stage('Deploy app') {
+        callback = "${env.BUILD_URL}input/Deploy/"
+
+        def author = sh(returnStdout: true, script: 'git --no-pager show -s --format="%an <%ae>" HEAD').trim()
+        def deploy = common.deployApp('veilarbaktivitet', version, "${miljo}", callback, author).key
+
+        try {
+            timeout(time: 15, unit: 'MINUTES') {
+                input id: 'deploy', message: "deployer ${deploy}, deploy OK?"
+            }
+        } catch(Exception e) {
+            msg = 'Deploy feilet [' + deploy + '](https://jira.adeo.no/browse/' + deploy + ')'
+            notifyFailed(msg, e)
+        }
+    }
+
 }
 
 chatmsg = "**[veilarbaktivitet ${version}](https://itjenester-t1.oera.no/veilarbaktivitet) Bygg og deploy OK**\n\n${common.getChangeString()}\n\n Bestill deploy til Q4: navbot deploy veilarbaktivitet ${version} q4"
