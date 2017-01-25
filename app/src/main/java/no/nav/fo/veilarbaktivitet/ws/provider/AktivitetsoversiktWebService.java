@@ -1,28 +1,34 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
-import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.domain.Aktivitet;
+import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetType;
+import no.nav.fo.veilarbaktivitet.domain.Innsender;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
-import org.springframework.stereotype.Component;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetSikkerhetsbegrensing;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetUgyldigInput;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
+import org.apache.commons.collections15.BidiMap;
+import org.apache.commons.collections15.bidimap.DualHashBidiMap;
+import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.ArrayList;
-import java.util.List;
+import javax.jws.WebService;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.PLANLAGT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
 import static no.nav.fo.veilarbaktivitet.domain.Innsender.BRUKER;
+import static no.nav.fo.veilarbaktivitet.domain.Innsender.NAV;
 
-// TODO
-//@WebService(
-//        name = "???",
-//        targetNamespace = "???"
-//)
-//@Service
-@Component
-public class AktivitetsoversiktWebService {
-
+@WebService
+@Service
+public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
 
     @Inject
     private AktoerConsumer aktoerConsumer;
@@ -30,129 +36,49 @@ public class AktivitetsoversiktWebService {
     @Inject
     private AktivitetDAO aktivitetDAO;
 
-    //@Override
-    public WSHentAktiviteterResponse hentAktiviteter(WSHentAktiviteterRequest request) {
-        String aktorId = hentAktoerIdForIdent(request.ident);
+    @Inject
+    private AktivitetsoversiktWebServiceTransformer aktivitetsoversiktWebServiceTransformer;
 
-        WSHentAktiviteterResponse wsHentAktiviteterResponse = new WSHentAktiviteterResponse();
-        aktivitetDAO.hentStillingsAktiviteterForAktorId(aktorId).stream().map(this::somWSAktivitet).forEach(wsHentAktiviteterResponse.aktivitetsoversikt.stillingsAktiviteter::add);
-        aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream().map(this::somWSAktivitet).forEach(wsHentAktiviteterResponse.aktivitetsoversikt.egenAktiviteter::add);
+    @Override
+    public OpprettNyEgenAktivitetResponse opprettNyEgenAktivitet(OpprettNyEgenAktivitetRequest opprettNyEgenAktivitetRequest) {
+        return of(opprettNyEgenAktivitetRequest)
+                .map(aktivitetsoversiktWebServiceTransformer::somEgenAktivitet)
+                .map(aktivitetDAO::opprettEgenAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyEgenAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public OpprettNyStillingAktivitetResponse opprettNyStillingAktivitet(OpprettNyStillingAktivitetRequest opprettNyStillingAktivitetRequest) throws OpprettNyStillingAktivitetSikkerhetsbegrensing, OpprettNyStillingAktivitetUgyldigInput {
+        return of(opprettNyStillingAktivitetRequest)
+                .map(aktivitetsoversiktWebServiceTransformer::somStillingAktivitet)
+                .map(aktivitetDAO::opprettStillingAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyStillingAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
+        String aktorId = hentAktoerIdForIdent(hentAktivitetsplanRequest.getPersonident());
+
+        HentAktivitetsplanResponse wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
+        Aktivitetsplan aktivitetsplan = new Aktivitetsplan();
+        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
+        aktivitetDAO.hentStillingsAktiviteterForAktorId(aktorId).stream().map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet).forEach(aktivitetsplan.getStillingaktivitetListe()::add);
+        aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream().map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet).forEach(aktivitetsplan.getEgenaktivitetListe()::add);
         return wsHentAktiviteterResponse;
     }
 
-    //@Override
-    public WSOpprettNyStillingAktivitetResponse opprettNyStillingAktivitet(WSOpprettNyStillingAktivitetRequest request) {
-        WSOpprettNyStillingAktivitetResponse wsOpprettNyStillingAktivitetResponse = new WSOpprettNyStillingAktivitetResponse();
-        wsOpprettNyStillingAktivitetResponse.stillingsaktivitet = of(request)
-                .map(this::somStillingAktivitet)
-                .map(aktivitetDAO::opprettStillingAktivitet)
-                .map(this::somWSAktivitet)
-                .get();
-
-        return wsOpprettNyStillingAktivitetResponse;
-    }
-
-    //@Override
-    public WSOpprettNyEgenAktivitetResponse opprettNyEgenAktivitet(WSOpprettNyEgenAktivitetRequest request) {
-        WSOpprettNyEgenAktivitetResponse opprettNyEgenAktivitetResponse = new WSOpprettNyEgenAktivitetResponse();
-        opprettNyEgenAktivitetResponse.egenaktiviteter = of(request)
-                .map(this::somEgenAktivitet)
-                .map(aktivitetDAO::opprettEgenAktivitet)
-                .map(this::somWSAktivitet)
-                .get();
-
-        return opprettNyEgenAktivitetResponse;
+    @Override
+    public void ping() {
     }
 
     private String hentAktoerIdForIdent(String ident) {
         return aktoerConsumer.hentAktoerIdForIdent(ident)
                 .orElseThrow(RuntimeException::new); // Hvordan håndere dette?
     }
-
-    private StillingsSoekAktivitet somStillingAktivitet(WSOpprettNyStillingAktivitetRequest request) {
-        return new StillingsSoekAktivitet()
-                .setStillingsoek(new Stillingsoek()
-                    .setStillingsoekEtikett(StillingsoekEtikett.values()[0]) // TODO
-                )
-                .setAktivitet(new Aktivitet()
-                        .setAktorId(hentAktoerIdForIdent(request.ident))
-
-                        // TODO
-                        .setStatus(PLANLAGT)
-                        .setLagtInnAv(BRUKER)
-                        // TODO
-                );
-    }
-
-    private EgenAktivitet somEgenAktivitet(WSOpprettNyEgenAktivitetRequest request) {
-        return new EgenAktivitet()
-                .setAktivitet(new Aktivitet()
-                        .setAktorId(hentAktoerIdForIdent(request.ident))
-
-                        // TODO
-                        .setStatus(PLANLAGT)
-                        .setLagtInnAv(BRUKER)
-                        // TODO
-                );
-    }
-
-    private WSStillingsAktivitet somWSAktivitet(StillingsSoekAktivitet stillingsSoekAktivitet) {
-        return new WSStillingsAktivitet();
-    }
-
-    private WSEgenAktivitet somWSAktivitet(EgenAktivitet egenAktivitet) {
-        return new WSEgenAktivitet();
-    }
-
-    //@Override
-    public void ping() {
-    }
-
-    // TODO disse blir definert i tjenestespesifikasjonen når den er ferdig!
-
-    public static class WSHentAktiviteterRequest{
-        public String ident;
-    }
-
-    @XmlRootElement
-    public static class WSHentAktiviteterResponse{
-
-        public WSAktivitetsoversikt aktivitetsoversikt = new WSAktivitetsoversikt();
-    }
-
-    public static class WSAktivitetsoversikt {
-
-        public List<WSStillingsAktivitet> stillingsAktiviteter = new ArrayList<>();
-        public List<WSEgenAktivitet> egenAktiviteter = new ArrayList<>();
-    }
-
-    public static class WSStillingsAktivitet {
-
-    }
-
-    public static class WSEgenAktivitet {
-
-    }
-
-    public static class WSOpprettNyStillingAktivitetRequest{
-        public String ident;
-        public WSStillingsAktivitet stillingaktivitet;
-    }
-
-    public static class WSOpprettNyStillingAktivitetResponse{
-        public WSStillingsAktivitet stillingsaktivitet;
-    }
-
-    public static class WSOpprettNyEgenAktivitetRequest {
-        public String ident;
-        public WSEgenAktivitet egenaktivitet;
-    }
-
-    @XmlRootElement
-    public static class WSOpprettNyEgenAktivitetResponse {
-        public WSEgenAktivitet egenaktiviteter;
-    }
-
 
 }
 

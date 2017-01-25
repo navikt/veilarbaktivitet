@@ -2,6 +2,11 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.TestData;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.HentAktivitetsplanRequest;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.HentAktivitetsplanResponse;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetRequest;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetRequest;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -18,25 +23,39 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
     private AktivitetsoversiktWebService aktivitetsoversiktWebService;
 
     @Test
-    public void hent_og_opprett_aktiviteter() {
-        AktivitetsoversiktWebService.WSHentAktiviteterRequest hentAktiviteterRequest = new AktivitetsoversiktWebService.WSHentAktiviteterRequest();
-        hentAktiviteterRequest.ident = KJENT_IDENT;
+    public void hent_og_opprett_aktiviteter() throws Exception {
+        HentAktivitetsplanRequest hentAktiviteterRequest = new HentAktivitetsplanRequest();
+        hentAktiviteterRequest.setPersonident(KJENT_IDENT);
 
-        AktivitetsoversiktWebService.WSHentAktiviteterResponse hentAktiviteterResponse = aktivitetsoversiktWebService.hentAktiviteter(hentAktiviteterRequest);
-        assertThat(hentAktiviteterResponse.aktivitetsoversikt.egenAktiviteter, empty());
-        assertThat(hentAktiviteterResponse.aktivitetsoversikt.stillingsAktiviteter, empty());
+        HentAktivitetsplanResponse hentAktiviteterResponse = aktivitetsoversiktWebService.hentAktivitetsplan(hentAktiviteterRequest);
+        Aktivitetsplan aktivitetsplan = hentAktiviteterResponse.getAktivitetsplan();
+        assertThat(aktivitetsplan.getEgenaktivitetListe(), empty());
+        assertThat(aktivitetsplan.getStillingaktivitetListe(), empty());
 
-        AktivitetsoversiktWebService.WSOpprettNyEgenAktivitetRequest opprettNyEgenAktivitetRequest = new AktivitetsoversiktWebService.WSOpprettNyEgenAktivitetRequest();
-        opprettNyEgenAktivitetRequest.ident = KJENT_IDENT;
+        OpprettNyEgenAktivitetRequest opprettNyEgenAktivitetRequest = new OpprettNyEgenAktivitetRequest();
+
+        Egenaktivitet egenaktivitet = new Egenaktivitet();
+        egenaktivitet.setAktivitet(nyAktivitet());
+        opprettNyEgenAktivitetRequest.setEgenaktivitet( egenaktivitet);
         aktivitetsoversiktWebService.opprettNyEgenAktivitet(opprettNyEgenAktivitetRequest);
 
-        AktivitetsoversiktWebService.WSOpprettNyStillingAktivitetRequest opprettNyStillingAktivitetRequest = new AktivitetsoversiktWebService.WSOpprettNyStillingAktivitetRequest();
-        opprettNyStillingAktivitetRequest.ident = KJENT_IDENT;
+        OpprettNyStillingAktivitetRequest opprettNyStillingAktivitetRequest = new OpprettNyStillingAktivitetRequest();
+        Stillingaktivitet stillingaktivitet = new Stillingaktivitet();
+        stillingaktivitet.setAktivitet(nyAktivitet());
+        opprettNyStillingAktivitetRequest.setStillingaktivitet(stillingaktivitet);
         aktivitetsoversiktWebService.opprettNyStillingAktivitet(opprettNyStillingAktivitetRequest);
 
-        AktivitetsoversiktWebService.WSHentAktiviteterResponse wsHentAktiviteterResponse2 = aktivitetsoversiktWebService.hentAktiviteter(hentAktiviteterRequest);
-        assertThat(wsHentAktiviteterResponse2.aktivitetsoversikt.egenAktiviteter, hasSize(1));
-        assertThat(wsHentAktiviteterResponse2.aktivitetsoversikt.stillingsAktiviteter, hasSize(1));
+        HentAktivitetsplanResponse wsHentAktiviteterResponse2 = aktivitetsoversiktWebService.hentAktivitetsplan(hentAktiviteterRequest);
+        Aktivitetsplan aktivitetsplan2 = wsHentAktiviteterResponse2.getAktivitetsplan();
+        assertThat(aktivitetsplan2.getEgenaktivitetListe(), hasSize(1));
+        assertThat(aktivitetsplan2.getStillingaktivitetListe(), hasSize(1));
+    }
+
+    private Aktivitet nyAktivitet() {
+        Aktivitet aktivitet = new Aktivitet();
+        aktivitet.setPersonIdent(KJENT_IDENT);
+        aktivitet.setStatus(Status.values()[0]);
+        return aktivitet;
     }
 
 }

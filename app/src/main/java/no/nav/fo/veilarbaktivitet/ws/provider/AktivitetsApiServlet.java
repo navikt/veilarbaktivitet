@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
+import no.nav.sbl.dialogarena.common.cxf.CXFEndpoint;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.transport.servlet.CXFNonSpringServlet;
 import org.springframework.context.ApplicationContext;
@@ -18,13 +19,12 @@ import java.io.IOException;
 
 public class AktivitetsApiServlet extends CXFNonSpringServlet {
 
-    // TODO
-    public static void settOppEndpoints(ApplicationContext applicationContext) {
-//        new CXFEndpoint()
-//                .address("/Aktivitet")
-//                .serviceBean(applicationContext.getBean(AktivitetsoversiktWebService.class))
-//                .kerberosInInterceptor()
-//                .create();
+    private static void settOppEndpoints(ApplicationContext applicationContext) {
+        new CXFEndpoint()
+                .address("/Aktivitet")
+                .serviceBean(applicationContext.getBean(AktivitetsoversiktWebService.class))
+                .kerberosInInterceptor()
+                .create();
     }
 
     @Override
@@ -33,37 +33,5 @@ public class AktivitetsApiServlet extends CXFNonSpringServlet {
         BusFactory.setDefaultBus(getBus());
         settOppEndpoints(WebApplicationContextUtils.getWebApplicationContext(servletConfig.getServletContext()));
     }
-
-
-    // TODO mens vi venter på tjenestespesifikasjonen
-    @Override
-    public void service(ServletRequest req, ServletResponse res) throws ServletException, IOException {
-        HttpServletRequest httpServletRequest = (HttpServletRequest) req;
-        HttpServletResponse httpServletResponse = (HttpServletResponse) res;
-
-        String ident = req.getParameter("ident");
-
-        WebApplicationContext webApplicationContext = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
-        AktivitetsoversiktWebService aktivitetsoversiktWebService = webApplicationContext.getBean(AktivitetsoversiktWebService.class);
-
-        if ("POST".equals(httpServletRequest.getMethod())) {
-            AktivitetsoversiktWebService.WSOpprettNyEgenAktivitetRequest request = new AktivitetsoversiktWebService.WSOpprettNyEgenAktivitetRequest();
-            request.ident = ident;
-            write(httpServletResponse, aktivitetsoversiktWebService.opprettNyEgenAktivitet(request));
-        } else {
-            AktivitetsoversiktWebService.WSHentAktiviteterRequest hentAktiviteterRequest = new AktivitetsoversiktWebService.WSHentAktiviteterRequest();
-            hentAktiviteterRequest.ident = ident;
-            write(httpServletResponse, aktivitetsoversiktWebService.hentAktiviteter(hentAktiviteterRequest));
-        }
-    }
-
-    private void write(HttpServletResponse httpServletResponse, Object response) throws IOException, ServletException {
-        try {
-            JAXBContext.newInstance(response.getClass()).createMarshaller().marshal(response, httpServletResponse.getWriter());
-        } catch (JAXBException e) {
-            throw new ServletException(e);
-        }
-    }
-    ///////////////////////////
 
 }

@@ -1,10 +1,10 @@
 package no.nav.fo.veilarbaktivitet.db;
 
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import org.slf4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
@@ -15,6 +15,8 @@ import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.db.SQLUtils.hentDato;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
+import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
+import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Component
@@ -57,11 +59,11 @@ public class AktivitetDAO {
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setTittel(rs.getString("tittel"))
                 .setBeskrivelse(rs.getString("beskrivelse"))
-                .setStatus(AktivitetStatus.valueOf(rs.getString("status")))
+                .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
                 .setAvsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
-                .setLagtInnAv(Innsender.valueOf(rs.getString("lagt_inn_av")))
+                .setLagtInnAv(valueOf(Innsender.class, rs.getString("lagt_inn_av")))
                 .setDeleMedNav(rs.getBoolean("dele_med_nav"))
                 .setLenke(rs.getString("lenke"))
                 .setKommentarer(kommentarer)
@@ -81,7 +83,7 @@ public class AktivitetDAO {
                 .setStillingsTittel(rs.getString("stillingstittel"))
                 .setArbeidsgiver(rs.getString("arbeidsgiver"))
                 .setKontaktPerson(rs.getString("kontaktperson"))
-                .setStillingsoekEtikett(StillingsoekEtikett.valueOf(rs.getString("etikett")))
+                .setStillingsoekEtikett(valueOf(StillingsoekEtikett.class, rs.getString("etikett")))
         );
     }
 
@@ -89,6 +91,7 @@ public class AktivitetDAO {
         return new EgenAktivitet().setAktivitet(mapAktivitet(rs));
     }
 
+    @Transactional
     public StillingsSoekAktivitet opprettStillingAktivitet(StillingsSoekAktivitet stillingsSoekAktivitet) {
         opprettAktivitet(stillingsSoekAktivitet.getAktivitet(), JOBBSØKING);
         opprettStillingsSøk(stillingsSoekAktivitet);
@@ -102,7 +105,7 @@ public class AktivitetDAO {
                     stillingsoek.getStillingsTittel(),
                     stillingsoek.getArbeidsgiver(),
                     stillingsoek.getKontaktPerson(),
-                    stillingsoek.getStillingsoekEtikett().name()
+                    getName(stillingsoek.getStillingsoekEtikett())
             );
         });
     }
@@ -122,11 +125,11 @@ public class AktivitetDAO {
                 aktivitet.getTilDato(),
                 aktivitet.getTittel(),
                 aktivitet.getBeskrivelse(),
-                aktivitet.getStatus().name(),
+                getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetDato(),
                 aktivitet.getAvsluttetKommentar(),
                 aktivitet.getOpprettetDato(),
-                aktivitet.getLagtInnAv().name(),
+                getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isDeleMedNav()
         );
