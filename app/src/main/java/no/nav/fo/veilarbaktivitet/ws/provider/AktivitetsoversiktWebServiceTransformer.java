@@ -42,7 +42,7 @@ public class AktivitetsoversiktWebServiceTransformer {
     }};
 
     private static final BidiMap<no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType, AktivitetType> typeMap = new DualHashBidiMap<no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType, AktivitetType>() {{
-        put(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType.JOBBSØKING, JOBBSØKING);
+        put(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType.JOBBSOEKING, JOBBSØKING);
         put(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
     }};
 
@@ -91,8 +91,10 @@ public class AktivitetsoversiktWebServiceTransformer {
         Egenaktivitet egenaktivitet = new Egenaktivitet();
         egenaktivitet.setAktivitet(somWSAktivitet(egenAktivitet.getAktivitet()));
 
+
+
         //
-        egenaktivitet.setTag(EgenaktivitetTag.values()[0]); // TODO dette må inn i datamodellen
+        egenaktivitet.setType(EgenaktivitetType.values()[0]); // TODO dette må inn i datamodellen
         //
 
         return egenaktivitet;
