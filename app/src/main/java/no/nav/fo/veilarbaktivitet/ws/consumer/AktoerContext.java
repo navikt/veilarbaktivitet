@@ -25,6 +25,7 @@ public class AktoerContext {
 
     private CXFClient<Aktoer_v2PortType> aktoerPortType() {
         return new CXFClient<>(Aktoer_v2PortType.class)
+                .wsdl("classpath:no/nav/tjeneste/virksomhet/aktoer/v2/v2.wsdl")
                 .address(getProperty("aktoer.endpoint.url"));
     }
 }
