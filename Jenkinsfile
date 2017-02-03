@@ -40,6 +40,12 @@ node {
         }
     }
 
+    stage('Migrer database') {
+        dir('config') {
+            sh "mvn process-resources org.flywaydb:flyway-maven-plugin:migrate -Pt6"
+        }
+    }
+
     stage('Deploy app') {
         callback = "${env.BUILD_URL}input/Deploy/"
 
