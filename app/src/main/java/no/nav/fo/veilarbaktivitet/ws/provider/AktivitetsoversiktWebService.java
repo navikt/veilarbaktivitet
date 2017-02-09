@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.Aktivitet;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetType;
@@ -37,6 +38,9 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
     private AktivitetDAO aktivitetDAO;
 
     @Inject
+    private EndringsLoggDAO endringsLoggDAO;
+
+    @Inject
     private AktivitetsoversiktWebServiceTransformer aktivitetsoversiktWebServiceTransformer;
 
     @Override
@@ -70,6 +74,8 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream().map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet).forEach(aktivitetsplan.getEgenaktivitetListe()::add);
         return wsHentAktiviteterResponse;
     }
+
+    //TODO WANT HentEndringsLogg method here
 
     @Override
     public void ping() {

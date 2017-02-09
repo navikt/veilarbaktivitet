@@ -26,8 +26,13 @@ public class AktivitetDAO {
 
     @Inject
     private JdbcTemplate jdbcTemplate;
+
     @Inject
     private SQLUtils sqlUtils;
+
+    @Inject
+    private EndringsLoggDAO endringsLoggDAO;
+    //TODO use when update status is in the works
 
     public List<StillingsSoekAktivitet> hentStillingsAktiviteterForAktorId(String aktorId) {
         return jdbcTemplate.query("SELECT * FROM AKTIVITET A " +
@@ -49,7 +54,7 @@ public class AktivitetDAO {
 
     private Aktivitet mapAktivitet(ResultSet rs) throws SQLException {
         long aktivitetId = rs.getLong("aktivitet_id");
-        // vurdere å slå opp alle kommentarer en gang, istede for en gang pr aktivitet
+        //TODO vurdere å slå opp alle kommentarer en gang, istede for en gang pr aktivitet
         List<Kommentar> kommentarer = jdbcTemplate.query("SELECT * FROM KOMMENTAR where aktivitet_id = ?", this::mapKommentar, aktivitetId);
         return new Aktivitet()
                 .setId(aktivitetId)
