@@ -12,7 +12,6 @@ import static java.util.Collections.emptyList;
 @Accessors(chain = true)
 public class EndringsLogg {
 
-    long id;
     String endringsBeskrivelse;
     String endretAv;
     Date endretDato;
