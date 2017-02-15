@@ -1,31 +1,21 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
+import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
-import no.nav.fo.veilarbaktivitet.domain.Aktivitet;
-import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetType;
-import no.nav.fo.veilarbaktivitet.domain.Innsender;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetSikkerhetsbegrensing;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetUgyldigInput;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitetsplan;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
-import org.apache.commons.collections15.BidiMap;
-import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import javax.jws.WebService;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
-import static no.nav.fo.veilarbaktivitet.domain.Innsender.BRUKER;
-import static no.nav.fo.veilarbaktivitet.domain.Innsender.NAV;
 
 @WebService
 @Service
@@ -75,7 +65,21 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         return wsHentAktiviteterResponse;
     }
 
-    //TODO WANT HentEndringsLogg method here
+    @Override
+    public HentEndringsLoggForAktivitetResponse hentEndringsLoggForAktivitet(HentEndringsLoggForAktivitetRequest hentEndringsLoggForAktivitetRequest) {
+        val endringsloggResponse = new HentEndringsLoggForAktivitetResponse();
+        val endringer = endringsloggResponse.getEndringslogg();
+
+        of(hentEndringsLoggForAktivitetRequest)
+                .map(HentEndringsLoggForAktivitetRequest::getAktivitetId)
+                .map(Long::parseLong)
+                .map(endringsLoggDAO::hentEndringdsloggForAktivitetId)
+                .ifPresent((endringslist) -> endringslist.stream()
+                        .map(aktivitetsoversiktWebServiceTransformer::somEndringsLoggResponse)
+                        .forEach(endringer::add)
+                );
+        return endringsloggResponse;
+    }
 
     @Override
     public void ping() {

@@ -1,15 +1,14 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
+import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.Aktivitet;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetType;
+import no.nav.fo.veilarbaktivitet.domain.Endringslogg;
 import no.nav.fo.veilarbaktivitet.domain.Innsender;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetResponse;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetResponse;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 import org.springframework.stereotype.Component;
@@ -133,6 +132,16 @@ public class AktivitetsoversiktWebServiceTransformer {
         OpprettNyStillingAktivitetResponse opprettNyStillingAktivitetResponse = new OpprettNyStillingAktivitetResponse();
         opprettNyStillingAktivitetResponse.setStillingaktivitet(stillingaktivitet);
         return opprettNyStillingAktivitetResponse;
+    }
+
+    public no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Endringslogg somEndringsLoggResponse(Endringslogg endringsLogg){
+        val endringsLoggMelding = new no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Endringslogg();
+
+        endringsLoggMelding.setEndringsBeskrivelse(endringsLogg.getEndringsBeskrivelse());
+        endringsLoggMelding.setEndretAv(endringsLogg.getEndretAv());
+        endringsLoggMelding.setEndretDato(endringsLogg.getEndretDato().toString());
+
+        return endringsLoggMelding;
     }
 
 }

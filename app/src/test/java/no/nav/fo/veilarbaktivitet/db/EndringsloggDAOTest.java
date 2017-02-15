@@ -20,7 +20,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class EndringsLoggDAOTest extends IntegrasjonsTest {
+public class EndringsloggDAOTest extends IntegrasjonsTest {
 
     private static final String endretAv = "BATMAN!!";
     private static final String endringsBeskrivelse = "one does not simply change anything";
