@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class StillingsSoekAktivitet {
 
-    public Aktivitet aktivitet;
-    public Stillingsoek stillingsoek;
+    public AktivitetData aktivitet;
+    public StillingsoekData stillingsoek;
 
 }

@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class Kommentar {
+public class KommentarData {
 
     public String kommentar;
     public String opprettetAv;

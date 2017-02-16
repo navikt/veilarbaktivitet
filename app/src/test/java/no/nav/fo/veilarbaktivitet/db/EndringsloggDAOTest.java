@@ -8,12 +8,7 @@ import org.junit.Test;
 import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
-import static java.util.Arrays.asList;
-import static java.util.Calendar.SECOND;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -47,23 +42,23 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
 
     private long opprett_egenaktivitet() {
         val aktorId = "123";
-        Aktivitet aktivitet = nyAktivitet(aktorId);
-        EgenAktivitet egenAktivitet = new EgenAktivitet().setAktivitet(aktivitet);
+        AktivitetData aktivitet = nyAktivitet(aktorId);
+        EgenAktivitetData egenAktivitet = new EgenAktivitetData().setAktivitet(aktivitet);
 
         aktivitetDAO.opprettEgenAktivitet(egenAktivitet);
 
-        List<EgenAktivitet> egenAktiviteter = aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId);
+        List<EgenAktivitetData> egenAktiviteter = aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId);
         return egenAktiviteter.get(0).getAktivitet().getId();
     }
 
-    private Aktivitet nyAktivitet(String aktorId) {
-        return new Aktivitet()
+    private AktivitetData nyAktivitet(String aktorId) {
+        return new AktivitetData()
                 .setAktorId(aktorId)
                 .setTittel("tittel")
                 .setBeskrivelse("beskrivelse")
-                .setStatus(AktivitetStatus.values()[0])
+                .setStatus(AktivitetStatusData.values()[0])
                 .setAvsluttetKommentar("avsluttetKommentar")
-                .setLagtInnAv(Innsender.values()[0])
+                .setLagtInnAv(InnsenderData.values()[0])
                 .setLenke("lenke")
                 .setDeleMedNav(true)
                 ;

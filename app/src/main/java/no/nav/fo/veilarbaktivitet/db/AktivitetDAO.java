@@ -13,8 +13,8 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.db.SQLUtils.hentDato;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -44,7 +44,7 @@ public class AktivitetDAO {
         );
     }
 
-    public List<EgenAktivitet> hentEgenAktiviteterForAktorId(String aktorId) {
+    public List<EgenAktivitetData> hentEgenAktiviteterForAktorId(String aktorId) {
         return jdbcTemplate.query("SELECT * FROM AKTIVITET where type = ? AND aktor_id = ?",
                 this::mapEgenAktivitet,
                 EGENAKTIVITET.name(),
@@ -52,31 +52,31 @@ public class AktivitetDAO {
         );
     }
 
-    private Aktivitet mapAktivitet(ResultSet rs) throws SQLException {
+    private AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         long aktivitetId = rs.getLong("aktivitet_id");
         //TODO vurdere å slå opp alle kommentarer en gang, istede for en gang pr aktivitet
-        List<Kommentar> kommentarer = jdbcTemplate.query("SELECT * FROM KOMMENTAR where aktivitet_id = ?", this::mapKommentar, aktivitetId);
-        return new Aktivitet()
+        List<KommentarData> kommentarer = jdbcTemplate.query("SELECT * FROM KOMMENTAR where aktivitet_id = ?", this::mapKommentar, aktivitetId);
+        return new AktivitetData()
                 .setId(aktivitetId)
                 .setAktorId(rs.getString("aktor_id"))
-                .setAktivitetType(AktivitetType.valueOf(rs.getString("type")))
+                .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
                 .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setTittel(rs.getString("tittel"))
                 .setBeskrivelse(rs.getString("beskrivelse"))
-                .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
+                .setStatus(valueOf(AktivitetStatusData.class, rs.getString("status")))
                 .setAvsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
-                .setLagtInnAv(valueOf(Innsender.class, rs.getString("lagt_inn_av")))
+                .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .setDeleMedNav(rs.getBoolean("dele_med_nav"))
                 .setLenke(rs.getString("lenke"))
                 .setKommentarer(kommentarer)
                 ;
     }
 
-    private Kommentar mapKommentar(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
-        return new Kommentar()
+    private KommentarData mapKommentar(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
+        return new KommentarData()
                 .setKommentar(rs.getString("kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setOpprettetAv(rs.getString("opprettet_av"))
@@ -84,16 +84,16 @@ public class AktivitetDAO {
     }
 
     private StillingsSoekAktivitet mapStillingsAktivitet(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
-        return new StillingsSoekAktivitet().setAktivitet(mapAktivitet(rs)).setStillingsoek(new Stillingsoek()
+        return new StillingsSoekAktivitet().setAktivitet(mapAktivitet(rs)).setStillingsoek(new StillingsoekData()
                 .setStillingsTittel(rs.getString("stillingstittel"))
                 .setArbeidsgiver(rs.getString("arbeidsgiver"))
                 .setKontaktPerson(rs.getString("kontaktperson"))
-                .setStillingsoekEtikett(valueOf(StillingsoekEtikett.class, rs.getString("etikett")))
+                .setStillingsoekEtikett(valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
         );
     }
 
-    private EgenAktivitet mapEgenAktivitet(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
-        return new EgenAktivitet().setAktivitet(mapAktivitet(rs));
+    private EgenAktivitetData mapEgenAktivitet(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
+        return new EgenAktivitetData().setAktivitet(mapAktivitet(rs));
     }
 
     @Transactional
@@ -115,12 +115,12 @@ public class AktivitetDAO {
         });
     }
 
-    public EgenAktivitet opprettEgenAktivitet(EgenAktivitet egenAktivitet) {
+    public EgenAktivitetData opprettEgenAktivitet(EgenAktivitetData egenAktivitet) {
         opprettAktivitet(egenAktivitet.getAktivitet(), EGENAKTIVITET);
         return egenAktivitet;
     }
 
-    private Aktivitet opprettAktivitet(Aktivitet aktivitet, AktivitetType aktivitetType) {
+    private AktivitetData opprettAktivitet(AktivitetData aktivitet, AktivitetTypeData aktivitetType) {
         long aktivitetId = sqlUtils.nesteFraSekvens("AKTIVITET_ID_SEQ");
         jdbcTemplate.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type,fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato,avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke,dele_med_nav) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,

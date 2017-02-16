@@ -10,24 +10,24 @@ import static java.util.Collections.emptyList;
 
 @Data
 @Accessors(chain = true)
-public class Aktivitet {
+public class AktivitetData {
 
     long id;
     String aktorId;
     String tittel;
-    AktivitetType aktivitetType;
+    AktivitetTypeData aktivitetType;
     String beskrivelse;
-    AktivitetStatus status;
+    AktivitetStatusData status;
     Date avsluttetDato;
     String avsluttetKommentar;
-    Innsender lagtInnAv;
+    InnsenderData lagtInnAv;
     Date fraDato;
     Date tilDato;
     String lenke;
     boolean deleMedNav;
     Date opprettetDato;
 
-    List<Kommentar> kommentarer = emptyList();
+    List<KommentarData> kommentarer = emptyList();
 
 }
 

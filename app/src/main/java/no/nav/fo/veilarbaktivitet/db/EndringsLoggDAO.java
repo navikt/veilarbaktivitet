@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.db;
 
-import no.nav.fo.veilarbaktivitet.domain.Endringslogg;
+import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
 import org.slf4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -25,15 +25,15 @@ public class EndringsLoggDAO {
     @Inject
     private SQLUtils sqlUtils;
 
-    public List<Endringslogg> hentEndringdsloggForAktivitetId(long aktivitetId) {
+    public List<EndringsloggData> hentEndringdsloggForAktivitetId(long aktivitetId) {
         return jdbcTemplate.query("SELECT * FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
                 this::mapEndringsLogg,
                 aktivitetId
         );
     }
 
-    private Endringslogg mapEndringsLogg(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
-        return new Endringslogg()
+    private EndringsloggData mapEndringsLogg(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
+        return new EndringsloggData()
                 .setEndretDato(hentDato(rs, "endrings_dato"))
                 .setEndretAv(rs.getString("endret_av"))
                 .setEndringsBeskrivelse(rs.getString("endrings_beskrivelse"))

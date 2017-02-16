@@ -5,11 +5,11 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class Stillingsoek {
+public class StillingsoekData {
 
     String arbeidsgiver;
     String stillingsTittel;
-    StillingsoekEtikett stillingsoekEtikett;
+    StillingsoekEtikettData stillingsoekEtikett;
     String kontaktPerson;
 
 }

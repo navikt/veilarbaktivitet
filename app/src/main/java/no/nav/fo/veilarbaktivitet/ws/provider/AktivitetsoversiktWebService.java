@@ -36,9 +36,9 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
     @Override
     public OpprettNyEgenAktivitetResponse opprettNyEgenAktivitet(OpprettNyEgenAktivitetRequest opprettNyEgenAktivitetRequest) {
         return of(opprettNyEgenAktivitetRequest)
-                .map(aktivitetsoversiktWebServiceTransformer::somEgenAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilEgenAktivitetData)
                 .map(aktivitetDAO::opprettEgenAktivitet)
-                .map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
                 .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyEgenAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }
@@ -46,9 +46,9 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
     @Override
     public OpprettNyStillingAktivitetResponse opprettNyStillingAktivitet(OpprettNyStillingAktivitetRequest opprettNyStillingAktivitetRequest) throws OpprettNyStillingAktivitetSikkerhetsbegrensing, OpprettNyStillingAktivitetUgyldigInput {
         return of(opprettNyStillingAktivitetRequest)
-                .map(aktivitetsoversiktWebServiceTransformer::somStillingAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilStillingAktivitetData)
                 .map(aktivitetDAO::opprettStillingAktivitet)
-                .map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
                 .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyStillingAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }
@@ -60,8 +60,15 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         HentAktivitetsplanResponse wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
         Aktivitetsplan aktivitetsplan = new Aktivitetsplan();
         wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
-        aktivitetDAO.hentStillingsAktiviteterForAktorId(aktorId).stream().map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet).forEach(aktivitetsplan.getStillingaktivitetListe()::add);
-        aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream().map(aktivitetsoversiktWebServiceTransformer::somWSAktivitet).forEach(aktivitetsplan.getEgenaktivitetListe()::add);
+
+        aktivitetDAO.hentStillingsAktiviteterForAktorId(aktorId).stream()
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
+                .forEach(aktivitetsplan.getStillingaktivitetListe()::add);
+
+        aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream()
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
+                .forEach(aktivitetsplan.getEgenaktivitetListe()::add);
+
         return wsHentAktiviteterResponse;
     }
 

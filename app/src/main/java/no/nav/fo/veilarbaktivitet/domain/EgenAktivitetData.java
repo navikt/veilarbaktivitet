@@ -5,6 +5,6 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class EgenAktivitet {
-    public Aktivitet aktivitet;
+public class EgenAktivitetData {
+    public AktivitetData aktivitet;
 }

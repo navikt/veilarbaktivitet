@@ -1,14 +1,13 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
-import no.nav.fo.veilarbaktivitet.domain.Aktivitet;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetType;
-import no.nav.fo.veilarbaktivitet.domain.Endringslogg;
-import no.nav.fo.veilarbaktivitet.domain.Innsender;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetRequest;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetResponse;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetRequest;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetResponse;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 import org.springframework.stereotype.Component;
@@ -16,34 +15,36 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
-import static no.nav.fo.veilarbaktivitet.domain.Innsender.BRUKER;
-import static no.nav.fo.veilarbaktivitet.domain.Innsender.NAV;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
+import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
+import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 
 @Component
-public class AktivitetsoversiktWebServiceTransformer {
+class AktivitetsoversiktWebServiceTransformer {
 
-    private static final BidiMap<InnsenderType, Innsender> innsenderMap = new DualHashBidiMap<>();
+    private static final BidiMap<InnsenderType, InnsenderData> innsenderMap = new DualHashBidiMap<>();
 
     static {
         innsenderMap.put(InnsenderType.BRUKER, BRUKER);
         innsenderMap.put(InnsenderType.NAV, NAV);
     }
 
-    private static final BidiMap<Status, AktivitetStatus> statusMap = new DualHashBidiMap<Status, AktivitetStatus>() {{
-        put(Status.AVBRUTT, AVBRUTT);
-        put(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
-        put(Status.FULLFOERT, FULLFØRT);
-        put(Status.GJENNOMFOERT, GJENNOMFØRT);
-        put(Status.PLANLAGT, PLANLAGT);
-    }};
+    private static final BidiMap<Status, AktivitetStatusData> statusMap =
+            new DualHashBidiMap<Status, AktivitetStatusData>() {{
+                put(Status.AVBRUTT, AVBRUTT);
+                put(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
+                put(Status.FULLFOERT, FULLFØRT);
+                put(Status.GJENNOMFOERT, GJENNOMFØRT);
+                put(Status.PLANLAGT, PLANLAGT);
+            }};
 
-    private static final BidiMap<no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType, AktivitetType> typeMap = new DualHashBidiMap<no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType, AktivitetType>() {{
-        put(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType.JOBBSOEKING, JOBBSØKING);
-        put(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
-    }};
+    private static final BidiMap<AktivitetType, AktivitetTypeData> typeMap =
+            new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
+                put(AktivitetType.JOBBSOEKING, JOBBSØKING);
+                put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
+            }};
 
 
     @Inject
@@ -59,20 +60,19 @@ public class AktivitetsoversiktWebServiceTransformer {
                 .orElseThrow(RuntimeException::new); // TODO Hvordan håndere dette?
     }
 
-    public StillingsSoekAktivitet somStillingAktivitet(OpprettNyStillingAktivitetRequest request) {
+    StillingsSoekAktivitet mapTilStillingAktivitetData(OpprettNyStillingAktivitetRequest request) {
         return new StillingsSoekAktivitet()
-                .setStillingsoek(new Stillingsoek())
-                .setAktivitet(somAktivitet(request.getStillingaktivitet().getAktivitet(), JOBBSØKING));
+                .setStillingsoek(new StillingsoekData())
+                .setAktivitet(mapTilAktivitetData(request.getStillingaktivitet().getAktivitet(), JOBBSØKING));
     }
 
-    public EgenAktivitet somEgenAktivitet(OpprettNyEgenAktivitetRequest request) {
-
-        return new EgenAktivitet()
-                .setAktivitet(somAktivitet(request.getEgenaktivitet().getAktivitet(), EGENAKTIVITET));
+    EgenAktivitetData mapTilEgenAktivitetData(OpprettNyEgenAktivitetRequest request) {
+        return new EgenAktivitetData()
+                .setAktivitet(mapTilAktivitetData(request.getEgenaktivitet().getAktivitet(), EGENAKTIVITET));
     }
 
-    private Aktivitet somAktivitet(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet aktivitet, AktivitetType type) {
-        return new Aktivitet()
+    private AktivitetData mapTilAktivitetData(Aktivitet aktivitet, AktivitetTypeData type) {
+        return new AktivitetData()
                 .setAktorId(hentAktoerIdForIdent(aktivitet.getPersonIdent()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setAktivitetType(type)
@@ -80,16 +80,15 @@ public class AktivitetsoversiktWebServiceTransformer {
                 .setLagtInnAv(lagtInnAv(aktivitet));
     }
 
-    public Stillingaktivitet somWSAktivitet(StillingsSoekAktivitet stillingsSoekAktivitet) {
-        Stillingaktivitet stillingaktivitet = new Stillingaktivitet();
-        stillingaktivitet.setAktivitet(somWSAktivitet(stillingsSoekAktivitet.getAktivitet()));
+    Stillingaktivitet mapTilAktivitet(StillingsSoekAktivitet stillingsSoekAktivitet) {
+        val stillingaktivitet = new Stillingaktivitet();
+        stillingaktivitet.setAktivitet(mapTilAktivitet(stillingsSoekAktivitet.getAktivitet()));
         return stillingaktivitet;
     }
 
-    public Egenaktivitet somWSAktivitet(EgenAktivitet egenAktivitet) {
-        Egenaktivitet egenaktivitet = new Egenaktivitet();
-        egenaktivitet.setAktivitet(somWSAktivitet(egenAktivitet.getAktivitet()));
-
+    Egenaktivitet mapTilAktivitet(EgenAktivitetData egenAktivitet) {
+        val egenaktivitet = new Egenaktivitet();
+        egenaktivitet.setAktivitet(mapTilAktivitet(egenAktivitet.getAktivitet()));
 
 
         //
@@ -99,8 +98,8 @@ public class AktivitetsoversiktWebServiceTransformer {
         return egenaktivitet;
     }
 
-    private no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet somWSAktivitet(Aktivitet aktivitet) {
-        no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet wsAktivitet = new no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet();
+    private Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
+        val wsAktivitet = new Aktivitet();
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
         wsAktivitet.setPersonIdent(hentIdentForAktorId(aktivitet.getAktorId()));
         wsAktivitet.setStatus(statusMap.getKey(aktivitet.getStatus()));
@@ -110,32 +109,36 @@ public class AktivitetsoversiktWebServiceTransformer {
         return wsAktivitet;
     }
 
-    private AktivitetStatus status(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet aktivitet) {
+    private AktivitetStatusData status(Aktivitet aktivitet) {
         return statusMap.get(aktivitet.getStatus());
     }
 
-    private Innsender lagtInnAv(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet aktivitet) {
+    private InnsenderData lagtInnAv(Aktivitet aktivitet) {
         return of(aktivitet)
-                .map(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet::getLagtInnAv)
-                .map(no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Innsender::getType)
+                .map(Aktivitet::getLagtInnAv)
+                .map(Innsender::getType)
                 .map(innsenderMap::get)
                 .orElse(null); // TODO kreve lagt inn av?
     }
 
-    public OpprettNyEgenAktivitetResponse somOpprettNyEgenAktivitetResponse(Egenaktivitet egenaktivitet) {
-        OpprettNyEgenAktivitetResponse opprettNyEgenAktivitetResponse = new OpprettNyEgenAktivitetResponse();
+    OpprettNyEgenAktivitetResponse somOpprettNyEgenAktivitetResponse(Egenaktivitet egenaktivitet) {
+        val opprettNyEgenAktivitetResponse = new OpprettNyEgenAktivitetResponse();
+
         opprettNyEgenAktivitetResponse.setEgenaktivitet(egenaktivitet);
+
         return opprettNyEgenAktivitetResponse;
     }
 
-    public OpprettNyStillingAktivitetResponse somOpprettNyStillingAktivitetResponse(Stillingaktivitet stillingaktivitet) {
-        OpprettNyStillingAktivitetResponse opprettNyStillingAktivitetResponse = new OpprettNyStillingAktivitetResponse();
+    OpprettNyStillingAktivitetResponse somOpprettNyStillingAktivitetResponse(Stillingaktivitet stillingaktivitet) {
+        val opprettNyStillingAktivitetResponse = new OpprettNyStillingAktivitetResponse();
+
         opprettNyStillingAktivitetResponse.setStillingaktivitet(stillingaktivitet);
+
         return opprettNyStillingAktivitetResponse;
     }
 
-    public no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Endringslogg somEndringsLoggResponse(Endringslogg endringsLogg){
-        val endringsLoggMelding = new no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Endringslogg();
+    Endringslogg somEndringsLoggResponse(EndringsloggData endringsLogg) {
+        val endringsLoggMelding = new Endringslogg();
 
         endringsLoggMelding.setEndringsBeskrivelse(endringsLogg.getEndringsBeskrivelse());
         endringsLoggMelding.setEndretAv(endringsLogg.getEndretAv());

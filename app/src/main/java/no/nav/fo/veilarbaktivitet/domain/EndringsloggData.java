@@ -10,7 +10,7 @@ import static java.util.Collections.emptyList;
 
 @Data
 @Accessors(chain = true)
-public class Endringslogg {
+public class EndringsloggData {
     String endringsBeskrivelse;
     String endretAv;
     Date endretDato;
