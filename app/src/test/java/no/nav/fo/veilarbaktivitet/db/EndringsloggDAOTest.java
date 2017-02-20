@@ -28,7 +28,7 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
 
     @Test
     public void opprett_og_hent_endringslogg() {
-        val aktivitetId = opprett_egenaktivitet();
+        val aktivitetId = opprett_aktivitet();
         endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
 
         val endringsLoggs = endringsLoggDao.hentEndringdsloggForAktivitetId(aktivitetId);
@@ -40,15 +40,13 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
                 (new Date().getTime() - endringsLoggs.get(0).getEndretDato().getTime()) < 1000);
     }
 
-    private long opprett_egenaktivitet() {
+    private long opprett_aktivitet() {
         val aktorId = "123";
-        AktivitetData aktivitet = nyAktivitet(aktorId);
-        EgenAktivitetData egenAktivitet = new EgenAktivitetData().setAktivitet(aktivitet);
 
-        aktivitetDAO.opprettEgenAktivitet(egenAktivitet);
+        aktivitetDAO.opprettAktivitet(nyAktivitet(aktorId));
 
-        List<EgenAktivitetData> egenAktiviteter = aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId);
-        return egenAktiviteter.get(0).getAktivitet().getId();
+        val aktiviter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+        return aktiviter.get(0).getId();
     }
 
     private AktivitetData nyAktivitet(String aktorId) {

@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbaktivitet.db;
 
+import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.junit.Test;
@@ -26,27 +27,30 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
     @Test
     public void opprette_og_hente_egenaktivitet() {
-        AktivitetData aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
-        EgenAktivitetData egenAktivitet = new EgenAktivitetData().setAktivitet(aktivitet);
+        val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
+        val egenAktivitet = new EgenAktivitetData();
+        aktivitet.setEgenAktivitetData(egenAktivitet);
 
-        aktivitetDAO.opprettEgenAktivitet(egenAktivitet);
+        aktivitetDAO.opprettAktivitet(aktivitet);
 
-        List<EgenAktivitetData> egenAktiviteter = aktivitetDAO.hentEgenAktiviteterForAktorId(AKTOR_ID);
-        assertThat(egenAktiviteter, hasSize(1));
-        assertThat(egenAktivitet, equalTo(egenAktiviteter.get(0)));
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
     }
 
     @Test
     public void opprette_og_hente_stillingaktivitet() {
-        AktivitetData aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSØKING);
-        StillingsoekData stillingsøk = nyttStillingssøk();
-        StillingsSoekAktivitet stillingsSøkAktivitet = new StillingsSoekAktivitet().setAktivitet(aktivitet).setStillingsoek(stillingsøk);
+        val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSØKING);
+        val stillingsok = nyttStillingssøk();
 
-        aktivitetDAO.opprettStillingAktivitet(stillingsSøkAktivitet);
+        aktivitet.setStillingsSoekAktivitetData(stillingsok);
 
-        List<StillingsSoekAktivitet> stillingsSøkAktiviteter = aktivitetDAO.hentStillingsAktiviteterForAktorId(AKTOR_ID);
-        assertThat(stillingsSøkAktiviteter, hasSize(1));
-        assertThat(stillingsSøkAktivitet, equalTo(stillingsSøkAktiviteter.get(0)));
+
+        aktivitetDAO.opprettAktivitet(aktivitet);
+
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
     }
 
     private AktivitetData nyAktivitet(String aktorId) {
@@ -75,8 +79,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
                 ;
     }
 
-    private StillingsoekData nyttStillingssøk() {
-        return new StillingsoekData()
+    private StillingsoekAktivitetData nyttStillingssøk() {
+        return new StillingsoekAktivitetData()
                 .setArbeidsgiver("arbeidsgiver")
                 .setKontaktPerson("kontaktperson")
                 .setStillingsTittel("stilingstittel")

@@ -5,7 +5,7 @@ import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
-public class StillingsoekData {
+public class StillingsoekAktivitetData {
 
     String arbeidsgiver;
     String stillingsTittel;

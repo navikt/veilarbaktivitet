@@ -29,5 +29,8 @@ public class AktivitetData {
 
     List<KommentarData> kommentarer = emptyList();
 
+    EgenAktivitetData egenAktivitetData;
+    StillingsoekAktivitetData stillingsSoekAktivitetData;
+
 }
 

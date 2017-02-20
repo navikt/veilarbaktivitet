@@ -3,16 +3,14 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyEgenAktivitetResponse;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyStillingAktivitetResponse;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
+import java.util.Optional;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
@@ -20,16 +18,17 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
+import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
 
 @Component
 class AktivitetsoversiktWebServiceTransformer {
 
-    private static final BidiMap<InnsenderType, InnsenderData> innsenderMap = new DualHashBidiMap<>();
+    private static final BidiMap<InnsenderType, InnsenderData> innsenderMap =
+            new DualHashBidiMap<InnsenderType, InnsenderData>() {{
+                put(InnsenderType.BRUKER, BRUKER);
+                put(InnsenderType.NAV, NAV);
+            }};
 
-    static {
-        innsenderMap.put(InnsenderType.BRUKER, BRUKER);
-        innsenderMap.put(InnsenderType.NAV, NAV);
-    }
 
     private static final BidiMap<Status, AktivitetStatusData> statusMap =
             new DualHashBidiMap<Status, AktivitetStatusData>() {{
@@ -46,6 +45,14 @@ class AktivitetsoversiktWebServiceTransformer {
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
             }};
 
+    private static final BidiMap<Etikett, StillingsoekEtikettData> etikettMap =
+            new DualHashBidiMap<Etikett, StillingsoekEtikettData>() {{
+                put(Etikett.AVSLAG, AVSLAG);
+                put(Etikett.INNKALDT_TIL_INTERVJU, INNKALT_TIL_INTERVJU);
+                put(Etikett.JOBBTILBUD, JOBBTILBUD);
+                put(Etikett.SOEKNAD_SENDT, SØKNAD_SENDT);
+            }};
+
 
     @Inject
     private AktoerConsumer aktoerConsumer;
@@ -60,45 +67,35 @@ class AktivitetsoversiktWebServiceTransformer {
                 .orElseThrow(RuntimeException::new); // TODO Hvordan håndere dette?
     }
 
-    StillingsSoekAktivitet mapTilStillingAktivitetData(OpprettNyStillingAktivitetRequest request) {
-        return new StillingsSoekAktivitet()
-                .setStillingsoek(new StillingsoekData())
-                .setAktivitet(mapTilAktivitetData(request.getStillingaktivitet().getAktivitet(), JOBBSØKING));
-    }
-
-    EgenAktivitetData mapTilEgenAktivitetData(OpprettNyEgenAktivitetRequest request) {
-        return new EgenAktivitetData()
-                .setAktivitet(mapTilAktivitetData(request.getEgenaktivitet().getAktivitet(), EGENAKTIVITET));
-    }
-
-    private AktivitetData mapTilAktivitetData(Aktivitet aktivitet, AktivitetTypeData type) {
+    public AktivitetData mapTilAktivitetData(Aktivitet aktivitet) {
         return new AktivitetData()
                 .setAktorId(hentAktoerIdForIdent(aktivitet.getPersonIdent()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
-                .setAktivitetType(type)
-                .setStatus(status(aktivitet))
-                .setLagtInnAv(lagtInnAv(aktivitet));
+                .setAktivitetType(AktivitetTypeData.valueOf(aktivitet.getType().name()))
+                .setStatus(statusMap.get(aktivitet.getStatus()))
+                .setLagtInnAv(lagtInnAv(aktivitet))
+                .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
+                .setStillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
+                ;
     }
 
-    Stillingaktivitet mapTilAktivitet(StillingsSoekAktivitet stillingsSoekAktivitet) {
-        val stillingaktivitet = new Stillingaktivitet();
-        stillingaktivitet.setAktivitet(mapTilAktivitet(stillingsSoekAktivitet.getAktivitet()));
-        return stillingaktivitet;
+    private StillingsoekAktivitetData mapTilStillingsoekAktivitetData(Stillingaktivitet stillingaktivitet) {
+        return Optional.ofNullable(stillingaktivitet).map(stilling ->
+                new StillingsoekAktivitetData()
+                        .setArbeidsgiver(stilling.getArbeidsgiver())
+                        .setKontaktPerson(stilling.getArbeidsgiver())
+                        .setStillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
+                        .setStillingsTittel(stilling.getStillingstittel()))
+                .orElse(null);
     }
 
-    Egenaktivitet mapTilAktivitet(EgenAktivitetData egenAktivitet) {
-        val egenaktivitet = new Egenaktivitet();
-        egenaktivitet.setAktivitet(mapTilAktivitet(egenAktivitet.getAktivitet()));
-
-
-        //
-        egenaktivitet.setType(EgenaktivitetType.values()[0]); // TODO dette må inn i datamodellen
-        //
-
-        return egenaktivitet;
+    private EgenAktivitetData mapTilEgenAktivitetData(Egenaktivitet egenaktivitet) {
+        return Optional.ofNullable(egenaktivitet)
+                .map(egen -> new EgenAktivitetData())
+                .orElse(null);
     }
 
-    private Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
+    Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
         val wsAktivitet = new Aktivitet();
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
         wsAktivitet.setPersonIdent(hentIdentForAktorId(aktivitet.getAktorId()));
@@ -106,11 +103,39 @@ class AktivitetsoversiktWebServiceTransformer {
         wsAktivitet.setType(typeMap.getKey(aktivitet.getAktivitetType()));
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setDelerMedNav(aktivitet.isDeleMedNav());
+        Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
+                .ifPresent(stillingsoekAktivitetData ->
+                        wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));
+        Optional.ofNullable(aktivitet.getEgenAktivitetData())
+                .ifPresent(egenAktivitetData ->
+                        wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
+
         return wsAktivitet;
     }
 
-    private AktivitetStatusData status(Aktivitet aktivitet) {
-        return statusMap.get(aktivitet.getStatus());
+    private Stillingaktivitet mapTilStillingsAktivitet(StillingsoekAktivitetData stillingsSoekAktivitet) {
+        val stillingaktivitet = new Stillingaktivitet();
+
+        stillingaktivitet.setArbeidsgiver(stillingsSoekAktivitet.getArbeidsgiver());
+        stillingaktivitet.setEtikett(etikettMap.getKey(stillingsSoekAktivitet.getStillingsoekEtikett()));
+        stillingaktivitet.setKontaktperson(stillingsSoekAktivitet.getKontaktPerson());
+        stillingaktivitet.setStillingstittel(stillingaktivitet.getStillingstittel());
+
+        return stillingaktivitet;
+    }
+
+    private Egenaktivitet mapTilEgenAktivitet(EgenAktivitetData egenAktivitet) {
+        val egenaktivitet = new Egenaktivitet();
+
+        egenaktivitet.setType(EgenaktivitetType.values()[0]); // TODO dette må inn i datamodellen
+
+        return egenaktivitet;
+    }
+
+    OpprettNyAktivitetResponse mapTilOpprettNyAktivitetResponse(Aktivitet aktivitet) {
+        val nyAktivitetResponse = new OpprettNyAktivitetResponse();
+        nyAktivitetResponse.setAktivitet(aktivitet);
+        return nyAktivitetResponse;
     }
 
     private InnsenderData lagtInnAv(Aktivitet aktivitet) {
@@ -119,22 +144,6 @@ class AktivitetsoversiktWebServiceTransformer {
                 .map(Innsender::getType)
                 .map(innsenderMap::get)
                 .orElse(null); // TODO kreve lagt inn av?
-    }
-
-    OpprettNyEgenAktivitetResponse somOpprettNyEgenAktivitetResponse(Egenaktivitet egenaktivitet) {
-        val opprettNyEgenAktivitetResponse = new OpprettNyEgenAktivitetResponse();
-
-        opprettNyEgenAktivitetResponse.setEgenaktivitet(egenaktivitet);
-
-        return opprettNyEgenAktivitetResponse;
-    }
-
-    OpprettNyStillingAktivitetResponse somOpprettNyStillingAktivitetResponse(Stillingaktivitet stillingaktivitet) {
-        val opprettNyStillingAktivitetResponse = new OpprettNyStillingAktivitetResponse();
-
-        opprettNyStillingAktivitetResponse.setStillingaktivitet(stillingaktivitet);
-
-        return opprettNyStillingAktivitetResponse;
     }
 
     Endringslogg somEndringsLoggResponse(EndringsloggData endringsLogg) {

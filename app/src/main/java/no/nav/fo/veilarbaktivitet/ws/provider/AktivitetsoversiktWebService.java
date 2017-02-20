@@ -6,8 +6,6 @@ import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetSikkerhetsbegrensing;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.OpprettNyStillingAktivitetUgyldigInput;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitetsplan;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.springframework.stereotype.Service;
@@ -34,22 +32,14 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
     private AktivitetsoversiktWebServiceTransformer aktivitetsoversiktWebServiceTransformer;
 
     @Override
-    public OpprettNyEgenAktivitetResponse opprettNyEgenAktivitet(OpprettNyEgenAktivitetRequest opprettNyEgenAktivitetRequest) {
-        return of(opprettNyEgenAktivitetRequest)
-                .map(aktivitetsoversiktWebServiceTransformer::mapTilEgenAktivitetData)
-                .map(aktivitetDAO::opprettEgenAktivitet)
-                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
-                .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyEgenAktivitetResponse)
-                .orElseThrow(RuntimeException::new);
-    }
+    public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
 
-    @Override
-    public OpprettNyStillingAktivitetResponse opprettNyStillingAktivitet(OpprettNyStillingAktivitetRequest opprettNyStillingAktivitetRequest) throws OpprettNyStillingAktivitetSikkerhetsbegrensing, OpprettNyStillingAktivitetUgyldigInput {
-        return of(opprettNyStillingAktivitetRequest)
-                .map(aktivitetsoversiktWebServiceTransformer::mapTilStillingAktivitetData)
-                .map(aktivitetDAO::opprettStillingAktivitet)
+        return of(opprettNyAktivitetRequest)
+                .map(OpprettNyAktivitetRequest::getAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitetData)
+                .map(aktivitetDAO::opprettAktivitet)
                 .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
-                .map(aktivitetsoversiktWebServiceTransformer::somOpprettNyStillingAktivitetResponse)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilOpprettNyAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -61,13 +51,10 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         Aktivitetsplan aktivitetsplan = new Aktivitetsplan();
         wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
 
-        aktivitetDAO.hentStillingsAktiviteterForAktorId(aktorId).stream()
+        aktivitetDAO.hentAktiviteterForAktorId(aktorId)
+                .stream()
                 .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
-                .forEach(aktivitetsplan.getStillingaktivitetListe()::add);
-
-        aktivitetDAO.hentEgenAktiviteterForAktorId(aktorId).stream()
-                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
-                .forEach(aktivitetsplan.getEgenaktivitetListe()::add);
+                .forEach(aktivitetsplan.getAktivitetListe()::add);
 
         return wsHentAktiviteterResponse;
     }
@@ -86,6 +73,11 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
                         .forEach(endringer::add)
                 );
         return endringsloggResponse;
+    }
+
+    @Override
+    public EndreAktivitetStatusResponse endreAktivitetStatus(EndreAktivitetStatusRequest endreAktivitetStatusRequest) {
+        return null;
     }
 
     @Override
