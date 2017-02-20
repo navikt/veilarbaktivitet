@@ -54,6 +54,7 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
                 .setAktorId(aktorId)
                 .setTittel("tittel")
                 .setBeskrivelse("beskrivelse")
+                .setAktivitetType(AktivitetTypeData.EGENAKTIVITET)
                 .setStatus(AktivitetStatusData.values()[0])
                 .setAvsluttetKommentar("avsluttetKommentar")
                 .setLagtInnAv(InnsenderData.values()[0])
