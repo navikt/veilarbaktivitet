@@ -21,7 +21,7 @@ public class AktivitetsApiServlet extends CXFNonSpringServlet {
 
     private static void settOppEndpoints(ApplicationContext applicationContext) {
         new CXFEndpoint()
-                .address("/AktivitetData")
+                .address("/Aktivitet")
                 .serviceBean(applicationContext.getBean(AktivitetsoversiktWebService.class))
                 .kerberosInInterceptor()
                 .create();
