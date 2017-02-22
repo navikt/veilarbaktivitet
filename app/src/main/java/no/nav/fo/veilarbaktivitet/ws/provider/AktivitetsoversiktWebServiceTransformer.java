@@ -15,7 +15,7 @@ import java.util.Optional;
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
@@ -41,7 +41,7 @@ class AktivitetsoversiktWebServiceTransformer {
 
     private static final BidiMap<AktivitetType, AktivitetTypeData> typeMap =
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
-                put(AktivitetType.JOBBSOEKING, JOBBSØKING);
+                put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
             }};
 
@@ -70,6 +70,7 @@ class AktivitetsoversiktWebServiceTransformer {
     public AktivitetData mapTilAktivitetData(Aktivitet aktivitet) {
         return new AktivitetData()
                 .setAktorId(hentAktoerIdForIdent(aktivitet.getPersonIdent()))
+                .setTittel(aktivitet.getTittel())
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setAktivitetType(AktivitetTypeData.valueOf(aktivitet.getType().name()))
                 .setStatus(statusMap.get(aktivitet.getStatus()))
@@ -98,6 +99,7 @@ class AktivitetsoversiktWebServiceTransformer {
     Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
         val wsAktivitet = new Aktivitet();
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
+        wsAktivitet.setTittel(aktivitet.getTittel());
         wsAktivitet.setPersonIdent(hentIdentForAktorId(aktivitet.getAktorId()));
         wsAktivitet.setStatus(statusMap.getKey(aktivitet.getStatus()));
         wsAktivitet.setType(typeMap.getKey(aktivitet.getAktivitetType()));

@@ -12,7 +12,7 @@ import java.util.*;
 import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -40,7 +40,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
     @Test
     public void opprette_og_hente_stillingaktivitet() {
-        val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSØKING);
+        val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
         val stillingsok = nyttStillingssøk();
 
         aktivitet.setStillingsSoekAktivitetData(stillingsok);

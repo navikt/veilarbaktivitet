@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbaktivitet.db;
 
-import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
@@ -12,13 +11,10 @@ import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.db.SQLUtils.hentDato;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSØKING;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -71,7 +67,7 @@ public class AktivitetDAO {
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
             aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
-        } else if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSØKING) {
+        } else if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             aktivitet.setStillingsSoekAktivitetData(this.mapStillingsAktivitet(rs));
         }
 
