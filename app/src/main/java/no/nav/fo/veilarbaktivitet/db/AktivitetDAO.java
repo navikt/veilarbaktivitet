@@ -72,7 +72,7 @@ public class AktivitetDAO {
         }
 
         return aktivitet;
-}
+    }
 
 
     private KommentarData mapKommentar(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
@@ -178,6 +178,38 @@ public class AktivitetDAO {
         //TODO save some data here
         return ofNullable(egenAktivitetData)
                 .orElse(null);
+    }
+
+
+    public int slettAktivitet(long aktivitetId) {
+
+        jdbcTemplate.update("DELETE FROM KOMMENTAR WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        jdbcTemplate.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        //TODO insert egenAktivitet
+
+        return jdbcTemplate.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+    }
+
+
+    public AktivitetData endreAktivitetStatus(long aktivitetId, AktivitetStatusData status) {
+        jdbcTemplate.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
+                getName(status),
+                aktivitetId
+        );
+
+
+        return jdbcTemplate.queryForObject("SELECT * FROM AKTIVITET A " +
+                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
+                        "WHERE aktivitet_id = ?",
+                this::mapAktivitet,
+                aktivitetId
+        );
     }
 
 

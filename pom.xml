@@ -41,7 +41,7 @@
         <metrics.version>3.1.1</metrics.version>
 
         <modig.version>1.0.30</modig.version>
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.4-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.5-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
 
         <!-- Tredjeparts  -->
         <cxf.version>2.7.6</cxf.version>
@@ -49,6 +49,7 @@
         <slf4j.version>1.7.15</slf4j.version>
         <logback.version>1.0.13</logback.version>
 
+        <mockito.version>1.10.19</mockito.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -295,6 +296,12 @@
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-library</artifactId>
                 <version>1.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>

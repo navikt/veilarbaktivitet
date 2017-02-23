@@ -20,7 +20,7 @@ import static java.util.Optional.of;
 public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
 
     @Inject
-    private AktoerConsumer aktoerConsumer;
+    AktoerConsumer aktoerConsumer;
 
     @Inject
     private AktivitetDAO aktivitetDAO;
@@ -77,7 +77,22 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
 
     @Override
     public EndreAktivitetStatusResponse endreAktivitetStatus(EndreAktivitetStatusRequest endreAktivitetStatusRequest) {
-        return null;
+        return of(endreAktivitetStatusRequest)
+                .map((req) -> aktivitetDAO.endreAktivitetStatus(
+                        Long.parseLong(req.getAktivitetId()),
+                        aktivitetsoversiktWebServiceTransformer.mapTilAktivitetStatusData(req.getStatus()))
+                ).map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilEndreAktivitetStatusResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public SlettAktivitetResponse slettAktivitet(SlettAktivitetRequest slettAktivitetRequest) {
+        of(slettAktivitetRequest)
+                .map(SlettAktivitetRequest::getAktivitetId)
+                .map(Long::parseLong)
+                .map(aktivitetDAO::slettAktivitet);
+        return new SlettAktivitetResponse();
     }
 
     @Override

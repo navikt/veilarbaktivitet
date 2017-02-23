@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import org.apache.commons.collections15.BidiMap;
@@ -156,6 +157,16 @@ class AktivitetsoversiktWebServiceTransformer {
         endringsLoggMelding.setEndretDato(endringsLogg.getEndretDato().toString());
 
         return endringsLoggMelding;
+    }
+
+    AktivitetStatusData mapTilAktivitetStatusData(Status status){
+        return statusMap.get(status);
+    }
+
+    EndreAktivitetStatusResponse mapTilEndreAktivitetStatusResponse(Aktivitet aktivitet){
+        val res = new EndreAktivitetStatusResponse();
+        res.setAktivitet(aktivitet);
+        return res;
     }
 
 }
