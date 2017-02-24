@@ -15,10 +15,8 @@ import java.util.Optional;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
-import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
+import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.*;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
 
 @Component
@@ -64,7 +62,7 @@ class AktivitetsoversiktWebServiceTransformer {
     }
 
     private String hentIdentForAktorId(String aktorId) {
-        return aktoerConsumer.hentIdentForAktørId(aktorId)
+        return aktoerConsumer.hentIdentForAktorId(aktorId)
                 .orElseThrow(RuntimeException::new); // TODO Hvordan håndere dette?
     }
 
