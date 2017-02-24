@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
@@ -99,6 +100,24 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
         endreReq.setStatus(Status.AVBRUTT);
         val res2 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
+    }
+
+    @Test
+    public void skal_ikke_kunne_endre_aktivitet_status_fra_avbrutt_eller_fullfort() throws Exception {
+        val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
+                .setAktivitetType(EGENAKTIVITET)
+                .setEgenAktivitetData(new EgenAktivitetData())
+                .setStatus(AktivitetStatusData.AVBRUTT);
+
+        aktivitetDAO.opprettAktivitet(aktivitet);
+
+        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val endreReq = new EndreAktivitetStatusRequest();
+        endreReq.setAktivitetId(aktivitetId);
+        endreReq.setStatus(Status.GJENNOMFOERT);
+
+        val res1 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
+        assertThat(res1.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
     }
 
     @Test

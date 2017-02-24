@@ -57,11 +57,21 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     public void endre_aktivitet_status() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        val endretAktivitet1 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFØRT);
-        assertThat(endretAktivitet1.getStatus(), equalTo(AktivitetStatusData.GJENNOMFØRT));
+        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFØRT);
+        assertThat(raderEndret, equalTo(1));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.GJENNOMFØRT));
 
-        val endretAktivitet2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.AVBRUTT);
-        assertThat(endretAktivitet2.getStatus(), equalTo(AktivitetStatusData.AVBRUTT));
+        val raderEndret2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.AVBRUTT);
+        assertThat(raderEndret2, equalTo(1));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.AVBRUTT));
+    }
+
+    @Test
+    public void hent_aktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+
+        val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        assertThat(aktivitet, equalTo(hentetAktivitet));
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {

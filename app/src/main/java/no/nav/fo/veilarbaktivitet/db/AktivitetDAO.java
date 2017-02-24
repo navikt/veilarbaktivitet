@@ -192,18 +192,19 @@ public class AktivitetDAO {
         );
     }
 
-
-    public AktivitetData endreAktivitetStatus(long aktivitetId, AktivitetStatusData status) {
-        database.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
-                getName(status),
-                aktivitetId
-        );
-
-
+    public AktivitetData hentAktivitet(long aktivitetId){
         return database.queryForObject("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "WHERE A.aktivitet_id = ?",
                 this::mapAktivitet,
+                aktivitetId
+        );
+    }
+
+
+    public int endreAktivitetStatus(long aktivitetId, AktivitetStatusData status) {
+        return database.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
+                getName(status),
                 aktivitetId
         );
     }

@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
@@ -86,16 +87,25 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
                 .orElseThrow(RuntimeException::new);
     }
 
-    private AktivitetData endreAktivitetStatus(String aktivitetId, Status status){
+    private AktivitetData endreAktivitetStatus(String aktivitetId, Status status) {
         val id = Long.parseLong(aktivitetId);
         val statusData = aktivitetsoversiktWebServiceTransformer.mapTilAktivitetStatusData(status);
 
-        val aktivtet = aktivitetDAO.endreAktivitetStatus(id, statusData);
-        endringsLoggDAO.opprettEndringsLogg(id,
-                "Test",
-                String.format("Livsløpsstatus endret til %s ", status.name()));
+        val gammelAktivitet = aktivitetDAO.hentAktivitet(id);
 
-        return aktivtet;
+        if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
+            val endretAktivitet = aktivitetDAO.endreAktivitetStatus(id, statusData);
+            endringsLoggDAO.opprettEndringsLogg(id,
+                    "Test",
+                    String.format("Livsløpsstatus endret til %s ", status.name()));
+        } //TODO return fault when updating an invalid aktivity or something
+
+        return aktivitetDAO.hentAktivitet(id);
+    }
+
+    private Boolean statusSkalIkkeKunneEndres(AktivitetData aktivitetData) {
+        return aktivitetData.getStatus() == AktivitetStatusData.AVBRUTT ||
+                aktivitetData.getStatus() == AktivitetStatusData.FULLFØRT;
     }
 
     @Override
