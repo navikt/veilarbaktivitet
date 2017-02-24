@@ -94,10 +94,10 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         val gammelAktivitet = aktivitetDAO.hentAktivitet(id);
 
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
-            val endretAktivitet = aktivitetDAO.endreAktivitetStatus(id, statusData);
-            endringsLoggDAO.opprettEndringsLogg(id,
-                    "Test",
-                    String.format("Livsløpsstatus endret til %s ", status.name()));
+            aktivitetDAO.endreAktivitetStatus(id, statusData);
+            val endretBeskrivelse = String.format("Livsløpsstatus endret til fra %s %s ",
+                    gammelAktivitet.getStatus().name(), status.name());
+            endringsLoggDAO.opprettEndringsLogg(id, "Test", endretBeskrivelse);
         } //TODO return fault when updating an invalid aktivity or something
 
         return aktivitetDAO.hentAktivitet(id);
