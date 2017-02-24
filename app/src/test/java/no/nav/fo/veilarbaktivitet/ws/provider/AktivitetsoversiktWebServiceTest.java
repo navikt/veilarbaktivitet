@@ -10,10 +10,7 @@ import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.HentAktivitetsplanRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetRequest;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.SlettAktivitetRequest;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -102,6 +99,22 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
         endreReq.setStatus(Status.AVBRUTT);
         val res2 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
+    }
+
+    @Test
+    public void hent_endringslogg() throws Exception {
+        opprett_aktivitet();
+
+        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val endreReq = new EndreAktivitetStatusRequest();
+        endreReq.setAktivitetId(aktivitetId);
+        endreReq.setStatus(Status.GJENNOMFOERT);
+
+        aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
+
+        val req = new HentEndringsLoggForAktivitetRequest();
+        req.setAktivitetId(aktivitetId);
+        assertThat(aktivitetsoversiktWebService.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
     }
 
     private List<AktivitetData> aktiviter() throws Exception {

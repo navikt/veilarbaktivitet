@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.db;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
 import org.slf4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -190,6 +191,10 @@ public class AktivitetDAO {
                 aktivitetId
         );
         //TODO insert egenAktivitet
+
+        jdbcTemplate.update("DELETE FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
+                aktivitetId
+        );
 
         return jdbcTemplate.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
                 aktivitetId

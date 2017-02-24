@@ -3,10 +3,12 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitetsplan;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
@@ -78,12 +80,22 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
     @Override
     public EndreAktivitetStatusResponse endreAktivitetStatus(EndreAktivitetStatusRequest endreAktivitetStatusRequest) {
         return of(endreAktivitetStatusRequest)
-                .map((req) -> aktivitetDAO.endreAktivitetStatus(
-                        Long.parseLong(req.getAktivitetId()),
-                        aktivitetsoversiktWebServiceTransformer.mapTilAktivitetStatusData(req.getStatus()))
-                ).map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
+                .map((req) -> endreAktivitetStatus(req.getAktivitetId(), req.getStatus()))
+                .map(aktivitetsoversiktWebServiceTransformer::mapTilAktivitet)
                 .map(aktivitetsoversiktWebServiceTransformer::mapTilEndreAktivitetStatusResponse)
                 .orElseThrow(RuntimeException::new);
+    }
+
+    private AktivitetData endreAktivitetStatus(String aktivitetId, Status status){
+        val id = Long.parseLong(aktivitetId);
+        val statusData = aktivitetsoversiktWebServiceTransformer.mapTilAktivitetStatusData(status);
+
+        val aktivtet = aktivitetDAO.endreAktivitetStatus(id, statusData);
+        endringsLoggDAO.opprettEndringsLogg(id,
+                "Test",
+                String.format("Livsløpsstatus endret til %s ", status.name()));
+
+        return aktivtet;
     }
 
     @Override

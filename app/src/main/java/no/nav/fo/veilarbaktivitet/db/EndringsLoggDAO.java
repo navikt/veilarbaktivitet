@@ -40,7 +40,7 @@ public class EndringsLoggDAO {
                 ;
     }
 
-    protected void opprettEndringsLogg(long aktivitetId, String endretAv, String endringsBeskrivelse) {
+    public void opprettEndringsLogg(long aktivitetId, String endretAv, String endringsBeskrivelse) {
         long endringsLoggId = sqlUtils.nesteFraSekvens("ENDRINGSLOGG_ID_SEQ");
         jdbcTemplate.update("INSERT INTO ENDRINGSLOGG(id, aktivitet_id, " +
                         "endrings_dato, endret_av, endrings_beskrivelse) " +
