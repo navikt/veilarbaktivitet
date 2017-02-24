@@ -30,7 +30,7 @@ public class AktivitetDAO {
         //TODO add egendefinerte when added
         return database.query("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
-                        "WHERE aktor_id = ?",
+                        "WHERE A.aktor_id = ?",
                 this::mapAktivitet,
                 aktorId
         );
@@ -202,7 +202,7 @@ public class AktivitetDAO {
 
         return database.queryForObject("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
-                        "WHERE aktivitet_id = ?",
+                        "WHERE A.aktivitet_id = ?",
                 this::mapAktivitet,
                 aktivitetId
         );
