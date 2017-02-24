@@ -3,7 +3,6 @@ package no.nav.fo.veilarbaktivitet.db;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +13,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbaktivitet.db.SQLUtils.hentDato;
+import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -25,18 +24,11 @@ public class AktivitetDAO {
     private static final Logger LOG = getLogger(AktivitetDAO.class);
 
     @Inject
-    private JdbcTemplate jdbcTemplate;
-
-    @Inject
-    private SQLUtils sqlUtils;
-
-    @Inject
-    private EndringsLoggDAO endringsLoggDAO;
-    //TODO use when update status is in the works
+    private Database database;
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         //TODO add egendefinerte when added
-        return jdbcTemplate.query("SELECT * FROM AKTIVITET A " +
+        return database.query("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "WHERE aktor_id = ?",
                 this::mapAktivitet,
@@ -44,10 +36,10 @@ public class AktivitetDAO {
         );
     }
 
-    private AktivitetData mapAktivitet(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
+    private AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         long aktivitetId = rs.getLong("aktivitet_id");
         //TODO vurdere å slå opp alle kommentarer en gang, istede for en gang pr aktivitet
-        List<KommentarData> kommentarer = jdbcTemplate.query("SELECT * FROM KOMMENTAR WHERE aktivitet_id = ?", this::mapKommentar, aktivitetId);
+        List<KommentarData> kommentarer = database.query("SELECT * FROM KOMMENTAR WHERE aktivitet_id = ?", this::mapKommentar, aktivitetId);
         val aktivitet = new AktivitetData()
                 .setId(aktivitetId)
                 .setAktorId(rs.getString("aktor_id"))
@@ -75,7 +67,7 @@ public class AktivitetDAO {
     }
 
 
-    private KommentarData mapKommentar(ResultSet rs, @SuppressWarnings("unused") int n) throws SQLException {
+    private KommentarData mapKommentar(ResultSet rs) throws SQLException {
         return new KommentarData()
                 .setKommentar(rs.getString("kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
@@ -113,8 +105,8 @@ public class AktivitetDAO {
 
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
-        long aktivitetId = sqlUtils.nesteFraSekvens("AKTIVITET_ID_SEQ");
-        jdbcTemplate.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
+        long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
+        database.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
                         "fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato," +
                         "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke,dele_med_nav) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -149,7 +141,7 @@ public class AktivitetDAO {
     }
 
     private KommentarData insertKommentar(long aktivitetId, KommentarData kommentar) {
-        jdbcTemplate.update("INSERT INTO KOMMENTAR(aktivitet_id,kommentar,opprettet_av,opprettet_dato) " +
+        database.update("INSERT INTO KOMMENTAR(aktivitet_id,kommentar,opprettet_av,opprettet_dato) " +
                         "VALUES (?,?,?,?)",
                 aktivitetId,
                 kommentar.getKommentar(),
@@ -162,7 +154,7 @@ public class AktivitetDAO {
     private StillingsoekAktivitetData insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
         return ofNullable(stillingsSoekAktivitet)
                 .map(stillingsoek -> {
-                    jdbcTemplate.update("INSERT INTO STILLINGSSOK(aktivitet_id,stillingstittel,arbeidsgiver," +
+                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id,stillingstittel,arbeidsgiver," +
                                     "kontaktperson,etikett) VALUES(?,?,?,?,?)",
                             aktivitetId,
                             stillingsoek.getStillingsTittel(),
@@ -183,28 +175,28 @@ public class AktivitetDAO {
 
     public int slettAktivitet(long aktivitetId) {
 
-        jdbcTemplate.update("DELETE FROM KOMMENTAR WHERE aktivitet_id = ?",
+        database.update("DELETE FROM KOMMENTAR WHERE aktivitet_id = ?",
                 aktivitetId
         );
-        jdbcTemplate.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
+        database.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
                 aktivitetId
         );
         //TODO insert egenAktivitet
 
-        return jdbcTemplate.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
+        return database.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
                 aktivitetId
         );
     }
 
 
     public AktivitetData endreAktivitetStatus(long aktivitetId, AktivitetStatusData status) {
-        jdbcTemplate.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
+        database.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
                 getName(status),
                 aktivitetId
         );
 
 
-        return jdbcTemplate.queryForObject("SELECT * FROM AKTIVITET A " +
+        return database.queryForObject("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "WHERE aktivitet_id = ?",
                 this::mapAktivitet,
