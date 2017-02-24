@@ -39,8 +39,8 @@ public class AktoerConsumer {
     }
 
 
-    public Optional<String> hentIdentForAktørId(String aktørId) {
-        if (isBlank(aktørId)) {
+    public Optional<String> hentIdentForAktorId(String aktorId) {
+        if (isBlank(aktorId)) {
             LOG.warn("Kan ikke hente odemt uten aktørId");
             return empty();
         }
@@ -48,7 +48,7 @@ public class AktoerConsumer {
         try {
             return of(aktoerV2.hentIdentForAktoerId(
                     new WSHentIdentForAktoerIdRequest()
-                            .withAktoerId(aktørId)
+                            .withAktoerId(aktorId)
             ).getIdent());
         } catch (HentIdentForAktoerIdPersonIkkeFunnet e) {
             LOG.warn("AktoerID ikke funnet for aktørId!", e);

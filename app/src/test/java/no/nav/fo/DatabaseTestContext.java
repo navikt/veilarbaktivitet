@@ -9,8 +9,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static no.nav.fo.veilarbaktivitet.db.SQLUtils.DIALECT_PROPERTY;
-import static no.nav.fo.veilarbaktivitet.db.SQLUtils.HSQLDB_DIALECT;
+import static no.nav.fo.veilarbaktivitet.db.Database.DIALECT_PROPERTY;
+import static no.nav.fo.veilarbaktivitet.db.Database.HSQLDB_DIALECT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 

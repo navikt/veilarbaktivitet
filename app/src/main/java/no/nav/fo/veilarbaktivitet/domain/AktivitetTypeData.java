@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-public enum AktivitetType {
+public enum AktivitetTypeData {
     EGENAKTIVITET,
-    JOBBSØKING
+    JOBBSOEKING
 }

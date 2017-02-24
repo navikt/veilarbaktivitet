@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-public enum AktivitetStatus {
+public enum AktivitetStatusData {
     PLANLAGT,
     GJENNOMFØRT,
     FULLFØRT,

@@ -1,19 +1,20 @@
 package no.nav.fo.veilarbaktivitet.db;
 
+import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
-import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
+import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
 import org.junit.Test;
 
 import javax.inject.Inject;
 
-import java.util.*;
-
-import static java.util.Arrays.asList;
-import static java.util.Calendar.SECOND;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetType.JOBBSØKING;
-import static org.apache.commons.lang3.time.DateUtils.truncate;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataHelper.nyAktivitet;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataHelper.nyttStillingssøk;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
@@ -26,65 +27,70 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
     @Test
     public void opprette_og_hente_egenaktivitet() {
-        Aktivitet aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
-        EgenAktivitet egenAktivitet = new EgenAktivitet().setAktivitet(aktivitet);
+        val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
 
-        aktivitetDAO.opprettEgenAktivitet(egenAktivitet);
-
-        List<EgenAktivitet> egenAktiviteter = aktivitetDAO.hentEgenAktiviteterForAktorId(AKTOR_ID);
-        assertThat(egenAktiviteter, hasSize(1));
-        assertThat(egenAktivitet, equalTo(egenAktiviteter.get(0)));
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
     }
 
     @Test
     public void opprette_og_hente_stillingaktivitet() {
-        Aktivitet aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSØKING);
-        Stillingsoek stillingsøk = nyttStillingssøk();
-        StillingsSoekAktivitet stillingsSøkAktivitet = new StillingsSoekAktivitet().setAktivitet(aktivitet).setStillingsoek(stillingsøk);
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        aktivitetDAO.opprettStillingAktivitet(stillingsSøkAktivitet);
-
-        List<StillingsSoekAktivitet> stillingsSøkAktiviteter = aktivitetDAO.hentStillingsAktiviteterForAktorId(AKTOR_ID);
-        assertThat(stillingsSøkAktiviteter, hasSize(1));
-        assertThat(stillingsSøkAktivitet, equalTo(stillingsSøkAktiviteter.get(0)));
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
     }
 
-    private Aktivitet nyAktivitet(String aktorId) {
-        return new Aktivitet()
-                .setAktorId(aktorId)
-                .setFraDato(nyDato())
-                .setTilDato(nyDato())
-                .setTittel("tittel")
-                .setBeskrivelse("beskrivelse")
-                .setStatus(AktivitetStatus.values()[0])
-                .setAvsluttetDato(nyDato())
-                .setAvsluttetKommentar("avsluttetKommentar")
-                .setLagtInnAv(Innsender.values()[0])
-                .setOpprettetDato(nyDato())
-                .setLenke("lenke")
-                .setDeleMedNav(true)
-                .setKommentarer(asList(nyKommentar(), nyKommentar()))
-                ;
+    @Test
+    public void slett_aktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+
+        val antallSlettet = aktivitetDAO.slettAktivitet(aktivitet.getId());
+
+        assertThat(antallSlettet, equalTo(1));
+        assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
     }
 
-    private Kommentar nyKommentar() {
-        return new Kommentar()
-                .setKommentar("kommentar")
-                .setOpprettetAv("opprettetAv")
-                .setOpprettetDato(nyDato())
-                ;
+    @Test
+    public void endre_aktivitet_status() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+
+        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFØRT);
+        assertThat(raderEndret, equalTo(1));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.GJENNOMFØRT));
+
+        val raderEndret2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.AVBRUTT);
+        assertThat(raderEndret2, equalTo(1));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.AVBRUTT));
     }
 
-    private Stillingsoek nyttStillingssøk() {
-        return new Stillingsoek()
-                .setArbeidsgiver("arbeidsgiver")
-                .setKontaktPerson("kontaktperson")
-                .setStillingsTittel("stilingstittel")
-                .setStillingsoekEtikett(StillingsoekEtikett.values()[0]);
+    @Test
+    public void hent_aktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+
+        val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        assertThat(aktivitet, equalTo(hentetAktivitet));
     }
 
-    private Date nyDato() {
-        return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
+    private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
+        val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
+        val stillingsok = nyttStillingssøk();
+
+        aktivitet.setStillingsSoekAktivitetData(stillingsok);
+        aktivitetDAO.opprettAktivitet(aktivitet);
+
+        return aktivitet;
     }
 
+    private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
+        val aktivitet = nyAktivitet(AKTOR_ID)
+                .setAktivitetType(EGENAKTIVITET)
+                .setEgenAktivitetData(new EgenAktivitetData());
+
+        aktivitetDAO.opprettAktivitet(aktivitet);
+
+        return aktivitet;
+    }
 }

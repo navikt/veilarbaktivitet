@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-public enum Innsender {
+public enum InnsenderData {
     BRUKER,
     NAV
 }
