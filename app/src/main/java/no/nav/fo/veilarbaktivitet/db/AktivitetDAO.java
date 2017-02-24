@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.db;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -59,7 +58,7 @@ public class AktivitetDAO {
                 .setKommentarer(kommentarer);
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
-            aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
+            aktivitet.setEgenAktivitetData(this.mapEgenAktivitet());
         } else if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             aktivitet.setStillingsSoekAktivitetData(this.mapStillingsAktivitet(rs));
         }
@@ -85,7 +84,7 @@ public class AktivitetDAO {
                 );
     }
 
-    private EgenAktivitetData mapEgenAktivitet(ResultSet rs) {
+    private EgenAktivitetData mapEgenAktivitet() {
         return new EgenAktivitetData();
     }
 
@@ -96,7 +95,7 @@ public class AktivitetDAO {
 
         val lagretAktivitet = insertAktivitet(aktivitet);
         val lagretStillingSoek = insertStillingsSoek(lagretAktivitet.getId(), aktivitet.getStillingsSoekAktivitetData());
-        val lagretEgenAktivitet = insertEgenAktivitet(lagretAktivitet.getId(), aktivitet.getEgenAktivitetData());
+        val lagretEgenAktivitet = insertEgenAktivitet(aktivitet.getEgenAktivitetData());
 
         lagretAktivitet.setStillingsSoekAktivitetData(lagretStillingSoek);
         lagretAktivitet.setEgenAktivitetData(lagretEgenAktivitet);
@@ -167,7 +166,7 @@ public class AktivitetDAO {
                 }).orElse(null);
     }
 
-    private EgenAktivitetData insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
+    private EgenAktivitetData insertEgenAktivitet(EgenAktivitetData egenAktivitetData) {
         //TODO save some data here
         return ofNullable(egenAktivitetData)
                 .orElse(null);

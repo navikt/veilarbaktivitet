@@ -111,7 +111,7 @@ class AktivitetsoversiktWebServiceTransformer {
                         wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));
         Optional.ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
-                        wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
+                        wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet()));
 
         return wsAktivitet;
     }
@@ -127,7 +127,7 @@ class AktivitetsoversiktWebServiceTransformer {
         return stillingaktivitet;
     }
 
-    private Egenaktivitet mapTilEgenAktivitet(EgenAktivitetData egenAktivitet) {
+    private Egenaktivitet mapTilEgenAktivitet() {
         val egenaktivitet = new Egenaktivitet();
 
         egenaktivitet.setType(EgenaktivitetType.values()[0]); // TODO dette må inn i datamodellen
