@@ -5,6 +5,7 @@ import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
+import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
@@ -93,9 +94,9 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
 
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
             aktivitetDAO.endreAktivitetStatus(id, statusData);
-            val endretBeskrivelse = String.format("Livsløpsstatus endret til fra %s %s ",
+            val endretBeskrivelse = String.format("livslopsendring, {fraStatus: %s, tilStatus: %s}",
                     gammelAktivitet.getStatus().name(), status.name());
-            endringsLoggDAO.opprettEndringsLogg(id, "Test", endretBeskrivelse);
+            endringsLoggDAO.opprettEndringsLogg(id, InnsenderData.BRUKER.toString(), endretBeskrivelse);
         } //TODO return fault when updating an invalid aktivity or something
 
         return aktivitetDAO.hentAktivitet(id);
