@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.util.DateUtils;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
@@ -18,6 +19,8 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.*;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 
 @Component
 class AktivitetsoversiktWebServiceTransformer {
@@ -70,10 +73,13 @@ class AktivitetsoversiktWebServiceTransformer {
         return new AktivitetData()
                 .setAktorId(hentAktoerIdForIdent(aktivitet.getPersonIdent()))
                 .setTittel(aktivitet.getTittel())
+                .setFraDato(getDate(aktivitet.getFom()))
+                .setTilDato(getDate(aktivitet.getTom()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setAktivitetType(AktivitetTypeData.valueOf(aktivitet.getType().name()))
                 .setStatus(statusMap.get(aktivitet.getStatus()))
                 .setLagtInnAv(lagtInnAv(aktivitet))
+                .setLenke(aktivitet.getLenke())
                 .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .setStillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
                 ;
@@ -99,10 +105,13 @@ class AktivitetsoversiktWebServiceTransformer {
         val wsAktivitet = new Aktivitet();
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
         wsAktivitet.setTittel(aktivitet.getTittel());
+        wsAktivitet.setTom(xmlCalendar(aktivitet.getTilDato()));
+        wsAktivitet.setFom(xmlCalendar(aktivitet.getFraDato()));
         wsAktivitet.setPersonIdent(hentIdentForAktorId(aktivitet.getAktorId()));
         wsAktivitet.setStatus(statusMap.getKey(aktivitet.getStatus()));
         wsAktivitet.setType(typeMap.getKey(aktivitet.getAktivitetType()));
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
+        wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setDelerMedNav(aktivitet.isDeleMedNav());
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
