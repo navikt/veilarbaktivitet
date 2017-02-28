@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -120,7 +121,7 @@ public class AktivitetDAO {
                 getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetDato(),
                 aktivitet.getAvsluttetKommentar(),
-                aktivitet.getOpprettetDato(),
+                new Date(),
                 getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isDeleMedNav()

@@ -112,6 +112,7 @@ class AktivitetsoversiktWebServiceTransformer {
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setDelerMedNav(aktivitet.isDeleMedNav());
+        wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
                         wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));
