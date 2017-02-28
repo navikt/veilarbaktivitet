@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import javax.jws.WebService;
 
 import static java.util.Optional.of;
+import static no.nav.fo.veilarbaktivitet.ws.provider.AktivitetsoversiktWebServiceTransformer.statusMap;
 
 @WebService
 @Service
@@ -95,7 +96,8 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
             aktivitetDAO.endreAktivitetStatus(id, statusData);
             val endretBeskrivelse = String.format("livslopsendring, {\"fraStatus\": \"%s\", \"tilStatus\": \"%s\"}",
-                    gammelAktivitet.getStatus().name(), status.name());
+                    statusMap.getKey(gammelAktivitet.getStatus()).name(),
+                    status.name());
             endringsLoggDAO.opprettEndringsLogg(id, gammelAktivitet.getAktorId(), endretBeskrivelse);
         } //TODO return fault when updating an invalid aktivity or something
 

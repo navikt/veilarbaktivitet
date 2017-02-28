@@ -31,7 +31,7 @@ class AktivitetsoversiktWebServiceTransformer {
             }};
 
 
-    private static final BidiMap<Status, AktivitetStatusData> statusMap =
+    static final BidiMap<Status, AktivitetStatusData> statusMap =
             new DualHashBidiMap<Status, AktivitetStatusData>() {{
                 put(Status.AVBRUTT, AVBRUTT);
                 put(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
