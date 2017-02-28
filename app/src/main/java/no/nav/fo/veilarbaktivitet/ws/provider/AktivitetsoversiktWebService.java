@@ -94,9 +94,9 @@ public class AktivitetsoversiktWebService implements BehandleAktivitetsplanV1 {
 
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
             aktivitetDAO.endreAktivitetStatus(id, statusData);
-            val endretBeskrivelse = String.format("livslopsendring, {fraStatus: %s, tilStatus: %s}",
+            val endretBeskrivelse = String.format("livslopsendring, {\"fraStatus\": \"%s\", \"tilStatus\": \"%s\"}",
                     gammelAktivitet.getStatus().name(), status.name());
-            endringsLoggDAO.opprettEndringsLogg(id, InnsenderData.BRUKER.toString(), endretBeskrivelse);
+            endringsLoggDAO.opprettEndringsLogg(id, gammelAktivitet.getAktorId(), endretBeskrivelse);
         } //TODO return fault when updating an invalid aktivity or something
 
         return aktivitetDAO.hentAktivitet(id);
