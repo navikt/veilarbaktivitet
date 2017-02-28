@@ -58,7 +58,7 @@ public class Database {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     private <T> T time(String sql, Callable<T> callable) {
-        return (T) MetodeTimer.timeMetode(callable::call, sql);
+        return (T) MetodeTimer.timeMetode(callable::call, sql + ".db");
     }
 
     @FunctionalInterface
