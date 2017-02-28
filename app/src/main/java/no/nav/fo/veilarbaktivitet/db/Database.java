@@ -58,7 +58,11 @@ public class Database {
     @SneakyThrows
     @SuppressWarnings("unchecked")
     private <T> T time(String sql, Callable<T> callable) {
-        return (T) MetodeTimer.timeMetode(callable::call, sql + ".db");
+        return (T) MetodeTimer.timeMetode(callable::call, timerNavn(sql));
+    }
+
+    private String timerNavn(String sql) {
+        return (sql + ".db").replaceAll("[^\\w]","-");
     }
 
     @FunctionalInterface
