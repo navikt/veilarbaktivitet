@@ -31,6 +31,7 @@ public class AktivitetDAO {
         //TODO add egendefinerte when added
         return database.query("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
+                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
                         "WHERE A.aktor_id = ?",
                 this::mapAktivitet,
                 aktorId
@@ -59,7 +60,7 @@ public class AktivitetDAO {
                 .setKommentarer(kommentarer);
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
-            aktivitet.setEgenAktivitetData(this.mapEgenAktivitet());
+            aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
         } else if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             aktivitet.setStillingsSoekAktivitetData(this.mapStillingsAktivitet(rs));
         }
@@ -80,13 +81,16 @@ public class AktivitetDAO {
         return new StillingsoekAktivitetData()
                 .setStillingsTittel(rs.getString("stillingstittel"))
                 .setArbeidsgiver(rs.getString("arbeidsgiver"))
+                .setArbeidssted(rs.getString("arbeidssted"))
                 .setKontaktPerson(rs.getString("kontaktperson"))
                 .setStillingsoekEtikett(valueOf(StillingsoekEtikettData.class, rs.getString("etikett"))
                 );
     }
 
-    private EgenAktivitetData mapEgenAktivitet() {
-        return new EgenAktivitetData();
+    private EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
+        return new EgenAktivitetData()
+                .setHensikt(rs.getString("hensikt"))
+                .setType(valueOf(EgenAktivitetTypeData.class, rs.getString("egen_type")));
     }
 
 
@@ -96,7 +100,7 @@ public class AktivitetDAO {
 
         val lagretAktivitet = insertAktivitet(aktivitet);
         val lagretStillingSoek = insertStillingsSoek(lagretAktivitet.getId(), aktivitet.getStillingsSoekAktivitetData());
-        val lagretEgenAktivitet = insertEgenAktivitet(aktivitet.getEgenAktivitetData());
+        val lagretEgenAktivitet = insertEgenAktivitet(lagretAktivitet.getId(), aktivitet.getEgenAktivitetData());
 
         lagretAktivitet.setStillingsSoekAktivitetData(lagretStillingSoek);
         lagretAktivitet.setEgenAktivitetData(lagretEgenAktivitet);
@@ -107,6 +111,7 @@ public class AktivitetDAO {
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
+        val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
                         "fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato," +
                         "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke,dele_med_nav) " +
@@ -121,12 +126,13 @@ public class AktivitetDAO {
                 getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetDato(),
                 aktivitet.getAvsluttetKommentar(),
-                new Date(),
+                opprettetDato,
                 getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isDeleMedNav()
         );
-        aktivitet.setId(aktivitetId); //Todo: set date and such
+        aktivitet.setId(aktivitetId);
+        aktivitet.setOpprettetDato(opprettetDato);
 
         val kommentarer = insertKommentarer(aktivitetId, aktivitet.getKommentarer());
         aktivitet.setKommentarer(kommentarer);
@@ -142,7 +148,7 @@ public class AktivitetDAO {
     }
 
     private KommentarData insertKommentar(long aktivitetId, KommentarData kommentar) {
-        database.update("INSERT INTO KOMMENTAR(aktivitet_id,kommentar,opprettet_av,opprettet_dato) " +
+        database.update("INSERT INTO KOMMENTAR(aktivitet_id, kommentar, opprettet_av, opprettet_dato) " +
                         "VALUES (?,?,?,?)",
                 aktivitetId,
                 kommentar.getKommentar(),
@@ -155,11 +161,12 @@ public class AktivitetDAO {
     private StillingsoekAktivitetData insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
         return ofNullable(stillingsSoekAktivitet)
                 .map(stillingsoek -> {
-                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id,stillingstittel,arbeidsgiver," +
-                                    "kontaktperson,etikett) VALUES(?,?,?,?,?)",
+                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id, stillingstittel, arbeidsgiver," +
+                                    "arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?)",
                             aktivitetId,
                             stillingsoek.getStillingsTittel(),
                             stillingsoek.getArbeidsgiver(),
+                            stillingsoek.getArbeidssted(),
                             stillingsoek.getKontaktPerson(),
                             getName(stillingsoek.getStillingsoekEtikett())
                     );
@@ -167,10 +174,16 @@ public class AktivitetDAO {
                 }).orElse(null);
     }
 
-    private EgenAktivitetData insertEgenAktivitet(EgenAktivitetData egenAktivitetData) {
-        //TODO save some data here
+    private EgenAktivitetData insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
         return ofNullable(egenAktivitetData)
-                .orElse(null);
+                .map(egen -> {
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, egen_type) VALUES(?,?,?)",
+                            aktivitetId,
+                            egen.getHensikt(),
+                            getName(egen.getType())
+                    );
+                    return egen;
+                }).orElse(null);
     }
 
 
@@ -179,11 +192,12 @@ public class AktivitetDAO {
         database.update("DELETE FROM KOMMENTAR WHERE aktivitet_id = ?",
                 aktivitetId
         );
+        database.update("DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
+                aktivitetId
+        );
         database.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
                 aktivitetId
         );
-        //TODO insert egenAktivitet
-
         database.update("DELETE FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
                 aktivitetId
         );
@@ -193,9 +207,10 @@ public class AktivitetDAO {
         );
     }
 
-    public AktivitetData hentAktivitet(long aktivitetId){
+    public AktivitetData hentAktivitet(long aktivitetId) {
         return database.queryForObject("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
+                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
                         "WHERE A.aktivitet_id = ?",
                 this::mapAktivitet,
                 aktivitetId

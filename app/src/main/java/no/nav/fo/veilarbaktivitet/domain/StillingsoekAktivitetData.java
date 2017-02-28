@@ -9,6 +9,7 @@ public class StillingsoekAktivitetData {
 
     String arbeidsgiver;
     String stillingsTittel;
+    String arbeidssted;
     StillingsoekEtikettData stillingsoekEtikett;
     String kontaktPerson;
 

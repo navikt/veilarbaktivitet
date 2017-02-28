@@ -5,10 +5,11 @@ import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
-import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitetsplan;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 

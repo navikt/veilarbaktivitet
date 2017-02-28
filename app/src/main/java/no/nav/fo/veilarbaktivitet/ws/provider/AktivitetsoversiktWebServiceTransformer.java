@@ -18,6 +18,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.*;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
+import static no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 
@@ -45,6 +46,15 @@ class AktivitetsoversiktWebServiceTransformer {
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
             }};
+
+    private static final BidiMap<EgenaktivitetType, EgenAktivitetTypeData> egenTypeMap =
+            new DualHashBidiMap<EgenaktivitetType, EgenAktivitetTypeData>() {{
+                put(EgenaktivitetType.ANBEFALTE_AKTIVITETER, ANBEFALTE_AKTIVITETER);
+                put(EgenaktivitetType.ANDRE_AKTIVITET, ANDRE_AKTIVITET);
+                put(EgenaktivitetType.AVKLARE_AKTIVITETER, AVKLARE_AKTIVITETER);
+                put(EgenaktivitetType.FINNE_ARBEIDSMULIGHETER, FINNE_ARBEIDSMULIGHETER);
+            }};
+
 
     private static final BidiMap<Etikett, StillingsoekEtikettData> etikettMap =
             new DualHashBidiMap<Etikett, StillingsoekEtikettData>() {{
@@ -88,7 +98,7 @@ class AktivitetsoversiktWebServiceTransformer {
         return Optional.ofNullable(stillingaktivitet).map(stilling ->
                 new StillingsoekAktivitetData()
                         .setArbeidsgiver(stilling.getArbeidsgiver())
-                        .setKontaktPerson(stilling.getArbeidsgiver())
+                        .setKontaktPerson(stilling.getKontaktperson())
                         .setStillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
                         .setStillingsTittel(stilling.getStillingstittel()))
                 .orElse(null);
@@ -96,7 +106,10 @@ class AktivitetsoversiktWebServiceTransformer {
 
     private EgenAktivitetData mapTilEgenAktivitetData(Egenaktivitet egenaktivitet) {
         return Optional.ofNullable(egenaktivitet)
-                .map(egen -> new EgenAktivitetData())
+                .map(egen ->
+                        new EgenAktivitetData()
+                                .setHensikt(egen.getHensikt())
+                                .setType(egenTypeMap.get(egen.getType())))
                 .orElse(null);
     }
 
@@ -118,7 +131,7 @@ class AktivitetsoversiktWebServiceTransformer {
                         wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));
         Optional.ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
-                        wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet()));
+                        wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
 
         return wsAktivitet;
     }
@@ -130,14 +143,16 @@ class AktivitetsoversiktWebServiceTransformer {
         stillingaktivitet.setEtikett(etikettMap.getKey(stillingsSoekAktivitet.getStillingsoekEtikett()));
         stillingaktivitet.setKontaktperson(stillingsSoekAktivitet.getKontaktPerson());
         stillingaktivitet.setStillingstittel(stillingaktivitet.getStillingstittel());
+        stillingaktivitet.setArbeidssted(stillingaktivitet.getArbeidssted());
 
         return stillingaktivitet;
     }
 
-    private Egenaktivitet mapTilEgenAktivitet() {
+    private Egenaktivitet mapTilEgenAktivitet(EgenAktivitetData egenAktivitetData) {
         val egenaktivitet = new Egenaktivitet();
 
-        egenaktivitet.setType(EgenaktivitetType.values()[0]); // TODO dette må inn i datamodellen
+        egenaktivitet.setHensikt(egenAktivitetData.getHensikt());
+        egenaktivitet.setType(egenTypeMap.getKey(egenAktivitetData.getType()));
 
         return egenaktivitet;
     }
@@ -161,7 +176,7 @@ class AktivitetsoversiktWebServiceTransformer {
 
         endringsLoggMelding.setEndringsBeskrivelse(endringsLogg.getEndringsBeskrivelse());
         endringsLoggMelding.setEndretAv(endringsLogg.getEndretAv());
-        endringsLoggMelding.setEndretDato(endringsLogg.getEndretDato().toString());
+        endringsLoggMelding.setEndretDato(xmlCalendar(endringsLogg.getEndretDato()));
 
         return endringsLoggMelding;
     }
