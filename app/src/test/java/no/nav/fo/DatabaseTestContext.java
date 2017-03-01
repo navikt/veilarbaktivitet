@@ -38,7 +38,7 @@ public class DatabaseTestContext {
         }
 
         Flyway flyway = new Flyway();
-        flyway.setLocations("db/aktivitetDataSource");
+        flyway.setLocations("db/migration/veilarbaktivitetDataSource");
         flyway.setDataSource(singleConnectionDataSource);
         int migrate = flyway.migrate();
         assertThat(migrate, greaterThan(0));
