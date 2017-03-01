@@ -41,7 +41,7 @@
         <metrics.version>3.1.1</metrics.version>
 
         <modig.version>1.0.30</modig.version>
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.8-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.9-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
 
         <!-- Tredjeparts  -->
         <cxf.version>2.7.6</cxf.version>
