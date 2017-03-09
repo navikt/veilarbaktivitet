@@ -15,6 +15,11 @@
     <dependencies>
 
         <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-api</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>no.nav</groupId>
             <artifactId>metrics</artifactId>
         </dependency>
@@ -160,6 +165,31 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-api</artifactId>
+        </dependency>
+
+
+        <!--Jersey-->
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-spring3</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jaxrs</groupId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
         </dependency>
 
     </dependencies>

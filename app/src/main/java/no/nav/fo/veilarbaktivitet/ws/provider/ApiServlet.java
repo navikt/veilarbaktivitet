@@ -8,12 +8,12 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.ServletConfig;
 
-public class AktivitetsApiServlet extends CXFNonSpringServlet {
+public class ApiServlet extends CXFNonSpringServlet {
 
     private static void settOppEndpoints(ApplicationContext applicationContext) {
         new CXFEndpoint()
                 .address("/Aktivitet")
-                .serviceBean(applicationContext.getBean(AktivitetsoversiktWebService.class))
+                .serviceBean(applicationContext.getBean(SoapService.class))
                 .kerberosInInterceptor()
                 .create();
     }
