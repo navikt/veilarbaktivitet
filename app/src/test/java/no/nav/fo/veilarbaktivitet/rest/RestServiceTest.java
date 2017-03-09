@@ -16,6 +16,7 @@ import java.util.List;
 
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -72,9 +73,14 @@ public class RestServiceTest extends IntegrasjonsTest {
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
     }
 
+    private AktivitetData nyStillingAktivitet(){
+        return AktivitetDataBuilder.nyAktivitet(KJENT_AKTOR_ID)
+                .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
+                .setStillingsSoekAktivitetData(nyttStillingssøk());
+    }
+
     private List<AktivitetData> aktiviter = Arrays.asList(
-            AktivitetDataBuilder.nyAktivitet(KJENT_AKTOR_ID),
-            AktivitetDataBuilder.nyAktivitet(KJENT_AKTOR_ID)
+            nyStillingAktivitet(), nyStillingAktivitet()
     );
 
     private AktivitetDTO aktivitet;

@@ -26,10 +26,7 @@ public class AktivitetDataBuilder {
                 .setOpprettetDato(nyDato())
                 .setLenke("lenke")
                 .setDeleMedNav(true)
-                .setKommentarer(asList(nyKommentar(), nyKommentar()))
-                .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
-                .setStillingsSoekAktivitetData(nyttStillingssøk())
-                ;
+                .setKommentarer(asList(nyKommentar(), nyKommentar()));
     }
 
     private static KommentarData nyKommentar() {
