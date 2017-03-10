@@ -99,6 +99,7 @@ class AktivitetsoversiktWebServiceTransformer {
                 new StillingsoekAktivitetData()
                         .setArbeidsgiver(stilling.getArbeidsgiver())
                         .setKontaktPerson(stilling.getKontaktperson())
+                        .setArbeidssted(stilling.getArbeidssted())
                         .setStillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
                         .setStillingsTittel(stilling.getStillingstittel()))
                 .orElse(null);
