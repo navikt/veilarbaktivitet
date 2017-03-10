@@ -143,8 +143,8 @@ class AktivitetsoversiktWebServiceTransformer {
         stillingaktivitet.setArbeidsgiver(stillingsSoekAktivitet.getArbeidsgiver());
         stillingaktivitet.setEtikett(etikettMap.getKey(stillingsSoekAktivitet.getStillingsoekEtikett()));
         stillingaktivitet.setKontaktperson(stillingsSoekAktivitet.getKontaktPerson());
-        stillingaktivitet.setStillingstittel(stillingaktivitet.getStillingstittel());
-        stillingaktivitet.setArbeidssted(stillingaktivitet.getArbeidssted());
+        stillingaktivitet.setStillingstittel(stillingsSoekAktivitet.getStillingsTittel());
+        stillingaktivitet.setArbeidssted(stillingsSoekAktivitet.getArbeidssted());
 
         return stillingaktivitet;
     }
