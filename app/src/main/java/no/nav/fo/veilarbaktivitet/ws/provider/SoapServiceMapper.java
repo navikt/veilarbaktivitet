@@ -86,6 +86,7 @@ class SoapServiceMapper {
                 new StillingsoekAktivitetData()
                         .setArbeidsgiver(stilling.getArbeidsgiver())
                         .setKontaktPerson(stilling.getKontaktperson())
+                        .setArbeidssted(stilling.getArbeidssted())
                         .setStillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
                         .setStillingsTittel(stilling.getStillingstittel()))
                 .orElse(null);
@@ -128,8 +129,8 @@ class SoapServiceMapper {
         stillingaktivitet.setArbeidsgiver(stillingsSoekAktivitet.getArbeidsgiver());
         stillingaktivitet.setEtikett(etikettMap.getKey(stillingsSoekAktivitet.getStillingsoekEtikett()));
         stillingaktivitet.setKontaktperson(stillingsSoekAktivitet.getKontaktPerson());
-        stillingaktivitet.setStillingstittel(stillingaktivitet.getStillingstittel());
-        stillingaktivitet.setArbeidssted(stillingaktivitet.getArbeidssted());
+        stillingaktivitet.setStillingstittel(stillingsSoekAktivitet.getStillingsTittel());
+        stillingaktivitet.setArbeidssted(stillingsSoekAktivitet.getArbeidssted());
 
         return stillingaktivitet;
     }
