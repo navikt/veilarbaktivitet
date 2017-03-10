@@ -46,6 +46,17 @@
             <artifactId>brukerdialog-behandleAktivitetsplan-v1-tjenestespesifikasjon</artifactId>
             <classifier>jaxws</classifier>
         </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-core</artifactId>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-core-test</artifactId>
+            <scope>test</scope>
+        </dependency>
 
         <!-- DB -->
         <dependency>

@@ -65,7 +65,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
         of(hentEndringsLoggForAktivitetRequest)
                 .map(HentEndringsLoggForAktivitetRequest::getAktivitetId)
                 .map(Long::parseLong)
-                .map(aktivietId -> appService.hentEndringsloggForAktivitetId("not_used", aktivietId))
+                .map(aktivietId -> appService.hentEndringsloggForAktivitetId(aktivietId))
                 .ifPresent((endringslist) -> endringslist.stream()
                         .map(SoapServiceMapper::somEndringsLoggResponse)
                         .forEach(endringer::add)
@@ -76,13 +76,13 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     @Override
     public EndreAktivitetStatusResponse endreAktivitetStatus(EndreAktivitetStatusRequest endreAktivitetStatusRequest) {
         return of(endreAktivitetStatusRequest)
-                .map((req) -> appService.oppdaterStatus("not_used",
+                .map((req) -> appService.oppdaterStatus(
                         Long.parseLong(req.getAktivitetId()),
                         SoapServiceMapper.mapTilAktivitetStatusData(req.getStatus()))
                 )
                 .map((aktivtet) -> {
                     val soapAktivitet = mapTilAktivitet(aktivtet);
-                    soapAktivitet.setAktivitetId("123"); //don't know this yet
+                    soapAktivitet.setPersonIdent(""); //don't know it here
                     return soapAktivitet;
                 })
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
@@ -94,7 +94,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
         of(slettAktivitetRequest)
                 .map(SlettAktivitetRequest::getAktivitetId)
                 .map(Long::parseLong)
-                .ifPresent(aktivitetId -> appService.slettAktivitet("not_used", aktivitetId));
+                .ifPresent(aktivitetId -> appService.slettAktivitet(aktivitetId));
         return new SlettAktivitetResponse();
     }
 

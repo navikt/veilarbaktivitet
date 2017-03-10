@@ -39,16 +39,11 @@ public class AppService {
         return aktivitetDAO.opprettAktivitet(aktivitetData.setAktorId(aktorId));
     }
 
-    public void slettAktivitet(String ident, long aktivitetId) {
-
-//        Todo: use ident in delete
-//        val aktorId = hentAktoerIdForIdent(ident);
+    public void slettAktivitet(long aktivitetId) {
         aktivitetDAO.slettAktivitet(aktivitetId);
-
     }
 
-    public AktivitetData oppdaterStatus(String ident, long aktivitetId, AktivitetStatusData status) {
-        //TODO use ident in change status
+    public AktivitetData oppdaterStatus(long aktivitetId, AktivitetStatusData status) {
         val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitetId);
 
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
@@ -68,7 +63,7 @@ public class AppService {
                 aktivitetData.getStatus() == AktivitetStatusData.FULLFORT;
     }
 
-    public List<EndringsloggData> hentEndringsloggForAktivitetId(String ident, long aktivitetId) {
+    public List<EndringsloggData> hentEndringsloggForAktivitetId(long aktivitetId) {
         //TODO use ident in change status
         return endringsLoggDAO.hentEndringdsloggForAktivitetId(aktivitetId);
     }

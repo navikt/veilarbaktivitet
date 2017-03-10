@@ -28,7 +28,6 @@ public class AktivitetDAO {
     private Database database;
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
-        //TODO add egendefinerte when added
         return database.query("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +

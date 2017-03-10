@@ -53,12 +53,12 @@ public class RestService implements AktivitetController {
 
     @Override
     public void slettAktivitet(String aktivitetId) {
-        appService.slettAktivitet(getUserIdent(), Long.parseLong(aktivitetId));
+        appService.slettAktivitet(Long.parseLong(aktivitetId));
     }
 
     @Override
     public AktivitetDTO oppdaterStatus(String aktivitetId, String status) {
-        val aktivitet = appService.oppdaterStatus(getUserIdent(), Long.parseLong(aktivitetId),
+        val aktivitet = appService.oppdaterStatus(Long.parseLong(aktivitetId),
                 EnumUtils.valueOf(AktivitetStatusData.class, status));
 
         return RestMapper.mapTilAktivitetDTO(aktivitet);
@@ -68,7 +68,7 @@ public class RestService implements AktivitetController {
     public List<EndringsloggDTO> hentEndringsLoggForAktivitetId(String aktivitetId) {
         return Optional.of(aktivitetId)
                 .map(Long::parseLong)
-                .map(aId -> appService.hentEndringsloggForAktivitetId(getUserIdent(), aId))
+                .map(aId -> appService.hentEndringsloggForAktivitetId(aId))
                 .map((endringslist) -> endringslist.stream()
                         .map(RestMapper::mapEndringsLoggDTO)
                         .collect(Collectors.toList())

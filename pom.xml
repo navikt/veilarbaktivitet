@@ -44,7 +44,7 @@
         <jersey.version>2.22.2</jersey.version>
         <jackson.version>2.7.4</jackson.version>
 
-        <modig.version>1.0.30</modig.version>
+        <modig.version>1.0.32</modig.version>
         <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.9-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
 
         <!-- Tredjeparts  -->
@@ -266,6 +266,19 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-jetty</artifactId>
                 <version>${common-jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-core-test</artifactId>
+                <version>1.0.0</version>
                 <scope>test</scope>
             </dependency>
 

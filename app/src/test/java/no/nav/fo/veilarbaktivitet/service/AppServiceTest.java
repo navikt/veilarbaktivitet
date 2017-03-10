@@ -6,8 +6,6 @@ import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusRequest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,8 +19,6 @@ import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -57,7 +53,7 @@ public class AppServiceTest {
         when(aktivitetDAO.hentAktivitet(aktivitetId)).thenReturn(aktivitet);
         verify(aktivitetDAO, never()).endreAktivitetStatus(aktivitetId, AktivitetStatusData.GJENNOMFORT);
 
-        appService.oppdaterStatus("123", aktivitetId, AktivitetStatusData.GJENNOMFORT);
+        appService.oppdaterStatus(aktivitetId, AktivitetStatusData.GJENNOMFORT);
     }
 
 
