@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
@@ -10,15 +9,16 @@ import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
-import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.*;
-import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData.*;
+import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
+import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
+import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 

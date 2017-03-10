@@ -2,14 +2,13 @@ package no.nav.fo.veilarbaktivitet.rest;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
 import java.util.Optional;
 
-import static no.nav.fo.veilarbaktivitet.util.EnumUtils.*;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
+import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 class RestMapper {
 
