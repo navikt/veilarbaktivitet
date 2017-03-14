@@ -86,23 +86,4 @@
     </resource-ref>
 
 
-    <servlet>
-        <servlet-name>restservlet</servlet-name>
-        <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>no.nav.fo.veilarbaktivitet.rest.RestConfig</param-value>
-        </init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>no.nav.fo.security.jwt.filter</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-        <async-supported>true</async-supported>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>restservlet</servlet-name>
-        <url-pattern>/api/*</url-pattern>
-    </servlet-mapping>
-
 </web-app>
