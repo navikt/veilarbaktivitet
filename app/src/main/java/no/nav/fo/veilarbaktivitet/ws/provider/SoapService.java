@@ -31,9 +31,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map((aktivitet) -> {
                     val aktivitetData = mapTilAktivitetData(aktivitet);
                     val lagretAktivtet = appService.opprettNyAktivtet(aktivitet.getPersonIdent(), aktivitetData);
-                    val nyAktivtet = mapTilAktivitet(lagretAktivtet);
-                    nyAktivtet.setPersonIdent(aktivitet.getPersonIdent());
-                    return nyAktivtet;
+                    return mapTilAktivitet(aktivitet.getPersonIdent(), lagretAktivtet);
                 })
                 .map(SoapServiceMapper::mapTilOpprettNyAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
@@ -47,11 +45,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
 
         appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
                 .stream()
-                .map(aktivitet -> {
-                    val soapAktivtet = mapTilAktivitet(aktivitet);
-                    soapAktivtet.setPersonIdent(hentAktivitetsplanRequest.getPersonident());
-                    return soapAktivtet;
-                })
+                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
                 .forEach(aktivitetsplan.getAktivitetListe()::add);
 
         return wsHentAktiviteterResponse;
@@ -80,11 +74,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                         Long.parseLong(req.getAktivitetId()),
                         SoapServiceMapper.mapTilAktivitetStatusData(req.getStatus()))
                 )
-                .map((aktivtet) -> {
-                    val soapAktivitet = mapTilAktivitet(aktivtet);
-                    soapAktivitet.setPersonIdent(""); //don't know it here
-                    return soapAktivitet;
-                })
+                .map((aktivtet) -> mapTilAktivitet("", aktivtet)) //TODO: fnr don't know it here
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
                 .orElseThrow(RuntimeException::new);
     }
