@@ -7,8 +7,8 @@
     <name>veilarbaktivitet</name>
 
     <selftest>
-        <path>/veilarbaktivitet/internal/selftest.json</path>
-        <humanReadablePath>/veilarbaktivitet/internal/selftest</humanReadablePath>
+        <path>/veilarbaktivitet-ws/internal/selftest.json</path>
+        <humanReadablePath>/veilarbaktivitet-ws/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
@@ -30,7 +30,7 @@
 
     <exposed-services>
         <exposedSoap name="BehandleAktivitetsplanV1"
-                     path="/veilarbaktivitet/ws/Aktivitet"
+                     path="/veilarbaktivitet-ws/ws/Aktivitet"
                      securityToken="SAML"
                      wsdlGroupId="no.nav.tjenester"
                      wsdlArtifactId="brukerdialog-behandleAktivitetsplan-v1-tjenestespesifikasjon"
@@ -46,5 +46,5 @@
         </logins>
     </security>
 
-    <loadBalancer isAlive="veilarbaktivitet/internal/isAlive"/>
+    <loadBalancer isAlive="veilarbaktivitet-ws/internal/isAlive"/>
 </application>
