@@ -14,7 +14,6 @@ public class ApiServlet extends CXFNonSpringServlet {
         new CXFEndpoint()
                 .address("/Aktivitet")
                 .serviceBean(applicationContext.getBean(SoapService.class))
-                .kerberosInInterceptor()
                 .create();
     }
 
