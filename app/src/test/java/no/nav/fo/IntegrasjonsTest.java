@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
+import static org.apache.cxf.staxutils.StaxUtils.ALLOW_INSECURE_PARSER;
 
 @ContextConfiguration(classes = {
         ApplicationContext.class,
@@ -29,6 +30,11 @@ public abstract class IntegrasjonsTest {
     @BeforeClass
     public static void testCertificates() {
         TestCertificates.setupKeyAndTrustStore();
+    }
+
+    @BeforeClass
+    public static void tillatInsecureParser() {
+        System.setProperty(ALLOW_INSECURE_PARSER, Boolean.TRUE.toString());
     }
 
     @BeforeClass

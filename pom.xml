@@ -24,8 +24,59 @@
         <module>ear</module>
     </modules>
 
+    <name>veilArbAktivitet</name>
 
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>1.8</java.version>
+
+        <!--Jersey-->
+        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
+        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+        <jersey.version>2.22.2</jersey.version>
+
+        <!--NAV Felles -->
+        <common-jetty.version>2.0.12</common-jetty.version>
+        <common-cxf.version>3.1.33</common-cxf.version>
+        <common-web.version>3.1.2</common-web.version>
+        <common-types.version>1.2</common-types.version>
+        <commons-lang3.version>3.4</commons-lang3.version>
+        <commons-io.version>2.5</commons-io.version>
+        <metrics.version>3.1.1</metrics.version>
+
+        <!--Sikkerhet-->
+        <modig-security.version>3.0.1</modig-security.version>
+        <modig-core-test.version>1.0.0</modig-core-test.version>
+        <modig-testcertificates.version>1.1.4</modig-testcertificates.version>
+        <geronimo-jaspi.version>2.0.0</geronimo-jaspi.version>
+
+        <!--Tjenester-->
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.10</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <dial-nav-tjeneste-aktoer_v2.version>1.2</dial-nav-tjeneste-aktoer_v2.version>
+
+        <!--Testing-->
+        <mockito.version>1.10.19</mockito.version>
+        <junit.version>4.12</junit.version>
+        <mockito.version>2.2.27</mockito.version>
+        <hamcrest.version>1.3</hamcrest.version>
+        <hamcrest-optional.version>1.0</hamcrest-optional.version>
+
+        <!--Database-->
+        <hsqldb.version>2.2.9</hsqldb.version>
+        <flyway-core.version>4.0.3</flyway-core.version>
+
+        <!--Annet-->
+        <javax.inject.version>1</javax.inject.version>
+        <jackson.version>2.7.4</jackson.version>
+        <cxf.version>3.1.6</cxf.version>
+        <spring.version>4.3.4.RELEASE</spring.version>
+        <slf4j.version>1.7.15</slf4j.version>
+        <logback.version>1.0.13</logback.version>
+        <joda.version>2.3</joda.version>
+        <collections-generic.version>4.01</collections-generic.version>
+        <lombok.version>1.16.12</lombok.version>
+
         <sonar.exclusions>
             **/config/**,
             **/mock/**,
@@ -33,33 +84,11 @@
             **/sikkerhet/**,
             **/rest/providers/**
         </sonar.exclusions>
-
-        <!-- Java  -->
-        <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-        <javax.ws.rs-api.version>2.0.1</javax.ws.rs-api.version>
-        <javax.inject.version>2.4.0-b34</javax.inject.version>
-        <common-jetty.version>2.0.12</common-jetty.version>
-        <commons-lang3.version>3.4</commons-lang3.version>
-        <commons-io.version>2.5</commons-io.version>
-        <metrics.version>3.1.1</metrics.version>
-
-        <jersey.version>2.22.2</jersey.version>
-        <jackson.version>2.7.4</jackson.version>
-
-        <modig.version>1.0.32</modig.version>
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.9-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
-
-        <!-- Tredjeparts  -->
-        <cxf.version>2.7.6</cxf.version>
-        <spring.version>4.1.6.RELEASE</spring.version>
-        <slf4j.version>1.7.15</slf4j.version>
-        <logback.version>1.0.13</logback.version>
-
-        <mockito.version>1.10.19</mockito.version>
     </properties>
     <dependencyManagement>
         <dependencies>
 
+            <!--Project dependencies-->
             <dependency>
                 <groupId>no.nav.fo</groupId>
                 <artifactId>veilarbaktivitet-config</artifactId>
@@ -84,12 +113,7 @@
             </dependency>
 
 
-            <dependency>
-                <groupId>javax.servlet</groupId>
-                <artifactId>javax.servlet-api</artifactId>
-                <version>${javax.servlet-api.version}</version>
-            </dependency>
-
+            <!--Tjenester-->
             <dependency>
                 <groupId>no.nav.tjenester</groupId>
                 <artifactId>brukerdialog-behandleAktivitetsplan-v1-tjenestespesifikasjon</artifactId>
@@ -99,24 +123,59 @@
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>joda-time</groupId>
-                <artifactId>joda-time</artifactId>
-                <version>2.3</version>
+                <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>javax.inject</groupId>
-                <artifactId>javax.inject</artifactId>
-                <version>1</version>
-            </dependency>
+
+            <!--NAV felles-->
             <dependency>
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-cxf</artifactId>
-                <version>3.1.21</version>
+                <version>${common-cxf.version}</version>
                 <exclusions>
+                    <exclusion>
+                        <artifactId>commons-logging</artifactId>
+                        <groupId>commons-logging</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>com.sun.xml.bind</groupId>
+                        <artifactId>jaxb-impl</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-web</artifactId>
+                <version>${common-web.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav</groupId>
+                <artifactId>metrics</artifactId>
+                <version>${metrics.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-jetty</artifactId>
+                <version>${common-jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>common-types</artifactId>
+                <version>${common-types.version}</version>
+            </dependency>
+
+
+            <!--Modig-->
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-ws</artifactId>
+                <version>${modig-security.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>xml-apis</groupId>
+                        <artifactId>xml-apis</artifactId>
+                    </exclusion>
                     <exclusion>
                         <groupId>com.sun.xml.bind</groupId>
                         <artifactId>jaxb-impl</artifactId>
@@ -128,36 +187,61 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.santuario</groupId>
-                <artifactId>xmlsec</artifactId>
-                <version>1.5.5</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>commons-logging</artifactId>
-                        <groupId>commons-logging</groupId>
-                    </exclusion>
-                </exclusions>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-testcertificates</artifactId>
+                <version>${modig-testcertificates.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
-                <groupId>org.apache.ws.security</groupId>
-                <artifactId>wss4j</artifactId>
-                <version>1.6.11</version>
-                <exclusions>
-                    <exclusion>
-                        <artifactId>commons-logging</artifactId>
-                        <groupId>commons-logging</groupId>
-                    </exclusion>
-                </exclusions>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-core</artifactId>
+                <version>${modig-security.version}</version>
+                <type>test-jar</type>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-core-test</artifactId>
+                <version>${modig-core-test.version}</version>
+                <scope>test</scope>
             </dependency>
 
+
+            <!--Sikkerhet-->
+            <dependency>
+                <groupId>org.apache.geronimo.components</groupId>
+                <artifactId>geronimo-jaspi</artifactId>
+                <version>${geronimo-jaspi.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
+            <!--Spring-->
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring-web</artifactId>
+                <artifactId>spring-beans</artifactId>
                 <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
                 <version>${spring.version}</version>
                 <exclusions>
                     <exclusion>
@@ -179,7 +263,7 @@
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring-aop</artifactId>
+                <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
             </dependency>
             <dependency>
@@ -194,42 +278,13 @@
                 <version>${spring.version}</version>
             </dependency>
 
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>1.16.12</version>
-                <scope>provided</scope>
-            </dependency>
 
-
-            <dependency>
-                <groupId>org.hsqldb</groupId>
-                <artifactId>hsqldb</artifactId>
-                <version>2.2.9</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.flywaydb</groupId>
-                <artifactId>flyway-core</artifactId>
-                <version>4.0.3</version>
-                <scope>test</scope>
-            </dependency>
-
+            <!--Logging-->
             <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback.version}</version>
                 <scope>runtime</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-lang3</artifactId>
-                <version>3.4</version>
-            </dependency>
-            <dependency>
-                <groupId>net.sourceforge.collections</groupId>
-                <artifactId>collections-generic</artifactId>
-                <version>4.01</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -242,68 +297,14 @@
                 <version>${slf4j.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-web</artifactId>
-                <version>3.1.2</version>
-            </dependency>
 
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-core</artifactId>
-                <version>${modig.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-ws</artifactId>
-                <version>${modig.version}</version>
-                <exclusions>
-                    <exclusion>
-                        <groupId>xml-apis</groupId>
-                        <artifactId>xml-apis</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <groupId>com.sun.xml.bind</groupId>
-                        <artifactId>jaxb-impl</artifactId>
-                    </exclusion>
-                    <exclusion>
-                        <artifactId>commons-logging</artifactId>
-                        <groupId>commons-logging</groupId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>no.nav</groupId>
-                <artifactId>metrics</artifactId>
-                <version>${metrics.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-jetty</artifactId>
-                <version>${common-jetty.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-security-core</artifactId>
-                <version>${modig.version}</version>
-                <type>test-jar</type>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-core-test</artifactId>
-                <version>1.0.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.geronimo.components</groupId>
-                <artifactId>geronimo-jaspi</artifactId>
-                <version>2.0.0</version>
-                <scope>test</scope>
-            </dependency>
 
             <!--Jersey-->
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet-api.version}</version>
+            </dependency>
             <dependency>
                 <groupId>javax.ws.rs</groupId>
                 <artifactId>javax.ws.rs-api</artifactId>
@@ -313,12 +314,24 @@
                 <groupId>org.glassfish.jersey.core</groupId>
                 <artifactId>jersey-server</artifactId>
                 <version>${jersey.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.glassfish.hk2.external</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.containers</groupId>
                 <artifactId>jersey-container-servlet-core</artifactId>
                 <scope>runtime</scope>
                 <version>${jersey.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.glassfish.hk2.external</groupId>
+                        <artifactId>javax.inject</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.jersey.ext</groupId>
@@ -326,53 +339,31 @@
                 <version>${jersey.version}</version>
                 <scope>runtime</scope>
             </dependency>
-            <!--<dependency>-->
-                <!--<groupId>org.glassfish.jersey.media</groupId>-->
-                <!--<artifactId>jersey-media-json-jackson</artifactId>-->
-                <!--<version>${jersey.version}</version>-->
-            <!--</dependency>-->
-            <dependency>
-                <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                <artifactId>jackson-jaxrs-json-provider</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
 
-            <!-- test dependencies -->
+
+            <!--Test-->
             <dependency>
                 <groupId>com.github.npathai</groupId>
                 <artifactId>hamcrest-optional</artifactId>
-                <version>1.0</version>
+                <version>${hamcrest-optional.version}</version>
                 <scope>test</scope>
-            </dependency>
-
-
-            <!-- transitive avhengigheter -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-context</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-beans</artifactId>
-                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
-                <version>4.11</version>
+                <version>${junit.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-core</artifactId>
-                <version>1.3</version>
+                <version>${hamcrest.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
                 <artifactId>hamcrest-library</artifactId>
-                <version>1.3</version>
+                <version>${hamcrest.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -381,11 +372,65 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
+                <!--Database-->
             <dependency>
-                <groupId>no.nav.modig</groupId>
-                <artifactId>modig-testcertificates</artifactId>
-                <version>1.1.4</version>
+                <groupId>org.hsqldb</groupId>
+                <artifactId>hsqldb</artifactId>
+                <version>${hsqldb.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flyway-core.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
+            <!--Jackson-->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+
+
+            <!--Annet-->
+            <dependency>
+                <groupId>javax.inject</groupId>
+                <artifactId>javax.inject</artifactId>
+                <version>${javax.inject.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>net.sourceforge.collections</groupId>
+                <artifactId>collections-generic</artifactId>
+                <version>${collections-generic.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
@@ -399,57 +444,10 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-types</artifactId>
-                <version>1.2</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-tx</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-api</artifactId>
+                <artifactId>cxf-core</artifactId>
                 <version>${cxf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>${jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${jackson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>1.4.1</version>
-                <executions>
-                    <execution>
-                        <id>enforce-no-snapshots</id>
-                        <goals>
-                            <goal>enforce</goal>
-                        </goals>
-                        <configuration>
-                            <rules>
-                                <requireReleaseDeps>
-                                    <onlyWhenRelease>true</onlyWhenRelease>
-                                    <message>No Snapshots Allowed!</message>
-                                </requireReleaseDeps>
-                            </rules>
-                            <fail>true</fail>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
 </project>

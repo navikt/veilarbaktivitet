@@ -27,8 +27,8 @@ public class AppServiceTest {
     @InjectMocks
     private AppService appService;
 
-    @Mock
-    private AktoerConsumer aktoerConsumerMock;
+//    @Mock
+//    private AktoerConsumer aktoerConsumerMock;
 
     @Mock
     private AktivitetDAO aktivitetDAO;
@@ -36,10 +36,10 @@ public class AppServiceTest {
     @Mock
     private EndringsLoggDAO endringsLoggDAO;
 
-    @Before
-    public void setup() {
-        when(aktoerConsumerMock.hentAktoerIdForIdent(KJENT_IDENT)).thenReturn(Optional.of(KJENT_AKTOR_ID));
-    }
+//    @Before
+//    public void setup() {
+//        when(aktoerConsumerMock.hentAktoerIdForIdent(KJENT_IDENT)).thenReturn(Optional.of(KJENT_AKTOR_ID));
+//    }
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_status_fra_avbrutt_eller_fullfort() {
