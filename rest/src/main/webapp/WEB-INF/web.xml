@@ -21,11 +21,23 @@
         <param-value>no.nav.fo.veilarbaktivitet.ApplicationContext</param-value>
     </context-param>
 
-    <resource-ref>
-        <res-ref-name>jdbc/AktivitetDS</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-    </resource-ref>
+    <servlet>
+        <servlet-name>selftest</servlet-name>
+        <servlet-class>no.nav.fo.veilarbaktivitet.internal.SelftestServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>selftest</servlet-name>
+        <url-pattern>/internal/selftest</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>isAlive</servlet-name>
+        <servlet-class>no.nav.fo.veilarbaktivitet.internal.IsAliveServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>isAlive</servlet-name>
+        <url-pattern>/internal/isAlive</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>restservlet</servlet-name>
@@ -33,10 +45,6 @@
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>no.nav.fo.veilarbaktivitet.rest.RestConfig</param-value>
-        </init-param>
-        <init-param>
-            <param-name>jersey.config.server.provider.packages</param-name>
-            <param-value>no.nav.fo.security.jwt.filter</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
         <async-supported>true</async-supported>
