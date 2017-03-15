@@ -7,7 +7,7 @@
     <name>veilarbaktivitet</name>
 
     <selftest>
-        <path>/veilarbaktivitet-ws/internal/selftest.json</path>
+        <path>/veilarbaktivitet-ws/internal/selftest</path>
         <humanReadablePath>/veilarbaktivitet-ws/internal/selftest</humanReadablePath>
     </selftest>
 
