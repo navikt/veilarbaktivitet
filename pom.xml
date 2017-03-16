@@ -205,6 +205,18 @@
                 <version>${modig-core-test.version}</version>
                 <scope>test</scope>
             </dependency>
+            <dependency>
+                <groupId>no.nav.modig</groupId>
+                <artifactId>modig-security-loginmodule</artifactId>
+                <version>${modig-security.version}</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-logging</groupId>
+                        <artifactId>commons-logging</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
 
             <!--Sikkerhet-->

@@ -48,6 +48,11 @@
             <artifactId>modig-core-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-loginmodule</artifactId>
+            <scope>runtime</scope>
+        </dependency>
 
 
         <!--Tjenester-->
