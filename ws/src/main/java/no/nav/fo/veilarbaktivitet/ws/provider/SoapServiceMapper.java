@@ -101,8 +101,9 @@ class SoapServiceMapper {
                 .orElse(null);
     }
 
-    static Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
+    static Aktivitet mapTilAktivitet(String fnr, AktivitetData aktivitet) {
         val wsAktivitet = new Aktivitet();
+        wsAktivitet.setPersonIdent(fnr);
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
         wsAktivitet.setTittel(aktivitet.getTittel());
         wsAktivitet.setTom(xmlCalendar(aktivitet.getTilDato()));

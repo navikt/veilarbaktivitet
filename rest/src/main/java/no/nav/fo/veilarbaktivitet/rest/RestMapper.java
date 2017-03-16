@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.rest;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
@@ -26,7 +27,7 @@ class RestMapper {
                 .setTittel(aktivitet.getTittel())
                 .setTilDato(aktivitet.getTilDato())
                 .setFraDato(aktivitet.getFraDato())
-                .setStatus(aktivitet.getStatus().name())
+                .setStatus(getName(aktivitet.getStatus()))
                 .setType(typeMap.get(aktivitet.getAktivitetType()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
@@ -45,7 +46,7 @@ class RestMapper {
                 .ifPresent(egenAktivitetData ->
                         aktivitetDTO
                                 .setHensikt(egenAktivitetData.getHensikt())
-                                .setEgenAktivitetTag(egenAktivitetData.getType().name())
+                                .setEgenAktivitetTag(getName(egenAktivitetData.getType()))
                 );
 
 
@@ -62,13 +63,13 @@ class RestMapper {
                 .setStatus(AktivitetStatusData.valueOf(aktivitetDTO.getStatus()))
                 .setLenke(aktivitetDTO.getLenke());
 
-        if(aktivitetData.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET){
+        AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();
+        if (aktivitetType == AktivitetTypeData.EGENAKTIVITET) {
             aktivitetData.setEgenAktivitetData(new EgenAktivitetData()
                     .setHensikt(aktivitetDTO.getHensikt())
-                    .setType(EgenAktivitetTypeData.valueOf(aktivitetDTO.getEgenAktivitetTag()))
+                    .setType(EnumUtils.valueOf(EgenAktivitetTypeData.class, aktivitetDTO.getEgenAktivitetTag()))
             );
-        }
-        else if (aktivitetData.getAktivitetType() == AktivitetTypeData.JOBBSOEKING){
+        } else if (aktivitetType == AktivitetTypeData.JOBBSOEKING) {
             aktivitetData.setStillingsSoekAktivitetData(new StillingsoekAktivitetData()
                     .setStillingsoekEtikett(valueOf(StillingsoekEtikettData.class, aktivitetDTO.getEtikett()))
                     .setKontaktPerson(aktivitetDTO.getKontaktperson())
