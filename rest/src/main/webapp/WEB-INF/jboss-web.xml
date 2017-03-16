@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jboss-web>
 	<context-root>veilarbaktivitet</context-root>
-    <security-domain>java:/jaas/NavSAML</security-domain>
+    <security-domain>jaspitest</security-domain>
     <resource-ref>
         <res-ref-name>jdbc/AktivitetDS</res-ref-name>
         <jndi-name>java:jboss/jdbc/AktivitetDS</jndi-name>

@@ -17,7 +17,14 @@
     <dependencies>
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbaktivitet-app</artifactId>
+            <artifactId>veilarbaktivitet-rest</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-ws</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>runtime</scope>
@@ -33,9 +40,15 @@
                     <modules>
                         <webModule>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>veilarbaktivitet-app</artifactId>
+                            <artifactId>veilarbaktivitet-rest</artifactId>
                             <contextRoot>/veilarbaktivitet</contextRoot>
-                            <bundleFileName>veilarbaktivitet-app.war</bundleFileName>
+                            <bundleFileName>veilarbaktivitet-rest.war</bundleFileName>
+                        </webModule>
+                        <webModule>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>veilarbaktivitet-ws</artifactId>
+                            <contextRoot>/veilarbaktivitet-ws</contextRoot>
+                            <bundleFileName>veilarbaktivitet-ws.war</bundleFileName>
                         </webModule>
                     </modules>
                     <displayName>veilarbaktivitet</displayName>

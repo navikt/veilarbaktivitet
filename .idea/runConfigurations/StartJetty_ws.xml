@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="StartJetty" type="Application" factoryName="Application" singleton="true" nameIsGenerated="true">
+  <configuration default="false" name="StartJetty-ws" type="Application" factoryName="Application" singleton="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
         <option name="PATTERN" value="no.nav.fo.*" />
@@ -15,7 +15,7 @@
     <option name="ENABLE_SWING_INSPECTOR" value="false" />
     <option name="ENV_VARIABLES" />
     <option name="PASS_PARENT_ENVS" value="true" />
-    <module name="veilarbaktivitet-app" />
+    <module name="veilarbaktivitet-ws" />
     <envs />
     <method />
   </configuration>
