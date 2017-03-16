@@ -39,7 +39,6 @@
     <servlet>
         <servlet-name>soapservlet</servlet-name>
         <servlet-class>no.nav.fo.veilarbaktivitet.ws.provider.ApiServlet</servlet-class>
-        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>soapservlet</servlet-name>
