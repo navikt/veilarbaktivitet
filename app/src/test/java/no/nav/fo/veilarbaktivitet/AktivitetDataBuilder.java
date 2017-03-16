@@ -9,10 +9,11 @@ import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 
-public class AktivitetDataHelper {
+public class AktivitetDataBuilder {
 
     public static AktivitetData nyAktivitet(String aktorId) {
         return new AktivitetData()
+                .setId(new Random().nextLong())
                 .setAktorId(aktorId)
                 .setFraDato(nyDato())
                 .setTilDato(nyDato())
@@ -25,8 +26,7 @@ public class AktivitetDataHelper {
                 .setOpprettetDato(nyDato())
                 .setLenke("lenke")
                 .setDeleMedNav(true)
-                .setKommentarer(asList(nyKommentar(), nyKommentar()))
-                ;
+                .setKommentarer(asList(nyKommentar(), nyKommentar()));
     }
 
     private static KommentarData nyKommentar() {

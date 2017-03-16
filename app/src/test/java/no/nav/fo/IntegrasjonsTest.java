@@ -6,17 +6,21 @@ import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
 
-@ContextConfiguration(classes = {ApplicationContext.class, IntegrasjonsTest.JndiBean.class})
+@ContextConfiguration(classes = {
+        ApplicationContext.class,
+        IntegrasjonsTest.JndiBean.class,
+        IntegrasjonsTest.Request.class
+})
 @RunWith(SpringJUnit4ClassRunner.class)
 @PropertySource("classpath:test.properties")
 @Transactional
@@ -42,5 +46,8 @@ public abstract class IntegrasjonsTest {
         }
 
     }
+
+    @Component
+    public static class Request extends MockHttpServletRequest {}
 
 }

@@ -4,57 +4,36 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Optional;
 
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
-import static no.nav.fo.veilarbaktivitet.AktivitetDataHelper.nyAktivitet;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.mockito.Mockito.when;
 
 
-public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
-
-    @Inject
-    private AktivitetsoversiktWebService aktivitetsoversiktWebService;
-
-    @Inject
-    private AktivitetDAO aktivitetDAO;
-
-    @Before
-    public void setup() {
-        val aktoerConsumer = aktivitetsoversiktWebService.aktoerConsumer = Mockito.mock(AktoerConsumer.class);
-        when(aktoerConsumer.hentAktoerIdForIdent(KJENT_IDENT)).thenReturn(Optional.of(KJENT_AKTOR_ID));
-    }
+public class SoapServiceTest extends IntegrasjonsTest {
 
     @Test
     public void hent_aktiviteter() throws Exception {
-        HentAktivitetsplanRequest hentAktiviteterRequest = getHentAktivitetsplanRequest();
-
-        val hentAktiviteterResponse1 = aktivitetsoversiktWebService.hentAktivitetsplan(hentAktiviteterRequest);
-        assertThat(hentAktiviteterResponse1.getAktivitetsplan().getAktivitetListe(), empty());
-
+        val hentAktiviteterRequest = getHentAktivitetsplanRequest();
         opprett_aktivitet();
-        val hentAktiviteterResponse2 = aktivitetsoversiktWebService.hentAktivitetsplan(hentAktiviteterRequest);
+
+        val hentAktiviteterResponse2 = soapService.hentAktivitetsplan(hentAktiviteterRequest);
         assertThat(hentAktiviteterResponse2.getAktivitetsplan().getAktivitetListe(), hasSize(1));
     }
 
@@ -63,7 +42,7 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
         val opprettNyAktivitetRequest = getOpprettNyAktivitetRequest();
         val beskrivelse = "Batman er awesome!!!!!";
         opprettNyAktivitetRequest.getAktivitet().setBeskrivelse(beskrivelse);
-        aktivitetsoversiktWebService.opprettNyAktivitet(opprettNyAktivitetRequest);
+        soapService.opprettNyAktivitet(opprettNyAktivitetRequest);
 
         val aktiviter = aktiviter();
         assertThat(aktiviter, hasSize(1));
@@ -79,7 +58,7 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
 
         val slettReq = new SlettAktivitetRequest();
         slettReq.setAktivitetId(aktivitetId);
-        aktivitetsoversiktWebService.slettAktivitet(slettReq);
+        soapService.slettAktivitet(slettReq);
 
         assertThat(aktiviter(), empty());
     }
@@ -93,31 +72,13 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
         endreReq.setAktivitetId(aktivitetId);
         endreReq.setStatus(Status.GJENNOMFOERT);
 
-        val res1 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
+        val res1 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res1.getAktivitet().getStatus(), equalTo(Status.GJENNOMFOERT));
 
 
         endreReq.setStatus(Status.AVBRUTT);
-        val res2 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
+        val res2 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
-    }
-
-    @Test
-    public void skal_ikke_kunne_endre_aktivitet_status_fra_avbrutt_eller_fullfort() throws Exception {
-        val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
-                .setAktivitetType(EGENAKTIVITET)
-                .setEgenAktivitetData(new EgenAktivitetData())
-                .setStatus(AktivitetStatusData.AVBRUTT);
-
-        aktivitetDAO.opprettAktivitet(aktivitet);
-
-        val aktivitetId = Long.toString(aktiviter().get(0).getId());
-        val endreReq = new EndreAktivitetStatusRequest();
-        endreReq.setAktivitetId(aktivitetId);
-        endreReq.setStatus(Status.GJENNOMFOERT);
-
-        val res1 = aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
-        assertThat(res1.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
     }
 
     @Test
@@ -129,12 +90,18 @@ public class AktivitetsoversiktWebServiceTest extends IntegrasjonsTest {
         endreReq.setAktivitetId(aktivitetId);
         endreReq.setStatus(Status.GJENNOMFOERT);
 
-        aktivitetsoversiktWebService.endreAktivitetStatus(endreReq);
+        soapService.endreAktivitetStatus(endreReq);
 
         val req = new HentEndringsLoggForAktivitetRequest();
         req.setAktivitetId(aktivitetId);
-        assertThat(aktivitetsoversiktWebService.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
+        assertThat(soapService.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
     }
+
+    @Inject
+    private SoapService soapService;
+
+    @Inject
+    private AktivitetDAO aktivitetDAO;
 
     private List<AktivitetData> aktiviter() throws Exception {
         return aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID);

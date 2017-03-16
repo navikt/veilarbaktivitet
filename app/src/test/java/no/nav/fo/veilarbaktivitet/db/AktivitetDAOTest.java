@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.veilarbaktivitet.AktivitetDataHelper.nyAktivitet;
-import static no.nav.fo.veilarbaktivitet.AktivitetDataHelper.nyttStillingssøk;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -58,9 +58,9 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     public void endre_aktivitet_status() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFØRT);
+        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFORT);
         assertThat(raderEndret, equalTo(1));
-        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.GJENNOMFØRT));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.GJENNOMFORT));
 
         val raderEndret2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.AVBRUTT);
         assertThat(raderEndret2, equalTo(1));
