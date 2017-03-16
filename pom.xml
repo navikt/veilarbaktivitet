@@ -24,7 +24,7 @@
         <module>ear</module>
     </modules>
 
-    <name>veilArbAktivitet</name>
+    <name>veilarbaktivitet</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
