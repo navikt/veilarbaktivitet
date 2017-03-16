@@ -1,5 +1,6 @@
 target
 *.iml
-.idea
+.idea/*
+!.idea/runConfigurations/
 *.log
 ignore
