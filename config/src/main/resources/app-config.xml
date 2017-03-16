@@ -15,6 +15,16 @@
         <ear groupId="no.nav.fo" artifactId="veilarbaktivitet-ear"/>
     </artifacts>
 
+    <loadBalancer isAlive="veilarbaktivitet/internal/isAlive"/>
+
+    <security serviceUserResourceAlias="srvveilarbaktivitet">
+        <logins>
+            <saml/>
+        </logins>
+    </security>
+
+    <logging serviceCalls="true"/>
+
     <resources>
         <credential alias="srvveilarbaktivitet" mapToProperty="systembruker"/>
         <applicationCertificate alias="srvveilarbaktivitet"/>
@@ -39,12 +49,4 @@
         </exposedSoap>
         <exposedRest path="/veilarbaktivitet/api" name="veilArbAktivitetAPI"/>
     </exposed-services>
-
-    <security serviceUserResourceAlias="srvveilarbaktivitet">
-        <logins>
-            <saml/>
-        </logins>
-    </security>
-
-    <loadBalancer isAlive="veilarbaktivitet-ws/internal/isAlive"/>
 </application>
