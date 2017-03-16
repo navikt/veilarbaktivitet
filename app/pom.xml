@@ -23,7 +23,7 @@
             <artifactId>javax.inject</artifactId>
         </dependency>
 
-        <!---->
+        <!--WS-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>

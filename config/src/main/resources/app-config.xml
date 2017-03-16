@@ -7,8 +7,8 @@
     <name>veilarbaktivitet</name>
 
     <selftest>
-        <path>/veilarbaktivitet-ws/internal/selftest</path>
-        <humanReadablePath>/veilarbaktivitet-ws/internal/selftest</humanReadablePath>
+        <path>/veilarbaktivitet/internal/selftest</path>
+        <humanReadablePath>/veilarbaktivitet/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
