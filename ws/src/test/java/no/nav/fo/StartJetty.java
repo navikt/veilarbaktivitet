@@ -7,6 +7,7 @@ import org.eclipse.jetty.jaas.JAASLoginService;
 
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
+import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
 
 public class StartJetty {
     private static final int PORT = 8486;
@@ -19,13 +20,14 @@ public class StartJetty {
         jaasLoginService.setLoginModuleName("saml");
 
         /**
-         * Legg på følgende for å teste mot in-memory-db under : .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
+         * Legg på følgende for å teste mot reell database : .addDatasourceByPropertyFile("/db.properties")
          */
 
         Jetty jetty = usingWar()
                 .at("/veilarbaktivitet")
                 .loadProperties("/test.properties")
-                .addDatasourceByPropertyFile("/db.properties")
+                //.addDatasourceByPropertyFile("/db.properties")
+                .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .withLoginService(jaasLoginService)
                 .port(PORT)
                 .buildJetty();

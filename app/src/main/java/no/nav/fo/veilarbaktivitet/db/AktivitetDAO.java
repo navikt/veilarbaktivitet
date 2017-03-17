@@ -52,7 +52,6 @@ public class AktivitetDAO {
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
-                .setDeleMedNav(rs.getBoolean("dele_med_nav"))
                 .setLenke(rs.getString("lenke"));
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
@@ -102,8 +101,8 @@ public class AktivitetDAO {
         val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
                         "fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato," +
-                        "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke,dele_med_nav) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -116,8 +115,7 @@ public class AktivitetDAO {
                 aktivitet.getAvsluttetKommentar(),
                 opprettetDato,
                 getName(aktivitet.getLagtInnAv()),
-                aktivitet.getLenke(),
-                aktivitet.isDeleMedNav()
+                aktivitet.getLenke()
         );
         aktivitet.setId(aktivitetId);
         aktivitet.setOpprettetDato(opprettetDato);

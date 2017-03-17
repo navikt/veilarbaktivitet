@@ -24,7 +24,6 @@ public class AktivitetData {
     Date fraDato;
     Date tilDato;
     String lenke;
-    boolean deleMedNav;
     Date opprettetDato;
 
     EgenAktivitetData egenAktivitetData;
