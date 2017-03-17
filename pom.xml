@@ -76,6 +76,7 @@
         <joda.version>2.3</joda.version>
         <collections-generic.version>4.01</collections-generic.version>
         <lombok.version>1.16.12</lombok.version>
+        <jetty-jaas.version>9.3.0.M2</jetty-jaas.version>
 
         <sonar.exclusions>
             **/config/**,
@@ -157,6 +158,12 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-jetty</artifactId>
                 <version>${common-jetty.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-jaas</artifactId>
+                <version>${jetty-jaas.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
@@ -384,7 +391,7 @@
                 <version>${mockito.version}</version>
                 <scope>test</scope>
             </dependency>
-                <!--Database-->
+            <!--Database-->
             <dependency>
                 <groupId>org.hsqldb</groupId>
                 <artifactId>hsqldb</artifactId>
