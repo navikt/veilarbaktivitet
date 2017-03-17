@@ -81,6 +81,7 @@
         <sonar.exclusions>
             **/config/**,
             **/ws/consumer/**,
+            **/domain/**,
             **/IsAliveServlet.java,
             **/SelftestServlet.java
         </sonar.exclusions>
