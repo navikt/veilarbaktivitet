@@ -2,12 +2,13 @@ package no.nav.fo.veilarbaktivitet.db;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.junit.Test;
 
 import javax.inject.Inject;
 import java.util.Date;
-import java.util.List;
 
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 import static org.hamcrest.CoreMatchers.equalTo;

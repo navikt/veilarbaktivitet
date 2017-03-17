@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.db;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;

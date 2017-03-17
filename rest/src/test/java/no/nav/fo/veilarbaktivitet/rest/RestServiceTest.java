@@ -3,7 +3,7 @@ package no.nav.fo.veilarbaktivitet.rest;
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.AktivitetDataBuilder;
-import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.junit.Before;
 import org.junit.Test;

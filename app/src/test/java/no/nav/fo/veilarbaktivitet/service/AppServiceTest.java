@@ -1,22 +1,17 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Optional;
-
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
-import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static org.mockito.Mockito.*;

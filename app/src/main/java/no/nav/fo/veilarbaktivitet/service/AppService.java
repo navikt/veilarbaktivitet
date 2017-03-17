@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.fo.veilarbaktivitet.db.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.db.EndringsLoggDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;

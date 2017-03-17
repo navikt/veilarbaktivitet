@@ -1,6 +1,7 @@
-package no.nav.fo.veilarbaktivitet.db;
+package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
+import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;

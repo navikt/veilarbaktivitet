@@ -79,11 +79,11 @@
         <jetty-jaas.version>9.3.0.M2</jetty-jaas.version>
 
         <sonar.exclusions>
+            **/api/**,
             **/config/**,
-            **/mock/**,
-            **/selftest/**,
-            **/sikkerhet/**,
-            **/rest/providers/**
+            **/ws/consumer/**,
+            IsAliveServlet.java,
+            SelftestServlet.java
         </sonar.exclusions>
     </properties>
     <dependencyManagement>
