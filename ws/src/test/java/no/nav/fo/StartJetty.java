@@ -4,9 +4,7 @@ import no.nav.modig.core.context.JettySubjectHandler;
 import no.nav.modig.core.context.SubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.eclipse.jetty.jaas.JAASLoginService;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
-import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
 import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
@@ -20,10 +18,14 @@ public class StartJetty {
         JAASLoginService jaasLoginService = new JAASLoginService("SAML Realm");
         jaasLoginService.setLoginModuleName("saml");
 
+        /**
+         * Legg på følgende for å teste mot in-memory-db under : .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
+         */
+
         Jetty jetty = usingWar()
                 .at("/veilarbaktivitet")
                 .loadProperties("/test.properties")
-                .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
+                .addDatasourceByPropertyFile("/db.properties")
                 .withLoginService(jaasLoginService)
                 .port(PORT)
                 .buildJetty();
