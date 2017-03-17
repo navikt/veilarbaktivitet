@@ -25,16 +25,7 @@ public class AktivitetDataBuilder {
                 .setLagtInnAv(InnsenderData.values()[0])
                 .setOpprettetDato(nyDato())
                 .setLenke("lenke")
-                .setDeleMedNav(true)
-                .setKommentarer(asList(nyKommentar(), nyKommentar()));
-    }
-
-    private static KommentarData nyKommentar() {
-        return new KommentarData()
-                .setKommentar("kommentar")
-                .setOpprettetAv("opprettetAv")
-                .setOpprettetDato(nyDato())
-                ;
+                .setDeleMedNav(true);
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {

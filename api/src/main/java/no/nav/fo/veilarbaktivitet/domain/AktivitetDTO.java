@@ -21,7 +21,6 @@ public class AktivitetDTO {
     public Date tilDato;
     public Date opprettetDato;
 
-    public List<AktivitetKommentarDTO> kommentarer = new ArrayList<>();
     public List<AktivitetTagDTO> tagger = new ArrayList<>();
 
     // stillingaktivitet

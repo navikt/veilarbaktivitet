@@ -27,8 +27,6 @@ public class AktivitetData {
     boolean deleMedNav;
     Date opprettetDato;
 
-    List<KommentarData> kommentarer = emptyList();
-
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
 
