@@ -11,6 +11,10 @@
 
     <artifactId>veilarbaktivitet-api</artifactId>
 
+    <properties>
+        <sonar.skip>true</sonar.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>javax.ws.rs</groupId>
