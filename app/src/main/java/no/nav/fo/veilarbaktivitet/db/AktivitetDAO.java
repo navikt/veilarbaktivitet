@@ -76,8 +76,7 @@ public class AktivitetDAO {
 
     private EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
         return new EgenAktivitetData()
-                .setHensikt(rs.getString("hensikt"))
-                .setType(valueOf(EgenAktivitetTypeData.class, rs.getString("egen_type")));
+                .setHensikt(rs.getString("hensikt"));
     }
 
 
@@ -143,10 +142,9 @@ public class AktivitetDAO {
     private EgenAktivitetData insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
         return ofNullable(egenAktivitetData)
                 .map(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, egen_type) VALUES(?,?,?)",
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt) VALUES(?,?)",
                             aktivitetId,
-                            egen.getHensikt(),
-                            getName(egen.getType())
+                            egen.getHensikt()
                     );
                     return egen;
                 }).orElse(null);

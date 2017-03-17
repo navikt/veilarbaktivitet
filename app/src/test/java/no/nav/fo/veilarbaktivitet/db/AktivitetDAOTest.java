@@ -5,7 +5,6 @@ import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData;
 import org.junit.Test;
 
 import javax.inject.Inject;
@@ -89,8 +88,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val aktivitet = nyAktivitet(AKTOR_ID)
                 .setAktivitetType(EGENAKTIVITET)
                 .setEgenAktivitetData(new EgenAktivitetData()
-                        .setHensikt("nada")
-                        .setType(EgenAktivitetTypeData.ANDRE_AKTIVITET));
+                        .setHensikt("nada"));
 
         aktivitetDAO.opprettAktivitet(aktivitet);
 

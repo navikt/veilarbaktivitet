@@ -32,6 +32,5 @@ public class AktivitetDTO {
 
     // egenaktivitet
     public String hensikt;
-    public String egenAktivitetTag;
 
 }
