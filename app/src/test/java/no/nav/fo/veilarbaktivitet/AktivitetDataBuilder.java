@@ -19,7 +19,7 @@ public class AktivitetDataBuilder {
                 .setTilDato(nyDato())
                 .setTittel("tittel")
                 .setBeskrivelse("beskrivelse")
-                .setStatus(AktivitetStatusData.values()[0])
+                .setStatus(AktivitetStatus.values()[0])
                 .setAvsluttetDato(nyDato())
                 .setAvsluttetKommentar("avsluttetKommentar")
                 .setLagtInnAv(InnsenderData.values()[0])

@@ -50,7 +50,7 @@ public class AktivitetDAO {
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setTittel(rs.getString("tittel"))
                 .setBeskrivelse(rs.getString("beskrivelse"))
-                .setStatus(valueOf(AktivitetStatusData.class, rs.getString("status")))
+                .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
                 .setAvsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
@@ -218,7 +218,7 @@ public class AktivitetDAO {
     }
 
 
-    public int endreAktivitetStatus(long aktivitetId, AktivitetStatusData status) {
+    public int endreAktivitetStatus(long aktivitetId, AktivitetStatus status) {
         return database.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
                 getName(status),
                 aktivitetId

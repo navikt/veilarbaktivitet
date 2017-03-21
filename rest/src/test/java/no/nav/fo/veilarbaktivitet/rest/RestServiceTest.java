@@ -102,11 +102,11 @@ public class RestServiceTest extends IntegrasjonsTest {
         aktivitetController.slettAktivitet(aktivitet.getId());
     }
 
-    private String nyAktivitetStatus = AktivitetStatusData.AVBRUTT.name();
+    private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
-        this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.getId(), nyAktivitetStatus);
+        this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.getId(), nyAktivitetStatus.name());
     }
 
     private List<EndringsloggDTO> endringer;
@@ -131,8 +131,7 @@ public class RestServiceTest extends IntegrasjonsTest {
 
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
-        assertThat(aktivitetDAO.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus().name(),
-                equalTo(nyAktivitetStatus));
+        assertThat(aktivitetDAO.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
     }
 
     private void da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten() {
@@ -146,7 +145,7 @@ public class RestServiceTest extends IntegrasjonsTest {
                 .setBeskrivelse("beskr")
                 .setLenke("lenke")
                 .setType(AktivitetTypeDTO.STILLING)
-                .setStatus(AktivitetStatusData.GJENNOMFORT.name())
+                .setStatus(AktivitetStatus.GJENNOMFORT)
                 .setFraDato(new Date())
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt")

@@ -1,5 +1,6 @@
 package no.nav.fo;
 
+import no.nav.fo.veilarbaktivitet.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
@@ -21,8 +22,8 @@ public class DatabaseTestContext {
     public static SingleConnectionDataSource buildDataSource() {
         SingleConnectionDataSource dataSource = new SingleConnectionDataSource();
         dataSource.setSuppressClose(true);
-        dataSource.setDriverClassName(org.hsqldb.jdbcDriver.class.getName());
-        dataSource.setUrl("jdbc:hsqldb:mem:henvendelse");
+        dataSource.setDriverClassName(TestDriver.class.getName());
+        dataSource.setUrl(TestDriver.URL);
         dataSource.setUsername("sa");
         dataSource.setPassword("");
         createTables(dataSource);

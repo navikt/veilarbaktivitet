@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData;
 import org.junit.Test;
@@ -59,13 +59,13 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     public void endre_aktivitet_status() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
-        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.GJENNOMFORT);
+        val raderEndret = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatus.GJENNOMFORT);
         assertThat(raderEndret, equalTo(1));
-        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.GJENNOMFORT));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatus.GJENNOMFORT));
 
-        val raderEndret2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatusData.AVBRUTT);
+        val raderEndret2 = aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), AktivitetStatus.AVBRUTT);
         assertThat(raderEndret2, equalTo(1));
-        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatusData.AVBRUTT));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getStatus(), equalTo(AktivitetStatus.AVBRUTT));
     }
 
     @Test

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData.*;
@@ -32,8 +32,8 @@ class SoapServiceMapper {
             }};
 
 
-    private static final BidiMap<Status, AktivitetStatusData> statusMap =
-            new DualHashBidiMap<Status, AktivitetStatusData>() {{
+    private static final BidiMap<Status, AktivitetStatus> statusMap =
+            new DualHashBidiMap<Status, AktivitetStatus>() {{
                 put(Status.AVBRUTT, AVBRUTT);
                 put(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
                 put(Status.FULLFOERT, FULLFORT);
@@ -169,7 +169,7 @@ class SoapServiceMapper {
         return endringsLoggMelding;
     }
 
-    static AktivitetStatusData mapTilAktivitetStatusData(Status status){
+    static AktivitetStatus mapTilAktivitetStatusData(Status status){
         return statusMap.get(status);
     }
 

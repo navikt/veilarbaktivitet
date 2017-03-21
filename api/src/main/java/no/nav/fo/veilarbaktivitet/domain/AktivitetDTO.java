@@ -16,7 +16,7 @@ public class AktivitetDTO {
     public String beskrivelse;
     public String lenke;
     public AktivitetTypeDTO type;
-    public String status;
+    public AktivitetStatus status;
     public Date fraDato;
     public Date tilDato;
     public Date opprettetDato;

@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import org.springframework.stereotype.Component;
@@ -43,7 +43,7 @@ public class AppService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public AktivitetData oppdaterStatus(long aktivitetId, AktivitetStatusData status) {
+    public AktivitetData oppdaterStatus(long aktivitetId, AktivitetStatus status) {
         val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitetId);
 
         if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
@@ -59,8 +59,8 @@ public class AppService {
     }
 
     private Boolean statusSkalIkkeKunneEndres(AktivitetData aktivitetData) {
-        return aktivitetData.getStatus() == AktivitetStatusData.AVBRUTT ||
-                aktivitetData.getStatus() == AktivitetStatusData.FULLFORT;
+        return aktivitetData.getStatus() == AktivitetStatus.AVBRUTT ||
+                aktivitetData.getStatus() == AktivitetStatus.FULLFORT;
     }
 
     public List<EndringsloggData> hentEndringsloggForAktivitetId(long aktivitetId) {
