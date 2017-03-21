@@ -11,7 +11,7 @@ import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 public class StartJetty {
-    private static final int PORT = 8486;
+    private static final int PORT = 8481;
 
     public static void main(String[] args) throws Exception {
         System.setProperty(SubjectHandler.SUBJECTHANDLER_KEY, JettySubjectHandler.class.getName());
@@ -21,7 +21,7 @@ public class StartJetty {
         jaasLoginService.setLoginModuleName("saml");
 
         Jetty jetty = usingWar()
-                .at("/veilarbaktivitet")
+                .at("/veilarbaktivitet-ws")
                 .loadProperties("/test.properties")
                 .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .withLoginService(jaasLoginService)

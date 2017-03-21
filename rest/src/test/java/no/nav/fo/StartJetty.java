@@ -14,7 +14,7 @@ import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 public class StartJetty {
-    private static final int PORT = 8486;
+    private static final int PORT = 8480;
     private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
