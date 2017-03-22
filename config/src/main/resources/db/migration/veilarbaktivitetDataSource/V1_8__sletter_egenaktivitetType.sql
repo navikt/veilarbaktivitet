@@ -1,0 +1,1 @@
+alter table egenaktivitet drop column egen_type;

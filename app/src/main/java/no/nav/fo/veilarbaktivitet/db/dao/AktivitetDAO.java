@@ -40,8 +40,6 @@ public class AktivitetDAO {
 
     private AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         long aktivitetId = rs.getLong("aktivitet_id");
-        //TODO vurdere å slå opp alle kommentarer en gang, istede for en gang pr aktivitet
-        List<KommentarData> kommentarer = database.query("SELECT * FROM KOMMENTAR WHERE aktivitet_id = ?", this::mapKommentar, aktivitetId);
         val aktivitet = new AktivitetData()
                 .setId(aktivitetId)
                 .setAktorId(rs.getString("aktor_id"))
@@ -55,9 +53,7 @@ public class AktivitetDAO {
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
-                .setDeleMedNav(rs.getBoolean("dele_med_nav"))
-                .setLenke(rs.getString("lenke"))
-                .setKommentarer(kommentarer);
+                .setLenke(rs.getString("lenke"));
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
             aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
@@ -68,14 +64,6 @@ public class AktivitetDAO {
         return aktivitet;
     }
 
-
-    private KommentarData mapKommentar(ResultSet rs) throws SQLException {
-        return new KommentarData()
-                .setKommentar(rs.getString("kommentar"))
-                .setOpprettetDato(hentDato(rs, "opprettet_dato"))
-                .setOpprettetAv(rs.getString("opprettet_av"))
-                ;
-    }
 
     private StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
         return new StillingsoekAktivitetData()
@@ -89,8 +77,7 @@ public class AktivitetDAO {
 
     private EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
         return new EgenAktivitetData()
-                .setHensikt(rs.getString("hensikt"))
-                .setType(valueOf(EgenAktivitetTypeData.class, rs.getString("egen_type")));
+                .setHensikt(rs.getString("hensikt"));
     }
 
 
@@ -114,8 +101,8 @@ public class AktivitetDAO {
         val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
                         "fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato," +
-                        "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke,dele_med_nav) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -128,34 +115,13 @@ public class AktivitetDAO {
                 aktivitet.getAvsluttetKommentar(),
                 opprettetDato,
                 getName(aktivitet.getLagtInnAv()),
-                aktivitet.getLenke(),
-                aktivitet.isDeleMedNav()
+                aktivitet.getLenke()
         );
         aktivitet.setId(aktivitetId);
         aktivitet.setOpprettetDato(opprettetDato);
 
-        val kommentarer = insertKommentarer(aktivitetId, aktivitet.getKommentarer());
-        aktivitet.setKommentarer(kommentarer);
-
         LOG.info("opprettet {}", aktivitet);
         return aktivitet;
-    }
-
-    private List<KommentarData> insertKommentarer(long aktivitetId, List<KommentarData> kommentarer) {
-        return kommentarer.stream()
-                .map(k -> insertKommentar(aktivitetId, k))
-                .collect(Collectors.toList());
-    }
-
-    private KommentarData insertKommentar(long aktivitetId, KommentarData kommentar) {
-        database.update("INSERT INTO KOMMENTAR(aktivitet_id, kommentar, opprettet_av, opprettet_dato) " +
-                        "VALUES (?,?,?,?)",
-                aktivitetId,
-                kommentar.getKommentar(),
-                kommentar.getOpprettetAv(),
-                kommentar.getOpprettetDato()
-        );
-        return kommentar; //Todo set date and such
     }
 
     private StillingsoekAktivitetData insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -177,10 +143,9 @@ public class AktivitetDAO {
     private EgenAktivitetData insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
         return ofNullable(egenAktivitetData)
                 .map(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, egen_type) VALUES(?,?,?)",
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt) VALUES(?,?)",
                             aktivitetId,
-                            egen.getHensikt(),
-                            getName(egen.getType())
+                            egen.getHensikt()
                     );
                     return egen;
                 }).orElse(null);
@@ -189,9 +154,6 @@ public class AktivitetDAO {
 
     public int slettAktivitet(long aktivitetId) {
 
-        database.update("DELETE FROM KOMMENTAR WHERE aktivitet_id = ?",
-                aktivitetId
-        );
         database.update("DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
                 aktivitetId
         );

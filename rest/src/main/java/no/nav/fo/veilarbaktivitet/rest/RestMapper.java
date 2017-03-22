@@ -46,7 +46,6 @@ class RestMapper {
                 .ifPresent(egenAktivitetData ->
                         aktivitetDTO
                                 .setHensikt(egenAktivitetData.getHensikt())
-                                .setEgenAktivitetTag(getName(egenAktivitetData.getType()))
                 );
 
 
@@ -67,7 +66,6 @@ class RestMapper {
         if (aktivitetType == AktivitetTypeData.EGENAKTIVITET) {
             aktivitetData.setEgenAktivitetData(new EgenAktivitetData()
                     .setHensikt(aktivitetDTO.getHensikt())
-                    .setType(EnumUtils.valueOf(EgenAktivitetTypeData.class, aktivitetDTO.getEgenAktivitetTag()))
             );
         } else if (aktivitetType == AktivitetTypeData.JOBBSOEKING) {
             aktivitetData.setStillingsSoekAktivitetData(new StillingsoekAktivitetData()

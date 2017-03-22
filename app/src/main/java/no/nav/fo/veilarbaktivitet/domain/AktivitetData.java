@@ -24,10 +24,7 @@ public class AktivitetData {
     Date fraDato;
     Date tilDato;
     String lenke;
-    boolean deleMedNav;
     Date opprettetDato;
-
-    List<KommentarData> kommentarer = emptyList();
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

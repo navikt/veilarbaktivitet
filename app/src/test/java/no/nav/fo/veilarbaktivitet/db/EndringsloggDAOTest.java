@@ -60,7 +60,6 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
                 .setAvsluttetKommentar("avsluttetKommentar")
                 .setLagtInnAv(InnsenderData.values()[0])
                 .setLenke("lenke")
-                .setDeleMedNav(true)
                 ;
     }
 

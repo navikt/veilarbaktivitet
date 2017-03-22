@@ -15,7 +15,6 @@ import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.domain.EgenAktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
@@ -45,14 +44,6 @@ class SoapServiceMapper {
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
-            }};
-
-    private static final BidiMap<EgenaktivitetType, EgenAktivitetTypeData> egenTypeMap =
-            new DualHashBidiMap<EgenaktivitetType, EgenAktivitetTypeData>() {{
-                put(EgenaktivitetType.ANBEFALTE_AKTIVITETER, ANBEFALTE_AKTIVITETER);
-                put(EgenaktivitetType.ANDRE_AKTIVITET, ANDRE_AKTIVITET);
-                put(EgenaktivitetType.AVKLARE_AKTIVITETER, AVKLARE_AKTIVITETER);
-                put(EgenaktivitetType.FINNE_ARBEIDSMULIGHETER, FINNE_ARBEIDSMULIGHETER);
             }};
 
 
@@ -96,8 +87,7 @@ class SoapServiceMapper {
         return Optional.ofNullable(egenaktivitet)
                 .map(egen ->
                         new EgenAktivitetData()
-                                .setHensikt(egen.getHensikt())
-                                .setType(egenTypeMap.get(egen.getType())))
+                                .setHensikt(egen.getHensikt()))
                 .orElse(null);
     }
 
@@ -112,7 +102,6 @@ class SoapServiceMapper {
         wsAktivitet.setType(typeMap.getKey(aktivitet.getAktivitetType()));
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setLenke(aktivitet.getLenke());
-        wsAktivitet.setDelerMedNav(aktivitet.isDeleMedNav());
         wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
@@ -140,7 +129,6 @@ class SoapServiceMapper {
         val egenaktivitet = new Egenaktivitet();
 
         egenaktivitet.setHensikt(egenAktivitetData.getHensikt());
-        egenaktivitet.setType(egenTypeMap.getKey(egenAktivitetData.getType()));
 
         return egenaktivitet;
     }

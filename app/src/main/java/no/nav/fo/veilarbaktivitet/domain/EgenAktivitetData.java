@@ -7,5 +7,4 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class EgenAktivitetData {
     String hensikt;
-    EgenAktivitetTypeData type;
 }
