@@ -27,7 +27,7 @@ class RestMapper {
                 .setTittel(aktivitet.getTittel())
                 .setTilDato(aktivitet.getTilDato())
                 .setFraDato(aktivitet.getFraDato())
-                .setStatus(getName(aktivitet.getStatus()))
+                .setStatus(aktivitet.getStatus())
                 .setType(typeMap.get(aktivitet.getAktivitetType()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
@@ -59,7 +59,7 @@ class RestMapper {
                 .setTilDato(aktivitetDTO.getTilDato())
                 .setBeskrivelse(aktivitetDTO.getBeskrivelse())
                 .setAktivitetType(typeMap.getKey(aktivitetDTO.getType()))
-                .setStatus(AktivitetStatusData.valueOf(aktivitetDTO.getStatus()))
+                .setStatus(aktivitetDTO.getStatus())
                 .setLenke(aktivitetDTO.getLenke());
 
         AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();

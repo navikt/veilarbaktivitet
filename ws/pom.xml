@@ -117,6 +117,12 @@
             <artifactId>lombok</artifactId>
         </dependency>
 
+        <!-- Transitivt -->
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-api</artifactId>
+        </dependency>
+
         <!--Test-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>

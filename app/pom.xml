@@ -17,7 +17,10 @@
             <groupId>no.nav</groupId>
             <artifactId>metrics</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>

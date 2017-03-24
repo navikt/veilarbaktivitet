@@ -3,7 +3,7 @@ package no.nav.fo.veilarbaktivitet.rest;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatusData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.service.AppService;
@@ -59,7 +59,7 @@ public class RestService implements AktivitetController {
     @Override
     public AktivitetDTO oppdaterStatus(String aktivitetId, String status) {
         val aktivitet = appService.oppdaterStatus(Long.parseLong(aktivitetId),
-                EnumUtils.valueOf(AktivitetStatusData.class, status));
+                EnumUtils.valueOf(AktivitetStatus.class, status));
 
         return RestMapper.mapTilAktivitetDTO(aktivitet);
     }

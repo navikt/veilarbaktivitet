@@ -17,10 +17,6 @@
         <!--Project-->
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbaktivitet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.fo</groupId>
             <artifactId>veilarbaktivitet-app</artifactId>
         </dependency>
         <dependency>
@@ -92,6 +88,13 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
+        </dependency>
+
+
+        <!-- Transitivt -->
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
 
 
