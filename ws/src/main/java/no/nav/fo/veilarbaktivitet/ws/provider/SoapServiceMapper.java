@@ -31,15 +31,6 @@ class SoapServiceMapper {
             }};
 
 
-    private static final BidiMap<Status, AktivitetStatus> statusMap =
-            new DualHashBidiMap<Status, AktivitetStatus>() {{
-                put(Status.AVBRUTT, AVBRUTT);
-                put(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
-                put(Status.FULLFOERT, FULLFORT);
-                put(Status.GJENNOMFOERT, GJENNOMFORT);
-                put(Status.PLANLAGT, PLANLAGT);
-            }};
-
     private static final BidiMap<AktivitetType, AktivitetTypeData> typeMap =
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
@@ -64,7 +55,7 @@ class SoapServiceMapper {
                 .setTilDato(getDate(aktivitet.getTom()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setAktivitetType(AktivitetTypeData.valueOf(aktivitet.getType().name()))
-                .setStatus(statusMap.get(aktivitet.getStatus()))
+                .setStatus(aktivitetStatus(aktivitet.getStatus()))
                 .setLagtInnAv(lagtInnAv(aktivitet))
                 .setLenke(aktivitet.getLenke())
                 .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
@@ -98,7 +89,7 @@ class SoapServiceMapper {
         wsAktivitet.setTittel(aktivitet.getTittel());
         wsAktivitet.setTom(xmlCalendar(aktivitet.getTilDato()));
         wsAktivitet.setFom(xmlCalendar(aktivitet.getFraDato()));
-        wsAktivitet.setStatus(statusMap.getKey(aktivitet.getStatus()));
+        wsAktivitet.setStatus(wsStatus(aktivitet.getStatus()));
         wsAktivitet.setType(typeMap.getKey(aktivitet.getAktivitetType()));
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setLenke(aktivitet.getLenke());
@@ -155,10 +146,6 @@ class SoapServiceMapper {
         endringsLoggMelding.setEndretDato(xmlCalendar(endringsLogg.getEndretDato()));
 
         return endringsLoggMelding;
-    }
-
-    static AktivitetStatus mapTilAktivitetStatusData(Status status){
-        return statusMap.get(status);
     }
 
     static EndreAktivitetStatusResponse mapTilEndreAktivitetStatusResponse(Aktivitet aktivitet){

@@ -13,6 +13,7 @@ import javax.jws.WebService;
 import java.util.Optional;
 
 import static java.util.Optional.of;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitet;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitetData;
 
@@ -72,7 +73,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
         return of(endreAktivitetStatusRequest)
                 .map((req) -> appService.oppdaterStatus(
                         Long.parseLong(req.getAktivitetId()),
-                        SoapServiceMapper.mapTilAktivitetStatusData(req.getStatus()))
+                        aktivitetStatus(req.getStatus()))
                 )
                 .map((aktivtet) -> mapTilAktivitet("", aktivtet)) //TODO: fnr don't know it here
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
