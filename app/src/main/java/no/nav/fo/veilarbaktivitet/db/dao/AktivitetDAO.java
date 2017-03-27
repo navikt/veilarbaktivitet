@@ -12,7 +12,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
@@ -27,6 +26,9 @@ public class AktivitetDAO {
 
     @Inject
     private Database database;
+
+    @Inject
+    private EndringsLoggDAO endringsLoggDAO;
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         return database.query("SELECT * FROM AKTIVITET A " +
@@ -160,9 +162,8 @@ public class AktivitetDAO {
         database.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
                 aktivitetId
         );
-        database.update("DELETE FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
-                aktivitetId
-        );
+
+        endringsLoggDAO.slettEndringslogg(aktivitetId);
 
         return database.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
                 aktivitetId

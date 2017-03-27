@@ -52,5 +52,12 @@ public class EndringsLoggDAO {
         LOG.info("opprettet endringslogg with id: {}", endringsLoggId);
     }
 
+    public int slettEndringslogg(long aktivitetId) {
+        return database.update("DELETE FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+    }
+
+
 
 }

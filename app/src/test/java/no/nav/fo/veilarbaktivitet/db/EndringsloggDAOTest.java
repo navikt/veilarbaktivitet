@@ -4,13 +4,15 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
-import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
 import org.junit.Test;
 
 import javax.inject.Inject;
 import java.util.Date;
 
-import static org.apache.commons.lang3.time.DateUtils.truncate;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
@@ -40,6 +42,19 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
         assertTrue("Dates are close enough",
                 (new Date().getTime() - endringsLoggs.get(0).getEndretDato().getTime()) < 1000);
     }
+
+    @Test
+    public void slett_endringslogg() {
+        val aktivitetId = opprett_aktivitet();
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+
+        assertThat(endringsLoggDao.slettEndringslogg(aktivitetId), equalTo(3));
+        val endringsLoggs = endringsLoggDao.hentEndringdsloggForAktivitetId(aktivitetId);
+        assertThat(endringsLoggs, hasSize(0));
+    }
+
 
     private long opprett_aktivitet() {
         val aktorId = "123";
