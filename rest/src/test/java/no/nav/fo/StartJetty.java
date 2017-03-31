@@ -1,10 +1,8 @@
 package no.nav.fo;
 
-import com.sun.javafx.runtime.SystemProperties;
 import no.nav.modig.core.context.JettySubjectHandler;
 import no.nav.sbl.dialogarena.common.jetty.Jetty;
 import org.apache.geronimo.components.jaspi.AuthConfigFactoryImpl;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
 
 import javax.security.auth.message.config.AuthConfigFactory;
 
@@ -14,13 +12,14 @@ import static no.nav.sbl.dialogarena.common.jetty.Jetty.usingWar;
 import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 
 public class StartJetty {
-    private static final int PORT = 8480;
+    public static final String CONTEXT_NAME = "veilarbaktivitet";
+    public static final int PORT = 8480;
     private static final int SSL_PORT = 8485;
 
     public static void main(String[] args) throws Exception {
         setupAutentisering();
         Jetty jetty = usingWar()
-                .at("/veilarbaktivitet")
+                .at(CONTEXT_NAME)
                 .loadProperties("/test.properties")
                 .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .port(PORT)

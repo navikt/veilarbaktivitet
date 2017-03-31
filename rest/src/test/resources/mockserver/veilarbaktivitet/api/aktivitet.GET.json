@@ -1,0 +1,40 @@
+{
+  "aktiviteter": [
+    {
+      "id": "201",
+      "tittel": "konsulent for BEKK",
+      "beskrivelse": null,
+      "lenke": "www.bekk.no",
+      "type": "STILLING",
+      "status": "PLANLAGT",
+      "fraDato": 1490464427000,
+      "tilDato": null,
+      "opprettetDato": 1490464446348,
+      "tagger": [],
+      "etikett": null,
+      "kontaktperson": null,
+      "arbeidsgiver": null,
+      "arbeidssted": null,
+      "stillingsTittel": null,
+      "hensikt": null
+    },
+    {
+      "id": "221",
+      "tittel": "tittel",
+      "beskrivelse": null,
+      "lenke": null,
+      "type": "STILLING",
+      "status": "PLANLAGT",
+      "fraDato": 1490601819000,
+      "tilDato": null,
+      "opprettetDato": 1490601925077,
+      "tagger": [],
+      "etikett": null,
+      "kontaktperson": null,
+      "arbeidsgiver": null,
+      "arbeidssted": null,
+      "stillingsTittel": null,
+      "hensikt": null
+    }
+  ]
+}
