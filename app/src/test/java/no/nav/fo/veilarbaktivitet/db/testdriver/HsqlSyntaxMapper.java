@@ -16,9 +16,14 @@ class HsqlSyntaxMapper {
                 "alter table AKTIVITET alter column status SET not null"
         );
         map(
-                "alter table AKTIVITET modify (beskrivelse varchar(5000), lenke varchar(2000))",
-                "alter table AKTIVITET alter column beskrivelse varchar(5000); alter table AKTIVITET alter column lenke varchar(2000)"
+                "alter table AKTIVITET modify lenke varchar(2000)",
+                "alter table AKTIVITET alter column lenke varchar(2000)"
         );
+        map(
+                "alter table AKTIVITET add beskrivelse clob",
+                "alter table AKTIVITET add beskrivelse varchar(5001)"
+        );
+
 
     }
 
