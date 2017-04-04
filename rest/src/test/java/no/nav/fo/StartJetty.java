@@ -14,7 +14,7 @@ import static no.nav.sbl.dialogarena.common.jetty.JettyStarterUtils.*;
 public class StartJetty {
     public static final String CONTEXT_NAME = "veilarbaktivitet";
     public static final int PORT = 8480;
-    private static final int SSL_PORT = 8485;
+    private static final int SSL_PORT = 8481;
 
     public static void main(String[] args) throws Exception {
         setupAutentisering();
