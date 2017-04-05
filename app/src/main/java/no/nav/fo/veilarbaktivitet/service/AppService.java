@@ -46,13 +46,15 @@ public class AppService {
     public AktivitetData oppdaterStatus(long aktivitetId, AktivitetStatus status) {
         val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitetId);
 
-        if (!statusSkalIkkeKunneEndres(gammelAktivitet)) {
+        if (statusSkalIkkeKunneEndres(gammelAktivitet)) {
+            throw new IllegalArgumentException(String.format("Kan ikke endre status til [%s] for aktivitet [%s]", status, aktivitetId));
+        } else {
             aktivitetDAO.endreAktivitetStatus(aktivitetId, status);
             val endretBeskrivelse = String.format("livslopsendring, {\"fraStatus\": \"%s\", \"tilStatus\": \"%s\"}",
                     gammelAktivitet.getStatus().name(),
                     status.name());
             endringsLoggDAO.opprettEndringsLogg(aktivitetId, gammelAktivitet.getAktorId(), endretBeskrivelse);
-        } //TODO return fault when updating an invalid aktivity or something
+        }
 
         return aktivitetDAO.hentAktivitet(aktivitetId);
 
