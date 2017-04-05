@@ -44,6 +44,18 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void hent_endringslogg_sortert() {
+        val aktivitetId = opprett_aktivitet();
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+
+        val endringsLoggs = endringsLoggDao.hentEndringdsloggForAktivitetId(aktivitetId);
+
+        assertThat(endringsLoggs, hasSize(2));
+        assertTrue(endringsLoggs.get(0).getEndretDato().after(endringsLoggs.get(1).getEndretDato()));
+    }
+
+    @Test
     public void slett_endringslogg() {
         val aktivitetId = opprett_aktivitet();
         endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);

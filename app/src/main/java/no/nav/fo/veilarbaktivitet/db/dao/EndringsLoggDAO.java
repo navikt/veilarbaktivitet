@@ -23,7 +23,7 @@ public class EndringsLoggDAO {
     private Database database;
 
     public List<EndringsloggData> hentEndringdsloggForAktivitetId(long aktivitetId) {
-        return database.query("SELECT * FROM ENDRINGSLOGG WHERE aktivitet_id = ?",
+        return database.query("SELECT * FROM ENDRINGSLOGG WHERE aktivitet_id = ? ORDER BY id desc",
                 this::mapEndringsLogg,
                 aktivitetId
         );
