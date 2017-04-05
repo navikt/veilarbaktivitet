@@ -15,8 +15,7 @@ import java.util.Date;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class EndringsloggDAOTest extends IntegrasjonsTest {
 
@@ -44,15 +43,18 @@ public class EndringsloggDAOTest extends IntegrasjonsTest {
     }
 
     @Test
-    public void hent_endringslogg_sortert() {
+    public void hent_endringslogg_sortert_fra_nyest_forst() {
         val aktivitetId = opprett_aktivitet();
-        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
-        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv, endringsBeskrivelse);
+        val endretAv1 = "batman";
+        val endretAv2 = "superman";
+
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv1, endringsBeskrivelse);
+        endringsLoggDao.opprettEndringsLogg(aktivitetId, endretAv2, endringsBeskrivelse);
 
         val endringsLoggs = endringsLoggDao.hentEndringdsloggForAktivitetId(aktivitetId);
 
-        assertThat(endringsLoggs, hasSize(2));
-        assertTrue(endringsLoggs.get(0).getEndretDato().after(endringsLoggs.get(1).getEndretDato()));
+        assertEquals(endringsLoggs.get(0).getEndretAv(), endretAv2);
+        assertEquals(endringsLoggs.get(1).getEndretAv(), endretAv1);
     }
 
     @Test

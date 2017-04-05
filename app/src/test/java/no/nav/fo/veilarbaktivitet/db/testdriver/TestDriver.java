@@ -25,7 +25,11 @@ public class TestDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(HSQL_URL, info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(), info)), Connection.class);
+    }
+
+    private String getHsqlUrl() {
+        return HSQL_URL;
     }
 
     @Override
