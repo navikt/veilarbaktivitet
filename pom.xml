@@ -37,7 +37,7 @@
         <jersey.version>2.22.2</jersey.version>
 
         <!--NAV Felles -->
-        <common-jetty.version>2.0.12</common-jetty.version>
+        <common-jetty.version>2.0.13</common-jetty.version>
         <common-cxf.version>3.1.33</common-cxf.version>
         <common-web.version>3.1.2</common-web.version>
         <common-types.version>1.2</common-types.version>
@@ -171,6 +171,18 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>common-types</artifactId>
                 <version>${common-types.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>app-mock</artifactId>
+                <version>1.0.2.3</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.sbl.dialogarena</groupId>
+                <artifactId>test-config</artifactId>
+                <version>1.0.6.11</version>
+                <scope>test</scope>
             </dependency>
 
 
