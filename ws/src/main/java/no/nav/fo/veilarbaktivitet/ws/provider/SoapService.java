@@ -83,7 +83,13 @@ public class SoapService implements BehandleAktivitetsplanV1 {
         return Optional.of(endreAktivitetRequest)
                 .map(EndreAktivitetRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
-                .map(appService::oppdaterAktivitet)
+                .map(aktivitet -> {
+                    val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
+                    if(orignalAktivitet.isAvtalt()){
+                        return orignalAktivitet;
+                    }
+                    return appService.oppdaterAktivitet(aktivitet);
+                })
                 .map(aktivtet -> mapTilAktivitet("", aktivtet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetResponse)
                 .orElseThrow(RuntimeException::new);

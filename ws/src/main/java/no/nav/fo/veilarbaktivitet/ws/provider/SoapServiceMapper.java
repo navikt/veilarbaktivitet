@@ -65,6 +65,10 @@ class SoapServiceMapper {
                 .setStatus(aktivitetStatus(aktivitet.getStatus()))
                 .setLagtInnAv(lagtInnAv(aktivitet))
                 .setLenke(aktivitet.getLenke())
+                .setOpprettetDato(getDate(aktivitet.getOpprettet()))
+                .setAvtalt(Optional.ofNullable(aktivitet.getAvtalt()).orElse(false))
+                .setAvsluttetDato(getDate(aktivitet.getAvsluttet()))
+                .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .setStillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
                 ;
@@ -101,6 +105,14 @@ class SoapServiceMapper {
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
+        wsAktivitet.setAvtalt(aktivitet.isAvtalt());
+        wsAktivitet.setAvsluttet(xmlCalendar(aktivitet.getAvsluttetDato()));
+        wsAktivitet.setAvsluttetKommentar(aktivitet.getAvsluttetKommentar());
+
+        val innsender = new Innsender();
+        innsender.setType(innsenderMap.getKey(aktivitet.getLagtInnAv()));
+        wsAktivitet.setLagtInnAv(innsender);
+
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
                         wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));

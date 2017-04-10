@@ -22,6 +22,7 @@ public class AktivitetData {
     Date tilDato;
     String lenke;
     Date opprettetDato;
+    boolean avtalt;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

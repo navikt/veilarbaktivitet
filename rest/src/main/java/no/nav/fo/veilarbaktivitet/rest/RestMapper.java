@@ -31,6 +31,7 @@ class RestMapper {
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
+                .setAvtalt(aktivitet.isAvtalt())
                 .setOpprettetDato(aktivitet.getOpprettetDato());
 
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
@@ -65,6 +66,7 @@ class RestMapper {
                 .setAktivitetType(typeMap.getKey(aktivitetDTO.getType()))
                 .setStatus(aktivitetDTO.getStatus())
                 .setAvsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
+                .setAvtalt(aktivitetDTO.isAvtalt())
                 .setLenke(aktivitetDTO.getLenke());
 
         AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();

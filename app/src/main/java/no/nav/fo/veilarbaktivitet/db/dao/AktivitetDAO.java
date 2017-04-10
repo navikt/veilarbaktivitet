@@ -56,6 +56,7 @@ public class AktivitetDAO {
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
+                .setAvtalt(rs.getBoolean("avtalt"))
                 .setLenke(rs.getString("lenke"));
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
@@ -110,12 +111,13 @@ public class AktivitetDAO {
                 egen -> updateEgenAktivitet(oppdatertAktivtet.getId(), egen)
         );
 
+        //TODO not really the correct value
         return oppdatertAktivtet;
     }
 
     private AktivitetData updateAktivitet(AktivitetData aktivitetData) {
         database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
-                        "avsluttet_dato = ?, avsluttet_kommentar = ?, lenke = ?" +
+                        "avsluttet_dato = ?, avsluttet_kommentar = ?, lenke = ?, avtalt = ?" +
                         "WHERE aktivitet_id = ?",
                 aktivitetData.getFraDato(),
                 aktivitetData.getTilDato(),
@@ -124,7 +126,8 @@ public class AktivitetDAO {
                 aktivitetData.getAvsluttetDato(),
                 aktivitetData.getAvsluttetKommentar(),
                 aktivitetData.getLenke(),
-                aktivitetData.getAktorId()
+                aktivitetData.isAvtalt(),
+                aktivitetData.getId()
         );
 
         //TODO maybe not return it
@@ -160,8 +163,8 @@ public class AktivitetDAO {
         val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status, avsluttet_dato," +
-                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -174,7 +177,8 @@ public class AktivitetDAO {
                 aktivitet.getAvsluttetKommentar(),
                 opprettetDato,
                 getName(aktivitet.getLagtInnAv()),
-                aktivitet.getLenke()
+                aktivitet.getLenke(),
+                aktivitet.isAvtalt()
         );
         aktivitet.setId(aktivitetId);
         aktivitet.setOpprettetDato(opprettetDato);

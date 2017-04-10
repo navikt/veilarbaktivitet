@@ -67,6 +67,15 @@ public class RestServiceTest extends IntegrasjonsTest {
     }
 
 
+    @Test
+    public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
+        gitt_at_jeg_har_laget_en_aktivtet();
+        gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
+        nar_jeg_lagrer_aktivteten();
+        nar_jeg_oppdaterer_aktiviten();
+        da_skal_kun_fristen_vare_oppdatert();
+    }
+
 
     @Inject
     private RestService aktivitetController;
@@ -101,9 +110,25 @@ public class RestServiceTest extends IntegrasjonsTest {
     private void gitt_at_jeg_har_laget_en_aktivtet() {
         aktivitet = nyAktivitet();
     }
-
+    private void gitt_at_jeg_har_satt_aktiviteten_til_avtalt() {
+        aktivitet.setAvtalt(true);
+    }
     private void nar_jeg_lagrer_aktivteten() {
-        aktivitetController.opprettNyAktivitet(aktivitet);
+        aktivitet = aktivitetController.opprettNyAktivitet(aktivitet);
+    }
+
+    private AktivitetDTO orignalAktivitet;
+    private void nar_jeg_oppdaterer_aktiviten() {
+        orignalAktivitet = nyAktivitet()
+                .setAvtalt(true)
+                .setOpprettetDato(aktivitet.getOpprettetDato())
+                .setFraDato(aktivitet.getFraDato())
+                .setId(aktivitet.getId());
+
+        aktivitet = aktivitetController.oppdaterAktiviet(
+                aktivitet.setBeskrivelse("noe tull")
+                        .setTilDato(new Date())
+        );
     }
 
     private void nar_jeg_sletter_en_aktivitet_fra_min_aktivitetsplan() {
@@ -164,6 +189,10 @@ public class RestServiceTest extends IntegrasjonsTest {
     private void da_skal_jeg_aktiviten_vare_endret() {
         assertThat(this.aktivitet.getLenke(), equalTo(nyLenke));
         assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
+    }
+
+    private void da_skal_kun_fristen_vare_oppdatert() {
+        assertThat(aktivitet, equalTo(orignalAktivitet.setTilDato(aktivitet.tilDato)));
     }
 
     private AktivitetDTO nyAktivitet() {

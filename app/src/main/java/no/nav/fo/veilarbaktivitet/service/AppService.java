@@ -47,8 +47,12 @@ public class AppService {
         return aktivitetDAO.oppdaterAktivitet(aktivitetData);
     }
 
+    public AktivitetData hentAktivitet(long id){
+        return aktivitetDAO.hentAktivitet(id);
+    }
+
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
-        val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        val gammelAktivitet = hentAktivitet(aktivitet.getId());
 
         if (statusSkalIkkeKunneEndres(gammelAktivitet)) {
             throw new IllegalArgumentException(
