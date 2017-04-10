@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
 import org.apache.commons.collections15.BidiMap;
@@ -12,7 +13,8 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.wsStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
@@ -49,7 +51,12 @@ class SoapServiceMapper {
 
 
     static AktivitetData mapTilAktivitetData(Aktivitet aktivitet) {
+
         return new AktivitetData()
+                .setId(Optional.ofNullable(aktivitet.getAktivitetId())
+                        .filter((id) -> !id.isEmpty())
+                        .map(Long::parseLong)
+                        .orElse(null))
                 .setTittel(aktivitet.getTittel())
                 .setFraDato(getDate(aktivitet.getFom()))
                 .setTilDato(getDate(aktivitet.getTom()))
@@ -150,6 +157,11 @@ class SoapServiceMapper {
 
     static EndreAktivitetStatusResponse mapTilEndreAktivitetStatusResponse(Aktivitet aktivitet){
         val res = new EndreAktivitetStatusResponse();
+        res.setAktivitet(aktivitet);
+        return res;
+    }
+    static EndreAktivitetResponse mapTilEndreAktivitetResponse(Aktivitet aktivitet){
+        val res = new EndreAktivitetResponse();
         res.setAktivitet(aktivitet);
         return res;
     }

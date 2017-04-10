@@ -3,11 +3,9 @@ package no.nav.fo.veilarbaktivitet.rest;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.service.AppService;
-import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -48,7 +46,11 @@ public class RestService implements AktivitetController {
 
     @Override
     public AktivitetDTO oppdaterAktiviet(AktivitetDTO aktivitet) {
-        throw new RuntimeException();
+        return Optional.of(aktivitet)
+                .map(RestMapper::mapTilAktivitetData)
+                .map((aktivitetData) -> appService.oppdaterAktivitet(aktivitetData))
+                .map(RestMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
@@ -57,11 +59,12 @@ public class RestService implements AktivitetController {
     }
 
     @Override
-    public AktivitetDTO oppdaterStatus(String aktivitetId, String status) {
-        val aktivitet = appService.oppdaterStatus(Long.parseLong(aktivitetId),
-                EnumUtils.valueOf(AktivitetStatus.class, status));
-
-        return RestMapper.mapTilAktivitetDTO(aktivitet);
+    public AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet) {
+        return Optional.of(aktivitet)
+                .map(RestMapper::mapTilAktivitetData)
+                .map((aktivitetData) -> appService.oppdaterStatus(aktivitetData))
+                .map(RestMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override

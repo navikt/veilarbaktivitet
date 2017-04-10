@@ -52,7 +52,7 @@
         <geronimo-jaspi.version>2.0.0</geronimo-jaspi.version>
 
         <!--Tjenester-->
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.11</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.12-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.2</dial-nav-tjeneste-aktoer_v2.version>
 
         <!--Testing-->

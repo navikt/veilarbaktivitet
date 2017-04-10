@@ -39,8 +39,8 @@ public interface AktivitetController {
     void slettAktivitet(@PathParam("id") String id);
 
     @PUT
-    @Path("/{id}/status/{status}")
-    AktivitetDTO oppdaterStatus(@PathParam("id") String aktivitetId, @PathParam("status") String status);
+    @Path("/{id}/status")
+    AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet);
 
     @GET
     @Path("/{id}/endringslogg")

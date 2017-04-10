@@ -13,7 +13,6 @@ import javax.jws.WebService;
 import java.util.Optional;
 
 import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitet;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitetData;
 
@@ -70,13 +69,23 @@ public class SoapService implements BehandleAktivitetsplanV1 {
 
     @Override
     public EndreAktivitetStatusResponse endreAktivitetStatus(EndreAktivitetStatusRequest endreAktivitetStatusRequest) {
-        return of(endreAktivitetStatusRequest)
-                .map((req) -> appService.oppdaterStatus(
-                        Long.parseLong(req.getAktivitetId()),
-                        aktivitetStatus(req.getStatus()))
-                )
+        return Optional.of(endreAktivitetStatusRequest)
+                .map(EndreAktivitetStatusRequest::getAktivitet)
+                .map(SoapServiceMapper::mapTilAktivitetData)
+                .map(appService::oppdaterStatus)
                 .map((aktivtet) -> mapTilAktivitet("", aktivtet)) //TODO: fnr don't know it here
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public EndreAktivitetResponse endreAktivitet(EndreAktivitetRequest endreAktivitetRequest) {
+        return Optional.of(endreAktivitetRequest)
+                .map(EndreAktivitetRequest::getAktivitet)
+                .map(SoapServiceMapper::mapTilAktivitetData)
+                .map(appService::oppdaterAktivitet)
+                .map(aktivtet -> mapTilAktivitet("", aktivtet))
+                .map(SoapServiceMapper::mapTilEndreAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }
 

@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
@@ -67,16 +68,17 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void endre_aktivitet_status() throws Exception {
         opprett_aktivitet();
 
-        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val aktivitet = aktiviter().get(0);
+        aktivitet.setStatus(AktivitetStatus.GJENNOMFORT);
+
         val endreReq = new EndreAktivitetStatusRequest();
-        endreReq.setAktivitetId(aktivitetId);
-        endreReq.setStatus(Status.GJENNOMFOERT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("123", aktivitet));
 
         val res1 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res1.getAktivitet().getStatus(), equalTo(Status.GJENNOMFOERT));
 
-
-        endreReq.setStatus(Status.AVBRUTT);
+        aktivitet.setStatus(AktivitetStatus.AVBRUTT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
         val res2 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
     }
@@ -85,16 +87,35 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void hent_endringslogg() throws Exception {
         opprett_aktivitet();
 
-        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val aktivitet = aktiviter().get(0);
+        aktivitet.setStatus(AktivitetStatus.GJENNOMFORT);
+
         val endreReq = new EndreAktivitetStatusRequest();
-        endreReq.setAktivitetId(aktivitetId);
-        endreReq.setStatus(Status.GJENNOMFOERT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
 
         soapService.endreAktivitetStatus(endreReq);
 
         val req = new HentEndringsLoggForAktivitetRequest();
-        req.setAktivitetId(aktivitetId);
+        req.setAktivitetId(Long.toString(aktivitet.getId()));
         assertThat(soapService.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
+    }
+
+    @Test
+    public void oppdater_aktivitet() throws Exception {
+        opprett_aktivitet();
+        val aktivitet = aktiviter().get(0);
+
+        val nyBeskrivelse = "batman > superman";
+        val nyLenke = "www.everythingIsAwesome.com";
+        aktivitet.setBeskrivelse(nyBeskrivelse);
+        aktivitet.setLenke(nyLenke);
+
+        val endreReq = new EndreAktivitetRequest();
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
+        val resp = soapService.endreAktivitet(endreReq);
+
+        assertThat(resp.getAktivitet().getBeskrivelse(), equalTo(nyBeskrivelse));
+        assertThat(resp.getAktivitet().getLenke(), equalTo(nyLenke));
     }
 
     @Inject

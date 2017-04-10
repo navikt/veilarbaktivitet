@@ -59,6 +59,15 @@ public class RestServiceTest extends IntegrasjonsTest {
         da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten();
     }
 
+    @Test
+    public void oppdater_aktivtet() {
+        gitt_at_jeg_har_aktiviter();
+        nar_jeg_oppdaterer_en_av_aktiviten();
+        da_skal_jeg_aktiviten_vare_endret();
+    }
+
+
+
     @Inject
     private RestService aktivitetController;
 
@@ -106,13 +115,27 @@ public class RestServiceTest extends IntegrasjonsTest {
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
-        this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.getId(), nyAktivitetStatus.name());
+        this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.setStatus(nyAktivitetStatus));
     }
 
     private List<EndringsloggDTO> endringer;
 
     private void nar_jeg_henter_endrings_logg_på_denne_aktiviten() {
         endringer = aktivitetController.hentEndringsLoggForAktivitetId(aktivitet.getId());
+    }
+
+    private String nyLenke;
+    private String nyAvsluttetKommentar;
+
+    private void nar_jeg_oppdaterer_en_av_aktiviten(){
+        val aktivitet = this.aktiviter.get(0);
+
+        nyLenke = "itsOver9000.com";
+        nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
+        aktivitet.setLenke(nyLenke);
+        aktivitet.setAvsluttetKommentar(nyAvsluttetKommentar);
+
+        this.aktivitet = aktivitetController.oppdaterAktiviet(RestMapper.mapTilAktivitetDTO(aktivitet));
     }
 
 
@@ -138,6 +161,10 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(endringer, hasSize(1));
     }
 
+    private void da_skal_jeg_aktiviten_vare_endret() {
+        assertThat(this.aktivitet.getLenke(), equalTo(nyLenke));
+        assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
+    }
 
     private AktivitetDTO nyAktivitet() {
         return new AktivitetDTO()

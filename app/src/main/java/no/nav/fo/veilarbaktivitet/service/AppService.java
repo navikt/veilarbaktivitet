@@ -43,20 +43,27 @@ public class AppService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public AktivitetData oppdaterStatus(long aktivitetId, AktivitetStatus status) {
-        val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitetId);
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData){
+        return aktivitetDAO.oppdaterAktivitet(aktivitetData);
+    }
+
+    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
+        val gammelAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
 
         if (statusSkalIkkeKunneEndres(gammelAktivitet)) {
-            throw new IllegalArgumentException(String.format("Kan ikke endre status til [%s] for aktivitet [%s]", status, aktivitetId));
+            throw new IllegalArgumentException(
+                    String.format("Kan ikke endre status til [%s] for aktivitet [%s]",
+                            aktivitet.getStatus(), aktivitet.getId())
+            );
         } else {
-            aktivitetDAO.endreAktivitetStatus(aktivitetId, status);
+            aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), aktivitet.getStatus());
             val endretBeskrivelse = String.format("livslopsendring, {\"fraStatus\": \"%s\", \"tilStatus\": \"%s\"}",
                     gammelAktivitet.getStatus().name(),
-                    status.name());
-            endringsLoggDAO.opprettEndringsLogg(aktivitetId, gammelAktivitet.getAktorId(), endretBeskrivelse);
+                    aktivitet.getStatus());
+            endringsLoggDAO.opprettEndringsLogg(aktivitet.getId(), gammelAktivitet.getAktorId(), endretBeskrivelse);
         }
 
-        return aktivitetDAO.hentAktivitet(aktivitetId);
+        return aktivitetDAO.hentAktivitet(aktivitet.getId());
 
     }
 
