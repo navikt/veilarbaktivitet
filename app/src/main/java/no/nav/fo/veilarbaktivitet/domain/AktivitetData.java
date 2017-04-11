@@ -15,7 +15,6 @@ public class AktivitetData {
     AktivitetTypeData aktivitetType;
     String beskrivelse;
     AktivitetStatus status;
-    Date avsluttetDato;
     String avsluttetKommentar;
     InnsenderData lagtInnAv;
     Date fraDato;

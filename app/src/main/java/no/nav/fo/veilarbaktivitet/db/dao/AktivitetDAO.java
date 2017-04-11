@@ -52,7 +52,6 @@ public class AktivitetDAO {
                 .setTittel(rs.getString("tittel"))
                 .setBeskrivelse(rs.getString("beskrivelse"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
-                .setAvsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
@@ -117,13 +116,12 @@ public class AktivitetDAO {
 
     private AktivitetData updateAktivitet(AktivitetData aktivitetData) {
         database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
-                        "avsluttet_dato = ?, avsluttet_kommentar = ?, lenke = ?, avtalt = ?" +
+                        "avsluttet_kommentar = ?, lenke = ?, avtalt = ?" +
                         "WHERE aktivitet_id = ?",
                 aktivitetData.getFraDato(),
                 aktivitetData.getTilDato(),
                 aktivitetData.getTittel(),
                 aktivitetData.getBeskrivelse(),
-                aktivitetData.getAvsluttetDato(),
                 aktivitetData.getAvsluttetKommentar(),
                 aktivitetData.getLenke(),
                 aktivitetData.isAvtalt(),
@@ -162,9 +160,9 @@ public class AktivitetDAO {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
         val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
-                        "fra_dato, til_dato, tittel, beskrivelse, status, avsluttet_dato," +
+                        "fra_dato, til_dato, tittel, beskrivelse, status," +
                         "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -173,7 +171,6 @@ public class AktivitetDAO {
                 aktivitet.getTittel(),
                 aktivitet.getBeskrivelse(),
                 getName(aktivitet.getStatus()),
-                aktivitet.getAvsluttetDato(),
                 aktivitet.getAvsluttetKommentar(),
                 opprettetDato,
                 getName(aktivitet.getLagtInnAv()),

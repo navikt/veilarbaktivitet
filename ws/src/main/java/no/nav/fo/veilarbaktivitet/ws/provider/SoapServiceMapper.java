@@ -67,7 +67,6 @@ class SoapServiceMapper {
                 .setLenke(aktivitet.getLenke())
                 .setOpprettetDato(getDate(aktivitet.getOpprettet()))
                 .setAvtalt(Optional.ofNullable(aktivitet.getAvtalt()).orElse(false))
-                .setAvsluttetDato(getDate(aktivitet.getAvsluttet()))
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .setStillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
@@ -106,10 +105,10 @@ class SoapServiceMapper {
         wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
         wsAktivitet.setAvtalt(aktivitet.isAvtalt());
-        wsAktivitet.setAvsluttet(xmlCalendar(aktivitet.getAvsluttetDato()));
         wsAktivitet.setAvsluttetKommentar(aktivitet.getAvsluttetKommentar());
 
         val innsender = new Innsender();
+        innsender.setId(aktivitet.getLagtInnAv().name());
         innsender.setType(innsenderMap.getKey(aktivitet.getLagtInnAv()));
         wsAktivitet.setLagtInnAv(innsender);
 
