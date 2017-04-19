@@ -1,5 +1,7 @@
 package no.nav.fo;
 
+import no.nav.dialogarena.config.fasit.FasitUtils;
+import no.nav.dialogarena.config.fasit.ServiceUser;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.modig.testcertificates.TestCertificates;
 import org.junit.BeforeClass;
@@ -35,6 +37,13 @@ public abstract class IntegrasjonsTest {
     @BeforeClass
     public static void tillatInsecureParser() {
         System.setProperty(ALLOW_INSECURE_PARSER, Boolean.TRUE.toString());
+    }
+
+    @BeforeClass
+    public static void serviceUser() throws IOException {
+        ServiceUser serviceUser = FasitUtils.getServiceUser("srvveilarbaktivitet", "veilarbaktivitet", "t6");
+        System.setProperty("no.nav.modig.security.systemuser.username",serviceUser.username);
+        System.setProperty("no.nav.modig.security.systemuser.password",serviceUser.password);
     }
 
     @BeforeClass
