@@ -4,21 +4,21 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.junit.Test;
 
 import javax.inject.Inject;
+import java.util.Date;
 import java.util.List;
 
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -41,7 +41,14 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void opprett_aktiviteter() throws Exception {
         val opprettNyAktivitetRequest = getOpprettNyAktivitetRequest();
         val beskrivelse = "Batman er awesome!!!!!";
+        Innsender innsender = new Innsender();
+        innsender.setId("Batman");
+        innsender.setType(InnsenderType.BRUKER);
+        opprettNyAktivitetRequest.getAktivitet().setLagtInnAv(innsender);
+
         opprettNyAktivitetRequest.getAktivitet().setBeskrivelse(beskrivelse);
+
+
         soapService.opprettNyAktivitet(opprettNyAktivitetRequest);
 
         val aktiviter = aktiviter();
@@ -67,16 +74,17 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void endre_aktivitet_status() throws Exception {
         opprett_aktivitet();
 
-        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val aktivitet = aktiviter().get(0);
+        aktivitet.setStatus(AktivitetStatus.GJENNOMFORT);
+
         val endreReq = new EndreAktivitetStatusRequest();
-        endreReq.setAktivitetId(aktivitetId);
-        endreReq.setStatus(Status.GJENNOMFOERT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("123", aktivitet));
 
         val res1 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res1.getAktivitet().getStatus(), equalTo(Status.GJENNOMFOERT));
 
-
-        endreReq.setStatus(Status.AVBRUTT);
+        aktivitet.setStatus(AktivitetStatus.AVBRUTT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
         val res2 = soapService.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
     }
@@ -85,17 +93,53 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void hent_endringslogg() throws Exception {
         opprett_aktivitet();
 
-        val aktivitetId = Long.toString(aktiviter().get(0).getId());
+        val aktivitet = aktiviter().get(0);
+        aktivitet.setStatus(AktivitetStatus.GJENNOMFORT);
+
         val endreReq = new EndreAktivitetStatusRequest();
-        endreReq.setAktivitetId(aktivitetId);
-        endreReq.setStatus(Status.GJENNOMFOERT);
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
 
         soapService.endreAktivitetStatus(endreReq);
 
         val req = new HentEndringsLoggForAktivitetRequest();
-        req.setAktivitetId(aktivitetId);
+        req.setAktivitetId(Long.toString(aktivitet.getId()));
         assertThat(soapService.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
     }
+
+    @Test
+    public void oppdater_aktivitet() throws Exception {
+        opprett_aktivitet();
+        val aktivitet = aktiviter().get(0);
+
+        val nyBeskrivelse = "batman > superman";
+        val nyLenke = "www.everythingIsAwesome.com";
+        aktivitet.setBeskrivelse(nyBeskrivelse);
+        aktivitet.setLenke(nyLenke);
+
+        val endreReq = new EndreAktivitetRequest();
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("", aktivitet));
+        val resp = soapService.endreAktivitet(endreReq);
+
+        assertThat(resp.getAktivitet().getBeskrivelse(), equalTo(nyBeskrivelse));
+        assertThat(resp.getAktivitet().getLenke(), equalTo(nyLenke));
+    }
+
+    @Test
+    public void skal_ikke_kunne_endre_en_avtalt_aktivitet() throws Exception {
+        opprett_avtalt_aktivitet();
+        val aktivitet = aktiviter().get(0);
+
+        val endreReq = new EndreAktivitetRequest();
+        val endreAktivitet = SoapServiceMapper.mapTilAktivitet("", aktivitet);
+        endreAktivitet.setTom(xmlCalendar(new Date()));
+        endreAktivitet.setBeskrivelse("bleeeeeee123");
+        endreReq.setAktivitet(endreAktivitet);
+
+        val resp = soapService.endreAktivitet(endreReq);
+        val respAktivitet = SoapServiceMapper.mapTilAktivitetData(resp.getAktivitet());
+        assertThat(respAktivitet, equalTo(aktivitet.setAktorId(respAktivitet.getAktorId())));
+    }
+
 
     @Inject
     private SoapService soapService;
@@ -110,6 +154,15 @@ public class SoapServiceTest extends IntegrasjonsTest {
     private void opprett_aktivitet() {
         val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
                 .setAktivitetType(EGENAKTIVITET)
+                .setEgenAktivitetData(new EgenAktivitetData());
+
+        aktivitetDAO.opprettAktivitet(aktivitet);
+    }
+
+    private void opprett_avtalt_aktivitet() {
+        val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
+                .setAktivitetType(EGENAKTIVITET)
+                .setAvtalt(true)
                 .setEgenAktivitetData(new EgenAktivitetData());
 
         aktivitetDAO.opprettAktivitet(aktivitet);

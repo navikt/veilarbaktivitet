@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
@@ -51,10 +52,10 @@ public class AktivitetDAO {
                 .setTittel(rs.getString("tittel"))
                 .setBeskrivelse(rs.getString("beskrivelse"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
-                .setAvsluttetDato(hentDato(rs, "avsluttet_dato"))
                 .setAvsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
+                .setAvtalt(rs.getBoolean("avtalt"))
                 .setLenke(rs.getString("lenke"));
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
@@ -97,13 +98,70 @@ public class AktivitetDAO {
         return lagretAktivitet;
     }
 
+    @Transactional
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
+        //TODO HUGE ISSUE: keep stuff immutable
+
+        val oppdatertAktivtet = updateAktivitet(aktivitet);
+        Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData()).ifPresent(
+                stilling -> updateStillingSoek(oppdatertAktivtet.getId(), stilling)
+        );
+        Optional.ofNullable(aktivitet.getEgenAktivitetData()).ifPresent(
+                egen -> updateEgenAktivitet(oppdatertAktivtet.getId(), egen)
+        );
+
+        //TODO not really the correct value
+        return oppdatertAktivtet;
+    }
+
+    private AktivitetData updateAktivitet(AktivitetData aktivitetData) {
+        database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
+                        "avsluttet_kommentar = ?, lenke = ?, avtalt = ?" +
+                        "WHERE aktivitet_id = ?",
+                aktivitetData.getFraDato(),
+                aktivitetData.getTilDato(),
+                aktivitetData.getTittel(),
+                aktivitetData.getBeskrivelse(),
+                aktivitetData.getAvsluttetKommentar(),
+                aktivitetData.getLenke(),
+                aktivitetData.isAvtalt(),
+                aktivitetData.getId()
+        );
+
+        //TODO maybe not return it
+        return aktivitetData;
+    }
+
+    private void updateStillingSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
+        database.update("UPDATE STILLINGSSOK SET stillingstittel = ?, arbeidsgiver = ?, arbeidssted = ?, " +
+                        "kontaktperson  = ?, etikett = ? " +
+                        "WHERE aktivitet_id = ?",
+                stillingsSoekAktivitet.getStillingsTittel(),
+                stillingsSoekAktivitet.getArbeidsgiver(),
+                stillingsSoekAktivitet.getArbeidssted(),
+                stillingsSoekAktivitet.getKontaktPerson(),
+                getName(stillingsSoekAktivitet.getStillingsoekEtikett()),
+                aktivitetId
+        );
+
+    }
+
+    private void updateEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
+        database.update("UPDATE EGENAKTIVITET SET hensikt = ? " +
+                        "WHERE aktivitet_id = ?",
+                egenAktivitetData.getHensikt(),
+                aktivitetId
+        );
+
+    }
+
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
         val opprettetDato = new Date();
-        database.update("INSERT INTO AKTIVITET(aktivitet_id,aktor_id,type," +
-                        "fra_dato,til_dato,tittel,beskrivelse,status,avsluttet_dato," +
-                        "avsluttet_kommentar,opprettet_dato,lagt_inn_av,lenke) " +
+        database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
+                        "fra_dato, til_dato, tittel, beskrivelse, status," +
+                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 aktivitet.getAktorId(),
@@ -113,11 +171,11 @@ public class AktivitetDAO {
                 aktivitet.getTittel(),
                 aktivitet.getBeskrivelse(),
                 getName(aktivitet.getStatus()),
-                aktivitet.getAvsluttetDato(),
                 aktivitet.getAvsluttetKommentar(),
                 opprettetDato,
                 getName(aktivitet.getLagtInnAv()),
-                aktivitet.getLenke()
+                aktivitet.getLenke(),
+                aktivitet.isAvtalt()
         );
         aktivitet.setId(aktivitetId);
         aktivitet.setOpprettetDato(opprettetDato);

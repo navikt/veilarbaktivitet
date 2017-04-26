@@ -20,6 +20,8 @@ public class AktivitetDTO {
     public Date fraDato;
     public Date tilDato;
     public Date opprettetDato;
+    public String avsluttetKommentar;
+    public boolean avtalt;
 
     public List<AktivitetTagDTO> tagger = new ArrayList<>();
 

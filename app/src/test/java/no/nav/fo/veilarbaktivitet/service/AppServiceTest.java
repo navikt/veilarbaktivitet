@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -35,11 +34,15 @@ public class AppServiceTest {
         val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
                 .setAktivitetType(EGENAKTIVITET)
                 .setEgenAktivitetData(new EgenAktivitetData())
-                .setStatus(AktivitetStatus.AVBRUTT);
+                .setStatus(AktivitetStatus.AVBRUTT)
+                .setId(AKTIVITET_ID);
         when(aktivitetDAO.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitet);
 
         try {
-            appService.oppdaterStatus(AKTIVITET_ID, AktivitetStatus.GJENNOMFORT);
+            val oppdatertAktivitet = nyAktivitet(KJENT_AKTOR_ID)
+                    .setId(AKTIVITET_ID)
+                    .setStatus(AktivitetStatus.GJENNOMFORT);
+            appService.oppdaterStatus(oppdatertAktivitet);
             fail();
         } catch (IllegalArgumentException e) {
             verify(aktivitetDAO, never()).endreAktivitetStatus(AKTIVITET_ID, AktivitetStatus.GJENNOMFORT);

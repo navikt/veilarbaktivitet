@@ -5,7 +5,6 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 import java.util.Date;
 import java.util.Random;
 
-import static java.util.Arrays.asList;
 import static java.util.Calendar.SECOND;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 
@@ -20,7 +19,6 @@ public class AktivitetDataBuilder {
                 .setTittel("tittel")
                 .setBeskrivelse("beskrivelse")
                 .setStatus(AktivitetStatus.values()[0])
-                .setAvsluttetDato(nyDato())
                 .setAvsluttetKommentar("avsluttetKommentar")
                 .setLagtInnAv(InnsenderData.values()[0])
                 .setOpprettetDato(nyDato())

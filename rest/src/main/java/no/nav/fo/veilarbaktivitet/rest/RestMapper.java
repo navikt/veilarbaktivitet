@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.rest;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
@@ -31,6 +30,8 @@ class RestMapper {
                 .setType(typeMap.get(aktivitet.getAktivitetType()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
+                .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
+                .setAvtalt(aktivitet.isAvtalt())
                 .setOpprettetDato(aktivitet.getOpprettetDato());
 
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
@@ -54,12 +55,18 @@ class RestMapper {
 
     static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
         val aktivitetData = new AktivitetData()
+                .setId(Optional.ofNullable(aktivitetDTO.getId())
+                        .filter((id) -> !id.isEmpty())
+                        .map(Long::parseLong)
+                        .orElse(null))
                 .setTittel(aktivitetDTO.getTittel())
                 .setFraDato(aktivitetDTO.getFraDato())
                 .setTilDato(aktivitetDTO.getTilDato())
                 .setBeskrivelse(aktivitetDTO.getBeskrivelse())
                 .setAktivitetType(typeMap.getKey(aktivitetDTO.getType()))
                 .setStatus(aktivitetDTO.getStatus())
+                .setAvsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
+                .setAvtalt(aktivitetDTO.isAvtalt())
                 .setLenke(aktivitetDTO.getLenke());
 
         AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();
