@@ -6,10 +6,7 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Status;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.junit.Test;
 
@@ -44,7 +41,14 @@ public class SoapServiceTest extends IntegrasjonsTest {
     public void opprett_aktiviteter() throws Exception {
         val opprettNyAktivitetRequest = getOpprettNyAktivitetRequest();
         val beskrivelse = "Batman er awesome!!!!!";
+        Innsender innsender = new Innsender();
+        innsender.setId("Batman");
+        innsender.setType(InnsenderType.BRUKER);
+        opprettNyAktivitetRequest.getAktivitet().setLagtInnAv(innsender);
+
         opprettNyAktivitetRequest.getAktivitet().setBeskrivelse(beskrivelse);
+
+
         soapService.opprettNyAktivitet(opprettNyAktivitetRequest);
 
         val aktiviter = aktiviter();
