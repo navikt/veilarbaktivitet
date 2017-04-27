@@ -49,7 +49,6 @@ class SoapServiceMapper {
             }};
 
 
-
     static AktivitetData mapTilAktivitetData(Aktivitet aktivitet) {
 
         return new AktivitetData()
@@ -107,10 +106,14 @@ class SoapServiceMapper {
         wsAktivitet.setAvtalt(aktivitet.isAvtalt());
         wsAktivitet.setAvsluttetKommentar(aktivitet.getAvsluttetKommentar());
 
-        val innsender = new Innsender();
-        innsender.setId(aktivitet.getLagtInnAv().name());
-        innsender.setType(innsenderMap.getKey(aktivitet.getLagtInnAv()));
-        wsAktivitet.setLagtInnAv(innsender);
+
+        Optional.ofNullable(aktivitet.getLagtInnAv()).ifPresent((lagtInnAv) -> {
+            val innsender = new Innsender();
+            innsender.setId(lagtInnAv.name());
+            innsender.setType(innsenderMap.getKey(lagtInnAv));
+            wsAktivitet.setLagtInnAv(innsender);
+        });
+
 
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
@@ -166,12 +169,13 @@ class SoapServiceMapper {
         return endringsLoggMelding;
     }
 
-    static EndreAktivitetStatusResponse mapTilEndreAktivitetStatusResponse(Aktivitet aktivitet){
+    static EndreAktivitetStatusResponse mapTilEndreAktivitetStatusResponse(Aktivitet aktivitet) {
         val res = new EndreAktivitetStatusResponse();
         res.setAktivitet(aktivitet);
         return res;
     }
-    static EndreAktivitetResponse mapTilEndreAktivitetResponse(Aktivitet aktivitet){
+
+    static EndreAktivitetResponse mapTilEndreAktivitetResponse(Aktivitet aktivitet) {
         val res = new EndreAktivitetResponse();
         res.setAktivitet(aktivitet);
         return res;
