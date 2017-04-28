@@ -27,6 +27,17 @@ public interface AktivitetController {
     AktivitetDTO oppdaterAktiviet(AktivitetDTO aktivitet);
 
     @GET
+    @Path("/{id}")
+    default AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId) {
+        return hentAktivitetsplan()
+                .aktiviteter
+                .stream()
+                .filter(e -> e.id.equals(aktivitetId))
+                .findAny()
+                .get();
+    }
+
+    @GET
     @Path("/etiketter")
     default List<EtikettType> hentEtiketter(){
         return Arrays.stream(Etikett.values())

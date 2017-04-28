@@ -61,6 +61,13 @@ public class RestService implements AktivitetController {
     }
 
     @Override
+    public AktivitetDTO hentAktivitet(String aktivitetId) {
+        return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
+                .map(RestMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
     public void slettAktivitet(String aktivitetId) {
         appService.slettAktivitet(Long.parseLong(aktivitetId));
     }
