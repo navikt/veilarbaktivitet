@@ -60,7 +60,11 @@ public class AppService {
                             aktivitet.getStatus(), aktivitet.getId())
             );
         } else {
-            aktivitetDAO.endreAktivitetStatus(aktivitet.getId(), aktivitet.getStatus());
+            aktivitetDAO.endreAktivitetStatus(
+                    aktivitet.getId(),
+                    aktivitet.getStatus(),
+                    aktivitet.getAvsluttetKommentar()
+            );
             val endretBeskrivelse = String.format("livslopsendring, {\"fraStatus\": \"%s\", \"tilStatus\": \"%s\"}",
                     gammelAktivitet.getStatus().name(),
                     aktivitet.getStatus());

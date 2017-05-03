@@ -239,9 +239,10 @@ public class AktivitetDAO {
     }
 
 
-    public int endreAktivitetStatus(long aktivitetId, AktivitetStatus status) {
-        return database.update("UPDATE AKTIVITET SET status = ? WHERE aktivitet_id = ?",
+    public int endreAktivitetStatus(long aktivitetId, AktivitetStatus status, String avsluttetKommentar) {
+        return database.update("UPDATE AKTIVITET SET status = ?, avsluttet_kommentar = ? WHERE aktivitet_id = ?",
                 getName(status),
+                avsluttetKommentar,
                 aktivitetId
         );
     }

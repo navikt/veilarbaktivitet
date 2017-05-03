@@ -45,7 +45,7 @@ public class AppServiceTest {
             appService.oppdaterStatus(oppdatertAktivitet);
             fail();
         } catch (IllegalArgumentException e) {
-            verify(aktivitetDAO, never()).endreAktivitetStatus(AKTIVITET_ID, AktivitetStatus.GJENNOMFORT);
+            verify(aktivitetDAO, never()).endreAktivitetStatus(AKTIVITET_ID, AktivitetStatus.GJENNOMFORT, "fordi");
             assertThat(e.getMessage(), containsString("Kan ikke"));
         }
     }
