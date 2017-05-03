@@ -7,6 +7,7 @@ import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
 import java.util.Optional;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
@@ -23,6 +24,7 @@ class RestMapper {
     static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
         val aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
+                .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())
                 .setTilDato(aktivitet.getTilDato())
                 .setFraDato(aktivitet.getFraDato())
@@ -34,7 +36,7 @@ class RestMapper {
                 .setAvtalt(aktivitet.isAvtalt())
                 .setOpprettetDato(aktivitet.getOpprettetDato());
 
-        Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
+        ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
                         aktivitetDTO
                                 .setEtikett(getName(stillingsoekAktivitetData.getStillingsoekEtikett()))
@@ -43,7 +45,7 @@ class RestMapper {
                                 .setArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
                                 .setStillingsTittel(stillingsoekAktivitetData.getStillingsTittel())
                 );
-        Optional.ofNullable(aktivitet.getEgenAktivitetData())
+        ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
                         aktivitetDTO
                                 .setHensikt(egenAktivitetData.getHensikt())
@@ -55,10 +57,11 @@ class RestMapper {
 
     static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
         val aktivitetData = new AktivitetData()
-                .setId(Optional.ofNullable(aktivitetDTO.getId())
+                .setId(ofNullable(aktivitetDTO.getId())
                         .filter((id) -> !id.isEmpty())
                         .map(Long::parseLong)
                         .orElse(null))
+                .setVersjon(ofNullable(aktivitetDTO.versjon).map(Long::parseLong).orElse(0L))
                 .setTittel(aktivitetDTO.getTittel())
                 .setFraDato(aktivitetDTO.getFraDato())
                 .setTilDato(aktivitetDTO.getTilDato())

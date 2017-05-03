@@ -10,6 +10,7 @@ import java.util.Date;
 public class AktivitetData {
 
     Long id;
+    long versjon;
     String aktorId;
     String tittel;
     AktivitetTypeData aktivitetType;

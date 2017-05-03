@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.db;
 
 import lombok.val;
+import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
@@ -15,6 +16,7 @@ import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
@@ -52,6 +54,20 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
         assertThat(antallSlettet, equalTo(1));
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
+    }
+
+    @Test
+    public void oppdaterAktivitet_kanOppdatereAktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+        aktivitetDAO.oppdaterAktivitet(aktivitet.setBeskrivelse("ny beskrivelse"));
+        assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getVersjon(), not(aktivitet.getVersjon()));
+    }
+
+    @Test(expected = VersjonsKonflikt.class )
+    public void oppdaterAktivitet_feilVersjon_feiler() {
+        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
+        aktivitetDAO.oppdaterAktivitet(aktivitet); // versjon oppdateres
+        aktivitetDAO.oppdaterAktivitet(aktivitet);
     }
 
     @Test
