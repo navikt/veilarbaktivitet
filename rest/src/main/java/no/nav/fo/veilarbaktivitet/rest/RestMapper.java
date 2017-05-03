@@ -23,6 +23,7 @@ class RestMapper {
     static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
         val aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
+                .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())
                 .setTilDato(aktivitet.getTilDato())
                 .setFraDato(aktivitet.getFraDato())
