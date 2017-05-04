@@ -13,6 +13,11 @@
     <artifactId>veilarbaktivitet-app</artifactId>
 
     <dependencies>
+
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav</groupId>
             <artifactId>metrics</artifactId>
@@ -23,6 +28,10 @@
         </dependency>
         <dependency>
             <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
 
@@ -55,14 +64,6 @@
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-web</artifactId>
         </dependency>
 
         <!-- LOGGING -->

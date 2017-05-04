@@ -73,7 +73,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
         nar_jeg_lagrer_aktivteten();
         nar_jeg_oppdaterer_aktiviten();
-        da_skal_kun_fristen_vare_oppdatert();
+        da_skal_kun_fristen_og_versjonen_vare_oppdatert();
     }
 
 
@@ -191,8 +191,11 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
     }
 
-    private void da_skal_kun_fristen_vare_oppdatert() {
-        assertThat(aktivitet, equalTo(orignalAktivitet.setTilDato(aktivitet.tilDato)));
+    private void da_skal_kun_fristen_og_versjonen_vare_oppdatert() {
+        assertThat(aktivitet, equalTo(orignalAktivitet
+                .setTilDato(aktivitet.tilDato)
+                .setVersjon(aktivitet.versjon)
+        ));
     }
 
     private AktivitetDTO nyAktivitet() {

@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
+import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
@@ -45,6 +46,7 @@ public class AktivitetDAO {
         long aktivitetId = rs.getLong("aktivitet_id");
         val aktivitet = new AktivitetData()
                 .setId(aktivitetId)
+                .setVersjon(rs.getLong("versjon"))
                 .setAktorId(rs.getString("aktor_id"))
                 .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
                 .setFraDato(hentDato(rs, "fra_dato"))
@@ -115,9 +117,11 @@ public class AktivitetDAO {
     }
 
     private AktivitetData updateAktivitet(AktivitetData aktivitetData) {
-        database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
-                        "avsluttet_kommentar = ?, lenke = ?, avtalt = ?" +
-                        "WHERE aktivitet_id = ?",
+        long versjon = aktivitetData.getVersjon();
+        int antallRaderOppdatert = database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
+                        "avsluttet_kommentar = ?, lenke = ?, avtalt = ?, versjon=?" +
+                        "WHERE aktivitet_id = ?" +
+                        "AND versjon = ?",
                 aktivitetData.getFraDato(),
                 aktivitetData.getTilDato(),
                 aktivitetData.getTittel(),
@@ -125,8 +129,13 @@ public class AktivitetDAO {
                 aktivitetData.getAvsluttetKommentar(),
                 aktivitetData.getLenke(),
                 aktivitetData.isAvtalt(),
-                aktivitetData.getId()
+                versjon + 1,
+                aktivitetData.getId(),
+                versjon
         );
+        if (antallRaderOppdatert != 1) {
+            throw new VersjonsKonflikt();
+        }
 
         //TODO maybe not return it
         return aktivitetData;

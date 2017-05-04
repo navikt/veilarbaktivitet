@@ -12,6 +12,8 @@ import java.util.List;
 public class AktivitetDTO {
 
     public String id;
+    public String versjon;
+
     public String tittel;
     public String beskrivelse;
     public String lenke;
