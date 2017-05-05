@@ -88,7 +88,8 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                     if(orignalAktivitet.isAvtalt()){
                         return orignalAktivitet;
                     }
-                    return appService.oppdaterAktivitet(aktivitet);
+                    appService.oppdaterAktivitet(aktivitet);
+                    return appService.hentAktivitet(aktivitet.getId());
                 })
                 .map(aktivtet -> mapTilAktivitet("", aktivtet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetResponse)
