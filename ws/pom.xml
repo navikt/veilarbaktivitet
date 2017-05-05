@@ -35,7 +35,7 @@
         <!--Nav felles-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
-            <artifactId>common-cxf</artifactId>
+            <artifactId>api-app</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.modig</groupId>
@@ -64,10 +64,6 @@
 
 
         <!--Spring-->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
-        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -107,14 +103,6 @@
         <dependency>
             <groupId>net.sourceforge.collections</groupId>
             <artifactId>collections-generic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
