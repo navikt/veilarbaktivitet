@@ -45,7 +45,7 @@ class SoapServiceMapper {
                 put(Etikett.AVSLAG, AVSLAG);
                 put(Etikett.INNKALDT_TIL_INTERVJU, INNKALT_TIL_INTERVJU);
                 put(Etikett.JOBBTILBUD, JOBBTILBUD);
-                put(Etikett.SOEKNAD_SENDT, SØKNAD_SENDT);
+                put(Etikett.SOEKNAD_SENDT, SOKNAD_SENDT);
             }};
 
 

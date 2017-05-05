@@ -21,6 +21,15 @@ class RestMapper {
             }};
 
 
+    private static final BidiMap<StillingsoekEtikettData, EtikettTypeDTO> etikettMap =
+            new DualHashBidiMap<StillingsoekEtikettData, EtikettTypeDTO>() {{
+                put(StillingsoekEtikettData.AVSLAG, EtikettTypeDTO.AVSLAG);
+                put(StillingsoekEtikettData.INNKALT_TIL_INTERVJU, EtikettTypeDTO.INNKALT_TIL_INTERVJU);
+                put(StillingsoekEtikettData.JOBBTILBUD, EtikettTypeDTO.JOBBTILBUD);
+                put(StillingsoekEtikettData.SOKNAD_SENDT, EtikettTypeDTO.SOKNAD_SENDT);
+            }};
+
+
     static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
         val aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
@@ -39,7 +48,7 @@ class RestMapper {
         ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
                         aktivitetDTO
-                                .setEtikett(getName(stillingsoekAktivitetData.getStillingsoekEtikett()))
+                                .setEtikett(etikettMap.get(stillingsoekAktivitetData.getStillingsoekEtikett()))
                                 .setKontaktperson(stillingsoekAktivitetData.getKontaktPerson())
                                 .setArbeidssted(stillingsoekAktivitetData.getArbeidssted())
                                 .setArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
@@ -79,7 +88,7 @@ class RestMapper {
             );
         } else if (aktivitetType == AktivitetTypeData.JOBBSOEKING) {
             aktivitetData.setStillingsSoekAktivitetData(new StillingsoekAktivitetData()
-                    .setStillingsoekEtikett(valueOf(StillingsoekEtikettData.class, aktivitetDTO.getEtikett()))
+                    .setStillingsoekEtikett(etikettMap.getKey(aktivitetDTO.getEtikett()))
                     .setKontaktPerson(aktivitetDTO.getKontaktperson())
                     .setArbeidsgiver(aktivitetDTO.getArbeidsgiver())
                     .setArbeidssted(aktivitetDTO.getArbeidssted())
