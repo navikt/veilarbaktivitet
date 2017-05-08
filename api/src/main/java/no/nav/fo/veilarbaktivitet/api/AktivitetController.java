@@ -3,7 +3,7 @@ package no.nav.fo.veilarbaktivitet.api;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
-import no.nav.fo.veilarbaktivitet.domain.EtikettType;
+import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
 import javax.ws.rs.*;
@@ -39,9 +39,9 @@ public interface AktivitetController {
 
     @GET
     @Path("/etiketter")
-    default List<EtikettType> hentEtiketter(){
+    default List<EtikettTypeDTO> hentEtiketter(){
         return Arrays.stream(Etikett.values())
-                .map(EtikettType::fraEtikett)
+                .map(EtikettTypeDTO::getDtoType)
                 .collect(Collectors.toList());
     }
 

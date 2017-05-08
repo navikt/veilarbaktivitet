@@ -159,6 +159,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
         aktivitet.setLenke(nyLenke);
         aktivitet.setAvsluttetKommentar(nyAvsluttetKommentar);
+        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.INNKALT_TIL_INTERVJU);
 
         this.aktivitet = aktivitetController.oppdaterAktiviet(RestMapper.mapTilAktivitetDTO(aktivitet));
     }
@@ -189,6 +190,7 @@ public class RestServiceTest extends IntegrasjonsTest {
     private void da_skal_jeg_aktiviten_vare_endret() {
         assertThat(this.aktivitet.getLenke(), equalTo(nyLenke));
         assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
+        assertThat(this.aktivitet.getEtikett(), equalTo(EtikettTypeDTO.INNKALT_TIL_INTERVJU));
     }
 
     private void da_skal_kun_fristen_og_versjonen_vare_oppdatert() {

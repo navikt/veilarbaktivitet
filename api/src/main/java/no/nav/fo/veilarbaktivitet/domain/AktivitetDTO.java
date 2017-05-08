@@ -3,9 +3,7 @@ package no.nav.fo.veilarbaktivitet.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Data
 @Accessors(chain = true)
@@ -25,10 +23,8 @@ public class AktivitetDTO {
     public String avsluttetKommentar;
     public boolean avtalt;
 
-    public List<AktivitetTagDTO> tagger = new ArrayList<>();
-
     // stillingaktivitet
-    public String etikett;
+    public EtikettTypeDTO etikett;
     public String kontaktperson;
     public String arbeidsgiver;
     public String arbeidssted;
