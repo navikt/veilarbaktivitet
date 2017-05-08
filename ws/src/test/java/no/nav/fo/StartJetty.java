@@ -12,10 +12,6 @@ public class StartJetty {
     private static final int SSL_PORT = 8482;
 
     public static void main(String[] args) throws Exception {
-        /**
-         * Legg på følgende for å teste mot reell database : .addDatasourceByPropertyFile("/db.properties")
-         */
-
         Jetty jetty = DevelopmentSecurity.setupSamlLogin(usingWar()
                 .at("/veilarbaktivitet-ws")
                 .loadProperties("/test.properties")
