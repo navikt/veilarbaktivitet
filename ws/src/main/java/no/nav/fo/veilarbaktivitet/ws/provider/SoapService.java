@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
+import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbaktivitet.service.AppService;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
@@ -9,15 +10,14 @@ import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 import java.util.Optional;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitet;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitetData;
 
-@WebService
 @Service
+@SoapTjeneste("/Aktivitet")
 public class SoapService implements BehandleAktivitetsplanV1 {
 
     @Inject
