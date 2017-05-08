@@ -52,6 +52,7 @@ public class RestService implements AktivitetController {
                     val orignalAktivitet = appService.hentAktivitet(Long.parseLong(aktivitet.getId()));
                     if (orignalAktivitet.isAvtalt()) {
                         orignalAktivitet.setTilDato(aktivitet.getTilDato());
+                        orignalAktivitet.setStillingsSoekAktivitetData(aktivitetData.getStillingsSoekAktivitetData());
                         return appService.oppdaterAktivitet(orignalAktivitet);
                     }
                     return appService.oppdaterAktivitet(aktivitetData);
