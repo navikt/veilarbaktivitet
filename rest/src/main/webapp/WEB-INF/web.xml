@@ -8,6 +8,9 @@
         <param-name>springContekstKlasse</param-name>
         <param-value>no.nav.fo.veilarbaktivitet.ApplicationContext</param-value>
     </context-param>
+    <listener>
+        <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
+    </listener>
 
     <security-constraint>
         <web-resource-collection>
