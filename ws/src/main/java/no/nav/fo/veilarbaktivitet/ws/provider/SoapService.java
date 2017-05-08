@@ -10,7 +10,6 @@ import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 import java.util.Optional;
 
 import static java.util.Optional.of;
@@ -89,8 +88,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                     if(orignalAktivitet.isAvtalt()){
                         return orignalAktivitet;
                     }
-                    appService.oppdaterAktivitet(aktivitet);
-                    return appService.hentAktivitet(aktivitet.getId());
+                    return appService.oppdaterAktivitet(aktivitet);
                 })
                 .map(aktivtet -> mapTilAktivitet("", aktivtet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetResponse)
