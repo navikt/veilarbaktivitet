@@ -87,10 +87,11 @@ public class AktivitetDAO {
 
 
     @Transactional
-    public void opprettAktivitet(AktivitetData aktivitet) {
+    public long opprettAktivitet(AktivitetData aktivitet) {
         val aktivitetId = insertAktivitet(aktivitet);
         insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
+        return aktivitetId;
     }
 
     @Transactional
