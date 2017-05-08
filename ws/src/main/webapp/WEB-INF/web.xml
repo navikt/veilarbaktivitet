@@ -12,15 +12,6 @@
         <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
     </listener>
 
-    <servlet>
-        <servlet-name>soapservlet</servlet-name>
-        <servlet-class>no.nav.fo.veilarbaktivitet.ws.provider.ApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>soapservlet</servlet-name>
-        <url-pattern>/ws/*</url-pattern>
-    </servlet-mapping>
-
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>All pages</web-resource-name>
