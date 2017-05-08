@@ -151,10 +151,11 @@ public class RestServiceTest extends IntegrasjonsTest {
 
     private String nyLenke;
     private String nyAvsluttetKommentar;
+    private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten(){
         val aktivitet = this.aktiviter.get(0);
-
+        oldOpprettetDato = aktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
         aktivitet.setLenke(nyLenke);
@@ -191,6 +192,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(this.aktivitet.getLenke(), equalTo(nyLenke));
         assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
         assertThat(this.aktivitet.getEtikett(), equalTo(EtikettTypeDTO.INNKALT_TIL_INTERVJU));
+        assertThat(this.aktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
     }
 
     private void da_skal_kun_fristen_og_versjonen_vare_oppdatert() {

@@ -10,7 +10,6 @@ import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import javax.jws.WebService;
 import java.util.Optional;
 
 import static java.util.Optional.of;
