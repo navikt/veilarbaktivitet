@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 import static java.util.Optional.of;
+import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.wsStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
@@ -55,7 +56,13 @@ class SoapServiceMapper {
                 .setId(Optional.ofNullable(aktivitet.getAktivitetId())
                         .filter((id) -> !id.isEmpty())
                         .map(Long::parseLong)
-                        .orElse(null))
+                        .orElse(null)
+                )
+                .setVersjon(ofNullable(aktivitet.getVersjon())
+                        .filter((versjon) -> !versjon.isEmpty())
+                        .map(Long::parseLong)
+                        .orElse(0L)
+                )
                 .setTittel(aktivitet.getTittel())
                 .setFraDato(getDate(aktivitet.getFom()))
                 .setTilDato(getDate(aktivitet.getTom()))
@@ -95,6 +102,7 @@ class SoapServiceMapper {
         val wsAktivitet = new Aktivitet();
         wsAktivitet.setPersonIdent(fnr);
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
+        wsAktivitet.setVersjon(Long.toString(aktivitet.getVersjon()));
         wsAktivitet.setTittel(aktivitet.getTittel());
         wsAktivitet.setTom(xmlCalendar(aktivitet.getTilDato()));
         wsAktivitet.setFom(xmlCalendar(aktivitet.getFraDato()));
