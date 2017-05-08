@@ -8,15 +8,9 @@
         <param-name>springContekstKlasse</param-name>
         <param-value>no.nav.fo.veilarbaktivitet.ApplicationContext</param-value>
     </context-param>
-
-    <servlet>
-        <servlet-name>soapservlet</servlet-name>
-        <servlet-class>no.nav.fo.veilarbaktivitet.ws.provider.ApiServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>soapservlet</servlet-name>
-        <url-pattern>/ws/*</url-pattern>
-    </servlet-mapping>
+    <listener>
+        <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
+    </listener>
 
     <security-constraint>
         <web-resource-collection>

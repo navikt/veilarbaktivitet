@@ -59,14 +59,14 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     @Test
     public void oppdaterAktivitet_kanOppdatereAktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
-        aktivitetDAO.oppdaterAktivitet(aktivitet.setBeskrivelse("ny beskrivelse"));
+        aktivitetDAO.oppdaterAktivitet(aktivitetDAO.hentAktivitet(aktivitet.getId()).setBeskrivelse("ny beskrivelse"));
         assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getVersjon(), not(aktivitet.getVersjon()));
     }
 
     @Test(expected = VersjonsKonflikt.class )
     public void oppdaterAktivitet_feilVersjon_feiler() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
-        aktivitetDAO.oppdaterAktivitet(aktivitet); // versjon oppdateres
+        aktivitetDAO.oppdaterAktivitet(aktivitetDAO.hentAktivitet(aktivitet.getId())); // versjon oppdateres
         aktivitetDAO.oppdaterAktivitet(aktivitet);
     }
 

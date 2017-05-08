@@ -106,6 +106,7 @@ public class AktivitetDAO {
 
     private void updateAktivitet(AktivitetData aktivitetData) {
         long versjon = aktivitetData.getVersjon();
+        long nesteVersjon = versjon + 1;
         int antallRaderOppdatert = database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
                         "avsluttet_kommentar = ?, lenke = ?, avtalt = ?, versjon=?" +
                         "WHERE aktivitet_id = ?" +
@@ -117,7 +118,7 @@ public class AktivitetDAO {
                 aktivitetData.getAvsluttetKommentar(),
                 aktivitetData.getLenke(),
                 aktivitetData.isAvtalt(),
-                versjon + 1,
+                nesteVersjon,
                 aktivitetData.getId(),
                 versjon
         );
