@@ -54,8 +54,7 @@ public class RestService implements AktivitetController {
                         orignalAktivitet.setTilDato(aktivitet.getTilDato());
                         return appService.oppdaterAktivitet(orignalAktivitet);
                     }
-                    appService.oppdaterAktivitet(aktivitetData);
-                    return appService.hentAktivitet(Long.parseLong(aktivitet.getId()));
+                    return appService.oppdaterAktivitet(aktivitetData);
                 })
                 .map(RestMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);

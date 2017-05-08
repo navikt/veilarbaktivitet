@@ -87,36 +87,24 @@ public class AktivitetDAO {
 
 
     @Transactional
-    public AktivitetData opprettAktivitet(AktivitetData aktivitet) {
-        //TODO HUGE ISSUE: keep stuff immutable
-
-        val lagretAktivitet = insertAktivitet(aktivitet);
-        val lagretStillingSoek = insertStillingsSoek(lagretAktivitet.getId(), aktivitet.getStillingsSoekAktivitetData());
-        val lagretEgenAktivitet = insertEgenAktivitet(lagretAktivitet.getId(), aktivitet.getEgenAktivitetData());
-
-        lagretAktivitet.setStillingsSoekAktivitetData(lagretStillingSoek);
-        lagretAktivitet.setEgenAktivitetData(lagretEgenAktivitet);
-
-        return lagretAktivitet;
+    public void opprettAktivitet(AktivitetData aktivitet) {
+        val aktivitetId = insertAktivitet(aktivitet);
+        insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
+        insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
     }
 
     @Transactional
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
-        //TODO HUGE ISSUE: keep stuff immutable
-
-        val oppdatertAktivtet = updateAktivitet(aktivitet);
+    public void oppdaterAktivitet(AktivitetData aktivitet) {
+        updateAktivitet(aktivitet);
         Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData()).ifPresent(
-                stilling -> updateStillingSoek(oppdatertAktivtet.getId(), stilling)
+                stilling -> updateStillingSoek(aktivitet.getId(), stilling)
         );
         Optional.ofNullable(aktivitet.getEgenAktivitetData()).ifPresent(
-                egen -> updateEgenAktivitet(oppdatertAktivtet.getId(), egen)
+                egen -> updateEgenAktivitet(aktivitet.getId(), egen)
         );
-
-        //TODO not really the correct value
-        return oppdatertAktivtet;
     }
 
-    private AktivitetData updateAktivitet(AktivitetData aktivitetData) {
+    private void updateAktivitet(AktivitetData aktivitetData) {
         long versjon = aktivitetData.getVersjon();
         int antallRaderOppdatert = database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
                         "avsluttet_kommentar = ?, lenke = ?, avtalt = ?, versjon=?" +
@@ -136,9 +124,6 @@ public class AktivitetDAO {
         if (antallRaderOppdatert != 1) {
             throw new VersjonsKonflikt();
         }
-
-        //TODO maybe not return it
-        return aktivitetData;
     }
 
     private void updateStillingSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -165,7 +150,7 @@ public class AktivitetDAO {
     }
 
 
-    private AktivitetData insertAktivitet(AktivitetData aktivitet) {
+    private long insertAktivitet(AktivitetData aktivitet) {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
         val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
@@ -190,12 +175,12 @@ public class AktivitetDAO {
         aktivitet.setOpprettetDato(opprettetDato);
 
         LOG.info("opprettet {}", aktivitet);
-        return aktivitet;
+        return aktivitetId;
     }
 
-    private StillingsoekAktivitetData insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
-        return ofNullable(stillingsSoekAktivitet)
-                .map(stillingsoek -> {
+    private void insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
+        ofNullable(stillingsSoekAktivitet)
+                .ifPresent(stillingsoek -> {
                     database.update("INSERT INTO STILLINGSSOK(aktivitet_id, stillingstittel, arbeidsgiver," +
                                     "arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?)",
                             aktivitetId,
@@ -205,19 +190,17 @@ public class AktivitetDAO {
                             stillingsoek.getKontaktPerson(),
                             getName(stillingsoek.getStillingsoekEtikett())
                     );
-                    return stillingsoek;
-                }).orElse(null);
+                });
     }
 
-    private EgenAktivitetData insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
-        return ofNullable(egenAktivitetData)
-                .map(egen -> {
+    private void insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
+        ofNullable(egenAktivitetData)
+                .ifPresent(egen -> {
                     database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt) VALUES(?,?)",
                             aktivitetId,
                             egen.getHensikt()
                     );
-                    return egen;
-                }).orElse(null);
+                });
     }
 
 

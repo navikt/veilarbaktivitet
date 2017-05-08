@@ -36,7 +36,8 @@ public class AppService {
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
         val aktorId = hentAktoerIdForIdent(ident);
-        return aktivitetDAO.opprettAktivitet(aktivitetData.setAktorId(aktorId));
+        aktivitetDAO.opprettAktivitet(aktivitetData.setAktorId(aktorId));
+        return hentAktivitet(aktivitetData.getId());
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -44,7 +45,8 @@ public class AppService {
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData){
-        return aktivitetDAO.oppdaterAktivitet(aktivitetData);
+        aktivitetDAO.oppdaterAktivitet(aktivitetData);
+        return hentAktivitet(aktivitetData.getId());
     }
 
     public AktivitetData hentAktivitet(long id){
