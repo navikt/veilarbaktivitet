@@ -73,7 +73,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
         nar_jeg_lagrer_aktivteten();
         nar_jeg_oppdaterer_aktiviten();
-        da_skal_kun_fristen_og_versjonen_vare_oppdatert();
+        da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
     }
 
 
@@ -127,6 +127,8 @@ public class RestServiceTest extends IntegrasjonsTest {
 
         aktivitet = aktivitetController.oppdaterAktiviet(
                 aktivitet.setBeskrivelse("noe tull")
+                        .setArbeidsgiver("Justice league")
+                        .setEtikett(EtikettTypeDTO.AVSLAG)
                         .setTilDato(new Date())
         );
     }
@@ -195,10 +197,11 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(this.aktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
     }
 
-    private void da_skal_kun_fristen_og_versjonen_vare_oppdatert() {
+    private void da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert() {
         assertThat(aktivitet, equalTo(orignalAktivitet
                 .setTilDato(aktivitet.tilDato)
                 .setVersjon(aktivitet.versjon)
+                .setEtikett(aktivitet.etikett)
         ));
     }
 

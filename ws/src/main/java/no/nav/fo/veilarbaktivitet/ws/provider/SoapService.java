@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.fo.veilarbaktivitet.service.AppService;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
@@ -86,6 +87,18 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(aktivitet -> {
                     val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
                     if(orignalAktivitet.isAvtalt()){
+                        if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
+                            //TODO: maybe extract
+                            orignalAktivitet.setStillingsSoekAktivitetData(
+                                    orignalAktivitet
+                                            .getStillingsSoekAktivitetData()
+                                            .setStillingsoekEtikett(
+                                                    aktivitet
+                                                            .getStillingsSoekAktivitetData()
+                                                            .getStillingsoekEtikett())
+                            );
+                            return appService.oppdaterAktivitet(orignalAktivitet);
+                        }
                         return orignalAktivitet;
                     }
                     return appService.oppdaterAktivitet(aktivitet);

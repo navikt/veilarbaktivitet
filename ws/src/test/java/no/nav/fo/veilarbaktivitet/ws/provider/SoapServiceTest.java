@@ -3,9 +3,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.junit.Test;
@@ -125,9 +123,11 @@ public class SoapServiceTest extends IntegrasjonsTest {
     }
 
     @Test
-    public void skal_ikke_kunne_endre_en_avtalt_aktivitet() throws Exception {
+    public void skal_kun_endre_diverse_felter_paa_en_avtalt_aktivitet() throws Exception {
         opprett_avtalt_aktivitet();
         val aktivitet = aktiviter().get(0);
+
+        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG);
 
         val endreReq = new EndreAktivitetRequest();
         val endreAktivitet = SoapServiceMapper.mapTilAktivitet("", aktivitet);
@@ -137,7 +137,15 @@ public class SoapServiceTest extends IntegrasjonsTest {
 
         val resp = soapService.endreAktivitet(endreReq);
         val respAktivitet = SoapServiceMapper.mapTilAktivitetData(resp.getAktivitet());
-        assertThat(respAktivitet, equalTo(aktivitet.setAktorId(respAktivitet.getAktorId())));
+        assertThat(respAktivitet, equalTo(aktivitet
+                .setAktorId(respAktivitet.getAktorId())
+                .setVersjon(respAktivitet.getVersjon())
+                .setStillingsSoekAktivitetData(aktivitet
+                        .getStillingsSoekAktivitetData()
+                        .setStillingsoekEtikett(respAktivitet
+                                .getStillingsSoekAktivitetData()
+                                .getStillingsoekEtikett()))
+        ));
     }
 
 
@@ -161,9 +169,9 @@ public class SoapServiceTest extends IntegrasjonsTest {
 
     private void opprett_avtalt_aktivitet() {
         val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
-                .setAktivitetType(EGENAKTIVITET)
+                .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
                 .setAvtalt(true)
-                .setEgenAktivitetData(new EgenAktivitetData());
+                .setStillingsSoekAktivitetData(new StillingsoekAktivitetData());
 
         aktivitetDAO.opprettAktivitet(aktivitet);
     }

@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.rest;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.service.AppService;
@@ -52,7 +53,18 @@ public class RestService implements AktivitetController {
                     val orignalAktivitet = appService.hentAktivitet(Long.parseLong(aktivitet.getId()));
                     if (orignalAktivitet.isAvtalt()) {
                         orignalAktivitet.setTilDato(aktivitet.getTilDato());
-                        orignalAktivitet.setStillingsSoekAktivitetData(aktivitetData.getStillingsSoekAktivitetData());
+                        //TODO: maybe extract
+                        if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
+                            orignalAktivitet.setStillingsSoekAktivitetData(
+                                    orignalAktivitet
+                                            .getStillingsSoekAktivitetData()
+                                            .setStillingsoekEtikett(
+                                                    aktivitetData
+                                                            .getStillingsSoekAktivitetData()
+                                                            .getStillingsoekEtikett())
+                            );
+                        }
+
                         return appService.oppdaterAktivitet(orignalAktivitet);
                     }
                     return appService.oppdaterAktivitet(aktivitetData);
