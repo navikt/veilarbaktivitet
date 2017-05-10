@@ -4,6 +4,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.AreanaAktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
 import javax.ws.rs.*;
@@ -18,6 +19,10 @@ public interface AktivitetController {
     @GET
     AktivitetsplanDTO hentAktivitetsplan();
 
+    @GET
+    @Path("arena")
+    List<AreanaAktivitet> hentArenaAktiviteter();
+
     @POST
     @Path("/ny")
     AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet);
@@ -29,7 +34,7 @@ public interface AktivitetController {
     @GET
     @Path("/{id}")
     default AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId) {
-        return hentAktivitetsplan()
+        return hentAktivitetsplan() //TODO should be a db quiery. so do not implement it
                 .aktiviteter
                 .stream()
                 .filter(e -> e.id.equals(aktivitetId))

@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.AreanaAktivitet;
 import no.nav.fo.veilarbaktivitet.service.AppService;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,11 @@ public class RestService implements AktivitetController {
                 .collect(Collectors.toList());
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);
+    }
+
+    @Override
+    public List<AreanaAktivitet> hentArenaAktiviteter() {
+        return null;
     }
 
     @Override
