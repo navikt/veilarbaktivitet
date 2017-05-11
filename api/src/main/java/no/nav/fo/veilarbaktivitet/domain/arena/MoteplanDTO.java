@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class Moteplan {
+public class MoteplanDTO {
     Date startDato; //startKlokkeslett kan også være i denne
     Date sluttDato;
     String sted;

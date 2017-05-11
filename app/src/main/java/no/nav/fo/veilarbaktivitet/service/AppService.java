@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import org.springframework.stereotype.Component;
 
@@ -32,6 +33,11 @@ public class AppService {
     public List<AktivitetData> hentAktiviteterForIdent(String ident) {
         val aktorId = hentAktoerIdForIdent(ident);
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+    }
+
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(){
+        //fixme
+        return null;
     }
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {

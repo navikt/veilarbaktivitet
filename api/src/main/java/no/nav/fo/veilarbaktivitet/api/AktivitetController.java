@@ -4,7 +4,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
-import no.nav.fo.veilarbaktivitet.domain.arena.AreanaAktivitet;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
 import javax.ws.rs.*;
@@ -21,7 +21,7 @@ public interface AktivitetController {
 
     @GET
     @Path("arena")
-    List<AreanaAktivitet> hentArenaAktiviteter();
+    List<ArenaAktivitetDTO> hentArenaAktiviteter();
 
     @POST
     @Path("/ny")

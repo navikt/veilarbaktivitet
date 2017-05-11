@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitet;
@@ -23,6 +24,34 @@ public class SoapService implements BehandleAktivitetsplanV1 {
 
     @Inject
     private AppService appService;
+
+    @Override
+    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
+        val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
+        val aktivitetsplan = new Aktivitetsplan();
+        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
+
+        appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
+                .stream()
+                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
+                .forEach(aktivitetsplan.getAktivitetListe()::add);
+
+        return wsHentAktiviteterResponse;
+    }
+
+    @Override
+    public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
+        return Optional.of(appService.hentArenaAktiviteter())
+                .map(arenaAktiviterDTO -> {
+                    val res = new HentArenaAktiviteterResponse();
+                    res.getArenaaktiviteter().addAll(
+                            arenaAktiviterDTO.stream()
+                                    .map(SoapServiceMapper::mapTilArenaAktivitet)
+                                    .collect(Collectors.toList()));
+                    return res;
+                })
+                .orElseThrow(RuntimeException::new);
+    }
 
     @Override
     public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
@@ -38,19 +67,6 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
-    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
-        val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
-        val aktivitetsplan = new Aktivitetsplan();
-        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
-
-        appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
-                .stream()
-                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
-                .forEach(aktivitetsplan.getAktivitetListe()::add);
-
-        return wsHentAktiviteterResponse;
-    }
 
     @Override
     public HentEndringsLoggForAktivitetResponse hentEndringsLoggForAktivitet(HentEndringsLoggForAktivitetRequest hentEndringsLoggForAktivitetRequest) {
@@ -86,7 +102,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(aktivitet -> {
                     val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
-                    if(orignalAktivitet.isAvtalt()){
+                    if (orignalAktivitet.isAvtalt()) {
                         if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
                             //TODO: maybe extract
                             orignalAktivitet.setStillingsSoekAktivitetData(
@@ -118,6 +134,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public void ping() {}
+    public void ping() {
+    }
 }
 

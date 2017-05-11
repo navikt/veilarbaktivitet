@@ -9,10 +9,11 @@ import java.util.List;
 
 @Data
 @Accessors(chain = true)
-public class AreanaAktivitet {
+public class ArenaAktivitetDTO {
     //Felles
+    String id;
     AktivitetStatus status; // bruk kodeverdi for å avgjøre denne
-    AreanaAktivitetType aktivitetstype;
+    ArenaAktivitetTypeDTO aktivitetstype;
     String beskrivelse;
     Date fom;
     Date tom;
@@ -28,6 +29,6 @@ public class AreanaAktivitet {
     Date statusSistEndret;
 
     // Gruppeaktivitet
-    List<Moteplan> moeteplanListe;
+    List<MoteplanDTO> moeteplanListe;
 
 }

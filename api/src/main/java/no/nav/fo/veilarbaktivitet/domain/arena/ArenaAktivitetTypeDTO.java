@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.domain.arena;
 
-public enum AreanaAktivitetType {
+public enum ArenaAktivitetTypeDTO {
     TILTAKSAKTIVITET,
     GRUPPEAKTIVITET,
     UTDANNINGSAKTIVITET

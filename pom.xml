@@ -32,7 +32,7 @@
         <java.version>1.8</java.version>
 
         <!--Tjenester-->
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.14-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.15-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.2</dial-nav-tjeneste-aktoer_v2.version>
     </properties>
     <dependencyManagement>
