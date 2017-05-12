@@ -28,14 +28,7 @@ public interface AktivitetController {
 
     @GET
     @Path("/{id}")
-    default AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId) {
-        return hentAktivitetsplan()
-                .aktiviteter
-                .stream()
-                .filter(e -> e.id.equals(aktivitetId))
-                .findAny()
-                .get();
-    }
+    AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
 
     @GET
     @Path("/etiketter")
@@ -44,6 +37,11 @@ public interface AktivitetController {
                 .map(EtikettTypeDTO::getDtoType)
                 .collect(Collectors.toList());
     }
+
+    @PUT
+    @Path("/{id}/etikett")
+    AktivitetDTO oppdaterEtikett(AktivitetDTO aktivitet);
+
 
     @DELETE
     @Path("/{id}")

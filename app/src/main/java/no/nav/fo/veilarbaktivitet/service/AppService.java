@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class AppService {
@@ -44,12 +45,12 @@ public class AppService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData){
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData) {
         aktivitetDAO.oppdaterAktivitet(aktivitetData);
         return hentAktivitet(aktivitetData.getId());
     }
 
-    public AktivitetData hentAktivitet(long id){
+    public AktivitetData hentAktivitet(long id) {
         return aktivitetDAO.hentAktivitet(id);
     }
 
@@ -75,6 +76,17 @@ public class AppService {
 
         return aktivitetDAO.hentAktivitet(aktivitet.getId());
 
+    }
+
+    //Todo must validate that user i think
+    public AktivitetData oppdaterEtikett(AktivitetData aktivitetData) {
+        Optional.of(aktivitetData)
+                .map(AktivitetData::getStillingsSoekAktivitetData)
+                .map((stilling) -> aktivitetDAO.endreAktivitetEtikett(aktivitetData.getId(),
+                        stilling.getStillingsoekEtikett())
+                );
+
+        return aktivitetDAO.hentAktivitet(aktivitetData.getId());
     }
 
     private Boolean statusSkalIkkeKunneEndres(AktivitetData aktivitetData) {

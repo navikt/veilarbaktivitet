@@ -31,6 +31,12 @@ public class RestServiceTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void hent_aktivitet() {
+        gitt_at_jeg_har_aktiviter();
+        da_skal_jeg_kunne_hente_en_aktivitet();
+    }
+
+    @Test
     public void opprett_aktivitet() {
         gitt_at_jeg_har_laget_en_aktivtet();
         nar_jeg_lagrer_aktivteten();
@@ -171,6 +177,11 @@ public class RestServiceTest extends IntegrasjonsTest {
     private void da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan() {
         List<AktivitetDTO> aktiviteter = aktivitetController.hentAktivitetsplan().aktiviteter;
         assertThat(aktiviteter, hasSize(2));
+    }
+
+    private void da_skal_jeg_kunne_hente_en_aktivitet() {
+        assertThat(aktiviter.get(0).getId().toString(),
+                equalTo(aktivitetController.hentAktivitet(aktiviter.get(0).getId().toString()).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
