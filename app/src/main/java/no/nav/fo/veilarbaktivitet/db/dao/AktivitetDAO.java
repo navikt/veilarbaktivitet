@@ -243,8 +243,8 @@ public class AktivitetDAO {
 
     public int endreAktivitetEtikett(long aktivitetId, StillingsoekEtikettData etikett) {
         return database.update("UPDATE STILLINGSSOK SET etikett = ? WHERE aktivitet_id = ?",
-                aktivitetId,
-                getName(etikett)
+                getName(etikett),
+                aktivitetId
         );
     }
 

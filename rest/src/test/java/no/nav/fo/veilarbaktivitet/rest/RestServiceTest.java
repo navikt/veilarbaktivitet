@@ -58,6 +58,13 @@ public class RestServiceTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void oppdater_etikett() {
+        gitt_at_jeg_har_aktiviter();
+        nar_jeg_oppdaterer_etiketten_pa_en_aktivitet();
+        da_skal_min_aktivitet_fatt_ny_etikett();
+    }
+
+    @Test
     public void hent_endrings_logg() {
         gitt_at_jeg_har_aktiviter();
         nar_jeg_flytter_en_aktivitet_til_en_annen_status();
@@ -145,10 +152,15 @@ public class RestServiceTest extends IntegrasjonsTest {
     }
 
     private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
+    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
         this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.setStatus(nyAktivitetStatus));
+    }
+    private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
+        val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
+        this.aktivitet = aktivitetController.oppdaterEtikett(aktivitet.setEtikett(nyAktivitetEtikett));
     }
 
     private List<EndringsloggDTO> endringer;
@@ -197,6 +209,10 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(aktivitetDAO.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
     }
 
+    private void da_skal_min_aktivitet_fatt_ny_etikett() {
+        assertThat(aktivitet.getEtikett(), equalTo(nyAktivitetEtikett));
+    }
+
     private void da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten() {
         assertThat(endringer, hasSize(1));
     }
@@ -212,7 +228,6 @@ public class RestServiceTest extends IntegrasjonsTest {
         assertThat(aktivitet, equalTo(orignalAktivitet
                 .setTilDato(aktivitet.tilDato)
                 .setVersjon(aktivitet.versjon)
-                .setEtikett(aktivitet.etikett)
         ));
     }
 
