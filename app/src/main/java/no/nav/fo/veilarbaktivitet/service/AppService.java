@@ -78,7 +78,6 @@ public class AppService {
 
     }
 
-    //Todo must validate that user i think
     public AktivitetData oppdaterEtikett(AktivitetData aktivitetData) {
         Optional.of(aktivitetData)
                 .map(AktivitetData::getStillingsSoekAktivitetData)

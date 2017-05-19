@@ -104,7 +104,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
     }
 
-    private AktivitetData nyStillingAktivitet(){
+    private AktivitetData nyStillingAktivitet() {
         return AktivitetDataBuilder.nyAktivitet(KJENT_AKTOR_ID)
                 .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
                 .setStillingsSoekAktivitetData(nyttStillingssøk());
@@ -123,14 +123,17 @@ public class RestServiceTest extends IntegrasjonsTest {
     private void gitt_at_jeg_har_laget_en_aktivtet() {
         aktivitet = nyAktivitet();
     }
+
     private void gitt_at_jeg_har_satt_aktiviteten_til_avtalt() {
         aktivitet.setAvtalt(true);
     }
+
     private void nar_jeg_lagrer_aktivteten() {
         aktivitet = aktivitetController.opprettNyAktivitet(aktivitet);
     }
 
     private AktivitetDTO orignalAktivitet;
+
     private void nar_jeg_oppdaterer_aktiviten() {
         orignalAktivitet = nyAktivitet()
                 .setAvtalt(true)
@@ -158,6 +161,7 @@ public class RestServiceTest extends IntegrasjonsTest {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
         this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.setStatus(nyAktivitetStatus));
     }
+
     private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
         this.aktivitet = aktivitetController.oppdaterEtikett(aktivitet.setEtikett(nyAktivitetEtikett));
@@ -173,7 +177,7 @@ public class RestServiceTest extends IntegrasjonsTest {
     private String nyAvsluttetKommentar;
     private Date oldOpprettetDato;
 
-    private void nar_jeg_oppdaterer_en_av_aktiviten(){
+    private void nar_jeg_oppdaterer_en_av_aktiviten() {
         val aktivitet = this.aktiviter.get(0);
         oldOpprettetDato = aktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";

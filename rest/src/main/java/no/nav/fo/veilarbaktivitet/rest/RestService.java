@@ -77,7 +77,7 @@ public class RestService implements AktivitetController {
                 .orElseThrow(RuntimeException::new);
     }
 
-        @Override
+    @Override
     public void slettAktivitet(String aktivitetId) {
         appService.slettAktivitet(Long.parseLong(aktivitetId));
     }

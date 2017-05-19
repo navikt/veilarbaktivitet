@@ -49,7 +49,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(HentAktivitetRequest::getAktivitetId)
                 .map(Long::parseLong)
                 .map(appService::hentAktivitet)
-                .map(aktivitet -> mapTilAktivitet("", aktivitet)) // TODO don't know fnr number
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
                 .map(aktivitet -> {
                     val res = new HentAktivitetResponse();
                     res.setAktivitet(aktivitet);
@@ -93,7 +93,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetStatusRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
-                .map(aktivitet -> mapTilAktivitet("", aktivitet)) //TODO: fnr don't know it here
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
                 .orElseThrow(RuntimeException::new);
     }
@@ -115,9 +115,9 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(aktivitet -> {
-                    val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
-                    if (orignalAktivitet.isAvtalt()) {
-                        return orignalAktivitet;
+                    val originalAktivitet = appService.hentAktivitet(aktivitet.getId());
+                    if (originalAktivitet.isAvtalt()) {
+                        return originalAktivitet;
                     }
                     return appService.oppdaterAktivitet(aktivitet);
                 })
@@ -136,7 +136,6 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public void ping() {
-    }
+    public void ping() {}
 }
 
