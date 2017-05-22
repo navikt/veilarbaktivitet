@@ -82,7 +82,8 @@ public class AktivitetDAO {
 
     private EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
         return new EgenAktivitetData()
-                .setHensikt(rs.getString("hensikt"));
+                .setHensikt(rs.getString("hensikt"))
+                .setOppfolging(rs.getString("oppfolging"));
     }
 
 
@@ -143,9 +144,10 @@ public class AktivitetDAO {
     }
 
     private void updateEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
-        database.update("UPDATE EGENAKTIVITET SET hensikt = ? " +
+        database.update("UPDATE EGENAKTIVITET SET hensikt = ?, oppfolging = ? " +
                         "WHERE aktivitet_id = ?",
                 egenAktivitetData.getHensikt(),
+                egenAktivitetData.getOppfolging(),
                 aktivitetId
         );
 
@@ -198,9 +200,10 @@ public class AktivitetDAO {
     private void insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt) VALUES(?,?)",
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, oppfolging) VALUES(?,?,?)",
                             aktivitetId,
-                            egen.getHensikt()
+                            egen.getHensikt(),
+                            egen.getOppfolging()
                     );
                 });
     }
