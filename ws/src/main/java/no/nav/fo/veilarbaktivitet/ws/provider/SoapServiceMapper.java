@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetEtikettResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
@@ -182,6 +183,13 @@ class SoapServiceMapper {
         res.setAktivitet(aktivitet);
         return res;
     }
+
+    static EndreAktivitetEtikettResponse mapTilEndreAktivitetEtikettResponse(Aktivitet aktivitet) {
+        val res = new EndreAktivitetEtikettResponse();
+        res.setAktivitet(aktivitet);
+        return res;
+    }
+
 
     static EndreAktivitetResponse mapTilEndreAktivitetResponse(Aktivitet aktivitet) {
         val res = new EndreAktivitetResponse();

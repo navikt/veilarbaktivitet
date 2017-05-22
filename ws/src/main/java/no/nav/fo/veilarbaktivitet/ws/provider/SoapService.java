@@ -39,6 +39,25 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     }
 
     @Override
+    public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
+        return null;
+    }
+
+    @Override
+    public HentAktivitetResponse hentAktivitet(HentAktivitetRequest hentAktivitetRequest) {
+        return Optional.of(hentAktivitetRequest)
+                .map(HentAktivitetRequest::getAktivitetId)
+                .map(Long::parseLong)
+                .map(appService::hentAktivitet)
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(aktivitet -> {
+                    val res = new HentAktivitetResponse();
+                    res.setAktivitet(aktivitet);
+                    return res;
+                }).orElseThrow(RuntimeException::new);
+    }
+
+    @Override
     public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
         val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
         val aktivitetsplan = new Aktivitetsplan();
@@ -74,8 +93,19 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetStatusRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
-                .map((aktivtet) -> mapTilAktivitet("", aktivtet)) //TODO: fnr don't know it here
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public EndreAktivitetEtikettResponse endreAktivitetEtikett(EndreAktivitetEtikettRequest endreAktivitetEtikettRequest) {
+        return Optional.of(endreAktivitetEtikettRequest)
+                .map(EndreAktivitetEtikettRequest::getAktivitet)
+                .map(SoapServiceMapper::mapTilAktivitetData)
+                .map(appService::oppdaterEtikett)
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(SoapServiceMapper::mapTilEndreAktivitetEtikettResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -85,21 +115,9 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(aktivitet -> {
-                    val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
-                    if(orignalAktivitet.isAvtalt()){
-                        if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
-                            //TODO: maybe extract
-                            orignalAktivitet.setStillingsSoekAktivitetData(
-                                    orignalAktivitet
-                                            .getStillingsSoekAktivitetData()
-                                            .setStillingsoekEtikett(
-                                                    aktivitet
-                                                            .getStillingsSoekAktivitetData()
-                                                            .getStillingsoekEtikett())
-                            );
-                            return appService.oppdaterAktivitet(orignalAktivitet);
-                        }
-                        return orignalAktivitet;
+                    val originalAktivitet = appService.hentAktivitet(aktivitet.getId());
+                    if (originalAktivitet.isAvtalt()) {
+                        return originalAktivitet;
                     }
                     return appService.oppdaterAktivitet(aktivitet);
                 })
