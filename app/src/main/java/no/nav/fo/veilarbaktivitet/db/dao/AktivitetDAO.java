@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class AktivitetDAO {
     @Inject
     private EndringsLoggDAO endringsLoggDAO;
 
-    public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Timestamp timestamp) {
+    public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date date) {
         return database.query(
                 "SELECT " +
                         "AKTIVITET_ID, " +
@@ -46,9 +45,9 @@ public class AktivitetDAO {
                         "OPPRETTET_DATO, " +
                         "AVTALT " +
                     "FROM AKTIVITET " +
-                    "WHERE OPPRETTET_DATO > ?",
+                    "WHERE OPPRETTET_DATO >= ?",
                 this::mapAktivitetForFeed,
-                timestamp
+                date
                 );
     }
 
@@ -95,10 +94,10 @@ public class AktivitetDAO {
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
                 .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
-                .setFraDato( rs.getTimestamp("fra_dato"))
-                .setTilDato(rs.getTimestamp("til_dato"))
+                .setFraDato( hentDato(rs, "fra_dato"))
+                .setTilDato(hentDato(rs, "til_dato"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
-                .setOpprettetDato(rs.getTimestamp ("opprettet_dato"))
+                .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
         return aktivitet;
     }
@@ -120,9 +119,13 @@ public class AktivitetDAO {
     }
 
 
-    @Transactional
     public long opprettAktivitet(AktivitetData aktivitet) {
-        val aktivitetId = insertAktivitet(aktivitet);
+        return opprettAktivitet(aktivitet, new Date());
+    }
+
+    @Transactional
+    long opprettAktivitet(AktivitetData aktivitet, Date opprettetDate) {
+        val aktivitetId = insertAktivitet(aktivitet, opprettetDate);
         insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
         return aktivitetId;
@@ -185,10 +188,8 @@ public class AktivitetDAO {
 
     }
 
-
-    private long insertAktivitet(AktivitetData aktivitet) {
+    private long insertAktivitet(AktivitetData aktivitet, Date opprettetDato) {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
-        val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
                         "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +

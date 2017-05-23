@@ -6,9 +6,10 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.sql.Timestamp;
-import java.time.*;
+import java.time.ZoneId;
 import java.util.stream.Stream;
+
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.*;
 
 
 @Component
@@ -23,21 +24,12 @@ public class AktivitetFeedProvider implements FeedProvider<AktivitetFeedData>{
 
     @Override
     public Stream<FeedElement<AktivitetFeedData>> fetchData(String sinceId, int i) {
-        ZonedDateTime zoned = ZonedDateTime.parse(sinceId);
-        Instant instant = Instant.from(zoned);
-        LocalDateTime localTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-        Timestamp timestamp = Timestamp.valueOf(localTime);
 
         return aktivitetDAO
-                .hentAktiviteterEtterTidspunkt(timestamp)
+                .hentAktiviteterEtterTidspunkt(dateFromISO8601(sinceId))
                 .stream()
                 .map(a -> new FeedElement<AktivitetFeedData>()
-                        .setId(toZonedDateTime(a.getOpprettetDato()).toString())
+                        .setId(ISO8601FromDate(a.getOpprettetDato(), ZoneId.systemDefault()))
                         .setElement(a));
-    }
-
-    private ZonedDateTime toZonedDateTime(Timestamp endretTimestamp) {
-        LocalDateTime localDateTime = endretTimestamp.toLocalDateTime();
-        return ZonedDateTime.of(localDateTime, ZoneId.systemDefault()).withZoneSameInstant(ZoneOffset.UTC);
     }
 }

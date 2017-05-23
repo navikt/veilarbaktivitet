@@ -5,23 +5,22 @@ import lombok.experimental.Accessors;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 
-import java.sql.Timestamp;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
 public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
 
-    public String aktivitetId;
-    public String aktorId;
+    String aktivitetId;
+    String aktorId;
 
-    public Timestamp fraDato;
-    public Timestamp tilDato;
-    public Timestamp opprettetDato;
+    Date fraDato;
+    Date tilDato;
+    Date opprettetDato;
 
     AktivitetTypeData aktivitetType;
     AktivitetStatus status;
-    public boolean avtalt;
-
+    boolean avtalt;
 
     @Override
     public int compareTo(AktivitetFeedData o) {
