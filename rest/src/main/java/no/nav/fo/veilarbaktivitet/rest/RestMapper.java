@@ -5,11 +5,7 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
-import java.util.Optional;
-
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
-import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 class RestMapper {
 
@@ -58,6 +54,7 @@ class RestMapper {
                 .ifPresent(egenAktivitetData ->
                         aktivitetDTO
                                 .setHensikt(egenAktivitetData.getHensikt())
+                                .setOppfolging(egenAktivitetData.getOppfolging())
                 );
 
 
@@ -85,6 +82,7 @@ class RestMapper {
         if (aktivitetType == AktivitetTypeData.EGENAKTIVITET) {
             aktivitetData.setEgenAktivitetData(new EgenAktivitetData()
                     .setHensikt(aktivitetDTO.getHensikt())
+                    .setOppfolging(aktivitetDTO.getOppfolging())
             );
         } else if (aktivitetType == AktivitetTypeData.JOBBSOEKING) {
             aktivitetData.setStillingsSoekAktivitetData(new StillingsoekAktivitetData()

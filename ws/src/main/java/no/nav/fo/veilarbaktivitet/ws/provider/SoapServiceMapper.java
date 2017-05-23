@@ -2,8 +2,8 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetEtikettResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetEtikettResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
@@ -95,7 +95,8 @@ class SoapServiceMapper {
         return Optional.ofNullable(egenaktivitet)
                 .map(egen ->
                         new EgenAktivitetData()
-                                .setHensikt(egen.getHensikt()))
+                                .setHensikt(egen.getHensikt())
+                                .setOppfolging(egen.getOppfolging()))
                 .orElse(null);
     }
 
@@ -150,6 +151,7 @@ class SoapServiceMapper {
         val egenaktivitet = new Egenaktivitet();
 
         egenaktivitet.setHensikt(egenAktivitetData.getHensikt());
+        egenaktivitet.setOppfolging(egenAktivitetData.getOppfolging());
 
         return egenaktivitet;
     }
