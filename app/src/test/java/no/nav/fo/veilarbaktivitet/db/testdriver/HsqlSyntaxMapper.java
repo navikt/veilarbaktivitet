@@ -11,19 +11,6 @@ class HsqlSyntaxMapper {
     private static final Map<String, String> syntaxMap = new HashMap<>();
 
     static {
-        map(
-                "alter table AKTIVITET modify status varchar(255) not null",
-                "alter table AKTIVITET alter column status SET not null"
-        );
-        map(
-                "alter table AKTIVITET modify lenke varchar(2000)",
-                "alter table AKTIVITET alter column lenke varchar(2000)"
-        );
-        map(
-                "alter table AKTIVITET add beskrivelse clob",
-                "alter table AKTIVITET add beskrivelse varchar(5001)"
-        );
-
 
     }
 
