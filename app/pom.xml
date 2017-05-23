@@ -13,7 +13,10 @@
     <artifactId>veilarbaktivitet-app</artifactId>
 
     <dependencies>
-
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>feed</artifactId>
+        </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>api-app</artifactId>
