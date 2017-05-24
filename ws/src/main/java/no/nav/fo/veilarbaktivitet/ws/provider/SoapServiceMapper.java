@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaStatusDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetEtikettResponse;
@@ -210,14 +211,31 @@ class SoapServiceMapper {
                 put(ArenaAktivitetType.UTDANNINGSAKTIVITET, ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET);
             }};
 
+    private static final BidiMap<ArenaEtikett, ArenaStatusDTO> arenaEtikettMap =
+            new DualHashBidiMap<ArenaEtikett, ArenaStatusDTO>() {{
+                put(ArenaEtikett.AKTUELL, ArenaStatusDTO.AKTUELL);
+                put(ArenaEtikett.AVSLAG, ArenaStatusDTO.AVSLAG);
+                put(ArenaEtikett.IKKAKTUELL, ArenaStatusDTO.IKKAKTUELL);
+                put(ArenaEtikett.IKKEM, ArenaStatusDTO.IKKEM);
+                put(ArenaEtikett.INFOMOETE, ArenaStatusDTO.INFOMOETE);
+                put(ArenaEtikett.JATAKK, ArenaStatusDTO.JATAKK);
+                put(ArenaEtikett.NEITAKK, ArenaStatusDTO.NEITAKK);
+                put(ArenaEtikett.TILBUD, ArenaStatusDTO.TILBUD);
+                put(ArenaEtikett.VENTELISTE, ArenaStatusDTO.VENTELISTE);
+            }};
+
     static ArenaAktivitet mapTilArenaAktivitet(ArenaAktivitetDTO dto) {
         val arena = new ArenaAktivitet();
         arena.setAktivitetId(dto.getId());
+        arena.setTittel(dto.getTittel());
         arena.setStatus(wsStatus(dto.getStatus()));
         arena.setType(arenaTypeMap.getKey(dto.getType()));
         arena.setBeskrivelse(dto.getBeskrivelse());
         arena.setFom(xmlCalendar(dto.getFraDato()));
         arena.setTom(xmlCalendar(dto.getTilDato()));
+        arena.setOpprettetDato(xmlCalendar(dto.getOpprettetDato()));
+        arena.setAvtalt(dto.isAvtalt());
+        arena.setEtikett(arenaEtikettMap.getKey(dto.getEtikett()));
         arena.setDeltakelseProsent(dto.getDeltakelseProsent());
         arena.setTiltaksnavn(dto.getTiltaksnavn());
         arena.setTiltakLokaltNavn(dto.getTiltakLokaltNavn());
