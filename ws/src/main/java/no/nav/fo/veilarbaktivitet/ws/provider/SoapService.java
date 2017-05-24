@@ -41,8 +41,7 @@ public class SoapService implements BehandleAktivitetsplanV1 {
 
     @Override
     public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
-        String ident = ""; // FIXME: Ta med fnr i hentArenaAktiviteterRequest
-        return Optional.of(appService.hentArenaAktiviteter(ident))
+        return Optional.of(appService.hentArenaAktiviteter(hentArenaAktiviteterRequest.getPersonident()))
                 .map(arenaAktiviterDTO -> {
                     val res = new HentArenaAktiviteterResponse();
                     res.getArenaaktiviteter().addAll(
