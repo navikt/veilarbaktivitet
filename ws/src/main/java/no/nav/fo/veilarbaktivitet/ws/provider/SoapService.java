@@ -26,17 +26,17 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     private AppService appService;
 
     @Override
-    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
-        val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
-        val aktivitetsplan = new Aktivitetsplan();
-        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
+    public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
 
-        appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
-                .stream()
-                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
-                .forEach(aktivitetsplan.getAktivitetListe()::add);
-
-        return wsHentAktiviteterResponse;
+        return Optional.of(opprettNyAktivitetRequest)
+                .map(OpprettNyAktivitetRequest::getAktivitet)
+                .map((aktivitet) -> {
+                    val aktivitetData = mapTilAktivitetData(aktivitet);
+                    val lagretAktivtet = appService.opprettNyAktivtet(aktivitet.getPersonIdent(), aktivitetData);
+                    return mapTilAktivitet(aktivitet.getPersonIdent(), lagretAktivtet);
+                })
+                .map(SoapServiceMapper::mapTilOpprettNyAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
@@ -55,19 +55,32 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
-
-        return Optional.of(opprettNyAktivitetRequest)
-                .map(OpprettNyAktivitetRequest::getAktivitet)
-                .map((aktivitet) -> {
-                    val aktivitetData = mapTilAktivitetData(aktivitet);
-                    val lagretAktivtet = appService.opprettNyAktivtet(aktivitet.getPersonIdent(), aktivitetData);
-                    return mapTilAktivitet(aktivitet.getPersonIdent(), lagretAktivtet);
-                })
-                .map(SoapServiceMapper::mapTilOpprettNyAktivitetResponse)
-                .orElseThrow(RuntimeException::new);
+    public HentAktivitetResponse hentAktivitet(HentAktivitetRequest hentAktivitetRequest) {
+        return Optional.of(hentAktivitetRequest)
+                .map(HentAktivitetRequest::getAktivitetId)
+                .map(Long::parseLong)
+                .map(appService::hentAktivitet)
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(aktivitet -> {
+                    val res = new HentAktivitetResponse();
+                    res.setAktivitet(aktivitet);
+                    return res;
+                }).orElseThrow(RuntimeException::new);
     }
 
+    @Override
+    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
+        val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
+        val aktivitetsplan = new Aktivitetsplan();
+        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
+
+        appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
+                .stream()
+                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
+                .forEach(aktivitetsplan.getAktivitetListe()::add);
+
+        return wsHentAktiviteterResponse;
+    }
 
     @Override
     public HentEndringsLoggForAktivitetResponse hentEndringsLoggForAktivitet(HentEndringsLoggForAktivitetRequest hentEndringsLoggForAktivitetRequest) {
@@ -91,8 +104,19 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetStatusRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
-                .map((aktivtet) -> mapTilAktivitet("", aktivtet)) //TODO: fnr don't know it here
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
                 .map(SoapServiceMapper::mapTilEndreAktivitetStatusResponse)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public EndreAktivitetEtikettResponse endreAktivitetEtikett(EndreAktivitetEtikettRequest endreAktivitetEtikettRequest) {
+        return Optional.of(endreAktivitetEtikettRequest)
+                .map(EndreAktivitetEtikettRequest::getAktivitet)
+                .map(SoapServiceMapper::mapTilAktivitetData)
+                .map(appService::oppdaterEtikett)
+                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(SoapServiceMapper::mapTilEndreAktivitetEtikettResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -102,21 +126,9 @@ public class SoapService implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetRequest::getAktivitet)
                 .map(SoapServiceMapper::mapTilAktivitetData)
                 .map(aktivitet -> {
-                    val orignalAktivitet = appService.hentAktivitet(aktivitet.getId());
-                    if (orignalAktivitet.isAvtalt()) {
-                        if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
-                            //TODO: maybe extract
-                            orignalAktivitet.setStillingsSoekAktivitetData(
-                                    orignalAktivitet
-                                            .getStillingsSoekAktivitetData()
-                                            .setStillingsoekEtikett(
-                                                    aktivitet
-                                                            .getStillingsSoekAktivitetData()
-                                                            .getStillingsoekEtikett())
-                            );
-                            return appService.oppdaterAktivitet(orignalAktivitet);
-                        }
-                        return orignalAktivitet;
+                    val originalAktivitet = appService.hentAktivitet(aktivitet.getId());
+                    if (originalAktivitet.isAvtalt()) {
+                        return originalAktivitet;
                     }
                     return appService.oppdaterAktivitet(aktivitet);
                 })
@@ -135,7 +147,6 @@ public class SoapService implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public void ping() {
-    }
+    public void ping() {}
 }
 

@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetEtikettResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.EndreAktivitetStatusResponse;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.OpprettNyAktivitetResponse;
@@ -98,7 +99,8 @@ class SoapServiceMapper {
         return Optional.ofNullable(egenaktivitet)
                 .map(egen ->
                         new EgenAktivitetData()
-                                .setHensikt(egen.getHensikt()))
+                                .setHensikt(egen.getHensikt())
+                                .setOppfolging(egen.getOppfolging()))
                 .orElse(null);
     }
 
@@ -153,6 +155,7 @@ class SoapServiceMapper {
         val egenaktivitet = new Egenaktivitet();
 
         egenaktivitet.setHensikt(egenAktivitetData.getHensikt());
+        egenaktivitet.setOppfolging(egenAktivitetData.getOppfolging());
 
         return egenaktivitet;
     }
@@ -186,6 +189,13 @@ class SoapServiceMapper {
         res.setAktivitet(aktivitet);
         return res;
     }
+
+    static EndreAktivitetEtikettResponse mapTilEndreAktivitetEtikettResponse(Aktivitet aktivitet) {
+        val res = new EndreAktivitetEtikettResponse();
+        res.setAktivitet(aktivitet);
+        return res;
+    }
+
 
     static EndreAktivitetResponse mapTilEndreAktivitetResponse(Aktivitet aktivitet) {
         val res = new EndreAktivitetResponse();

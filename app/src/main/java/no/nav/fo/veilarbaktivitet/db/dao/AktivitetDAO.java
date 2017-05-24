@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.feed.producer.AktivitetFeedData;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,24 @@ public class AktivitetDAO {
 
     @Inject
     private EndringsLoggDAO endringsLoggDAO;
+
+    public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date date) {
+        return database.query(
+                "SELECT " +
+                        "AKTIVITET_ID, " +
+                        "AKTOR_ID, " +
+                        "TYPE, " +
+                        "STATUS, " +
+                        "FRA_DATO, " +
+                        "TIL_DATO, " +
+                        "OPPRETTET_DATO, " +
+                        "AVTALT " +
+                    "FROM AKTIVITET " +
+                    "WHERE OPPRETTET_DATO >= ?",
+                this::mapAktivitetForFeed,
+                date
+                );
+    }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         return database.query("SELECT * FROM AKTIVITET A " +
@@ -69,6 +88,20 @@ public class AktivitetDAO {
         return aktivitet;
     }
 
+    private AktivitetFeedData mapAktivitetForFeed(ResultSet rs) throws SQLException {
+        long aktivitetId = rs.getLong("aktivitet_id");
+        val aktivitet = new AktivitetFeedData()
+                .setAktivitetId(String.valueOf(aktivitetId))
+                .setAktorId(rs.getString("aktor_id"))
+                .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
+                .setFraDato( hentDato(rs, "fra_dato"))
+                .setTilDato(hentDato(rs, "til_dato"))
+                .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
+                .setOpprettetDato(hentDato(rs, "opprettet_dato"))
+                .setAvtalt(rs.getBoolean("avtalt"));
+        return aktivitet;
+    }
+
 
     private StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
         return new StillingsoekAktivitetData()
@@ -82,13 +115,18 @@ public class AktivitetDAO {
 
     private EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
         return new EgenAktivitetData()
-                .setHensikt(rs.getString("hensikt"));
+                .setHensikt(rs.getString("hensikt"))
+                .setOppfolging(rs.getString("oppfolging"));
     }
 
 
-    @Transactional
     public long opprettAktivitet(AktivitetData aktivitet) {
-        val aktivitetId = insertAktivitet(aktivitet);
+        return opprettAktivitet(aktivitet, new Date());
+    }
+
+    @Transactional
+    long opprettAktivitet(AktivitetData aktivitet, Date opprettetDate) {
+        val aktivitetId = insertAktivitet(aktivitet, opprettetDate);
         insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
         return aktivitetId;
@@ -143,18 +181,17 @@ public class AktivitetDAO {
     }
 
     private void updateEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
-        database.update("UPDATE EGENAKTIVITET SET hensikt = ? " +
+        database.update("UPDATE EGENAKTIVITET SET hensikt = ?, oppfolging = ? " +
                         "WHERE aktivitet_id = ?",
                 egenAktivitetData.getHensikt(),
+                egenAktivitetData.getOppfolging(),
                 aktivitetId
         );
 
     }
 
-
-    private long insertAktivitet(AktivitetData aktivitet) {
+    private long insertAktivitet(AktivitetData aktivitet, Date opprettetDato) {
         long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
-        val opprettetDato = new Date();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
                         "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +
@@ -198,9 +235,10 @@ public class AktivitetDAO {
     private void insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt) VALUES(?,?)",
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, oppfolging) VALUES(?,?,?)",
                             aktivitetId,
-                            egen.getHensikt()
+                            egen.getHensikt(),
+                            egen.getOppfolging()
                     );
                 });
     }
@@ -237,6 +275,13 @@ public class AktivitetDAO {
         return database.update("UPDATE AKTIVITET SET status = ?, avsluttet_kommentar = ? WHERE aktivitet_id = ?",
                 getName(status),
                 avsluttetKommentar,
+                aktivitetId
+        );
+    }
+
+    public int endreAktivitetEtikett(long aktivitetId, StillingsoekEtikettData etikett) {
+        return database.update("UPDATE STILLINGSSOK SET etikett = ? WHERE aktivitet_id = ?",
+                getName(etikett),
                 aktivitetId
         );
     }

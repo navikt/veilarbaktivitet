@@ -1,1 +1,0 @@
-alter table aktivitet drop column dele_med_nav;

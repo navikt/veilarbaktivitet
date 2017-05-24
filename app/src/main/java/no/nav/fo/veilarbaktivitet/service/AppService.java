@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class AppService {
@@ -84,6 +85,16 @@ public class AppService {
 
         return aktivitetDAO.hentAktivitet(aktivitet.getId());
 
+    }
+
+    public AktivitetData oppdaterEtikett(AktivitetData aktivitetData) {
+        Optional.of(aktivitetData)
+                .map(AktivitetData::getStillingsSoekAktivitetData)
+                .map((stilling) -> aktivitetDAO.endreAktivitetEtikett(aktivitetData.getId(),
+                        stilling.getStillingsoekEtikett())
+                );
+
+        return aktivitetDAO.hentAktivitet(aktivitetData.getId());
     }
 
     private Boolean statusSkalIkkeKunneEndres(AktivitetData aktivitetData) {

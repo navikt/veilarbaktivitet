@@ -1,9 +1,8 @@
-package no.nav.fo.veilarbaktivitet.db;
+package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.IntegrasjonsTest;
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
@@ -11,13 +10,16 @@ import org.junit.Test;
 
 import javax.inject.Inject;
 
+
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 
@@ -90,6 +92,53 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(aktivitet, equalTo(hentetAktivitet));
     }
+
+    @Test
+    public void hent_aktiviteter_for_feed() {
+        val fra = dateFromISO8601("2010-12-03T10:15:30+02:00");
+        val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
+        val opprettet2 = dateFromISO8601("2010-12-04T10:15:30+02:00");
+
+        val aktivitet1 = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
+        val aktivitet2 = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
+        aktivitetDAO.opprettAktivitet(aktivitet1, opprettet1);
+        aktivitetDAO.opprettAktivitet(aktivitet2, opprettet2);
+
+        val hentetAktiviteter = aktivitetDAO.hentAktiviteterEtterTidspunkt(fra);
+        assertThat(hentetAktiviteter.size(), is(2));
+    }
+
+    @Test
+    public void hent_aktiviteter_for_feed_skal_hente_bare_en() {
+        val fra = dateFromISO8601("2010-12-03T10:15:30.1+02:00");
+        val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
+        val opprettet2 = dateFromISO8601("2010-12-03T10:15:30.2+02:00");
+
+        val aktivitet1 = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
+        val aktivitet2 = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
+        aktivitetDAO.opprettAktivitet(aktivitet1, opprettet1);
+        aktivitetDAO.opprettAktivitet(aktivitet2, opprettet2);
+
+        val hentetAktiviteter = aktivitetDAO.hentAktiviteterEtterTidspunkt(fra);
+        assertThat(hentetAktiviteter.size(), is(1));
+        assertThat(hentetAktiviteter.get(0).getOpprettetDato(), is(opprettet2));
+    }
+
+    @Test
+    public void hent_aktiviteter_for_feed_skal_returnere_tom_liste() {
+        val fra = dateFromISO8601("2010-12-05T11:15:30+02:00");
+        val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
+        val opprettet2 = dateFromISO8601("2010-12-04T10:15:30+02:00");
+
+        val aktivitet1 = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
+        val aktivitet2 = nyAktivitet(AKTOR_ID).setAktivitetType(EGENAKTIVITET);
+        aktivitetDAO.opprettAktivitet(aktivitet1, opprettet1);
+        aktivitetDAO.opprettAktivitet(aktivitet2, opprettet2);
+
+        val hentetAktiviteter = aktivitetDAO.hentAktiviteterEtterTidspunkt(fra);
+        assertThat(hentetAktiviteter.size(), is(0));
+    }
+
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
         val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);

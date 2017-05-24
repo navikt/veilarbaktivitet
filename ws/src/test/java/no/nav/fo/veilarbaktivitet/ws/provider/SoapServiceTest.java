@@ -16,7 +16,9 @@ import java.util.List;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -29,11 +31,22 @@ public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
 
     @Test
     public void hent_aktiviteter() throws Exception {
-        val hentAktiviteterRequest = getHentAktivitetsplanRequest();
         opprett_aktivitet();
+        val req = getHentAktivitetsplanRequest();
+        val res = soapService.hentAktivitetsplan(req);
+        assertThat(res.getAktivitetsplan().getAktivitetListe(), hasSize(1));
+    }
 
-        val hentAktiviteterResponse2 = soapService.hentAktivitetsplan(hentAktiviteterRequest);
-        assertThat(hentAktiviteterResponse2.getAktivitetsplan().getAktivitetListe(), hasSize(1));
+    @Test
+    public void hent_aktivitet() throws Exception {
+        opprett_aktivitet();
+        val req = new HentAktivitetRequest();
+        val aktiviet = aktiviter().get(0);
+        req.setAktivitetId(aktiviet.getId().toString());
+
+        val res = soapService.hentAktivitet(req);
+        assertThat(res.getAktivitet().getAktivitetId(), equalTo(aktiviet.getId().toString()));
+        assertThat(res.getAktivitet().getTittel(), equalTo(aktiviet.getTittel()));
     }
 
     @Test
@@ -89,6 +102,20 @@ public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     @Test
+    public void endre_aktivitet_etikett() throws Exception {
+        opprett_stilling_aktivitet();
+
+        val aktivitet = aktiviter().get(0);
+        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG);
+
+        val endreReq = new EndreAktivitetEtikettRequest();
+        endreReq.setAktivitet(SoapServiceMapper.mapTilAktivitet("123", aktivitet));
+
+        val res1 = soapService.endreAktivitetEtikett(endreReq);
+        assertThat(res1.getAktivitet().getStillingAktivitet().getEtikett(), equalTo(Etikett.AVSLAG));
+    }
+
+    @Test
     public void hent_endringslogg() throws Exception {
         opprett_aktivitet();
 
@@ -124,11 +151,9 @@ public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     @Test
-    public void skal_kun_endre_diverse_felter_paa_en_avtalt_aktivitet() throws Exception {
+    public void skal_ikke_kunne_endre_en_avtalt_aktivitet() throws Exception {
         opprett_avtalt_aktivitet();
         val aktivitet = aktiviter().get(0);
-
-        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG);
 
         val endreReq = new EndreAktivitetRequest();
         val endreAktivitet = SoapServiceMapper.mapTilAktivitet("", aktivitet);
@@ -138,16 +163,9 @@ public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
 
         val resp = soapService.endreAktivitet(endreReq);
         val respAktivitet = SoapServiceMapper.mapTilAktivitetData(resp.getAktivitet());
-        assertThat(respAktivitet, equalTo(aktivitet
-                .setAktorId(respAktivitet.getAktorId())
-                .setVersjon(respAktivitet.getVersjon())
-                .setStillingsSoekAktivitetData(aktivitet
-                        .getStillingsSoekAktivitetData()
-                        .setStillingsoekEtikett(respAktivitet
-                                .getStillingsSoekAktivitetData()
-                                .getStillingsoekEtikett()))
-        ));
+        assertThat(respAktivitet, equalTo(aktivitet.setAktorId(respAktivitet.getAktorId())));
     }
+
 
 
     @Inject
@@ -164,6 +182,14 @@ public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
         val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
                 .setAktivitetType(EGENAKTIVITET)
                 .setEgenAktivitetData(new EgenAktivitetData());
+
+        aktivitetDAO.opprettAktivitet(aktivitet);
+    }
+
+    private void opprett_stilling_aktivitet() {
+        val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
+                .setAktivitetType(JOBBSOEKING)
+                .setStillingsSoekAktivitetData(nyttStillingssøk());
 
         aktivitetDAO.opprettAktivitet(aktivitet);
     }

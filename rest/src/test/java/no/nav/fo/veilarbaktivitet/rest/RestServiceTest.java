@@ -33,6 +33,12 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     @Test
+    public void hent_aktivitet() {
+        gitt_at_jeg_har_aktiviter();
+        da_skal_jeg_kunne_hente_en_aktivitet();
+    }
+
+    @Test
     public void opprett_aktivitet() {
         gitt_at_jeg_har_laget_en_aktivtet();
         nar_jeg_lagrer_aktivteten();
@@ -51,6 +57,13 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
         gitt_at_jeg_har_aktiviter();
         nar_jeg_flytter_en_aktivitet_til_en_annen_status();
         da_skal_min_aktivitet_fatt_ny_status();
+    }
+
+    @Test
+    public void oppdater_etikett() {
+        gitt_at_jeg_har_aktiviter();
+        nar_jeg_oppdaterer_etiketten_pa_en_aktivitet();
+        da_skal_min_aktivitet_fatt_ny_etikett();
     }
 
     @Test
@@ -93,7 +106,7 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
     }
 
-    private AktivitetData nyStillingAktivitet(){
+    private AktivitetData nyStillingAktivitet() {
         return AktivitetDataBuilder.nyAktivitet(KJENT_AKTOR_ID)
                 .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
                 .setStillingsSoekAktivitetData(nyttStillingssøk());
@@ -112,14 +125,17 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
     private void gitt_at_jeg_har_laget_en_aktivtet() {
         aktivitet = nyAktivitet();
     }
+
     private void gitt_at_jeg_har_satt_aktiviteten_til_avtalt() {
         aktivitet.setAvtalt(true);
     }
+
     private void nar_jeg_lagrer_aktivteten() {
         aktivitet = aktivitetController.opprettNyAktivitet(aktivitet);
     }
 
     private AktivitetDTO orignalAktivitet;
+
     private void nar_jeg_oppdaterer_aktiviten() {
         orignalAktivitet = nyAktivitet()
                 .setAvtalt(true)
@@ -141,10 +157,16 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
+    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
         this.aktivitet = aktivitetController.oppdaterStatus(aktivitet.setStatus(nyAktivitetStatus));
+    }
+
+    private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
+        val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
+        this.aktivitet = aktivitetController.oppdaterEtikett(aktivitet.setEtikett(nyAktivitetEtikett));
     }
 
     private List<EndringsloggDTO> endringer;
@@ -157,7 +179,7 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
     private String nyAvsluttetKommentar;
     private Date oldOpprettetDato;
 
-    private void nar_jeg_oppdaterer_en_av_aktiviten(){
+    private void nar_jeg_oppdaterer_en_av_aktiviten() {
         val aktivitet = this.aktiviter.get(0);
         oldOpprettetDato = aktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
@@ -175,6 +197,11 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
         assertThat(aktiviteter, hasSize(2));
     }
 
+    private void da_skal_jeg_kunne_hente_en_aktivitet() {
+        assertThat(aktiviter.get(0).getId().toString(),
+                equalTo(aktivitetController.hentAktivitet(aktiviter.get(0).getId().toString()).getId()));
+    }
+
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
@@ -186,6 +213,10 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
         assertThat(aktivitetDAO.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
+    }
+
+    private void da_skal_min_aktivitet_fatt_ny_etikett() {
+        assertThat(aktivitet.getEtikett(), equalTo(nyAktivitetEtikett));
     }
 
     private void da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten() {
@@ -203,7 +234,6 @@ public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
         assertThat(aktivitet, equalTo(orignalAktivitet
                 .setTilDato(aktivitet.tilDato)
                 .setVersjon(aktivitet.versjon)
-                .setEtikett(aktivitet.etikett)
         ));
     }
 

@@ -38,6 +38,13 @@ public class RestService implements AktivitetController {
     }
 
     @Override
+    public AktivitetDTO hentAktivitet(String aktivitetId) {
+        return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
+                .map(RestMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         return Optional.of(appService.hentArenaAktiviteter(getUserIdent()))
                 .orElseThrow(RuntimeException::new);
@@ -60,18 +67,6 @@ public class RestService implements AktivitetController {
                     val orignalAktivitet = appService.hentAktivitet(Long.parseLong(aktivitet.getId()));
                     if (orignalAktivitet.isAvtalt()) {
                         orignalAktivitet.setTilDato(aktivitet.getTilDato());
-                        //TODO: maybe extract
-                        if (orignalAktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
-                            orignalAktivitet.setStillingsSoekAktivitetData(
-                                    orignalAktivitet
-                                            .getStillingsSoekAktivitetData()
-                                            .setStillingsoekEtikett(
-                                                    aktivitetData
-                                                            .getStillingsSoekAktivitetData()
-                                                            .getStillingsoekEtikett())
-                            );
-                        }
-
                         return appService.oppdaterAktivitet(orignalAktivitet);
                     }
                     return appService.oppdaterAktivitet(aktivitetData);
@@ -81,8 +76,10 @@ public class RestService implements AktivitetController {
     }
 
     @Override
-    public AktivitetDTO hentAktivitet(String aktivitetId) {
-        return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
+    public AktivitetDTO oppdaterEtikett(AktivitetDTO aktivitet) {
+        return Optional.of(aktivitet)
+                .map(RestMapper::mapTilAktivitetData)
+                .map(appService::oppdaterEtikett)
                 .map(RestMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
@@ -96,7 +93,7 @@ public class RestService implements AktivitetController {
     public AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(RestMapper::mapTilAktivitetData)
-                .map((aktivitetData) -> appService.oppdaterStatus(aktivitetData))
+                .map(appService::oppdaterStatus)
                 .map(RestMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
