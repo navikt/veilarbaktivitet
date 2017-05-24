@@ -34,4 +34,11 @@ public class DateUtils {
                 .orElse(null);
     }
 
+    public static XMLGregorianCalendar mergeDateTime(XMLGregorianCalendar date, XMLGregorianCalendar time) {
+        date.setHour(time.getHour());
+        date.setMinute(time.getMinute());
+        date.setSecond(time.getSecond());
+        return date;
+    }
+
 }

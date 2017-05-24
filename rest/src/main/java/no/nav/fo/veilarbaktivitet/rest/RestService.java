@@ -39,7 +39,7 @@ public class RestService implements AktivitetController {
 
     @Override
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-        return Optional.of(appService.hentArenaAktiviteter())
+        return Optional.of(appService.hentArenaAktiviteter(getUserIdent()))
                 .orElseThrow(RuntimeException::new);
     }
 

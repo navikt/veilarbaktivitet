@@ -32,6 +32,7 @@
         <java.version>1.8</java.version>
 
         <!--Tjenester-->
+        <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.0.1</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
         <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.15-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.2</dial-nav-tjeneste-aktoer_v2.version>
     </properties>
@@ -81,6 +82,12 @@
                 <groupId>no.nav.sbl.dialogarena</groupId>
                 <artifactId>dial-nav-tjeneste-aktoer_v2</artifactId>
                 <version>${dial-nav-tjeneste-aktoer_v2.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>no.nav.tjenester</groupId>
+                <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
+                <version>${nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version}</version>
+                <classifier>jaxws</classifier>
             </dependency>
 
         </dependencies>

@@ -14,13 +14,14 @@ import java.util.stream.Collectors;
 
 
 @Path("/aktivitet")
+@Produces("application/json")
 public interface AktivitetController {
 
     @GET
     AktivitetsplanDTO hentAktivitetsplan();
 
     @GET
-    @Path("arena")
+    @Path("/arena")
     List<ArenaAktivitetDTO> hentArenaAktiviteter();
 
     @POST
@@ -44,7 +45,7 @@ public interface AktivitetController {
 
     @GET
     @Path("/etiketter")
-    default List<EtikettTypeDTO> hentEtiketter(){
+    default List<EtikettTypeDTO> hentEtiketter() {
         return Arrays.stream(Etikett.values())
                 .map(EtikettTypeDTO::getDtoType)
                 .collect(Collectors.toList());

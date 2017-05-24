@@ -204,10 +204,10 @@ class SoapServiceMapper {
         val arena = new ArenaAktivitet();
         arena.setAktivitetId(dto.getId());
         arena.setStatus(wsStatus(dto.getStatus()));
-        arena.setType(arenaTypeMap.getKey(dto.getAktivitetstype()));
+        arena.setType(arenaTypeMap.getKey(dto.getType()));
         arena.setBeskrivelse(dto.getBeskrivelse());
-        arena.setFom(xmlCalendar(dto.getFom()));
-        arena.setTom(xmlCalendar(dto.getTom()));
+        arena.setFom(xmlCalendar(dto.getFraDato()));
+        arena.setTom(xmlCalendar(dto.getTilDato()));
         arena.setDeltakelseProsent(dto.getDeltakelseProsent());
         arena.setTiltaksnavn(dto.getTiltaksnavn());
         arena.setTiltakLokaltNavn(dto.getTiltakLokaltNavn());

@@ -8,6 +8,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
+import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -25,6 +26,9 @@ public class AppService {
     @Inject
     private EndringsLoggDAO endringsLoggDAO;
 
+    @Inject
+    private ArenaAktivitetConsumer arenaAktivitetConsumer;
+
     private String hentAktoerIdForIdent(String ident) {
         return aktoerConsumer.hentAktoerIdForIdent(ident)
                 .orElseThrow(RuntimeException::new); // Hvordan håndere dette?
@@ -35,9 +39,8 @@ public class AppService {
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
     }
 
-    public List<ArenaAktivitetDTO> hentArenaAktiviteter(){
-        //fixme
-        return null;
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(String ident) {
+        return arenaAktivitetConsumer.hentArenaAktivieter(ident);
     }
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
@@ -50,12 +53,12 @@ public class AppService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData){
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData) {
         aktivitetDAO.oppdaterAktivitet(aktivitetData);
         return hentAktivitet(aktivitetData.getId());
     }
 
-    public AktivitetData hentAktivitet(long id){
+    public AktivitetData hentAktivitet(long id) {
         return aktivitetDAO.hentAktivitet(id);
     }
 

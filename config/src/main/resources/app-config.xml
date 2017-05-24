@@ -32,6 +32,7 @@
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+        <webservice alias="TiltakOgAktivitet_v1" mapToProperty="tiltakOgAktivitet.endpoint"/>
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>

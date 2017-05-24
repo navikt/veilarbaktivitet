@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.ws.provider;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.IntegrasjonsTestUtenArenaMock;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
@@ -24,7 +25,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 
 
-public class SoapServiceTest extends IntegrasjonsTest {
+public class SoapServiceTest extends IntegrasjonsTestUtenArenaMock {
 
     @Test
     public void hent_aktiviteter() throws Exception {

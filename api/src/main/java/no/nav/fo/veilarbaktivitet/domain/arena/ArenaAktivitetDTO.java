@@ -12,20 +12,23 @@ import java.util.List;
 public class ArenaAktivitetDTO {
     //Felles
     String id;
-    AktivitetStatus status; // bruk kodeverdi for å avgjøre denne
-    ArenaAktivitetTypeDTO aktivitetstype;
+    AktivitetStatus status;
+    ArenaAktivitetTypeDTO type;
+    String tittel;
     String beskrivelse;
-    Date fom;
-    Date tom;
+    Date fraDato;
+    Date tilDato;
+    Date opprettetDato;
+    boolean avtalt;
+    public ArenaStatusDTO etikett;
 
     // Tiltaksaktivitet
-    float deltakelseProsent;
+    Float deltakelseProsent;
     String tiltaksnavn;
     String tiltakLokaltNavn;
     String arrangoer;
     String bedriftsnummer;
-    float antallDagerPerUke;
-    //usikker på deltakerStatus
+    Float antallDagerPerUke;
     Date statusSistEndret;
 
     // Gruppeaktivitet

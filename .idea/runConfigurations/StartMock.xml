@@ -2,7 +2,7 @@
   <configuration default="false" name="StartMock" type="Application" factoryName="Application" singleton="true" nameIsGenerated="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="no.nav.fo.*" />
+        <option name="PATTERN" value="no.nav.fo.veilarbaktivitet.service.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
