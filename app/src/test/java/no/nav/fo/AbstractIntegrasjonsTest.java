@@ -46,7 +46,7 @@ public abstract class AbstractIntegrasjonsTest {
 
     @BeforeClass
     public static void testProperties() throws IOException {
-        System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/test.properties"));
+        System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/integrasjonstest.properties"));
     }
 
     @Component
