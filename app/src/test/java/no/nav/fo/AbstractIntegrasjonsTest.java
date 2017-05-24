@@ -28,6 +28,11 @@ public abstract class AbstractIntegrasjonsTest {
     }
 
     @BeforeClass
+    public static void disableCertificateCheck() {
+        System.setProperty("disable.ssl.cn.check", "true");
+    }
+
+    @BeforeClass
     public static void tillatInsecureParser() {
         System.setProperty(ALLOW_INSECURE_PARSER, Boolean.TRUE.toString());
     }
