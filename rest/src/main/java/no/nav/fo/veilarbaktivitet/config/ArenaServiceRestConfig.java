@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class ArenaServiceRestConfig {
 
     @Bean
-    public TiltakOgAktivitetV1 tildtakOgAktivitetV1() {
+    public TiltakOgAktivitetV1 tiltakOgAktivitetV1() {
         return ArenaServiceConfig.tiltakOgAktivitetV1Client()
                 .configureStsForOnBehalfOfWithJWT()
                 .build();

@@ -12,7 +12,7 @@ import static java.lang.System.getProperty;
 public class ArenaServiceWSConfig {
 
     @Bean
-    public TiltakOgAktivitetV1 tildtakOgAktivitetV1() {
+    public TiltakOgAktivitetV1 tiltakOgAktivitetV1() {
         return ArenaServiceConfig.tiltakOgAktivitetV1Client()
                 .withOutInterceptor(new UserSAMLOutInterceptor())
                 .build();
