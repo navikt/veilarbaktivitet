@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.of;
 import static no.nav.fo.veilarbaktivitet.ws.provider.SoapServiceMapper.mapTilAktivitet;
@@ -40,7 +41,16 @@ public class SoapService implements BehandleAktivitetsplanV1 {
 
     @Override
     public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
-        return null;
+        return Optional.of(appService.hentArenaAktiviteter(hentArenaAktiviteterRequest.getPersonident()))
+                .map(arenaAktiviterDTO -> {
+                    val res = new HentArenaAktiviteterResponse();
+                    res.getArenaaktiviteter().addAll(
+                            arenaAktiviterDTO.stream()
+                                    .map(SoapServiceMapper::mapTilArenaAktivitet)
+                                    .collect(Collectors.toList()));
+                    return res;
+                })
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override

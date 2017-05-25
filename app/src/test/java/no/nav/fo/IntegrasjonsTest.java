@@ -6,6 +6,8 @@ import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.modig.testcertificates.TestCertificates;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -24,45 +26,4 @@ import static org.apache.cxf.staxutils.StaxUtils.ALLOW_INSECURE_PARSER;
         IntegrasjonsTest.JndiBean.class,
         IntegrasjonsTest.Request.class
 })
-@RunWith(SpringJUnit4ClassRunner.class)
-@PropertySource("classpath:test.properties")
-@Transactional
-public abstract class IntegrasjonsTest {
-
-    @BeforeClass
-    public static void testCertificates() {
-        TestCertificates.setupKeyAndTrustStore();
-    }
-
-    @BeforeClass
-    public static void tillatInsecureParser() {
-        System.setProperty(ALLOW_INSECURE_PARSER, Boolean.TRUE.toString());
-    }
-
-    @BeforeClass
-    public static void serviceUser() throws IOException {
-        ServiceUser serviceUser = FasitUtils.getServiceUser("srvveilarbaktivitet", "veilarbaktivitet", "t6");
-        System.setProperty("no.nav.modig.security.systemuser.username",serviceUser.username);
-        System.setProperty("no.nav.modig.security.systemuser.password",serviceUser.password);
-    }
-
-    @BeforeClass
-    public static void testProperties() throws IOException {
-        System.getProperties().load(IntegrasjonsTest.class.getResourceAsStream("/test.properties"));
-    }
-
-    @Component
-    public static class JndiBean {
-
-        public JndiBean() throws Exception {
-            SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
-            builder.bind(AKTIVITET_DATA_SOURCE_JDNI_NAME, DatabaseTestContext.buildDataSource());
-            builder.activate();
-        }
-
-    }
-
-    @Component
-    public static class Request extends MockHttpServletRequest {}
-
-}
+public abstract class IntegrasjonsTest extends  AbstractIntegrasjonsTest {}

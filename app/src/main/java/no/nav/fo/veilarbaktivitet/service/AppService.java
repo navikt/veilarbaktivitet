@@ -6,7 +6,9 @@ import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
+import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -25,6 +27,9 @@ public class AppService {
     @Inject
     private EndringsLoggDAO endringsLoggDAO;
 
+    @Inject
+    private ArenaAktivitetConsumer arenaAktivitetConsumer;
+
     private String hentAktoerIdForIdent(String ident) {
         return aktoerConsumer.hentAktoerIdForIdent(ident)
                 .orElseThrow(RuntimeException::new); // Hvordan håndere dette?
@@ -33,6 +38,10 @@ public class AppService {
     public List<AktivitetData> hentAktiviteterForIdent(String ident) {
         val aktorId = hentAktoerIdForIdent(ident);
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+    }
+
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(String ident) {
+        return arenaAktivitetConsumer.hentArenaAktivieter(ident);
     }
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {

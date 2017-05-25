@@ -4,6 +4,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
 import javax.ws.rs.*;
@@ -13,10 +14,15 @@ import java.util.stream.Collectors;
 
 
 @Path("/aktivitet")
+@Produces("application/json")
 public interface AktivitetController {
 
     @GET
     AktivitetsplanDTO hentAktivitetsplan();
+
+    @GET
+    @Path("/arena")
+    List<ArenaAktivitetDTO> hentArenaAktiviteter();
 
     @POST
     @Path("/ny")
@@ -32,7 +38,7 @@ public interface AktivitetController {
 
     @GET
     @Path("/etiketter")
-    default List<EtikettTypeDTO> hentEtiketter(){
+    default List<EtikettTypeDTO> hentEtiketter() {
         return Arrays.stream(Etikett.values())
                 .map(EtikettTypeDTO::getDtoType)
                 .collect(Collectors.toList());

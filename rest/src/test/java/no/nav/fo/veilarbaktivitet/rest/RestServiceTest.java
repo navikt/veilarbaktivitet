@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbaktivitet.rest;
 
 import lombok.val;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.IntegrasjonsTestUtenArenaMock;
 import no.nav.fo.veilarbaktivitet.AktivitetDataBuilder;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
@@ -22,7 +22,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
-public class RestServiceTest extends IntegrasjonsTest {
+public class RestServiceTest extends IntegrasjonsTestUtenArenaMock {
+
+
 
     @Test
     public void hent_aktivitsplan() {

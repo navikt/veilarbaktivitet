@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.service.AppService;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +41,12 @@ public class RestService implements AktivitetController {
     public AktivitetDTO hentAktivitet(String aktivitetId) {
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(RestMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @Override
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
+        return Optional.of(appService.hentArenaAktiviteter(getUserIdent()))
                 .orElseThrow(RuntimeException::new);
     }
 
