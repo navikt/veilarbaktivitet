@@ -98,15 +98,18 @@ public class ArenaAktivitetConsumer {
 
         Date startDato = motePlan.get(0).getStartDato();
         Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
+        AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
+                AktivitetStatus.AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
                 .setId(randomArenaId())
-                .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
+                .setStatus(status)
                 .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
                 .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
                 .setBeskrivelse(gruppeaktivitet.getBeskrivelse())
                 .setFraDato(startDato)
                 .setTilDato(sluttDato)
                 .setAvtalt(true)
+                .setOpprettetDato(startDato)
                 .setMoeteplanListe(motePlan);
     }
 
@@ -121,6 +124,7 @@ public class ArenaAktivitetConsumer {
                 .setBeskrivelse(utdanningsaktivitet.getBeskrivelse())
                 .setFraDato(startDato)
                 .setTilDato(sluttDato)
+                .setOpprettetDato(startDato)
                 .setAvtalt(true);
     }
 
