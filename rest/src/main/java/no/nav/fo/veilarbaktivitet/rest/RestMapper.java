@@ -99,6 +99,11 @@ class RestMapper {
                     .setArbeidssted(aktivitetDTO.getArbeidssted())
                     .setStillingsTittel(aktivitetDTO.getStillingsTittel())
             );
+        } else if (aktivitetType == AktivitetTypeData.SOKEAVTALE) {
+            aktivitetData.setSokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
+                    .setAntall(aktivitetDTO.getAntall())
+                    .setAvtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
+            );
         }
 
         return aktivitetData;
