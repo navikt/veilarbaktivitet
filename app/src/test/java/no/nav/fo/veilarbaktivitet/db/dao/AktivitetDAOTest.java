@@ -6,16 +6,15 @@ import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.SokeAvtaleAktivitetData;
 import org.junit.Test;
 
 import javax.inject.Inject;
 
-
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataBuilder.nyttStillingssøk;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.util.DateUtils.*;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
+import static no.nav.fo.veilarbaktivitet.util.DateUtils.dateFromISO8601;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.empty;
@@ -49,6 +48,15 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void opprette_og_hente_sokeavtaleaktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_sokeavtale();
+
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
     public void slett_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
@@ -65,7 +73,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         assertThat(aktivitetDAO.hentAktivitet(aktivitet.getId()).getVersjon(), not(aktivitet.getVersjon()));
     }
 
-    @Test(expected = VersjonsKonflikt.class )
+    @Test(expected = VersjonsKonflikt.class)
     public void oppdaterAktivitet_feilVersjon_feiler() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
         aktivitetDAO.oppdaterAktivitet(aktivitetDAO.hentAktivitet(aktivitet.getId())); // versjon oppdateres
@@ -139,7 +147,6 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         assertThat(hentetAktiviteter.size(), is(0));
     }
 
-
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
         val aktivitet = nyAktivitet(AKTOR_ID).setAktivitetType(JOBBSOEKING);
         val stillingsok = nyttStillingssøk();
@@ -158,6 +165,16 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
         aktivitetDAO.opprettAktivitet(aktivitet);
 
+        return aktivitet;
+    }
+
+    private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
+        val aktivitet = nyAktivitet(AKTOR_ID)
+                .setAktivitetType(SOKEAVTALE)
+                .setSokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
+                        .setAntall(10L)
+                        .setAvtaleOppfolging("Oppfølging"));
+        aktivitetDAO.opprettAktivitet(aktivitet);
         return aktivitet;
     }
 }

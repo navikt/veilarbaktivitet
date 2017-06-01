@@ -34,4 +34,7 @@ public class AktivitetDTO {
     public String hensikt;
     public String oppfolging;
 
+    //sokeAvtaleAktivitet
+    public Long antall;
+    public String avtaleOppfolging;
 }

@@ -14,6 +14,7 @@ class RestMapper {
             new DualHashBidiMap<AktivitetTypeData, AktivitetTypeDTO>() {{
                 put(AktivitetTypeData.EGENAKTIVITET, AktivitetTypeDTO.EGEN);
                 put(AktivitetTypeData.JOBBSOEKING, AktivitetTypeDTO.STILLING);
+                put(AktivitetTypeData.SOKEAVTALE, AktivitetTypeDTO.SOKEAVTALE);
             }};
 
 
@@ -57,6 +58,12 @@ class RestMapper {
                                 .setOppfolging(egenAktivitetData.getOppfolging())
                 );
 
+        ofNullable(aktivitet.getSokeAvtaleAktivitetData())
+                .ifPresent(sokeAvtaleAktivitetData ->
+                        aktivitetDTO
+                                .setAntall(sokeAvtaleAktivitetData.getAntall())
+                                .setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging())
+                );
 
         return aktivitetDTO;
     }

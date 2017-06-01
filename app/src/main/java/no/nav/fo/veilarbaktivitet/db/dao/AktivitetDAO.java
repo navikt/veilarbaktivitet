@@ -44,17 +44,18 @@ public class AktivitetDAO {
                         "TIL_DATO, " +
                         "OPPRETTET_DATO, " +
                         "AVTALT " +
-                    "FROM AKTIVITET " +
-                    "WHERE OPPRETTET_DATO >= ?",
+                        "FROM AKTIVITET " +
+                        "WHERE OPPRETTET_DATO >= ?",
                 this::mapAktivitetForFeed,
                 date
-                );
+        );
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         return database.query("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
+                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id " +
                         "WHERE A.aktor_id = ?",
                 this::mapAktivitet,
                 aktorId
@@ -83,6 +84,8 @@ public class AktivitetDAO {
             aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
         } else if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             aktivitet.setStillingsSoekAktivitetData(this.mapStillingsAktivitet(rs));
+        } else if (aktivitet.getAktivitetType() == AktivitetTypeData.SOKEAVTALE) {
+            aktivitet.setSokeAvtaleAktivitetData(this.mapSokeAvtaleAktivitet(rs));
         }
 
         return aktivitet;
@@ -94,14 +97,13 @@ public class AktivitetDAO {
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
                 .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
-                .setFraDato( hentDato(rs, "fra_dato"))
+                .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
         return aktivitet;
     }
-
 
     private StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
         return new StillingsoekAktivitetData()
@@ -119,6 +121,12 @@ public class AktivitetDAO {
                 .setOppfolging(rs.getString("oppfolging"));
     }
 
+    private SokeAvtaleAktivitetData mapSokeAvtaleAktivitet(ResultSet rs) throws SQLException {
+        return new SokeAvtaleAktivitetData()
+                .setAntall(rs.getLong("antall"))
+                .setAvtaleOppfolging(rs.getString("avtale_oppfolging"));
+    }
+
 
     public long opprettAktivitet(AktivitetData aktivitet) {
         return opprettAktivitet(aktivitet, new Date());
@@ -129,6 +137,7 @@ public class AktivitetDAO {
         val aktivitetId = insertAktivitet(aktivitet, opprettetDate);
         insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
+        insertSokeAvtale(aktivitetId, aktivitet.getSokeAvtaleAktivitetData());
         return aktivitetId;
     }
 
@@ -140,6 +149,9 @@ public class AktivitetDAO {
         );
         Optional.ofNullable(aktivitet.getEgenAktivitetData()).ifPresent(
                 egen -> updateEgenAktivitet(aktivitet.getId(), egen)
+        );
+        Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData()).ifPresent(
+                sokeAvtale -> updateSokAvtale(aktivitet.getId(), sokeAvtale)
         );
     }
 
@@ -188,6 +200,15 @@ public class AktivitetDAO {
                 aktivitetId
         );
 
+    }
+
+    private void updateSokAvtale(long aktivitetId, SokeAvtaleAktivitetData sokeAvtale) {
+        database.update("UPDATE SOKEAVTALE SET antall = ? avtale_oppfolging = ? " +
+                        "WHERE aktivitet_id = ?",
+                sokeAvtale.getAntall(),
+                sokeAvtale.getAvtaleOppfolging(),
+                aktivitetId
+        );
     }
 
     private long insertAktivitet(AktivitetData aktivitet, Date opprettetDato) {
@@ -243,6 +264,17 @@ public class AktivitetDAO {
                 });
     }
 
+    private void insertSokeAvtale(long aktivitetId, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
+        ofNullable(sokeAvtaleAktivitetData)
+                .ifPresent(sokeAvtale -> {
+                    database.update("INSERT INTO SOKEAVTALE(aktivitet_id, antall, avtale_oppfolging) VALUES(?, ?, ?)",
+                            aktivitetId,
+                            sokeAvtale.getAntall(),
+                            sokeAvtale.getAvtaleOppfolging()
+                    );
+                });
+    }
+
 
     public int slettAktivitet(long aktivitetId) {
 
@@ -264,6 +296,7 @@ public class AktivitetDAO {
         return database.queryForObject("SELECT * FROM AKTIVITET A " +
                         "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
                         "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
+                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id " +
                         "WHERE A.aktivitet_id = ?",
                 this::mapAktivitet,
                 aktivitetId
