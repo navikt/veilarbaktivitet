@@ -1,0 +1,8 @@
+create table SOKEAVTALE
+(
+  AKTIVITET_ID NUMBER(19)
+    constraint SOKEAVTALE_FK
+    references AKTIVITET,
+  ANTALL NUMBER(19),
+  OPPFOLGING CLOB
+);
