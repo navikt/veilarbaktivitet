@@ -22,7 +22,8 @@ public class AktivitetDataBuilder {
                 .setAvsluttetKommentar("avsluttetKommentar")
                 .setLagtInnAv(InnsenderData.values()[0])
                 .setOpprettetDato(nyDato())
-                .setLenke("lenke");
+                .setLenke("lenke")
+                .setTransaksjonsTypeData(TransaksjonsTypeData.DETALJER_ENDRET);
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {

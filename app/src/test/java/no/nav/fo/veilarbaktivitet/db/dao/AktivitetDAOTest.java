@@ -154,7 +154,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         aktivitet.setStillingsSoekAktivitetData(stillingsok);
         aktivitetDAO.opprettAktivitet(aktivitet);
 
-        return aktivitet;
+        return aktivitet.setVersjon(0);
     }
 
     private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
@@ -165,7 +165,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
         aktivitetDAO.opprettAktivitet(aktivitet);
 
-        return aktivitet;
+        return aktivitet.setVersjon(0);
     }
 
     private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
@@ -175,6 +175,6 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
                         .setAntall(10L)
                         .setAvtaleOppfolging("Oppfølging"));
         aktivitetDAO.opprettAktivitet(aktivitet);
-        return aktivitet;
+        return aktivitet.setVersjon(0);
     }
 }

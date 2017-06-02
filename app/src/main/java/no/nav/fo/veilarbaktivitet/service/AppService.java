@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.db.dao.EndringsLoggDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.EndringsloggData;
+import no.nav.fo.veilarbaktivitet.domain.TransaksjonsTypeData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
@@ -46,7 +47,11 @@ public class AppService {
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
         val aktorId = hentAktoerIdForIdent(ident);
-        val aktivitetId = aktivitetDAO.opprettAktivitet(aktivitetData.setAktorId(aktorId));
+        val aktivitetId = aktivitetDAO.opprettAktivitet(
+                aktivitetData
+                        .setAktorId(aktorId)
+                        .setTransaksjonsTypeData(TransaksjonsTypeData.OPPRETTET)
+        );
         return hentAktivitet(aktivitetId);
     }
 
@@ -55,7 +60,7 @@ public class AppService {
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitetData) {
-        aktivitetDAO.oppdaterAktivitet(aktivitetData);
+        aktivitetDAO.oppdaterAktivitet(aktivitetData.setTransaksjonsTypeData(TransaksjonsTypeData.DETALJER_ENDRET));
         return hentAktivitet(aktivitetData.getId());
     }
 

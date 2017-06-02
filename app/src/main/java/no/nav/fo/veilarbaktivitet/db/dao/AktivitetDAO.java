@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.feed.producer.AktivitetFeedData;
 import org.slf4j.Logger;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,22 +31,12 @@ public class AktivitetDAO {
     @Inject
     private Database database;
 
-    @Inject
-    private EndringsLoggDAO endringsLoggDAO;
-
     public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date date) {
         return database.query(
                 "SELECT " +
-                        "AKTIVITET_ID, " +
-                        "AKTOR_ID, " +
-                        "TYPE, " +
-                        "STATUS, " +
-                        "FRA_DATO, " +
-                        "TIL_DATO, " +
-                        "OPPRETTET_DATO, " +
-                        "AVTALT " +
-                        "FROM AKTIVITET " +
-                        "WHERE OPPRETTET_DATO >= ?",
+                        "aktivitet_id, aktor_id, type, status, fra_dato, til_dato, opprettet_dato, avtalt " +
+                        "FROM aktivitet " +
+                        "WHERE opprettet_dato >= ? and gjeldende = true",
                 this::mapAktivitetForFeed,
                 date
         );
@@ -53,10 +44,10 @@ public class AktivitetDAO {
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         return database.query("SELECT * FROM AKTIVITET A " +
-                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
-                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
-                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id " +
-                        "WHERE A.aktor_id = ?",
+                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id  and A.versjon = S.versjon " +
+                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id and A.versjon = E.versjon " +
+                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id and A.versjon = SA.versjon " +
+                        "WHERE A.aktor_id = ? and A.gjeldende = true",
                 this::mapAktivitet,
                 aktorId
         );
@@ -78,7 +69,11 @@ public class AktivitetDAO {
                 .setOpprettetDato(hentDato(rs, "opprettet_dato"))
                 .setLagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .setAvtalt(rs.getBoolean("avtalt"))
-                .setLenke(rs.getString("lenke"));
+                .setLenke(rs.getString("lenke"))
+                .setTransaksjonsTypeData(
+                        valueOf(TransaksjonsTypeData.class,
+                                rs.getString("transaksjons_type"))
+                );
 
         if (aktivitet.getAktivitetType() == AktivitetTypeData.EGENAKTIVITET) {
             aktivitet.setEgenAktivitetData(this.mapEgenAktivitet(rs));
@@ -132,92 +127,72 @@ public class AktivitetDAO {
         return opprettAktivitet(aktivitet, new Date());
     }
 
-    @Transactional
     long opprettAktivitet(AktivitetData aktivitet, Date opprettetDate) {
-        val aktivitetId = insertAktivitet(aktivitet, opprettetDate);
-        insertStillingsSoek(aktivitetId, aktivitet.getStillingsSoekAktivitetData());
-        insertEgenAktivitet(aktivitetId, aktivitet.getEgenAktivitetData());
-        insertSokeAvtale(aktivitetId, aktivitet.getSokeAvtaleAktivitetData());
+        val aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
+        val nyAktivivitet = aktivitet
+                .setId(aktivitetId)
+                .setVersjon(-1)
+                .setOpprettetDato(opprettetDate);
+
+        insertAktivitet(aktivitet);
         return aktivitetId;
     }
 
-    @Transactional
     public void oppdaterAktivitet(AktivitetData aktivitet) {
-        updateAktivitet(aktivitet);
-        Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData()).ifPresent(
-                stilling -> updateStillingSoek(aktivitet.getId(), stilling)
-        );
-        Optional.ofNullable(aktivitet.getEgenAktivitetData()).ifPresent(
-                egen -> updateEgenAktivitet(aktivitet.getId(), egen)
-        );
-        Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData()).ifPresent(
-                sokeAvtale -> updateSokAvtale(aktivitet.getId(), sokeAvtale)
-        );
-    }
 
-    private void updateAktivitet(AktivitetData aktivitetData) {
-        long versjon = aktivitetData.getVersjon();
-        long nesteVersjon = versjon + 1;
-        int antallRaderOppdatert = database.update("UPDATE AKTIVITET SET fra_dato = ?, til_dato = ?, tittel = ?, beskrivelse = ?, " +
-                        "avsluttet_kommentar = ?, lenke = ?, avtalt = ?, versjon=?" +
-                        "WHERE aktivitet_id = ?" +
-                        "AND versjon = ?",
-                aktivitetData.getFraDato(),
-                aktivitetData.getTilDato(),
-                aktivitetData.getTittel(),
-                aktivitetData.getBeskrivelse(),
-                aktivitetData.getAvsluttetKommentar(),
-                aktivitetData.getLenke(),
-                aktivitetData.isAvtalt(),
-                nesteVersjon,
-                aktivitetData.getId(),
-                versjon
+        val oldAktivtet = hentAktivitet(aktivitet.getId());
+
+
+        // Sjekke versjonskonlfikt her? tror ikke dette vil funke
+        // Versjonene vil jo skape problemer mot hverandre....
+        // kan prøve å inserte for så å kaste en exception gitt sql constraint exception
+
+        val nyAktivitet = oldAktivtet
+                .setFraDato(aktivitet.getFraDato())
+                .setTilDato(aktivitet.getTilDato())
+                .setTittel(aktivitet.getTittel())
+                .setBeskrivelse(aktivitet.getBeskrivelse())
+                .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
+                .setLenke(aktivitet.getLenke())
+                .setVersjon(aktivitet.getVersjon())
+                .setAvtalt(aktivitet.isAvtalt());
+
+        Optional.ofNullable(oldAktivtet.getStillingsSoekAktivitetData()).ifPresent(
+                stilling ->
+                        stilling.setArbeidsgiver(aktivitet.getStillingsSoekAktivitetData().getArbeidsgiver())
+                                .setArbeidssted(aktivitet.getStillingsSoekAktivitetData().getArbeidssted())
+                                .setKontaktPerson(aktivitet.getStillingsSoekAktivitetData().getKontaktPerson())
+                                .setStillingsTittel(aktivitet.getStillingsSoekAktivitetData().getStillingsTittel())
         );
-        if (antallRaderOppdatert != 1) {
+        Optional.ofNullable(oldAktivtet.getEgenAktivitetData()).ifPresent(
+                egen -> egen
+                        .setOppfolging(aktivitet.getEgenAktivitetData().getOppfolging())
+                        .setHensikt(aktivitet.getEgenAktivitetData().getHensikt())
+        );
+        Optional.ofNullable(oldAktivtet.getSokeAvtaleAktivitetData()).ifPresent(
+                sokeAvtale -> sokeAvtale
+                        .setAntall(aktivitet.getSokeAvtaleAktivitetData().getAntall())
+                        .setAvtaleOppfolging(aktivitet.getSokeAvtaleAktivitetData().getAvtaleOppfolging())
+        );
+
+        try {
+            insertAktivitet(nyAktivitet);
+        } catch (DuplicateKeyException e){
             throw new VersjonsKonflikt();
         }
     }
 
-    private void updateStillingSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
-        database.update("UPDATE STILLINGSSOK SET stillingstittel = ?, arbeidsgiver = ?, arbeidssted = ?, " +
-                        "kontaktperson  = ?, etikett = ? " +
-                        "WHERE aktivitet_id = ?",
-                stillingsSoekAktivitet.getStillingsTittel(),
-                stillingsSoekAktivitet.getArbeidsgiver(),
-                stillingsSoekAktivitet.getArbeidssted(),
-                stillingsSoekAktivitet.getKontaktPerson(),
-                getName(stillingsSoekAktivitet.getStillingsoekEtikett()),
-                aktivitetId
-        );
+    @Transactional
+    private void insertAktivitet(AktivitetData aktivitet) {
+        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitet.getId());
 
-    }
-
-    private void updateEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
-        database.update("UPDATE EGENAKTIVITET SET hensikt = ?, oppfolging = ? " +
-                        "WHERE aktivitet_id = ?",
-                egenAktivitetData.getHensikt(),
-                egenAktivitetData.getOppfolging(),
-                aktivitetId
-        );
-
-    }
-
-    private void updateSokAvtale(long aktivitetId, SokeAvtaleAktivitetData sokeAvtale) {
-        database.update("UPDATE SOKEAVTALE SET antall = ? avtale_oppfolging = ? " +
-                        "WHERE aktivitet_id = ?",
-                sokeAvtale.getAntall(),
-                sokeAvtale.getAvtaleOppfolging(),
-                aktivitetId
-        );
-    }
-
-    private long insertAktivitet(AktivitetData aktivitet, Date opprettetDato) {
-        long aktivitetId = database.nesteFraSekvens("AKTIVITET_ID_SEQ");
-        database.update("INSERT INTO AKTIVITET(aktivitet_id, aktor_id, type," +
+        val versjon = aktivitet.getVersjon() + 1;
+        database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
-                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                aktivitetId,
+                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt, gjeldende, transaksjons_type) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                aktivitet.getId(),
+                versjon,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
                 aktivitet.getFraDato(),
@@ -226,24 +201,28 @@ public class AktivitetDAO {
                 aktivitet.getBeskrivelse(),
                 getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetKommentar(),
-                opprettetDato,
+                aktivitet.getOpprettetDato(),
                 getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
-                aktivitet.isAvtalt()
+                aktivitet.isAvtalt(),
+                true,
+                getName(aktivitet.getTransaksjonsTypeData())
         );
-        aktivitet.setId(aktivitetId);
-        aktivitet.setOpprettetDato(opprettetDato);
+
+        insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());
+        insertEgenAktivitet(aktivitet.getId(), versjon, aktivitet.getEgenAktivitetData());
+        insertSokeAvtale(aktivitet.getId(), versjon, aktivitet.getSokeAvtaleAktivitetData());
 
         LOG.info("opprettet {}", aktivitet);
-        return aktivitetId;
     }
 
-    private void insertStillingsSoek(long aktivitetId, StillingsoekAktivitetData stillingsSoekAktivitet) {
+    private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
         ofNullable(stillingsSoekAktivitet)
                 .ifPresent(stillingsoek -> {
-                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id, stillingstittel, arbeidsgiver," +
-                                    "arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?)",
+                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel," +
+                                    "arbeidsgiver, arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?,?)",
                             aktivitetId,
+                            versjon,
                             stillingsoek.getStillingsTittel(),
                             stillingsoek.getArbeidsgiver(),
                             stillingsoek.getArbeidssted(),
@@ -253,22 +232,26 @@ public class AktivitetDAO {
                 });
     }
 
-    private void insertEgenAktivitet(long aktivitetId, EgenAktivitetData egenAktivitetData) {
+    private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, hensikt, oppfolging) VALUES(?,?,?)",
+                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
+                                    "VALUES(?,?,?,?)",
                             aktivitetId,
+                            versjon,
                             egen.getHensikt(),
                             egen.getOppfolging()
                     );
                 });
     }
 
-    private void insertSokeAvtale(long aktivitetId, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
+    private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
                 .ifPresent(sokeAvtale -> {
-                    database.update("INSERT INTO SOKEAVTALE(aktivitet_id, antall, avtale_oppfolging) VALUES(?, ?, ?)",
+                    database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall, avtale_oppfolging) " +
+                                    "VALUES(?,?,?,?)",
                             aktivitetId,
+                            versjon,
                             sokeAvtale.getAntall(),
                             sokeAvtale.getAvtaleOppfolging()
                     );
@@ -284,8 +267,9 @@ public class AktivitetDAO {
         database.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
                 aktivitetId
         );
-
-        endringsLoggDAO.slettEndringslogg(aktivitetId);
+        database.update("DELETE FROM SOKEAVTALE WHERE aktivitet_id = ?",
+                aktivitetId
+        );
 
         return database.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
                 aktivitetId
@@ -294,10 +278,10 @@ public class AktivitetDAO {
 
     public AktivitetData hentAktivitet(long aktivitetId) {
         return database.queryForObject("SELECT * FROM AKTIVITET A " +
-                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id " +
-                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id " +
-                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id " +
-                        "WHERE A.aktivitet_id = ?",
+                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
+                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
+                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
+                        "WHERE A.aktivitet_id = ? and gjeldende = true",
                 this::mapAktivitet,
                 aktivitetId
         );
