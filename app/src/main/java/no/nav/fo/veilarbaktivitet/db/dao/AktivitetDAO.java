@@ -203,7 +203,7 @@ public class AktivitetDAO {
     }
 
     private void updateSokAvtale(long aktivitetId, SokeAvtaleAktivitetData sokeAvtale) {
-        database.update("UPDATE SOKEAVTALE SET antall = ? avtale_oppfolging = ? " +
+        database.update("UPDATE SOKEAVTALE SET antall = ?, avtale_oppfolging = ? " +
                         "WHERE aktivitet_id = ?",
                 sokeAvtale.getAntall(),
                 sokeAvtale.getAvtaleOppfolging(),

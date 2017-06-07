@@ -17,7 +17,7 @@ public enum AktivitetTypeDTO {
     static {
         put(AktivitetType.EGENAKTIVITET, EGEN);
         put(AktivitetType.JOBBSOEKING, STILLING);
-//        put(AktivitetType.SOKEAVTALE, SOKEAVTALE); TODO when wsdl is updated
+        put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
     }
 
     private static void put(AktivitetType aktivitetType, AktivitetTypeDTO aktivitetTypeDTO) {

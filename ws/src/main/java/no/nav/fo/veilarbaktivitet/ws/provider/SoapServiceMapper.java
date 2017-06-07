@@ -24,6 +24,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.wsStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
@@ -44,6 +45,7 @@ class SoapServiceMapper {
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
+                put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
             }};
 
 
@@ -136,6 +138,9 @@ class SoapServiceMapper {
         Optional.ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
                         wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
+        Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData())
+                .ifPresent(sokeAvtaleAktivitetData ->
+                wsAktivitet.setSokeavtale(mapTilSokeAvtaleAktivitet(sokeAvtaleAktivitetData)));
 
         return wsAktivitet;
     }
@@ -159,6 +164,13 @@ class SoapServiceMapper {
         egenaktivitet.setOppfolging(egenAktivitetData.getOppfolging());
 
         return egenaktivitet;
+    }
+
+    private static Sokeavtale mapTilSokeAvtaleAktivitet(SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
+        val sokeAvtaleAtivitet = new Sokeavtale();
+        sokeAvtaleAtivitet.setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
+        sokeAvtaleAtivitet.setAntall(sokeAvtaleAktivitetData.getAntall());
+        return sokeAvtaleAtivitet;
     }
 
     static OpprettNyAktivitetResponse mapTilOpprettNyAktivitetResponse(Aktivitet aktivitet) {
