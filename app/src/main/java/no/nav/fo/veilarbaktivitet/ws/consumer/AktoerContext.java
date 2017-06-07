@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
-import no.nav.modig.security.ws.SystemSAMLOutInterceptor;
 import no.nav.sbl.dialogarena.common.cxf.CXFClient;
 import no.nav.tjeneste.virksomhet.aktoer.v2.Aktoer_v2PortType;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +13,7 @@ public class AktoerContext {
     @Bean
     public Aktoer_v2PortType aktoerV2() {
         return aktoerPortType()
-                .withOutInterceptor(new SystemSAMLOutInterceptor())
+                .configureStsForSystemUserInFSS()
                 .build();
     }
 
