@@ -11,10 +11,9 @@ import static org.apache.commons.lang3.time.DateUtils.truncate;
 
 public class AktivitetDataTestBuilder {
 
-    public static AktivitetDataBuilder nyAktivitet(String aktorId) {
+    public static AktivitetDataBuilder nyAktivitet() {
         return AktivitetData.builder()
                 .id(new Random().nextLong())
-                .aktorId(aktorId)
                 .fraDato(nyDato())
                 .tilDato(nyDato())
                 .tittel("tittel")

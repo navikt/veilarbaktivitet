@@ -117,6 +117,7 @@ public class AktivitetService {
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .lenke(aktivitet.getLenke())
                 .transaksjonsTypeData(transType)
+                .versjon(aktivitet.getVersjon())
                 .avtalt(aktivitet.isAvtalt());
 
         Optional.ofNullable(orignalAktivitet.getStillingsSoekAktivitetData()).ifPresent(

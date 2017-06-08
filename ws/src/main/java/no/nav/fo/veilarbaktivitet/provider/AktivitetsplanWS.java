@@ -89,18 +89,6 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
 
     @Override
     public HentEndringsLoggForAktivitetResponse hentEndringsLoggForAktivitet(HentEndringsLoggForAktivitetRequest hentEndringsLoggForAktivitetRequest) {
-//        val endringsloggResponse = new HentEndringsLoggForAktivitetResponse();
-//        val endringer = endringsloggResponse.getEndringslogg();
-//
-//        of(hentEndringsLoggForAktivitetRequest)
-//                .map(HentEndringsLoggForAktivitetRequest::getAktivitetId)
-//                .map(Long::parseLong)
-//                .map(aktivietId -> appService.hentEndringsloggForAktivitetId(aktivietId))
-//                .ifPresent((endringslist) -> endringslist.stream()
-//                        .map(SoapMapper::somEndringsLoggResponse)
-//                        .forEach(endringer::add)
-//                );
-//        return endringsloggResponse;
         return null;
     }
 

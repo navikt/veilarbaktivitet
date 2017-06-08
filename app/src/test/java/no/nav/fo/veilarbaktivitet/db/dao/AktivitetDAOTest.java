@@ -109,8 +109,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
         val opprettet2 = dateFromISO8601("2010-12-04T10:15:30+02:00");
 
-        val aktivitet1 = nyAktivitet(AKTOR_ID).aktivitetType(JOBBSOEKING);
-        val aktivitet2 = nyAktivitet(AKTOR_ID).aktivitetType(EGENAKTIVITET);
+        val aktivitet1 = nyAktivitet().aktivitetType(JOBBSOEKING);
+        val aktivitet2 = nyAktivitet().aktivitetType(EGENAKTIVITET);
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet1.build(), opprettet1);
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet2.build(), opprettet2);
 
@@ -124,8 +124,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
         val opprettet2 = dateFromISO8601("2010-12-03T10:15:30.2+02:00");
 
-        val aktivitet1 = nyAktivitet(AKTOR_ID).aktivitetType(JOBBSOEKING);
-        val aktivitet2 = nyAktivitet(AKTOR_ID).aktivitetType(EGENAKTIVITET);
+        val aktivitet1 = nyAktivitet().aktivitetType(JOBBSOEKING);
+        val aktivitet2 = nyAktivitet().aktivitetType(EGENAKTIVITET);
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet1.build(), opprettet1);
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet2.build(), opprettet2);
 //
@@ -140,8 +140,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val opprettet1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
         val opprettet2 = dateFromISO8601("2010-12-04T10:15:30+02:00");
 
-        val aktivitet1 = nyAktivitet(AKTOR_ID).aktivitetType(JOBBSOEKING).build();
-        val aktivitet2 = nyAktivitet(AKTOR_ID).aktivitetType(EGENAKTIVITET).build();
+        val aktivitet1 = nyAktivitet().aktivitetType(JOBBSOEKING).build();
+        val aktivitet2 = nyAktivitet().aktivitetType(EGENAKTIVITET).build();
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet1, opprettet1);
 //        aktivitetDAO.opprettAktivitet(AKTOR_ID, aktivitet2, opprettet2);
 //
@@ -150,7 +150,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitetBuilder = nyAktivitet(AKTOR_ID).aktivitetType(JOBBSOEKING);
+        val aktivitetBuilder = nyAktivitet().aktivitetType(JOBBSOEKING);
         val stillingsok = nyttStillingssøk();
 
         aktivitetBuilder.stillingsSoekAktivitetData(stillingsok);
@@ -161,7 +161,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
-        val aktivitetBuilder = nyAktivitet(AKTOR_ID)
+        val aktivitetBuilder = nyAktivitet()
                 .aktivitetType(EGENAKTIVITET)
                 .egenAktivitetData(new EgenAktivitetData()
                         .setHensikt("nada"));
@@ -174,7 +174,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
-        val aktivitetBuilder = nyAktivitet(AKTOR_ID)
+        val aktivitetBuilder = nyAktivitet()
                 .aktivitetType(SOKEAVTALE)
                 .sokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
                         .setAntall(10L)

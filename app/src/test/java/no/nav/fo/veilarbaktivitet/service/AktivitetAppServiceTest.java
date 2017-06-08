@@ -11,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static junit.framework.TestCase.fail;
-import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static org.hamcrest.Matchers.containsString;
@@ -31,7 +30,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_status_fra_avbrutt_eller_fullfort() {
-        val aktivitet = nyAktivitet(KJENT_AKTOR_ID)
+        val aktivitet = nyAktivitet()
                 .aktivitetType(EGENAKTIVITET)
                 .egenAktivitetData(new EgenAktivitetData())
                 .status(AktivitetStatus.AVBRUTT)
@@ -39,7 +38,7 @@ public class AktivitetAppServiceTest {
         when(aktivitetDAO.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitet.build());
 
         try {
-            val oppdatertAktivitet = nyAktivitet(KJENT_AKTOR_ID)
+            val oppdatertAktivitet = nyAktivitet()
                     .id(AKTIVITET_ID)
                     .status(AktivitetStatus.GJENNOMFORT);
             aktivitetAppService.oppdaterStatus(oppdatertAktivitet.build());
