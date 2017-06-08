@@ -2,8 +2,10 @@ package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTestUtenArenaMock;
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
+import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -12,18 +14,17 @@ import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
 public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
-
-
-
     @Test
     public void hent_aktivitsplan() {
         gitt_at_jeg_har_aktiviter();
@@ -79,7 +80,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
         da_skal_jeg_aktiviten_vare_endret();
     }
 
-
     @Test
     public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
         gitt_at_jeg_har_laget_en_aktivtet();
@@ -97,7 +97,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private MockHttpServletRequest mockHttpServletRequest;
 
     @Inject
-    private AktivitetDAO aktivitetDAO;
+    private AktivitetService aktivitetService;
 
     @Before
     public void setup() {
@@ -105,11 +105,13 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private AktivitetData nyStillingAktivitet() {
-//        return AktivitetDataTestBuilder.nyAktivitet(KJENT_AKTOR_ID)
-//                .setAktivitetType(AktivitetTypeData.JOBBSOEKING)
-//                .setStillingsSoekAktivitetData(nyttStillingssøk());
-        return null;
+        return AktivitetDataTestBuilder.nyAktivitet(KJENT_AKTOR_ID)
+                .aktivitetType(AktivitetTypeData.JOBBSOEKING)
+                .stillingsSoekAktivitetData(nyttStillingssøk())
+                .build();
     }
+
+    private List<Long> lagredeAktivitetsIder;
 
     private List<AktivitetData> aktiviter = Arrays.asList(
             nyStillingAktivitet(), nyStillingAktivitet()
@@ -118,7 +120,9 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private AktivitetDTO aktivitet;
 
     private void gitt_at_jeg_har_aktiviter() {
-//        aktiviter.forEach(aktivitetDAO::opprettAktivitet);
+        lagredeAktivitetsIder = aktiviter.stream()
+                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet))
+                .collect(Collectors.toList());
     }
 
     private void gitt_at_jeg_har_laget_en_aktivtet() {
@@ -179,15 +183,20 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
-        val aktivitet = this.aktiviter.get(0);
-        oldOpprettetDato = aktivitet.getOpprettetDato();
+        val originalAktivitet = aktivitetService.hentAktivitet(lagredeAktivitetsIder.get(0));
+        oldOpprettetDato = originalAktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
-//        aktivitet.setLenke(nyLenke);
-//        aktivitet.setAvsluttetKommentar(nyAvsluttetKommentar);
-//        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.INNKALT_TIL_INTERVJU);
 
-//        this.aktivitet = aktivitetController.oppdaterAktiviet(RestMapper.mapTilAktivitetDTO(aktivitet));
+        val nyAktivitet = originalAktivitet
+                .toBuilder()
+                .lenke(nyLenke)
+                .avsluttetKommentar(nyAvsluttetKommentar)
+                .versjon(1L)
+                .build();
+
+        this.aktivitet = aktivitetController.oppdaterAktiviet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
+        this.lagredeAktivitetsIder.set(0, Long.parseLong(this.aktivitet.getId()));
     }
 
 
@@ -197,21 +206,21 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
-        assertThat(aktiviter.get(0).getId().toString(),
-                equalTo(aktivitetController.hentAktivitet(aktiviter.get(0).getId().toString()).getId()));
+        assertThat(lagredeAktivitetsIder.get(0).toString(),
+                equalTo(aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString()).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
-        assertThat(aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
+        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
 
     private void da_skal_jeg_ha_mindre_aktiviter_i_min_aktivitetsplan() {
-        assertThat(aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
+        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
-        assertThat(aktivitetDAO.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
+        assertThat(aktivitetService.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_etikett() {
@@ -223,10 +232,10 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {
-        assertThat(this.aktivitet.getLenke(), equalTo(nyLenke));
-        assertThat(this.aktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
-        assertThat(this.aktivitet.getEtikett(), equalTo(EtikettTypeDTO.INNKALT_TIL_INTERVJU));
-        assertThat(this.aktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
+        val lagretAktivitet = aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
+        assertThat(lagretAktivitet.getLenke(), equalTo(nyLenke));
+        assertThat(lagretAktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
+        assertThat(lagretAktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
     }
 
     private void da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert() {
