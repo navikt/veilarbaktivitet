@@ -48,46 +48,34 @@ public class AktivitetService {
 
     public void oppdaterStatus(AktivitetData aktivitet) {
         val orignalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(orignalAktivitet);
 
-        if (statusSkalIkkeKunneEndres(orignalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre status til [%s] for aktivitet [%s]",
-                            aktivitet.getStatus(), aktivitet.getId())
-            );
-        } else {
-            val nyAktivitet = orignalAktivitet
-                    .toBuilder()
-                    .status(aktivitet.getStatus())
-                    .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
-                    .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
-                    .build();
+        val nyAktivitet = orignalAktivitet
+                .toBuilder()
+                .status(aktivitet.getStatus())
+                .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
+                .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
+                .build();
 
-            aktivitetDAO.insertAktivitet(nyAktivitet);
-        }
+        aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData aktivitet) {
         val orignalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(orignalAktivitet);
 
-        if (statusSkalIkkeKunneEndres(orignalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre status til [%s] for aktivitet [%s]",
-                            aktivitet.getStatus(), aktivitet.getId())
-            );
-        } else {
-            val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
+        val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
 
-            val orginalStillingsAktivitet = orignalAktivitet.getStillingsSoekAktivitetData();
-            val nyStillingsAktivitet = orginalStillingsAktivitet.setStillingsoekEtikett(nyEtikett);
+        val orginalStillingsAktivitet = orignalAktivitet.getStillingsSoekAktivitetData();
+        val nyStillingsAktivitet = orginalStillingsAktivitet.setStillingsoekEtikett(nyEtikett);
 
-            val nyAktivitet = orignalAktivitet
-                    .toBuilder()
-                    .stillingsSoekAktivitetData(nyStillingsAktivitet)
-                    .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
-                    .build();
+        val nyAktivitet = orignalAktivitet
+                .toBuilder()
+                .stillingsSoekAktivitetData(nyStillingsAktivitet)
+                .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
+                .build();
 
-            aktivitetDAO.insertAktivitet(nyAktivitet);
-        }
+        aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -104,6 +92,7 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitet(AktivitetData orignalAktivitet, AktivitetData aktivitet) {
+        kanEndreAktivitetGuard(orignalAktivitet);
 
         val blittAvtalt = orignalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? TransaksjonsTypeData.AVTALT : TransaksjonsTypeData.DETALJER_ENDRET;
@@ -142,6 +131,15 @@ public class AktivitetService {
             aktivitetDAO.insertAktivitet(mergetAktivitetEndringer.build());
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
+        }
+    }
+
+    private void kanEndreAktivitetGuard(AktivitetData orignalAktivitet) {
+        if (statusSkalIkkeKunneEndres(orignalAktivitet)) {
+            throw new IllegalArgumentException(
+                    String.format("Kan ikke endre aktivitet aktivitet [%s]",
+                            orignalAktivitet.getId())
+            );
         }
     }
 
