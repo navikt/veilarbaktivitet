@@ -270,7 +270,7 @@ class SoapServiceMapper {
         val mote = new Moeteplan();
         mote.setSluttDato(xmlCalendar(dto.getSluttDato()));
         mote.setStartDato(xmlCalendar(dto.getStartDato()));
-        mote.setStartDato(xmlCalendar(dto.getStartDato()));
+        mote.setSted(dto.getSted());
 
         return mote;
 
