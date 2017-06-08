@@ -34,6 +34,16 @@ public class AktivitetDataTestBuilder {
                 .setStillingsoekEtikett(StillingsoekEtikettData.values()[0]);
     }
 
+    public static EgenAktivitetData nyEgenaktivitet() {
+        return new EgenAktivitetData().setHensikt("nada");
+    }
+
+    public static SokeAvtaleAktivitetData nySokeAvtaleAktivitet() {
+        return new SokeAvtaleAktivitetData()
+                .setAntall(10L)
+                .setAvtaleOppfolging("Oppfølging");
+    }
+
     public static Date nyDato() {
         return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
     }
