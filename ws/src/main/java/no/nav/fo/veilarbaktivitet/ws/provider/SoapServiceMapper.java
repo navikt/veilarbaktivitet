@@ -22,9 +22,7 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.wsStatus;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
@@ -84,6 +82,7 @@ class SoapServiceMapper {
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setEgenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .setStillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
+                .setSokeAvtaleAktivitetData(mapTilSokeavtaleAktivitetData(aktivitet.getSokeavtale()))
                 ;
     }
 
@@ -105,6 +104,15 @@ class SoapServiceMapper {
                                 .setHensikt(egen.getHensikt())
                                 .setOppfolging(egen.getOppfolging()))
                 .orElse(null);
+    }
+
+    private static SokeAvtaleAktivitetData mapTilSokeavtaleAktivitetData(Sokeavtale sokeavtaleAktivitet) {
+        return Optional.ofNullable(sokeavtaleAktivitet)
+                .map(sokeavtale ->
+                        new SokeAvtaleAktivitetData()
+                                .setAntall(sokeavtaleAktivitet.getAntall())
+                                .setAvtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
+                ).orElse(null);
     }
 
     static Aktivitet mapTilAktivitet(String fnr, AktivitetData aktivitet) {
@@ -140,7 +148,7 @@ class SoapServiceMapper {
                         wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
         Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData())
                 .ifPresent(sokeAvtaleAktivitetData ->
-                wsAktivitet.setSokeavtale(mapTilSokeAvtaleAktivitet(sokeAvtaleAktivitetData)));
+                        wsAktivitet.setSokeavtale(mapTilSokeAvtaleAktivitet(sokeAvtaleAktivitetData)));
 
         return wsAktivitet;
     }
