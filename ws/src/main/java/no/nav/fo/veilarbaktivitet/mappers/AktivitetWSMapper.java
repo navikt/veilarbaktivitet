@@ -14,6 +14,11 @@ import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 
 public class AktivitetWSMapper {
+
+    public static Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
+        return mapTilAktivitet("", aktivitet);
+    }
+
     public static Aktivitet mapTilAktivitet(String fnr, AktivitetData aktivitet) {
         val wsAktivitet = new Aktivitet();
         wsAktivitet.setPersonIdent(fnr);

@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
@@ -99,8 +98,15 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Override
-    public List<EndringsloggDTO> hentEndringsLoggForAktivitetId(String aktivitetId) {
-        return null;
+    public List<AktivitetDTO> hentAktivitetVersjoner(String aktivitetId) {
+        return Optional.of(aktivitetId)
+                .map(Long::parseLong)
+                .map(appService::hentAktivitetVersjoner)
+                .map(aktivitetList -> aktivitetList
+                        .stream()
+                        .map(AktivitetDTOMapper::mapTilAktivitetDTO)
+                        .collect(Collectors.toList())
+                ).orElseThrow(RuntimeException::new);
     }
 
     private String getUserIdent() {

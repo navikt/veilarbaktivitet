@@ -111,29 +111,25 @@ public class AktivitetDAO {
 
     private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
         ofNullable(egenAktivitetData)
-                .ifPresent(egen -> {
-                    database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
-                                    "VALUES(?,?,?,?)",
-                            aktivitetId,
-                            versjon,
-                            egen.getHensikt(),
-                            egen.getOppfolging()
-                    );
-                });
+                .ifPresent(egen -> database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
+                                "VALUES(?,?,?,?)",
+                        aktivitetId,
+                        versjon,
+                        egen.getHensikt(),
+                        egen.getOppfolging()
+                ));
     }
 
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
-                .ifPresent(sokeAvtale -> {
-                    database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall, avtale_oppfolging) " +
-                                    "VALUES(?,?,?,?)",
-                            aktivitetId,
-                            versjon,
-                            sokeAvtale.getAntall(),
-                            sokeAvtale.getAvtaleOppfolging()
-                    );
-                });
+                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall, avtale_oppfolging) " +
+                                "VALUES(?,?,?,?)",
+                        aktivitetId,
+                        versjon,
+                        sokeAvtale.getAntall(),
+                        sokeAvtale.getAvtaleOppfolging()
+                ));
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -153,4 +149,15 @@ public class AktivitetDAO {
         );
     }
 
+    public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
+        return database.query("SELECT * FROM AKTIVITET A " +
+                        "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
+                        "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
+                        "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
+                        "WHERE A.aktivitet_id = ? " +
+                        "ORDER BY A.versjon asc",
+                AktivitetDataRowMapper::mapAktivitet,
+                aktivitetId
+        );
+    }
 }

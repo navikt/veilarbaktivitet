@@ -115,21 +115,21 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         assertThat(res1.getAktivitet().getStillingAktivitet().getEtikett(), equalTo(Etikett.AVSLAG));
     }
 
-    //    @Test
-    public void hent_endringslogg() throws Exception {
-//        opprett_aktivitet();
-//
-//        val aktivitet = aktiviter().get(0);
-//        aktivitet.setStatus(AktivitetStatus.GJENNOMFORT);
-//
-//        val endreReq = new EndreAktivitetStatusRequest();
-//        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("", aktivitet));
-//
-//        aktivitetsplanWS.endreAktivitetStatus(endreReq);
-//
-//        val req = new HentEndringsLoggForAktivitetRequest();
-//        req.setAktivitetId(Long.toString(aktivitet.getId()));
-//        assertThat(aktivitetsplanWS.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
+    @Test
+    public void hent_aktivitet_versjoner() throws Exception {
+        opprett_aktivitet();
+        val aktivitet = aktiviter().get(0);
+
+        val endreReq = new EndreAktivitetStatusRequest();
+        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
+        aktivitetsplanWS.endreAktivitetStatus(endreReq);
+
+        val hentVersjoner = new HentAktivitetVersjonerRequest();
+        hentVersjoner.setAktivitetId(aktivitet.getId().toString());
+        val versjoner = aktivitetsplanWS.hentAktivitetVersjoner(hentVersjoner).getAktivitetversjoner();
+        assertThat(versjoner, hasSize(2));
+        assertThat(versjoner.get(0).getVersjon(), equalTo("0"));
+        assertThat(versjoner.get(1).getVersjon(), equalTo("1"));
     }
 
     @Test

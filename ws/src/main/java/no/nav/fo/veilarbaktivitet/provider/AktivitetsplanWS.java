@@ -3,12 +3,13 @@ package no.nav.fo.veilarbaktivitet.provider;
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
+import no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.mappers.ArenaAktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.mappers.ResponseMapper;
 import no.nav.fo.veilarbaktivitet.service.AktivitetWSAppService;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitetsplan;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
 import org.springframework.stereotype.Service;
 
@@ -16,8 +17,6 @@ import javax.inject.Inject;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Optional.of;
-import static no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper.mapTilAktivitetData;
 import static no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper.mapTilAktivitet;
 
 @Service
@@ -32,30 +31,28 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
-
-        return Optional.of(opprettNyAktivitetRequest)
-                .map(OpprettNyAktivitetRequest::getAktivitet)
-                .map((aktivitet) -> {
-                    val aktivitetData = mapTilAktivitetData(aktivitet);
-                    val lagretAktivtet = appService.opprettNyAktivtet(aktivitet.getPersonIdent(), aktivitetData);
-                    return mapTilAktivitet(aktivitet.getPersonIdent(), lagretAktivtet);
-                })
-                .map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
+    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
+        return Optional.of(hentAktivitetsplanRequest)
+                .map(HentAktivitetsplanRequest::getPersonident)
+                .map(fnr -> appService
+                        .hentAktiviteterForIdent(fnr)
+                        .stream()
+                        .map(aktivitet -> mapTilAktivitet(fnr, aktivitet))
+                        .collect(Collectors.toList()))
+                .map(ResponseMapper::mapTilHentAktivitetsplanResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
     @Override
     public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
-        return Optional.of(appService.hentArenaAktiviteter(hentArenaAktiviteterRequest.getPersonident()))
-                .map(arenaAktiviterDTO -> {
-                    val res = new HentArenaAktiviteterResponse();
-                    res.getArenaaktiviteter().addAll(
-                            arenaAktiviterDTO.stream()
-                                    .map(ArenaAktivitetWSMapper::mapTilArenaAktivitet)
-                                    .collect(Collectors.toList()));
-                    return res;
-                })
+        return Optional.of(hentArenaAktiviteterRequest)
+                .map(HentArenaAktiviteterRequest::getPersonident)
+                .map(appService::hentArenaAktiviteter)
+                .map(aktivitetList -> aktivitetList
+                        .stream()
+                        .map(ArenaAktivitetWSMapper::mapTilArenaAktivitet)
+                        .collect(Collectors.toList()))
+                .map(ResponseMapper::mapTilHentArenaAktiviteterResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -65,31 +62,40 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
                 .map(HentAktivitetRequest::getAktivitetId)
                 .map(Long::parseLong)
                 .map(appService::hentAktivitet)
-                .map(aktivitet -> mapTilAktivitet("", aktivitet))
-                .map(aktivitet -> {
-                    val res = new HentAktivitetResponse();
-                    res.setAktivitet(aktivitet);
-                    return res;
-                }).orElseThrow(RuntimeException::new);
+                .map(AktivitetWSMapper::mapTilAktivitet)
+                .map(ResponseMapper::maptTilHentAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
-    public HentAktivitetsplanResponse hentAktivitetsplan(HentAktivitetsplanRequest hentAktivitetsplanRequest) throws HentAktivitetsplanSikkerhetsbegrensing {
-        val wsHentAktiviteterResponse = new HentAktivitetsplanResponse();
-        val aktivitetsplan = new Aktivitetsplan();
-        wsHentAktiviteterResponse.setAktivitetsplan(aktivitetsplan);
-
-        appService.hentAktiviteterForIdent(hentAktivitetsplanRequest.getPersonident())
-                .stream()
-                .map(aktivitet -> mapTilAktivitet(hentAktivitetsplanRequest.getPersonident(), aktivitet))
-                .forEach(aktivitetsplan.getAktivitetListe()::add);
-
-        return wsHentAktiviteterResponse;
+    public HentAktivitetVersjonerResponse hentAktivitetVersjoner(HentAktivitetVersjonerRequest hentAktivitetVersjonerRequest) {
+        return Optional.of(hentAktivitetVersjonerRequest.getAktivitetId())
+                .map(Long::parseLong)
+                .map(appService::hentAktivitetVersjoner)
+                .map(aktivitetList -> aktivitetList
+                        .stream()
+                        .map(AktivitetWSMapper::mapTilAktivitet)
+                        .collect(Collectors.toList())
+                ).map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
-    public HentEndringsLoggForAktivitetResponse hentEndringsLoggForAktivitet(HentEndringsLoggForAktivitetRequest hentEndringsLoggForAktivitetRequest) {
-        return null;
+    public OpprettNyAktivitetResponse opprettNyAktivitet(OpprettNyAktivitetRequest opprettNyAktivitetRequest) {
+
+        val maybeAktivitet = Optional.of(opprettNyAktivitetRequest)
+                .map(OpprettNyAktivitetRequest::getAktivitet);
+
+        val fnr = maybeAktivitet
+                .map(Aktivitet::getPersonIdent)
+                .orElseThrow(RuntimeException::new);
+
+        return maybeAktivitet
+                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitet -> appService.opprettNyAktivtet(fnr, aktivitet))
+                .map(aktivitetData -> mapTilAktivitet(fnr, aktivitetData))
+                .map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
@@ -98,7 +104,7 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetStatusRequest::getAktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
-                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(AktivitetWSMapper::mapTilAktivitet)
                 .map(ResponseMapper::mapTilEndreAktivitetStatusResponse)
                 .orElseThrow(RuntimeException::new);
     }
@@ -109,7 +115,7 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetEtikettRequest::getAktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterEtikett)
-                .map(aktivitet -> mapTilAktivitet("", aktivitet))
+                .map(AktivitetWSMapper::mapTilAktivitet)
                 .map(ResponseMapper::mapTilEndreAktivitetEtikettResponse)
                 .orElseThrow(RuntimeException::new);
     }
@@ -120,14 +126,14 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
                 .map(EndreAktivitetRequest::getAktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)
-                .map(aktivtet -> mapTilAktivitet("", aktivtet))
+                .map(AktivitetWSMapper::mapTilAktivitet)
                 .map(ResponseMapper::mapTilEndreAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }
 
     @Override
     public SlettAktivitetResponse slettAktivitet(SlettAktivitetRequest slettAktivitetRequest) {
-        of(slettAktivitetRequest)
+        Optional.of(slettAktivitetRequest)
                 .map(SlettAktivitetRequest::getAktivitetId)
                 .map(Long::parseLong)
                 .ifPresent(appService::slettAktivitet);
@@ -135,6 +141,7 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
     }
 
     @Override
-    public void ping() {}
+    public void ping() {
+    }
 }
 

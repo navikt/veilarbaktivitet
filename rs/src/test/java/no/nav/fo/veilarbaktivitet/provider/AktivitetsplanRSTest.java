@@ -25,6 +25,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
 public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
+
     @Test
     public void hent_aktivitsplan() {
         gitt_at_jeg_har_aktiviter();
@@ -66,11 +67,11 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     @Test
-    public void hent_endrings_logg() {
+    public void hent_aktivitet_versjoner() {
         gitt_at_jeg_har_aktiviter();
         nar_jeg_flytter_en_aktivitet_til_en_annen_status();
-        nar_jeg_henter_endrings_logg_på_denne_aktiviten();
-        da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten();
+        nar_jeg_henter_versjoner_pa_denne_aktiviten();
+        da_skal_jeg_fa_versjonene_pa_denne_aktiviteten();
     }
 
     @Test
@@ -105,7 +106,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private AktivitetData nyStillingAktivitet() {
-        return AktivitetDataTestBuilder.nyAktivitet(KJENT_AKTOR_ID)
+        return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.JOBBSOEKING)
                 .stillingsSoekAktivitetData(nyttStillingssøk())
                 .build();
@@ -172,10 +173,10 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
         this.aktivitet = aktivitetController.oppdaterEtikett(aktivitet.setEtikett(nyAktivitetEtikett));
     }
 
-    private List<EndringsloggDTO> endringer;
+    private List<AktivitetDTO> versjoner;
 
-    private void nar_jeg_henter_endrings_logg_på_denne_aktiviten() {
-        endringer = aktivitetController.hentEndringsLoggForAktivitetId(aktivitet.getId());
+    private void nar_jeg_henter_versjoner_pa_denne_aktiviten() {
+        versjoner = aktivitetController.hentAktivitetVersjoner(aktivitet.getId());
     }
 
     private String nyLenke;
@@ -227,8 +228,8 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
         assertThat(aktivitet.getEtikett(), equalTo(nyAktivitetEtikett));
     }
 
-    private void da_skal_jeg_fa_en_endringslogg_pa_denne_aktiviteten() {
-        assertThat(endringer, hasSize(1));
+    private void da_skal_jeg_fa_versjonene_pa_denne_aktiviteten() {
+        assertThat(versjoner, hasSize(2));
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {

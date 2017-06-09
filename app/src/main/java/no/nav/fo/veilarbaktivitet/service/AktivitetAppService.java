@@ -34,12 +34,16 @@ public abstract class AktivitetAppService {
         return aktivitetService.hentAktiviteterForAktorId(aktorId);
     }
 
+    public AktivitetData hentAktivitet(long id) {
+        return aktivitetService.hentAktivitet(id);
+    }
+
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(String ident) {
         return arenaAktivitetConsumer.hentArenaAktivieter(ident);
     }
 
-    public AktivitetData hentAktivitet(long id) {
-        return aktivitetService.hentAktivitet(id);
+    public List<AktivitetData> hentAktivitetVersjoner(long id) {
+        return aktivitetService.hentAktivitetVersjoner(id);
     }
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
