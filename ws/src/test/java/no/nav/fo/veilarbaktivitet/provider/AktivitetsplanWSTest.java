@@ -115,8 +115,8 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         assertThat(res1.getAktivitet().getStillingAktivitet().getEtikett(), equalTo(Etikett.AVSLAG));
     }
 
-//    @Test
-public void hent_endringslogg() throws Exception {
+    //    @Test
+    public void hent_endringslogg() throws Exception {
 //        opprett_aktivitet();
 //
 //        val aktivitet = aktiviter().get(0);
@@ -130,7 +130,7 @@ public void hent_endringslogg() throws Exception {
 //        val req = new HentEndringsLoggForAktivitetRequest();
 //        req.setAktivitetId(Long.toString(aktivitet.getId()));
 //        assertThat(aktivitetsplanWS.hentEndringsLoggForAktivitet(req).getEndringslogg(), hasSize(1));
-}
+    }
 
     @Test
     public void oppdater_aktivitet() throws Exception {
