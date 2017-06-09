@@ -1,10 +1,7 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Innsender;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Stillingaktivitet;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 
 import java.util.Optional;
 
@@ -41,6 +38,7 @@ public class AktivitetDataMapper {
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .egenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .stillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
+                .sokeAvtaleAktivitetData(mapTilSokeavtaleAktivitetData(aktivitet.getSokeavtale()))
                 .build();
     }
 
@@ -70,5 +68,14 @@ public class AktivitetDataMapper {
                                 .setHensikt(egen.getHensikt())
                                 .setOppfolging(egen.getOppfolging()))
                 .orElse(null);
+    }
+
+    private static SokeAvtaleAktivitetData mapTilSokeavtaleAktivitetData(Sokeavtale sokeavtaleAktivitet) {
+        return Optional.ofNullable(sokeavtaleAktivitet)
+                .map(sokeavtale ->
+                        new SokeAvtaleAktivitetData()
+                                .setAntall(sokeavtaleAktivitet.getAntall())
+                                .setAvtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
+                ).orElse(null);
     }
 }

@@ -3,11 +3,9 @@ package no.nav.fo.veilarbaktivitet.mappers;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.SokeAvtaleAktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekAktivitetData;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Innsender;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Stillingaktivitet;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 
 import java.util.Optional;
 
@@ -47,6 +45,9 @@ public class AktivitetWSMapper {
         Optional.ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
                         wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
+        Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData())
+                .ifPresent(sokeAvtaleAktivitetData ->
+                        wsAktivitet.setSokeavtale(mapTilSokeAvtaleAktivitet(sokeAvtaleAktivitetData)));
 
         return wsAktivitet;
     }
@@ -70,6 +71,15 @@ public class AktivitetWSMapper {
         egenaktivitet.setOppfolging(egenAktivitetData.getOppfolging());
 
         return egenaktivitet;
+    }
+
+    private static Sokeavtale mapTilSokeAvtaleAktivitet(SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
+        val sokeAvtaleAtivitet = new Sokeavtale();
+
+        sokeAvtaleAtivitet.setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
+        sokeAvtaleAtivitet.setAntall(sokeAvtaleAktivitetData.getAntall());
+
+        return sokeAvtaleAtivitet;
     }
 
 }
