@@ -1,16 +1,16 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Builder;
+import lombok.Value;
 
 import java.util.Date;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder(toBuilder = true)
 public class AktivitetData {
 
     Long id;
-    long versjon;
+    Long versjon;
     String aktorId;
     String tittel;
     AktivitetTypeData aktivitetType;
@@ -23,6 +23,7 @@ public class AktivitetData {
     String lenke;
     Date opprettetDato;
     boolean avtalt;
+    TransaksjonsTypeData transaksjonsTypeData;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.api;
 
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.fo.veilarbaktivitet.domain.EndringsloggDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
@@ -58,7 +57,7 @@ public interface AktivitetController {
     AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet);
 
     @GET
-    @Path("/{id}/endringslogg")
-    List<EndringsloggDTO> hentEndringsLoggForAktivitetId(@PathParam("id") String aktivitetId);
+    @Path("/{id}/endringer")
+    List<AktivitetDTO> hentAktivitetVersjoner(@PathParam("id") String aktivitetId);
 
 }

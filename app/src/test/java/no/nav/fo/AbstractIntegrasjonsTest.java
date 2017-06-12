@@ -2,8 +2,6 @@ package no.nav.fo;
 
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.dialogarena.config.fasit.ServiceUser;
-import no.nav.modig.testcertificates.TestCertificates;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.PropertySource;
@@ -16,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
-import static org.apache.cxf.staxutils.StaxUtils.ALLOW_INSECURE_PARSER;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @PropertySource("classpath:test.properties")
