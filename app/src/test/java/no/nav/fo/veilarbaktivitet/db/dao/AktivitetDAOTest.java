@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
+import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import org.junit.Test;
@@ -62,10 +63,10 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
     }
 
-    @Test(expected = DuplicateKeyException.class)
+    @Test(expected = VersjonsKonflikt.class)
     public void versjonskonflikt() {
-        lagaktivitetMedIdVersjon(10L, 22L);
-        lagaktivitetMedIdVersjon(10L, 22L);
+        lagAktivitetMedIdVersjon(10L, 22L);
+        lagAktivitetMedIdVersjon(10L, 22L);
     }
 
     @Test
@@ -103,15 +104,19 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         return insertAktivitet(aktivitet);
     }
 
-    private AktivitetData lagaktivitetMedIdVersjon(Long id, Long versjon) {
-        val aktivitet = nyAktivitet()
-                .id(id)
-                .versjon(versjon)
-                .aktivitetType(SOKEAVTALE)
-                .sokeAvtaleAktivitetData(nySokeAvtaleAktivitet())
-                .build();
+    private AktivitetData lagAktivitetMedIdVersjon(Long id, Long versjon) {
+        try {
+            val aktivitet = nyAktivitet()
+                    .id(id)
+                    .versjon(versjon)
+                    .aktivitetType(SOKEAVTALE)
+                    .sokeAvtaleAktivitetData(nySokeAvtaleAktivitet())
+                    .build();
 
-        return insertAktivitet(aktivitet);
+            return insertAktivitet(aktivitet);
+        } catch (DuplicateKeyException e) {
+            throw new VersjonsKonflikt();
+        }
     }
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
