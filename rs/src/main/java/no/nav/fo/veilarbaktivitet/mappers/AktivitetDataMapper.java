@@ -5,6 +5,9 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 
 import java.util.Optional;
 
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
 
@@ -32,12 +35,12 @@ public class AktivitetDataMapper {
                 .avtalt(aktivitetDTO.isAvtalt())
                 .lenke(aktivitetDTO.getLenke());
 
-        if (aktivitetType == AktivitetTypeData.EGENAKTIVITET) {
+        if (EGENAKTIVITET.equals(aktivitetType)) {
             aktivitetData.egenAktivitetData(new EgenAktivitetData()
                     .setHensikt(aktivitetDTO.getHensikt())
                     .setOppfolging(aktivitetDTO.getOppfolging())
             );
-        } else if (aktivitetType == AktivitetTypeData.JOBBSOEKING) {
+        } else if (JOBBSOEKING.equals(aktivitetType)) {
             aktivitetData.stillingsSoekAktivitetData(new StillingsoekAktivitetData()
                     .setStillingsoekEtikett(etikettMap.getKey(aktivitetDTO.getEtikett()))
                     .setKontaktPerson(aktivitetDTO.getKontaktperson())
@@ -45,7 +48,7 @@ public class AktivitetDataMapper {
                     .setArbeidssted(aktivitetDTO.getArbeidssted())
                     .setStillingsTittel(aktivitetDTO.getStillingsTittel())
             );
-        } else if (aktivitetType == AktivitetTypeData.SOKEAVTALE) {
+        } else if (SOKEAVTALE.equals(aktivitetType)) {
             aktivitetData.sokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
                     .setAntall(aktivitetDTO.getAntall())
                     .setAvtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())

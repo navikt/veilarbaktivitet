@@ -7,6 +7,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 public class AktivitetDataRowMapper {
@@ -33,11 +36,11 @@ public class AktivitetDataRowMapper {
                                 rs.getString("transaksjons_type"))
                 );
 
-        if (type == AktivitetTypeData.EGENAKTIVITET) {
+        if (EGENAKTIVITET.equals(type)) {
             aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
-        } else if (type == AktivitetTypeData.JOBBSOEKING) {
+        } else if (JOBBSOEKING.equals(type)) {
             aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
-        } else if (type == AktivitetTypeData.SOKEAVTALE) {
+        } else if (SOKEAVTALE.equals(type)) {
             aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
         }
 
