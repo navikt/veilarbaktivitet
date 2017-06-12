@@ -1,16 +1,12 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
-import lombok.experimental.Accessors;
 
 import java.util.Date;
 
 @Value
 @Builder(toBuilder = true)
-@AllArgsConstructor
-@Accessors(chain = true)
 public class AktivitetData {
 
     Long id;
