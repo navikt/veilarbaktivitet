@@ -20,7 +20,7 @@
     <dependencies>
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbaktivitet-rest</artifactId>
+            <artifactId>veilarbaktivitet-rs</artifactId>
             <version>${project.version}</version>
             <type>war</type>
             <scope>runtime</scope>
@@ -43,9 +43,9 @@
                     <modules>
                         <webModule>
                             <groupId>${project.groupId}</groupId>
-                            <artifactId>veilarbaktivitet-rest</artifactId>
+                            <artifactId>veilarbaktivitet-rs</artifactId>
                             <contextRoot>/veilarbaktivitet</contextRoot>
-                            <bundleFileName>veilarbaktivitet-rest.war</bundleFileName>
+                            <bundleFileName>veilarbaktivitet-rs.war</bundleFileName>
                         </webModule>
                         <webModule>
                             <groupId>${project.groupId}</groupId>
