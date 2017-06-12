@@ -37,7 +37,7 @@ public class AktivitetDAO {
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
         return database.query(SELECT_AKTIVITET +
-                        "WHERE A.aktor_id = ? and A.gjeldende = true",
+                        "WHERE A.aktor_id = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktorId
         );
@@ -45,7 +45,7 @@ public class AktivitetDAO {
 
     public AktivitetData hentAktivitet(long aktivitetId) {
         return database.queryForObject(SELECT_AKTIVITET +
-                        "WHERE A.aktivitet_id = ? and gjeldende = true",
+                        "WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
