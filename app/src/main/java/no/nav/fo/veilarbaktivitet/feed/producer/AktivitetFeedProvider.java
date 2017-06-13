@@ -30,7 +30,7 @@ public class AktivitetFeedProvider implements FeedProvider<AktivitetFeedData> {
                 .hentAktiviteterEtterTidspunkt(dateFromISO8601(sinceId))
                 .stream()
                 .map(a -> new FeedElement<AktivitetFeedData>()
-                        .setId(ISO8601FromDate(a.getOpprettetDato(), ZoneId.systemDefault()))
+                        .setId(ISO8601FromDate(a.getEndretDato(), ZoneId.systemDefault()))
                         .setElement(a));
     }
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,16 +57,21 @@ public class AktivitetDAO {
     }
 
 
-    @Transactional
     public void insertAktivitet(AktivitetData aktivitet) {
+        insertAktivitet(aktivitet, new Date());
+    }
+
+    @Transactional
+    void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
 
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitet.getId());
 
         val versjon = Optional.ofNullable(aktivitet.getVersjon()).map(v -> v + 1).orElse(0L);
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
-                        "avsluttet_kommentar, opprettet_dato, lagt_inn_av, lenke, avtalt, gjeldende, transaksjons_type) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avsluttet_kommentar, opprettet_dato, endret_dato, lagt_inn_av, lenke, " +
+                        "avtalt, gjeldende, transaksjons_type) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitet.getId(),
                 versjon,
                 aktivitet.getAktorId(),
@@ -77,6 +83,7 @@ public class AktivitetDAO {
                 getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetKommentar(),
                 aktivitet.getOpprettetDato(),
+                endretDato,
                 getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
