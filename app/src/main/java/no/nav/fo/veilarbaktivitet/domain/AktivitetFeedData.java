@@ -14,7 +14,7 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
 
     Date fraDato;
     Date tilDato;
-    Date opprettetDato;
+    Date endretDato;
 
     AktivitetTypeData aktivitetType;
     AktivitetStatus status;
@@ -22,6 +22,6 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
 
     @Override
     public int compareTo(AktivitetFeedData o) {
-        return opprettetDato.compareTo(o.opprettetDato);
+        return endretDato.compareTo(o.endretDato);
     }
 }

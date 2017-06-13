@@ -20,7 +20,7 @@ public class AktivitetFeedDataRowMapper {
                 .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
-                .setOpprettetDato(hentDato(rs, "opprettet_dato"))
+                .setEndretDato(hentDato(rs, "endret_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
     }
 }
