@@ -57,7 +57,7 @@ public interface AktivitetController {
     AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet);
 
     @GET
-    @Path("/{id}/endringer")
+    @Path("/{id}/versjoner")
     List<AktivitetDTO> hentAktivitetVersjoner(@PathParam("id") String aktivitetId);
 
 }

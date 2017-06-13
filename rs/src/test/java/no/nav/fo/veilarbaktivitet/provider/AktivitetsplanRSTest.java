@@ -242,7 +242,10 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private void da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert() {
         assertThat(aktivitet, equalTo(orignalAktivitet
                 .setTilDato(aktivitet.tilDato)
-                .setVersjon(aktivitet.versjon)
+                .setVersjon(aktivitet.versjon) //automatiske felter satt av systemet
+                .setLagtInnAv(aktivitet.getLagtInnAv())
+                .setTransaksjonsType(aktivitet.transaksjonsType)
+                .setEndretDato(aktivitet.endretDato)
         ));
     }
 

@@ -88,7 +88,7 @@ public class AktivitetDAO {
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
                 true,
-                getName(aktivitet.getTransaksjonsTypeData())
+                getName(aktivitet.getTransaksjonsType())
         );
 
         insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());

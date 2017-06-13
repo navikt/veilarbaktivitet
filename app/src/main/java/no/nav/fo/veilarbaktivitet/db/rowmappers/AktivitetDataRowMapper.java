@@ -7,9 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 public class AktivitetDataRowMapper {
@@ -28,11 +26,12 @@ public class AktivitetDataRowMapper {
                 .status(valueOf(AktivitetStatus.class, rs.getString("status")))
                 .avsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .opprettetDato(hentDato(rs, "opprettet_dato"))
+                .endretDato(hentDato(rs, "endret_dato"))
                 .lagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .avtalt(rs.getBoolean("avtalt"))
                 .lenke(rs.getString("lenke"))
-                .transaksjonsTypeData(
-                        valueOf(TransaksjonsTypeData.class,
+                .transaksjonsType(
+                        valueOf(AktivitetTransaksjonsType.class,
                                 rs.getString("transaksjons_type"))
                 );
 

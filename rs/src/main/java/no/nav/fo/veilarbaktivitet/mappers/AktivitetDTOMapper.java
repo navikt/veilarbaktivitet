@@ -22,7 +22,10 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
-                .setOpprettetDato(aktivitet.getOpprettetDato());
+                .setLagtInnAv(aktivitet.getLagtInnAv().name())
+                .setOpprettetDato(aktivitet.getOpprettetDato())
+                .setEndretDato(aktivitet.getEndretDato())
+                .setTransaksjonsType(aktivitet.getTransaksjonsType());
 
         ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->

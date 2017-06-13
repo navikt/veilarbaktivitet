@@ -5,8 +5,8 @@ import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
-import no.nav.fo.veilarbaktivitet.domain.TransaksjonsTypeData;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -53,7 +53,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getTittel(), equalTo(aktivitet.getTittel()));
 
         assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID));
-        assertThat(getCapturedAktivitet().getTransaksjonsTypeData(), equalTo(TransaksjonsTypeData.OPPRETTET));
+        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
     }
 
@@ -138,11 +138,11 @@ public class AktivitetServiceTest {
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet);
 
         captureInsertAktivitetArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsTypeData(), equalTo(TransaksjonsTypeData.DETALJER_ENDRET));
+        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
 
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build());
         captureInsertAktivitetArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsTypeData(), equalTo(TransaksjonsTypeData.AVTALT));
+        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }
 
 

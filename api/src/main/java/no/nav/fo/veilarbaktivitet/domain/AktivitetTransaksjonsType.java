@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-public enum TransaksjonsTypeData {
+public enum AktivitetTransaksjonsType {
     OPPRETTET,
     STATUS_ENDRET,
     DETALJER_ENDRET,

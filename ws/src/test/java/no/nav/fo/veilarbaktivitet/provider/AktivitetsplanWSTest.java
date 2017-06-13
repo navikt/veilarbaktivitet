@@ -167,7 +167,12 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         val resp = aktivitetsplanWS.endreAktivitet(endreReq);
         val respAktivitet = AktivitetDataMapper
                 .mapTilAktivitetData(resp.getAktivitet());
-        assertThat(aktivitet.toBuilder().aktorId(null).transaksjonsTypeData(null).build(), equalTo(respAktivitet));
+        assertThat(aktivitet.toBuilder()
+                        .aktorId(null)
+                        .transaksjonsType(null)
+                        .endretDato(null)
+                        .build(),
+                equalTo(respAktivitet));
     }
 
     @Inject
