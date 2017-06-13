@@ -31,7 +31,7 @@ public class AktivitetDataMapper {
                 .beskrivelse(aktivitet.getBeskrivelse())
                 .aktivitetType(AktivitetTypeData.valueOf(aktivitet.getType().name()))
                 .status(aktivitetStatus(aktivitet.getStatus()))
-                .lagtInnAv(lagtInnAv(aktivitet))
+                .lagtInnAv(InnsenderData.BRUKER) // vet at fra denne siden er det alltid BRUKER
                 .lenke(aktivitet.getLenke())
                 .opprettetDato(getDate(aktivitet.getOpprettet()))
                 .avtalt(Optional.ofNullable(aktivitet.getAvtalt()).orElse(false))

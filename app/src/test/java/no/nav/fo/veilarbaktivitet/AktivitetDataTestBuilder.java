@@ -23,7 +23,7 @@ public class AktivitetDataTestBuilder {
                 .lagtInnAv(InnsenderData.values()[0])
                 .opprettetDato(nyDato())
                 .lenke("lenke")
-                .transaksjonsTypeData(TransaksjonsTypeData.DETALJER_ENDRET);
+                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET);
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {

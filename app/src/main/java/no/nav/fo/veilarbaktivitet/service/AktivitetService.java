@@ -5,7 +5,7 @@ import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.TransaksjonsTypeData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
@@ -42,7 +42,7 @@ public class AktivitetService {
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId)
-                .transaksjonsTypeData(TransaksjonsTypeData.OPPRETTET)
+                .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
                 .build();
 
@@ -59,7 +59,7 @@ public class AktivitetService {
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
-                .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
+                .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
@@ -77,7 +77,7 @@ public class AktivitetService {
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
-                .transaksjonsTypeData(TransaksjonsTypeData.STATUS_ENDRET)
+                .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
@@ -91,7 +91,7 @@ public class AktivitetService {
         kanEndreAktivitetGuard(orginalAktivitet);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
-                .transaksjonsTypeData(TransaksjonsTypeData.AVTALT_DATO_ENDRET)
+                .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(frist)
                 .build();
         aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
@@ -101,7 +101,7 @@ public class AktivitetService {
         kanEndreAktivitetGuard(orginalAktivitet);
 
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
-        val transType = blittAvtalt ? TransaksjonsTypeData.AVTALT : TransaksjonsTypeData.DETALJER_ENDRET;
+        val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val mergetAktivitetEndringer = orginalAktivitet
                 .toBuilder()
@@ -111,7 +111,7 @@ public class AktivitetService {
                 .beskrivelse(aktivitet.getBeskrivelse())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .lenke(aktivitet.getLenke())
-                .transaksjonsTypeData(transType)
+                .transaksjonsType(transType)
                 .versjon(aktivitet.getVersjon())
                 .avtalt(aktivitet.isAvtalt());
 

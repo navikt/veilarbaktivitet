@@ -32,8 +32,10 @@ public class AktivitetWSMapper {
         wsAktivitet.setBeskrivelse(aktivitet.getBeskrivelse());
         wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
+        wsAktivitet.setEndret(xmlCalendar(aktivitet.getEndretDato()));
         wsAktivitet.setAvtalt(aktivitet.isAvtalt());
         wsAktivitet.setAvsluttetKommentar(aktivitet.getAvsluttetKommentar());
+        wsAktivitet.setTransaksjonsType(transaksjonsTypeMap.get(aktivitet.getTransaksjonsType()));
 
 
         Optional.ofNullable(aktivitet.getLagtInnAv()).ifPresent((lagtInnAv) -> {

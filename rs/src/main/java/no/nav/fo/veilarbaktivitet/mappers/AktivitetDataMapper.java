@@ -5,9 +5,7 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 
 import java.util.Optional;
 
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.SOKEAVTALE;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
 
@@ -33,6 +31,7 @@ public class AktivitetDataMapper {
                 .status(aktivitetDTO.getStatus())
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
+                .lagtInnAv(InnsenderData.NAV) // Vet at det alltid er fra NAV på denne siden
                 .lenke(aktivitetDTO.getLenke());
 
         if (EGENAKTIVITET.equals(aktivitetType)) {
