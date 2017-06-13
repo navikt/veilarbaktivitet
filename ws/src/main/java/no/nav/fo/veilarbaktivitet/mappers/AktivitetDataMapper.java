@@ -1,15 +1,16 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Sokeavtale;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Stillingaktivitet;
 
 import java.util.Optional;
 
-import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
-import static no.nav.fo.veilarbaktivitet.mappers.Helpers.innsenderMap;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 
 public class AktivitetDataMapper {
@@ -40,14 +41,6 @@ public class AktivitetDataMapper {
                 .stillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
                 .sokeAvtaleAktivitetData(mapTilSokeavtaleAktivitetData(aktivitet.getSokeavtale()))
                 .build();
-    }
-
-    private static InnsenderData lagtInnAv(Aktivitet aktivitet) {
-        return of(aktivitet)
-                .map(Aktivitet::getLagtInnAv)
-                .map(Innsender::getType)
-                .map(innsenderMap::get)
-                .orElse(null); // TODO kreve lagt inn av?
     }
 
     private static StillingsoekAktivitetData mapTilStillingsoekAktivitetData(Stillingaktivitet stillingaktivitet) {

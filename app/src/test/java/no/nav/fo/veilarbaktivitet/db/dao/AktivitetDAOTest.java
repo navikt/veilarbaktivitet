@@ -7,13 +7,12 @@ import org.junit.Test;
 import org.springframework.dao.DuplicateKeyException;
 
 import javax.inject.Inject;
-
+import java.util.Date;
 import java.util.Optional;
 
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
@@ -123,7 +122,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
                 .aktorId(AKTOR_ID)
                 .build();
 
-        aktivitetDAO.insertAktivitet(aktivitetMedId);
-        return aktivitetMedId.toBuilder().id(id).versjon(versjon).build();
+        val endret = new Date();
+        aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
+        return aktivitetMedId.toBuilder().id(id).versjon(versjon).endretDato(endret).build();
     }
 }
