@@ -157,7 +157,7 @@ public class AktivitetDAO {
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
         return database.query(SELECT_AKTIVITET +
                         "WHERE A.aktivitet_id = ? " +
-                        "ORDER BY A.versjon asc",
+                        "ORDER BY A.versjon desc",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
