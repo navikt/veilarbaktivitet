@@ -11,8 +11,7 @@ import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
@@ -30,6 +29,7 @@ public class Helpers {
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
+                put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
             }};
 
 
