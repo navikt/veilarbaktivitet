@@ -103,7 +103,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
-        aktivitetService.oppdaterAktivitetFrist(aktivitet, nyFrist);
+        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build());
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
@@ -162,7 +162,7 @@ public class AktivitetServiceTest {
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            aktivitetService.oppdaterAktivitetFrist(aktivitet, new Date());
+            aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet);
             fail();
         } catch (IllegalArgumentException ignored) {
         }

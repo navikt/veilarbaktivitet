@@ -23,7 +23,7 @@ public class AktivitetRSAppService extends AktivitetAppService {
         val orignalAktivitet = hentAktivitet(aktivitet.getId());
 
         if (orignalAktivitet.isAvtalt()) {
-            aktivitetService.oppdaterAktivitetFrist(orignalAktivitet, aktivitet.getTilDato());
+            aktivitetService.oppdaterAktivitetFrist(orignalAktivitet, aktivitet);
         } else {
             aktivitetService.oppdaterAktivitet(orignalAktivitet, aktivitet);
         }

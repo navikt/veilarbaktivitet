@@ -42,6 +42,7 @@ public class AktivitetService {
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId)
+                .lagtInnAv(aktivitet.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
                 .build();
@@ -58,6 +59,7 @@ public class AktivitetService {
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
+                .lagtInnAv(aktivitet.getLagtInnAv())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
@@ -76,6 +78,7 @@ public class AktivitetService {
 
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
+                .lagtInnAv(aktivitet.getLagtInnAv())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .build();
@@ -87,12 +90,13 @@ public class AktivitetService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, Date frist) {
+    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData) {
         kanEndreAktivitetGuard(orginalAktivitet);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
+                .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
-                .tilDato(frist)
+                .tilDato(aktivitetData.getTilDato())
                 .build();
         aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
@@ -109,6 +113,7 @@ public class AktivitetService {
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .beskrivelse(aktivitet.getBeskrivelse())
+                .lagtInnAv(aktivitet.getLagtInnAv())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)
