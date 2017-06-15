@@ -128,8 +128,8 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         hentVersjoner.setAktivitetId(aktivitet.getId().toString());
         val versjoner = aktivitetsplanWS.hentAktivitetVersjoner(hentVersjoner).getAktivitetversjoner();
         assertThat(versjoner, hasSize(2));
-        assertThat(versjoner.get(0).getVersjon(), equalTo("0"));
-        assertThat(versjoner.get(1).getVersjon(), equalTo("1"));
+        assertThat(versjoner.get(0).getVersjon(), equalTo("1"));
+        assertThat(versjoner.get(1).getVersjon(), equalTo("0"));
     }
 
     @Test
