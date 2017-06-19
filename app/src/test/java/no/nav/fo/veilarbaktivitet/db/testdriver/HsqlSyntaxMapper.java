@@ -12,15 +12,15 @@ class HsqlSyntaxMapper {
 
     static {
         map(
-                "alter table AKTIVITET modify lob(BESKRIVELSE) (deduplicate)",
+                "ALTER TABLE AKTIVITET MODIFY LOB (BESKRIVELSE) ( DEDUPLICATE )",
                 "SELECT 1 FROM DUAL"
         );
         map(
-                "alter table AKTIVITET modify lob(LENKE) (deduplicate)",
+                "ALTER TABLE AKTIVITET MODIFY LOB (LENKE) ( DEDUPLICATE )",
                 "SELECT 1 FROM DUAL"
         );
         map(
-                "alter table SOKEAVTALE modify lob(AVTALE_OPPFOLGING) (deduplicate)",
+                "ALTER TABLE SOKEAVTALE MODIFY LOB (AVTALE_OPPFOLGING) ( DEDUPLICATE )",
                 "SELECT 1 FROM DUAL"
         );
     }
