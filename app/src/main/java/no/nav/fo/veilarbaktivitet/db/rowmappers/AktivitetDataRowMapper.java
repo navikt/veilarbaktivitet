@@ -33,7 +33,8 @@ public class AktivitetDataRowMapper {
                 .transaksjonsType(
                         valueOf(AktivitetTransaksjonsType.class,
                                 rs.getString("transaksjons_type"))
-                );
+                )
+                .historiskDato(hentDato(rs, "historisk_dato"));
 
         if (EGENAKTIVITET.equals(type)) {
             aktivitet.egenAktivitetData(mapEgenAktivitet(rs));

@@ -25,6 +25,7 @@ public class AktivitetData {
     Date endretDato;
     boolean avtalt;
     AktivitetTransaksjonsType transaksjonsType;
+    Date historiskDato;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

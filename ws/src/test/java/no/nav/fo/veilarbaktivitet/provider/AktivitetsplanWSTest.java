@@ -171,6 +171,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                         .aktorId(null)
                         .transaksjonsType(null)
                         .endretDato(null)
+                        .historiskDato(null)
                         .build(),
                 equalTo(respAktivitet));
     }
