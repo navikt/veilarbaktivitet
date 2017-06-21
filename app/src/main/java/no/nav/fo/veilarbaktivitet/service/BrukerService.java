@@ -26,8 +26,8 @@ public class BrukerService {
 
     public Optional<String> getLoggedInnUser() {
         return subjectService.getIdentType().flatMap(type -> {
-            if (type == IdentType.EksternBruker) return getAktorIdForEksternBruker();
-            else if (type == IdentType.InternBruker) return subjectService.getUserId();
+            if (IdentType.EksternBruker.equals(type)) return getAktorIdForEksternBruker();
+            else if (IdentType.InternBruker.equals(type)) return subjectService.getUserId();
             else return Optional.empty();
         });
 
