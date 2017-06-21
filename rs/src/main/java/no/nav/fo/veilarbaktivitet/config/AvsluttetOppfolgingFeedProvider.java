@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbaktivitet.config.feed;
+package no.nav.fo.veilarbaktivitet.config;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;

@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbaktivitet.config.feed;
+package no.nav.fo.veilarbaktivitet.config;
 
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.consumer.FeedConsumer;
