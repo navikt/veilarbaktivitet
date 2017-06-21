@@ -69,9 +69,9 @@ public class AktivitetDAO {
         val versjon = Optional.ofNullable(aktivitet.getVersjon()).map(v -> v + 1).orElse(0L);
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
-                        "avsluttet_kommentar, opprettet_dato, endret_dato, lagt_inn_av, lenke, " +
+                        "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
                         "avtalt, gjeldende, transaksjons_type) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitet.getId(),
                 versjon,
                 aktivitet.getAktorId(),
@@ -84,6 +84,7 @@ public class AktivitetDAO {
                 aktivitet.getAvsluttetKommentar(),
                 aktivitet.getOpprettetDato(),
                 endretDato,
+                aktivitet.getEndretAv(),
                 getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),

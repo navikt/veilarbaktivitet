@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
@@ -12,10 +11,17 @@ import javax.inject.Inject;
 public class AktivitetWSAppService extends AktivitetAppService {
 
     @Inject
-    public AktivitetWSAppService(AktoerConsumer aktoerConsumer,
-                                 ArenaAktivitetConsumer arenaAktivitetConsumer,
-                                 AktivitetService aktivitetService) {
-        super(aktoerConsumer, arenaAktivitetConsumer, aktivitetService);
+    public AktivitetWSAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
+                                 AktivitetService aktivitetService,
+                                 BrukerService brukerService) {
+        super(arenaAktivitetConsumer, aktivitetService, brukerService);
+    }
+
+    public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
+        return brukerService.getAktorIdForFNR(ident)
+                .map(aktorId -> aktivitetService.opprettAktivitet(aktorId, aktivitetData, aktorId))
+                .map(this::hentAktivitet)
+                .orElseThrow(RuntimeException::new);
     }
 
     @Override
@@ -24,8 +30,12 @@ public class AktivitetWSAppService extends AktivitetAppService {
         if (originalAktivitet.isAvtalt()) {
             return originalAktivitet;
         }
-        aktivitetService.oppdaterAktivitet(originalAktivitet, aktivitet);
-        return hentAktivitet(aktivitet.getId());
+
+        return brukerService.getLoggedInnUser()
+                .map(userIdent -> {
+                    aktivitetService.oppdaterAktivitet(originalAktivitet, aktivitet, userIdent);
+                    return hentAktivitet(aktivitet.getId());
+                }).orElseThrow(RuntimeException::new);
     }
 
 }

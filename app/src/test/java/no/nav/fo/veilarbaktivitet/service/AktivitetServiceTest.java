@@ -44,7 +44,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
 
         captureInsertAktivitetArgument();
 
@@ -70,7 +70,7 @@ public class AktivitetServiceTest {
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
                 .build();
-        aktivitetService.oppdaterStatus(oppdatertAktivitet);
+        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -90,7 +90,7 @@ public class AktivitetServiceTest {
                         .getStillingsSoekAktivitetData()
                         .setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
                 .build();
-        aktivitetService.oppdaterEtikett(oppdatertAktivitet);
+        aktivitetService.oppdaterEtikett(oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -103,7 +103,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
-        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build());
+        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build(), null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
@@ -117,7 +117,7 @@ public class AktivitetServiceTest {
                 .beskrivelse("Alexander er den beste")
                 .lenke("www.alexander-er-best.no")
                 .build();
-        aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet);
+        aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
@@ -128,19 +128,19 @@ public class AktivitetServiceTest {
     public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).insertAktivitet(any());
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet);
+        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
     }
 
     @Test
     public void oppdaterAktivitet_skal_sette_rett_transaksjonstype() {
         val aktivitet = lagEnNyAktivitet();
 
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet);
+        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
 
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build());
+        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), null);
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }
@@ -152,22 +152,22 @@ public class AktivitetServiceTest {
         mockHentAktivitet(aktivitet);
 
         try {
-            aktivitetService.oppdaterStatus(aktivitet);
+            aktivitetService.oppdaterStatus(aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            aktivitetService.oppdaterEtikett(aktivitet);
+            aktivitetService.oppdaterEtikett(aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet);
+            aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
         try {
-            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet);
+            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
