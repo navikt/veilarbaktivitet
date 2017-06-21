@@ -26,6 +26,7 @@
     <logging serviceCalls="true"/>
 
     <resources>
+        <applicationProperties alias="veilarbaktivitet.properties" />
         <credential alias="srvveilarbaktivitet" mapToProperty="systembruker"/>
         <applicationCertificate alias="srvveilarbaktivitet"/>
         <datasource alias="veilarbaktivitetDataSource" jndi="java:jboss/jdbc/AktivitetDS">

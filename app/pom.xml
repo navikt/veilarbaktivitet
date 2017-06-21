@@ -30,6 +30,11 @@
             <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarbsituasjon-api</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
             <groupId>javax.inject</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
@@ -146,6 +151,10 @@
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>

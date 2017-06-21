@@ -26,6 +26,7 @@ public class AktivitetData {
     String endretAv;
     boolean avtalt;
     AktivitetTransaksjonsType transaksjonsType;
+    Date historiskDato;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
