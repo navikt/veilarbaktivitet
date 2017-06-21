@@ -6,8 +6,10 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -158,4 +160,15 @@ public class AktivitetService {
         return aktivitetData.getStatus() == AktivitetStatus.AVBRUTT ||
                 aktivitetData.getStatus() == AktivitetStatus.FULLFORT;
     }
+
+    @Transactional
+    public void settAktiviteterTilHistoriske(AvsluttetOppfolgingFeedDTO element) {
+        hentAktiviteterForAktorId(element.getAktoerid())
+                .stream()
+                .map(AktivitetData::toBuilder)
+                .map(aktivitet -> aktivitet.historiskDato(element.getSluttdato()))
+                .map(AktivitetData.AktivitetDataBuilder::build)
+                .forEach(aktivitetDAO::insertAktivitet);
+    }
+
 }

@@ -70,8 +70,8 @@ public class AktivitetDAO {
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, type," +
                         "fra_dato, til_dato, tittel, beskrivelse, status," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitet.getId(),
                 versjon,
                 aktivitet.getAktorId(),
@@ -88,7 +88,8 @@ public class AktivitetDAO {
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
                 true,
-                getName(aktivitet.getTransaksjonsType())
+                getName(aktivitet.getTransaksjonsType()),
+                aktivitet.getHistoriskDato()
         );
 
         insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());
