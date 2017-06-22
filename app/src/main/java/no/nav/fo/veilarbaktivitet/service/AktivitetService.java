@@ -38,7 +38,7 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
-    public long opprettAktivitet(String aktorId, AktivitetData aktivitet) {
+    public long opprettAktivitet(String aktorId, AktivitetData aktivitet, String endretAv) {
         val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
         val nyAktivivitet = aktivitet
                 .toBuilder()
@@ -47,6 +47,7 @@ public class AktivitetService {
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
+                .endretAv(endretAv)
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivivitet);
@@ -54,7 +55,7 @@ public class AktivitetService {
     }
 
 
-    public void oppdaterStatus(AktivitetData aktivitet) {
+    public void oppdaterStatus(AktivitetData aktivitet, String endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet);
 
@@ -64,12 +65,13 @@ public class AktivitetService {
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
+                .endretAv(endretAv)
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
-    public void oppdaterEtikett(AktivitetData aktivitet) {
+    public void oppdaterEtikett(AktivitetData aktivitet, String endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet);
 
@@ -83,6 +85,7 @@ public class AktivitetService {
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
+                .endretAv(endretAv)
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
@@ -92,18 +95,19 @@ public class AktivitetService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData) {
+    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
         kanEndreAktivitetGuard(orginalAktivitet);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
+                .endretAv(endretAv)
                 .build();
         aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
+    public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, String endretAv) {
         kanEndreAktivitetGuard(orginalAktivitet);
 
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
@@ -120,6 +124,7 @@ public class AktivitetService {
                 .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)
                 .versjon(aktivitet.getVersjon())
+                .endretAv(endretAv)
                 .avtalt(aktivitet.isAvtalt());
 
         Optional.ofNullable(orginalAktivitet.getStillingsSoekAktivitetData()).ifPresent(

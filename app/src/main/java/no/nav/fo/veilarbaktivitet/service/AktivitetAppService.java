@@ -1,37 +1,31 @@
 package no.nav.fo.veilarbaktivitet.service;
 
-import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 
 import java.util.List;
 
 public abstract class AktivitetAppService {
 
-    private final AktoerConsumer aktoerConsumer;
-
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
 
     protected final AktivitetService aktivitetService;
 
-    AktivitetAppService(AktoerConsumer aktoerConsumer,
-                        ArenaAktivitetConsumer arenaAktivitetConsumer,
-                        AktivitetService aktivitetService) {
-        this.aktoerConsumer = aktoerConsumer;
+    protected final BrukerService brukerService;
+
+    AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
+                        AktivitetService aktivitetService,
+                        BrukerService brukerService) {
         this.arenaAktivitetConsumer = arenaAktivitetConsumer;
         this.aktivitetService = aktivitetService;
-    }
-
-    private String hentAktoerIdForIdent(String ident) {
-        return aktoerConsumer.hentAktoerIdForIdent(ident)
-                .orElseThrow(RuntimeException::new);
+        this.brukerService = brukerService;
     }
 
     public List<AktivitetData> hentAktiviteterForIdent(String ident) {
-        val aktorId = hentAktoerIdForIdent(ident);
-        return aktivitetService.hentAktiviteterForAktorId(aktorId);
+        return brukerService.getAktorIdForFNR(ident)
+                .map(aktivitetService::hentAktiviteterForAktorId)
+                .orElseThrow(RuntimeException::new);
     }
 
     public AktivitetData hentAktivitet(long id) {
@@ -46,23 +40,26 @@ public abstract class AktivitetAppService {
         return aktivitetService.hentAktivitetVersjoner(id);
     }
 
-    public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
-        val aktorId = hentAktoerIdForIdent(ident);
-        val aktivitetId = aktivitetService.opprettAktivitet(aktorId, aktivitetData);
-
-        return hentAktivitet(aktivitetId);
-    }
+    public abstract AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData);
 
     public abstract AktivitetData oppdaterAktivitet(AktivitetData aktivitet);
 
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
-        aktivitetService.oppdaterStatus(aktivitet);
-        return aktivitetService.hentAktivitet(aktivitet.getId());
+        return brukerService.getLoggedInnUser()
+                .map(userIdent -> {
+                    aktivitetService.oppdaterStatus(aktivitet, userIdent);
+                    return aktivitetService.hentAktivitet(aktivitet.getId());
+                })
+                .orElseThrow(RuntimeException::new);
     }
 
-    public AktivitetData oppdaterEtikett(AktivitetData aktivtet) {
-        aktivitetService.oppdaterEtikett(aktivtet);
-        return aktivitetService.hentAktivitet(aktivtet.getId());
+    public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
+        return brukerService.getLoggedInnUser()
+                .map(userIdent -> {
+                    aktivitetService.oppdaterEtikett(aktivitet, userIdent);
+                    return aktivitetService.hentAktivitet(aktivitet.getId());
+                })
+                .orElseThrow(RuntimeException::new);
     }
 
     public void slettAktivitet(long aktivitetId) {

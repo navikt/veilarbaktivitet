@@ -122,7 +122,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
 
     private void gitt_at_jeg_har_aktiviter() {
         lagredeAktivitetsIder = aktiviter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet))
+                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null))
                 .collect(Collectors.toList());
     }
 

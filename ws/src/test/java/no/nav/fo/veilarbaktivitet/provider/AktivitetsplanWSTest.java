@@ -192,7 +192,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                 .egenAktivitetData(new EgenAktivitetData())
                 .build();
 
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
     }
 
     private void opprett_stilling_aktivitet() {
@@ -201,7 +201,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                 .stillingsSoekAktivitetData(nyttStillingssøk())
                 .build();
 
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
     }
 
     private void opprett_avtalt_aktivitet() {
@@ -211,7 +211,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                 .stillingsSoekAktivitetData(new StillingsoekAktivitetData())
                 .build();
 
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
     }
 
     private OpprettNyAktivitetRequest getOpprettNyAktivitetRequest() {
