@@ -8,7 +8,6 @@
 
     <selftest>
         <path>/veilarbaktivitet/internal/selftest</path>
-        <humanReadablePath>/veilarbaktivitet/internal/selftest</humanReadablePath>
     </selftest>
 
     <artifacts>
