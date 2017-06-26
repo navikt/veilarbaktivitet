@@ -8,7 +8,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
-import java.sql.SQLException;
 
 @Component
 public class DatabaseHelsesjekk implements Helsesjekk {
@@ -25,12 +24,7 @@ public class DatabaseHelsesjekk implements Helsesjekk {
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        String dbUri = "Ukjent uri";
-        try {
-            dbUri = jdbcTemplate.getDataSource().getConnection().getMetaData().getURL();
-        } catch (SQLException e) {
-            logger.error("Kunne ikke hente connection for datasource.", e);
-        }
+        String dbUri = System.getProperty("veilarbaktivitetDataSource.url");
         return new HelsesjekkMetadata(
                 "Database: " + dbUri,
                 "Lokal database for VeilArbAktivitet",
