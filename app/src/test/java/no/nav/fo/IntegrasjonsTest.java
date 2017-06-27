@@ -8,4 +8,4 @@ import org.springframework.test.context.ContextConfiguration;
         IntegrasjonsTest.JndiBean.class,
         IntegrasjonsTest.Request.class
 })
-public abstract class IntegrasjonsTest extends  AbstractIntegrasjonsTest {}
+public abstract class IntegrasjonsTest extends AbstractIntegrasjonsTest {}

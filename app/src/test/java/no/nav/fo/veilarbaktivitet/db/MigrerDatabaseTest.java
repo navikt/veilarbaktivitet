@@ -6,8 +6,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 
-import java.util.Map;
-
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertThat;
 
