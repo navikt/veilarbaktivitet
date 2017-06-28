@@ -11,7 +11,7 @@ import static java.sql.DriverManager.registerDriver;
 public class TestDriver implements Driver {
 
     public static final String URL = TestDriver.class.getSimpleName();
-    private static final String HSQL_URL = "jdbc:hsqldb:mem:veilarbaktivitet";
+    private static final String H2 = "jdbc:h2:mem:veilarbaktivitet;DB_CLOSE_DELAY=-1;MODE=Oracle";
 
     static {
         try {
@@ -21,15 +21,15 @@ public class TestDriver implements Driver {
         }
     }
 
-    private Driver driver = new org.hsqldb.jdbcDriver();
+    private Driver driver = new org.h2.Driver();
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(), info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(), info)), Connection.class);
     }
 
-    private String getHsqlUrl() {
-        return HSQL_URL;
+    private String getH2Url() {
+        return H2;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(HSQL_URL, info);
+        return driver.getPropertyInfo(H2, info);
     }
 
     @Override
@@ -61,5 +61,4 @@ public class TestDriver implements Driver {
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return driver.getParentLogger();
     }
-
 }

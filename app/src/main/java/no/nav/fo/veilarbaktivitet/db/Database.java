@@ -19,9 +19,6 @@ import static java.util.Optional.ofNullable;
 @Component
 public class Database {
 
-    public static final String DIALECT_PROPERTY = "dialect";
-    public static final String HSQLDB_DIALECT = "hsqldb";
-
     @Inject
     private JdbcTemplate jdbcTemplate;
 
@@ -39,13 +36,7 @@ public class Database {
 
 
     public long nesteFraSekvens(String sekvensNavn) {
-        String sekvensQuery;
-        if (HSQLDB_DIALECT.equals(System.getProperty(DIALECT_PROPERTY))) {
-            sekvensQuery = "call next value for " + sekvensNavn;
-        } else {
-            sekvensQuery = "select " + sekvensNavn + ".nextval from dual";
-        }
-        return jdbcTemplate.queryForObject(sekvensQuery, Long.class);
+        return jdbcTemplate.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class);
     }
 
     public static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
