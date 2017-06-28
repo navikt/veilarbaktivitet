@@ -5,8 +5,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
-import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
+import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
 
 public class AktivitetDTOMapper {
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
@@ -48,6 +47,20 @@ public class AktivitetDTOMapper {
                         aktivitetDTO
                                 .setAntall(sokeAvtaleAktivitetData.getAntall())
                                 .setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging())
+                );
+
+        ofNullable(aktivitet.getIJobbAktivitetData())
+                .ifPresent(iJobbAktivitetData ->
+                        aktivitetDTO.setJobbStatus(jobbStatusMap.get(iJobbAktivitetData.getJobbStatusType()))
+                                .setAnsettelsesforhold(iJobbAktivitetData.getAnsttelsesforhold())
+                                .setArbeidstid(iJobbAktivitetData.getArbeidstid())
+                );
+
+        ofNullable(aktivitet.getBehandlingAktivitetData())
+                .ifPresent(behandlingAktivitetData ->
+                        aktivitetDTO.setBehandlingSted(behandlingAktivitetData.getBehandlingSted())
+                                .setEffekt(behandlingAktivitetData.getEffekt())
+                                .setBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging())
                 );
 
         return aktivitetDTO;

@@ -1,14 +1,10 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
 import lombok.val;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.SokeAvtaleAktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.StillingsoekAktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 
-import java.util.Optional;
-
+import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.wsStatus;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
@@ -38,7 +34,7 @@ public class AktivitetWSMapper {
         wsAktivitet.setTransaksjonsType(transaksjonsTypeMap.get(aktivitet.getTransaksjonsType()));
 
 
-        Optional.ofNullable(aktivitet.getLagtInnAv()).ifPresent((lagtInnAv) -> {
+        ofNullable(aktivitet.getLagtInnAv()).ifPresent((lagtInnAv) -> {
             val innsender = new Innsender();
             innsender.setId(lagtInnAv.name());
             innsender.setType(innsenderMap.getKey(lagtInnAv));
@@ -46,15 +42,21 @@ public class AktivitetWSMapper {
         });
 
 
-        Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
+        ofNullable(aktivitet.getStillingsSoekAktivitetData())
                 .ifPresent(stillingsoekAktivitetData ->
                         wsAktivitet.setStillingAktivitet(mapTilStillingsAktivitet(stillingsoekAktivitetData)));
-        Optional.ofNullable(aktivitet.getEgenAktivitetData())
+        ofNullable(aktivitet.getEgenAktivitetData())
                 .ifPresent(egenAktivitetData ->
                         wsAktivitet.setEgenAktivitet(mapTilEgenAktivitet(egenAktivitetData)));
-        Optional.ofNullable(aktivitet.getSokeAvtaleAktivitetData())
+        ofNullable(aktivitet.getSokeAvtaleAktivitetData())
                 .ifPresent(sokeAvtaleAktivitetData ->
                         wsAktivitet.setSokeavtale(mapTilSokeAvtaleAktivitet(sokeAvtaleAktivitetData)));
+        ofNullable(aktivitet.getIJobbAktivitetData())
+                .ifPresent(iJobbAktivitetData ->
+                        wsAktivitet.setIjobb(mapTilIJobbAktivitet(iJobbAktivitetData)));
+        ofNullable(aktivitet.getBehandlingAktivitetData())
+                .ifPresent(behandlingAktivitetData ->
+                        wsAktivitet.setBehandling(mapTilBehandlingAktivitet(behandlingAktivitetData)));
 
         return wsAktivitet;
     }
@@ -87,6 +89,22 @@ public class AktivitetWSMapper {
         sokeAvtaleAtivitet.setAntall(sokeAvtaleAktivitetData.getAntall());
 
         return sokeAvtaleAtivitet;
+    }
+
+    private static Ijobb mapTilIJobbAktivitet(IJobbAktivitetData iJobbAktivitetData) {
+        val ijobb = new Ijobb();
+        ijobb.setJobbStatus(jobbStatusTypeMap.getKey(iJobbAktivitetData.getJobbStatusType()));
+        ijobb.setAnsettelsesforhold(iJobbAktivitetData.getAnsttelsesforhold());
+        ijobb.setArbeidstid(iJobbAktivitetData.getArbeidstid());
+        return ijobb;
+    }
+
+    private static Behandling mapTilBehandlingAktivitet(BehandlingAktivitetData behandlingAktivitetData) {
+        val behandling = new Behandling();
+        behandling.setBehandlingSted(behandlingAktivitetData.getBehandlingSted());
+        behandling.setEffekt(behandlingAktivitetData.getEffekt());
+        behandling.setBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging());
+        return behandling;
     }
 
 }

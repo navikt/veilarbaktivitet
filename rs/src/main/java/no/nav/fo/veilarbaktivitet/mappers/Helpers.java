@@ -1,9 +1,6 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
-import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
-import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
@@ -22,5 +19,11 @@ public class Helpers {
                 put(StillingsoekEtikettData.INNKALT_TIL_INTERVJU, EtikettTypeDTO.INNKALT_TIL_INTERVJU);
                 put(StillingsoekEtikettData.JOBBTILBUD, EtikettTypeDTO.JOBBTILBUD);
                 put(StillingsoekEtikettData.SOKNAD_SENDT, EtikettTypeDTO.SOKNAD_SENDT);
+            }};
+
+    static final BidiMap<JobbStatusTypeData, JobbStatusTypeDTO> jobbStatusMap =
+            new DualHashBidiMap<JobbStatusTypeData, JobbStatusTypeDTO>() {{
+                put(JobbStatusTypeData.HELTID, JobbStatusTypeDTO.HELTID);
+                put(JobbStatusTypeData.DELTID, JobbStatusTypeDTO.DELTID);
             }};
 }

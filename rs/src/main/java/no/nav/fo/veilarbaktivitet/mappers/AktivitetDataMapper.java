@@ -6,8 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 import java.util.Optional;
 
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
-import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
-import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
+import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
 
 public class AktivitetDataMapper {
     public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
@@ -51,6 +50,18 @@ public class AktivitetDataMapper {
             aktivitetData.sokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
                     .setAntall(aktivitetDTO.getAntall())
                     .setAvtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
+            );
+        } else if (IJOBB.equals(aktivitetType)) {
+            aktivitetData.iJobbAktivitetData(new IJobbAktivitetData()
+                    .setJobbStatusType(jobbStatusMap.getKey(aktivitetDTO.getJobbStatus()))
+                    .setAnsttelsesforhold(aktivitetDTO.getAnsettelsesforhold())
+                    .setArbeidstid(aktivitetDTO.getArbeidstid())
+            );
+        } else if (BEHANDLING.equals(aktivitetType)) {
+            aktivitetData.behandlingAktivitetData(new BehandlingAktivitetData()
+                    .setBehandlingSted(aktivitetDTO.getBehandlingSted())
+                    .setEffekt(aktivitetDTO.getEffekt())
+                    .setBehandlingOppfolging(aktivitetDTO.getBehandlingOppfolging())
             );
         }
 

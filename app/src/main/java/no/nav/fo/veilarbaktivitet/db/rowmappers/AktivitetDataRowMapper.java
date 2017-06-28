@@ -42,6 +42,10 @@ public class AktivitetDataRowMapper {
             aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
         } else if (SOKEAVTALE.equals(type)) {
             aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
+        } else if (IJOBB.equals(type)) {
+            aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
+        } else if (BEHANDLING.equals(type)) {
+            aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
         }
 
         return aktivitet.build();
@@ -67,6 +71,20 @@ public class AktivitetDataRowMapper {
         return new SokeAvtaleAktivitetData()
                 .setAntall(rs.getLong("antall"))
                 .setAvtaleOppfolging(rs.getString("avtale_oppfolging"));
+    }
+
+    private static IJobbAktivitetData mapIJobbAktivitet(ResultSet rs) throws SQLException {
+        return new IJobbAktivitetData()
+                .setJobbStatusType(valueOf(JobbStatusTypeData.class, rs.getString("jobb_status")))
+                .setAnsttelsesforhold(rs.getString("ansettelsesforhold"))
+                .setArbeidstid(rs.getString("arbeidstid"));
+    }
+
+    private static BehandlingAktivitetData mapBehandlingAktivitet(ResultSet rs) throws SQLException {
+        return new BehandlingAktivitetData()
+                .setBehandlingSted(rs.getString("behandling_sted"))
+                .setEffekt(rs.getString("effekt"))
+                .setBehandlingOppfolging(rs.getString("behandling_oppfolging"));
     }
 
 }

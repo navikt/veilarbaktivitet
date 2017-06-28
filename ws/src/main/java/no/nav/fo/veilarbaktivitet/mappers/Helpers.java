@@ -1,19 +1,15 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
-import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
-import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.AktivitetType;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.InnsenderType;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.TransaksjonType;
+import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.BRUKER;
 import static no.nav.fo.veilarbaktivitet.domain.InnsenderData.NAV;
+import static no.nav.fo.veilarbaktivitet.domain.JobbStatusTypeData.DELTID;
+import static no.nav.fo.veilarbaktivitet.domain.JobbStatusTypeData.HELTID;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.*;
 import static no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.TransaksjonType.*;
 
@@ -51,4 +47,9 @@ public class Helpers {
                 put(AktivitetTransaksjonsType.STATUS_ENDRET, STATUS_ENDRET);
             }};
 
+    static final BidiMap<JobbStatus, JobbStatusTypeData> jobbStatusTypeMap =
+            new DualHashBidiMap<JobbStatus, JobbStatusTypeData>() {{
+                put(JobbStatus.HELTID, HELTID);
+                put(JobbStatus.DELTID, DELTID);
+            }};
 }

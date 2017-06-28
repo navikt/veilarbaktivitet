@@ -31,6 +31,8 @@ public class AktivitetData {
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
     SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
+    IJobbAktivitetData iJobbAktivitetData;
+    BehandlingAktivitetData behandlingAktivitetData;
 
 }
 
