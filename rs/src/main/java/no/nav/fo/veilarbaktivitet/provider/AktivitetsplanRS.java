@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
@@ -22,13 +23,17 @@ import java.util.stream.Collectors;
 public class AktivitetsplanRS implements AktivitetController {
 
     private final AktivitetRSAppService appService;
-
+    private final PepClient pepClient;
     private final Provider<HttpServletRequest> requestProvider;
 
     @Inject
-    public AktivitetsplanRS(AktivitetRSAppService appService,
-                            Provider<HttpServletRequest> requestProvider) {
+    public AktivitetsplanRS(
+            AktivitetRSAppService appService,
+            PepClient pepClient,
+            Provider<HttpServletRequest> requestProvider
+    ) {
         this.appService = appService;
+        this.pepClient = pepClient;
         this.requestProvider = requestProvider;
     }
 
@@ -110,7 +115,9 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     private String getUserIdent() {
-        return Optional.ofNullable(requestProvider.get().getParameter("fnr"))
-                .orElseThrow(RuntimeException::new); // Hvordan håndere dette?
+        String fnr = Optional.ofNullable(requestProvider.get().getParameter("fnr"))
+                .orElseThrow(RuntimeException::new);// Hvordan håndere dette?
+        pepClient.sjekkTilgangTilFnr(fnr);
+        return fnr;
     }
 }
