@@ -26,7 +26,7 @@ public class AktivitetDAO {
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
             "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
-            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon";
+            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon ";
 
     private final Database database;
 
@@ -158,7 +158,7 @@ public class AktivitetDAO {
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
                     database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_sted," +
-                                    " effekt, behandling_oppfolging",
+                                    " effekt, behandling_oppfolging) VALUES(?,?,?,?,?)",
                             aktivitetId,
                             versjon,
                             behandling.getBehandlingSted(),
