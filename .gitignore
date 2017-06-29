@@ -3,4 +3,5 @@ target
 .idea/*
 !.idea/runConfigurations/
 *.log
+*.gz
 ignore

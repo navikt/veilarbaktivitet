@@ -22,56 +22,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>no.nav.maven.plugins</groupId>
-                <artifactId>aura-maven-plugin</artifactId>
-                <version>6.1.48</version>
-                <configuration>
-                    <apps>${project.parent.artifactId}:${project.version}</apps>
-                    <envConfigUrl>https://envconfig.adeo.no/conf</envConfigUrl>
-                    <username>admin</username>
-                    <password>admin</password>
-                </configuration>
-            </plugin>
-        </plugins>
-
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.flywaydb</groupId>
-                    <artifactId>flyway-maven-plugin</artifactId>
-                    <version>4.0.3</version>
-                    <dependencies>
-                        <dependency>
-                            <groupId>com.oracle</groupId>
-                            <artifactId>ojdbc6</artifactId>
-                            <version>11.2.0.3</version>
-                        </dependency>
-                    </dependencies>
-                    <configuration>
-                        <driver>oracle.jdbc.OracleDriver</driver>
-                        <locations>
-                            <location>db/aktivitetDataSource</location>
-                        </locations>
-                        <outOfOrder>true</outOfOrder>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
     </build>
-
-
-
-    <profiles>
-        <profile>
-            <id>t6</id>
-            <properties>
-                <flyway.url>jdbc:oracle:thin:@d26dbfl007.test.local:1521/t6veilarbaktivitet</flyway.url>
-                <flyway.user>t6_veilarbaktivitet</flyway.user>
-                <flyway.password>y0Mb6ITh7SdO</flyway.password>
-            </properties>
-        </profile>
-    </profiles>
 
 </project>
