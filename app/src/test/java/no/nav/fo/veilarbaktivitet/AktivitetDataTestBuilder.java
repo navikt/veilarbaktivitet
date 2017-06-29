@@ -45,6 +45,20 @@ public class AktivitetDataTestBuilder {
                 .setAvtaleOppfolging("Oppfølging");
     }
 
+    public static IJobbAktivitetData nyIJobbAktivitet() {
+        return new IJobbAktivitetData()
+                .setJobbStatusType(JobbStatusTypeData.HELTID)
+                .setAnsettelsesforhold("Vikar")
+                .setArbeidstid("7,5 timer");
+    }
+
+    public static BehandlingAktivitetData nyBehandlingAktivitet() {
+        return new BehandlingAktivitetData()
+                .setBehandlingSted("Legen")
+                .setEffekt("Bli frisk")
+                .setBehandlingOppfolging("Husk å ta pillene dine");
+    }
+
     public static Date nyDato() {
         return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
     }

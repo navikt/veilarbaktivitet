@@ -40,4 +40,14 @@ public class AktivitetDTO {
     //sokeAvtaleAktivitet
     public Long antall;
     public String avtaleOppfolging;
+
+    //iJobbAktivitet
+    public JobbStatusTypeDTO jobbStatus;
+    public String ansettelsesforhold;
+    public String arbeidstid;
+
+    //behandlingAktivitet
+    public String behandlingSted;
+    public String effekt;
+    public String behandlingOppfolging;
 }

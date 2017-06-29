@@ -53,6 +53,24 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void opprette_og_hente_ijobbaktivitet() {
+        val aktivitet = gitt_at_det_finnes_en_ijobb();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
+    public void opprette_og_hente_behandlingaktiviete() {
+        val aktivitet = gitt_at_det_finnes_en_behandling();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
     public void slett_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
@@ -100,6 +118,22 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
                 .build();
 
         return insertAktivitet(aktivitet);
+    }
+
+    private AktivitetData gitt_at_det_finnes_en_ijobb() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(IJOBB)
+                .iJobbAktivitetData(nyIJobbAktivitet())
+                .build()
+        );
+    }
+
+    private AktivitetData gitt_at_det_finnes_en_behandling() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(BEHANDLING)
+                .behandlingAktivitetData(nyBehandlingAktivitet())
+                .build()
+        );
     }
 
     private AktivitetData lagaktivitetMedIdVersjon(Long id, Long versjon) {
