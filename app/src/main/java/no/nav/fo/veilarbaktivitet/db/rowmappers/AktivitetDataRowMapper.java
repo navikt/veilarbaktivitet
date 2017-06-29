@@ -76,7 +76,7 @@ public class AktivitetDataRowMapper {
     private static IJobbAktivitetData mapIJobbAktivitet(ResultSet rs) throws SQLException {
         return new IJobbAktivitetData()
                 .setJobbStatusType(valueOf(JobbStatusTypeData.class, rs.getString("jobb_status")))
-                .setAnsttelsesforhold(rs.getString("ansettelsesforhold"))
+                .setAnsettelsesforhold(rs.getString("ansettelsesforhold"))
                 .setArbeidstid(rs.getString("arbeidstid"));
     }
 

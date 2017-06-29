@@ -3,8 +3,6 @@ package no.nav.fo.veilarbaktivitet.mappers;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 
-import java.util.Optional;
-
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
@@ -76,7 +74,7 @@ public class AktivitetDataMapper {
         return ofNullable(ijobbAktivitet).map(ijobb ->
                 new IJobbAktivitetData()
                         .setJobbStatusType(jobbStatusTypeMap.get(ijobb.getJobbStatus()))
-                        .setAnsttelsesforhold(ijobb.getAnsettelsesforhold())
+                        .setAnsettelsesforhold(ijobb.getAnsettelsesforhold())
                         .setArbeidstid(ijobb.getArbeidstid())
         ).orElse(null);
     }

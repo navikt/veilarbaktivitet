@@ -94,7 +94,7 @@ public class AktivitetWSMapper {
     private static Ijobb mapTilIJobbAktivitet(IJobbAktivitetData iJobbAktivitetData) {
         val ijobb = new Ijobb();
         ijobb.setJobbStatus(jobbStatusTypeMap.getKey(iJobbAktivitetData.getJobbStatusType()));
-        ijobb.setAnsettelsesforhold(iJobbAktivitetData.getAnsttelsesforhold());
+        ijobb.setAnsettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold());
         ijobb.setArbeidstid(iJobbAktivitetData.getArbeidstid());
         return ijobb;
     }

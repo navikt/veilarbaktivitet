@@ -48,7 +48,7 @@ public class AktivitetDataTestBuilder {
     public static IJobbAktivitetData nyIJobbAktivitet() {
         return new IJobbAktivitetData()
                 .setJobbStatusType(JobbStatusTypeData.HELTID)
-                .setAnsttelsesforhold("Vikar")
+                .setAnsettelsesforhold("Vikar")
                 .setArbeidstid("7,5 timer");
     }
 

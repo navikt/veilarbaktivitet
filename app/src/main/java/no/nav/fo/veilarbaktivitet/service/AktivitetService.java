@@ -148,7 +148,7 @@ public class AktivitetService {
         ofNullable(orginalAktivitet.getIJobbAktivitetData()).ifPresent(
                 iJobb -> iJobb
                         .setJobbStatusType(aktivitet.getIJobbAktivitetData().getJobbStatusType())
-                        .setAnsttelsesforhold(aktivitet.getIJobbAktivitetData().getAnsttelsesforhold())
+                        .setAnsettelsesforhold(aktivitet.getIJobbAktivitetData().getAnsettelsesforhold())
                         .setArbeidstid(aktivitet.getIJobbAktivitetData().getArbeidstid())
         );
         ofNullable(orginalAktivitet.getBehandlingAktivitetData()).ifPresent(

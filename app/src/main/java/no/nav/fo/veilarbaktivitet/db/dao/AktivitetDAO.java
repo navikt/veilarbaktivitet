@@ -147,7 +147,7 @@ public class AktivitetDAO {
                             aktivitetId,
                             versjon,
                             getName(iJobb.getJobbStatusType()),
-                            iJobb.getAnsttelsesforhold(),
+                            iJobb.getAnsettelsesforhold(),
                             iJobb.getArbeidstid()
                     );
                 });

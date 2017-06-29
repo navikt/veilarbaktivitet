@@ -52,7 +52,7 @@ public class AktivitetDTOMapper {
         ofNullable(aktivitet.getIJobbAktivitetData())
                 .ifPresent(iJobbAktivitetData ->
                         aktivitetDTO.setJobbStatus(jobbStatusMap.get(iJobbAktivitetData.getJobbStatusType()))
-                                .setAnsettelsesforhold(iJobbAktivitetData.getAnsttelsesforhold())
+                                .setAnsettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
                                 .setArbeidstid(iJobbAktivitetData.getArbeidstid())
                 );
 

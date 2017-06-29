@@ -54,7 +54,7 @@ public class AktivitetDataMapper {
         } else if (IJOBB.equals(aktivitetType)) {
             aktivitetData.iJobbAktivitetData(new IJobbAktivitetData()
                     .setJobbStatusType(jobbStatusMap.getKey(aktivitetDTO.getJobbStatus()))
-                    .setAnsttelsesforhold(aktivitetDTO.getAnsettelsesforhold())
+                    .setAnsettelsesforhold(aktivitetDTO.getAnsettelsesforhold())
                     .setArbeidstid(aktivitetDTO.getArbeidstid())
             );
         } else if (BEHANDLING.equals(aktivitetType)) {

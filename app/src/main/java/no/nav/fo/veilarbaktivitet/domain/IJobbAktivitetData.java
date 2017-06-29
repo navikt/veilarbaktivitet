@@ -7,6 +7,6 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class IJobbAktivitetData {
     JobbStatusTypeData jobbStatusType;
-    String ansttelsesforhold;
+    String ansettelsesforhold;
     String arbeidstid;
 }
