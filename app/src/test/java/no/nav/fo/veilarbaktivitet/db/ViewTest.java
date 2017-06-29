@@ -22,9 +22,9 @@ public class ViewTest extends IntegrasjonsTest {
 
     @Test
     public void views_eksisterer() {
-        for(String viewName : views) {
-            List<Map<String, Object>> view = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
-            assertThat(view).isNotNull();
+        for(String view : views) {
+            List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + view + ";");
+            assertThat(viewData).isNotNull();
         }
     }
 
@@ -33,16 +33,16 @@ public class ViewTest extends IntegrasjonsTest {
 
         for(String view : views) {
 
-            String kolonneData = JsonUtils.toJson(getKolonneDataForView(view));
+            String kolonneData = JsonUtils.toJson(hentKolonneDataForView(view));
 
-            String kolonneDataFasit = readContentFromFile("view-meta-data/" + view.toLowerCase() + ".json");
+            String kolonneDataFasit = lesInnholdFraFil("view-meta-data/" + view.toLowerCase() + ".json");
 
             assertThat(kolonneData).isEqualTo(kolonneDataFasit);
         }
 
     }
 
-    private List<Map<String, Object>> getKolonneDataForView(String view) {
+    private List<Map<String, Object>> hentKolonneDataForView(String view) {
         return jdbcTemplate.queryForList(
             "SELECT " +
                 "COLUMN_NAME, " +
@@ -53,7 +53,7 @@ public class ViewTest extends IntegrasjonsTest {
         );
     }
 
-    public String readContentFromFile(String fileName) {
-        return new Scanner(getClass().getClassLoader().getResourceAsStream(fileName), "UTF-8").useDelimiter("\\A").next();
+    public String lesInnholdFraFil(String filNavn) {
+        return new Scanner(getClass().getClassLoader().getResourceAsStream(filNavn), "UTF-8").useDelimiter("\\A").next();
     }
 }
