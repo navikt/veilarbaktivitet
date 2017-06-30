@@ -10,6 +10,7 @@ import static java.sql.DriverManager.registerDriver;
 
 public class TestDriver implements Driver {
 
+
     private static final String BASE_URL = TestDriver.class.getSimpleName();
 
     private static int count;
@@ -25,15 +26,19 @@ public class TestDriver implements Driver {
         }
     }
 
-    private Driver driver = new org.hsqldb.jdbcDriver();
+    private Driver driver = new org.h2.Driver();
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(url), info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(url), info)), Connection.class);
     }
 
-    private String getHsqlUrl(String url) {
-        return "jdbc:hsqldb:mem:veilarbaktivitet" + url.substring(BASE_URL.length());
+    private String getH2Url(String url) {
+        String uniktNavn = url.substring(BASE_URL.length());
+        return String.format(
+            "jdbc:h2:mem:veilarbaktivitet-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
+            uniktNavn
+        );
     }
 
     @Override
@@ -43,7 +48,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(getHsqlUrl(url), info);
+        return driver.getPropertyInfo(getH2Url(url), info);
     }
 
     @Override
@@ -65,5 +70,4 @@ public class TestDriver implements Driver {
     public Logger getParentLogger() throws SQLFeatureNotSupportedException {
         return driver.getParentLogger();
     }
-
 }
