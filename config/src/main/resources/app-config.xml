@@ -32,6 +32,8 @@
             <pool maxPoolSize="300" minPoolSize="0"/>
         </datasource>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
+        <rest mapToProperty="abac.endpoint" alias="abac.pdp.endpoint"/>
+        <abacSecurity serviceUserResourceAlias="srvveilarbaktivitet"/>
         <webservice alias="virksomhet:TiltakOgAktivitet_v1" mapToProperty="tiltakOgAktivitet.endpoint"/>
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
