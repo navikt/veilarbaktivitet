@@ -33,9 +33,11 @@
         </datasource>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <webservice alias="virksomhet:TiltakOgAktivitet_v1" mapToProperty="tiltakOgAktivitet.endpoint"/>
+        <rest alias="abac.pdp.endpoint" mapToProperty="abac.endpoint" />
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
         <baseUrl alias="isso-issuer"/>
+        <baseUrl alias="isso.isalive"/>
         <credential alias="isso-rp-user"/>
     </resources>
 
