@@ -21,7 +21,7 @@ public class ViewTest extends IntegrasjonsTest {
 
     private static final String[] views = new String[]{
         "DVH_TRANSAKSJON_TYPE",
-        "DVH_AKTIVITET_LIVSLOPSTATUS_TYPE",
+        "DVH_AKT_LIVSLOPSTATUS_TYPE",
         "DVH_AKTIVITET_TYPE",
         "DVH_STILLINGSOK_ETIKETT_TYPE",
         "DVH_AKTIVITET",
