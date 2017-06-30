@@ -1,47 +1,85 @@
 package no.nav.fo;
 
+import lombok.SneakyThrows;
 import no.nav.dialogarena.config.DevelopmentSecurity;
 import no.nav.dialogarena.config.fasit.FasitUtils;
-import org.junit.BeforeClass;
-import org.junit.runner.RunWith;
-import org.springframework.context.annotation.PropertySource;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.mock.jndi.SimpleNamingContextBuilder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.stereotype.Component;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.io.IOException;
+import javax.naming.NamingException;
 
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@PropertySource("classpath:test.properties")
-@Transactional
 public abstract class AbstractIntegrasjonsTest {
 
-    @BeforeClass
-    public static void serviceUser() throws IOException {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbaktivitet", "veilarbaktivitet", "t6"));
-    }
+    private static AnnotationConfigApplicationContext annotationConfigApplicationContext;
+    private static PlatformTransactionManager platformTransactionManager;
+    private TransactionStatus transactionStatus;
 
-    @BeforeClass
-    public static void testProperties() throws IOException {
+    @SneakyThrows
+    public static void setupContext(Class<?>... classes) {
+        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbaktivitet", "veilarbaktivitet", "t6"));
+        System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/test.properties"));
         System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/integrasjonstest.properties"));
+        DevelopmentSecurity.configureLdap(FasitUtils.getLdapConfig("ldap", "veilarbaktivitet", "t6"));
+
+        annotationConfigApplicationContext = new AnnotationConfigApplicationContext(classes);
+        annotationConfigApplicationContext.start();
+        platformTransactionManager = getBean(PlatformTransactionManager.class);
     }
 
     @Component
     public static class JndiBean {
 
+        private final SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
+
         public JndiBean() throws Exception {
-            SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
             builder.bind(AKTIVITET_DATA_SOURCE_JDNI_NAME, DatabaseTestContext.buildDataSource());
             builder.activate();
         }
 
     }
 
+    @BeforeEach
+    @Before
+    public final void fiksJndiOgLdapKonflikt() throws NamingException {
+        getBean(JndiBean.class).builder.deactivate();
+    }
+
+    @BeforeEach
+    @Before
+    public void injectAvhengigheter() {
+        annotationConfigApplicationContext.getAutowireCapableBeanFactory().autowireBean(this);
+    }
+
+    @BeforeEach
+    @Before
+    public void startTransaksjon() {
+        transactionStatus = platformTransactionManager.getTransaction(new DefaultTransactionDefinition());
+    }
+
+    @AfterEach
+    @After
+    public void rollbackTransaksjon() {
+        platformTransactionManager.rollback(transactionStatus);
+    }
+
     @Component
-    public static class Request extends MockHttpServletRequest {}
+    public static class Request extends MockHttpServletRequest {
+    }
+
+    protected static <T> T getBean(Class<T> requiredType) {
+        return annotationConfigApplicationContext.getBean(requiredType);
+    }
+
 
 }

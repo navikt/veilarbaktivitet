@@ -10,8 +10,12 @@ import static java.sql.DriverManager.registerDriver;
 
 public class TestDriver implements Driver {
 
-    public static final String URL = TestDriver.class.getSimpleName();
-    private static final String HSQL_URL = "jdbc:hsqldb:mem:veilarbaktivitet";
+    private static final String BASE_URL = TestDriver.class.getSimpleName();
+
+    private static int count;
+    public static String getURL() {
+        return BASE_URL + "-" + count++;
+    }
 
     static {
         try {
@@ -25,11 +29,11 @@ public class TestDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(), info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getHsqlUrl(url), info)), Connection.class);
     }
 
-    private String getHsqlUrl() {
-        return HSQL_URL;
+    private String getHsqlUrl(String url) {
+        return "jdbc:hsqldb:mem:veilarbaktivitet" + url.substring(BASE_URL.length());
     }
 
     @Override
@@ -39,7 +43,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(HSQL_URL, info);
+        return driver.getPropertyInfo(getHsqlUrl(url), info);
     }
 
     @Override
