@@ -20,6 +20,7 @@
         <logins>
             <saml/>
         </logins>
+        <abacSecurity serviceUserResourceAlias="srvveilarbaktivitet"/>
     </security>
 
     <logging serviceCalls="true"/>
@@ -33,7 +34,6 @@
         </datasource>
         <webservice alias="Aktoer_v2" mapToProperty="aktoer.endpoint"/>
         <rest mapToProperty="abac.endpoint" alias="abac.pdp.endpoint"/>
-        <abacSecurity serviceUserResourceAlias="srvveilarbaktivitet"/>
         <webservice alias="virksomhet:TiltakOgAktivitet_v1" mapToProperty="tiltakOgAktivitet.endpoint"/>
         <baseUrl alias="isso-host"/>
         <baseUrl alias="isso-jwks"/>
