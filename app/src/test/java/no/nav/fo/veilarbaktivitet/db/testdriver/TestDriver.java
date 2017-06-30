@@ -10,8 +10,13 @@ import static java.sql.DriverManager.registerDriver;
 
 public class TestDriver implements Driver {
 
-    public static final String URL = TestDriver.class.getSimpleName();
-    private static final String H2 = "jdbc:h2:mem:veilarbaktivitet;DB_CLOSE_DELAY=-1;MODE=Oracle";
+
+    private static final String BASE_URL = TestDriver.class.getSimpleName();
+
+    private static int count;
+    public static String getURL() {
+        return BASE_URL + "-" + count++;
+    }
 
     static {
         try {
@@ -25,11 +30,15 @@ public class TestDriver implements Driver {
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {
-        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(), info)), Connection.class);
+        return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(url), info)), Connection.class);
     }
 
-    private String getH2Url() {
-        return H2;
+    private String getH2Url(String url) {
+        String uniktNavn = url.substring(BASE_URL.length());
+        return String.format(
+            "jdbc:h2:mem:veilarbaktivitet-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
+            uniktNavn
+        );
     }
 
     @Override
@@ -39,7 +48,7 @@ public class TestDriver implements Driver {
 
     @Override
     public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
-        return driver.getPropertyInfo(H2, info);
+        return driver.getPropertyInfo(getH2Url(url), info);
     }
 
     @Override

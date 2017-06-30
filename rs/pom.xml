@@ -88,11 +88,20 @@
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
+        </dependency>
 
         <!--Test-->
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>app-mock</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>api-app</artifactId>
+            <type>test-jar</type>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>

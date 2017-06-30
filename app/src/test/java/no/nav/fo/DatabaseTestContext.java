@@ -17,7 +17,7 @@ public class DatabaseTestContext {
         SingleConnectionDataSource dataSource = new SingleConnectionDataSource();
         dataSource.setSuppressClose(true);
         dataSource.setDriverClassName(TestDriver.class.getName());
-        dataSource.setUrl(TestDriver.URL);
+        dataSource.setUrl(TestDriver.getURL());
         dataSource.setUsername("sa");
         dataSource.setPassword("");
         createTables(dataSource);

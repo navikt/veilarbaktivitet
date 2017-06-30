@@ -14,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+
+import static java.util.Optional.ofNullable;
 
 @Component
 public class AktivitetService {
@@ -127,22 +128,34 @@ public class AktivitetService {
                 .endretAv(endretAv)
                 .avtalt(aktivitet.isAvtalt());
 
-        Optional.ofNullable(orginalAktivitet.getStillingsSoekAktivitetData()).ifPresent(
+        ofNullable(orginalAktivitet.getStillingsSoekAktivitetData()).ifPresent(
                 stilling ->
                         stilling.setArbeidsgiver(aktivitet.getStillingsSoekAktivitetData().getArbeidsgiver())
                                 .setArbeidssted(aktivitet.getStillingsSoekAktivitetData().getArbeidssted())
                                 .setKontaktPerson(aktivitet.getStillingsSoekAktivitetData().getKontaktPerson())
                                 .setStillingsTittel(aktivitet.getStillingsSoekAktivitetData().getStillingsTittel())
         );
-        Optional.ofNullable(orginalAktivitet.getEgenAktivitetData()).ifPresent(
+        ofNullable(orginalAktivitet.getEgenAktivitetData()).ifPresent(
                 egen -> egen
                         .setOppfolging(aktivitet.getEgenAktivitetData().getOppfolging())
                         .setHensikt(aktivitet.getEgenAktivitetData().getHensikt())
         );
-        Optional.ofNullable(orginalAktivitet.getSokeAvtaleAktivitetData()).ifPresent(
+        ofNullable(orginalAktivitet.getSokeAvtaleAktivitetData()).ifPresent(
                 sokeAvtale -> sokeAvtale
                         .setAntall(aktivitet.getSokeAvtaleAktivitetData().getAntall())
                         .setAvtaleOppfolging(aktivitet.getSokeAvtaleAktivitetData().getAvtaleOppfolging())
+        );
+        ofNullable(orginalAktivitet.getIJobbAktivitetData()).ifPresent(
+                iJobb -> iJobb
+                        .setJobbStatusType(aktivitet.getIJobbAktivitetData().getJobbStatusType())
+                        .setAnsettelsesforhold(aktivitet.getIJobbAktivitetData().getAnsettelsesforhold())
+                        .setArbeidstid(aktivitet.getIJobbAktivitetData().getArbeidstid())
+        );
+        ofNullable(orginalAktivitet.getBehandlingAktivitetData()).ifPresent(
+                behandling -> behandling
+                        .setBehandlingSted(aktivitet.getBehandlingAktivitetData().getBehandlingSted())
+                        .setEffekt(aktivitet.getBehandlingAktivitetData().getEffekt())
+                        .setBehandlingOppfolging(aktivitet.getBehandlingAktivitetData().getBehandlingOppfolging())
         );
 
         try {

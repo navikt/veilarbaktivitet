@@ -3,10 +3,7 @@ package no.nav.fo.veilarbaktivitet.db.dao;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.EgenAktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.SokeAvtaleAktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.StillingsoekAktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +24,9 @@ public class AktivitetDAO {
     private static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
             "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
-            "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon ";
+            "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
+            "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
+            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon ";
 
     private final Database database;
 
@@ -96,6 +95,8 @@ public class AktivitetDAO {
         insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitet.getId(), versjon, aktivitet.getEgenAktivitetData());
         insertSokeAvtale(aktivitet.getId(), versjon, aktivitet.getSokeAvtaleAktivitetData());
+        insertIJobb(aktivitet.getId(), versjon, aktivitet.getIJobbAktivitetData());
+        insertBehandling(aktivitet.getId(), versjon, aktivitet.getBehandlingAktivitetData());
 
         LOG.info("opprettet {}", aktivitet);
     }
@@ -127,7 +128,6 @@ public class AktivitetDAO {
                 ));
     }
 
-
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
                 .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall, avtale_oppfolging) " +
@@ -139,6 +139,35 @@ public class AktivitetDAO {
                 ));
     }
 
+    private void insertIJobb(long aktivitetId, long versjon, IJobbAktivitetData iJobbAktivitet) {
+        ofNullable(iJobbAktivitet)
+                .ifPresent(iJobb -> {
+                    database.update("INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status," +
+                                    " ansettelsesforhold, arbeidstid) VALUES(?,?,?,?,?)",
+                            aktivitetId,
+                            versjon,
+                            getName(iJobb.getJobbStatusType()),
+                            iJobb.getAnsettelsesforhold(),
+                            iJobb.getArbeidstid()
+                    );
+                });
+    }
+
+
+    private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
+        ofNullable(behandlingAktivitet)
+                .ifPresent(behandling -> {
+                    database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_sted," +
+                                    " effekt, behandling_oppfolging) VALUES(?,?,?,?,?)",
+                            aktivitetId,
+                            versjon,
+                            behandling.getBehandlingSted(),
+                            behandling.getEffekt(),
+                            behandling.getBehandlingOppfolging()
+                    );
+                });
+    }
+
     public void slettAktivitet(long aktivitetId) {
 
         database.update("DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
@@ -148,6 +177,12 @@ public class AktivitetDAO {
                 aktivitetId
         );
         database.update("DELETE FROM SOKEAVTALE WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        database.update("DELETE FROM IJOBB WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        database.update("DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
                 aktivitetId
         );
 

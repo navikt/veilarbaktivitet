@@ -1,22 +1,18 @@
 package no.nav.fo.veilarbaktivitet.mappers;
 
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Egenaktivitet;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Sokeavtale;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Stillingaktivitet;
-
-import java.util.Optional;
+import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.aktivitetStatus;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.etikettMap;
+import static no.nav.fo.veilarbaktivitet.mappers.Helpers.jobbStatusTypeMap;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 
 public class AktivitetDataMapper {
     public static AktivitetData mapTilAktivitetData(Aktivitet aktivitet) {
         return AktivitetData.builder()
-                .id(Optional.ofNullable(aktivitet.getAktivitetId())
+                .id(ofNullable(aktivitet.getAktivitetId())
                         .filter((id) -> !id.isEmpty())
                         .map(Long::parseLong)
                         .orElse(null)
@@ -35,16 +31,18 @@ public class AktivitetDataMapper {
                 .lagtInnAv(InnsenderData.BRUKER) // vet at fra denne siden er det alltid BRUKER
                 .lenke(aktivitet.getLenke())
                 .opprettetDato(getDate(aktivitet.getOpprettet()))
-                .avtalt(Optional.ofNullable(aktivitet.getAvtalt()).orElse(false))
+                .avtalt(ofNullable(aktivitet.getAvtalt()).orElse(false))
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .egenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))
                 .stillingsSoekAktivitetData(mapTilStillingsoekAktivitetData(aktivitet.getStillingAktivitet()))
                 .sokeAvtaleAktivitetData(mapTilSokeavtaleAktivitetData(aktivitet.getSokeavtale()))
+                .iJobbAktivitetData(mapTilIJobbAktivitetData(aktivitet.getIjobb()))
+                .behandlingAktivitetData(mapTilBehandlingAktivitetData(aktivitet.getBehandling()))
                 .build();
     }
 
     private static StillingsoekAktivitetData mapTilStillingsoekAktivitetData(Stillingaktivitet stillingaktivitet) {
-        return Optional.ofNullable(stillingaktivitet).map(stilling ->
+        return ofNullable(stillingaktivitet).map(stilling ->
                 new StillingsoekAktivitetData()
                         .setArbeidsgiver(stilling.getArbeidsgiver())
                         .setKontaktPerson(stilling.getKontaktperson())
@@ -55,7 +53,7 @@ public class AktivitetDataMapper {
     }
 
     private static EgenAktivitetData mapTilEgenAktivitetData(Egenaktivitet egenaktivitet) {
-        return Optional.ofNullable(egenaktivitet)
+        return ofNullable(egenaktivitet)
                 .map(egen ->
                         new EgenAktivitetData()
                                 .setHensikt(egen.getHensikt())
@@ -64,11 +62,29 @@ public class AktivitetDataMapper {
     }
 
     private static SokeAvtaleAktivitetData mapTilSokeavtaleAktivitetData(Sokeavtale sokeavtaleAktivitet) {
-        return Optional.ofNullable(sokeavtaleAktivitet)
+        return ofNullable(sokeavtaleAktivitet)
                 .map(sokeavtale ->
                         new SokeAvtaleAktivitetData()
                                 .setAntall(sokeavtaleAktivitet.getAntall())
                                 .setAvtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
                 ).orElse(null);
+    }
+
+    private static IJobbAktivitetData mapTilIJobbAktivitetData(Ijobb ijobbAktivitet) {
+        return ofNullable(ijobbAktivitet).map(ijobb ->
+                new IJobbAktivitetData()
+                        .setJobbStatusType(jobbStatusTypeMap.get(ijobb.getJobbStatus()))
+                        .setAnsettelsesforhold(ijobb.getAnsettelsesforhold())
+                        .setArbeidstid(ijobb.getArbeidstid())
+        ).orElse(null);
+    }
+
+    private static BehandlingAktivitetData mapTilBehandlingAktivitetData(Behandling behandlingAktivitet) {
+        return ofNullable(behandlingAktivitet).map(behandling ->
+                new BehandlingAktivitetData()
+                        .setBehandlingSted(behandling.getBehandlingSted())
+                        .setEffekt(behandling.getEffekt())
+                        .setBehandlingOppfolging(behandling.getBehandlingOppfolging())
+        ).orElse(null);
     }
 }
