@@ -30,6 +30,8 @@ public class ViewTest extends IntegrasjonsTest {
         "DVH_EGENAKTIVITET"
     };
 
+    private static final int antallViews = 8;
+
     @Inject
     private JdbcTemplate jdbcTemplate;
 
@@ -43,6 +45,17 @@ public class ViewTest extends IntegrasjonsTest {
         }).toArray();
 
         return objects;
+    }
+
+    @Test
+    public void database_skal_ha_riktig_antall_views() {
+        long count = (long) jdbcTemplate.queryForList("" +
+            "SELECT " +
+                "COUNT(*) AS VIEW_COUNT " +
+            "FROM INFORMATION_SCHEMA.VIEWS;"
+        ).get(0).get("VIEW_COUNT");
+
+        assertThat(count).isEqualTo(antallViews);
     }
 
     @Test
