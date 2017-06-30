@@ -42,6 +42,10 @@
             <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>javax.inject</artifactId>
         </dependency>
+        <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>common-types</artifactId>
+        </dependency>
 
         <!--WS-->
         <dependency>

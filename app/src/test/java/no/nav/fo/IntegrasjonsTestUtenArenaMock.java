@@ -5,6 +5,7 @@ import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.fo.veilarbaktivitet.config.AbacConfig;
 import no.nav.fo.veilarbaktivitet.service.TiltakOgAktivitetMock;
 import no.nav.modig.testcertificates.TestCertificates;
+import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.annotation.*;
@@ -40,6 +41,11 @@ public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjons
             @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = AbacConfig.class),
     })
     public static class Config {
+
+        @Bean
+        public Pep pep() {
+            return mock(Pep.class);
+        }
 
         @Bean
         public PepClient pepClient(){

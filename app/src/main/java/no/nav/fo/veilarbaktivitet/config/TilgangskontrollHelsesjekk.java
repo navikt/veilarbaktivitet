@@ -7,6 +7,7 @@ import no.nav.sbl.dialogarena.types.Pingable.Ping.PingMetadata;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -16,6 +17,7 @@ public class TilgangskontrollHelsesjekk {
 
     private final Pep pep;
 
+    @Inject
     TilgangskontrollHelsesjekk(Pep pep) {
         this.pep = pep;
     }
