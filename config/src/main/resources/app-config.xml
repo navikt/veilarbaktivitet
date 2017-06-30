@@ -20,9 +20,9 @@
         <logins>
             <saml/>
         </logins>
-        <abacSecurity serviceUserResourceAlias="srvveilarbaktivitet"/>
     </security>
 
+    <abacSecurity serviceUserResourceAlias="srvveilarbaktivitet"/>
     <logging serviceCalls="true"/>
 
     <resources>
