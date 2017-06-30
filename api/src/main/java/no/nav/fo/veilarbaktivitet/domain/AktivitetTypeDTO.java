@@ -9,7 +9,9 @@ import java.util.Map;
 public enum AktivitetTypeDTO {
     EGEN,
     STILLING,
-    SOKEAVTALE;
+    SOKEAVTALE,
+    IJOBB,
+    BEHANDLING;
 
     private static final Map<AktivitetType, AktivitetTypeDTO> dtoMap = new HashMap<>();
     private static final Map<AktivitetTypeDTO, AktivitetType> typeMap = new HashMap<>();
@@ -18,6 +20,8 @@ public enum AktivitetTypeDTO {
         put(AktivitetType.EGENAKTIVITET, EGEN);
         put(AktivitetType.JOBBSOEKING, STILLING);
         put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
+        put(AktivitetType.IJOBB, IJOBB);
+        put(AktivitetType.BEHANDLING, BEHANDLING);
     }
 
     private static void put(AktivitetType aktivitetType, AktivitetTypeDTO aktivitetTypeDTO) {
