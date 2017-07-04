@@ -24,6 +24,10 @@ public class BrukerService {
         return aktoerConsumer.hentAktoerIdForIdent(fnr);
     }
 
+    public Optional<String> getFNRForAktorId(String fnr) {
+        return aktoerConsumer.hentIdentForAktorId(fnr);
+    }
+
     public Optional<String> getLoggedInnUser() {
         return subjectService.getIdentType().flatMap(type -> {
             if (IdentType.EksternBruker.equals(type)) return getAktorIdForEksternBruker();

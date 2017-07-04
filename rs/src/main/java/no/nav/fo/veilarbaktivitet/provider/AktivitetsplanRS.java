@@ -115,9 +115,7 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     private String getUserIdent() {
-        String fnr = Optional.ofNullable(requestProvider.get().getParameter("fnr"))
-                .orElseThrow(RuntimeException::new);// Hvordan håndere dette?
-        pepClient.sjekkTilgangTilFnr(fnr);
-        return fnr;
+        return Optional.ofNullable(requestProvider.get().getParameter("fnr"))
+                .orElseThrow(RuntimeException::new);
     }
 }

@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
@@ -11,13 +12,17 @@ import javax.inject.Inject;
 public class AktivitetWSAppService extends AktivitetAppService {
 
     @Inject
-    public AktivitetWSAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
-                                 AktivitetService aktivitetService,
-                                 BrukerService brukerService) {
-        super(arenaAktivitetConsumer, aktivitetService, brukerService);
+    public AktivitetWSAppService(
+            ArenaAktivitetConsumer arenaAktivitetConsumer,
+            AktivitetService aktivitetService,
+            BrukerService brukerService,
+            PepClient pepClient
+    ) {
+        super(arenaAktivitetConsumer, aktivitetService, brukerService, pepClient);
     }
 
     public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
+        sjekkTilgangTilFnr(ident);
         return brukerService.getAktorIdForFNR(ident)
                 .map(aktorId -> aktivitetService.opprettAktivitet(aktorId, aktivitetData, aktorId))
                 .map(this::hentAktivitet)
@@ -26,7 +31,7 @@ public class AktivitetWSAppService extends AktivitetAppService {
 
     @Override
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if (originalAktivitet.isAvtalt()) {
             return originalAktivitet;
         }
