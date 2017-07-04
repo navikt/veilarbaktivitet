@@ -10,6 +10,8 @@ public class Helpers {
                 put(AktivitetTypeData.EGENAKTIVITET, AktivitetTypeDTO.EGEN);
                 put(AktivitetTypeData.JOBBSOEKING, AktivitetTypeDTO.STILLING);
                 put(AktivitetTypeData.SOKEAVTALE, AktivitetTypeDTO.SOKEAVTALE);
+                put(AktivitetTypeData.IJOBB, AktivitetTypeDTO.IJOBB);
+                put(AktivitetTypeData.BEHANDLING, AktivitetTypeDTO.BEHANDLING);
             }};
 
 

@@ -72,11 +72,9 @@
             <artifactId>spring-jdbc</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.hsqldb</groupId>
-            <artifactId>hsqldb</artifactId>
-            <scope>test</scope>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
         </dependency>
-
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
@@ -128,6 +126,11 @@
         <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarbaktivitet-config</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -187,6 +190,11 @@
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.modig</groupId>
+            <artifactId>modig-security-loginmodule</artifactId>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
