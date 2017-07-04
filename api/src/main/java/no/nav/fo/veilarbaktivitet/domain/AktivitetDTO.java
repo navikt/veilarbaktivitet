@@ -47,6 +47,7 @@ public class AktivitetDTO {
     public String arbeidstid;
 
     //behandlingAktivitet
+    public String typeBehandling;
     public String behandlingSted;
     public String effekt;
     public String behandlingOppfolging;
