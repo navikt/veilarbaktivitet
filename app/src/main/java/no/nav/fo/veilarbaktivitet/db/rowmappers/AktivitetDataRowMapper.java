@@ -82,6 +82,7 @@ public class AktivitetDataRowMapper {
 
     private static BehandlingAktivitetData mapBehandlingAktivitet(ResultSet rs) throws SQLException {
         return new BehandlingAktivitetData()
+                .setBehandlingType(rs.getString("behandling_type"))
                 .setBehandlingSted(rs.getString("behandling_sted"))
                 .setEffekt(rs.getString("effekt"))
                 .setBehandlingOppfolging(rs.getString("behandling_oppfolging"));

@@ -157,10 +157,11 @@ public class AktivitetDAO {
     private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
-                    database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_sted," +
-                                    " effekt, behandling_oppfolging) VALUES(?,?,?,?,?)",
+                    database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type, " +
+                                    "behandling_sted, effekt, behandling_oppfolging) VALUES(?,?,?,?,?,?)",
                             aktivitetId,
                             versjon,
+                            behandling.getBehandlingType(),
                             behandling.getBehandlingSted(),
                             behandling.getEffekt(),
                             behandling.getBehandlingOppfolging()

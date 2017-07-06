@@ -59,6 +59,7 @@ public class AktivitetDataMapper {
             );
         } else if (BEHANDLING.equals(aktivitetType)) {
             aktivitetData.behandlingAktivitetData(new BehandlingAktivitetData()
+                    .setBehandlingType(aktivitetDTO.getBehandlingType())
                     .setBehandlingSted(aktivitetDTO.getBehandlingSted())
                     .setEffekt(aktivitetDTO.getEffekt())
                     .setBehandlingOppfolging(aktivitetDTO.getBehandlingOppfolging())

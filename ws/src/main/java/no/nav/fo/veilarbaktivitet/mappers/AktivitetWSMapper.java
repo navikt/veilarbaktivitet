@@ -101,6 +101,7 @@ public class AktivitetWSMapper {
 
     private static Behandling mapTilBehandlingAktivitet(BehandlingAktivitetData behandlingAktivitetData) {
         val behandling = new Behandling();
+        behandling.setBehandlingType(behandlingAktivitetData.getBehandlingType());
         behandling.setBehandlingSted(behandlingAktivitetData.getBehandlingSted());
         behandling.setEffekt(behandlingAktivitetData.getEffekt());
         behandling.setBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging());
