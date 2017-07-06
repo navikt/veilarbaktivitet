@@ -25,6 +25,8 @@ public class Helpers {
             new DualHashBidiMap<AktivitetType, AktivitetTypeData>() {{
                 put(AktivitetType.JOBBSOEKING, JOBBSOEKING);
                 put(AktivitetType.EGENAKTIVITET, EGENAKTIVITET);
+                put(AktivitetType.BEHANDLING, BEHANDLING);
+                put(AktivitetType.IJOBB, IJOBB);
                 put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
             }};
 
