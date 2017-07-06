@@ -153,6 +153,7 @@ public class AktivitetService {
         );
         ofNullable(orginalAktivitet.getBehandlingAktivitetData()).ifPresent(
                 behandling -> behandling
+                        .setBehandlingType(aktivitet.getBehandlingAktivitetData().getBehandlingType())
                         .setBehandlingSted(aktivitet.getBehandlingAktivitetData().getBehandlingSted())
                         .setEffekt(aktivitet.getBehandlingAktivitetData().getEffekt())
                         .setBehandlingOppfolging(aktivitet.getBehandlingAktivitetData().getBehandlingOppfolging())

@@ -58,7 +58,8 @@ public class AktivitetDTOMapper {
 
         ofNullable(aktivitet.getBehandlingAktivitetData())
                 .ifPresent(behandlingAktivitetData ->
-                        aktivitetDTO.setBehandlingSted(behandlingAktivitetData.getBehandlingSted())
+                        aktivitetDTO.setBehandlingType(behandlingAktivitetData.getBehandlingType())
+                                .setBehandlingSted(behandlingAktivitetData.getBehandlingSted())
                                 .setEffekt(behandlingAktivitetData.getEffekt())
                                 .setBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging())
                 );

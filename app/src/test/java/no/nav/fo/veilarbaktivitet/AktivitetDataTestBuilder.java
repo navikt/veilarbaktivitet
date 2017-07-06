@@ -54,6 +54,7 @@ public class AktivitetDataTestBuilder {
 
     public static BehandlingAktivitetData nyBehandlingAktivitet() {
         return new BehandlingAktivitetData()
+                .setBehandlingType("Medisinsk")
                 .setBehandlingSted("Legen")
                 .setEffekt("Bli frisk")
                 .setBehandlingOppfolging("Husk å ta pillene dine");

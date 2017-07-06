@@ -82,6 +82,7 @@ public class AktivitetDataMapper {
     private static BehandlingAktivitetData mapTilBehandlingAktivitetData(Behandling behandlingAktivitet) {
         return ofNullable(behandlingAktivitet).map(behandling ->
                 new BehandlingAktivitetData()
+                        .setBehandlingType(behandling.getBehandlingType())
                         .setBehandlingSted(behandling.getBehandlingSted())
                         .setEffekt(behandling.getEffekt())
                         .setBehandlingOppfolging(behandling.getBehandlingOppfolging())
