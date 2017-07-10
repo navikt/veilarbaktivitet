@@ -16,10 +16,10 @@ public class AktivitetFeedDataRowMapper {
         return new AktivitetFeedData()
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
-                .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("type")))
+                .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")))
                 .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
-                .setStatus(valueOf(AktivitetStatus.class, rs.getString("status")))
+                .setStatus(valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode")))
                 .setEndretDato(hentDato(rs, "endret_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
     }

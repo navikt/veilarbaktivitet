@@ -12,7 +12,7 @@ import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 public class AktivitetDataRowMapper {
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
-        val type = AktivitetTypeData.valueOf(rs.getString("type"));
+        val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
@@ -23,7 +23,7 @@ public class AktivitetDataRowMapper {
                 .tilDato(hentDato(rs, "til_dato"))
                 .tittel(rs.getString("tittel"))
                 .beskrivelse(rs.getString("beskrivelse"))
-                .status(valueOf(AktivitetStatus.class, rs.getString("status")))
+                .status(valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode")))
                 .avsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .opprettetDato(hentDato(rs, "opprettet_dato"))
                 .endretDato(hentDato(rs, "endret_dato"))
@@ -69,7 +69,7 @@ public class AktivitetDataRowMapper {
 
     private static SokeAvtaleAktivitetData mapSokeAvtaleAktivitet(ResultSet rs) throws SQLException {
         return new SokeAvtaleAktivitetData()
-                .setAntall(rs.getLong("antall"))
+                .setAntall(rs.getLong("antall_stillinger_sokes"))
                 .setAvtaleOppfolging(rs.getString("avtale_oppfolging"));
     }
 

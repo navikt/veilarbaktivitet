@@ -22,7 +22,7 @@ public class AktivitetFeedDAO {
     public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date date) {
         return database.query(
                 "SELECT " +
-                        "aktivitet_id, aktor_id, type, status, fra_dato, til_dato, endret_dato, avtalt " +
+                        "aktivitet_id, aktor_id, aktivitet_type_kode, livslopstatus_kode, fra_dato, til_dato, endret_dato, avtalt " +
                         "FROM aktivitet " +
                         "WHERE endret_dato >= ? and gjeldende = 1",
                 AktivitetFeedDataRowMapper::mapAktivitetForFeed,

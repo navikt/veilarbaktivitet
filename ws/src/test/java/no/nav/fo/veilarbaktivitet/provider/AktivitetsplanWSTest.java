@@ -85,7 +85,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
     public void endre_aktivitet_status() throws Exception {
         opprett_aktivitet();
 
-        val aktivitet = aktiviter().get(0).toBuilder().status(AktivitetStatus.GJENNOMFORT).build();
+        val aktivitet = aktiviter().get(0).toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
 
         val endreReq = new EndreAktivitetStatusRequest();
         endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
