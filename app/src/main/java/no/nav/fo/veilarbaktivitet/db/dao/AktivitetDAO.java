@@ -134,7 +134,7 @@ public class AktivitetDAO {
                                 "VALUES(?,?,?,?)",
                         aktivitetId,
                         versjon,
-                        sokeAvtale.getAntall(),
+                        sokeAvtale.getAntallStillingerSokes(),
                         sokeAvtale.getAvtaleOppfolging()
                 ));
     }

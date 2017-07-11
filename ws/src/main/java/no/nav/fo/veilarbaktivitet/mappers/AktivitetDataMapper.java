@@ -65,7 +65,7 @@ public class AktivitetDataMapper {
         return ofNullable(sokeavtaleAktivitet)
                 .map(sokeavtale ->
                         new SokeAvtaleAktivitetData()
-                                .setAntall(sokeavtaleAktivitet.getAntall())
+                                .setAntallStillingerSokes(sokeavtaleAktivitet.getAntall())
                                 .setAvtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
                 ).orElse(null);
     }

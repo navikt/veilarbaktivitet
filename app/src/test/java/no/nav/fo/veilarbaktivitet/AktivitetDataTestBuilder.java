@@ -41,7 +41,7 @@ public class AktivitetDataTestBuilder {
 
     public static SokeAvtaleAktivitetData nySokeAvtaleAktivitet() {
         return new SokeAvtaleAktivitetData()
-                .setAntall(10L)
+                .setAntallStillingerSokes(10L)
                 .setAvtaleOppfolging("Oppfølging");
     }
 

@@ -142,7 +142,7 @@ public class AktivitetService {
         );
         ofNullable(orginalAktivitet.getSokeAvtaleAktivitetData()).ifPresent(
                 sokeAvtale -> sokeAvtale
-                        .setAntall(aktivitet.getSokeAvtaleAktivitetData().getAntall())
+                        .setAntallStillingerSokes(aktivitet.getSokeAvtaleAktivitetData().getAntallStillingerSokes())
                         .setAvtaleOppfolging(aktivitet.getSokeAvtaleAktivitetData().getAvtaleOppfolging())
         );
         ofNullable(orginalAktivitet.getIJobbAktivitetData()).ifPresent(

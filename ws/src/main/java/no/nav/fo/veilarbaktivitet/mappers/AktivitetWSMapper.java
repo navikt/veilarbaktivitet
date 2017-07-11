@@ -86,7 +86,7 @@ public class AktivitetWSMapper {
         val sokeAvtaleAtivitet = new Sokeavtale();
 
         sokeAvtaleAtivitet.setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
-        sokeAvtaleAtivitet.setAntall(sokeAvtaleAktivitetData.getAntall());
+        sokeAvtaleAtivitet.setAntall(sokeAvtaleAktivitetData.getAntallStillingerSokes());
 
         return sokeAvtaleAtivitet;
     }
