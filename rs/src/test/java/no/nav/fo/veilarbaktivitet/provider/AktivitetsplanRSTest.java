@@ -255,7 +255,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .setBeskrivelse("beskr")
                 .setLenke("lenke")
                 .setType(AktivitetTypeDTO.STILLING)
-                .setStatus(AktivitetStatus.GJENNOMFORT)
+                .setStatus(AktivitetStatus.GJENNOMFORES)
                 .setFraDato(new Date())
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt")

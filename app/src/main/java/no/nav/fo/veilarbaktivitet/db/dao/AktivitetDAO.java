@@ -66,8 +66,8 @@ public class AktivitetDAO {
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitet.getId());
 
         val versjon = Optional.ofNullable(aktivitet.getVersjon()).map(v -> v + 1).orElse(0L);
-        database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, type," +
-                        "fra_dato, til_dato, tittel, beskrivelse, status," +
+        database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
+                        "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
                         "avtalt, gjeldende, transaksjons_type, historisk_dato) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
@@ -130,11 +130,11 @@ public class AktivitetDAO {
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
-                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall, avtale_oppfolging) " +
+                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, avtale_oppfolging) " +
                                 "VALUES(?,?,?,?)",
                         aktivitetId,
                         versjon,
-                        sokeAvtale.getAntall(),
+                        sokeAvtale.getAntallStillingerSokes(),
                         sokeAvtale.getAvtaleOppfolging()
                 ));
     }

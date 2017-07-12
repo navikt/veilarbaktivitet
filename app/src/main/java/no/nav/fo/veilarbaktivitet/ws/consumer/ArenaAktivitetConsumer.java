@@ -131,7 +131,7 @@ public class ArenaAktivitetConsumer {
     private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         Date now = Calendar.getInstance().getTime();
         return now.before(startDato) ? AktivitetStatus.PLANLAGT : now.before(sluttDato) ?
-                AktivitetStatus.GJENNOMFORT : AktivitetStatus.AVBRUTT;
+                AktivitetStatus.GJENNOMFORES : AktivitetStatus.AVBRUTT;
     }
 
     private MoteplanDTO mapTilMoteplan(Moeteplan moeteplan) {
@@ -155,7 +155,7 @@ public class ArenaAktivitetConsumer {
         AVSLAG(AktivitetStatus.AVBRUTT),
         DELAVB(AktivitetStatus.AVBRUTT),
         FULLF(AktivitetStatus.FULLFORT),
-        GJENN(AktivitetStatus.GJENNOMFORT),
+        GJENN(AktivitetStatus.GJENNOMFORES),
         GJENN_AVB(AktivitetStatus.AVBRUTT),
         GJENN_AVL(AktivitetStatus.AVBRUTT),
         IKKAKTUELL(AktivitetStatus.AVBRUTT),

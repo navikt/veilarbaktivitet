@@ -63,7 +63,7 @@ public class AktivitetServiceTest {
         mockHentAktivitet(aktivitet);
 
         val avsluttKommentar = "Alexander er best";
-        val nyStatus = AktivitetStatus.GJENNOMFORT;
+        val nyStatus = AktivitetStatus.GJENNOMFORES;
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .beskrivelse("ikke rett beskrivelse")

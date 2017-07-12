@@ -45,7 +45,7 @@ public class AktivitetDTOMapper {
         ofNullable(aktivitet.getSokeAvtaleAktivitetData())
                 .ifPresent(sokeAvtaleAktivitetData ->
                         aktivitetDTO
-                                .setAntall(sokeAvtaleAktivitetData.getAntall())
+                                .setAntallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
                                 .setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging())
                 );
 

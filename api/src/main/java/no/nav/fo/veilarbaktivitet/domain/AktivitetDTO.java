@@ -38,7 +38,7 @@ public class AktivitetDTO {
     public String oppfolging;
 
     //sokeAvtaleAktivitet
-    public Long antall;
+    public Long antallStillingerSokes;
     public String avtaleOppfolging;
 
     //iJobbAktivitet

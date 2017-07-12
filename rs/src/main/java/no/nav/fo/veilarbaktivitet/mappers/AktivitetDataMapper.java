@@ -48,7 +48,7 @@ public class AktivitetDataMapper {
             );
         } else if (SOKEAVTALE.equals(aktivitetType)) {
             aktivitetData.sokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
-                    .setAntall(aktivitetDTO.getAntall())
+                    .setAntallStillingerSokes(aktivitetDTO.getAntallStillingerSokes())
                     .setAvtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
             );
         } else if (IJOBB.equals(aktivitetType)) {
