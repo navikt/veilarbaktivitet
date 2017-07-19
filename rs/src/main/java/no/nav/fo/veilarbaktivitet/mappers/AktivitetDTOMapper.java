@@ -24,6 +24,7 @@ public class AktivitetDTOMapper {
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
+                .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
 
         ofNullable(aktivitet.getStillingsSoekAktivitetData())
