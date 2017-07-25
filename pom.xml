@@ -46,6 +46,12 @@
                 <scope>import</scope>
             </dependency>
 
+            <dependency>
+                <groupId>no.nav.dialogarena</groupId>
+                <artifactId>oidc-security</artifactId>
+                <version>3.58.3-tydelige-feil-SNAPSHOT</version>
+            </dependency>
+
             <!--Project dependencies-->
             <dependency>
                 <groupId>no.nav.fo</groupId>
