@@ -182,11 +182,11 @@ public class AktivitetService {
 
     @Transactional
     public void settAktiviteterTilHistoriske(AvsluttetOppfolgingFeedDTO element) {
+        Date sluttdato = element.getSluttdato();
         hentAktiviteterForAktorId(element.getAktoerid())
                 .stream()
-                .map(AktivitetData::toBuilder)
-                .map(aktivitet -> aktivitet.historiskDato(element.getSluttdato()))
-                .map(AktivitetData.AktivitetDataBuilder::build)
+                .filter(a -> a.getHistoriskDato() == null || a.getHistoriskDato().before(sluttdato))
+                .map(a -> a.withHistoriskDato(sluttdato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
