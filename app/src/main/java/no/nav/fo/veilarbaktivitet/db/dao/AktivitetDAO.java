@@ -55,6 +55,9 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_ID_SEQ");
     }
 
+    public long nesteVersjon() {
+        return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
+    }
 
     public void insertAktivitet(AktivitetData aktivitet) {
         insertAktivitet(aktivitet, new Date());
@@ -62,16 +65,16 @@ public class AktivitetDAO {
 
     @Transactional
     void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
+        long aktivitetId = aktivitet.getId();
+        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
-        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitet.getId());
-
-        val versjon = Optional.ofNullable(aktivitet.getVersjon()).map(v -> v + 1).orElse(0L);
+        val versjon = nesteVersjon();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
                         "avtalt, gjeldende, transaksjons_type, historisk_dato) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                aktivitet.getId(),
+                aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -92,11 +95,11 @@ public class AktivitetDAO {
                 aktivitet.getHistoriskDato()
         );
 
-        insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());
-        insertEgenAktivitet(aktivitet.getId(), versjon, aktivitet.getEgenAktivitetData());
-        insertSokeAvtale(aktivitet.getId(), versjon, aktivitet.getSokeAvtaleAktivitetData());
-        insertIJobb(aktivitet.getId(), versjon, aktivitet.getIJobbAktivitetData());
-        insertBehandling(aktivitet.getId(), versjon, aktivitet.getBehandlingAktivitetData());
+        insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
+        insertEgenAktivitet(aktivitetId, versjon, aktivitet.getEgenAktivitetData());
+        insertSokeAvtale(aktivitetId, versjon, aktivitet.getSokeAvtaleAktivitetData());
+        insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
+        insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
 
         LOG.info("opprettet {}", aktivitet);
     }

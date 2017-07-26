@@ -79,12 +79,6 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
     }
 
-    @Test(expected = DuplicateKeyException.class)
-    public void versjonskonflikt() {
-        lagaktivitetMedIdVersjon(10L, 22L);
-        lagaktivitetMedIdVersjon(10L, 22L);
-    }
-
     @Test
     public void hent_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
@@ -136,28 +130,15 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         );
     }
 
-    private AktivitetData lagaktivitetMedIdVersjon(Long id, Long versjon) {
-        val aktivitet = nyAktivitet()
-                .id(id)
-                .versjon(versjon)
-                .aktivitetType(SOKEAVTALE)
-                .sokeAvtaleAktivitetData(nySokeAvtaleAktivitet())
-                .build();
-
-        return insertAktivitet(aktivitet);
-    }
-
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
         val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
-        val nyVersjon = Optional.ofNullable(aktivitet.getVersjon()).orElseGet(() -> versjon++);
         val aktivitetMedId = aktivitet.toBuilder()
                 .id(id)
-                .versjon(nyVersjon)
                 .aktorId(AKTOR_ID)
                 .build();
 
         val endret = new Date();
         aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
-        return aktivitetMedId.toBuilder().id(id).versjon(versjon).endretDato(endret).build();
+        return aktivitetDAO.hentAktivitet(id);
     }
 }
