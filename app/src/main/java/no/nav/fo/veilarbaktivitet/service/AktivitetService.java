@@ -185,9 +185,15 @@ public class AktivitetService {
         Date sluttdato = element.getSluttdato();
         hentAktiviteterForAktorId(element.getAktoerid())
                 .stream()
-                .filter(a -> a.getHistoriskDato() == null || a.getHistoriskDato().before(sluttdato))
+                .filter(a -> skalBliHistorisk(a, element))
                 .map(a -> a.withHistoriskDato(sluttdato))
                 .forEach(aktivitetDAO::insertAktivitet);
+    }
+
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, AvsluttetOppfolgingFeedDTO element) {
+        Date sluttdato = element.getSluttdato();
+        return (aktivitetData.getHistoriskDato() == null || aktivitetData.getHistoriskDato().before(sluttdato))
+                && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
 }

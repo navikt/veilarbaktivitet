@@ -193,6 +193,14 @@ public class AktivitetServiceTest {
     }
 
     @Test
+    public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
+        AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
+        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(avsluttetOppfolgingFeedDTO.sluttdato.getTime() + 1)));
+        aktivitetService.settAktiviteterTilHistoriske(avsluttetOppfolgingFeedDTO);
+        verify(aktivitetDAO, never()).insertAktivitet(any());
+    }
+
+    @Test
     public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
         AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
         gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(avsluttetOppfolgingFeedDTO.getSluttdato()));
