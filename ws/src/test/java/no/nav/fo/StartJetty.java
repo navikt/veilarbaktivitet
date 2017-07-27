@@ -15,7 +15,6 @@ public class StartJetty {
         Jetty jetty = DevelopmentSecurity.setupSamlLogin(usingWar()
                 .at("/veilarbaktivitet-ws")
                 .loadProperties("/test.properties")
-                //.addDatasourceByPropertyFile("/db.properties")
                 .addDatasource(DatabaseTestContext.buildDataSource(), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .port(PORT)
                 .sslPort(SSL_PORT),  new DevelopmentSecurity.SamlSecurityConfig("veilarbaktivitet", "t6")
