@@ -5,5 +5,7 @@ public enum AktivitetTypeData {
     JOBBSOEKING,
     SOKEAVTALE,
     IJOBB,
-    BEHANDLING
+    BEHANDLING,
+    MOTE,
+    SAMTALEREFERAT,
 }

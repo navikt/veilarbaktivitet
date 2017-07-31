@@ -1,13 +1,18 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
+import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Value;
 import lombok.experimental.Accessors;
+import lombok.experimental.Wither;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder
+@Wither
 public class StillingsoekAktivitetData {
 
-    String arbeidsgiver;
+    public String arbeidsgiver;
     String stillingsTittel;
     String arbeidssted;
     StillingsoekEtikettData stillingsoekEtikett;

@@ -35,6 +35,7 @@ public class AktivitetData {
     SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
     IJobbAktivitetData iJobbAktivitetData;
     BehandlingAktivitetData behandlingAktivitetData;
+    MoteData moteData;
 
 }
 
