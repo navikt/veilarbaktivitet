@@ -71,6 +71,24 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void opprette_og_hente_mote() {
+        val aktivitet = gitt_at_det_finnes_et_mote();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
+    public void opprette_og_hente_samtalereferat() {
+        val aktivitet = gitt_at_det_finnes_et_samtalereferat();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
     public void slett_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
@@ -126,6 +144,22 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         return insertAktivitet(nyAktivitet()
                 .aktivitetType(BEHANDLING)
                 .behandlingAktivitetData(nyBehandlingAktivitet())
+                .build()
+        );
+    }
+
+    private AktivitetData gitt_at_det_finnes_et_mote() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(MOTE)
+                .moteData(moteData())
+                .build()
+        );
+    }
+
+    private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(SAMTALEREFERAT)
+                .moteData(moteData())
                 .build()
         );
     }

@@ -12,6 +12,8 @@ public class Helpers {
                 put(AktivitetTypeData.SOKEAVTALE, AktivitetTypeDTO.SOKEAVTALE);
                 put(AktivitetTypeData.IJOBB, AktivitetTypeDTO.IJOBB);
                 put(AktivitetTypeData.BEHANDLING, AktivitetTypeDTO.BEHANDLING);
+                put(AktivitetTypeData.MOTE, AktivitetTypeDTO.MOTE);
+                put(AktivitetTypeData.SAMTALEREFERAT, AktivitetTypeDTO.SAMTALEREFERAT);
             }};
 
 
