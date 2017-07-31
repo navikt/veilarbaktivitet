@@ -1,7 +1,9 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
@@ -42,4 +44,14 @@ public class AktivitetRSAppService extends AktivitetAppService {
                 })
                 .orElseThrow(RuntimeException::new);
     }
+
+
+    public AktivitetData oppdaterReferat(AktivitetData aktivitet, AktivitetTransaksjonsType aktivitetTransaksjonsType) {
+        aktivitetService.oppdaterReferat(
+                aktivitet,
+                aktivitetTransaksjonsType, brukerService.getLoggedInnUser().orElseThrow(IngenTilgang::new)
+        );
+        return hentAktivitet(aktivitet.getId());
+    }
+
 }
