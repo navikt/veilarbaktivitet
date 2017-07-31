@@ -58,8 +58,21 @@ public class AktivitetWSMapper {
         ofNullable(aktivitet.getBehandlingAktivitetData())
                 .ifPresent(behandlingAktivitetData ->
                         wsAktivitet.setBehandling(mapTilBehandlingAktivitet(behandlingAktivitetData)));
+        ofNullable(aktivitet.getMoteData())
+                .map(AktivitetWSMapper::mapTilMote)
+                .ifPresent(wsAktivitet::setMote);
 
         return wsAktivitet;
+    }
+
+    private static Mote mapTilMote(MoteData moteData) {
+        Mote mote = new Mote();
+        mote.setAdresse(moteData.getAdresse());
+        mote.setForberedelser(moteData.getForberedelser());
+        mote.setKanal(KanalDTO.getType(moteData.getKanal()));
+        mote.setReferat(moteData.getReferat());
+        mote.setErReferatPublisert(moteData.isReferatPublisert());
+        return mote;
     }
 
     private static Stillingaktivitet mapTilStillingsAktivitet(StillingsoekAktivitetData stillingsSoekAktivitet) {

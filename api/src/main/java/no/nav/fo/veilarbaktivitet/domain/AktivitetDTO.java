@@ -52,4 +52,13 @@ public class AktivitetDTO {
     public String behandlingSted;
     public String effekt;
     public String behandlingOppfolging;
+
+    //møte
+    public String adresse;
+    public String forberedelser;
+    public KanalDTO kanal;
+    public String referat;
+    public boolean erReferatPublisert;
+
+
 }

@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.api;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.KanalDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
@@ -41,6 +42,12 @@ public interface AktivitetController {
         return Arrays.stream(Etikett.values())
                 .map(EtikettTypeDTO::getDtoType)
                 .collect(Collectors.toList());
+    }
+
+    @GET
+    @Path("/kanaler")
+    default List<KanalDTO> hentKanaler() {
+        return Arrays.asList(KanalDTO.values());
     }
 
     @PUT

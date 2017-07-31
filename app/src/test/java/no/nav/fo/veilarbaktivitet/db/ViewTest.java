@@ -27,10 +27,12 @@ public class ViewTest extends IntegrasjonsTest {
         "DVH_AKTIVITET",
         "DVH_STILLINGSOK_AKTIVITET",
         "DVH_SOKEAVTALE_AKTIVITET",
-        "DVH_EGENAKTIVITET"
+        "DVH_EGENAKTIVITET",
+        "DVH_MOTE",
+        "DVH_KANAL_TYPE"
     };
 
-    private static final int antallViews = 8;
+    private static final int antallViews = views.length;
 
     @Inject
     private JdbcTemplate jdbcTemplate;

@@ -90,7 +90,7 @@ public class AktivitetServiceTest {
                 .beskrivelse("Alexander er fremdeles best")
                 .stillingsSoekAktivitetData(aktivitet
                         .getStillingsSoekAktivitetData()
-                        .setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
+                        .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
                 .build();
         aktivitetService.oppdaterEtikett(oppdatertAktivitet, null);
 

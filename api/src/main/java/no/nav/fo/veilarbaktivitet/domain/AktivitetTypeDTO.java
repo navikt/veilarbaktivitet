@@ -11,7 +11,10 @@ public enum AktivitetTypeDTO {
     STILLING,
     SOKEAVTALE,
     IJOBB,
-    BEHANDLING;
+    BEHANDLING,
+    MOTE,
+    SAMTALEREFERAT
+    ;
 
     private static final Map<AktivitetType, AktivitetTypeDTO> dtoMap = new HashMap<>();
     private static final Map<AktivitetTypeDTO, AktivitetType> typeMap = new HashMap<>();
@@ -22,6 +25,8 @@ public enum AktivitetTypeDTO {
         put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
         put(AktivitetType.IJOBB, IJOBB);
         put(AktivitetType.BEHANDLING, BEHANDLING);
+        put(AktivitetType.MOTE, MOTE);
+        put(AktivitetType.SAMTALEREFERAT, SAMTALEREFERAT);
     }
 
     private static void put(AktivitetType aktivitetType, AktivitetTypeDTO aktivitetTypeDTO) {
