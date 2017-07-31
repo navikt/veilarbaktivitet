@@ -6,8 +6,8 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 public class AktivitetDataRowMapper {
@@ -36,56 +36,82 @@ public class AktivitetDataRowMapper {
                 )
                 .historiskDato(hentDato(rs, "historisk_dato"));
 
-        if (EGENAKTIVITET.equals(type)) {
-            aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
-        } else if (JOBBSOEKING.equals(type)) {
-            aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
-        } else if (SOKEAVTALE.equals(type)) {
-            aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
-        } else if (IJOBB.equals(type)) {
-            aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
-        } else if (BEHANDLING.equals(type)) {
-            aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
+        switch (type) {
+            case EGENAKTIVITET:
+                aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
+                break;
+            case JOBBSOEKING:
+                aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
+                break;
+            case SOKEAVTALE:
+                aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
+                break;
+            case IJOBB:
+                aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
+                break;
+            case BEHANDLING:
+                aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
+                break;
+            case MOTE:
+            case SAMTALEREFERAT:
+                aktivitet.moteData(mapMoteData(rs));
+                break;
         }
 
         return aktivitet.build();
     }
 
+    private static MoteData mapMoteData(ResultSet rs) throws SQLException {
+        return MoteData.builder()
+                .adresse(rs.getString("adresse"))
+                .forberedelser(rs.getString("forberedelser"))
+                .kanal(valueOfOptional(KanalDTO.class, rs.getString("kanal")).orElse(null))
+                .referat(rs.getString("referat"))
+                .referatPublisert(rs.getBoolean("referat_publisert"))
+                .build()
+                ;
+    }
+
     private static StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
-        return new StillingsoekAktivitetData()
-                .setStillingsTittel(rs.getString("stillingstittel"))
-                .setArbeidsgiver(rs.getString("arbeidsgiver"))
-                .setArbeidssted(rs.getString("arbeidssted"))
-                .setKontaktPerson(rs.getString("kontaktperson"))
-                .setStillingsoekEtikett(valueOf(StillingsoekEtikettData.class, rs.getString("etikett"))
-                );
+        return StillingsoekAktivitetData.builder()
+                .stillingsTittel(rs.getString("stillingstittel"))
+                .arbeidsgiver(rs.getString("arbeidsgiver"))
+                .arbeidssted(rs.getString("arbeidssted"))
+                .kontaktPerson(rs.getString("kontaktperson"))
+                .stillingsoekEtikett(valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
+                .build()
+                ;
     }
 
     private static EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {
-        return new EgenAktivitetData()
-                .setHensikt(rs.getString("hensikt"))
-                .setOppfolging(rs.getString("oppfolging"));
+        return EgenAktivitetData.builder()
+                .hensikt(rs.getString("hensikt"))
+                .oppfolging(rs.getString("oppfolging"))
+                .build();
     }
 
     private static SokeAvtaleAktivitetData mapSokeAvtaleAktivitet(ResultSet rs) throws SQLException {
-        return new SokeAvtaleAktivitetData()
-                .setAntallStillingerSokes(rs.getLong("antall_stillinger_sokes"))
-                .setAvtaleOppfolging(rs.getString("avtale_oppfolging"));
+        return SokeAvtaleAktivitetData.builder()
+                .antallStillingerSokes(rs.getLong("antall_stillinger_sokes"))
+                .avtaleOppfolging(rs.getString("avtale_oppfolging"))
+                .build();
     }
 
     private static IJobbAktivitetData mapIJobbAktivitet(ResultSet rs) throws SQLException {
-        return new IJobbAktivitetData()
-                .setJobbStatusType(valueOf(JobbStatusTypeData.class, rs.getString("jobb_status")))
-                .setAnsettelsesforhold(rs.getString("ansettelsesforhold"))
-                .setArbeidstid(rs.getString("arbeidstid"));
+        return IJobbAktivitetData.builder()
+                .jobbStatusType(valueOf(JobbStatusTypeData.class, rs.getString("jobb_status")))
+                .ansettelsesforhold(rs.getString("ansettelsesforhold"))
+                .arbeidstid(rs.getString("arbeidstid"))
+                .build();
     }
 
     private static BehandlingAktivitetData mapBehandlingAktivitet(ResultSet rs) throws SQLException {
-        return new BehandlingAktivitetData()
-                .setBehandlingType(rs.getString("behandling_type"))
-                .setBehandlingSted(rs.getString("behandling_sted"))
-                .setEffekt(rs.getString("effekt"))
-                .setBehandlingOppfolging(rs.getString("behandling_oppfolging"));
+        return BehandlingAktivitetData.builder()
+                .behandlingType(rs.getString("behandling_type"))
+                .behandlingSted(rs.getString("behandling_sted"))
+                .effekt(rs.getString("effekt"))
+                .behandlingOppfolging(rs.getString("behandling_oppfolging"))
+                .build();
     }
 
 }
