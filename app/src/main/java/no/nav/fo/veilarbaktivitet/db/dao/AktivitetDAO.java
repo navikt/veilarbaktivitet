@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class AktivitetDAO {
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
             "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
+            "LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon " +
             "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon ";
 
     private final Database database;
@@ -100,8 +102,31 @@ public class AktivitetDAO {
         insertSokeAvtale(aktivitetId, versjon, aktivitet.getSokeAvtaleAktivitetData());
         insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
+        insertMote(aktivitetId, versjon, aktivitet.getMoteData());
 
         LOG.info("opprettet {}", aktivitet);
+    }
+
+    private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
+        ofNullable(moteData).ifPresent(m -> {
+            database.update("INSERT INTO MOTE(" +
+                            "aktivitet_id, " +
+                            "versjon, " +
+                            "adresse," +
+                            "forberedelser, " +
+                            "kanal, " +
+                            "referat, " +
+                            "referat_publisert" +
+                            ") VALUES(?,?,?,?,?,?,?)",
+                    aktivitetId,
+                    versjon,
+                    moteData.getAdresse(),
+                    moteData.getForberedelser(),
+                    getName(moteData.getKanal()),
+                    moteData.getReferat(),
+                    moteData.isReferatPublisert()
+            );
+        });
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -187,6 +212,9 @@ public class AktivitetDAO {
                 aktivitetId
         );
         database.update("DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        database.update("DELETE FROM MOTE WHERE aktivitet_id = ?",
                 aktivitetId
         );
 
