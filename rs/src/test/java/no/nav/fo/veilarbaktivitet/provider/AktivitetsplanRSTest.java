@@ -193,7 +193,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .toBuilder()
                 .lenke(nyLenke)
                 .avsluttetKommentar(nyAvsluttetKommentar)
-                .versjon(1L)
                 .build();
 
         this.aktivitet = aktivitetController.oppdaterAktiviet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
