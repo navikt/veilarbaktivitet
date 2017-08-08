@@ -19,9 +19,11 @@ import java.util.Date;
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.moteData;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -112,6 +114,22 @@ public class AktivitetServiceTest {
     }
 
     @Test
+    public void oppdaterMoteTidOgSted() {
+        val aktivitet = lagEnNyAktivitet().withAktivitetType(MOTE).withMoteData(moteData());
+
+        val nyFrist = new Date();
+        String nyAdresse = "ny adresse";
+        aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
+
+        captureInsertAktivitetArgument();
+        AktivitetData capturedAktivitet = getCapturedAktivitet();
+
+        assertThat(capturedAktivitet.getFraDato(), equalTo(nyFrist));
+        assertThat(capturedAktivitet.getTilDato(), equalTo(nyFrist));
+        assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
+    }
+
+    @Test
     public void oppdaterAktivitet() {
         val aktivitet = lagEnNyAktivitet();
         val oppdatertAktivitet = aktivitet
@@ -165,6 +183,11 @@ public class AktivitetServiceTest {
         }
         try {
             aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
