@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
@@ -103,6 +104,20 @@ public class AktivitetService {
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
+                .endretAv(endretAv)
+                .build();
+        insertAktivitet(oppdatertAktivitetMedNyFrist);
+    }
+
+    public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
+        val oppdatertAktivitetMedNyFrist = orginalAktivitet
+                .toBuilder()
+                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET )
+                .fraDato(aktivitetData.getFraDato())
+                .tilDato(aktivitetData.getTilDato())
+                .moteData(ofNullable(orginalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
                 .endretAv(endretAv)
                 .build();
         insertAktivitet(oppdatertAktivitetMedNyFrist);
