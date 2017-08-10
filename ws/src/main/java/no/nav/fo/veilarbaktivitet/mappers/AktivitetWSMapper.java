@@ -29,6 +29,7 @@ public class AktivitetWSMapper {
         wsAktivitet.setLenke(aktivitet.getLenke());
         wsAktivitet.setOpprettet(xmlCalendar(aktivitet.getOpprettetDato()));
         wsAktivitet.setEndret(xmlCalendar(aktivitet.getEndretDato()));
+        wsAktivitet.setHistorisk(aktivitet.getHistoriskDato() != null);
         wsAktivitet.setAvtalt(aktivitet.isAvtalt());
         wsAktivitet.setAvsluttetKommentar(aktivitet.getAvsluttetKommentar());
         wsAktivitet.setTransaksjonsType(transaksjonsTypeMap.get(aktivitet.getTransaksjonsType()));
@@ -57,8 +58,21 @@ public class AktivitetWSMapper {
         ofNullable(aktivitet.getBehandlingAktivitetData())
                 .ifPresent(behandlingAktivitetData ->
                         wsAktivitet.setBehandling(mapTilBehandlingAktivitet(behandlingAktivitetData)));
+        ofNullable(aktivitet.getMoteData())
+                .map(AktivitetWSMapper::mapTilMote)
+                .ifPresent(wsAktivitet::setMote);
 
         return wsAktivitet;
+    }
+
+    private static Mote mapTilMote(MoteData moteData) {
+        Mote mote = new Mote();
+        mote.setAdresse(moteData.getAdresse());
+        mote.setForberedelser(moteData.getForberedelser());
+        mote.setKanal(KanalDTO.getType(moteData.getKanal()));
+        mote.setReferat(moteData.getReferat());
+        mote.setErReferatPublisert(moteData.isReferatPublisert());
+        return mote;
     }
 
     private static Stillingaktivitet mapTilStillingsAktivitet(StillingsoekAktivitetData stillingsSoekAktivitet) {

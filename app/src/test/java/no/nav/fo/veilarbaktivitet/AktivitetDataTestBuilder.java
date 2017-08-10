@@ -28,36 +28,53 @@ public class AktivitetDataTestBuilder {
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {
-        return new StillingsoekAktivitetData()
-                .setArbeidsgiver("arbeidsgiver")
-                .setKontaktPerson("kontaktperson")
-                .setStillingsTittel("stilingstittel")
-                .setStillingsoekEtikett(StillingsoekEtikettData.values()[0]);
+        return StillingsoekAktivitetData.builder()
+                .arbeidsgiver("arbeidsgiver")
+                .kontaktPerson("kontaktperson")
+                .stillingsTittel("stilingstittel")
+                .stillingsoekEtikett(StillingsoekEtikettData.values()[0])
+                .build()
+                ;
     }
 
     public static EgenAktivitetData nyEgenaktivitet() {
-        return new EgenAktivitetData().setHensikt("nada");
+        return EgenAktivitetData.builder()
+                .hensikt("nada")
+                .build();
+    }
+
+    public static MoteData moteData() {
+        return MoteData.builder()
+                .adresse("en adresse")
+                .forberedelser("en forbedredelse")
+                .kanal(KanalDTO.values()[0])
+                .referatPublisert(true)
+                .referat("et referat")
+                .build();
     }
 
     public static SokeAvtaleAktivitetData nySokeAvtaleAktivitet() {
-        return new SokeAvtaleAktivitetData()
-                .setAntallStillingerSokes(10L)
-                .setAvtaleOppfolging("Oppfølging");
+        return SokeAvtaleAktivitetData.builder()
+                .antallStillingerSokes(10L)
+                .avtaleOppfolging("Oppfølging")
+                .build();
     }
 
     public static IJobbAktivitetData nyIJobbAktivitet() {
-        return new IJobbAktivitetData()
-                .setJobbStatusType(JobbStatusTypeData.HELTID)
-                .setAnsettelsesforhold("Vikar")
-                .setArbeidstid("7,5 timer");
+        return IJobbAktivitetData.builder()
+                .jobbStatusType(JobbStatusTypeData.HELTID)
+                .ansettelsesforhold("Vikar")
+                .arbeidstid("7,5 timer")
+                .build();
     }
 
     public static BehandlingAktivitetData nyBehandlingAktivitet() {
-        return new BehandlingAktivitetData()
-                .setBehandlingType("Medisinsk")
-                .setBehandlingSted("Legen")
-                .setEffekt("Bli frisk")
-                .setBehandlingOppfolging("Husk å ta pillene dine");
+        return BehandlingAktivitetData.builder()
+                .behandlingType("Medisinsk")
+                .behandlingSted("Legen")
+                .effekt("Bli frisk")
+                .behandlingOppfolging("Husk å ta pillene dine")
+                .build();
     }
 
     public static Date nyDato() {

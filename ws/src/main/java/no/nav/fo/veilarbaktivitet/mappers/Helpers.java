@@ -28,6 +28,8 @@ public class Helpers {
                 put(AktivitetType.BEHANDLING, BEHANDLING);
                 put(AktivitetType.IJOBB, IJOBB);
                 put(AktivitetType.SOKEAVTALE, SOKEAVTALE);
+                put(AktivitetType.MOTE, MOTE);
+                put(AktivitetType.SAMTALEREFERAT, SAMTALEREFERAT);
             }};
 
 

@@ -17,6 +17,7 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.naming.NamingException;
 
+import static no.nav.fo.veilarbaktivitet.TestConfig.APPLICATION_NAME;
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.AKTIVITET_DATA_SOURCE_JDNI_NAME;
 
 public abstract class AbstractIntegrasjonsTest {
@@ -27,7 +28,7 @@ public abstract class AbstractIntegrasjonsTest {
 
     @SneakyThrows
     public static void setupContext(Class<?>... classes) {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbaktivitet", "veilarbaktivitet", "t6"));
+        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbaktivitet", APPLICATION_NAME, "t6"));
         System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/test.properties"));
         System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/integrasjonstest.properties"));
         DevelopmentSecurity.configureLdap(FasitUtils.getLdapConfig("ldap", "veilarbaktivitet", "t6"));

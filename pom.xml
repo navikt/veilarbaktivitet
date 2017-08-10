@@ -31,8 +31,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
 
-        <!--Tjenester-->
-        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.29-SNAPSHOT</behandleaktivitetsplan.tjenestespesifikasjon.version>
+        <behandleaktivitetsplan.tjenestespesifikasjon.version>1.0.12.18.7</behandleaktivitetsplan.tjenestespesifikasjon.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.0.3</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
         <dial-nav-tjeneste-aktoer_v2.version>1.2</dial-nav-tjeneste-aktoer_v2.version>
     </properties>

@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class AktivitetDAO {
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
             "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
+            "LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon " +
             "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon ";
 
     private final Database database;
@@ -55,6 +57,9 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_ID_SEQ");
     }
 
+    public long nesteVersjon() {
+        return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
+    }
 
     public void insertAktivitet(AktivitetData aktivitet) {
         insertAktivitet(aktivitet, new Date());
@@ -62,16 +67,16 @@ public class AktivitetDAO {
 
     @Transactional
     void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
+        long aktivitetId = aktivitet.getId();
+        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
-        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitet.getId());
-
-        val versjon = Optional.ofNullable(aktivitet.getVersjon()).map(v -> v + 1).orElse(0L);
+        val versjon = nesteVersjon();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
                         "avtalt, gjeldende, transaksjons_type, historisk_dato) " +
                         "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                aktivitet.getId(),
+                aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
@@ -92,13 +97,36 @@ public class AktivitetDAO {
                 aktivitet.getHistoriskDato()
         );
 
-        insertStillingsSoek(aktivitet.getId(), versjon, aktivitet.getStillingsSoekAktivitetData());
-        insertEgenAktivitet(aktivitet.getId(), versjon, aktivitet.getEgenAktivitetData());
-        insertSokeAvtale(aktivitet.getId(), versjon, aktivitet.getSokeAvtaleAktivitetData());
-        insertIJobb(aktivitet.getId(), versjon, aktivitet.getIJobbAktivitetData());
-        insertBehandling(aktivitet.getId(), versjon, aktivitet.getBehandlingAktivitetData());
+        insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
+        insertEgenAktivitet(aktivitetId, versjon, aktivitet.getEgenAktivitetData());
+        insertSokeAvtale(aktivitetId, versjon, aktivitet.getSokeAvtaleAktivitetData());
+        insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
+        insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
+        insertMote(aktivitetId, versjon, aktivitet.getMoteData());
 
         LOG.info("opprettet {}", aktivitet);
+    }
+
+    private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
+        ofNullable(moteData).ifPresent(m -> {
+            database.update("INSERT INTO MOTE(" +
+                            "aktivitet_id, " +
+                            "versjon, " +
+                            "adresse," +
+                            "forberedelser, " +
+                            "kanal, " +
+                            "referat, " +
+                            "referat_publisert" +
+                            ") VALUES(?,?,?,?,?,?,?)",
+                    aktivitetId,
+                    versjon,
+                    moteData.getAdresse(),
+                    moteData.getForberedelser(),
+                    getName(moteData.getKanal()),
+                    moteData.getReferat(),
+                    moteData.isReferatPublisert()
+            );
+        });
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
@@ -184,6 +212,9 @@ public class AktivitetDAO {
                 aktivitetId
         );
         database.update("DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
+                aktivitetId
+        );
+        database.update("DELETE FROM MOTE WHERE aktivitet_id = ?",
                 aktivitetId
         );
 

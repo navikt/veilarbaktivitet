@@ -22,12 +22,14 @@ public class AvsluttetOppfolgingFeedConfig {
     @Bean
     public FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer(AvsluttetOppfolgingFeedProvider avsluttetOppfolgingFeedProvider) {
         FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(
-                AvsluttetOppfolgingFeedDTO.class,
-                avsluttetOppfolgingFeedProvider::sisteEndring,
-                host,
-                AvsluttetOppfolgingFeedDTO.FEED_NAME
+                new FeedConsumerConfig.BaseConfig<>(
+                        AvsluttetOppfolgingFeedDTO.class,
+                        avsluttetOppfolgingFeedProvider::sisteEndring,
+                        host,
+                        AvsluttetOppfolgingFeedDTO.FEED_NAME
+                ),
+                new FeedConsumerConfig.PollingConfig(polling)
         )
-                .pollingInterval(polling)
                 .callback(avsluttetOppfolgingFeedProvider::lesAvsluttetOppfolgingFeed)
                 .interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
 

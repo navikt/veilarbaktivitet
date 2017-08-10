@@ -69,7 +69,7 @@ public class ArenaAktivitetConsumer {
                 "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
 
         return new ArenaAktivitetDTO()
-                .setId(randomArenaId())
+                .setId(tiltaksaktivitet.getAktivitetId())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus().getValue()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setTittel(titttel)
@@ -101,7 +101,7 @@ public class ArenaAktivitetConsumer {
         AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
                 AktivitetStatus.AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
-                .setId(randomArenaId())
+                .setId(gruppeaktivitet.getAktivitetId())
                 .setStatus(status)
                 .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
                 .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
@@ -117,7 +117,7 @@ public class ArenaAktivitetConsumer {
         Date startDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
         return new ArenaAktivitetDTO()
-                .setId(randomArenaId())
+                .setId(utdanningsaktivitet.getAktivitetId())
                 .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())
@@ -143,11 +143,6 @@ public class ArenaAktivitetConsumer {
 
     private Date mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
         return Optional.ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
-    }
-
-    private String randomArenaId() {
-        // TODO: Fjern denne når PK-43443 er løst.
-        return "arena" + String.valueOf(new Random().nextInt(100000));
     }
 
     private enum ArenaStatus {

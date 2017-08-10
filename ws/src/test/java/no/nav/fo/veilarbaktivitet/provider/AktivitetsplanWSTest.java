@@ -20,6 +20,7 @@ import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.AVSLAG;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -91,9 +92,10 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
 
         val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
-        assertThat(res1.getAktivitet().getStatus(), equalTo(Status.GJENNOMFOERT));
+        Aktivitet res1Aktivitet = res1.getAktivitet();
+        assertThat(res1Aktivitet.getStatus(), equalTo(Status.GJENNOMFOERT));
 
-        val avbruttAktivitet = aktivitet.toBuilder().status(AktivitetStatus.AVBRUTT).build();
+        val avbruttAktivitet = aktivitet.withStatus(AktivitetStatus.AVBRUTT).withVersjon(Long.parseLong(res1Aktivitet.getVersjon()));
         val aktivitet2 = AktivitetWSMapper.mapTilAktivitet("123", avbruttAktivitet);
         endreReq.setAktivitet(aktivitet2);
 
@@ -103,13 +105,14 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
     @Test
     public void endre_aktivitet_etikett() throws Exception {
-        opprett_stilling_aktivitet();
+        val aktivitet  = opprett_stilling_aktivitet();
 
-        val aktivitet = aktiviter().get(0);
-        aktivitet.getStillingsSoekAktivitetData().setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG);
+        val aktivitetMedAvslagEtikett = aktivitet.withStillingsSoekAktivitetData(
+                aktivitet.getStillingsSoekAktivitetData().withStillingsoekEtikett(AVSLAG)
+        );
 
         val endreReq = new EndreAktivitetEtikettRequest();
-        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
+        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitetMedAvslagEtikett));
 
         val res1 = aktivitetsplanWS.endreAktivitetEtikett(endreReq);
         assertThat(res1.getAktivitet().getStillingAktivitet().getEtikett(), equalTo(Etikett.AVSLAG));
@@ -128,8 +131,9 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
         hentVersjoner.setAktivitetId(aktivitet.getId().toString());
         val versjoner = aktivitetsplanWS.hentAktivitetVersjoner(hentVersjoner).getAktivitetversjoner();
         assertThat(versjoner, hasSize(2));
-        assertThat(versjoner.get(0).getVersjon(), equalTo("1"));
-        assertThat(versjoner.get(1).getVersjon(), equalTo("0"));
+        String versjon1 = versjoner.get(0).getVersjon();
+        String versjon2 = versjoner.get(1).getVersjon();
+        assertThat(versjon1, not(equalTo(versjon2)));
     }
 
     @Test
@@ -189,26 +193,27 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
     private void opprett_aktivitet() {
         val aktivitet = nyAktivitet()
                 .aktivitetType(EGENAKTIVITET)
-                .egenAktivitetData(new EgenAktivitetData())
+                .egenAktivitetData(EgenAktivitetData.builder().build())
                 .build();
 
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
     }
 
-    private void opprett_stilling_aktivitet() {
+    private AktivitetData opprett_stilling_aktivitet() {
         val aktivitet = nyAktivitet()
                 .aktivitetType(JOBBSOEKING)
                 .stillingsSoekAktivitetData(nyttStillingssøk())
                 .build();
 
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+        long aktivitetId = aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+        return aktivitetService.hentAktivitet(aktivitetId);
     }
 
     private void opprett_avtalt_aktivitet() {
         val aktivitet = nyAktivitet()
                 .aktivitetType(JOBBSOEKING)
                 .avtalt(true)
-                .stillingsSoekAktivitetData(new StillingsoekAktivitetData())
+                .stillingsSoekAktivitetData(StillingsoekAktivitetData.builder().build())
                 .build();
 
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
