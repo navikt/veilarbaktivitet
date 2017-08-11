@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbaktivitet.db;
 
-import no.nav.apiapp.util.JsonUtils;
 import no.nav.fo.DatabaseTestContext;
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.json.JsonUtils;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
