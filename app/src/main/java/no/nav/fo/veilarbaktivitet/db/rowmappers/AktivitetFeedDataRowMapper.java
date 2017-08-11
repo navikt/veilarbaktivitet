@@ -8,6 +8,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
+import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.valueOf;
 
 public class AktivitetFeedDataRowMapper {
@@ -16,7 +17,7 @@ public class AktivitetFeedDataRowMapper {
         return new AktivitetFeedData()
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
-                .setAktivitetType(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")))
+                .setAktivitetType(typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"))))
                 .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode")))

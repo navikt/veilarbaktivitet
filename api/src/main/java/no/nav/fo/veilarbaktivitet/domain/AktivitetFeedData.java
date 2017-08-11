@@ -9,6 +9,8 @@ import java.util.Date;
 @Accessors(chain = true)
 public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
 
+    public static final String FEED_NAME = "aktiviteter";
+
     String aktivitetId;
     String aktorId;
 
@@ -16,7 +18,7 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
     Date tilDato;
     Date endretDato;
 
-    AktivitetTypeData aktivitetType;
+    AktivitetTypeDTO aktivitetType;
     AktivitetStatus status;
     boolean avtalt;
 
@@ -24,4 +26,5 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
     public int compareTo(AktivitetFeedData o) {
         return endretDato.compareTo(o.endretDato);
     }
+
 }

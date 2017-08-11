@@ -25,9 +25,9 @@ public class AktivitetFeedProvider implements FeedProvider<AktivitetFeedData> {
     }
 
     @Override
-    public Stream<FeedElement<AktivitetFeedData>> fetchData(String sinceId, int i) {
+    public Stream<FeedElement<AktivitetFeedData>> fetchData(String sinceId, int pageSize) {
         return aktivitetFeedDAO
-                .hentAktiviteterEtterTidspunkt(dateFromISO8601(sinceId))
+                .hentAktiviteterEtterTidspunkt(dateFromISO8601(sinceId), pageSize)
                 .stream()
                 .map(a -> new FeedElement<AktivitetFeedData>()
                         .setId(ISO8601FromDate(a.getEndretDato(), ZoneId.systemDefault()))
