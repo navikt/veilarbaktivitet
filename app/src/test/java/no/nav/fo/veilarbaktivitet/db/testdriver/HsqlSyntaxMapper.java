@@ -16,6 +16,22 @@ class HsqlSyntaxMapper {
                 "SELECT 1 FROM DUAL"
         );
         map(
+                "ALTER TABLE AKTIVITET_TYPE MODIFY ENDRET_DATO NOT NULL",
+                "SELECT 1 FROM DUAL"
+        );
+        map(
+                "ALTER TABLE AKTIVITET_TYPE MODIFY ENDRET_AV NOT NULL",
+                "SELECT 1 FROM DUAL"
+        );
+        map(
+                "ALTER TABLE AKTIVITET_LIVSLOPSTATUS_TYPE MODIFY ENDRET_DATO NOT NULL",
+                "SELECT 1 FROM DUAL"
+        );
+        map(
+                "ALTER TABLE AKTIVITET_LIVSLOPSTATUS_TYPE MODIFY ENDRET_AV NOT NULL",
+                "SELECT 1 FROM DUAL"
+        );
+        map(
                 "ALTER TABLE AKTIVITET MODIFY LOB (LENKE) ( DEDUPLICATE )",
                 "SELECT 1 FROM DUAL"
         );
