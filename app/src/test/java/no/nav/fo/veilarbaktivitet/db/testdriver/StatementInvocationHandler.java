@@ -4,7 +4,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.sql.Statement;
 
-import static no.nav.fo.veilarbaktivitet.db.testdriver.HsqlSyntaxMapper.hsqlSyntax;
+import static no.nav.fo.veilarbaktivitet.db.testdriver.DatabaseSyntaxMapper.syntax;
 import static no.nav.fo.veilarbaktivitet.util.ReflectionUtils.getMethod;
 
 public class StatementInvocationHandler implements InvocationHandler {
@@ -20,7 +20,7 @@ public class StatementInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         if (EXECUTE_METHOD.equals(method)) {
-            args[0] = hsqlSyntax((String) args[0]);
+            args[0] = syntax((String) args[0]);
         }
         return method.invoke(statement, args);
     }
