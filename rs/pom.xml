@@ -78,6 +78,11 @@
             <artifactId>feed</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl.dialogarena</groupId>
+            <artifactId>feed</artifactId>
+            <type>test-jar</type>
+        </dependency>
+        <dependency>
             <groupId>no.nav.fo</groupId>
             <artifactId>veilarbsituasjon-api</artifactId>
             <version>RELEASE</version>

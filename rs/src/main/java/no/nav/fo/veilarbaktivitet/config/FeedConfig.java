@@ -21,7 +21,7 @@ public class FeedConfig {
     ) {
         FeedController feedController = new FeedController();
 
-        feedController.addFeed("aktiviteter", aktivitetFeed);
+        feedController.addFeed(AktivitetFeedData.FEED_NAME, aktivitetFeed);
         feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
 
         return feedController;

@@ -2,9 +2,12 @@ package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetFeedData;
 import org.junit.Test;
 
 import javax.inject.Inject;
+import java.util.Date;
+import java.util.List;
 
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
@@ -31,7 +34,7 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         aktivitetDAO.insertAktivitet(aktivitet1.build(), endret1);
         aktivitetDAO.insertAktivitet(aktivitet2.build(), endret2);
 
-        val hentetAktiviteter = aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra);
+        val hentetAktiviteter = hentAktiviteterEtterTidspunkt(fra);
         assertThat(hentetAktiviteter).hasSize(2);
     }
 
@@ -46,7 +49,7 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         aktivitetDAO.insertAktivitet(aktivitet1.build(), endret1);
         aktivitetDAO.insertAktivitet(aktivitet2.build(), endret2);
 
-        val hentetAktiviteter = aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra);
+        val hentetAktiviteter = hentAktiviteterEtterTidspunkt(fra);
         assertThat(hentetAktiviteter).hasSize(1);
         assertThat(hentetAktiviteter.get(0).getEndretDato()).isEqualTo(endret2);
     }
@@ -62,7 +65,7 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         aktivitetDAO.insertAktivitet(aktivitet1.build(), endret1);
         aktivitetDAO.insertAktivitet(aktivitet2.build(), endret2);
 
-        val hentetAktiviteter = aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra);
+        val hentetAktiviteter = hentAktiviteterEtterTidspunkt(fra);
         assertThat(hentetAktiviteter).isEmpty();
     }
 
@@ -86,4 +89,9 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         val sisteHistoriskeTidspunkt = aktivitetFeedDAO.hentSisteHistoriskeTidspunkt();
         assertThat(sisteHistoriskeTidspunkt).isEqualTo(endret2);
     }
+
+    private List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date fra) {
+        return aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra, 10);
+    }
+
 }
