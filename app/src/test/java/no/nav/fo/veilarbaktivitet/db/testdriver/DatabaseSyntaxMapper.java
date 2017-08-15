@@ -4,9 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /*
-"Fattigmanns-løsning" for å kunne bruke hsql lokalt med oracle syntax
+"Fattigmanns-løsning" for å kunne bruke h2 lokalt med oracle syntax
 */
-class HsqlSyntaxMapper {
+class DatabaseSyntaxMapper {
 
     private static final Map<String, String> syntaxMap = new HashMap<>();
 
@@ -25,11 +25,11 @@ class HsqlSyntaxMapper {
         );
     }
 
-    private static void map(String oracleSyntax, String hsqlSyntax) {
-        syntaxMap.put(oracleSyntax, hsqlSyntax);
+    private static void map(String oracleSyntax, String syntax) {
+        syntaxMap.put(oracleSyntax, syntax);
     }
 
-    static String hsqlSyntax(String sql) {
+    static String syntax(String sql) {
         return syntaxMap.getOrDefault(sql, sql);
     }
 

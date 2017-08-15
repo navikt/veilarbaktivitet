@@ -43,48 +43,54 @@ public class AktivitetDataMapper {
 
     private static StillingsoekAktivitetData mapTilStillingsoekAktivitetData(Stillingaktivitet stillingaktivitet) {
         return ofNullable(stillingaktivitet).map(stilling ->
-                new StillingsoekAktivitetData()
-                        .setArbeidsgiver(stilling.getArbeidsgiver())
-                        .setKontaktPerson(stilling.getKontaktperson())
-                        .setArbeidssted(stilling.getArbeidssted())
-                        .setStillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
-                        .setStillingsTittel(stilling.getStillingstittel()))
-                .orElse(null);
+                StillingsoekAktivitetData.builder()
+                        .arbeidsgiver(stilling.getArbeidsgiver())
+                        .kontaktPerson(stilling.getKontaktperson())
+                        .arbeidssted(stilling.getArbeidssted())
+                        .stillingsoekEtikett(etikettMap.get(stilling.getEtikett()))
+                        .stillingsTittel(stilling.getStillingstittel())
+                        .build()
+        ).orElse(null);
     }
 
     private static EgenAktivitetData mapTilEgenAktivitetData(Egenaktivitet egenaktivitet) {
         return ofNullable(egenaktivitet)
                 .map(egen ->
-                        new EgenAktivitetData()
-                                .setHensikt(egen.getHensikt())
-                                .setOppfolging(egen.getOppfolging()))
-                .orElse(null);
+                        EgenAktivitetData.builder()
+                                .hensikt(egen.getHensikt())
+                                .oppfolging(egen.getOppfolging())
+                                .build()
+                ).orElse(null);
     }
 
     private static SokeAvtaleAktivitetData mapTilSokeavtaleAktivitetData(Sokeavtale sokeavtaleAktivitet) {
         return ofNullable(sokeavtaleAktivitet)
                 .map(sokeavtale ->
-                        new SokeAvtaleAktivitetData()
-                                .setAntall(sokeavtaleAktivitet.getAntall())
-                                .setAvtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
+                        SokeAvtaleAktivitetData.builder()
+                                .antallStillingerSokes(sokeavtaleAktivitet.getAntall())
+                                .avtaleOppfolging(sokeavtaleAktivitet.getAvtaleOppfolging())
+                                .build()
                 ).orElse(null);
     }
 
     private static IJobbAktivitetData mapTilIJobbAktivitetData(Ijobb ijobbAktivitet) {
         return ofNullable(ijobbAktivitet).map(ijobb ->
-                new IJobbAktivitetData()
-                        .setJobbStatusType(jobbStatusTypeMap.get(ijobb.getJobbStatus()))
-                        .setAnsettelsesforhold(ijobb.getAnsettelsesforhold())
-                        .setArbeidstid(ijobb.getArbeidstid())
+                IJobbAktivitetData.builder()
+                        .jobbStatusType(jobbStatusTypeMap.get(ijobb.getJobbStatus()))
+                        .ansettelsesforhold(ijobb.getAnsettelsesforhold())
+                        .arbeidstid(ijobb.getArbeidstid())
+                        .build()
         ).orElse(null);
     }
 
     private static BehandlingAktivitetData mapTilBehandlingAktivitetData(Behandling behandlingAktivitet) {
         return ofNullable(behandlingAktivitet).map(behandling ->
-                new BehandlingAktivitetData()
-                        .setBehandlingSted(behandling.getBehandlingSted())
-                        .setEffekt(behandling.getEffekt())
-                        .setBehandlingOppfolging(behandling.getBehandlingOppfolging())
+                BehandlingAktivitetData.builder()
+                        .behandlingType(behandling.getBehandlingType())
+                        .behandlingSted(behandling.getBehandlingSted())
+                        .effekt(behandling.getEffekt())
+                        .behandlingOppfolging(behandling.getBehandlingOppfolging())
+                        .build()
         ).orElse(null);
     }
 }

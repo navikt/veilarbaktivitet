@@ -11,6 +11,8 @@ import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 
+import static java.util.Optional.ofNullable;
+
 @Component
 public class AvsluttetOppfolgingFeedProvider {
 
@@ -21,7 +23,7 @@ public class AvsluttetOppfolgingFeedProvider {
     AktivitetFeedDAO aktivitetFeedDAO;
 
     public String sisteEndring() {
-        Date sisteEndring = aktivitetFeedDAO.hentSisteHistoriskeTidspunkt();
+        Date sisteEndring = ofNullable(aktivitetFeedDAO.hentSisteHistoriskeTidspunkt()).orElseGet(() -> new Date(0));
         return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
     }
 

@@ -71,18 +71,30 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     @Test
+    public void opprette_og_hente_mote() {
+        val aktivitet = gitt_at_det_finnes_et_mote();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
+    public void opprette_og_hente_samtalereferat() {
+        val aktivitet = gitt_at_det_finnes_et_samtalereferat();
+        val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertThat(aktiviteter, hasSize(1));
+        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
     public void slett_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
         aktivitetDAO.slettAktivitet(aktivitet.getId());
 
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
-    }
-
-    @Test(expected = DuplicateKeyException.class)
-    public void versjonskonflikt() {
-        lagaktivitetMedIdVersjon(10L, 22L);
-        lagaktivitetMedIdVersjon(10L, 22L);
     }
 
     @Test
@@ -136,28 +148,31 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         );
     }
 
-    private AktivitetData lagaktivitetMedIdVersjon(Long id, Long versjon) {
-        val aktivitet = nyAktivitet()
-                .id(id)
-                .versjon(versjon)
-                .aktivitetType(SOKEAVTALE)
-                .sokeAvtaleAktivitetData(nySokeAvtaleAktivitet())
-                .build();
+    private AktivitetData gitt_at_det_finnes_et_mote() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(MOTE)
+                .moteData(moteData())
+                .build()
+        );
+    }
 
-        return insertAktivitet(aktivitet);
+    private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
+        return insertAktivitet(nyAktivitet()
+                .aktivitetType(SAMTALEREFERAT)
+                .moteData(moteData())
+                .build()
+        );
     }
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
         val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
-        val nyVersjon = Optional.ofNullable(aktivitet.getVersjon()).orElseGet(() -> versjon++);
         val aktivitetMedId = aktivitet.toBuilder()
                 .id(id)
-                .versjon(nyVersjon)
                 .aktorId(AKTOR_ID)
                 .build();
 
         val endret = new Date();
         aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
-        return aktivitetMedId.toBuilder().id(id).versjon(versjon).endretDato(endret).build();
+        return aktivitetDAO.hentAktivitet(id);
     }
 }

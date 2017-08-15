@@ -7,6 +7,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
+import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -15,11 +16,14 @@ import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Date;
 
+import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.moteData;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -63,7 +67,7 @@ public class AktivitetServiceTest {
         mockHentAktivitet(aktivitet);
 
         val avsluttKommentar = "Alexander er best";
-        val nyStatus = AktivitetStatus.GJENNOMFORT;
+        val nyStatus = AktivitetStatus.GJENNOMFORES;
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .beskrivelse("ikke rett beskrivelse")
@@ -88,7 +92,7 @@ public class AktivitetServiceTest {
                 .beskrivelse("Alexander er fremdeles best")
                 .stillingsSoekAktivitetData(aktivitet
                         .getStillingsSoekAktivitetData()
-                        .setStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
+                        .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
                 .build();
         aktivitetService.oppdaterEtikett(oppdatertAktivitet, null);
 
@@ -107,6 +111,22 @@ public class AktivitetServiceTest {
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
+    }
+
+    @Test
+    public void oppdaterMoteTidOgSted() {
+        val aktivitet = lagEnNyAktivitet().withAktivitetType(MOTE).withMoteData(moteData());
+
+        val nyFrist = new Date();
+        String nyAdresse = "ny adresse";
+        aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
+
+        captureInsertAktivitetArgument();
+        AktivitetData capturedAktivitet = getCapturedAktivitet();
+
+        assertThat(capturedAktivitet.getFraDato(), equalTo(nyFrist));
+        assertThat(capturedAktivitet.getTilDato(), equalTo(nyFrist));
+        assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
     }
 
     @Test
@@ -167,6 +187,11 @@ public class AktivitetServiceTest {
         } catch (IllegalArgumentException ignored) {
         }
         try {
+            aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
             aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
             fail();
         } catch (IllegalArgumentException ignored) {
@@ -174,6 +199,48 @@ public class AktivitetServiceTest {
 
         verify(aktivitetDAO, never()).insertAktivitet(any());
 
+    }
+
+    @Test
+    public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
+        gitt_aktivitet(lagEnNyAktivitet());
+        aktivitetService.settAktiviteterTilHistoriske(lagAvsluttetOppfolging());
+        verify(aktivitetDAO).insertAktivitet(any());
+    }
+
+    @Test
+    public void settAktiviteterTilHistoriske_gammelHistoriskDato_oppdaterAktivitet() {
+        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
+        aktivitetService.settAktiviteterTilHistoriske(lagAvsluttetOppfolging());
+        verify(aktivitetDAO).insertAktivitet(any());
+    }
+
+    @Test
+    public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
+        AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
+        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(avsluttetOppfolgingFeedDTO.sluttdato.getTime() + 1)));
+        aktivitetService.settAktiviteterTilHistoriske(avsluttetOppfolgingFeedDTO);
+        verify(aktivitetDAO, never()).insertAktivitet(any());
+    }
+
+    @Test
+    public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
+        AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
+        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(avsluttetOppfolgingFeedDTO.getSluttdato()));
+        aktivitetService.settAktiviteterTilHistoriske(avsluttetOppfolgingFeedDTO);
+        verify(aktivitetDAO, never()).insertAktivitet(any());
+    }
+
+    private void gitt_aktivitet(AktivitetData aktivitetData) {
+        when(aktivitetDAO.hentAktiviteterForAktorId(anyString())).thenReturn(asList(aktivitetData));
+    }
+
+    private AvsluttetOppfolgingFeedDTO lagAvsluttetOppfolging() {
+        Date na = new Date();
+        return new AvsluttetOppfolgingFeedDTO()
+                .setAktoerid("aktorId")
+                .setOppdatert(na)
+                .setSluttdato(na);
     }
 
     public AktivitetData lagEnNyAktivitet() {

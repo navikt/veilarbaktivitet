@@ -7,7 +7,7 @@ import java.util.Map;
 
 public enum AktivitetStatus {
     PLANLAGT,
-    GJENNOMFORT,
+    GJENNOMFORES,
     FULLFORT,
     BRUKER_ER_INTERESSERT,
     AVBRUTT
@@ -20,7 +20,7 @@ public enum AktivitetStatus {
         map(Status.AVBRUTT, AVBRUTT);
         map(Status.BRUKER_ER_INTERESSERT, BRUKER_ER_INTERESSERT);
         map(Status.FULLFOERT, FULLFORT);
-        map(Status.GJENNOMFOERT, GJENNOMFORT);
+        map(Status.GJENNOMFOERT, GJENNOMFORES);
         map(Status.PLANLAGT, PLANLAGT);
     }
 

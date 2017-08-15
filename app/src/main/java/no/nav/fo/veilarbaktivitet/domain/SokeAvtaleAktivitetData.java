@@ -1,11 +1,13 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder
+@Wither
 public class SokeAvtaleAktivitetData {
-    public Long antall;
+    public Long antallStillingerSokes;
     public String avtaleOppfolging;
 }

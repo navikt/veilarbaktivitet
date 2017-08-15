@@ -5,7 +5,6 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 
 import java.util.Optional;
 
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
 
 public class AktivitetDataMapper {
@@ -33,38 +32,80 @@ public class AktivitetDataMapper {
                 .lagtInnAv(InnsenderData.NAV) // Vet at det alltid er fra NAV på denne siden
                 .lenke(aktivitetDTO.getLenke());
 
-        if (EGENAKTIVITET.equals(aktivitetType)) {
-            aktivitetData.egenAktivitetData(new EgenAktivitetData()
-                    .setHensikt(aktivitetDTO.getHensikt())
-                    .setOppfolging(aktivitetDTO.getOppfolging())
-            );
-        } else if (JOBBSOEKING.equals(aktivitetType)) {
-            aktivitetData.stillingsSoekAktivitetData(new StillingsoekAktivitetData()
-                    .setStillingsoekEtikett(etikettMap.getKey(aktivitetDTO.getEtikett()))
-                    .setKontaktPerson(aktivitetDTO.getKontaktperson())
-                    .setArbeidsgiver(aktivitetDTO.getArbeidsgiver())
-                    .setArbeidssted(aktivitetDTO.getArbeidssted())
-                    .setStillingsTittel(aktivitetDTO.getStillingsTittel())
-            );
-        } else if (SOKEAVTALE.equals(aktivitetType)) {
-            aktivitetData.sokeAvtaleAktivitetData(new SokeAvtaleAktivitetData()
-                    .setAntall(aktivitetDTO.getAntall())
-                    .setAvtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
-            );
-        } else if (IJOBB.equals(aktivitetType)) {
-            aktivitetData.iJobbAktivitetData(new IJobbAktivitetData()
-                    .setJobbStatusType(jobbStatusMap.getKey(aktivitetDTO.getJobbStatus()))
-                    .setAnsettelsesforhold(aktivitetDTO.getAnsettelsesforhold())
-                    .setArbeidstid(aktivitetDTO.getArbeidstid())
-            );
-        } else if (BEHANDLING.equals(aktivitetType)) {
-            aktivitetData.behandlingAktivitetData(new BehandlingAktivitetData()
-                    .setBehandlingSted(aktivitetDTO.getBehandlingSted())
-                    .setEffekt(aktivitetDTO.getEffekt())
-                    .setBehandlingOppfolging(aktivitetDTO.getBehandlingOppfolging())
-            );
+        switch (aktivitetType){
+            case EGENAKTIVITET:
+                aktivitetData.egenAktivitetData(egenAktivitetData(aktivitetDTO));
+                break;
+            case JOBBSOEKING:
+                aktivitetData.stillingsSoekAktivitetData(stillingsoekAktivitetData(aktivitetDTO));
+                break;
+            case SOKEAVTALE:
+                aktivitetData.sokeAvtaleAktivitetData(sokeAvtaleAktivitetData(aktivitetDTO)
+                );
+                break;
+            case IJOBB:
+                aktivitetData.iJobbAktivitetData(iJobbAktivitetData(aktivitetDTO));
+                break;
+            case BEHANDLING:
+                aktivitetData.behandlingAktivitetData(behandlingAktivitetData(aktivitetDTO));
+                break;
+            case MOTE:
+            case SAMTALEREFERAT:
+                aktivitetData.moteData(moteData(aktivitetDTO));
+                break;
         }
 
         return aktivitetData.build();
+    }
+
+    private static EgenAktivitetData egenAktivitetData(AktivitetDTO aktivitetDTO) {
+        return EgenAktivitetData.builder()
+                .hensikt(aktivitetDTO.getHensikt())
+                .oppfolging(aktivitetDTO.getOppfolging())
+                .build();
+    }
+
+    private static StillingsoekAktivitetData stillingsoekAktivitetData(AktivitetDTO aktivitetDTO) {
+        return StillingsoekAktivitetData.builder()
+                .stillingsoekEtikett(etikettMap.getKey(aktivitetDTO.getEtikett()))
+                .kontaktPerson(aktivitetDTO.getKontaktperson())
+                .arbeidsgiver(aktivitetDTO.getArbeidsgiver())
+                .arbeidssted(aktivitetDTO.getArbeidssted())
+                .stillingsTittel(aktivitetDTO.getStillingsTittel())
+                .build();
+    }
+
+    private static SokeAvtaleAktivitetData sokeAvtaleAktivitetData(AktivitetDTO aktivitetDTO) {
+        return SokeAvtaleAktivitetData.builder()
+                .antallStillingerSokes(aktivitetDTO.getAntallStillingerSokes())
+                .avtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
+                .build();
+    }
+
+    private static IJobbAktivitetData iJobbAktivitetData(AktivitetDTO aktivitetDTO) {
+        return IJobbAktivitetData.builder()
+                .jobbStatusType(jobbStatusMap.getKey(aktivitetDTO.getJobbStatus()))
+                .ansettelsesforhold(aktivitetDTO.getAnsettelsesforhold())
+                .arbeidstid(aktivitetDTO.getArbeidstid())
+                .build();
+    }
+
+    private static BehandlingAktivitetData behandlingAktivitetData(AktivitetDTO aktivitetDTO) {
+        return BehandlingAktivitetData.builder()
+                .behandlingType(aktivitetDTO.getBehandlingType())
+                .behandlingSted(aktivitetDTO.getBehandlingSted())
+                .effekt(aktivitetDTO.getEffekt())
+                .behandlingOppfolging(aktivitetDTO.getBehandlingOppfolging())
+                .build();
+    }
+
+    private static MoteData moteData(AktivitetDTO aktivitetDTO) {
+        return MoteData.builder()
+                .adresse(aktivitetDTO.getAdresse())
+                .forberedelser(aktivitetDTO.getForberedelser())
+                .kanal(aktivitetDTO.getKanal())
+                .referat(aktivitetDTO.getReferat())
+                .referatPublisert(aktivitetDTO.isErReferatPublisert())
+                .build();
     }
 }

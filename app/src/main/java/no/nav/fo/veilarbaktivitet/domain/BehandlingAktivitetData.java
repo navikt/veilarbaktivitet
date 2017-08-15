@@ -1,11 +1,14 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Builder;
+import lombok.Value;
+import lombok.experimental.Wither;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder
+@Wither
 public class BehandlingAktivitetData {
+    String behandlingType;
     String behandlingSted;
     String effekt;
     String behandlingOppfolging;

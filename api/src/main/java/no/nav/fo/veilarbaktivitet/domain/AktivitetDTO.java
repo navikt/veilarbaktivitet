@@ -21,6 +21,7 @@ public class AktivitetDTO {
     public Date tilDato;
     public Date opprettetDato;
     public Date endretDato;
+    public boolean historisk;
     public String avsluttetKommentar;
     public boolean avtalt;
     public String lagtInnAv;
@@ -38,7 +39,7 @@ public class AktivitetDTO {
     public String oppfolging;
 
     //sokeAvtaleAktivitet
-    public Long antall;
+    public Long antallStillingerSokes;
     public String avtaleOppfolging;
 
     //iJobbAktivitet
@@ -47,7 +48,17 @@ public class AktivitetDTO {
     public String arbeidstid;
 
     //behandlingAktivitet
+    public String behandlingType;
     public String behandlingSted;
     public String effekt;
     public String behandlingOppfolging;
+
+    //møte
+    public String adresse;
+    public String forberedelser;
+    public KanalDTO kanal;
+    public String referat;
+    public boolean erReferatPublisert;
+
+
 }

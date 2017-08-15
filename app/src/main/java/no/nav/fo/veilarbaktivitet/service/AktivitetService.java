@@ -3,9 +3,8 @@ package no.nav.fo.veilarbaktivitet.service;
 import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.util.MappingUtils;
 import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -16,6 +15,8 @@ import java.util.Date;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
+import static no.nav.apiapp.util.ObjectUtils.notEqual;
+import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
 public class AktivitetService {
@@ -58,7 +59,7 @@ public class AktivitetService {
 
     public void oppdaterStatus(AktivitetData aktivitet, String endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(orginalAktivitet);
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
@@ -69,17 +70,17 @@ public class AktivitetService {
                 .endretAv(endretAv)
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
+        insertAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData aktivitet, String endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(orginalAktivitet);
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
         val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
 
         val orginalStillingsAktivitet = orginalAktivitet.getStillingsSoekAktivitetData();
-        val nyStillingsAktivitet = orginalStillingsAktivitet.setStillingsoekEtikett(nyEtikett);
+        val nyStillingsAktivitet = orginalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
 
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
@@ -89,7 +90,7 @@ public class AktivitetService {
                 .endretAv(endretAv)
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
+        insertAktivitet(nyAktivitet);
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -97,7 +98,7 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet);
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
@@ -105,16 +106,53 @@ public class AktivitetService {
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv)
                 .build();
-        aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
+        insertAktivitet(oppdatertAktivitetMedNyFrist);
+    }
+
+    public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
+        val oppdatertAktivitetMedNyFrist = orginalAktivitet
+                .toBuilder()
+                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET )
+                .fraDato(aktivitetData.getFraDato())
+                .tilDato(aktivitetData.getTilDato())
+                .moteData(ofNullable(orginalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
+                .endretAv(endretAv)
+                .build();
+        insertAktivitet(oppdatertAktivitetMedNyFrist);
+    }
+
+    public void oppdaterReferat(
+            AktivitetData aktivitet,
+            AktivitetTransaksjonsType aktivitetTransaksjonsType,
+            String endretAv
+    ) {
+        val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
+
+        val merger = merge(orginalAktivitet, aktivitet);
+        insertAktivitet(orginalAktivitet
+                .withEndretAv(endretAv)
+                .withTransaksjonsType(aktivitetTransaksjonsType)
+                .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
+        );
+    }
+
+    private MoteData mergeReferat(MoteData orginalMoteData, MoteData moteData) {
+        return orginalMoteData
+                .withReferat(moteData.getReferat())
+                .withReferatPublisert(moteData.isReferatPublisert());
     }
 
     public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, String endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet);
+        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
-        val mergetAktivitetEndringer = orginalAktivitet
+        val merger = merge(orginalAktivitet, aktivitet);
+        insertAktivitet(orginalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -126,46 +164,72 @@ public class AktivitetService {
                 .transaksjonsType(transType)
                 .versjon(aktivitet.getVersjon())
                 .endretAv(endretAv)
-                .avtalt(aktivitet.isAvtalt());
+                .avtalt(aktivitet.isAvtalt())
+                .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
+                .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
+                .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
+                .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
+                .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
+                .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
+                .build()
+        );
+    }
 
-        ofNullable(orginalAktivitet.getStillingsSoekAktivitetData()).ifPresent(
-                stilling ->
-                        stilling.setArbeidsgiver(aktivitet.getStillingsSoekAktivitetData().getArbeidsgiver())
-                                .setArbeidssted(aktivitet.getStillingsSoekAktivitetData().getArbeidssted())
-                                .setKontaktPerson(aktivitet.getStillingsSoekAktivitetData().getKontaktPerson())
-                                .setStillingsTittel(aktivitet.getStillingsSoekAktivitetData().getStillingsTittel())
-        );
-        ofNullable(orginalAktivitet.getEgenAktivitetData()).ifPresent(
-                egen -> egen
-                        .setOppfolging(aktivitet.getEgenAktivitetData().getOppfolging())
-                        .setHensikt(aktivitet.getEgenAktivitetData().getHensikt())
-        );
-        ofNullable(orginalAktivitet.getSokeAvtaleAktivitetData()).ifPresent(
-                sokeAvtale -> sokeAvtale
-                        .setAntall(aktivitet.getSokeAvtaleAktivitetData().getAntall())
-                        .setAvtaleOppfolging(aktivitet.getSokeAvtaleAktivitetData().getAvtaleOppfolging())
-        );
-        ofNullable(orginalAktivitet.getIJobbAktivitetData()).ifPresent(
-                iJobb -> iJobb
-                        .setJobbStatusType(aktivitet.getIJobbAktivitetData().getJobbStatusType())
-                        .setAnsettelsesforhold(aktivitet.getIJobbAktivitetData().getAnsettelsesforhold())
-                        .setArbeidstid(aktivitet.getIJobbAktivitetData().getArbeidstid())
-        );
-        ofNullable(orginalAktivitet.getBehandlingAktivitetData()).ifPresent(
-                behandling -> behandling
-                        .setBehandlingSted(aktivitet.getBehandlingAktivitetData().getBehandlingSted())
-                        .setEffekt(aktivitet.getBehandlingAktivitetData().getEffekt())
-                        .setBehandlingOppfolging(aktivitet.getBehandlingAktivitetData().getBehandlingOppfolging())
-        );
+    private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
+        return originalBehandlingAktivitetData
+                .withBehandlingType(behandlingAktivitetData.getBehandlingType())
+                .withBehandlingSted(behandlingAktivitetData.getBehandlingSted())
+                .withEffekt(behandlingAktivitetData.getEffekt())
+                .withBehandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging());
+    }
 
+    private IJobbAktivitetData mergeIJobbAktivitetData(IJobbAktivitetData originalIJobbAktivitetData, IJobbAktivitetData iJobbAktivitetData) {
+        return originalIJobbAktivitetData
+                .withJobbStatusType(iJobbAktivitetData.getJobbStatusType())
+                .withAnsettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
+                .withArbeidstid(iJobbAktivitetData.getArbeidstid());
+    }
+
+    private SokeAvtaleAktivitetData mergeSokeAvtaleAktivitetData(SokeAvtaleAktivitetData originalSokeAvtaleAktivitetData, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
+        return originalSokeAvtaleAktivitetData
+                .withAntallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
+                .withAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
+    }
+
+    private EgenAktivitetData mergeEgenAktivitetData(EgenAktivitetData orginalEgenAktivitetData, EgenAktivitetData egenAktivitetData) {
+        return orginalEgenAktivitetData
+                .withOppfolging(egenAktivitetData.getOppfolging())
+                .withHensikt(egenAktivitetData.getHensikt());
+    }
+
+    private MoteData mergeMoteData(MoteData orginalMoteData, MoteData moteData) {
+        // Referat-felter settes gjennom egne operasjoner, se oppdaterReferat()
+        return orginalMoteData
+                .withAdresse(moteData.getAdresse())
+                .withForberedelser(moteData.getForberedelser())
+                .withKanal(moteData.getKanal());
+    }
+
+    private StillingsoekAktivitetData mergeStillingSok(StillingsoekAktivitetData originalStillingsoekAktivitetData, StillingsoekAktivitetData stillingsoekAktivitetData) {
+        return originalStillingsoekAktivitetData
+                .withArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
+                .withArbeidssted(stillingsoekAktivitetData.getArbeidssted())
+                .withKontaktPerson(stillingsoekAktivitetData.getKontaktPerson())
+                .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
+    }
+
+    private void insertAktivitet(AktivitetData aktivitetData) {
         try {
-            aktivitetDAO.insertAktivitet(mergetAktivitetEndringer.build());
+            aktivitetDAO.insertAktivitet(aktivitetData);
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet) {
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
+        if (notEqual(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
+            throw new VersjonsKonflikt();
+        }
         if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
             throw new IllegalArgumentException(
                     String.format("Kan ikke endre aktivitet aktivitet [%s]",
@@ -181,12 +245,18 @@ public class AktivitetService {
 
     @Transactional
     public void settAktiviteterTilHistoriske(AvsluttetOppfolgingFeedDTO element) {
+        Date sluttdato = element.getSluttdato();
         hentAktiviteterForAktorId(element.getAktoerid())
                 .stream()
-                .map(AktivitetData::toBuilder)
-                .map(aktivitet -> aktivitet.historiskDato(element.getSluttdato()))
-                .map(AktivitetData.AktivitetDataBuilder::build)
+                .filter(a -> skalBliHistorisk(a, element))
+                .map(a -> a.withHistoriskDato(sluttdato))
                 .forEach(aktivitetDAO::insertAktivitet);
+    }
+
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, AvsluttetOppfolgingFeedDTO element) {
+        Date sluttdato = element.getSluttdato();
+        return (aktivitetData.getHistoriskDato() == null || aktivitetData.getHistoriskDato().before(sluttdato))
+                && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
 }

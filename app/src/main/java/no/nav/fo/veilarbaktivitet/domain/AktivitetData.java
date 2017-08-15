@@ -2,11 +2,13 @@ package no.nav.fo.veilarbaktivitet.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.Wither;
 
 import java.util.Date;
 
 @Value
 @Builder(toBuilder = true)
+@Wither
 public class AktivitetData {
 
     Long id;
@@ -33,6 +35,7 @@ public class AktivitetData {
     SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
     IJobbAktivitetData iJobbAktivitetData;
     BehandlingAktivitetData behandlingAktivitetData;
+    MoteData moteData;
 
 }
 

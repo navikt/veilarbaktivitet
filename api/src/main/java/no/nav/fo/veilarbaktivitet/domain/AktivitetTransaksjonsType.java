@@ -6,5 +6,8 @@ public enum AktivitetTransaksjonsType {
     DETALJER_ENDRET,
     AVTALT,
     AVTALT_DATO_ENDRET,
-    ETIKETT_ENDRET
+    ETIKETT_ENDRET,
+    MOTE_TID_OG_STED_ENDRET,
+    REFERAT_ENDRET,
+    REFERAT_PUBLISERT,
 }

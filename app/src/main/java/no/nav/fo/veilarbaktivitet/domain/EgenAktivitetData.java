@@ -1,10 +1,14 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Value;
+import lombok.experimental.Wither;
 
-@Data
-@Accessors(chain = true)
+@Value
+@Builder
+@Wither
+@Getter
 public class EgenAktivitetData {
     String hensikt;
     String oppfolging;

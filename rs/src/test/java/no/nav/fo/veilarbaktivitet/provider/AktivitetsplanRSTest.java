@@ -193,7 +193,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .toBuilder()
                 .lenke(nyLenke)
                 .avsluttetKommentar(nyAvsluttetKommentar)
-                .versjon(1L)
                 .build();
 
         this.aktivitet = aktivitetController.oppdaterAktiviet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
@@ -255,7 +254,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .setBeskrivelse("beskr")
                 .setLenke("lenke")
                 .setType(AktivitetTypeDTO.STILLING)
-                .setStatus(AktivitetStatus.GJENNOMFORT)
+                .setStatus(AktivitetStatus.GJENNOMFORES)
                 .setFraDato(new Date())
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt")
