@@ -4,7 +4,6 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 
 import java.util.List;
@@ -56,16 +55,16 @@ public abstract class AktivitetAppService {
 
     public abstract AktivitetData oppdaterAktivitet(AktivitetData aktivitet);
 
-    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
-        long aktivitetId = aktivitet.getId();
-        sjekkTilgangTilAktivitet(aktivitetId);
+    protected AktivitetData internalOppdaterStatus(AktivitetData aktivitetData) {
         return brukerService.getLoggedInnUser()
                 .map(userIdent -> {
-                    aktivitetService.oppdaterStatus(aktivitet, userIdent);
-                    return aktivitetService.hentAktivitet(aktivitetId);
+                    aktivitetService.oppdaterStatus(aktivitetData, userIdent);
+                    return aktivitetService.hentAktivitet(aktivitetData.getId());
                 })
                 .orElseThrow(RuntimeException::new);
     }
+
+    public abstract AktivitetData oppdaterStatus(AktivitetData aktivitet);
 
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         long aktivitetId = aktivitet.getId();

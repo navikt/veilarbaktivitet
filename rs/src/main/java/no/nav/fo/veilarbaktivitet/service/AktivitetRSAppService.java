@@ -56,6 +56,11 @@ public class AktivitetRSAppService extends AktivitetAppService {
                 .orElseThrow(RuntimeException::new);
     }
 
+    @Override
+    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
+        sjekkTilgangTilAktivitet(aktivitet.getId());
+        return internalOppdaterStatus(aktivitet);
+    }
 
     public AktivitetData oppdaterReferat(AktivitetData aktivitet, AktivitetTransaksjonsType aktivitetTransaksjonsType) {
         aktivitetService.oppdaterReferat(
