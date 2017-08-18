@@ -13,7 +13,7 @@ import java.util.Collections;
 @Configuration
 public class AvsluttetOppfolgingFeedConfig {
 
-    @Value("${avsluttoppfolging.feed.producer.url}")
+    @Value("${veilarbsituasjon.api.url}")
     private String host;
 
     @Value("${avsluttoppfolging.feed.consumer.pollingrate}")
