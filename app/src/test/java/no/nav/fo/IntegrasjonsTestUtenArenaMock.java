@@ -17,11 +17,6 @@ import static org.mockito.Mockito.mock;
 
 public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjonsTest {
 
-    @BeforeClass
-    public static void testCertificates() throws IOException {
-        TestCertificates.setupKeyAndTrustStore();
-    }
-
     @BeforeAll
     @BeforeClass
     public static void setupContext() {

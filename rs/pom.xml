@@ -94,7 +94,7 @@
             <artifactId>veilarbaktivitet-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
         </dependency>
         <dependency>
@@ -108,7 +108,7 @@
             <artifactId>app-mock</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.sbl.dialogarena</groupId>
+            <groupId>no.nav.sbl</groupId>
             <artifactId>api-app</artifactId>
             <type>test-jar</type>
         </dependency>
@@ -175,10 +175,6 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.components</groupId>
-            <artifactId>geronimo-jaspi</artifactId>
         </dependency>
     </dependencies>
 
