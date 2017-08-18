@@ -44,6 +44,15 @@ public class AktivitetWSAppService extends AktivitetAppService {
     }
 
     @Override
+    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
+        val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
+        if(TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())){
+            return internalOppdaterStatus(aktivitet);
+        }
+        return aktivitet;
+    }
+
+    @Override
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if (originalAktivitet.isAvtalt() || !TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())) {

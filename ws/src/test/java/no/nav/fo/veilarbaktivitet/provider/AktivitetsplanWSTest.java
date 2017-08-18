@@ -18,8 +18,7 @@ import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.EGENAKTIVITET;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData.AVSLAG;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -101,6 +100,35 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
         val res2 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
         assertThat(res2.getAktivitet().getStatus(), equalTo(Status.AVBRUTT));
+    }
+
+    @Test
+    public void ikke_endre_status_pa_samtale_aktivitet(){
+        val samtalsAktivitet = opprett_aktivitet_med_type_og_status(SAMTALEREFERAT, AktivitetStatus.PLANLAGT);
+
+        val endreReq = new EndreAktivitetStatusRequest();
+        samtalsAktivitet.withStatus(AktivitetStatus.GJENNOMFORES);
+        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", samtalsAktivitet));
+
+        val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
+        Aktivitet res1Aktivitet = res1.getAktivitet();
+
+        assertThat(res1Aktivitet.getStatus(), equalTo(Status.PLANLAGT));
+
+    }
+
+    @Test
+    public void ikke_endre_status_pa_mote_aktivitet(){
+        val samtalsAktivitet = opprett_aktivitet_med_type_og_status(MOTE, AktivitetStatus.GJENNOMFORES);
+
+        val endreReq = new EndreAktivitetStatusRequest();
+        samtalsAktivitet.withStatus(AktivitetStatus.FULLFORT);
+        endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", samtalsAktivitet));
+
+        val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
+        Aktivitet res1Aktivitet = res1.getAktivitet();
+
+        assertThat(res1Aktivitet.getStatus(), equalTo(Status.GJENNOMFOERT));
     }
 
     @Test
@@ -197,6 +225,17 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                 .build();
 
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+    }
+
+    private AktivitetData opprett_aktivitet_med_type_og_status(AktivitetTypeData aktivitetsType, AktivitetStatus aktivitetsStatus){
+       val aktivitet= nyAktivitet()
+                .aktivitetType(aktivitetsType)
+                .stillingsSoekAktivitetData(nyttStillingssøk())
+                .status(aktivitetsStatus)
+                .build();
+
+       long aktivitetId = aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+       return aktivitetService.hentAktivitet(aktivitetId);
     }
 
     private AktivitetData opprett_stilling_aktivitet() {
