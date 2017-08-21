@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.config;
 
 
+import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.feed.producer.FeedProducer;
@@ -32,6 +33,7 @@ public class FeedConfig {
         return FeedProducer.<AktivitetFeedData>builder()
                 .provider(new AktivitetFeedProvider(aktivitetFeedDAO))
                 .maxPageSize(1000)
+                .authorizationModule(new OidcFeedAuthorizationModule())
                 .build();
     }
 }

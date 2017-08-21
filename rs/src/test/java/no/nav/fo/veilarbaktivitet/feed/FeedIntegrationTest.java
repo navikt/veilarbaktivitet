@@ -1,10 +1,12 @@
 package no.nav.fo.veilarbaktivitet.feed;
 
+import no.nav.brukerdialog.security.context.SubjectHandler;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.feed.FeedProducerTester;
 import no.nav.fo.feed.controller.FeedController;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import org.junit.jupiter.api.BeforeEach;
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -22,6 +24,11 @@ public class FeedIntegrationTest extends IntegrasjonsTest implements FeedProduce
 
     @Inject
     private AktivitetDAO aktivitetDAO;
+
+    @BeforeEach
+    public void setup() {
+        System.setProperty("aktiviteter.feed.brukertilgang", SubjectHandler.getSubjectHandler().getUid());
+    }
 
     @Override
     public FeedController getFeedController() {
