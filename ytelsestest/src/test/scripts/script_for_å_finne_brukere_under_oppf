@@ -1,0 +1,10 @@
+select count(fodselsnr) from oppfolgingsbruker where
+NAV_KONTOR=1001 AND
+(
+  formidlingsgruppekode in ('ARBS', 'PARBS', 'RARBS')
+  OR
+  (formidlingsgruppekode in ('IARBS') AND kvalifiseringsgruppekode in ('BATT','BFORM','IKVAL','VURDU','OPPFI','VARIG'))
+)
+AND FR_KODE is null
+AND SPERRET_ANSATT = 'N'
+AND ER_DOED = 'N';

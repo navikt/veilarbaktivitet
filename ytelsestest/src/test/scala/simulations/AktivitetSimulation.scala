@@ -4,7 +4,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import no.nav.sbl.gatling.login.OpenIdConnectLogin
 import org.slf4j.LoggerFactory
-import utils.{Helpers, RequestFilter}
+import utils.{Helpers}
 import java.util.concurrent.TimeUnit
 
 import io.gatling.core.feeder.RecordSeqFeederBuilder
@@ -13,6 +13,14 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 class AktivitetSimulation extends Simulation {
+
+  def login() = {
+    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
+      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
+      .exec(Helpers.httpGetSuccess("Logging in...", "/veilarbpersonflatefs"))
+      .pause("50", "600", TimeUnit.MILLISECONDS)
+  }
+
   private val logger = LoggerFactory.getLogger(AktivitetSimulation.this.getClass)
   private val veiledere = csv(System.getProperty("VEILEDERE", "veiledere.csv")).circular
   private val brukere = csv(System.getProperty("BRUKERE", "brukere_t.csv")).circular
@@ -34,8 +42,8 @@ class AktivitetSimulation extends Simulation {
     Map("kanal" -> "TELEFON"),
     Map("kanal" -> "INTERNETT")).circular
 
-  private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC",3).toInt
-  private val duration = Integer.getInteger("DURATION", 10).toInt
+  private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC",1).toInt
+  private val duration = Integer.getInteger("DURATION", 7100).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://app-t6.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   private val password = "odigM001"
@@ -45,7 +53,6 @@ class AktivitetSimulation extends Simulation {
   private val appnavn = "veilarbpersonflatefs"
   private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
   private val random = new Random()
-
 
   private val httpProtocol = http
     .baseURL(baseUrl)
@@ -57,14 +64,12 @@ class AktivitetSimulation extends Simulation {
     .userAgentHeader("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:30.0) Gecko/20100101 Firefox/30.0")
     .disableWarmUp
     .silentResources
+    .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
 
-  private val personflateScenario = scenario("Veileder åpner Personflate / Aktivitetsplan")
+  private val personflateScenario = scenario("Veileder aapner Personflate / Aktivitetsplan")
     .feed(veiledere)
     .feed(brukere)
-    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
-    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
-    .exec(Helpers.httpGetSuccess("forside personflate", "/veilarbpersonflatefs"))
-    .pause("50", "600", TimeUnit.MILLISECONDS)
+    .exec(login)
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
     .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjon/api/situasjon/me"))
     .exec(Helpers.httpGetSuccess("hent situasjon", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}"))
@@ -80,41 +85,82 @@ class AktivitetSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("henter maal-historikk", session => s"/veilarbsituasjon/api/situasjon/malListe?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent vilkaar", session => s"/veilarbsituasjon/api/situasjon/hentVilkaarStatusListe?fnr=${session("user").as[String]}"))
 
-  private val regAktivitetScenario = scenario("Veileder oppretter aktiviteter og gjør endringer på dem")
+  private val regAktivitetScenario = scenario("Veileder oppretter aktiviteter og gjoer endringer paa dem")
     .feed(veiledere)
     .feed(brukere)
     .feed(aktivetTyper)
     .feed(livslopsStatuser)
     .feed(kanaler)
-    .exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
-    .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
-    .exec(Helpers.httpGetSuccess("forside personflate", "/veilarbpersonflatefs"))
-    .exec(Helpers.httpGetSuccess("forside personflate", session => s"/veilarbaktivitet/api/aktivitet/kanaler?fnr=${session("user").as[String]}"))
-    .pause("50", "600", TimeUnit.MILLISECONDS)
+    .exec(login)
     .exec(
       Helpers.httpPost("registrer aktivitet", session => s"/veilarbaktivitet/api/aktivitet/ny?fnr=${session("user").as[String]}")
         .body(ElFileBody("domain/aktivitet.json"))
         .check(regex(".*").saveAs("responseJson"))
         .check(regex("\"id\":\"(.*?)\"").saveAs("aktivitet_id"))
     )
-    .exec(
+    .doIf("${postFeilet.isUndefined()}") {
+      exec(
       Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
-      .check(regex("\"beskrivelse\":\"${user}\""))
-    )
+        .check(regex("\"beskrivelse\":\"${user}\""))
+      )
+      .exec(
+        Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
+          .body(StringBody("""${responseJson}""")).asJSON
+      )
+      .exec(
+        Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/status?fnr=${session("user").as[String]}")
+          .body(StringBody("""${responseJson}""")).asJSON
+      )
+      .exec(
+        Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}"))
+    }
+
+  private val dialogScenario = scenario("Veileder oppretter og endrer dialog")
+    .feed(veiledere)
+    .feed(brukere)
+    .exec(login)
     .exec(
-      Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
-      .body(StringBody("""${responseJson}""")).asJSON
+      Helpers.httpPost("ny dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}")
+        .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Ytelsestest\"}")).asJSON
+        .check(regex("\"id\":\"(.*?)\"").saveAs("dialog_id"))
     )
-    .exec(
-      Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/status?fnr=${session("user").as[String]}")
-      .body(StringBody("""${responseJson}""")).asJSON
-    )
-    .exec(
-      Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}"))
+    .doIf("${postFeilet.isUndefined()}") {
+      exec(Helpers.httpPut("setter bruker maa svare til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/true?fnr=${session("user").as[String]}"))
+        .exec(Helpers.httpPut("setter bruker maa svare til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/false?fnr=${session("user").as[String]}"))
+        .exec(Helpers.httpPut("setter ferdig behandlet til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/ferdigbehandlet/false?fnr=${session("user").as[String]}"))
+        .exec(Helpers.httpPut("setter ferdig behandlet til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/ferdigbehandlet/true?fnr=${session("user").as[String]}"))
+    }
+
+  private val innstillingerScenario = scenario("Veileder henter historikk og setter til manuell / under oppfoelging")
+    .feed(veiledere)
+    .feed(brukere)
+    .exec(login)
+    .exec(Helpers.httpGetSuccess("henter innstillingerhistorikk", session => s"/veilarbsituasjon/api/situasjon/innstillingsHistorikk?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("henter reservert-status", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}")
+      .check(regex("\"reservasjonKRR\":(.*?),").saveAs("erReservert")))
+
+    .doIfEquals("${erReservert}", "false") {
+        exec(
+          Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarbsituasjon/api/situasjon/settManuell?fnr=${session("user").as[String]}")
+            .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
+        )
+        .exec(
+          Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarbsituasjon/api/situasjon/settDigital?fnr=${session("user").as[String]}")
+            .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
+        )
+        .exec(
+          Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarbsituasjon/api/situasjon/innstillingsHistorikk?fnr=${session("user").as[String]}")
+            .check(regex("${user}").count.greaterThan(1))
+        )
+      }
+    .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
+
 
   setUp(
-    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during duration.minutes),
-    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds))
+    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds))
   )
     .protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
