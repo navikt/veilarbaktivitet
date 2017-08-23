@@ -4,8 +4,9 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import no.nav.sbl.gatling.login.OpenIdConnectLogin
 import org.slf4j.LoggerFactory
-import utils.{Helpers}
+import utils.{Helpers,FeedHelpers}
 import java.util.concurrent.TimeUnit
+import io.gatling.core.session.Expression
 
 import io.gatling.core.feeder.RecordSeqFeederBuilder
 
@@ -13,6 +14,9 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 class AktivitetSimulation extends Simulation {
+
+
+  //
 
   def login() = {
     exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
@@ -53,6 +57,8 @@ class AktivitetSimulation extends Simulation {
   private val appnavn = "veilarbpersonflatefs"
   private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
   private val random = new Random()
+
+  var portefoljefeedInitialDate = "2017-08-22T17:24:23.882Z"
 
   private val httpProtocol = http
     .baseURL(baseUrl)
@@ -155,13 +161,20 @@ class AktivitetSimulation extends Simulation {
       }
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
 
+    private val portefoljeFeedScenario = scenario ("Portefoljefeed")
+      .feed(veiledere)
+      .exec(login) //hente bruker fra variabel
+      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+portefoljefeedInitialDate+"&page_size=1"))
+      .exec(FeedHelpers.traverseFeed("traverserer portefoljefeed", session => s"/veilarbsituasjon/api/feed/situasjon?id=${session("nextPageVariable").as[String]}&page_size=100"))
 
   setUp(
-    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds))
-  )
-    .protocols(httpProtocol)
+    //personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    //regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    //dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    //innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    portefoljeFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
+    portefoljeFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
+  ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
+
 }
