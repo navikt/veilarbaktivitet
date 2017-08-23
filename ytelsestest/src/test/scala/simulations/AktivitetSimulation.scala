@@ -1,13 +1,15 @@
 package simulations
 
+import java.net.URLEncoder
+
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import no.nav.sbl.gatling.login.OpenIdConnectLogin
 import org.slf4j.LoggerFactory
-import utils.{Helpers,FeedHelpers}
+import utils.{FeedHelpers, Helpers}
 import java.util.concurrent.TimeUnit
-import io.gatling.core.session.Expression
 
+import io.gatling.core.session.Expression
 import io.gatling.core.feeder.RecordSeqFeederBuilder
 
 import scala.concurrent.duration._
@@ -15,19 +17,32 @@ import scala.util.Random
 
 class AktivitetSimulation extends Simulation {
 
-
-  //
-
-  def login() = {
-    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
-      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
-      .exec(Helpers.httpGetSuccess("Logging in...", "/veilarbpersonflatefs"))
-      .pause("50", "600", TimeUnit.MILLISECONDS)
-  }
-
   private val logger = LoggerFactory.getLogger(AktivitetSimulation.this.getClass)
+
+  ////////////////////////////
+  //Variabler settes i Jenkins
+  ///////////////////////////
+  private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC",1).toInt
+  private val duration = Integer.getInteger("DURATION", 7100).toInt
+  private val baseUrl = System.getProperty("BASEURL", "https://app-t6.adeo.no")
+  private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
+  val password = System.getProperty("VEILEDER_PASSWD", "odigM001")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  private val feedUsername = System.getProperty("FEED_USERNAME", "srvveilarbportefolje")
+  private val feedPassword = System.getProperty("FEED_PASSWORD", "APUkG8YqkzTJ9eJ")
+  private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
+  private val initialDateSituasjonsfeed =  System.getProperty("INITIAL_DATE_SITUASJONSFEED", "2017-08-21T17:24:23.882Z")
+  private val initialDateDialogfeed =  System.getProperty("INITIAL_DATE_DIALOGFEED", "2017-08-21T17:24:23.882Z")
+  private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T17:24:23.882Z")
+
+
+
+  ///////////////////////////
+  //Feeders
+  ///////////////////////////
   private val veiledere = csv(System.getProperty("VEILEDERE", "veiledere.csv")).circular
   private val brukere = csv(System.getProperty("BRUKERE", "brukere_t.csv")).circular
+
   private val aktivetTyper = Array (
     Map("aktivitettype" -> "STILLING"),
     Map("aktivitettype" -> "EGEN"),
@@ -46,20 +61,28 @@ class AktivitetSimulation extends Simulation {
     Map("kanal" -> "TELEFON"),
     Map("kanal" -> "INTERNETT")).circular
 
-  private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC",1).toInt
-  private val duration = Integer.getInteger("DURATION", 7100).toInt
-  private val baseUrl = System.getProperty("BASEURL", "https://app-t6.adeo.no")
-  private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  private val password = "odigM001"
-  private val oidcPassword = "0987654321"
-  private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
 
+  ///////////////////////////
+  //Login
+  ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
   private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
-  private val random = new Random()
 
-  var portefoljefeedInitialDate = "2017-08-22T17:24:23.882Z"
+  private def login() = {
+    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
+      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
+      .pause("50", "600", TimeUnit.MILLISECONDS)
+  }
 
+  private def loginFeed() = {
+    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(feedUsername, feedPassword))))
+      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(feedUsername, feedPassword))))
+      .pause("50", "600", TimeUnit.MILLISECONDS)
+  }
+
+  ///////////////////////////
+  //HTTP-oppsett
+  ///////////////////////////
   private val httpProtocol = http
     .baseURL(baseUrl)
     .inferHtmlResources()
@@ -72,6 +95,10 @@ class AktivitetSimulation extends Simulation {
     .silentResources
     .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
 
+
+  ///////////////////////////
+  //Scenarioer
+  ///////////////////////////
   private val personflateScenario = scenario("Veileder aapner Personflate / Aktivitetsplan")
     .feed(veiledere)
     .feed(brukere)
@@ -161,19 +188,32 @@ class AktivitetSimulation extends Simulation {
       }
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
 
-    private val portefoljeFeedScenario = scenario ("Portefoljefeed")
-      .feed(veiledere)
-      .exec(login) //hente bruker fra variabel
-      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+portefoljefeedInitialDate+"&page_size=1"))
+    private val situasjonsFeedScenario = scenario ("Situasjonsfeed")
+      .exec(loginFeed())
+      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+initialDateSituasjonsfeed+"&page_size=1"))
       .exec(FeedHelpers.traverseFeed("traverserer portefoljefeed", session => s"/veilarbsituasjon/api/feed/situasjon?id=${session("nextPageVariable").as[String]}&page_size=100"))
 
+    private val dialogFeedScenario = scenario ("Dialogfeed")
+      .exec(loginFeed())
+      .exec(FeedHelpers.httpGetFeed("henter dialogfeed", "/veilarbdialog/api/feed/dialogaktor?id="+initialDateSituasjonsfeed+"&page_size=1"))
+      .exec(session => session.set("nextPageVariableUrlEncoded", URLEncoder.encode(session("nextPageVariable").as[String])))
+      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbdialog/api/feed/dialogaktor?id=${session("nextPageVariableUrlEncoded").as[String]}&page_size=100"))
+
+    private val aktivitetFeedScenario = scenario ("Aktivitetfeed")
+      .exec(loginFeed())
+      .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id"+initialDateAktivitetfeed+"&page_size=1"))
+      .exec(session => session.set("nextPageVariableUrlEncoded", URLEncoder.encode(session("nextPageVariable").as[String])))
+      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbaktivitet/api/feed/aktiviteter?id=${session("nextPageVariableUrlEncoded").as[String]}&page_size=100"))
+
+
   setUp(
-    //personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    //regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    //dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    //innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    portefoljeFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
-    portefoljeFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
+//    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+//    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+//    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+//    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+//    situasjonsFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
+//    dialogFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
+    aktivitetFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 
