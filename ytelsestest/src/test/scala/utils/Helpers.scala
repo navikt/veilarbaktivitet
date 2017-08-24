@@ -47,6 +47,14 @@ object Helpers {
         //}
     }
 
+    def printToConsole(tekst: Expression[String]) = {
+        exec(session => {
+            println(tekst)
+            session
+        })
+    }
+
+
     def toBody(obj: Object): CompositeByteArrayBody = {
         StringBody(mapper.writeValueAsString(obj))
     }

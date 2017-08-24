@@ -22,15 +22,14 @@ object FeedHelpers {
     http(navn)
       .get(uri)
       .check(status.is(200))
-      .check(regex("\"nextPageId\":\"(.*?)\"").saveAs("nextPageVariable"))
-      .check(regex("\"id\":\"(.*?)\"").saveAs("lastReceivedId"))
+      .check(regex("\"nextPageId\":\"(.*?)\"").saveAs("nextPage"))
   }
 
   def traverseFeed(navn: String, uri: Expression[String]) = {
-      exec(session => session.set("nextPageVariableUrlEncoded",  URLEncoder.encode(session("nextPageVariable").as[String])))
-        .asLongAs(session => session("nextPageVariable").as[String] != session("lastReceivedId").as[String]) {
-        pause(1)
-        .exec(httpGetFeed(navn, uri))
+        asLongAs(session =>  session("nextPage").asOption[String] != session("lastPage").asOption[String]) {
+          pause(1)
+          .exec(session => session.set("lastPage", session("nextPage").as[String]))
+          .exec(httpGetFeed(navn, uri))
     }
   }
 }
