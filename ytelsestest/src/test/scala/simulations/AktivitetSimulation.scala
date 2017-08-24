@@ -33,7 +33,7 @@ class AktivitetSimulation extends Simulation {
   private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
   private val initialDateSituasjonsfeed =  System.getProperty("INITIAL_DATE_SITUASJONSFEED", "2017-08-21T17:24:23.882Z")
   private val initialDateDialogfeed =  System.getProperty("INITIAL_DATE_DIALOGFEED", "2017-08-21T17:24:23.882Z")
-  private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T17:24:23.882Z")
+  private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T10:04:20.515%2b02:00[Europe/Oslo]")
 
 
 
@@ -190,20 +190,20 @@ class AktivitetSimulation extends Simulation {
 
     private val situasjonsFeedScenario = scenario ("Situasjonsfeed")
       .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+initialDateSituasjonsfeed+"&page_size=1"))
+      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+initialDateSituasjonsfeed+"&page_size=100"))
       .exec(FeedHelpers.traverseFeed("traverserer portefoljefeed", session => s"/veilarbsituasjon/api/feed/situasjon?id=${session("nextPageVariable").as[String]}&page_size=100"))
 
     private val dialogFeedScenario = scenario ("Dialogfeed")
       .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter dialogfeed", "/veilarbdialog/api/feed/dialogaktor?id="+initialDateSituasjonsfeed+"&page_size=1"))
+      .exec(FeedHelpers.httpGetFeed("henter dialogfeed", "/veilarbdialog/api/feed/dialogaktor?id="+initialDateSituasjonsfeed+"&page_size=100"))
       .exec(session => session.set("nextPageVariableUrlEncoded", URLEncoder.encode(session("nextPageVariable").as[String])))
       .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbdialog/api/feed/dialogaktor?id=${session("nextPageVariableUrlEncoded").as[String]}&page_size=100"))
 
     private val aktivitetFeedScenario = scenario ("Aktivitetfeed")
       .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id"+initialDateAktivitetfeed+"&page_size=1"))
-      .exec(session => session.set("nextPageVariableUrlEncoded", URLEncoder.encode(session("nextPageVariable").as[String])))
-      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbaktivitet/api/feed/aktiviteter?id=${session("nextPageVariableUrlEncoded").as[String]}&page_size=100"))
+      .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id="+initialDateAktivitetfeed+"&page_size=100"))
+      //.exec(session => session.set("nextPageVariableUrlEncoded", URLEncoder.encode(session("nextPageVariable").as[String])))
+      .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => s"/veilarbaktivitet/api/feed/aktiviteter?id=${session("nextPageVariableUrlEncoded").as[String]}&page_size=10"))
 
 
   setUp(
@@ -211,7 +211,7 @@ class AktivitetSimulation extends Simulation {
 //    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
 //    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
 //    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-//    situasjonsFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
+  //  situasjonsFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
 //    dialogFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
     aktivitetFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
   ).protocols(httpProtocol)

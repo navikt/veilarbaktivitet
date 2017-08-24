@@ -17,6 +17,7 @@ object FeedHelpers {
   val mapper = new ObjectMapper() with ScalaObjectMapper
   mapper.registerModule(DefaultScalaModule)
 
+
   def httpGetFeed(navn: String, uri: Expression[String]): HttpRequestBuilder = {
     http(navn)
       .get(uri)
@@ -24,9 +25,11 @@ object FeedHelpers {
       .check(regex("\"nextPageId\":\"(.*?)\"").saveAs("nextPageVariable"))
       .check(regex("\"id\":\"(.*?)\"").saveAs("lastReceivedId"))
   }
+
   def traverseFeed(navn: String, uri: Expression[String]) = {
-    asLongAs(session => session("nextPageVariable").as[String] != session("lastReceivedId").as[String]) {
-      pause(1)
+      exec(session => session.set("nextPageVariableUrlEncoded",  URLEncoder.encode(session("nextPageVariable").as[String])))
+        .asLongAs(session => session("nextPageVariable").as[String] != session("lastReceivedId").as[String]) {
+        pause(1)
         .exec(httpGetFeed(navn, uri))
     }
   }
