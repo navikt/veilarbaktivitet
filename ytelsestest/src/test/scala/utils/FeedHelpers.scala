@@ -14,10 +14,6 @@ import io.gatling.http.request.builder._
 import io.gatling.http.request.ExtraInfo
 
 object FeedHelpers {
-  val mapper = new ObjectMapper() with ScalaObjectMapper
-  mapper.registerModule(DefaultScalaModule)
-
-
   def httpGetFeed(navn: String, uri: Expression[String]): HttpRequestBuilder = {
     http(navn)
       .get(uri)

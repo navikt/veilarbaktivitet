@@ -13,9 +13,6 @@ import io.gatling.http.request.builder._
 import io.gatling.http.request.ExtraInfo
 
 object Helpers {
-    val mapper = new ObjectMapper() with ScalaObjectMapper
-    mapper.registerModule(DefaultScalaModule)
-
     def httpGetSuccess(navn: String, uri: Expression[String]): HttpRequestBuilder = {
         http(navn)
             .get(uri)
@@ -52,10 +49,5 @@ object Helpers {
             println(tekst)
             session
         })
-    }
-
-
-    def toBody(obj: Object): CompositeByteArrayBody = {
-        StringBody(mapper.writeValueAsString(obj))
     }
 }

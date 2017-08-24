@@ -37,12 +37,11 @@ class AktivitetSimulation extends Simulation {
   private val feedPageSize =  System.getProperty("FEED_PAGE_SIZE", "100")
 
 
-
   ///////////////////////////
   //Feeders
   ///////////////////////////
-  private val veiledere = csv(System.getProperty("VEILEDERE", "veiledere.csv")).circular
-  private val brukere = csv(System.getProperty("BRUKERE", "brukere_t.csv")).circular
+  private val veiledere = csv(System.getProperty("VEILEDERE", "veileder-data/veiledere.csv")).circular
+  private val brukere = csv(System.getProperty("BRUKERE", "veileder-data/brukere_for_sok.csv")).circular
 
   private val aktivetTyper = Array (
     Map("aktivitettype" -> "STILLING"),
@@ -204,9 +203,11 @@ class AktivitetSimulation extends Simulation {
       .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id="+initialDateAktivitetfeed+"&page_size=100"))
       .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => "/veilarbaktivitet/api/feed/aktiviteter?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
 
+    private val eksternBrukerScenario = scenario ("Aktivitetfeed")
+
 
   setUp(
-//    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
 //    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
 //    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
 //    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
