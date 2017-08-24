@@ -197,12 +197,12 @@ class AktivitetSimulation extends Simulation {
     private val dialogFeedScenario = scenario ("Dialogfeed")
       .exec(loginFeed())
       .exec(FeedHelpers.httpGetFeed("henter dialogfeed", "/veilarbdialog/api/feed/dialogaktor?id="+initialDateSituasjonsfeed+"&page_size=100"))
-      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbdialog/api/feed/dialogaktor?id="+URLEncoder.encode(s"${session("nextPage").as[String]}")+"&page_size="+feedPageSize))
+      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbdialog/api/feed/dialogaktor?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
 
     private val aktivitetFeedScenario = scenario ("Aktivitetfeed")
       .exec(loginFeed())
       .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id="+initialDateAktivitetfeed+"&page_size=100"))
-      .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => "/veilarbaktivitet/api/feed/aktiviteter?id="+URLEncoder.encode(s"${session("nextPage").as[String]}")+"&page_size="+feedPageSize))
+      .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => "/veilarbaktivitet/api/feed/aktiviteter?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
 
 
   setUp(
