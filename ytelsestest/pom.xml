@@ -149,7 +149,8 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <simulationClass>simulations.AktivitetSimulation</simulationClass>
+                            <simulationClass>simulations.EksternBrukerSimulation</simulationClass>
+                            <simulationClass>simulations.VeilederOgFeedSimulation</simulationClass>
                         </configuration>
                     </execution>
                 </executions>

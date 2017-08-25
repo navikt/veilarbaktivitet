@@ -19,6 +19,12 @@ object Helpers {
             .check(status.is(200))
     }
 
+    def httpDeleteSuccess(navn: String, uri: Expression[String]): HttpRequestBuilder = {
+      http(navn)
+        .delete(uri)
+        .check(status.is(204))
+    }
+
     def httpPost(navn: String, uri: Expression[String]): HttpRequestBuilder = {
         http(navn)
             .post(uri)
@@ -34,14 +40,14 @@ object Helpers {
     }
 
     def getInfo(extraInfo: ExtraInfo): String = {
-        //if (extraInfo.response.statusCode.get != 200) {
+        if (extraInfo.response.statusCode.get != 200) {
             "URL : " + extraInfo.request.getUrl + ", " +
               "Request : " + extraInfo.request.getStringData + ", " +
               "Response : " + extraInfo.response.body.string + ", " +
               "Session-data : " + extraInfo.session
-        //} else {
-           // ""
-        //}
+        } else {
+            ""
+        }
     }
 
     def printToConsole(tekst: Expression[String]) = {

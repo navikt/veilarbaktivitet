@@ -15,9 +15,9 @@ import io.gatling.core.feeder.RecordSeqFeederBuilder
 import scala.concurrent.duration._
 import scala.util.Random
 
-class AktivitetSimulation extends Simulation {
+class VeilederOgFeedSimulation extends Simulation {
 
-  private val logger = LoggerFactory.getLogger(AktivitetSimulation.this.getClass)
+  private val logger = LoggerFactory.getLogger(VeilederOgFeedSimulation.this.getClass)
 
   ////////////////////////////
   //Variabler settes i Jenkins
@@ -41,7 +41,8 @@ class AktivitetSimulation extends Simulation {
   //Feeders
   ///////////////////////////
   private val veiledere = csv(System.getProperty("VEILEDERE", "veileder-data/veiledere.csv")).circular
-  private val brukere = csv(System.getProperty("BRUKERE", "veileder-data/brukere_for_sok.csv")).circular
+  private val brukere_for_sok = csv(System.getProperty("VEILEDER_BRUKERE", "veileder-data/brukere_for_sok.csv")).circular
+  private val eksterne_brukere = csv(System.getProperty("EKSTERNE_BRUKERE", "ekstern-bruker-data/brukere.csv")).circular
 
   private val aktivetTyper = Array (
     Map("aktivitettype" -> "STILLING"),
@@ -60,6 +61,10 @@ class AktivitetSimulation extends Simulation {
     Map("kanal" -> "OPPMOTE"),
     Map("kanal" -> "TELEFON"),
     Map("kanal" -> "INTERNETT")).circular
+
+  private val jobbstatus = Array (
+    Map("jobbstatus" -> "HELTID"),
+    Map("jobbstatus" -> "DELTID")).circular
 
 
   ///////////////////////////
@@ -101,7 +106,7 @@ class AktivitetSimulation extends Simulation {
   ///////////////////////////
   private val personflateScenario = scenario("Veileder aapner Personflate / Aktivitetsplan")
     .feed(veiledere)
-    .feed(brukere)
+    .feed(brukere_for_sok)
     .exec(login)
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
     .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjon/api/situasjon/me"))
@@ -113,21 +118,22 @@ class AktivitetSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", session => s"/veilarbaktivitet/api/aktivitet/arena?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("henter maal", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}")
-      .body(StringBody("{\"mal\":\"Lager et nytt maal\"}")).asJSON
+      .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
     )
     .exec(Helpers.httpGetSuccess("henter maal-historikk", session => s"/veilarbsituasjon/api/situasjon/malListe?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent vilkaar", session => s"/veilarbsituasjon/api/situasjon/hentVilkaarStatusListe?fnr=${session("user").as[String]}"))
 
   private val regAktivitetScenario = scenario("Veileder oppretter aktiviteter og gjoer endringer paa dem")
     .feed(veiledere)
-    .feed(brukere)
+    .feed(brukere_for_sok)
     .feed(aktivetTyper)
     .feed(livslopsStatuser)
+    .feed(jobbstatus)
     .feed(kanaler)
     .exec(login)
     .exec(
       Helpers.httpPost("registrer aktivitet", session => s"/veilarbaktivitet/api/aktivitet/ny?fnr=${session("user").as[String]}")
-        .body(ElFileBody("domain/aktivitet.json"))
+        .body(ElFileBody("domain/stor-aktivitet.json"))
         .check(regex(".*").saveAs("responseJson"))
         .check(regex("\"id\":\"(.*?)\"").saveAs("aktivitet_id"))
     )
@@ -150,7 +156,7 @@ class AktivitetSimulation extends Simulation {
 
   private val dialogScenario = scenario("Veileder oppretter og endrer dialog")
     .feed(veiledere)
-    .feed(brukere)
+    .feed(brukere_for_sok)
     .exec(login)
     .exec(
       Helpers.httpPost("ny dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}")
@@ -166,7 +172,7 @@ class AktivitetSimulation extends Simulation {
 
   private val innstillingerScenario = scenario("Veileder henter historikk og setter til manuell / under oppfoelging")
     .feed(veiledere)
-    .feed(brukere)
+    .feed(brukere_for_sok)
     .exec(login)
     .exec(Helpers.httpGetSuccess("henter innstillingerhistorikk", session => s"/veilarbsituasjon/api/situasjon/innstillingsHistorikk?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("henter reservert-status", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}")
@@ -203,14 +209,12 @@ class AktivitetSimulation extends Simulation {
       .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id="+initialDateAktivitetfeed+"&page_size=100"))
       .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => "/veilarbaktivitet/api/feed/aktiviteter?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
 
-    private val eksternBrukerScenario = scenario ("Aktivitetfeed")
-
 
   setUp(
     personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-//    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-//    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-//    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
+    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
     situasjonsFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
     dialogFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
     aktivitetFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))

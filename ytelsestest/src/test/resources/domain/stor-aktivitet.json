@@ -10,5 +10,6 @@
   "kanal":"${kanal}",
   "forberedelser":"Test",
   "referat":"Test",
-  "erReferatPublisert":true
+  "erReferatPublisert":true,
+  "jobbStatus":"${jobbstatus}"
 }
