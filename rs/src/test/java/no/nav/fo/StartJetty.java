@@ -22,7 +22,7 @@ public class StartJetty {
                 .addDatasource(buildDataSourceFor(System.getProperty("database")), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .port(PORT)
                 .sslPort(SSL_PORT)
-        , new ISSOSecurityConfig(CONTEXT_NAME,"t6")).buildJetty();
+        , new ISSOSecurityConfig(CONTEXT_NAME)).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
 

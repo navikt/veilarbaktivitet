@@ -18,7 +18,7 @@ public class StartJetty {
                 .loadProperties("/test.properties")
                 .addDatasource(buildDataSourceFor(System.getProperty("database")), AKTIVITET_DATA_SOURCE_JDNI_NAME)
                 .port(PORT)
-                .sslPort(SSL_PORT),  new DevelopmentSecurity.SamlSecurityConfig("veilarbaktivitet", "t6")
+                .sslPort(SSL_PORT),  new DevelopmentSecurity.SamlSecurityConfig("veilarbaktivitet")
             ).buildJetty();
         jetty.startAnd(first(waitFor(gotKeypress())).then(jetty.stop));
     }
