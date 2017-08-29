@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
 import lombok.val;
+
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
@@ -19,6 +20,9 @@ import org.slf4j.Logger;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 
@@ -32,8 +36,25 @@ public class ArenaAktivitetConsumer {
 
     private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
+    
+    // TODO: Bytte ut denne med fasit-konfigurert dato med default, f.eks. noe a la
+    // @Value("${arena.aktivitet.datofilter ?: 2017-12-06}")
+    private String konfigurertDato = "2017-12-06";
+    
+    Date arenaAktivitetFilterDato = parseDato(konfigurertDato);
+    
+    private Date parseDato(String konfigurertDato) {
+        try {
+            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+        } catch (ParseException e) {
+            LOG.warn("Kunne ikke parse dato {} med datoformat {}", konfigurertDato, DATO_FORMAT);
+            return null;
+        }
+    }
+
     @Inject
-    private TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
     public List<ArenaAktivitetDTO> hentArenaAktivieter(String personident) {
 
@@ -55,13 +76,17 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result;
+            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()) ).collect(toList());
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             LOG.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
         }
+    }
+
+    private boolean etterFilterDato(Date tilDato) {
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
     private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
