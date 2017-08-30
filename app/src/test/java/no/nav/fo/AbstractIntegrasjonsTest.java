@@ -2,9 +2,10 @@ package no.nav.fo;
 
 import lombok.SneakyThrows;
 import no.nav.dialogarena.config.DevelopmentSecurity;
-import no.nav.dialogarena.config.fasit.FasitUtils;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -28,24 +29,21 @@ public abstract class AbstractIntegrasjonsTest {
 
     @SneakyThrows
     public static void setupContext(Class<?>... classes) {
-        DevelopmentSecurity.setupIntegrationTestSecurity(FasitUtils.getServiceUser("srvveilarbaktivitet", APPLICATION_NAME, "t6"));
-        System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/test.properties"));
-        System.getProperties().load(AbstractIntegrasjonsTest.class.getResourceAsStream("/integrasjonstest.properties"));
-        DevelopmentSecurity.configureLdap(FasitUtils.getLdapConfig("ldap", "veilarbaktivitet", "t6"));
+        DevelopmentSecurity.setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig(APPLICATION_NAME));
 
         annotationConfigApplicationContext = new AnnotationConfigApplicationContext(classes);
         annotationConfigApplicationContext.start();
         platformTransactionManager = getBean(PlatformTransactionManager.class);
     }
 
+    private static final SimpleNamingContextBuilder SIMPLE_NAMING_CONTEXT_BUILDER = new SimpleNamingContextBuilder();
+
     @Component
     public static class JndiBean {
 
-        private final SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
-
         public JndiBean() throws Exception {
-            builder.bind(AKTIVITET_DATA_SOURCE_JDNI_NAME, DatabaseTestContext.buildDataSource());
-            builder.activate();
+            SIMPLE_NAMING_CONTEXT_BUILDER.bind(AKTIVITET_DATA_SOURCE_JDNI_NAME, DatabaseTestContext.buildDataSource());
+            SIMPLE_NAMING_CONTEXT_BUILDER.activate();
         }
 
     }
@@ -53,7 +51,7 @@ public abstract class AbstractIntegrasjonsTest {
     @BeforeEach
     @Before
     public final void fiksJndiOgLdapKonflikt() throws NamingException {
-        getBean(JndiBean.class).builder.deactivate();
+        SIMPLE_NAMING_CONTEXT_BUILDER.deactivate();
     }
 
     @BeforeEach
@@ -71,7 +69,9 @@ public abstract class AbstractIntegrasjonsTest {
     @AfterEach
     @After
     public void rollbackTransaksjon() {
-        platformTransactionManager.rollback(transactionStatus);
+        if (platformTransactionManager != null && transactionStatus != null) {
+            platformTransactionManager.rollback(transactionStatus);
+        }
     }
 
     @Component
@@ -80,6 +80,17 @@ public abstract class AbstractIntegrasjonsTest {
 
     protected static <T> T getBean(Class<T> requiredType) {
         return annotationConfigApplicationContext.getBean(requiredType);
+    }
+
+    @AfterAll
+    @AfterClass
+    public static void close() {
+        if (annotationConfigApplicationContext != null) {
+            annotationConfigApplicationContext.stop();
+            annotationConfigApplicationContext.close();
+            annotationConfigApplicationContext.destroy();
+            annotationConfigApplicationContext = null;
+        }
     }
 
 
