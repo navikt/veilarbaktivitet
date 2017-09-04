@@ -18,11 +18,10 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAkt
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
-
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -33,6 +32,7 @@ import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.mergeDateTime;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Component
 public class ArenaAktivitetConsumer {
 
     static final String DATOFILTER_PROPERTY_NAME = "arena.aktivitet.datofilter";
@@ -40,20 +40,16 @@ public class ArenaAktivitetConsumer {
     private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
-    
+
     @Inject
     TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    @Value("${" + DATOFILTER_PROPERTY_NAME + "}")
-    private String konfigurertDato;
-    
-    Date arenaAktivitetFilterDato; 
-    
-    @PostConstruct
-    public void parseFilterDato() {
-        arenaAktivitetFilterDato = parseDato(konfigurertDato);
+    Date arenaAktivitetFilterDato;
+
+    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String test) {
+        this.arenaAktivitetFilterDato = parseDato(test);
     }
-    
+
     static Date parseDato(String konfigurertDato) {
         try {
             return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);

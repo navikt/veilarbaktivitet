@@ -23,12 +23,14 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Periode;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerResponse;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 public class ArenaAktivitetConsumerTest {
 
     private ApplicationContext setupContext(TiltakOgAktivitetV1 arena) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
         context.getBeanFactory().registerSingleton("TiltakOgAktivitetV1", arena);
+        context.register(PropertySourcesPlaceholderConfigurer.class);
         context.register(ArenaAktivitetConsumer.class);
         
         context.refresh();
@@ -55,7 +57,7 @@ public class ArenaAktivitetConsumerTest {
     public void skalFiltrereArenaAktiviteterBasertPaaDato() throws Exception {
 
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
-        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(null);
         consumer.tiltakOgAktivitetV1 = arena;
         consumer.arenaAktivitetFilterDato = new Date();
 
@@ -78,7 +80,7 @@ public class ArenaAktivitetConsumerTest {
     public void skalIkkeFiltrereArenaAktiviteterHvisFilterDatoErNull() throws Exception {
 
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
-        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(null);
         consumer.tiltakOgAktivitetV1 = arena;
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = 
