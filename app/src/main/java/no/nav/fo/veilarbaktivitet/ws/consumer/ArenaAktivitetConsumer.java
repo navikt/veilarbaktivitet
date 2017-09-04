@@ -17,11 +17,12 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
@@ -34,27 +35,33 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class ArenaAktivitetConsumer {
 
+    static final String DATOFILTER_PROPERTY_NAME = "arena.aktivitet.datofilter";
+
     private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
     
-    // TODO: Bytte ut denne med fasit-konfigurert dato med default, f.eks. noe a la
-    // @Value("${arena.aktivitet.datofilter ?: 2017-12-06}")
-    private String konfigurertDato = "2017-12-06";
+    @Inject
+    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+
+    @Value("${" + DATOFILTER_PROPERTY_NAME + "}")
+    private String konfigurertDato;
     
-    Date arenaAktivitetFilterDato = parseDato(konfigurertDato);
+    Date arenaAktivitetFilterDato; 
     
-    private Date parseDato(String konfigurertDato) {
+    @PostConstruct
+    public void parseFilterDato() {
+        arenaAktivitetFilterDato = parseDato(konfigurertDato);
+    }
+    
+    static Date parseDato(String konfigurertDato) {
         try {
             return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
-        } catch (ParseException e) {
-            LOG.warn("Kunne ikke parse dato {} med datoformat {}", konfigurertDato, DATO_FORMAT);
+        } catch (Exception e) {
+            LOG.warn("Kunne ikke parse dato {} med datoformat {}.", konfigurertDato, DATO_FORMAT);
             return null;
         }
     }
-
-    @Inject
-    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
     public List<ArenaAktivitetDTO> hentArenaAktivieter(String personident) {
 

@@ -1,6 +1,9 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
-import static org.hamcrest.Matchers.is;
+import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.DATOFILTER_PROPERTY_NAME;
+import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.parseDato;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -10,6 +13,8 @@ import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import no.nav.fo.veilarbaktivitet.util.DateUtils;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
@@ -21,25 +26,66 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAkt
 
 public class ArenaAktivitetConsumerTest {
 
+    private ApplicationContext setupContext(TiltakOgAktivitetV1 arena) {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+        context.getBeanFactory().registerSingleton("TiltakOgAktivitetV1", arena);
+        context.register(ArenaAktivitetConsumer.class);
+        
+        context.refresh();
+        context.start();
+        return context;
+    }
+
+
+    @Test
+    public void springInitialiseringSkalLeseVariabelOgParseDato() {
+        System.clearProperty(DATOFILTER_PROPERTY_NAME);
+        ApplicationContext context = setupContext(mock(TiltakOgAktivitetV1.class));
+        ArenaAktivitetConsumer consumer = context.getBean(ArenaAktivitetConsumer.class);
+        assertThat(consumer.arenaAktivitetFilterDato, nullValue());
+
+        System.setProperty(DATOFILTER_PROPERTY_NAME, "2017-08-30");
+        context = setupContext(mock(TiltakOgAktivitetV1.class));
+        consumer = context.getBean(ArenaAktivitetConsumer.class);
+        assertThat(consumer.arenaAktivitetFilterDato, equalTo(parseDato("2017-08-30")));
+
+    }
+    
     @Test
     public void skalFiltrereArenaAktiviteterBasertPaaDato() throws Exception {
-        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
-        TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
-        consumer.tiltakOgAktivitetV1 = arena;
 
-        Date arenaAktivitetFilterDato = consumer.arenaAktivitetFilterDato;       
+        TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
+        consumer.tiltakOgAktivitetV1 = arena;
+        consumer.arenaAktivitetFilterDato = new Date();
+
+        Date arenaAktivitetFilterDato = consumer.arenaAktivitetFilterDato;
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = 
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() + 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
-        assertThat(consumer.hentArenaAktivieter("123").size(), is(1));
+        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(1));
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet = 
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() - 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedGammelAktivitet);
-        assertThat(consumer.hentArenaAktivieter("123").size(), is(0));
+        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(0));
+    }
+
+    @Test
+    public void skalIkkeFiltrereArenaAktiviteterHvisFilterDatoErNull() throws Exception {
+
+        TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
+        consumer.tiltakOgAktivitetV1 = arena;
+
+        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = 
+                responsMedTiltak(new Date());
+        when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
+                .thenReturn(responsMedNyAktivitet);
+        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(1));
     }
 
     private HentTiltakOgAktiviteterForBrukerResponse responsMedTiltak(Date date) {
