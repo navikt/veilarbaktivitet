@@ -54,7 +54,7 @@ public class ArenaAktivitetConsumer {
         try {
             return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
         } catch (Exception e) {
-            LOG.warn("Kunne ikke parse dato {} med datoformat {}.", konfigurertDato, DATO_FORMAT);
+            LOG.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
         }
     }
