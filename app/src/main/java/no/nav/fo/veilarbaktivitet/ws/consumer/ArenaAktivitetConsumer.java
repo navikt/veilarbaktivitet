@@ -46,8 +46,8 @@ public class ArenaAktivitetConsumer {
 
     Date arenaAktivitetFilterDato;
 
-    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String test) {
-        this.arenaAktivitetFilterDato = parseDato(test);
+    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String datoStreng) {
+        this.arenaAktivitetFilterDato = parseDato(datoStreng);
     }
 
     static Date parseDato(String konfigurertDato) {
