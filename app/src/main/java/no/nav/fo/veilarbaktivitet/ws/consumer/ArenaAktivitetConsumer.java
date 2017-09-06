@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
 import lombok.val;
+
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
@@ -16,9 +17,12 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 
@@ -28,12 +32,32 @@ import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.mergeDateTime;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Component
 public class ArenaAktivitetConsumer {
+
+    static final String DATOFILTER_PROPERTY_NAME = "arena.aktivitet.datofilter";
 
     private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
+
     @Inject
-    private TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+
+    Date arenaAktivitetFilterDato;
+
+    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String datoStreng) {
+        this.arenaAktivitetFilterDato = parseDato(datoStreng);
+    }
+
+    static Date parseDato(String konfigurertDato) {
+        try {
+            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+        } catch (Exception e) {
+            LOG.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            return null;
+        }
+    }
 
     public List<ArenaAktivitetDTO> hentArenaAktivieter(String personident) {
 
@@ -55,13 +79,17 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result;
+            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()) ).collect(toList());
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             LOG.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
         }
+    }
+
+    private boolean etterFilterDato(Date tilDato) {
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
     private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
