@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
+
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -245,17 +245,15 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(AvsluttetOppfolgingFeedDTO element) {
-        Date sluttdato = element.getSluttdato();
-        hentAktiviteterForAktorId(element.getAktoerid())
+    public void settAktiviteterTilHistoriske(String aktoerId, Date sluttDato) {
+        hentAktiviteterForAktorId(aktoerId)
                 .stream()
-                .filter(a -> skalBliHistorisk(a, element))
-                .map(a -> a.withHistoriskDato(sluttdato))
+                .filter(a -> skalBliHistorisk(a, sluttDato))
+                .map(a -> a.withHistoriskDato(sluttDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
-    private boolean skalBliHistorisk(AktivitetData aktivitetData, AvsluttetOppfolgingFeedDTO element) {
-        Date sluttdato = element.getSluttdato();
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
         return (aktivitetData.getHistoriskDato() == null || aktivitetData.getHistoriskDato().before(sluttdato))
                 && aktivitetData.getOpprettetDato().before(sluttdato);
     }

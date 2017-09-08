@@ -28,6 +28,6 @@ public class AvsluttetOppfolgingFeedProvider {
     }
 
     public void lesAvsluttetOppfolgingFeed(String lastEntryId, List<AvsluttetOppfolgingFeedDTO> elements) {
-        elements.forEach(element -> aktivitetService.settAktiviteterTilHistoriske(element));
+        elements.forEach(element -> aktivitetService.settAktiviteterTilHistoriske(element.getAktoerid(), element.getSluttdato()));
     }
 }
