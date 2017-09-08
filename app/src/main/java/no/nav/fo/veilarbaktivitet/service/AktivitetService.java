@@ -36,7 +36,6 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitet(id);
     }
 
-
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
