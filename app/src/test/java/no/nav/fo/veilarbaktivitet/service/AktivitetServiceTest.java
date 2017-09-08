@@ -201,6 +201,41 @@ public class AktivitetServiceTest {
     }
 
     @Test
+    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
+        val aktivitet = lagEnNyAktivitet().toBuilder().historiskDato(new Date()).build();
+        mockHentAktivitet(aktivitet);
+
+        try {
+            aktivitetService.oppdaterStatus(aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            aktivitetService.oppdaterEtikett(aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        verify(aktivitetDAO, never()).insertAktivitet(any());
+
+    }
+    
+    @Test
     public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet());
         aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());

@@ -24,7 +24,7 @@ public class AktivitetDataTestBuilder {
                 .opprettetDato(nyDato())
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .historiskDato(nyDato());
+                .historiskDato(null);
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {

@@ -240,7 +240,7 @@ public class AktivitetService {
 
     private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
-        return AVBRUTT.equals(status) || FULLFORT.equals(status);
+        return AVBRUTT.equals(status) || FULLFORT.equals(status) || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
