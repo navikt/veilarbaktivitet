@@ -17,6 +17,7 @@ import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.BLE_HISTORISK;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
@@ -248,7 +249,7 @@ public class AktivitetService {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
-                .map(a -> a.withHistoriskDato(sluttDato))
+                .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 

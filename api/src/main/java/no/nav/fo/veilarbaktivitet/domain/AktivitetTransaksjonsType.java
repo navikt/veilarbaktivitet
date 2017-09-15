@@ -11,4 +11,5 @@ public enum AktivitetTransaksjonsType {
     REFERAT_OPPRETTET,
     REFERAT_ENDRET,
     REFERAT_PUBLISERT,
+    BLE_HISTORISK
 }
