@@ -254,8 +254,7 @@ public class AktivitetService {
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
-        return (aktivitetData.getHistoriskDato() == null || aktivitetData.getHistoriskDato().before(sluttdato))
-                && aktivitetData.getOpprettetDato().before(sluttdato);
+        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
 }
