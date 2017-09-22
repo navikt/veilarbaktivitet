@@ -7,6 +7,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -221,10 +222,10 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void settAktiviteterTilHistoriske_gammelHistoriskDato_oppdaterAktivitet() {
+    public void settAktiviteterTilHistoriske_harHistoriskDato_oppdaterIkkeAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
         aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());
-        verify(aktivitetDAO).insertAktivitet(any());
+        verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
