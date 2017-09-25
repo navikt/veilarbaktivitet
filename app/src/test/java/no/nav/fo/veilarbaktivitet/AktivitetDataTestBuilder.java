@@ -77,6 +77,16 @@ public class AktivitetDataTestBuilder {
                 .build();
     }
 
+    public static MoteData nyMote() {
+        return MoteData.builder()
+                .adresse("123")
+                .kanal(KanalDTO.INTERNETT)
+                .forberedelser("blee")
+                .referat("temp")
+                .referatPublisert(false)
+                .build();
+    }
+
     public static Date nyDato() {
         return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
     }
