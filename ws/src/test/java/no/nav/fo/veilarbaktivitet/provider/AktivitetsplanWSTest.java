@@ -194,7 +194,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
             val publishedMoteReferat = "published";
             aktivitetService.oppdaterReferat(aktivitet.withMoteData(moteData.withReferat("this is fun")),
-                    AktivitetTransaksjonsType.REFERAT_ENDRET, "Superman");
+                    AktivitetTransaksjonsType.REFERAT_OPPRETTET, "Superman");
 
             aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
                             .withMoteData(moteData.withReferat("test2")),

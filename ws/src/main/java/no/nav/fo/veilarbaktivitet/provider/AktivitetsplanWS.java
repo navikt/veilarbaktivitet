@@ -95,8 +95,9 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
     }
 
     private boolean erReferatetEndretForDetErPublisert(AktivitetData aktivitetData) {
-        return !aktivitetData.getMoteData().isReferatPublisert() &&
-                aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_ENDRET;
+        val referatEndret = aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_ENDRET ||
+                aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_OPPRETTET;
+        return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
     @Override
