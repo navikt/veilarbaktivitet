@@ -6,7 +6,7 @@ import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import no.nav.sbl.gatling.login.OpenIdConnectLogin
 import org.slf4j.LoggerFactory
-import utils.{FeedHelpers, Helpers}
+import utils.{Helpers}
 import java.util.concurrent.TimeUnit
 
 import io.gatling.core.session.Expression
@@ -15,26 +15,24 @@ import io.gatling.core.feeder.RecordSeqFeederBuilder
 import scala.concurrent.duration._
 import scala.util.Random
 
-class VeilederOgFeedSimulation extends Simulation {
+class VeilederSimulation extends Simulation {
 
-  private val logger = LoggerFactory.getLogger(VeilederOgFeedSimulation.this.getClass)
+  private val logger = LoggerFactory.getLogger(VeilederSimulation.this.getClass)
 
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecEnhet = Integer.getInteger("USERS_PER_SEC",1).toInt
-  private val duration = Integer.getInteger("DURATION", 7100).toInt
-  private val baseUrl = System.getProperty("BASEURL", "https://app-t6.adeo.no")
+  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 2).toInt
+  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 2).toInt
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 2).toInt
+  private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
+
+  private val duration = Integer.getInteger("DURATION", 7500).toInt
+  private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  val password = System.getProperty("VEILEDER_PASSWD", "odigM001") //Teflon3970
+  val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
   val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
-  private val feedUsername = System.getProperty("FEED_USERNAME", "srvveilarbportefolje")
-  private val feedPassword = System.getProperty("FEED_PASSWORD", "APUkG8YqkzTJ9eJ")
   private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
-  private val initialDateSituasjonsfeed =  System.getProperty("INITIAL_DATE_SITUASJONSFEED", "2017-08-21T17:24:23.882Z")
-  private val initialDateDialogfeed =  System.getProperty("INITIAL_DATE_DIALOGFEED", "2017-08-21T17:24:23.882Z")
-  private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T17:24:23.882Z")
-  private val feedPageSize =  System.getProperty("FEED_PAGE_SIZE", "100")
 
 
   ///////////////////////////
@@ -76,12 +74,6 @@ class VeilederOgFeedSimulation extends Simulation {
   private def login() = {
     exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
       .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(session("username").as[String], password))))
-      .pause("50", "600", TimeUnit.MILLISECONDS)
-  }
-
-  private def loginFeed() = {
-    exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(feedUsername, feedPassword))))
-      .exec(addCookie(Cookie("refresh_token", session => openIdConnectLogin.getRefreshToken(feedUsername, feedPassword))))
       .pause("50", "600", TimeUnit.MILLISECONDS)
   }
 
@@ -137,7 +129,7 @@ class VeilederOgFeedSimulation extends Simulation {
         .check(regex(".*").saveAs("responseJson"))
         .check(regex("\"id\":\"(.*?)\"").saveAs("aktivitet_id"))
     )
-    .doIf("${postFeilet.isUndefined()}") {
+    .doIf(session => !session("responseJson").as[String].contains("Exception")) {
       exec(
       Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
         .check(regex("\"beskrivelse\":\"${user}\""))
@@ -161,9 +153,10 @@ class VeilederOgFeedSimulation extends Simulation {
     .exec(
       Helpers.httpPost("ny dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}")
         .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Ytelsestest\"}")).asJSON
-        .check(regex("\"id\":\"(.*?)\"").saveAs("dialog_id"))
+        .check(regex("\"id\" : \"(.*?)\"").saveAs("dialog_id"))
+        .check(regex(".*").saveAs("dialogResponse"))
     )
-    .doIf("${postFeilet.isUndefined()}") {
+    .doIf(session => !session("dialogResponse").as[String].contains("Exception")) {
       exec(Helpers.httpPut("setter bruker maa svare til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/true?fnr=${session("user").as[String]}"))
         .exec(Helpers.httpPut("setter bruker maa svare til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/false?fnr=${session("user").as[String]}"))
         .exec(Helpers.httpPut("setter ferdig behandlet til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/ferdigbehandlet/false?fnr=${session("user").as[String]}"))
@@ -194,30 +187,11 @@ class VeilederOgFeedSimulation extends Simulation {
       }
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
 
-    private val situasjonsFeedScenario = scenario ("Situasjonsfeed")
-      .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+initialDateSituasjonsfeed+"&page_size=100"))
-      .exec(FeedHelpers.traverseFeed("traverserer portefoljefeed", session => s"/veilarbsituasjon/api/feed/situasjon?id=${session("nextPage").as[String]}&page_size="+feedPageSize))
-
-    private val dialogFeedScenario = scenario ("Dialogfeed")
-      .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter dialogfeed", "/veilarbdialog/api/feed/dialogaktor?id="+initialDateSituasjonsfeed+"&page_size=100"))
-      .exec(FeedHelpers.traverseFeed("traverserer dialogfeed", session => s"/veilarbdialog/api/feed/dialogaktor?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
-
-    private val aktivitetFeedScenario = scenario ("Aktivitetfeed")
-      .exec(loginFeed())
-      .exec(FeedHelpers.httpGetFeed("henter aktivitetfeed", "/veilarbaktivitet/api/feed/aktiviteter?id="+initialDateAktivitetfeed+"&page_size=100"))
-      .exec(FeedHelpers.traverseFeed("traverserer aktivitetfeed", session => "/veilarbaktivitet/api/feed/aktiviteter?id="+URLEncoder.encode(s"${session("nextPage").as[String]}", "UTF-8")+"&page_size="+feedPageSize))
-
-
   setUp(
-    personflateScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    dialogScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    innstillingerScenario.inject(constantUsersPerSec(usersPerSecEnhet) during (duration seconds)),
-    situasjonsFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
-    dialogFeedScenario.inject(constantUsersPerSec(1) during (1 seconds)),
-    aktivitetFeedScenario.inject(constantUsersPerSec(1) during (1 seconds))
+    personflateScenario.inject(rampUsers(50) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
+    regAktivitetScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    dialogScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
+    innstillingerScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 

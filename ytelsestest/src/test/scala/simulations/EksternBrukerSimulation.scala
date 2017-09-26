@@ -25,7 +25,7 @@ class EksternBrukerSimulation extends Simulation {
   private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC",1).toInt
   private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",1).toInt
   private val duration = Integer.getInteger("DURATION", 500).toInt
-  private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t6.nav.no")
+  private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t3.nav.no")
   private val standard_headers = Map( """Accept""" -> """text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
 
   ///////////////////////////
