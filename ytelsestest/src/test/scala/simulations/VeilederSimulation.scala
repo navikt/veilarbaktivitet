@@ -22,9 +22,9 @@ class VeilederSimulation extends Simulation {
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 2).toInt
-  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 2).toInt
-  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 2).toInt
+  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 10).toInt
+  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 10).toInt
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 10).toInt
   private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
 
   private val duration = Integer.getInteger("DURATION", 7500).toInt
@@ -152,7 +152,7 @@ class VeilederSimulation extends Simulation {
     .exec(login)
     .exec(
       Helpers.httpPost("ny dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}")
-        .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Ytelsestest\"}")).asJSON
+        .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Generert-data-ytelsestest\"}")).asJSON
         .check(regex("\"id\" : \"(.*?)\"").saveAs("dialog_id"))
         .check(regex(".*").saveAs("dialogResponse"))
     )
@@ -188,10 +188,10 @@ class VeilederSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
 
   setUp(
-    personflateScenario.inject(rampUsers(50) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
-    regAktivitetScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
-    dialogScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
-    innstillingerScenario.inject(rampUsers(50) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
+    personflateScenario.inject(rampUsers(40) over (200 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
+    regAktivitetScenario.inject(rampUsers(40) over (200 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    dialogScenario.inject(rampUsers(40) over (200 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
+    innstillingerScenario.inject(rampUsers(40) over (200 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 

@@ -23,8 +23,8 @@ class EksternBrukerSimulation extends Simulation {
   //Variabler settes i Jenkins
   ///////////////////////////
   private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC",1).toInt
-  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",1).toInt
-  private val duration = Integer.getInteger("DURATION", 500).toInt
+  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",2).toInt
+  private val duration = Integer.getInteger("DURATION", 3000).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t3.nav.no")
   private val standard_headers = Map( """Accept""" -> """text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
 
@@ -150,7 +150,7 @@ class EksternBrukerSimulation extends Simulation {
     }
     .exec(
       Helpers.httpPost("oppretter ny dialog", session => s"/veilarbdialogproxy/api/dialog")
-        .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Ytelsestest\"}")).asJSON
+        .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Generert-data-ytelsestest\"}")).asJSON
     )
 
   setUp(
