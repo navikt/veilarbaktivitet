@@ -149,8 +149,9 @@
                             <goal>execute</goal>
                         </goals>
                         <configuration>
-                            <simulationClass>simulations.EksternBrukerSimulation</simulationClass>
-                            <simulationClass>simulations.VeilederOgFeedSimulation</simulationClass>
+                            <!--<simulationClass>simulations.EksternBrukerSimulation</simulationClass>-->
+                            <!--<simulationClass>simulations.FeedSimulation</simulationClass>-->
+                            <simulationClass>simulations.VeilederSimulation</simulationClass>
                         </configuration>
                     </execution>
                 </executions>
