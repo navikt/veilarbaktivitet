@@ -16,6 +16,8 @@ import java.util.List;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
@@ -239,8 +241,8 @@ public class AktivitetService {
     }
 
     private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
-        return aktivitetData.getStatus() == AktivitetStatus.AVBRUTT ||
-                aktivitetData.getStatus() == AktivitetStatus.FULLFORT;
+        AktivitetStatus status = aktivitetData.getStatus();
+        return AVBRUTT.equals(status) || FULLFORT.equals(status);
     }
 
     @Transactional

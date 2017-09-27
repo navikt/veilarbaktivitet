@@ -66,7 +66,7 @@ public class AktivitetDAO {
     }
 
     @Transactional
-    void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
+    public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 

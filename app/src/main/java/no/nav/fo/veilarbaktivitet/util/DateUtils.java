@@ -42,6 +42,10 @@ public class DateUtils {
         return Date.from(instant);
     }
 
+    public static String ISO8601FromDate(Date date) {
+        return ISO8601FromDate(date, ZoneId.systemDefault());
+    }
+
     public static String ISO8601FromDate(Date date, ZoneId zoneId) {
         return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
     }
