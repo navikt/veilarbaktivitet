@@ -130,18 +130,19 @@ class EksternBrukerSimulation extends Simulation {
     .exec(
       Helpers.httpPost("registrer aktivitet", "/veilarbaktivitetproxy/api/aktivitet/ny")
         .body(ElFileBody("domain/liten-aktivitet.json"))
-        .check(regex(".*").saveAs("responseJson"))
-        .check(regex("\"id\":\"(.*?)\"").saveAs("aktivitet_id"))
+        .check(jsonPath("$").saveAs("responseJson"))
+        .check(regex("\"id\" : \"(.*?)\"").saveAs("aktivitet_id"))
     )
     .doIf(session => session("postFeilet").asOption[String].isEmpty) {
       exec(Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}")
-          .check(regex("\"beskrivelse\":\"${username}\""))
+          .check(regex("\"beskrivelse\" : \"${username}\""))
       )
       .exec(Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}")
           .body(StringBody("""${responseJson}""")).asJSON
+          .check(jsonPath("$").saveAs("responseJson2"))
       )
       .exec(Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}/status")
-          .body(StringBody("""${responseJson}""")).asJSON
+          .body(StringBody("""${responseJson2}""")).asJSON
       )
       .exec(Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner"))
       .doIfEquals("${underOppfolging}", "false") {
