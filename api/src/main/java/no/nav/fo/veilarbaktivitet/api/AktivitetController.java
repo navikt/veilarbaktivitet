@@ -1,9 +1,6 @@
 package no.nav.fo.veilarbaktivitet.api;
 
-import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
-import no.nav.fo.veilarbaktivitet.domain.KanalDTO;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
@@ -16,6 +13,7 @@ import java.util.stream.Collectors;
 @Path("/aktivitet")
 @Produces("application/json")
 public interface AktivitetController {
+    String ARENA_PREFIX = "ARENA";
 
     @GET
     AktivitetsplanDTO hentAktivitetsplan();
@@ -34,7 +32,7 @@ public interface AktivitetController {
 
     @GET
     @Path("/{id}")
-    AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
+    SuperAktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
 
     @GET
     @Path("/etiketter")

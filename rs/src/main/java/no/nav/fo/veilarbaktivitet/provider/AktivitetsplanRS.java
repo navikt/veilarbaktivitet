@@ -3,8 +3,7 @@ package no.nav.fo.veilarbaktivitet.provider;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
@@ -51,7 +50,13 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Override
-    public AktivitetDTO hentAktivitet(String aktivitetId) {
+    public SuperAktivitetDTO hentAktivitet(String aktivitetId) {
+        if (aktivitetId.startsWith(ARENA_PREFIX)) {
+            return hentArenaAktiviteter().stream()
+                    .filter((aktivitet) -> aktivitet.getId().equals(aktivitetId))
+                    .findFirst()
+                    .orElseThrow(RuntimeException::new);
+        }
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
@@ -117,7 +122,7 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Path("{aktivitetId}/referat")
-    public ReferatRessurs referatRessurs(@PathParam("aktivitetId") long aktivitetId){
+    public ReferatRessurs referatRessurs(@PathParam("aktivitetId") long aktivitetId) {
         return new ReferatRessurs(aktivitetId, appService);
     }
 
