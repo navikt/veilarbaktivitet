@@ -91,7 +91,7 @@ public class ArenaAktivitetConsumer {
                 "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
 
         return new ArenaAktivitetDTO()
-                .setId(tiltaksaktivitet.getAktivitetId())
+                .setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus().getValue()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setTittel(titttel)
