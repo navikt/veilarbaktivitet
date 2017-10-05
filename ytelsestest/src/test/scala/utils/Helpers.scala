@@ -28,8 +28,8 @@ object Helpers {
     def httpPost(navn: String, uri: Expression[String]): HttpRequestBuilder = {
         http(navn)
             .post(uri)
-            .check(regex("Exception|INGEN_TILGANG").notExists.saveAs("postFeilet"))
-            .check(status.is(200))
+            .check(regex("INGEN_TILGANG").notExists.saveAs("postFeilet"))
+            .check(status.is(200).saveAs("responseCode"))
             .check(regex(".*").saveAs("responseJson"))
     }
 
@@ -56,4 +56,9 @@ object Helpers {
             session
         })
     }
+
+//  .exec(session => {
+//      println(session("json").as[String])
+//      session
+//  })
 }

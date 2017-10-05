@@ -22,9 +22,9 @@ class EksternBrukerSimulation extends Simulation {
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC",1).toInt
-  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",2).toInt
-  private val duration = Integer.getInteger("DURATION", 3000).toInt
+  private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC",2).toInt
+  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",3).toInt
+  private val duration = Integer.getInteger("DURATION", 300).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t3.nav.no")
   private val standard_headers = Map( """Accept""" -> """text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
 
@@ -133,7 +133,7 @@ class EksternBrukerSimulation extends Simulation {
         .check(jsonPath("$").saveAs("responseJson"))
         .check(regex("\"id\" : \"(.*?)\"").saveAs("aktivitet_id"))
     )
-    .doIf(session => session("postFeilet").asOption[String].isEmpty) {
+    .doIfEquals("${responseCode}", 200) {
       exec(Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}")
           .check(regex("\"beskrivelse\" : \"${username}\""))
       )
