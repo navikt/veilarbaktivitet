@@ -24,7 +24,7 @@ class VeilederSimulation extends Simulation {
   ///////////////////////////
   private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 10).toInt
   private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 10).toInt
-  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 10).toInt
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 3).toInt
   private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
 
   private val duration = Integer.getInteger("DURATION", 100).toInt
@@ -131,25 +131,18 @@ class VeilederSimulation extends Simulation {
         .check(regex("\"id\" : \"(.*?)\"").saveAs("aktivitet_id"))
         .check(jsonPath("$").saveAs("responseJson"))
     )
-
-    .exec(session => session.set("json", session("responseJson").as[String])) //må mellomlagre denne verdien for å unngå at den korrumperes
-
     .pause("50", "600", TimeUnit.MILLISECONDS)
-    .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}")
-      .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
-    )
-    .pause("50", "600", TimeUnit.MILLISECONDS)
-
-    .pause("50", "600", TimeUnit.MILLISECONDS)
-    .doIf(session => !session("responseJson").as[String].contains("Exception")) {
+    .doIfEquals("${responseCode}", 200) {
        exec(
         Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
           .check(regex("\"beskrivelse\" : \"${user}\""))
         )
+        .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
-          .body(StringBody("""${json}""")).asJSON
+          .body(StringBody("""${responseJson}""")).asJSON
           .check(jsonPath("$").saveAs("responseJson2"))
         )
+        .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/status?fnr=${session("user").as[String]}")
              .body(StringBody("""${responseJson2}""")).asJSON
         )
@@ -157,6 +150,9 @@ class VeilederSimulation extends Simulation {
             Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}")
         )
     }
+    .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}")
+      .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
+    )
 
   private val dialogScenario = scenario("Veileder oppretter og endrer dialog")
     .feed(veiledere)
@@ -169,7 +165,7 @@ class VeilederSimulation extends Simulation {
         .check(regex("(.*)").saveAs("dialogResponse"))
     )
     .pause("50", "600", TimeUnit.MILLISECONDS)
-    .doIf(session => !session("dialogResponse").as[String].contains("Exception")) {
+    .doIfEquals("${responseCode}", 200) {
       exec(Helpers.httpPut("setter bruker maa svare til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/true?fnr=${session("user").as[String]}"))
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("setter bruker maa svare til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/false?fnr=${session("user").as[String]}"))
@@ -205,8 +201,8 @@ class VeilederSimulation extends Simulation {
   setUp(
     loginScenario.inject(constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (140 seconds)),
     personflateScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
-    regAktivitetScenario.inject(nothingFor(140 seconds),rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds))
-    //dialogScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
+    regAktivitetScenario.inject(rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    dialogScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
     innstillingerScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))

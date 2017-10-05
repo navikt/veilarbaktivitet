@@ -30,7 +30,6 @@ object Helpers {
             .post(uri)
             .check(regex("INGEN_TILGANG").notExists.saveAs("postFeilet"))
             .check(status.is(200).saveAs("responseCode"))
-            .check(regex(".*").saveAs("responseJson"))
     }
 
     def httpPut(navn: String, uri: Expression[String]): HttpRequestBuilder = {
