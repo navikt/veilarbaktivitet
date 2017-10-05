@@ -73,24 +73,26 @@ class AbacSimulation extends Simulation {
   //Scenarioer
   ///////////////////////////
 
-  private val loginScenario = scenario("Logger inn")
+  private val loginWarmUpScenario = scenario("Logger inn")
     .feed(veiledere)
     .exec(login)
 
-  private val oidcScenario = scenario("Tester Abac")
+  private val abacScenario = scenario("Tester Abac")
     .feed(veiledere)
     .feed(brukere_for_sok)
-    .exec(session => session.set("oidcToken", openIdConnectLogin.getIssoToken(session("username").as[String], password)))
+    .exec(session => {
+      val issoToken = openIdConnectLogin.getIssoToken(session("username").as[String], password)
+      session.set("oidcToken", issoToken.split("\\.")(1))
+    })
 
     .exec(
       Helpers.httpPost("Autoriserer", "https://wasapp-t3.adeo.no/asm-pdp/authorize")
         .body(ElFileBody("domain/abac-request.json"))
-        .check(regex(".*").saveAs("responseJson"))
     )
 
   setUp(
-    loginScenario.inject(constantUsersPerSec(10) during (140 seconds)),
-    oidcScenario.inject(nothingFor(140 seconds), constantUsersPerSec(100) during (140 seconds))
+    loginWarmUpScenario.inject(constantUsersPerSec(10) during (140 seconds)),
+    abacScenario.inject(nothingFor(140 seconds), constantUsersPerSec(200) during (140 seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 
