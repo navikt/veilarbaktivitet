@@ -24,10 +24,10 @@ class VeilederSimulation extends Simulation {
   ///////////////////////////
   private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 10).toInt
   private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 10).toInt
-  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 3).toInt
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 10).toInt
   private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
 
-  private val duration = Integer.getInteger("DURATION", 100).toInt
+  private val duration = Integer.getInteger("DURATION", 500).toInt
   //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
@@ -169,6 +169,7 @@ class VeilederSimulation extends Simulation {
       exec(Helpers.httpPut("setter bruker maa svare til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/true?fnr=${session("user").as[String]}"))
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("setter bruker maa svare til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/venter_pa_svar/false?fnr=${session("user").as[String]}"))
+        .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("setter ferdig behandlet til false", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/ferdigbehandlet/false?fnr=${session("user").as[String]}"))
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("setter ferdig behandlet til true", session => s"/veilarbdialog/api/dialog/${session("dialog_id").as[String]}/ferdigbehandlet/true?fnr=${session("user").as[String]}"))
@@ -201,7 +202,7 @@ class VeilederSimulation extends Simulation {
   setUp(
     loginScenario.inject(constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (140 seconds)),
     personflateScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
-    regAktivitetScenario.inject(rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    regAktivitetScenario.inject(nothingFor(140 seconds),rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
     dialogScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
     innstillingerScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
