@@ -24,7 +24,7 @@ public class AktivitetDataTestBuilder {
                 .opprettetDato(nyDato())
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .historiskDato(nyDato());
+                .historiskDato(null);
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {
@@ -74,6 +74,16 @@ public class AktivitetDataTestBuilder {
                 .behandlingSted("Legen")
                 .effekt("Bli frisk")
                 .behandlingOppfolging("Husk å ta pillene dine")
+                .build();
+    }
+
+    public static MoteData nyMote() {
+        return MoteData.builder()
+                .adresse("123")
+                .kanal(KanalDTO.INTERNETT)
+                .forberedelser("blee")
+                .referat("temp")
+                .referatPublisert(false)
                 .build();
     }
 

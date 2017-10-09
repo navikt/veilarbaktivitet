@@ -2,38 +2,56 @@ package no.nav.fo.veilarbaktivitet.ws.consumer;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
-import no.nav.fo.veilarbaktivitet.domain.arena.ArenaStatusDTO;
-import no.nav.fo.veilarbaktivitet.domain.arena.MoteplanDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.*;
 import no.nav.fo.veilarbaktivitet.util.DateUtils;
 import no.nav.fo.veilarbaktivitet.util.EnumUtils;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerUgyldigInput;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbaktivitet.api.AktivitetController.ARENA_PREFIX;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.mergeDateTime;
 import static org.slf4j.LoggerFactory.getLogger;
 
+@Component
 public class ArenaAktivitetConsumer {
+
+    static final String DATOFILTER_PROPERTY_NAME = "arena.aktivitet.datofilter";
 
     private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
+
     @Inject
-    private TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+
+    Date arenaAktivitetFilterDato;
+
+    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String datoStreng) {
+        this.arenaAktivitetFilterDato = parseDato(datoStreng);
+    }
+
+    static Date parseDato(String konfigurertDato) {
+        try {
+            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+        } catch (Exception e) {
+            LOG.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            return null;
+        }
+    }
 
     public List<ArenaAktivitetDTO> hentArenaAktivieter(String personident) {
 
@@ -55,7 +73,7 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result;
+            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()) ).collect(toList());
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
@@ -64,12 +82,16 @@ public class ArenaAktivitetConsumer {
         }
     }
 
+    private boolean etterFilterDato(Date tilDato) {
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
+    }
+
     private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
         String titttel = tiltaksaktivitet.getTiltaksnavn().startsWith("Arbeidsmarkedsopplæring") ?
                 "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
 
         return new ArenaAktivitetDTO()
-                .setId(tiltaksaktivitet.getAktivitetId())
+                .setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus().getValue()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setTittel(titttel)
@@ -101,7 +123,7 @@ public class ArenaAktivitetConsumer {
         AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
                 AktivitetStatus.AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
-                .setId(gruppeaktivitet.getAktivitetId())
+                .setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
                 .setStatus(status)
                 .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
                 .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
@@ -117,7 +139,7 @@ public class ArenaAktivitetConsumer {
         Date startDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
         return new ArenaAktivitetDTO()
-                .setId(utdanningsaktivitet.getAktivitetId())
+                .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
                 .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())
@@ -126,6 +148,10 @@ public class ArenaAktivitetConsumer {
                 .setTilDato(sluttDato)
                 .setOpprettetDato(startDato)
                 .setAvtalt(true);
+    }
+
+    private String prefixArenaId(String arenaId) {
+        return ARENA_PREFIX + arenaId;
     }
 
     private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {

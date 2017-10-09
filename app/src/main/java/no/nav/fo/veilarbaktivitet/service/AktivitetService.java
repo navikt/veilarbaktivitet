@@ -4,8 +4,7 @@ import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.util.MappingUtils;
-import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
+
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +17,7 @@ import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.BLE_HISTORISK;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
@@ -36,7 +36,6 @@ public class AktivitetService {
     public AktivitetData hentAktivitet(long id) {
         return aktivitetDAO.hentAktivitet(id);
     }
-
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
@@ -242,23 +241,20 @@ public class AktivitetService {
 
     private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
-        return AVBRUTT.equals(status) || FULLFORT.equals(status);
+        return AVBRUTT.equals(status) || FULLFORT.equals(status) || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(AvsluttetOppfolgingFeedDTO element) {
-        Date sluttdato = element.getSluttdato();
-        hentAktiviteterForAktorId(element.getAktoerid())
+    public void settAktiviteterTilHistoriske(String aktoerId, Date sluttDato) {
+        hentAktiviteterForAktorId(aktoerId)
                 .stream()
-                .filter(a -> skalBliHistorisk(a, element))
-                .map(a -> a.withHistoriskDato(sluttdato))
+                .filter(a -> skalBliHistorisk(a, sluttDato))
+                .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
-    private boolean skalBliHistorisk(AktivitetData aktivitetData, AvsluttetOppfolgingFeedDTO element) {
-        Date sluttdato = element.getSluttdato();
-        return (aktivitetData.getHistoriskDato() == null || aktivitetData.getHistoriskDato().before(sluttdato))
-                && aktivitetData.getOpprettetDato().before(sluttdato);
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
+        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
 }

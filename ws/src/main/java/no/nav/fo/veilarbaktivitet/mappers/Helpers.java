@@ -49,6 +49,11 @@ public class Helpers {
                 put(AktivitetTransaksjonsType.ETIKETT_ENDRET, ETIKETT_ENDRET);
                 put(AktivitetTransaksjonsType.OPPRETTET, OPPRETTET);
                 put(AktivitetTransaksjonsType.STATUS_ENDRET, STATUS_ENDRET);
+                put(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET, MOTE_TID_OG_STED_ENDRET);
+                put(AktivitetTransaksjonsType.REFERAT_OPPRETTET, REFERAT_OPPRETTET);
+                put(AktivitetTransaksjonsType.REFERAT_ENDRET, REFERAT_ENDRET);
+                put(AktivitetTransaksjonsType.REFERAT_PUBLISERT, REFERAT_PUBLISERT);
+                put(AktivitetTransaksjonsType.BLE_HISTORISK, BLE_HISTORISK);
             }};
 
     static final BidiMap<JobbStatus, JobbStatusTypeData> jobbStatusTypeMap =

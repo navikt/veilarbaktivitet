@@ -3,10 +3,11 @@ package no.nav.fo.veilarbaktivitet.db.dao;
 import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import org.junit.Test;
-import org.springframework.dao.DuplicateKeyException;
 
 import javax.inject.Inject;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -16,6 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class AktivitetDAOTest extends IntegrasjonsTest {
 
@@ -103,6 +105,23 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
         val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(aktivitet, equalTo(hentetAktivitet));
+    }
+
+    @Test
+    public void transaksjonsTypene_er_rett_satt_opp() {
+        val aktivitetBuilder = nyAktivitet()
+                .aktivitetType(EGENAKTIVITET)
+                .egenAktivitetData(nyEgenaktivitet());
+
+        Arrays.asList(AktivitetTransaksjonsType.values()).forEach(t -> {
+                    aktivitetBuilder.transaksjonsType(t);
+                    try {
+                        insertAktivitet(aktivitetBuilder.build());
+                    } catch (Exception e) {
+                        fail("TransaksjonsTypen er ikke lagt inn i databasen");
+                    }
+                }
+        );
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
