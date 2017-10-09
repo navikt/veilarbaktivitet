@@ -83,7 +83,7 @@ public abstract class AktivitetAppService {
     }
 
     protected String sjekkTilgangTilFnr(String ident) {
-        return pepClient.sjekkTilgangTilFnr(ident);
+        return pepClient.sjekkLeseTilgangTilFnr(ident);
     }
 
     protected void sjekkTilgangTilAktorId(String aktorId) {

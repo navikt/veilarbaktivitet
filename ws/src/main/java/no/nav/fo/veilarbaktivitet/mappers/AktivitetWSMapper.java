@@ -66,11 +66,13 @@ public class AktivitetWSMapper {
     }
 
     private static Mote mapTilMote(MoteData moteData) {
+        String referat = moteData.isReferatPublisert() ? moteData.getReferat() : null;
+
         Mote mote = new Mote();
         mote.setAdresse(moteData.getAdresse());
         mote.setForberedelser(moteData.getForberedelser());
         mote.setKanal(KanalDTO.getType(moteData.getKanal()));
-        mote.setReferat(moteData.getReferat());
+        mote.setReferat(referat);
         mote.setErReferatPublisert(moteData.isReferatPublisert());
         return mote;
     }

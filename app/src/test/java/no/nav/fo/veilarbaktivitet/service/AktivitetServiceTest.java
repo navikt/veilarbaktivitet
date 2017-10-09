@@ -7,7 +7,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
-import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -171,6 +171,20 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet().toBuilder().status(AktivitetStatus.AVBRUTT).build();
         mockHentAktivitet(aktivitet);
 
+        testAlleOppdateringsmetoder(aktivitet);
+
+    }
+
+    @Test
+    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
+        val aktivitet = lagEnNyAktivitet().toBuilder().historiskDato(new Date()).build();
+        mockHentAktivitet(aktivitet);
+
+        testAlleOppdateringsmetoder(aktivitet);
+
+    }
+
+    private void testAlleOppdateringsmetoder(final no.nav.fo.veilarbaktivitet.domain.AktivitetData aktivitet) {
         try {
             aktivitetService.oppdaterStatus(aktivitet, null);
             fail();
@@ -198,49 +212,40 @@ public class AktivitetServiceTest {
         }
 
         verify(aktivitetDAO, never()).insertAktivitet(any());
-
     }
-
+    
     @Test
     public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet());
-        aktivitetService.settAktiviteterTilHistoriske(lagAvsluttetOppfolging());
+        aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());
         verify(aktivitetDAO).insertAktivitet(any());
     }
 
     @Test
-    public void settAktiviteterTilHistoriske_gammelHistoriskDato_oppdaterAktivitet() {
+    public void settAktiviteterTilHistoriske_harHistoriskDato_oppdaterIkkeAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
-        aktivitetService.settAktiviteterTilHistoriske(lagAvsluttetOppfolging());
-        verify(aktivitetDAO).insertAktivitet(any());
+        aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());
+        verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
-        AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
-        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(avsluttetOppfolgingFeedDTO.sluttdato.getTime() + 1)));
-        aktivitetService.settAktiviteterTilHistoriske(avsluttetOppfolgingFeedDTO);
+        Date sluttdato = new Date();
+        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(sluttdato.getTime() + 1)));
+        aktivitetService.settAktiviteterTilHistoriske("aktorId", sluttdato);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
-        AvsluttetOppfolgingFeedDTO avsluttetOppfolgingFeedDTO = lagAvsluttetOppfolging();
-        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(avsluttetOppfolgingFeedDTO.getSluttdato()));
-        aktivitetService.settAktiviteterTilHistoriske(avsluttetOppfolgingFeedDTO);
+        Date sluttdato = new Date();
+        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(sluttdato));
+        aktivitetService.settAktiviteterTilHistoriske("aktorId", sluttdato);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     private void gitt_aktivitet(AktivitetData aktivitetData) {
         when(aktivitetDAO.hentAktiviteterForAktorId(anyString())).thenReturn(asList(aktivitetData));
-    }
-
-    private AvsluttetOppfolgingFeedDTO lagAvsluttetOppfolging() {
-        Date na = new Date();
-        return new AvsluttetOppfolgingFeedDTO()
-                .setAktoerid("aktorId")
-                .setOppdatert(na)
-                .setSluttdato(na);
     }
 
     public AktivitetData lagEnNyAktivitet() {

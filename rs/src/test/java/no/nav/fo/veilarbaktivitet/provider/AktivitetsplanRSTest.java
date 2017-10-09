@@ -11,9 +11,7 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.inject.Inject;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
@@ -207,7 +205,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo(aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString()).getId()));
+                equalTo(((AktivitetDTO)aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
@@ -232,7 +230,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {
-        val lagretAktivitet = aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
+        val lagretAktivitet = (AktivitetDTO)aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
         assertThat(lagretAktivitet.getLenke(), equalTo(nyLenke));
         assertThat(lagretAktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
         assertThat(lagretAktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
