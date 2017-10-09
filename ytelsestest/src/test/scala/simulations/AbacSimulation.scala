@@ -23,13 +23,12 @@ class AbacSimulation extends Simulation {
   //Variabler settes i Jenkins
   ///////////////////////////
   private val duration = Integer.getInteger("DURATION", 7500).toInt
-  //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
-  //private val baseUrl = System.getProperty("BASEURL", "https://wasapp-t3.adeo.no")
 
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  val password = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "!!ChangeMe!!")
+  val basicAuthPasswd = System.getProperty("BASIC_AUTH_PASSSWD", "!!ChangeMe!!")
 
 
   ///////////////////////////
@@ -65,7 +64,7 @@ class AbacSimulation extends Simulation {
     .disableWarmUp
     .silentResources
     .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
-    .basicAuth("srvveilarbportefolje","APUkG8YqkzTJ9eJ")
+    .basicAuth("srvveilarbportefolje",BASIC_AUTH_PASSSWD)
 
 
 

@@ -28,11 +28,10 @@ class VeilederSimulation extends Simulation {
   private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
 
   private val duration = Integer.getInteger("DURATION", 500).toInt
-  //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  val password = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "!!ChangeMe!!")
   private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
 
 
