@@ -18,7 +18,7 @@ object FeedHelpers {
     http(navn)
       .get(uri)
       .check(status.is(200))
-      .check(regex("\"nextPageId\":\"(.*?)\"").saveAs("nextPage"))
+      .check(regex("\"nextPageId\" : \"(.*?)\"").saveAs("nextPage"))
   }
 
   def traverseFeed(navn: String, uri: Expression[String]) = {
