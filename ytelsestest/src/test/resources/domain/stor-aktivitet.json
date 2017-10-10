@@ -1,0 +1,15 @@
+{"status":"${livslopsStatus}",
+  "fraDato":"2017-08-18T08:00:00.0Z",
+  "tittel":"Ytelsestest",
+  "tilDato":"2050-08-19T10:00:00.000Z",
+  "beskrivelse":"${user}",
+  "type":"${aktivitettype}",
+  "antallStillingerSokes": "1",
+  "klokkeslett":"0000",
+  "varighet":"0015",
+  "kanal":"${kanal}",
+  "forberedelser":"Test",
+  "referat":"Test",
+  "erReferatPublisert":true,
+  "jobbStatus":"${jobbstatus}"
+}
