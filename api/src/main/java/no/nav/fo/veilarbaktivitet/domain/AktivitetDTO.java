@@ -7,7 +7,7 @@ import java.util.Date;
 
 @Data
 @Accessors(chain = true)
-public class AktivitetDTO extends SuperAktivitetDTO {
+public class AktivitetDTO {
 
     public String id;
     public String versjon;
