@@ -3,7 +3,7 @@ DECLARE
  AKTOER_ID_RANDOM integer;
 
 BEGIN
-  FOR i IN 1..100000
+  FOR i IN 1..100000 LOOP
     SELECT dbms_random.value(0, 100000000) into AKTOER_ID_RANDOM from dual;
 
     select AKTIVITET_ID_SEQ.nextval into AKTIVITET_ID from dual;
