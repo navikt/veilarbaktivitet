@@ -151,7 +151,7 @@
                         <configuration>
                             <!--<simulationClass>simulations.EksternBrukerSimulation</simulationClass>-->
                             <!--<simulationClass>simulations.FeedSimulation</simulationClass>-->
-                            <simulationClass>simulations.VeilederSimulation</simulationClass>
+                            <!--<simulationClass>simulations.VeilederSimulation</simulationClass>-->
                         </configuration>
                     </execution>
                 </executions>
