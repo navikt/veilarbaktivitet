@@ -2,7 +2,7 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import no.nav.apiapp.security.SubjectService;
 import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.fo.veilarbaktivitet.ws.consumer.AktoerConsumer;
+import no.nav.dialogarena.aktor.AktorService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -13,19 +13,15 @@ public class BrukerService {
 
     private final SubjectService subjectService = new SubjectService();
 
-    private final AktoerConsumer aktoerConsumer;
-
     @Inject
-    public BrukerService(AktoerConsumer aktoerConsumer) {
-        this.aktoerConsumer = aktoerConsumer;
-    }
+    private AktorService aktorService;
 
     public Optional<String> getAktorIdForFNR(String fnr) {
-        return aktoerConsumer.hentAktoerIdForIdent(fnr);
+        return aktorService.getAktorId(fnr);
     }
 
-    public Optional<String> getFNRForAktorId(String fnr) {
-        return aktoerConsumer.hentIdentForAktorId(fnr);
+    public Optional<String> getFNRForAktorId(String aktorId) {
+        return aktorService.getFnr(aktorId);
     }
 
     public Optional<String> getLoggedInnUser() {

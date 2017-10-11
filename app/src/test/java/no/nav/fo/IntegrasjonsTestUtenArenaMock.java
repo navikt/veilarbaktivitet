@@ -1,6 +1,7 @@
 package no.nav.fo;
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.fo.veilarbaktivitet.config.AbacConfig;
 import no.nav.fo.veilarbaktivitet.service.TiltakOgAktivitetMock;
@@ -23,7 +24,8 @@ public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjons
         setupContext(
                 IntegrasjonsTestUtenArenaMock.Config.class,
                 IntegrasjonsTest.JndiBean.class,
-                IntegrasjonsTest.Request.class
+                IntegrasjonsTest.Request.class,
+                AktorConfig.class
         );
     }
 
