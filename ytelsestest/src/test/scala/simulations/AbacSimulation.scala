@@ -28,8 +28,8 @@ class AbacSimulation extends Simulation {
   //private val baseUrl = System.getProperty("BASEURL", "https://wasapp-t3.adeo.no")
 
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
+  val password = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "!!ChangeMe!!")
 
 
   ///////////////////////////
@@ -65,7 +65,7 @@ class AbacSimulation extends Simulation {
     .disableWarmUp
     .silentResources
     .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
-    .basicAuth("srvveilarbportefolje","APUkG8YqkzTJ9eJ")
+    .basicAuth("srvveilarbportefolje","!!ChangeMe!!")
 
 
 
