@@ -22,8 +22,8 @@ class EksternBrukerSimulation extends Simulation {
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC",2).toInt
-  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC",3).toInt
+  private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC_READING",2).toInt
+  private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC_EDITING",3).toInt
   private val duration = Integer.getInteger("DURATION", 300).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t3.nav.no")
   private val standard_headers = Map( """Accept""" -> """text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
