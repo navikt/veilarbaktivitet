@@ -3,7 +3,8 @@ package no.nav.fo.veilarbaktivitet.provider;
 import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
-import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
@@ -50,13 +51,7 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Override
-    public SuperAktivitetDTO hentAktivitet(String aktivitetId) {
-        if (aktivitetId.startsWith(ARENA_PREFIX)) {
-            return hentArenaAktiviteter().stream()
-                    .filter((aktivitet) -> aktivitet.getId().equals(aktivitetId))
-                    .findFirst()
-                    .orElseThrow(RuntimeException::new);
-        }
+    public AktivitetDTO hentAktivitet(String aktivitetId) {
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);

@@ -1,6 +1,9 @@
 package no.nav.fo.veilarbaktivitet.api;
 
-import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.KanalDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
@@ -32,7 +35,7 @@ public interface AktivitetController {
 
     @GET
     @Path("/{id}")
-    SuperAktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
+    AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
 
     @GET
     @Path("/etiketter")
