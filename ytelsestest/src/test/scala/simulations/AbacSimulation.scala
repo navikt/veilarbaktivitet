@@ -29,7 +29,7 @@ class AbacSimulation extends Simulation {
 
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
 
 
   ///////////////////////////
@@ -43,7 +43,7 @@ class AbacSimulation extends Simulation {
   //Login
   ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
   private def login() = {
     exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))

@@ -27,7 +27,7 @@ class FeedSimulation extends Simulation {
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   private val feedUsername = System.getProperty("FEED_USERNAME", "srvveilarbportefolje")
   private val feedPassword = System.getProperty("FEED_PASSWORD", "APUkG8YqkzTJ9eJ")
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
   private val initialDateSituasjonsfeed =  System.getProperty("INITIAL_DATE_SITUASJONSFEED", "2017-08-21T17:24:23.882Z")
   private val initialDateDialogfeed =  System.getProperty("INITIAL_DATE_DIALOGFEED", "2017-08-21T17:24:23.882Z")
   private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T17:24:23.882Z")
@@ -38,7 +38,7 @@ class FeedSimulation extends Simulation {
   //Login
   ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
 
   private def loginFeed() = {

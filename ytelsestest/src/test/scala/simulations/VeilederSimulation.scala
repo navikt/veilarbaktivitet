@@ -22,17 +22,17 @@ class VeilederSimulation extends Simulation {
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 10).toInt
-  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 10).toInt
-  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 10).toInt
+  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 12).toInt
+  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 3).toInt
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 4).toInt
   private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
 
-  private val duration = Integer.getInteger("DURATION", 500).toInt
+  private val duration = Integer.getInteger("DURATION", 2700).toInt
   //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   val password = System.getProperty("VEILEDER_PASSWD", "Teflon3970") //Teflon3970
-  val oidcPassword = System.getProperty("OIDC_PASSWD", "0987654321")
+  val oidcPassword = System.getProperty("OIDC_PASSWD", "YAqE_D30s6Dpwd6yKJVwNYDPnqx42KRz")
   private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
 
 
@@ -70,7 +70,7 @@ class VeilederSimulation extends Simulation {
   //Login
   ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
   private def login() = {
     exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
@@ -108,7 +108,7 @@ class VeilederSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
     .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjon/api/situasjon/me"))
     .exec(Helpers.httpGetSuccess("hent situasjon", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
+//   .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent arbeidsliste", session => s"/veilarbportefolje/tjenester/arbeidsliste/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", session => s"/veilarbaktivitet/api/aktivitet?fnr=${session("user").as[String]}"))
@@ -200,11 +200,11 @@ class VeilederSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
 
   setUp(
-    loginScenario.inject(constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (140 seconds)),
-    personflateScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
-    regAktivitetScenario.inject(nothingFor(140 seconds),rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
-    dialogScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
-    innstillingerScenario.inject(nothingFor(140 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
+    loginScenario.inject(constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (160 seconds)),
+    personflateScenario.inject(nothingFor(160 seconds), rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
+    regAktivitetScenario.inject(nothingFor(160 seconds), rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    dialogScenario.inject(nothingFor(160 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
+    innstillingerScenario.inject(nothingFor(160 seconds), rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 
