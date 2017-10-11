@@ -38,7 +38,7 @@ class FeedSimulation extends Simulation {
   //Login
   ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
 
   private def loginFeed() = {

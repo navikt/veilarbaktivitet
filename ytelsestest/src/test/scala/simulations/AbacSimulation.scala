@@ -23,12 +23,13 @@ class AbacSimulation extends Simulation {
   //Variabler settes i Jenkins
   ///////////////////////////
   private val duration = Integer.getInteger("DURATION", 7500).toInt
+  //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
   private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
+  //private val baseUrl = System.getProperty("BASEURL", "https://wasapp-t3.adeo.no")
 
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
   val password = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!")
   val oidcPassword = System.getProperty("OIDC_PASSWD", "!!ChangeMe!!")
-  val basicAuthPasswd = System.getProperty("BASIC_AUTH_PASSSWD", "!!ChangeMe!!")
 
 
   ///////////////////////////
@@ -42,7 +43,7 @@ class AbacSimulation extends Simulation {
   //Login
   ///////////////////////////
   private val appnavn = "veilarbpersonflatefs"
-  private val openIdConnectLogin = new OpenIdConnectLogin("OIDC", oidcPassword, loginUrl, baseUrl, appnavn)
+  private val openIdConnectLogin = new OpenIdConnectLogin("veilarblogin-t3", oidcPassword, loginUrl, baseUrl, appnavn)
 
   private def login() = {
     exec(addCookie(Cookie("ID_token", session => openIdConnectLogin.getIssoToken(session("username").as[String], password))))
@@ -64,7 +65,7 @@ class AbacSimulation extends Simulation {
     .disableWarmUp
     .silentResources
     .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
-    .basicAuth("srvveilarbportefolje",BASIC_AUTH_PASSSWD)
+    .basicAuth("srvveilarbportefolje","!!ChangeMe!!")
 
 
 
