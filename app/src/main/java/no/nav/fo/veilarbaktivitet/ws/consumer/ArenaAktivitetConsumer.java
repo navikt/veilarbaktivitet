@@ -181,7 +181,7 @@ public class ArenaAktivitetConsumer {
         val tempStatus = mapTilAktivitetsStatus(startDato, sluttDato);
 
         val erEgenFinansiert = EGEN_FINANSERT_UTDANNELSE_NAVN.stream()
-                .anyMatch(titel -> utdanningsaktivitet.getAktivitetstype().toLowerCase().startsWith(titel));
+                .anyMatch(tittel -> utdanningsaktivitet.getAktivitetstype().toLowerCase().startsWith(tittel));
 
         val status = AktivitetStatus.AVBRUTT.equals(tempStatus) && erEgenFinansiert ?
                 AktivitetStatus.FULLFORT : AktivitetStatus.AVBRUTT;
