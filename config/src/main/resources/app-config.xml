@@ -13,6 +13,10 @@
     <artifacts>
         <ear groupId="no.nav.fo" artifactId="veilarbaktivitet-ear"/>
     </artifacts>
+  
+    <serverOptions>
+        <memoryParameters resourceAlias="veilarb-memparams"/>
+    </serverOptions>
 
     <loadBalancer isAlive="veilarbaktivitet/internal/isAlive"/>
 

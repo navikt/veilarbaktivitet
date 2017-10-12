@@ -2,10 +2,16 @@ package no.nav.fo.veilarbaktivitet.ws.consumer;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.arena.*;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.ArenaStatusDTO;
+import no.nav.fo.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.fo.veilarbaktivitet.util.DateUtils;
 import no.nav.fo.veilarbaktivitet.util.EnumUtils;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.*;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerUgyldigInput;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +79,7 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()) ).collect(toList());
+            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).collect(toList());
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
@@ -86,16 +92,14 @@ public class ArenaAktivitetConsumer {
         return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
-    private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
-        String titttel = tiltaksaktivitet.getTiltaksnavn().startsWith("Arbeidsmarkedsopplæring") ?
-                "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
+    private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
+    private static final String JOBBKLUBB_NAVN = "Jobbklubb";
 
-        return new ArenaAktivitetDTO()
+    private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
+        val arenaAktivitetDTO = new ArenaAktivitetDTO()
                 .setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus().getValue()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
-                .setTittel(titttel)
-                .setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn())
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), Periode::getFom))
                 .setTilDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), Periode::getTom))
                 .setAvtalt(true)
@@ -106,8 +110,37 @@ public class ArenaAktivitetConsumer {
                 .setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
                 .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
                 .setStatusSistEndret(getDate(tiltaksaktivitet.getStatusSistEndret()))
-                .setOpprettetDato(getDate(tiltaksaktivitet.getStatusSistEndret()))
-                .setEtikett(EnumUtils.valueOf(ArenaStatusDTO.class, tiltaksaktivitet.getDeltakerStatus().getValue()));
+                .setOpprettetDato(getDate(tiltaksaktivitet.getStatusSistEndret()));
+
+
+        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(VANLIG_AMO_NAVN);
+
+        val tittel = erVanligAmo ?
+                "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
+
+        arenaAktivitetDTO.setTittel(tittel);
+
+        val erJobbKlubb = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(JOBBKLUBB_NAVN);
+
+        if (erJobbKlubb) {
+            arenaAktivitetDTO.setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn());
+        }
+
+        val arenaEtikett = EnumUtils.valueOf(ArenaStatusDTO.class,
+                tiltaksaktivitet.getDeltakerStatus().getValue());
+
+        if (ArenaStatusDTO.TILBUD.equals(arenaEtikett)) {
+            if (erJobbKlubb || erVanligAmo) {
+                arenaAktivitetDTO.setEtikett(ArenaStatusDTO.TILBUD);
+            }
+        } else {
+            arenaAktivitetDTO.setEtikett(arenaEtikett);
+        }
+
+
+        return arenaAktivitetDTO;
     }
 
     private ArenaAktivitetDTO mapTilAktivitet(Gruppeaktivitet gruppeaktivitet) {
@@ -135,12 +168,27 @@ public class ArenaAktivitetConsumer {
                 .setMoeteplanListe(motePlan);
     }
 
+    private final static List<String> EGEN_FINANSERT_UTDANNELSE_NAVN = Arrays.asList(
+            "ordinær utdanning for enslig forsørgere",
+            "egenfinansiert utdanning",
+            "egenfinansiert kurs");
+
     private ArenaAktivitetDTO mapTilAktivitet(Utdanningsaktivitet utdanningsaktivitet) {
         Date startDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
+
+
+        val tempStatus = mapTilAktivitetsStatus(startDato, sluttDato);
+
+        val erEgenFinansiert = EGEN_FINANSERT_UTDANNELSE_NAVN.stream()
+                .anyMatch(tittel -> utdanningsaktivitet.getAktivitetstype().toLowerCase().startsWith(tittel));
+
+        val status = AktivitetStatus.AVBRUTT.equals(tempStatus) && erEgenFinansiert ?
+                AktivitetStatus.FULLFORT : AktivitetStatus.AVBRUTT;
+
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
-                .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
+                .setStatus(status)
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())
                 .setBeskrivelse(utdanningsaktivitet.getBeskrivelse())
