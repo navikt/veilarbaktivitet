@@ -131,7 +131,7 @@ public class ArenaAktivitetConsumer {
         val arenaEtikett = EnumUtils.valueOf(ArenaStatusDTO.class,
                 tiltaksaktivitet.getDeltakerStatus().getValue());
 
-        if (arenaEtikett.equals(ArenaStatusDTO.TILBUD)) {
+        if (ArenaStatusDTO.TILBUD.equals(arenaEtikett)) {
             if (erJobbKlubb || erVanligAmo) {
                 arenaAktivitetDTO.setEtikett(ArenaStatusDTO.TILBUD);
             }
@@ -183,7 +183,7 @@ public class ArenaAktivitetConsumer {
         val erEgenFinansiert = EGEN_FINANSERT_UTDANNELSE_NAVN.stream()
                 .anyMatch(titel -> utdanningsaktivitet.getAktivitetstype().toLowerCase().startsWith(titel));
 
-        val status = tempStatus.equals(AktivitetStatus.AVBRUTT) && erEgenFinansiert ?
+        val status = AktivitetStatus.AVBRUTT.equals(tempStatus) && erEgenFinansiert ?
                 AktivitetStatus.FULLFORT : AktivitetStatus.AVBRUTT;
 
         return new ArenaAktivitetDTO()
