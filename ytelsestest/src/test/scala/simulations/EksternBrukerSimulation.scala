@@ -91,7 +91,8 @@ class EksternBrukerSimulation extends Simulation {
       .check(regex("\"vilkarMaBesvares\":(.*?),").saveAs("vilkarMaBesvares"))
       .check(regex("\"reservasjonKRR\":(.*?),").saveAs("reservasjonKRR"))
       .check(regex("\"manuell\":(.*?),").saveAs("manuell"))
-      .check(regex("\"underOppfolging\":(.*?),").saveAs("underOppfolging")))
+      .check(regex("\"underOppfolging\":(.*?),").saveAs("underOppfolging"))
+      .check(status.is(200).saveAs("situasjonResponseCode")))
   }
 
   ///////////////////////////
@@ -104,9 +105,11 @@ class EksternBrukerSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("henter tekster", "/aktivitetsplan/api/tekster"))
     .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjonproxy/api/situasjon/me"))
     .exec(hentSituasjonOgSettVariabler)
-    .doIfEquals("${vilkarMaBesvares}", "true") {
-      exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarbsituasjonproxy/api/situasjon/vilkar").check(regex("\"hash\":\"(.*?)\"").saveAs("hash")))
-      .exec(Helpers.httpPost("godtar vilkaar", session => s"/veilarbsituasjonproxy/api/situasjon/godta/${session("hash").as[String]}"))
+    .doIfEquals("${situasjonResponseCode}", 200) {
+      doIfEquals("${vilkarMaBesvares}", "true") {
+        exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarbsituasjonproxy/api/situasjon/vilkar").check(regex("\"hash\":\"(.*?)\"").saveAs("hash")))
+          .exec(Helpers.httpPost("godtar vilkaar", session => s"/veilarbsituasjonproxy/api/situasjon/godta/${session("hash").as[String]}"))
+      }
     }
     .exec(Helpers.httpGetSuccess("hent situasjon","/veilarbsituasjonproxy/api/situasjon"))
     .exec(Helpers.httpGetSuccess("hent dialog", "/veilarbdialogproxy/api/dialog"))
