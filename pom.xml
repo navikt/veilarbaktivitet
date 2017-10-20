@@ -11,7 +11,7 @@
     <parent>
         <groupId>no.nav.sbl</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2017.10.20.12.42</version> <!-- TODO låse ned før prodsetting -->
+        <version>2017.10.20.12.42</version>
     </parent>
 
     <version>1</version>
@@ -39,7 +39,7 @@
             <dependency>
                 <groupId>no.nav.sbl</groupId>
                 <artifactId>bom</artifactId>
-                <version>2017.10.20.12.42</version> <!-- TODO låse ned før prodsetting -->
+                <version>2017.10.20.12.42</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
