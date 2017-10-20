@@ -168,27 +168,13 @@ public class ArenaAktivitetConsumer {
                 .setMoeteplanListe(motePlan);
     }
 
-    private final static List<String> EGEN_FINANSERT_UTDANNELSE_NAVN = Arrays.asList(
-            "ordinær utdanning for enslig forsørgere",
-            "egenfinansiert utdanning",
-            "egenfinansiert kurs");
-
     private ArenaAktivitetDTO mapTilAktivitet(Utdanningsaktivitet utdanningsaktivitet) {
         Date startDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
 
-
-        val tempStatus = mapTilAktivitetsStatus(startDato, sluttDato);
-
-        val erEgenFinansiert = EGEN_FINANSERT_UTDANNELSE_NAVN.stream()
-                .anyMatch(tittel -> utdanningsaktivitet.getAktivitetstype().toLowerCase().startsWith(tittel));
-
-        val status = AktivitetStatus.AVBRUTT.equals(tempStatus) && erEgenFinansiert ?
-                AktivitetStatus.FULLFORT : AktivitetStatus.AVBRUTT;
-
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
-                .setStatus(status)
+                .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())
                 .setBeskrivelse(utdanningsaktivitet.getBeskrivelse())
@@ -205,7 +191,7 @@ public class ArenaAktivitetConsumer {
     private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         Date now = Calendar.getInstance().getTime();
         return now.before(startDato) ? AktivitetStatus.PLANLAGT : now.before(sluttDato) ?
-                AktivitetStatus.GJENNOMFORES : AktivitetStatus.AVBRUTT;
+                AktivitetStatus.GJENNOMFORES : AktivitetStatus.FULLFORT;
     }
 
     private MoteplanDTO mapTilMoteplan(Moeteplan moeteplan) {
