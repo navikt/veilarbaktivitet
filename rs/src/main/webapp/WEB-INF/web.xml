@@ -5,7 +5,7 @@
          version="3.0">
 
     <context-param>
-        <param-name>springContekstKlasse</param-name>
+        <param-name>springKontekstKlasse</param-name>
         <param-value>no.nav.fo.veilarbaktivitet.ApplicationContext</param-value>
     </context-param>
     <listener>
