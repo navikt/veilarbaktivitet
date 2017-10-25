@@ -2,7 +2,7 @@ package no.nav.fo.veilarbaktivitet.config;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
-import no.nav.fo.veilarbsituasjon.rest.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;

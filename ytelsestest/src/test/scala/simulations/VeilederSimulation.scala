@@ -1,19 +1,6 @@
 package simulations
 
-import java.net.URLEncoder
-
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
-import org.slf4j.LoggerFactory
-import utils.Helpers
-import no.nav.sbl.gatling.login.LoginHelper
 import java.util.concurrent.TimeUnit
-
-import io.gatling.core.session.Expression
-
-import scala.concurrent.duration._
-import scala.util.Random
 
 class VeilederSimulation extends Simulation {
 
@@ -104,16 +91,16 @@ class VeilederSimulation extends Simulation {
     .feed(brukere_for_sok)
     .exec(login)
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
-    .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjon/api/situasjon/me"))
-    .exec(Helpers.httpGetSuccess("hent situasjon", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("me", "/veilarboppfolging/api/oppfolging/me"))
+    .exec(Helpers.httpGetSuccess("hent oppfolging", session => s"/veilarboppfolging/api/oppfolging?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent arbeidsliste", session => s"/veilarbportefolje/tjenester/arbeidsliste/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", session => s"/veilarbaktivitet/api/aktivitet?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", session => s"/veilarbaktivitet/api/aktivitet/arena?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("henter maal", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("henter maal-historikk", session => s"/veilarbsituasjon/api/situasjon/malListe?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("hent vilkaar", session => s"/veilarbsituasjon/api/situasjon/hentVilkaarStatusListe?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("henter maal", session => s"/veilarboppfolging/api/oppfolging/mal?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("henter maal-historikk", session => s"/veilarboppfolging/api/oppfolging/malListe?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("hent vilkaar", session => s"/veilarboppfolging/api/oppfolging/hentVilkaarStatusListe?fnr=${session("user").as[String]}"))
 
   private val regAktivitetScenario = scenario("Veileder oppretter aktiviteter og gjoer endringer paa dem")
     .feed(veiledere)
@@ -148,7 +135,7 @@ class VeilederSimulation extends Simulation {
             Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}")
         )
     }
-    .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarbsituasjon/api/situasjon/mal?fnr=${session("user").as[String]}")
+    .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarboppfolging/api/oppfolging/mal?fnr=${session("user").as[String]}")
       .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
     )
 
@@ -177,25 +164,25 @@ class VeilederSimulation extends Simulation {
     .feed(veiledere)
     .feed(brukere_for_sok)
     .exec(login)
-    .exec(Helpers.httpGetSuccess("henter innstillingerhistorikk", session => s"/veilarbsituasjon/api/situasjon/innstillingsHistorikk?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("henter reservert-status", session => s"/veilarbsituasjon/api/situasjon?fnr=${session("user").as[String]}")
+    .exec(Helpers.httpGetSuccess("henter innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("henter reservert-status", session => s"/veilarboppfolging/api/oppfolging?fnr=${session("user").as[String]}")
       .check(regex("\"reservasjonKRR\" : (.*?),").saveAs("erReservert")))
 
     .doIfEquals("${erReservert}", "false") {
         exec(
-          Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarbsituasjon/api/situasjon/settManuell?fnr=${session("user").as[String]}")
+          Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarboppfolging/api/oppfolging/settManuell?fnr=${session("user").as[String]}")
             .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
         )
         .exec(
-          Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarbsituasjon/api/situasjon/settDigital?fnr=${session("user").as[String]}")
+          Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
             .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
         )
         .exec(
-          Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarbsituasjon/api/situasjon/innstillingsHistorikk?fnr=${session("user").as[String]}")
+          Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}")
             .check(regex("${user}").count.greaterThan(1))
         )
       }
-    .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarbsituasjon/api/situasjon/avslutningStatus?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarboppfolging/api/oppfolging/avslutningStatus?fnr=${session("user").as[String]}"))
 
   setUp(
     personflateScenario.inject(rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),

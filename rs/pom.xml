@@ -84,7 +84,7 @@
         </dependency>
         <dependency>
             <groupId>no.nav.fo</groupId>
-            <artifactId>veilarbsituasjon-api</artifactId>
+            <artifactId>veilarboppfolging-api</artifactId>
             <version>RELEASE</version>
         </dependency>
 
