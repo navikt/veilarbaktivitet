@@ -1,19 +1,7 @@
 package simulations
 
 import java.net.URLEncoder
-
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
-import org.slf4j.LoggerFactory
-import utils.{FeedHelpers, Helpers}
 import java.util.concurrent.TimeUnit
-
-import io.gatling.core.session.Expression
-import io.gatling.core.feeder.RecordSeqFeederBuilder
-
-import scala.concurrent.duration._
-import scala.util.Random
 
 class FeedSimulation extends Simulation {
 
@@ -28,7 +16,7 @@ class FeedSimulation extends Simulation {
   private val feedUsername = System.getProperty("FEED_USERNAME", "srvveilarbportefolje")
   private val feedPassword = System.getProperty("FEED_PASSWORD", "!!ChangeMe!!")
   val oidcPassword = System.getProperty("OIDC_PASSWD", "!!ChangeMe!!")
-  private val initialDateSituasjonsfeed =  System.getProperty("INITIAL_DATE_SITUASJONSFEED", "2017-08-21T17:24:23.882Z")
+  private val initialDateOppfolgingsfeed = System.getProperty("INITIAL_DATE_OPPFOLGINGSFEED", "2017-08-21T17:24:23.882Z")
   private val initialDateDialogfeed =  System.getProperty("INITIAL_DATE_DIALOGFEED", "2017-08-21T17:24:23.882Z")
   private val initialDateAktivitetfeed =  System.getProperty("INITIAL_DATE_AKTIVITETFEED", "2017-08-21T17:24:23.882Z")
   private val feedPageSize =  System.getProperty("FEED_PAGE_SIZE", "100")
@@ -63,10 +51,10 @@ class FeedSimulation extends Simulation {
     .extraInfoExtractor {extraInfo => List(Helpers.getInfo(extraInfo))}
 
 
-  private val situasjonsFeedScenario = scenario ("Situasjonsfeed")
+  private val oppfolgingsFeedScenario = scenario("Oppfolgingfeed")
     .exec(loginFeed())
-    .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarbsituasjon/api/feed/situasjon?id="+initialDateSituasjonsfeed+"&page_size=100"))
-    .exec(FeedHelpers.traverseFeed("traverserer situasjonsfeed", session => s"/veilarbsituasjon/api/feed/situasjon?id=${session("nextPage").as[String]}&page_size="+feedPageSize))
+    .exec(FeedHelpers.httpGetFeed("henter portefoljefeed", "/veilarboppfolging/api/feed/oppfolging?id=" + initialDateOppfolgingsfeed + "&page_size=100"))
+    .exec(FeedHelpers.traverseFeed("traverserer oppfolgingsfeed", session => s"/veilarboppfolging/api/feed/oppfolging?id=${session("nextPage").as[String]}&page_size=" + feedPageSize))
 
   private val dialogFeedScenario = scenario ("Dialogfeed")
     .exec(loginFeed())
@@ -80,7 +68,7 @@ class FeedSimulation extends Simulation {
 
 
   setUp(
-    situasjonsFeedScenario.inject(splitUsers(100) into(rampUsers(1) over (60 seconds)) separatedBy (60 seconds)),
+    oppfolgingsFeedScenario.inject(splitUsers(100) into (rampUsers(1) over (60 seconds)) separatedBy (60 seconds)),
     dialogFeedScenario.inject(splitUsers(100) into(rampUsers(1) over (1 seconds)) separatedBy (60 seconds)),
     aktivitetFeedScenario.inject(splitUsers(100) into(rampUsers(1) over (1 seconds)) separatedBy (300 seconds))
   ).protocols(httpProtocol)

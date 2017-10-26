@@ -1,20 +1,5 @@
 package simulations
 
-import java.net.URLEncoder
-
-import io.gatling.core.Predef._
-import io.gatling.http.Predef._
-import no.nav.sbl.gatling.login.OpenIdConnectLogin
-import org.slf4j.LoggerFactory
-import utils.{FeedHelpers, Helpers}
-import java.util.concurrent.TimeUnit
-
-import io.gatling.core.session.Expression
-import io.gatling.core.feeder.RecordSeqFeederBuilder
-
-import scala.concurrent.duration._
-import scala.util.Random
-
 class EksternBrukerSimulation extends Simulation {
 
   private val logger = LoggerFactory.getLogger(EksternBrukerSimulation.this.getClass)
@@ -86,13 +71,13 @@ class EksternBrukerSimulation extends Simulation {
   ///////////////////////////
   //Hjelpemetoder
   ///////////////////////////
-  private def hentSituasjonOgSettVariabler() = {
-    exec(Helpers.httpGetSuccess("hent situasjon", "/veilarbsituasjonproxy/api/situasjon")
+  private def hentOppfolgingOgSettVariabler() = {
+    exec(Helpers.httpGetSuccess("hent oppfolging", "/veilarboppfolgingproxy/api/oppfolging")
       .check(regex("\"vilkarMaBesvares\":(.*?),").saveAs("vilkarMaBesvares"))
       .check(regex("\"reservasjonKRR\":(.*?),").saveAs("reservasjonKRR"))
       .check(regex("\"manuell\":(.*?),").saveAs("manuell"))
       .check(regex("\"underOppfolging\":(.*?),").saveAs("underOppfolging"))
-      .check(status.is(200).saveAs("situasjonResponseCode")))
+      .check(status.is(200).saveAs("oppfolgingResponseCode")))
   }
 
   ///////////////////////////
@@ -103,21 +88,21 @@ class EksternBrukerSimulation extends Simulation {
     .exec(login)
     .exec(Helpers.httpGetSuccess("henter innloggingslinje", "/innloggingslinje/auth"))
     .exec(Helpers.httpGetSuccess("henter tekster", "/aktivitetsplan/api/tekster"))
-    .exec(Helpers.httpGetSuccess("me", "/veilarbsituasjonproxy/api/situasjon/me"))
-    .exec(hentSituasjonOgSettVariabler)
-    .doIfEquals("${situasjonResponseCode}", 200) {
+    .exec(Helpers.httpGetSuccess("me", "/veilarboppfolgingproxy/api/oppfolging/me"))
+    .exec(hentOppfolgingOgSettVariabler)
+    .doIfEquals("${oppfolgingResponseCode}", 200) {
       doIfEquals("${vilkarMaBesvares}", "true") {
-        exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarbsituasjonproxy/api/situasjon/vilkar").check(regex("\"hash\":\"(.*?)\"").saveAs("hash")))
-          .exec(Helpers.httpPost("godtar vilkaar", session => s"/veilarbsituasjonproxy/api/situasjon/godta/${session("hash").as[String]}"))
+        exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarboppfolgingproxy/api/oppfolging/vilkar").check(regex("\"hash\":\"(.*?)\"").saveAs("hash")))
+          .exec(Helpers.httpPost("godtar vilkaar", session => s"/veilarboppfolgingproxy/api/oppfolging/godta/${session("hash").as[String]}"))
       }
     }
-    .exec(Helpers.httpGetSuccess("hent situasjon","/veilarbsituasjonproxy/api/situasjon"))
+    .exec(Helpers.httpGetSuccess("hent oppfolging", "/veilarboppfolgingproxy/api/oppfolging"))
     .exec(Helpers.httpGetSuccess("hent dialog", "/veilarbdialogproxy/api/dialog"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", "/veilarbaktivitetproxy/api/aktivitet"))
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", "/veilarbaktivitetproxy/api/aktivitet/arena"))
-    .exec(Helpers.httpGetSuccess("hent maal", "/veilarbsituasjonproxy/api/situasjon/mal"))
-    .exec(Helpers.httpGetSuccess("hent maal-historikk", "/veilarbsituasjonproxy/api/situasjon/malListe"))
-    .exec(Helpers.httpGetSuccess("hent vilkaar", "/veilarbsituasjonproxy/api/situasjon/hentVilkaarStatusListe"))
+    .exec(Helpers.httpGetSuccess("hent maal", "/veilarboppfolgingproxy/api/oppfolging/mal"))
+    .exec(Helpers.httpGetSuccess("hent maal-historikk", "/veilarboppfolgingproxy/api/oppfolging/malListe"))
+    .exec(Helpers.httpGetSuccess("hent vilkaar", "/veilarboppfolgingproxy/api/oppfolging/hentVilkaarStatusListe"))
 
 
   private val editererInfoScenario = scenario ("Editerer og verifiserer aktiviteter og dialoger - ekstern bruker")
@@ -126,8 +111,8 @@ class EksternBrukerSimulation extends Simulation {
     .feed(livslopsStatuser)
     .feed(jobbstatus)
     .exec(login)
-    .exec(hentSituasjonOgSettVariabler)
-    .exec(Helpers.httpPost("registrerer maal", session => s"/veilarbsituasjonproxy/api/situasjon/mal")
+    .exec(hentOppfolgingOgSettVariabler)
+    .exec(Helpers.httpPost("registrerer maal", session => s"/veilarboppfolgingproxy/api/oppfolging/mal")
       .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
     )
     .exec(
