@@ -22,12 +22,19 @@ import org.springframework.stereotype.Component;
 import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 
+import static java.time.ZoneId.systemDefault;
+import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.fo.veilarbaktivitet.api.AktivitetController.ARENA_PREFIX;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.mergeDateTime;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -154,7 +161,7 @@ public class ArenaAktivitetConsumer {
         Date startDato = motePlan.get(0).getStartDato();
         Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
         AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
-                AktivitetStatus.AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
+                AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
                 .setStatus(status)
@@ -189,9 +196,12 @@ public class ArenaAktivitetConsumer {
     }
 
     private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
-        Date now = Calendar.getInstance().getTime();
-        return now.before(startDato) ? AktivitetStatus.PLANLAGT : now.before(sluttDato) ?
-                AktivitetStatus.GJENNOMFORES : AktivitetStatus.FULLFORT;
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = ofInstant(sluttDato.toInstant(), systemDefault()).toLocalDate().plusDays(1).atStartOfDay();
+
+        return now.isBefore(startOfDay) ? PLANLAGT : now.isBefore(endOfDay) ? GJENNOMFORES : FULLFORT;
     }
 
     private MoteplanDTO mapTilMoteplan(Moeteplan moeteplan) {
@@ -206,20 +216,20 @@ public class ArenaAktivitetConsumer {
     }
 
     private enum ArenaStatus {
-        AKTUELL(AktivitetStatus.PLANLAGT),
-        AVSLAG(AktivitetStatus.AVBRUTT),
-        DELAVB(AktivitetStatus.AVBRUTT),
-        FULLF(AktivitetStatus.FULLFORT),
-        GJENN(AktivitetStatus.GJENNOMFORES),
-        GJENN_AVB(AktivitetStatus.AVBRUTT),
-        GJENN_AVL(AktivitetStatus.AVBRUTT),
-        IKKAKTUELL(AktivitetStatus.AVBRUTT),
-        IKKEM(AktivitetStatus.AVBRUTT),
-        INFOMOETE(AktivitetStatus.PLANLAGT),
-        JATAKK(AktivitetStatus.PLANLAGT),
-        NEITAKK(AktivitetStatus.AVBRUTT),
-        TILBUD(AktivitetStatus.PLANLAGT),
-        VENTELISTE(AktivitetStatus.PLANLAGT);
+        AKTUELL(PLANLAGT),
+        AVSLAG(AVBRUTT),
+        DELAVB(AVBRUTT),
+        FULLF(FULLFORT),
+        GJENN(GJENNOMFORES),
+        GJENN_AVB(AVBRUTT),
+        GJENN_AVL(AVBRUTT),
+        IKKAKTUELL(AVBRUTT),
+        IKKEM(AVBRUTT),
+        INFOMOETE(PLANLAGT),
+        JATAKK(PLANLAGT),
+        NEITAKK(AVBRUTT),
+        TILBUD(PLANLAGT),
+        VENTELISTE(PLANLAGT);
 
         ArenaStatus(AktivitetStatus status) {
             this.status = status;
