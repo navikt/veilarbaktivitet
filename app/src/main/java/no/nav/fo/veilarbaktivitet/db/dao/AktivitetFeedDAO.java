@@ -24,7 +24,7 @@ public class AktivitetFeedDAO {
         return database.query(
                 "SELECT * FROM (" +
                         "SELECT " +
-                        "aktivitet_id, aktor_id, aktivitet_type_kode, livslopstatus_kode, fra_dato, til_dato, endret_dato, avtalt " +
+                        "aktivitet_id, aktor_id, aktivitet_type_kode, livslopstatus_kode, fra_dato, til_dato, endret_dato, avtalt, historisk_dato " +
                         "FROM aktivitet " +
                         "WHERE endret_dato >= ? and gjeldende = 1" +
                         "ORDER BY endret_dato " +

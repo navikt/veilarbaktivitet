@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 import static no.nav.fo.veilarbaktivitet.db.Database.hentDato;
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
@@ -20,6 +21,7 @@ public class AktivitetFeedDataRowMapper {
                 .setAktivitetType(typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"))))
                 .setFraDato(hentDato(rs, "fra_dato"))
                 .setTilDato(hentDato(rs, "til_dato"))
+                .setHistorisk(Optional.ofNullable(hentDato(rs, "historisk_dato")).isPresent())
                 .setStatus(valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode")))
                 .setEndretDato(hentDato(rs, "endret_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
