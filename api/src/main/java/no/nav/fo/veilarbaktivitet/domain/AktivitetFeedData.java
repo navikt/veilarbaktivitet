@@ -21,6 +21,7 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus status;
     boolean avtalt;
+    boolean historisk;
 
     @Override
     public int compareTo(AktivitetFeedData o) {
