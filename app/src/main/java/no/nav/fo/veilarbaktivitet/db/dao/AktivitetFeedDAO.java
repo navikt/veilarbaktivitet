@@ -35,17 +35,4 @@ public class AktivitetFeedDAO {
         );
     }
 
-    public Date hentSisteKjenteId() {
-        return database.queryForObject("SELECT SISTE_FEED_ELEMENT_ID FROM FEED_METADATA",
-                (rs) -> Database.hentDato(rs, "SISTE_FEED_ELEMENT_ID")
-        );
-
-    }
-
-    public void oppdaterSisteFeedId(Date id) {
-        database.update(
-                "UPDATE FEED_METADATA SET SISTE_FEED_ELEMENT_ID = ?", 
-                id
-        );
-    }
 }

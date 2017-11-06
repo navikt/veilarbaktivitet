@@ -10,7 +10,7 @@ import java.util.Date;
 
 import org.junit.Test;
 
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 
@@ -19,8 +19,8 @@ public class AvsluttetOppfolgingFeedProviderTest {
     private static final String AKTØR_ID = "aktørId";
 
     private AktivitetService aktivitetService = mock(AktivitetService.class);
-    private AktivitetFeedDAO aktivitetFeedDAO = mock(AktivitetFeedDAO.class);    
-    private AvsluttetOppfolgingFeedProvider feedProvider = new AvsluttetOppfolgingFeedProvider(aktivitetService, aktivitetFeedDAO); 
+    private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO = mock(AvsluttetOppfolgingFeedDAO.class);    
+    private AvsluttetOppfolgingFeedProvider feedProvider = new AvsluttetOppfolgingFeedProvider(aktivitetService, avsluttetOppfolgingFeedDAO); 
 
     @Test
     public void skal_ta_vare_paa_siste_kjente_id() {
@@ -28,7 +28,7 @@ public class AvsluttetOppfolgingFeedProviderTest {
         Date oppdatert1 = new Date();
         Date oppdatert2 = new Date(oppdatert1.getTime() + 1000);
         feedProvider.lesAvsluttetOppfolgingFeed(null, asList(element(oppdatert1), element(oppdatert2)));
-        verify(aktivitetFeedDAO).oppdaterSisteFeedId(oppdatert2);
+        verify(avsluttetOppfolgingFeedDAO).oppdaterSisteFeedId(oppdatert2);
     }
 
 
@@ -39,7 +39,7 @@ public class AvsluttetOppfolgingFeedProviderTest {
         try {
             feedProvider.lesAvsluttetOppfolgingFeed(null, asList(element(new Date())));
         } finally {
-            verifyNoMoreInteractions(aktivitetFeedDAO);
+            verifyNoMoreInteractions(avsluttetOppfolgingFeedDAO);
         }
     }
     

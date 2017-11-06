@@ -69,19 +69,6 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         assertThat(hentetAktiviteter).isEmpty();
     }
 
-    @Test
-    public void siste_kjente_id_skal_være_null_forste_gang() {
-        assertThat(aktivitetFeedDAO.hentSisteKjenteId()).isNull();
-    }
-
-    @Test
-    public void skal_ha_siste_dato_for_historiske_aktiviteter() {
-        Date id = new Date();
-        aktivitetFeedDAO.oppdaterSisteFeedId(id);
-        Date sisteKjenteId = aktivitetFeedDAO.hentSisteKjenteId();
-        assertThat(sisteKjenteId).isEqualTo(id);
-    }
-
     private List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date fra) {
         return aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra, 10);
     }

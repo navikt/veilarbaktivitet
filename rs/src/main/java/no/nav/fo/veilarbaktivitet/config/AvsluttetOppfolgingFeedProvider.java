@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.config;
 
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.stereotype.Component;
@@ -18,16 +18,16 @@ public class AvsluttetOppfolgingFeedProvider {
 
     private AktivitetService aktivitetService;
 
-    private AktivitetFeedDAO aktivitetFeedDAO;
+    private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;
 
     @Inject
-    public AvsluttetOppfolgingFeedProvider(AktivitetService aktivitetService, AktivitetFeedDAO aktivitetFeedDAO) {
+    public AvsluttetOppfolgingFeedProvider(AktivitetService aktivitetService, AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO) {
         this.aktivitetService = aktivitetService;
-        this.aktivitetFeedDAO = aktivitetFeedDAO;
+        this.avsluttetOppfolgingFeedDAO = avsluttetOppfolgingFeedDAO;
     }
 
     public String sisteKjenteId() {
-        Date sisteKjenteId = ofNullable(aktivitetFeedDAO.hentSisteKjenteId()).orElseGet(() -> new Date(0));
+        Date sisteKjenteId = ofNullable(avsluttetOppfolgingFeedDAO.hentSisteKjenteId()).orElseGet(() -> new Date(0));
         return ZonedDateTime.ofInstant(sisteKjenteId.toInstant(), ZoneId.systemDefault()).toString();
     }
 
@@ -43,7 +43,7 @@ public class AvsluttetOppfolgingFeedProvider {
         // prosessere noen elementer flere ganger. Dette skal gå bra, siden koden som setter dialoger til historisk
         // er idempotent
         if(lastSuccessfulId != null) {
-            aktivitetFeedDAO.oppdaterSisteFeedId(lastSuccessfulId);
+            avsluttetOppfolgingFeedDAO.oppdaterSisteFeedId(lastSuccessfulId);
         }        
     }
 }
