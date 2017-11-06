@@ -35,10 +35,17 @@ public class AktivitetFeedDAO {
         );
     }
 
-    public Date hentSisteHistoriskeTidspunkt() {
-        return database.queryForObject("SELECT MAX(HISTORISK_DATO) AS SISTE_HISTORISKE_DATO FROM AKTIVITET",
-                (rs) -> Database.hentDato(rs, "SISTE_HISTORISKE_DATO")
+    public Date hentSisteKjenteId() {
+        return database.queryForObject("SELECT SISTE_FEED_ELEMENT_ID FROM FEED_METADATA",
+                (rs) -> Database.hentDato(rs, "SISTE_FEED_ELEMENT_ID")
         );
 
+    }
+
+    public void oppdaterSisteFeedId(Date id) {
+        database.update(
+                "UPDATE FEED_METADATA SET SISTE_FEED_ELEMENT_ID = ?", 
+                id
+        );
     }
 }
