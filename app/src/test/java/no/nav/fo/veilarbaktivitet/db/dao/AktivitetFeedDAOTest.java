@@ -69,27 +69,6 @@ public class AktivitetFeedDAOTest extends IntegrasjonsTest {
         assertThat(hentetAktiviteter).isEmpty();
     }
 
-    @Test
-    public void skal_returnere_null_hvis_ingen_historiske_i_databasen() {
-        val aktivitet = aktivitetFeedDAO.hentSisteHistoriskeTidspunkt();
-        assertThat(aktivitet).isNull();
-    }
-
-    @Test
-    public void skal_ha_siste_dato_for_historiske_aktiviteter() {
-        val endret1 = dateFromISO8601("2010-12-03T10:15:30+02:00");
-        val endret2 = dateFromISO8601("2010-12-04T10:15:30+02:00");
-
-        val aktivitet1 = nyAktivitet().aktivitetType(JOBBSOEKING).historiskDato(endret1);
-        val aktivitet2 = nyAktivitet().aktivitetType(JOBBSOEKING).historiskDato(endret2);
-
-        aktivitetDAO.insertAktivitet(aktivitet1.build(), endret1);
-        aktivitetDAO.insertAktivitet(aktivitet2.build(), endret2);
-
-        val sisteHistoriskeTidspunkt = aktivitetFeedDAO.hentSisteHistoriskeTidspunkt();
-        assertThat(sisteHistoriskeTidspunkt).isEqualTo(endret2);
-    }
-
     private List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date fra) {
         return aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra, 10);
     }

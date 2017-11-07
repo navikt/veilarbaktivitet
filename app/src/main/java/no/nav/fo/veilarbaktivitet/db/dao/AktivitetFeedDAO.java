@@ -35,10 +35,4 @@ public class AktivitetFeedDAO {
         );
     }
 
-    public Date hentSisteHistoriskeTidspunkt() {
-        return database.queryForObject("SELECT MAX(HISTORISK_DATO) AS SISTE_HISTORISKE_DATO FROM AKTIVITET",
-                (rs) -> Database.hentDato(rs, "SISTE_HISTORISKE_DATO")
-        );
-
-    }
 }

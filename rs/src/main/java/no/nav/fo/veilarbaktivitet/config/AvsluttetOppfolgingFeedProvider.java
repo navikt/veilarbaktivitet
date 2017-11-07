@@ -1,6 +1,6 @@
 package no.nav.fo.veilarbaktivitet.config;
 
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
+import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.stereotype.Component;
@@ -16,18 +16,34 @@ import static java.util.Optional.ofNullable;
 @Component
 public class AvsluttetOppfolgingFeedProvider {
 
-    @Inject
-    AktivitetService aktivitetService;
+    private AktivitetService aktivitetService;
+
+    private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;
 
     @Inject
-    AktivitetFeedDAO aktivitetFeedDAO;
+    public AvsluttetOppfolgingFeedProvider(AktivitetService aktivitetService, AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO) {
+        this.aktivitetService = aktivitetService;
+        this.avsluttetOppfolgingFeedDAO = avsluttetOppfolgingFeedDAO;
+    }
 
-    public String sisteEndring() {
-        Date sisteEndring = ofNullable(aktivitetFeedDAO.hentSisteHistoriskeTidspunkt()).orElseGet(() -> new Date(0));
-        return ZonedDateTime.ofInstant(sisteEndring.toInstant(), ZoneId.systemDefault()).toString();
+    public String sisteKjenteId() {
+        Date sisteKjenteId = ofNullable(avsluttetOppfolgingFeedDAO.hentSisteKjenteId()).orElseGet(() -> new Date(0));
+        return ZonedDateTime.ofInstant(sisteKjenteId.toInstant(), ZoneId.systemDefault()).toString();
     }
 
     public void lesAvsluttetOppfolgingFeed(String lastEntryId, List<AvsluttetOppfolgingFeedDTO> elements) {
-        elements.forEach(element -> aktivitetService.settAktiviteterTilHistoriske(element.getAktoerid(), element.getSluttdato()));
+        Date lastSuccessfulId = null;
+        for (AvsluttetOppfolgingFeedDTO element : elements) {
+            aktivitetService.settAktiviteterTilHistoriske(element.getAktoerid(), element.getSluttdato());
+            lastSuccessfulId = element.getOppdatert();
+        }
+
+        // Håndterer ikke exceptions her. Dersom en exception oppstår i løkkeprosesseringen over, vil 
+        // vi altså IKKE få oppdatert siste id. Dermed vil vi lese feeden på nytt fra siste kjente id og potensielt
+        // prosessere noen elementer flere ganger. Dette skal gå bra, siden koden som setter dialoger til historisk
+        // er idempotent
+        if(lastSuccessfulId != null) {
+            avsluttetOppfolgingFeedDAO.oppdaterSisteFeedId(lastSuccessfulId);
+        }        
     }
 }

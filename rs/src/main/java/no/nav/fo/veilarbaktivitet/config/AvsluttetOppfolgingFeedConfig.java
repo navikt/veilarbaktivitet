@@ -24,7 +24,7 @@ public class AvsluttetOppfolgingFeedConfig {
         FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(
                 new FeedConsumerConfig.BaseConfig<>(
                         AvsluttetOppfolgingFeedDTO.class,
-                        avsluttetOppfolgingFeedProvider::sisteEndring,
+                        avsluttetOppfolgingFeedProvider::sisteKjenteId,
                         host,
                         AvsluttetOppfolgingFeedDTO.FEED_NAME
                 ),
