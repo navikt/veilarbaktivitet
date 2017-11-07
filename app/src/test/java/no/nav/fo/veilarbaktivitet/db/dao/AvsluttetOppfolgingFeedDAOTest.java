@@ -21,7 +21,7 @@ public class AvsluttetOppfolgingFeedDAOTest extends IntegrasjonsTest {
     }
 
     @Test
-    public void skal_ha_siste_dato_for_historiske_aktiviteter() {
+    public void skal_kunne_sette_og_hente_siste_kjente_id() {
         Date id = new Date();
         avsluttetOppfolgingFeedDAO.oppdaterSisteFeedId(id);
         Date sisteKjenteId = avsluttetOppfolgingFeedDAO.hentSisteKjenteId();
