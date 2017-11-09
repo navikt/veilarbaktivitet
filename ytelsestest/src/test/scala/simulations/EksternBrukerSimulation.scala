@@ -1,5 +1,20 @@
 package simulations
 
+import java.net.URLEncoder
+
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import no.nav.sbl.gatling.login.OpenIdConnectLogin
+import org.slf4j.LoggerFactory
+import utils.{FeedHelpers, Helpers}
+import java.util.concurrent.TimeUnit
+
+import io.gatling.core.session.Expression
+import io.gatling.core.feeder.RecordSeqFeederBuilder
+
+import scala.concurrent.duration._
+import scala.util.Random
+
 class EksternBrukerSimulation extends Simulation {
 
   private val logger = LoggerFactory.getLogger(EksternBrukerSimulation.this.getClass)
@@ -10,7 +25,7 @@ class EksternBrukerSimulation extends Simulation {
   private val usersPerSecReading = Integer.getInteger("USERS_PER_SEC_READING",2).toInt
   private val usersPerSecEditing = Integer.getInteger("USERS_PER_SEC_EDITING",3).toInt
   private val duration = Integer.getInteger("DURATION", 300).toInt
-  private val baseUrl = System.getProperty("BASEURL", "https://tjenester-t3.nav.no")
+  private val baseUrl = System.getProperty("BASEURL", "https://tjenester-q1.nav.no")
   private val standard_headers = Map( """Accept""" -> """text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
 
   ///////////////////////////
@@ -57,6 +72,7 @@ class EksternBrukerSimulation extends Simulation {
         .formParam("""gx_charset""", """UTF-8""")
         .check(status.is(302))
     )
+    .pause("50", "600", TimeUnit.MILLISECONDS)
   }
 
   ///////////////////////////
@@ -71,13 +87,13 @@ class EksternBrukerSimulation extends Simulation {
   ///////////////////////////
   //Hjelpemetoder
   ///////////////////////////
-  private def hentOppfolgingOgSettVariabler() = {
+  private def hentSituasjonOgSettVariabler() = {
     exec(Helpers.httpGetSuccess("hent oppfolging", "/veilarboppfolgingproxy/api/oppfolging")
-      .check(regex("\"vilkarMaBesvares\":(.*?),").saveAs("vilkarMaBesvares"))
-      .check(regex("\"reservasjonKRR\":(.*?),").saveAs("reservasjonKRR"))
-      .check(regex("\"manuell\":(.*?),").saveAs("manuell"))
-      .check(regex("\"underOppfolging\":(.*?),").saveAs("underOppfolging"))
-      .check(status.is(200).saveAs("oppfolgingResponseCode")))
+      .check(regex("\"vilkarMaBesvares\"?:?(.*?),").saveAs("vilkarMaBesvares"))
+      .check(regex("\"reservasjonKRR\"?:?(.*?),").saveAs("reservasjonKRR"))
+      .check(regex("\"manuell\"?:?(.*?),").saveAs("manuell"))
+      .check(regex("\"underOppfolging\"?:?(.*?),").saveAs("underOppfolging"))
+      .check(status.is(200).saveAs("situasjonResponseCode")))
   }
 
   ///////////////////////////
@@ -89,14 +105,15 @@ class EksternBrukerSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("henter innloggingslinje", "/innloggingslinje/auth"))
     .exec(Helpers.httpGetSuccess("henter tekster", "/aktivitetsplan/api/tekster"))
     .exec(Helpers.httpGetSuccess("me", "/veilarboppfolgingproxy/api/oppfolging/me"))
-    .exec(hentOppfolgingOgSettVariabler)
-    .doIfEquals("${oppfolgingResponseCode}", 200) {
+    .exec(hentSituasjonOgSettVariabler)
+    .pause("50", "600", TimeUnit.MILLISECONDS)
+    .doIfEquals("${situasjonResponseCode}", 200) {
       doIfEquals("${vilkarMaBesvares}", "true") {
-        exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarboppfolgingproxy/api/oppfolging/vilkar").check(regex("\"hash\":\"(.*?)\"").saveAs("hash")))
+        exec(Helpers.httpGetSuccess("henter vilkaar", "/veilarboppfolgingproxy/api/oppfolging/vilkar").check(regex("\"hash\"?:?\"(.*?)\"").saveAs("hash")))
+          .pause("50", "600", TimeUnit.MILLISECONDS)
           .exec(Helpers.httpPost("godtar vilkaar", session => s"/veilarboppfolgingproxy/api/oppfolging/godta/${session("hash").as[String]}"))
       }
     }
-    .exec(Helpers.httpGetSuccess("hent oppfolging", "/veilarboppfolgingproxy/api/oppfolging"))
     .exec(Helpers.httpGetSuccess("hent dialog", "/veilarbdialogproxy/api/dialog"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", "/veilarbaktivitetproxy/api/aktivitet"))
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", "/veilarbaktivitetproxy/api/aktivitet/arena"))
@@ -111,32 +128,39 @@ class EksternBrukerSimulation extends Simulation {
     .feed(livslopsStatuser)
     .feed(jobbstatus)
     .exec(login)
-    .exec(hentOppfolgingOgSettVariabler)
+    .exec(hentSituasjonOgSettVariabler)
+    .pause("50", "600", TimeUnit.MILLISECONDS)
     .exec(Helpers.httpPost("registrerer maal", session => s"/veilarboppfolgingproxy/api/oppfolging/mal")
       .body(StringBody("{\"mal\":\"Ytelsestest - Lager et nytt maal\"}")).asJSON
     )
+    .pause("50", "600", TimeUnit.MILLISECONDS)
     .exec(
       Helpers.httpPost("registrer aktivitet", "/veilarbaktivitetproxy/api/aktivitet/ny")
         .body(ElFileBody("domain/liten-aktivitet.json"))
         .check(jsonPath("$").saveAs("responseJson"))
-        .check(regex("\"id\" : \"(.*?)\"").saveAs("aktivitet_id"))
+        .check(regex("\"id\"?:?\"(.*?)\"").saveAs("aktivitet_id"))
     )
+    .pause("50", "600", TimeUnit.MILLISECONDS)
     .doIfEquals("${responseCode}", 200) {
       exec(Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}")
-          .check(regex("\"beskrivelse\" : \"${username}\""))
+          .check(regex("\"beskrivelse\"?:?\"${username}\""))
       )
+      .pause("50", "600", TimeUnit.MILLISECONDS)
       .exec(Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}")
           .body(StringBody("""${responseJson}""")).asJSON
           .check(jsonPath("$").saveAs("responseJson2"))
       )
+      .pause("50", "600", TimeUnit.MILLISECONDS)
       .exec(Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}/status")
           .body(StringBody("""${responseJson2}""")).asJSON
       )
+        .pause("50", "600", TimeUnit.MILLISECONDS)
       .exec(Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner"))
       .doIfEquals("${underOppfolging}", "false") {
         exec(Helpers.httpDeleteSuccess("slett aktivitet", session => s"/veilarbaktivitetproxy/api/aktivitet/${session("aktivitet_id").as[String]}"))
       }
     }
+    .pause("50", "600", TimeUnit.MILLISECONDS)
     .exec(
       Helpers.httpPost("oppretter ny dialog", session => s"/veilarbdialogproxy/api/dialog")
         .body(StringBody("{\"overskrift\":\"Overskrift\",\"tekst\":\"Generert-data-ytelsestest\"}")).asJSON

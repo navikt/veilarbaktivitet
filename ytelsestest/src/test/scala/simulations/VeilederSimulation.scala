@@ -1,6 +1,19 @@
 package simulations
 
+import java.net.URLEncoder
+
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import no.nav.sbl.gatling.login.OpenIdConnectLogin
+import org.slf4j.LoggerFactory
+import utils.Helpers
+import no.nav.sbl.gatling.login.LoginHelper
 import java.util.concurrent.TimeUnit
+
+import io.gatling.core.session.Expression
+
+import scala.concurrent.duration._
+import scala.util.Random
 
 class VeilederSimulation extends Simulation {
 
@@ -12,13 +25,13 @@ class VeilederSimulation extends Simulation {
   private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 12).toInt
   private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 3).toInt
   private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 4).toInt
-  private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 2).toInt
+  private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 1).toInt
 
-  private val duration = Integer.getInteger("DURATION", 2700).toInt
-  //private val baseUrl = System.getProperty("BASEURL", "http://localhost:8080")
-  private val baseUrl = System.getProperty("BASEURL", "https://app-t3.adeo.no")
-  private val loginUrl = System.getProperty("LOGINURL", "https://isso-t.adeo.no")
-  val veilederPassword = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!)
+  private val duration = Integer.getInteger("DURATION", 3600).toInt
+  private val baseUrl = System.getProperty("BASEURL", "https://app-q1.adeo.no")
+  private val loginBruker = System.getProperty("LOGIN_BRUKER", "veilarblogin-q1")
+  private val loginUrl = System.getProperty("LOGINURL", "https://isso-q.adeo.no")
+  val veilederPassword = System.getProperty("VEILEDER_PASSWD", "!!ChangeMe!!")
   private val enheter = System.getProperty("ENHETER", "1001").split(",") //Norge største enhet Nav Kristiansand
 
 
@@ -60,8 +73,9 @@ class VeilederSimulation extends Simulation {
   private def login() = {
     exec(session => session.set("veilederPassword", veilederPassword))
     .exec(session => session.set("veilederUsername", session("username").as[String]))
-    .exec(LoginHelper.loginOidc(loginUrl, "veilarblogin-t3", baseUrl))
+    .exec(LoginHelper.loginOidc(loginUrl, loginBruker, baseUrl))
   }
+
 
   ///////////////////////////
   //HTTP-oppsett
@@ -93,9 +107,9 @@ class VeilederSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
     .exec(Helpers.httpGetSuccess("me", "/veilarboppfolging/api/oppfolging/me"))
     .exec(Helpers.httpGetSuccess("hent oppfolging", session => s"/veilarboppfolging/api/oppfolging?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
+    //.exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}"))
-    .exec(Helpers.httpGetSuccess("hent arbeidsliste", session => s"/veilarbportefolje/tjenester/arbeidsliste/${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("hent arbeidsliste", session => s"/veilarbportefolje/api/arbeidsliste/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", session => s"/veilarbaktivitet/api/aktivitet?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", session => s"/veilarbaktivitet/api/aktivitet/arena?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("henter maal", session => s"/veilarboppfolging/api/oppfolging/mal?fnr=${session("user").as[String]}"))
@@ -113,14 +127,14 @@ class VeilederSimulation extends Simulation {
     .exec(
       Helpers.httpPost("registrer aktivitet", session => s"/veilarbaktivitet/api/aktivitet/ny?fnr=${session("user").as[String]}")
         .body(ElFileBody("domain/stor-aktivitet.json"))
-        .check(regex("\"id\" : \"(.*?)\"").saveAs("aktivitet_id"))
+        .check(regex("\"id\"?:?\"(.*?)\"").saveAs("aktivitet_id"))
         .check(jsonPath("$").saveAs("responseJson"))
     )
     .pause("50", "600", TimeUnit.MILLISECONDS)
     .doIfEquals("${responseCode}", 200) {
        exec(
         Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
-          .check(regex("\"beskrivelse\" : \"${user}\""))
+          .check(regex("\"beskrivelse\"?:?\"${user}\""))
         )
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
@@ -146,7 +160,7 @@ class VeilederSimulation extends Simulation {
     .exec(
       Helpers.httpPost("ny dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}")
         .body(StringBody("{\"overskrift\" : \"Overskrift\",\"tekst\":\"Generert-data-ytelsestest\"}")).asJSON
-        .check(regex("\"id\" : \"(.*?)\"").saveAs("dialog_id"))
+        .check(regex("\"id\"?:?\"(.*?)\"").saveAs("dialog_id"))
         .check(regex("(.*)").saveAs("dialogResponse"))
     )
     .pause("50", "600", TimeUnit.MILLISECONDS)
@@ -166,29 +180,39 @@ class VeilederSimulation extends Simulation {
     .exec(login)
     .exec(Helpers.httpGetSuccess("henter innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("henter reservert-status", session => s"/veilarboppfolging/api/oppfolging?fnr=${session("user").as[String]}")
-      .check(regex("\"reservasjonKRR\" : (.*?),").saveAs("erReservert")))
+      .check(regex("\"reservasjonKRR\"?:?(.*?),").saveAs("erReservert"))
+      .check(regex("\"underOppfolging\"?:?(.*?),").saveAs("underOppfolging")))
 
     .doIfEquals("${erReservert}", "false") {
+
+      exec(
+        Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
+          .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
+      )
+      .exec(
+        Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarboppfolging/api/oppfolging/settManuell?fnr=${session("user").as[String]}")
+          .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
+      )
+        .exec(
+        Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
+          .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
+      )
+
+      .doIfEquals("${underOppfolging}", "true") {
         exec(
-          Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarboppfolging/api/oppfolging/settManuell?fnr=${session("user").as[String]}")
-            .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
-        )
-        .exec(
-          Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
-            .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
-        )
-        .exec(
           Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}")
             .check(regex("${user}").count.greaterThan(1))
         )
       }
+      }
+
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarboppfolging/api/oppfolging/avslutningStatus?fnr=${session("user").as[String]}"))
 
   setUp(
-    personflateScenario.inject(rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds), constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
-    regAktivitetScenario.inject(rampUsers(40) over (20 seconds), rampUsers(200) over (20 seconds),constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
-    dialogScenario.inject(rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
-    innstillingerScenario.inject(rampUsers(40) over (20 seconds),constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
+    personflateScenario.inject(constantUsersPerSec(usersPerSecAapnerAktivitetsplan) during (duration seconds)),
+    regAktivitetScenario.inject(constantUsersPerSec(usersPerSecRegistrererAktivitetsplan) during (duration seconds)),
+    dialogScenario.inject(constantUsersPerSec(usersPerSecDialog) during (duration seconds)),
+    innstillingerScenario.inject(constantUsersPerSec(usersPerSecInnstillinger) during (duration seconds))
   ).protocols(httpProtocol)
     .assertions(global.successfulRequests.percent.gte(99))
 
