@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FeedConfig {
 
+    public static boolean isMasterNode() {
+        String isMasterString = System.getProperty("cluster.ismasternode", "false");
+        return Boolean.parseBoolean(isMasterString);
+    }
+
     @Bean
     public FeedController feedController(
             FeedProducer<AktivitetFeedData> aktivitetFeed,
@@ -23,7 +28,10 @@ public class FeedConfig {
         FeedController feedController = new FeedController();
 
         feedController.addFeed(AktivitetFeedData.FEED_NAME, aktivitetFeed);
-        feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
+
+        if (isMasterNode()) {
+            feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
+        }
 
         return feedController;
     }
