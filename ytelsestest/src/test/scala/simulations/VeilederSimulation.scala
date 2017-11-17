@@ -22,12 +22,12 @@ class VeilederSimulation extends Simulation {
   ////////////////////////////
   //Variabler settes i Jenkins
   ///////////////////////////
-  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 12).toInt
-  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 3).toInt
-  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 4).toInt
-  private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 1).toInt
+  private val usersPerSecAapnerAktivitetsplan = Integer.getInteger("USERS_PER_SEC_AAPNER_AKTIVITETSPLAN", 12).toInt //12
+  private val usersPerSecRegistrererAktivitetsplan = Integer.getInteger("USERS_PER_SEC_REG_AKTIVITET", 3).toInt //3
+  private val usersPerSecDialog = Integer.getInteger("USERS_PER_SEC_DIALOG", 4).toInt // 4
+  private val usersPerSecInnstillinger = Integer.getInteger("USERS_PER_SEC_INNSTILLINGER", 1).toInt //2
 
-  private val duration = Integer.getInteger("DURATION", 3600).toInt
+  private val duration = Integer.getInteger("DURATION", 600).toInt
   private val baseUrl = System.getProperty("BASEURL", "https://app-q1.adeo.no")
   private val loginBruker = System.getProperty("LOGIN_BRUKER", "veilarblogin-q1")
   private val loginUrl = System.getProperty("LOGINURL", "https://isso-q.adeo.no")
@@ -72,8 +72,9 @@ class VeilederSimulation extends Simulation {
 
   private def login() = {
     exec(session => session.set("veilederPassword", veilederPassword))
-    .exec(session => session.set("veilederUsername", session("username").as[String]))
-    .exec(LoginHelper.loginOidc(loginUrl, loginBruker, baseUrl))
+      .exec(session => session.set("veilederUsername", session("username").as[String]))
+      .exec(LoginHelper.loginOidc(loginUrl, loginBruker, baseUrl))
+      .pause("500", "1000", TimeUnit.MILLISECONDS)
   }
 
 
@@ -107,11 +108,16 @@ class VeilederSimulation extends Simulation {
     .exec(Helpers.httpGetSuccess("tekster personflate", "/veilarbpersonfs/tjenester/tekster?lang=nb"))
     .exec(Helpers.httpGetSuccess("me", "/veilarboppfolging/api/oppfolging/me"))
     .exec(Helpers.httpGetSuccess("hent oppfolging", session => s"/veilarboppfolging/api/oppfolging?fnr=${session("user").as[String]}"))
-    //.exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
+    .pause("50", "200", TimeUnit.MILLISECONDS)
+    .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent dialog", session => s"/veilarbdialog/api/dialog?fnr=${session("user").as[String]}"))
+    .exec(Helpers.httpGetSuccess("hent veilederdetaljer", "/veilarbveileder/api/veileder/enheter"))
+    .pause("50", "200", TimeUnit.MILLISECONDS)
+    .exec(Helpers.httpGetSuccess("hent persondetaljer", session => s"/veilarbperson/api/person/${session("user").as[String]}")) //kall #2 siden det gjøres to kall fra personflaten.
     .exec(Helpers.httpGetSuccess("hent arbeidsliste", session => s"/veilarbportefolje/api/arbeidsliste/${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent aktiviteter", session => s"/veilarbaktivitet/api/aktivitet?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent arena-aktiviteter", session => s"/veilarbaktivitet/api/aktivitet/arena?fnr=${session("user").as[String]}"))
+    .pause("50", "200", TimeUnit.MILLISECONDS)
     .exec(Helpers.httpGetSuccess("henter maal", session => s"/veilarboppfolging/api/oppfolging/mal?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("henter maal-historikk", session => s"/veilarboppfolging/api/oppfolging/malListe?fnr=${session("user").as[String]}"))
     .exec(Helpers.httpGetSuccess("hent vilkaar", session => s"/veilarboppfolging/api/oppfolging/hentVilkaarStatusListe?fnr=${session("user").as[String]}"))
@@ -132,10 +138,10 @@ class VeilederSimulation extends Simulation {
     )
     .pause("50", "600", TimeUnit.MILLISECONDS)
     .doIfEquals("${responseCode}", 200) {
-       exec(
+      exec(
         Helpers.httpGetSuccess("hent nylig lagret aktivitet", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
           .check(regex("\"beskrivelse\"?:?\"${user}\""))
-        )
+      )
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("kaller endre-aktivitet-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}?fnr=${session("user").as[String]}")
           .body(StringBody("""${responseJson}""")).asJSON
@@ -143,10 +149,10 @@ class VeilederSimulation extends Simulation {
         )
         .pause("50", "600", TimeUnit.MILLISECONDS)
         .exec(Helpers.httpPut("kaller endre-status-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/status?fnr=${session("user").as[String]}")
-             .body(StringBody("""${responseJson2}""")).asJSON
+          .body(StringBody("""${responseJson2}""")).asJSON
         )
         .exec(
-            Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}")
+          Helpers.httpGetSuccess("kaller versjoner(historikk)-endepunkt", session => s"/veilarbaktivitet/api/aktivitet/${session("aktivitet_id").as[String]}/versjoner?fnr=${session("user").as[String]}")
         )
     }
     .exec(Helpers.httpPost("endrer maal til bruker", session => s"/veilarboppfolging/api/oppfolging/mal?fnr=${session("user").as[String]}")
@@ -189,22 +195,22 @@ class VeilederSimulation extends Simulation {
         Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
           .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
       )
-      .exec(
-        Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarboppfolging/api/oppfolging/settManuell?fnr=${session("user").as[String]}")
-          .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
-      )
         .exec(
-        Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
-          .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
-      )
-
-      .doIfEquals("${underOppfolging}", "true") {
-        exec(
-          Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}")
-            .check(regex("${user}").count.greaterThan(1))
+          Helpers.httpPost("setter bruker til manuell oppfolging", session => s"/veilarboppfolging/api/oppfolging/settManuell?fnr=${session("user").as[String]}")
+            .body(StringBody("""{"begrunnelse":"setter ${user} til manuell","veilederId":"Ytelesestest-veileder"}""")).asJSON
         )
-      }
-      }
+        .exec(
+          Helpers.httpPost("setter bruker til digital oppfolging", session => s"/veilarboppfolging/api/oppfolging/settDigital?fnr=${session("user").as[String]}")
+            .body(StringBody("""{"begrunnelse":"setter ${user} til digital","veilederId":"Ytelesestest-veileder"}""")).asJSON
+        )
+
+        .doIfEquals("${underOppfolging}", "true") {
+          exec(
+            Helpers.httpGetSuccess("sjekker innstillingerhistorikk", session => s"/veilarboppfolging/api/oppfolging/innstillingsHistorikk?fnr=${session("user").as[String]}")
+              .check(regex("${user}").count.greaterThan(1))
+          )
+        }
+    }
 
     .exec(Helpers.httpGetSuccess("sjekker avslutningsstatus", session => s"/veilarboppfolging/api/oppfolging/avslutningStatus?fnr=${session("user").as[String]}"))
 

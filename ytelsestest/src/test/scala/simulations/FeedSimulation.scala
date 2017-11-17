@@ -1,7 +1,22 @@
 package simulations
 
 import java.net.URLEncoder
+
+import io.gatling.core.Predef._
+import io.gatling.http.Predef._
+import no.nav.sbl.gatling.login.OpenIdConnectLogin
+import org.slf4j.LoggerFactory
+import utils.Helpers
+import utils.FeedHelpers
+import no.nav.sbl.gatling.login.LoginHelper
 import java.util.concurrent.TimeUnit
+
+import io.gatling.core.session.Expression
+
+import scala.concurrent.duration._
+import scala.util.Random
+import java.net.URLEncoder
+
 
 class FeedSimulation extends Simulation {
 
