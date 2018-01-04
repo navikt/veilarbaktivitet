@@ -34,6 +34,9 @@ public class Database {
         return time(sql, () -> jdbcTemplate.queryForObject(sql, mapper, args));
     }
 
+    public <T> T queryForObject(String sql, Class<T> cls) {
+        return time(sql, () -> jdbcTemplate.queryForObject(sql, cls));
+    }
 
     public long nesteFraSekvens(String sekvensNavn) {
         return jdbcTemplate.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class);

@@ -97,6 +97,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         aktivitetDAO.slettAktivitet(aktivitet.getId());
 
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
+        assertThat(aktivitetDAO.hentAntallSlettedeAktiviteter(), equalTo(1));
     }
 
     @Test

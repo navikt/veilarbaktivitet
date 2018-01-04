@@ -32,7 +32,8 @@ public class ViewTest extends IntegrasjonsTest {
                 "DVH_SOKEAVTALE_AKTIVITET",
                 "DVH_EGENAKTIVITET",
                 "DVH_MOTE",
-                "DVH_KANAL_TYPE"
+                "DVH_KANAL_TYPE",
+                "DVH_SLETTEDE_AKTIVITETER"
         };
     }
 

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.fo.veilarbaktivitet.util.EnumUtils.getName;
@@ -196,29 +197,25 @@ public class AktivitetDAO {
     }
 
     public void slettAktivitet(long aktivitetId) {
+        int oppdaterteRader = Stream.of(
+                "DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
+                "DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
+                "DELETE FROM SOKEAVTALE WHERE aktivitet_id = ?",
+                "DELETE FROM IJOBB WHERE aktivitet_id = ?",
+                "DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
+                "DELETE FROM MOTE WHERE aktivitet_id = ?",
+                "DELETE FROM AKTIVITET WHERE aktivitet_id = ?"
+        )
+                .mapToInt((sql) -> database.update(sql, aktivitetId))
+                .sum();
 
-        database.update("DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
-                aktivitetId
-        );
-        database.update("DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
-                aktivitetId
-        );
-        database.update("DELETE FROM SOKEAVTALE WHERE aktivitet_id = ?",
-                aktivitetId
-        );
-        database.update("DELETE FROM IJOBB WHERE aktivitet_id = ?",
-                aktivitetId
-        );
-        database.update("DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
-                aktivitetId
-        );
-        database.update("DELETE FROM MOTE WHERE aktivitet_id = ?",
-                aktivitetId
-        );
+        if (oppdaterteRader > 0) {
+            database.update("INSERT INTO SLETTEDE_AKTIVITETER(aktivitet_id, tidspunkt) VALUES(?, CURRENT_TIMESTAMP)", aktivitetId);
+        }
+    }
 
-        database.update("DELETE FROM AKTIVITET WHERE aktivitet_id = ?",
-                aktivitetId
-        );
+    int hentAntallSlettedeAktiviteter() {
+        return database.queryForObject("SELECT COUNT(*) as ANTALL_SLETTET FROM SLETTEDE_AKTIVITETER", Integer.class);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
