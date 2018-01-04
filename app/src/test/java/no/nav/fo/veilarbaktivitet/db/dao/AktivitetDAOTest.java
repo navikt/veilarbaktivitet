@@ -5,6 +5,7 @@ import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -26,6 +27,8 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
 
     @Inject
     private AktivitetDAO aktivitetDAO;
+    @Inject
+    private JdbcTemplate db;
 
     @Test
     public void opprette_og_hente_egenaktivitet() {
@@ -97,6 +100,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         aktivitetDAO.slettAktivitet(aktivitet.getId());
 
         assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
+        assertThat(hentAntallSlettedeAktiviteter(), equalTo(1));
     }
 
     @Test
@@ -193,5 +197,9 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val endret = new Date();
         aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
         return aktivitetDAO.hentAktivitet(id);
+    }
+
+    int hentAntallSlettedeAktiviteter() {
+        return db.queryForObject("SELECT COUNT(*) as ANTALL_SLETTET FROM SLETTEDE_AKTIVITETER", Integer.class);
     }
 }
