@@ -196,6 +196,7 @@ public class AktivitetDAO {
                 });
     }
 
+    @Transactional
     public void slettAktivitet(long aktivitetId) {
         int oppdaterteRader = Stream.of(
                 "DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
@@ -212,10 +213,6 @@ public class AktivitetDAO {
         if (oppdaterteRader > 0) {
             database.update("INSERT INTO SLETTEDE_AKTIVITETER(aktivitet_id, tidspunkt) VALUES(?, CURRENT_TIMESTAMP)", aktivitetId);
         }
-    }
-
-    int hentAntallSlettedeAktiviteter() {
-        return database.queryForObject("SELECT COUNT(*) as ANTALL_SLETTET FROM SLETTEDE_AKTIVITETER", Integer.class);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
