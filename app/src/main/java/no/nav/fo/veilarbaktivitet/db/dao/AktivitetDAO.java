@@ -1,12 +1,13 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
-import lombok.val;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
 import org.springframework.transaction.annotation.Transactional;
+
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -60,6 +61,7 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
     }
 
+    @Transactional
     public void insertAktivitet(AktivitetData aktivitet) {
         insertAktivitet(aktivitet, new Date());
     }
@@ -69,7 +71,7 @@ public class AktivitetDAO {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
-        val versjon = nesteVersjon();
+        long versjon = nesteVersjon();
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
