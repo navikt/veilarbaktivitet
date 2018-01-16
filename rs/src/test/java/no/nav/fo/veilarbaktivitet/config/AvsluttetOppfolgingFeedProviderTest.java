@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Date;
 
+import no.nav.fo.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
 import org.junit.Test;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
@@ -20,7 +21,7 @@ public class AvsluttetOppfolgingFeedProviderTest {
 
     private AktivitetService aktivitetService = mock(AktivitetService.class);
     private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO = mock(AvsluttetOppfolgingFeedDAO.class);    
-    private AvsluttetOppfolgingFeedProvider feedProvider = new AvsluttetOppfolgingFeedProvider(aktivitetService, avsluttetOppfolgingFeedDAO); 
+    private AvsluttetOppfolgingFeedConsumer feedProvider = new AvsluttetOppfolgingFeedConsumer(aktivitetService, avsluttetOppfolgingFeedDAO);
 
     @Test
     public void skal_ta_vare_paa_siste_kjente_id() {
