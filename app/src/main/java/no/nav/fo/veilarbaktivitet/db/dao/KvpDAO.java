@@ -1,25 +1,20 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
 import no.nav.fo.veilarbaktivitet.db.Database;
+import no.nav.fo.veilarbaktivitet.db.rowmappers.KvpDataRowMapper;
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
-
-import static org.slf4j.LoggerFactory.getLogger;
+import java.util.Date;
+import java.util.List;
 
 @Component
 public class KvpDAO {
 
-    private static final Logger LOG = getLogger(KvpDAO.class);
-
-    private final Database database;
-
     @Inject
-    public KvpDAO(Database database) {
-        this.database = database;
-    }
+    private Database database;
 
     /**
      * Insert a new row into the database.
@@ -38,7 +33,6 @@ public class KvpDAO {
                 k.getOpprettetDato(),
                 k.getAvsluttetDato()
         );
-        LOG.info("KVP cache table updated with serial {}", k.getSerial());
     }
 
     /**
@@ -50,5 +44,34 @@ public class KvpDAO {
         } catch (NullPointerException e) {
             return 0;
         }
+    }
+
+    /**
+     * Check if an actor has an active KVP period, and return the office ID.
+     * In case there is no active KVP period, NULL is returned.
+     */
+    @Nullable
+    public String enhetID(String aktorId) {
+        String sql = "" +
+                "SELECT * FROM " +
+                "(SELECT * FROM KVP WHERE AKTOR_ID = ? ORDER BY SERIAL DESC) " +
+                "WHERE ROWNUM = 1";
+
+        List<KvpDTO> results = database.query(sql, KvpDataRowMapper::map, aktorId);
+
+        if (results.size() == 0) {
+            return null;
+        }
+
+        KvpDTO kvp = results.stream().findFirst().get();
+        Date dt = kvp.getAvsluttetDato();
+
+        // If end date is not set, or is set in the future, return the office ID.
+        if (dt == null || dt.after(new Date())) {
+            return kvp.getEnhet();
+        }
+
+        // The latest KVP period has finished.
+        return null;
     }
 }
