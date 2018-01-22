@@ -205,6 +205,11 @@
             <artifactId>modig-security-loginmodule</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>no.nav.fo</groupId>
+            <artifactId>veilarboppfolging-api</artifactId>
+            <version>RELEASE</version>
+        </dependency>
     </dependencies>
 
     <build>
