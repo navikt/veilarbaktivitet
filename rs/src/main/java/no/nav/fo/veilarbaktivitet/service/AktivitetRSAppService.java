@@ -5,6 +5,7 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
@@ -59,7 +60,9 @@ public class AktivitetRSAppService extends AktivitetAppService {
     @Override
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         sjekkTilgangTilAktivitet(aktivitet.getId());
-        return internalOppdaterStatus(aktivitet);
+        AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
+        FunksjonelleMetrikker.oppdatertStatusAvNAV(aktivitet.getStatus());
+        return aktivitetData;
     }
 
     public AktivitetData oppdaterReferat(AktivitetData aktivitet, AktivitetTransaksjonsType aktivitetTransaksjonsType) {

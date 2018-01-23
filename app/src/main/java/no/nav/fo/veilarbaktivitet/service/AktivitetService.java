@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
-
+import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,6 +54,7 @@ public class AktivitetService {
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivivitet);
+        FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
 
@@ -174,6 +175,7 @@ public class AktivitetService {
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .build()
         );
+        FunksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt);
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
