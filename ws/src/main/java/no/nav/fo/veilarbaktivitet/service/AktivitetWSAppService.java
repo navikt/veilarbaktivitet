@@ -49,7 +49,7 @@ public class AktivitetWSAppService extends AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if(TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())){
             AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
-            FunksjonelleMetrikker.oppdatertStatusAvBruker(aktivitetData.getStatus());
+            FunksjonelleMetrikker.oppdatertStatusAvBruker(aktivitetData);
             return aktivitetData;
         }
         return aktivitet;

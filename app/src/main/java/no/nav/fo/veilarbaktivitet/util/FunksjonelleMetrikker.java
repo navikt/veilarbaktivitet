@@ -1,7 +1,6 @@
 package no.nav.fo.veilarbaktivitet.util;
 
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
 import no.nav.metrics.MetricsFactory;
 
@@ -21,18 +20,23 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
-    public static void oppdatertStatusAvNAV(AktivitetStatus status) {
-        oppdatertStatus(status, true);
+    public static void oppdatertStatusAvNAV(AktivitetData aktivitetData) {
+        oppdatertStatus(aktivitetData, true);
     }
 
-    public static void oppdatertStatusAvBruker(AktivitetStatus status) {
-        oppdatertStatus(status, false);
+    public static void oppdatertStatusAvBruker(AktivitetData aktivitetData) {
+        oppdatertStatus(aktivitetData, false);
     }
 
-    private static void oppdatertStatus(AktivitetStatus status, boolean oppdatertAvNAV) {
+    private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
-                .addFieldToReport("status", status)
+                .addFieldToReport("status", aktivitetData)
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
+                .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .report();
+    }
+
+    private static long tidMellomOpprettetOgOppdatert(AktivitetData aktivitetData) {
+        return aktivitetData.getEndretDato().getTime() - aktivitetData.getOpprettetDato().getTime();
     }
 }

@@ -61,7 +61,7 @@ public class AktivitetRSAppService extends AktivitetAppService {
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         sjekkTilgangTilAktivitet(aktivitet.getId());
         AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
-        FunksjonelleMetrikker.oppdatertStatusAvNAV(aktivitet.getStatus());
+        FunksjonelleMetrikker.oppdatertStatusAvNAV(aktivitetData);
         return aktivitetData;
     }
 
