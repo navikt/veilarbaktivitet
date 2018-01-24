@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
 
@@ -47,7 +48,9 @@ public class AktivitetWSAppService extends AktivitetAppService {
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if(TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())){
-            return internalOppdaterStatus(aktivitet);
+            AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
+            FunksjonelleMetrikker.oppdatertStatusAvBruker(aktivitetData);
+            return aktivitetData;
         }
         return aktivitet;
     }
