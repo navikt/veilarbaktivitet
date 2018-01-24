@@ -2,9 +2,11 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
+import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 
+import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,12 @@ import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 @Component
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
+    private final KvpClient kvpClient;
 
     @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient) {
         this.aktivitetDAO = aktivitetDAO;
+        this.kvpClient = kvpClient;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
@@ -41,9 +45,25 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
+    /**
+     * Returnerer en kopi av AktivitetData-objektet hvor kontorsperreEnhetId
+     * er satt dersom brukeren er under KVP.
+     */
+    private AktivitetData tagUsingKVP(AktivitetData a) {
+        KvpDTO kvp;
+
+        kvp = kvpClient.get(a.getAktorId());
+        if (kvp == null) {
+            return a;
+        }
+
+        return a.toBuilder().kontorsperreEnhetId(kvp.getEnhet()).build();
+    }
+
     public long opprettAktivitet(String aktorId, AktivitetData aktivitet, String endretAv) {
+
         val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
-        val nyAktivivitet = aktivitet
+        AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId)
@@ -52,6 +72,8 @@ public class AktivitetService {
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
                 .build();
+
+        nyAktivivitet = tagUsingKVP(nyAktivivitet);
 
         aktivitetDAO.insertAktivitet(nyAktivivitet);
         return aktivitetId;
@@ -62,7 +84,7 @@ public class AktivitetService {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
-        val nyAktivitet = orginalAktivitet
+        AktivitetData nyAktivitet = orginalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .lagtInnAv(aktivitet.getLagtInnAv())

@@ -34,7 +34,8 @@ public class AktivitetDataRowMapper {
                         valueOf(AktivitetTransaksjonsType.class,
                                 rs.getString("transaksjons_type"))
                 )
-                .historiskDato(hentDato(rs, "historisk_dato"));
+                .historiskDato(hentDato(rs, "historisk_dato"))
+                .kontorsperreEnhetId(rs.getString("kontorsperre_enhet_id"));
 
         switch (type) {
             case EGENAKTIVITET:
