@@ -8,14 +8,14 @@ public class FunksjonelleMetrikker {
 
     public static void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
         MetricsFactory.createEvent("aktivitet.ny")
-                .addFieldToReport("type", aktivitetData.getAktivitetType())
+                .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
                 .report();
     }
 
-    public static void oppdaterAktivitetMetrikk(AktivitetData aktivitet, boolean blittAvtalt) {
+    public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt) {
         MetricsFactory.createEvent("aktivitet.oppdatert")
-                .addFieldToReport("type", aktivitet.getAktivitetType())
+                .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
                 .report();
     }
@@ -30,6 +30,7 @@ public class FunksjonelleMetrikker {
 
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
+                .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("status", aktivitetData)
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
