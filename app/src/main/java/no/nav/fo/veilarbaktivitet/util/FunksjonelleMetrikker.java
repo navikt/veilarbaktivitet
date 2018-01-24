@@ -31,7 +31,7 @@ public class FunksjonelleMetrikker {
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
-                .addFieldToReport("status", aktivitetData)
+                .addFieldToReport("status", aktivitetData.getStatus())
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .report();
