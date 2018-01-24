@@ -15,10 +15,14 @@ public class RestClient {
 
     private final Provider<HttpServletRequest> httpServletRequestProvider;
     private final String basePath;
+    private final long connectTimeout;
+    private final long readTimeout;
 
-    public RestClient(Provider<HttpServletRequest> httpServletRequestProvider, String basePath) {
+    public RestClient(Provider<HttpServletRequest> httpServletRequestProvider, String basePath, long connectTimeout, long readTimeout) {
         this.httpServletRequestProvider = httpServletRequestProvider;
         this.basePath = basePath;
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
     }
 
     public RestRequest request(String relativePath) {
@@ -32,12 +36,12 @@ public class RestClient {
         ClientConfig clientConfig = new ClientConfig();
         clientConfig.register(new JsonProvider());
         clientConfig.property(FOLLOW_REDIRECTS,false);
-        clientConfig.property(CONNECT_TIMEOUT,1000);
-        clientConfig.property(READ_TIMEOUT,1000);
+        clientConfig.property(CONNECT_TIMEOUT, connectTimeout);
+        clientConfig.property(READ_TIMEOUT, readTimeout);
         return ClientBuilder.newClient(clientConfig);
     }
 
-    public static RestClient build(Provider<HttpServletRequest> httpServletRequestProvider, String basePath) {
+    public static RestClient build(Provider<HttpServletRequest> httpServletRequestProvider, String basePath, long connectTimeout, long readTimeout) {
         if (basePath == null || basePath.length() == 0) {
             throw new IllegalArgumentException("mangler basePath");
         }
@@ -45,7 +49,7 @@ public class RestClient {
             throw new IllegalArgumentException("mangler httpServletRequestProvider");
         }
 
-        return new RestClient(httpServletRequestProvider, basePath);
+        return new RestClient(httpServletRequestProvider, basePath, connectTimeout, readTimeout);
     }
 
 }

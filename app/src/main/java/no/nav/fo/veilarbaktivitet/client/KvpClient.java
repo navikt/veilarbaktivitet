@@ -2,8 +2,6 @@ package no.nav.fo.veilarbaktivitet.client;
 
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 
-import java.util.List;
-
 public class KvpClient {
 
     private RestClient restClient;
