@@ -2,17 +2,20 @@ package no.nav.fo.veilarbaktivitet.client;
 
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 
+import javax.ws.rs.client.Client;
+
 public class KvpClient {
 
-    private RestClient restClient;
+    private final String baseUrl;
+    private final Client client;
 
-    public KvpClient(RestClient restClient) {
-        this.restClient = restClient;
+    public KvpClient(String baseUrl, Client client) {
+        this.baseUrl = baseUrl;
+        this.client = client;
     }
 
     public KvpDTO get(String aktorId) {
-        String uri = String.format("/%s/currentStatus", aktorId);
-        RestRequest request = restClient.request(uri);
-        return request.get(KvpDTO.class);
+        String uri = String.format("%s/%s/currentStatus", baseUrl, aktorId);
+        return client.target(uri).request().get(KvpDTO.class);
     }
 }

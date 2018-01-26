@@ -1,18 +1,20 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
-
-import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
+import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
 import java.util.List;
 
@@ -53,7 +55,14 @@ public class AktivitetService {
     private AktivitetData tagUsingKVP(AktivitetData a) {
         KvpDTO kvp;
 
-        kvp = kvpClient.get(a.getAktorId());
+        try {
+            kvp = kvpClient.get(a.getAktorId());
+        } catch (ForbiddenException e) {
+            throw new Feil(Feil.Type.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
+        } catch (InternalServerErrorException e) {
+            throw new Feil(Feil.Type.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
+        }
+
         if (kvp == null) {
             return a;
         }
