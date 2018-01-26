@@ -26,6 +26,10 @@
             <artifactId>api-app</artifactId>
         </dependency>
         <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>rest</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav</groupId>
             <artifactId>metrics</artifactId>
         </dependency>
@@ -40,6 +44,10 @@
         <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
             <artifactId>javax.inject</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
         </dependency>
 
         <!-- Tjenester -->
