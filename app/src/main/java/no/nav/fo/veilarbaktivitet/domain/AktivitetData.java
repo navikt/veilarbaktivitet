@@ -29,6 +29,7 @@ public class AktivitetData {
     boolean avtalt;
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
+    String kontorsperreEnhetId;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

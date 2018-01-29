@@ -2,12 +2,14 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
+import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
 
+import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -26,6 +28,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
@@ -33,9 +36,13 @@ import static org.mockito.Mockito.*;
 public class AktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
+    private static final String KONTORSPERRE_ENHET_ID = "1337";
 
     @Mock
     private AktivitetDAO aktivitetDAO;
+
+    @Mock
+    private KvpClient kvpClient;
 
     @Captor
     private ArgumentCaptor argumentCaptor;
@@ -48,6 +55,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
+        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(null);
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
 
         captureInsertAktivitetArgument();
@@ -56,9 +64,24 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getFraDato(), equalTo(aktivitet.getFraDato()));
         assertThat(getCapturedAktivitet().getTittel(), equalTo(aktivitet.getTittel()));
 
+        assertThat(getCapturedAktivitet().getKontorsperreEnhetId(), nullValue());
         assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
+    }
+
+    @Test
+    public void opprettAktivitetMedKvp() {
+        val aktivitet = lagEnNyAktivitet();
+        KvpDTO kvp = new KvpDTO().setEnhet(KONTORSPERRE_ENHET_ID);
+
+        when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
+        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(kvp);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+
+        captureInsertAktivitetArgument();
+
+        assertThat(getCapturedAktivitet().getKontorsperreEnhetId(), equalTo(kvp.getEnhet()));
     }
 
     @Test

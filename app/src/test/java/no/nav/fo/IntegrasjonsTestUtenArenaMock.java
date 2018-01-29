@@ -3,16 +3,14 @@ package no.nav.fo;
 import no.nav.apiapp.security.PepClient;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
+import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.config.AbacConfig;
 import no.nav.fo.veilarbaktivitet.service.TiltakOgAktivitetMock;
-import no.nav.modig.testcertificates.TestCertificates;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.annotation.*;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
-
-import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 
@@ -45,8 +43,13 @@ public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjons
         }
 
         @Bean
-        public PepClient pepClient(){
+        public PepClient pepClient() {
             return mock(PepClient.class);
+        }
+
+        @Bean
+        public KvpClient kvpClient() {
+            return mock(KvpClient.class);
         }
 
     }

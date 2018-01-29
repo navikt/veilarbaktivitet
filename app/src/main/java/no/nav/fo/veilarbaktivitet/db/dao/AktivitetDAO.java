@@ -75,8 +75,8 @@ public class AktivitetDAO {
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type, historisk_dato) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -95,7 +95,8 @@ public class AktivitetDAO {
                 aktivitet.isAvtalt(),
                 true,
                 getName(aktivitet.getTransaksjonsType()),
-                aktivitet.getHistoriskDato()
+                aktivitet.getHistoriskDato(),
+                aktivitet.getKontorsperreEnhetId()
         );
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());

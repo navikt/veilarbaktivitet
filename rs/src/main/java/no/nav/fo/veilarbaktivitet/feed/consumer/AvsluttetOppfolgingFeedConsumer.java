@@ -1,4 +1,4 @@
-package no.nav.fo.veilarbaktivitet.config;
+package no.nav.fo.veilarbaktivitet.feed.consumer;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
@@ -14,14 +14,14 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 
 @Component
-public class AvsluttetOppfolgingFeedProvider {
+public class AvsluttetOppfolgingFeedConsumer {
 
     private AktivitetService aktivitetService;
 
     private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;
 
     @Inject
-    public AvsluttetOppfolgingFeedProvider(AktivitetService aktivitetService, AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO) {
+    public AvsluttetOppfolgingFeedConsumer(AktivitetService aktivitetService, AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO) {
         this.aktivitetService = aktivitetService;
         this.avsluttetOppfolgingFeedDAO = avsluttetOppfolgingFeedDAO;
     }

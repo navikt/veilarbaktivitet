@@ -1,17 +1,23 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.VersjonsKonflikt;
+import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
+import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
+import javax.ws.rs.ForbiddenException;
+import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
@@ -23,10 +29,12 @@ import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 @Component
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
+    private final KvpClient kvpClient;
 
     @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient) {
         this.aktivitetDAO = aktivitetDAO;
+        this.kvpClient = kvpClient;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
@@ -41,7 +49,28 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
+    /**
+     * Returnerer en kopi av AktivitetData-objektet hvor kontorsperreEnhetId
+     * er satt dersom brukeren er under KVP.
+     */
+    private AktivitetData tagUsingKVP(AktivitetData a) {
+        KvpDTO kvp;
+
+        try {
+            kvp = kvpClient.get(a.getAktorId());
+        } catch (ForbiddenException e) {
+            throw new Feil(Feil.Type.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
+        } catch (InternalServerErrorException e) {
+            throw new Feil(Feil.Type.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
+        }
+
+        return Optional.ofNullable(kvp)
+                .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
+                .orElse(a);
+    }
+
     public long opprettAktivitet(String aktorId, AktivitetData aktivitet, String endretAv) {
+
         val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
         val nyAktivivitet = aktivitet
                 .toBuilder()
@@ -53,7 +82,9 @@ public class AktivitetService {
                 .endretAv(endretAv)
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivivitet);
+        val kvpAktivivitet = tagUsingKVP(nyAktivivitet);
+
+        aktivitetDAO.insertAktivitet(kvpAktivivitet);
         FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
