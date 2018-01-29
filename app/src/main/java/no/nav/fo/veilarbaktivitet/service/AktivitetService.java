@@ -17,6 +17,7 @@ import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
@@ -63,17 +64,15 @@ public class AktivitetService {
             throw new Feil(Feil.Type.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
         }
 
-        if (kvp == null) {
-            return a;
-        }
-
-        return a.toBuilder().kontorsperreEnhetId(kvp.getEnhet()).build();
+        return Optional.ofNullable(kvp)
+                .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
+                .orElse(a);
     }
 
     public long opprettAktivitet(String aktorId, AktivitetData aktivitet, String endretAv) {
 
         val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
-        AktivitetData nyAktivivitet = aktivitet
+        val nyAktivivitet = aktivitet
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId)
@@ -83,9 +82,9 @@ public class AktivitetService {
                 .endretAv(endretAv)
                 .build();
 
-        nyAktivivitet = tagUsingKVP(nyAktivivitet);
+        val kvpAktivivitet = tagUsingKVP(nyAktivivitet);
 
-        aktivitetDAO.insertAktivitet(nyAktivivitet);
+        aktivitetDAO.insertAktivitet(kvpAktivivitet);
         FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
@@ -95,7 +94,7 @@ public class AktivitetService {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
-        AktivitetData nyAktivitet = orginalAktivitet
+        val nyAktivitet = orginalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .lagtInnAv(aktivitet.getLagtInnAv())

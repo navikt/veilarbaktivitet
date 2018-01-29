@@ -15,7 +15,7 @@ public class KvpClient {
     }
 
     public KvpDTO get(String aktorId) {
-        String uri = String.format("%s/%s/currentStatus", baseUrl, aktorId);
+        String uri = String.format("%s/kvp/%s/currentStatus", baseUrl, aktorId);
         return client.target(uri).request().get(KvpDTO.class);
     }
 }
