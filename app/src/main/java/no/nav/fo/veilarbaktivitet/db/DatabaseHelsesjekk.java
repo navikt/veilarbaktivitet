@@ -26,7 +26,8 @@ public class DatabaseHelsesjekk implements Helsesjekk {
     public HelsesjekkMetadata getMetadata() {
         String dbUri = System.getProperty("veilarbaktivitetDataSource.url");
         return new HelsesjekkMetadata(
-                "Database: " + dbUri,
+                "db",
+                dbUri,
                 "Lokal database for VeilArbAktivitet",
                 true
         );
