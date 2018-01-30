@@ -24,7 +24,8 @@ public class ArenaServiceHelsesjekk implements Helsesjekk {
         String tiltakUri = getProperty("tiltakOgAktivitet.endpoint.url");
 
         return new HelsesjekkMetadata(
-                "TILTAKOGAKTIVITET_V1 via " + tiltakUri,
+                "TILTAKOGAKTIVITET_V1",
+                tiltakUri,
                 "Ping av tjeneste for å hente tiltak og aktiviteter.",
                 false
         );

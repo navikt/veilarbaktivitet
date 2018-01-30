@@ -15,6 +15,13 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Import(AktorConfig.class)
 public class ApplicationContext implements ApiApplication {
 
+    public final String APPLICATION_NAME = "veilarbaktivitet";
+
+    @Override
+    public String getApplicationName() {
+        return APPLICATION_NAME;
+    }
+
     @Override
     public Sone getSone() {
         return Sone.FSS;
