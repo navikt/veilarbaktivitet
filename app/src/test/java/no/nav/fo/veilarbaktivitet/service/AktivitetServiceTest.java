@@ -1,14 +1,16 @@
 package no.nav.fo.veilarbaktivitet.service;
 
+import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.VersjonsKonflikt;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
-
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,15 +23,12 @@ import java.util.Date;
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
-import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.moteData;
-import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
-import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
+import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -43,6 +42,9 @@ public class AktivitetServiceTest {
 
     @Mock
     private KvpClient kvpClient;
+
+    @Mock
+    private PepClient pepClientMock;
 
     @Captor
     private ArgumentCaptor argumentCaptor;
@@ -103,6 +105,40 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
+    }
+
+    @SneakyThrows
+    @Test
+    public void oppdaterStatusMedKvpTilgang() {
+        val aktivitet = lagEnNyAktivitet();
+        val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+        mockHentAktivitet(kvpAktivitet);
+
+        val nyStatus = AktivitetStatus.GJENNOMFORES;
+        val oppdatertAktivitet = kvpAktivitet
+                .toBuilder()
+                .status(nyStatus)
+                .build();
+
+        when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(true);
+        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
+    }
+
+    @SneakyThrows
+    @Test(expected = Feil.class)
+    public void oppdaterStatusUtenKvpTilgang() {
+        val aktivitet = lagEnNyAktivitet();
+        val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+        mockHentAktivitet(kvpAktivitet);
+
+        val nyStatus = AktivitetStatus.GJENNOMFORES;
+        val oppdatertAktivitet = kvpAktivitet
+                .toBuilder()
+                .status(nyStatus)
+                .build();
+
+        when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(false);
+        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
     }
 
     @Test
