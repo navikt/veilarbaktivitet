@@ -18,7 +18,9 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
@@ -139,6 +141,23 @@ public class AktivitetServiceTest {
 
         when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(false);
         aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
+    }
+
+    @Test
+    @SneakyThrows
+    public void hentAktiviteterUtenKvpTilgang() {
+        List<AktivitetData> aktiviteter = Arrays.asList(
+            lagEnNyAktivitet(),
+            lagEnNyAktivitet().withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID),
+            lagEnNyAktivitet()
+        );
+
+        when(aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID)).thenReturn(aktiviteter);
+
+        List<AktivitetData> filtrerteAktiviteter = aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID);
+
+        assertThat(filtrerteAktiviteter.size(), equalTo(2));
+        assertThat(filtrerteAktiviteter.get(1).getKontorsperreEnhetId(), equalTo(null));
     }
 
     @Test

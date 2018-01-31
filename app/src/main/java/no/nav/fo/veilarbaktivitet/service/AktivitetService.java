@@ -20,6 +20,7 @@ import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
@@ -42,15 +43,27 @@ public class AktivitetService {
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
-        return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+        return filterKontorsperret(aktivitetDAO.hentAktiviteterForAktorId(aktorId));
     }
 
     public AktivitetData hentAktivitet(long id) {
-        return aktivitetDAO.hentAktivitet(id);
+        AktivitetData aktivitet = aktivitetDAO.hentAktivitet(id);
+        assertCanAccessKvpActivity(aktivitet);
+        return aktivitet;
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        return aktivitetDAO.hentAktivitetVersjoner(id);
+        return filterKontorsperret(aktivitetDAO.hentAktivitetVersjoner(id));
+    }
+
+    /**
+     * Take a list of activities, filter out any that can not be accessed due
+     * to insufficient kontorsperre privileges, and return the remainder.
+     */
+    private List<AktivitetData> filterKontorsperret(List<AktivitetData> list) {
+        return list.stream().sequential()
+                .filter(this::canAccessKvpActivity)
+                .collect(Collectors.toList());
     }
 
     /**
