@@ -3,13 +3,11 @@ package no.nav.fo.veilarbaktivitet.service;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.VersjonsKonflikt;
-import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,13 +30,11 @@ import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
-    private final PepClient pepClient;
 
     @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, PepClient pepClient) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient) {
         this.aktivitetDAO = aktivitetDAO;
         this.kvpClient = kvpClient;
-        this.pepClient = pepClient;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
@@ -131,7 +127,6 @@ public class AktivitetService {
     }
 
     public void slettAktivitet(long aktivitetId) {
-        assertCanAccessKvpActivity(aktivitetDAO.hentAktivitet(aktivitetId));
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
@@ -275,35 +270,6 @@ public class AktivitetService {
                             orginalAktivitet.getId())
             );
         }
-        assertCanAccessKvpActivity(orginalAktivitet);
-    }
-
-    /**
-     * Checks the activity for KVP status, and throws an exception if the
-     * current user does not have access to the activity.
-     */
-    private void assertCanAccessKvpActivity(AktivitetData aktivitet) {
-        if (!canAccessKvpActivity(aktivitet)) {
-            throw new Feil(Feil.Type.INGEN_TILGANG);
-        }
-    }
-
-    /**
-     * Checks the activity for KVP status, and returns true if the current user
-     * can access the activity. If the activity is not tagged with KVP, true
-     * is always returned.
-     */
-    private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        return Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
-                .map(id -> {
-                    try {
-                        return pepClient.harTilgangTilEnhet(id);
-                    } catch (PepException e) {
-                        throw new Feil(Feil.Type.SERVICE_UNAVAILABLE, "Kan ikke kontakte ABAC for utleding av kontorsperre.");
-                    }
-                })
-                .orElse(true);
-
     }
 
     private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {

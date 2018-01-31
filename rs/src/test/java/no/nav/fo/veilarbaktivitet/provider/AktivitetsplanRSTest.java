@@ -11,11 +11,13 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.fo.TestData.KJENT_AKTOR_ID;
-import static no.nav.fo.TestData.KJENT_IDENT;
+import static no.nav.fo.TestData.*;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -34,6 +36,18 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     public void hent_aktivitet() {
         gitt_at_jeg_har_aktiviter();
         da_skal_jeg_kunne_hente_en_aktivitet();
+    }
+
+    @Test
+    public void hent_aktivitetsplan_med_kontorsperre() {
+        gitt_at_jeg_har_aktiviteter_med_kontorsperre();
+        da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan();
+    }
+
+    @Test
+    public void hent_aktivitet_med_kontorsperre() {
+        gitt_at_jeg_har_en_aktivitet_med_kontorsperre();
+        da_skal_jeg_ikke_kunne_hente_noen_aktiviteter();
     }
 
     @Test
@@ -119,7 +133,26 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private AktivitetDTO aktivitet;
 
     private void gitt_at_jeg_har_aktiviter() {
-        lagredeAktivitetsIder = aktiviter.stream()
+        gitt_at_jeg_har_folgende_aktiviteter(aktiviter);
+    }
+
+    private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
+        gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
+                nyStillingAktivitet(),
+                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
+                nyStillingAktivitet(),
+                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+        ));
+    }
+
+    private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
+        gitt_at_jeg_har_folgende_aktiviteter(Collections.singletonList(
+                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+        ));
+    }
+
+    private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
+        lagredeAktivitetsIder = aktiviteter.stream()
                 .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null))
                 .collect(Collectors.toList());
     }
@@ -201,6 +234,11 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
     private void da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan() {
         List<AktivitetDTO> aktiviteter = aktivitetController.hentAktivitetsplan().aktiviteter;
         assertThat(aktiviteter, hasSize(2));
+    }
+
+    private void da_skal_jeg_ikke_kunne_hente_noen_aktiviteter() {
+        List<AktivitetDTO> aktiviteter = aktivitetController.hentAktivitetsplan().aktiviteter;
+        assertThat(aktiviteter, hasSize(0));
     }
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
