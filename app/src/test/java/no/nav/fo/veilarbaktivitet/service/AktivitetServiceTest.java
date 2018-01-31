@@ -144,23 +144,6 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    @SneakyThrows
-    public void hentAktiviteterUtenKvpTilgang() {
-        List<AktivitetData> aktiviteter = Arrays.asList(
-            lagEnNyAktivitet(),
-            lagEnNyAktivitet().withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID),
-            lagEnNyAktivitet()
-        );
-
-        when(aktivitetDAO.hentAktiviteterForAktorId(KJENT_AKTOR_ID)).thenReturn(aktiviteter);
-
-        List<AktivitetData> filtrerteAktiviteter = aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID);
-
-        assertThat(filtrerteAktiviteter.size(), equalTo(2));
-        assertThat(filtrerteAktiviteter.get(1).getKontorsperreEnhetId(), equalTo(null));
-    }
-
-    @Test
     public void oppdaterEtikett() {
         val aktivitet = lagEnNyAktivitet();
         mockHentAktivitet(aktivitet);
