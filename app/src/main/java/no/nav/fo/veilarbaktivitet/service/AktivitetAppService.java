@@ -6,6 +6,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
 
 import java.util.List;
@@ -92,6 +93,7 @@ public abstract class AktivitetAppService {
      * Take a list of activities, filter out any that can not be accessed due
      * to insufficient kontorsperre privileges, and return the remainder.
      */
+    @Timed(name="kontorsperre.filter.aktivitet")
     private List<AktivitetData> filterKontorsperret(List<AktivitetData> list) {
         return list.stream().sequential()
                 .filter(this::canAccessKvpActivity)
