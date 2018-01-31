@@ -124,23 +124,6 @@ public class AktivitetServiceTest {
         aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
     }
 
-    @SneakyThrows
-    @Test(expected = Feil.class)
-    public void oppdaterStatusUtenKvpTilgang() {
-        val aktivitet = lagEnNyAktivitet();
-        val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
-        mockHentAktivitet(kvpAktivitet);
-
-        val nyStatus = AktivitetStatus.GJENNOMFORES;
-        val oppdatertAktivitet = kvpAktivitet
-                .toBuilder()
-                .status(nyStatus)
-                .build();
-
-        when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(false);
-        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
-    }
-
     @Test
     public void oppdaterEtikett() {
         val aktivitet = lagEnNyAktivitet();
