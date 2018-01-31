@@ -2,7 +2,6 @@ package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
 import no.nav.fo.IntegrasjonsTestUtenArenaMock;
-import no.nav.fo.TestData;
 import no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
@@ -12,12 +11,13 @@ import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.inject.Inject;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.fo.TestData.KJENT_AKTOR_ID;
-import static no.nav.fo.TestData.KJENT_IDENT;
-import static no.nav.fo.TestData.KJENT_KONTORSPERRE_ENHET_ID;
+import static no.nav.fo.TestData.*;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

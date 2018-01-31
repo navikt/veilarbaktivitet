@@ -18,9 +18,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 import static java.util.Arrays.asList;
 import static junit.framework.TestCase.fail;
