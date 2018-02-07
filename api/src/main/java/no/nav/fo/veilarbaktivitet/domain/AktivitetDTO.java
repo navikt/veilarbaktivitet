@@ -21,6 +21,7 @@ public class AktivitetDTO {
     public Date tilDato;
     public Date opprettetDato;
     public Date endretDato;
+    public String endretAv;
     public boolean historisk;
     public String avsluttetKommentar;
     public boolean avtalt;
