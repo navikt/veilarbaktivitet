@@ -27,6 +27,7 @@ public class AktivitetDataRowMapper {
                 .avsluttetKommentar(rs.getString("avsluttet_kommentar"))
                 .opprettetDato(hentDato(rs, "opprettet_dato"))
                 .endretDato(hentDato(rs, "endret_dato"))
+                .endretAv(rs.getString("endret_av"))
                 .lagtInnAv(valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .avtalt(rs.getBoolean("avtalt"))
                 .lenke(rs.getString("lenke"))

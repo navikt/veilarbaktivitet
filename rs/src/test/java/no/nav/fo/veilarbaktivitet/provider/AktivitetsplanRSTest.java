@@ -281,6 +281,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .setLagtInnAv(aktivitet.getLagtInnAv())
                 .setTransaksjonsType(aktivitet.transaksjonsType)
                 .setEndretDato(aktivitet.endretDato)
+                .setEndretAv("Z999999")
         ));
     }
 
