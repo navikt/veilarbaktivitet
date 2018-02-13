@@ -116,9 +116,11 @@ public abstract class AktivitetAppService {
      * Checks the activity for KVP status, and returns true if the current user
      * can access the activity. If the activity is not tagged with KVP, true
      * is always returned.
+     *
+     * This function reports real usage through the metric system.
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        return Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
+        boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
                 .map(id -> {
                     try {
                         return pepClient.harTilgangTilEnhet(id);
@@ -127,7 +129,8 @@ public abstract class AktivitetAppService {
                     }
                 })
                 .orElse(true);
-
+        FunksjonelleMetrikker.reportHentAktivitet(aktivitet, hasAccess);
+        return hasAccess;
     }
 
     protected String sjekkTilgangTilFnr(String ident) {
