@@ -28,6 +28,10 @@ public class FunksjonelleMetrikker {
         oppdatertStatus(aktivitetData, false);
     }
 
+    public static void reportIngenTilgangGrunnetKontorsperre() {
+        MetricsFactory.createEvent("aktivitet.kontorsperre.ikketilgang").report();
+    }
+
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
