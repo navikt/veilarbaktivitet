@@ -5,6 +5,7 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -114,9 +115,11 @@ public abstract class AktivitetAppService {
      * Checks the activity for KVP status, and returns true if the current user
      * can access the activity. If the activity is not tagged with KVP, true
      * is always returned.
+     *
+     * This function reports real usage through the metric system.
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        return Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
+        boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
                 .map(id -> {
                     try {
                         return pepClient.harTilgangTilEnhet(id);
@@ -125,7 +128,8 @@ public abstract class AktivitetAppService {
                     }
                 })
                 .orElse(true);
-
+        FunksjonelleMetrikker.reportHentAktivitet(aktivitet, hasAccess);
+        return hasAccess;
     }
 
     protected String sjekkTilgangTilFnr(String ident) {
