@@ -5,6 +5,7 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
@@ -106,6 +107,7 @@ public abstract class AktivitetAppService {
      */
     private void assertCanAccessKvpActivity(AktivitetData aktivitet) {
         if (!canAccessKvpActivity(aktivitet)) {
+            FunksjonelleMetrikker.reportIngenTilgangGrunnetKontorsperre();
             throw new Feil(Feil.Type.INGEN_TILGANG);
         }
     }
