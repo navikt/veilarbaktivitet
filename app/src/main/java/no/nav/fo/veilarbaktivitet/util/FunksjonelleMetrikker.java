@@ -32,6 +32,13 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("aktivitet.kontorsperre.ikketilgang").report();
     }
 
+    public static void reportHentAktivitet(AktivitetData aktivitetData, boolean harTilgang) {
+        MetricsFactory.createEvent("aktivitet.hent")
+                .addFieldToReport("kontorsperret", aktivitetData.getKontorsperreEnhetId() != null)
+                .addFieldToReport("harTilgang", harTilgang)
+                .report();
+    }
+
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
