@@ -32,10 +32,10 @@ public class FunksjonelleMetrikker {
         MetricsFactory.createEvent("aktivitet.kontorsperre.ikketilgang").report();
     }
 
-    public static void reportHentAktivitet(AktivitetData aktivitetData, boolean harTilgang) {
-        MetricsFactory.createEvent("aktivitet.hent")
-                .addFieldToReport("kontorsperret", aktivitetData.getKontorsperreEnhetId() != null)
-                .addFieldToReport("harTilgang", harTilgang)
+    public static void reportFilterAktivitet(AktivitetData aktivitetData, boolean harTilgang) {
+        MetricsFactory.createEvent("aktivitet.filter")
+                .addTagToReport("kontorsperre", String.valueOf(aktivitetData.getKontorsperreEnhetId() != null))
+                .addTagToReport("harTilgang", String.valueOf(harTilgang))
                 .report();
     }
 
