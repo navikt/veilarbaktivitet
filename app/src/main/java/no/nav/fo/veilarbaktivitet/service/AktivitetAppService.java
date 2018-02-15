@@ -129,7 +129,7 @@ public abstract class AktivitetAppService {
                     }
                 })
                 .orElse(true);
-        FunksjonelleMetrikker.reportHentAktivitet(aktivitet, hasAccess);
+        FunksjonelleMetrikker.reportFilterAktivitet(aktivitet, hasAccess);
         return hasAccess;
     }
 
