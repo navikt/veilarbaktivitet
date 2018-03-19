@@ -3,9 +3,11 @@ package no.nav.fo.veilarbaktivitet.provider;
 import lombok.val;
 import no.nav.fo.IntegrasjonsTestUtenArenaMock;
 import no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -25,6 +27,35 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
 public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
+
+    @Inject
+    private AktivitetsplanRS aktivitetController;
+
+    @Inject
+    private MockHttpServletRequest mockHttpServletRequest;
+
+    @Inject
+    private AktivitetService aktivitetService;
+
+    @Inject
+    private Database database;
+
+    @Before
+    public void setup() {
+        mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
+    }
+
+    @After
+    public void cleanup() {
+        database.update("DELETE FROM EGENAKTIVITET");
+        database.update("DELETE FROM SOKEAVTALE");
+        database.update("DELETE FROM BEHANDLING");
+        database.update("DELETE FROM IJOBB");
+        database.update("DELETE FROM MOTE");
+        database.update("DELETE FROM STILLINGSSOK");
+
+        database.update("DELETE FROM AKTIVITET");
+    }
 
     @Test
     public void hent_aktivitsplan() {
@@ -102,20 +133,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
         da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
     }
 
-
-    @Inject
-    private AktivitetsplanRS aktivitetController;
-
-    @Inject
-    private MockHttpServletRequest mockHttpServletRequest;
-
-    @Inject
-    private AktivitetService aktivitetService;
-
-    @Before
-    public void setup() {
-        mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
-    }
 
     private AktivitetData nyStillingAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
