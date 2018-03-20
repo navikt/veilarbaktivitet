@@ -87,6 +87,14 @@
             <artifactId>veilarboppfolging-api</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc</artifactId>
+        </dependency>
 
         <!-- Transitivt -->
         <dependency>
