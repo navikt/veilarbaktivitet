@@ -44,13 +44,6 @@
                 <scope>import</scope>
             </dependency>
 
-            <!-- TODO overskriver BOM etter prodfeil, må analyseres og fjernes -->
-            <dependency>
-                <groupId>no.nav.sbl.dialogarena</groupId>
-                <artifactId>common-cxf</artifactId>
-                <version>2018.01.30.10.40</version>
-            </dependency>
-
             <!--Project dependencies-->
             <dependency>
                 <groupId>no.nav.fo</groupId>
