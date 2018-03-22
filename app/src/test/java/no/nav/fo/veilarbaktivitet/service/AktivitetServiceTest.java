@@ -2,15 +2,11 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.fo.veilarbaktivitet.domain.StillingsoekEtikettData;
+import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +63,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getTittel(), equalTo(aktivitet.getTittel()));
 
         assertThat(getCapturedAktivitet().getKontorsperreEnhetId(), nullValue());
-        assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID));
+        assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID.get()));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
     }
@@ -255,18 +251,18 @@ public class AktivitetServiceTest {
 
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
-    
+
     @Test
     public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet());
-        aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
         verify(aktivitetDAO).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_harHistoriskDato_oppdaterIkkeAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
-        aktivitetService.settAktiviteterTilHistoriske("aktorId", new Date());
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
@@ -274,7 +270,7 @@ public class AktivitetServiceTest {
     public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
         Date sluttdato = new Date();
         gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(sluttdato.getTime() + 1)));
-        aktivitetService.settAktiviteterTilHistoriske("aktorId", sluttdato);
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
@@ -282,12 +278,12 @@ public class AktivitetServiceTest {
     public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
         Date sluttdato = new Date();
         gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(sluttdato));
-        aktivitetService.settAktiviteterTilHistoriske("aktorId", sluttdato);
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     private void gitt_aktivitet(AktivitetData aktivitetData) {
-        when(aktivitetDAO.hentAktiviteterForAktorId(anyString())).thenReturn(asList(aktivitetData));
+        when(aktivitetDAO.hentAktiviteterForAktorId(any(Person.AktorId.class))).thenReturn(asList(aktivitetData));
     }
 
     public AktivitetData lagEnNyAktivitet() {

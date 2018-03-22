@@ -104,14 +104,14 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
             val aktivitet = aktiviter().get(0).toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
 
             val endreReq = new EndreAktivitetStatusRequest();
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), aktivitet));
 
             val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
             Aktivitet res1Aktivitet = res1.getAktivitet();
             assertThat(res1Aktivitet.getStatus(), equalTo(Status.GJENNOMFOERT));
 
             val avbruttAktivitet = aktivitet.withStatus(AktivitetStatus.AVBRUTT).withVersjon(Long.parseLong(res1Aktivitet.getVersjon()));
-            val aktivitet2 = AktivitetWSMapper.mapTilAktivitet("123", avbruttAktivitet);
+            val aktivitet2 = AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), avbruttAktivitet);
             endreReq.setAktivitet(aktivitet2);
 
             val res2 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
@@ -124,7 +124,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
             val endreReq = new EndreAktivitetStatusRequest();
             samtalsAktivitet.withStatus(AktivitetStatus.GJENNOMFORES);
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", samtalsAktivitet));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), samtalsAktivitet));
 
             val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
             Aktivitet res1Aktivitet = res1.getAktivitet();
@@ -138,7 +138,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
             val endreReq = new EndreAktivitetStatusRequest();
             samtalsAktivitet.withStatus(AktivitetStatus.FULLFORT);
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", samtalsAktivitet));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), samtalsAktivitet));
 
             val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
             Aktivitet res1Aktivitet = res1.getAktivitet();
@@ -159,7 +159,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
             );
 
             val endreReq = new EndreAktivitetEtikettRequest();
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitetMedAvslagEtikett));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), aktivitetMedAvslagEtikett));
 
             val res1 = aktivitetsplanWS.endreAktivitetEtikett(endreReq);
             assertThat(res1.getAktivitet().getStillingAktivitet().getEtikett(), equalTo(Etikett.AVSLAG));
@@ -175,7 +175,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
             val aktivitet = aktiviter().get(0);
 
             val endreReq = new EndreAktivitetStatusRequest();
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("123", aktivitet));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), aktivitet));
             aktivitetsplanWS.endreAktivitetStatus(endreReq);
 
             val hentVersjoner = new HentAktivitetVersjonerRequest();
@@ -194,20 +194,20 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
             val publishedMoteReferat = "published";
             aktivitetService.oppdaterReferat(aktivitet.withMoteData(moteData.withReferat("this is fun")),
-                    AktivitetTransaksjonsType.REFERAT_OPPRETTET, "Superman");
+                    AktivitetTransaksjonsType.REFERAT_OPPRETTET, Person.navIdent("Superman"));
 
             aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
                             .withMoteData(moteData.withReferat("test2")),
-                    AktivitetTransaksjonsType.REFERAT_ENDRET, "Superman");
+                    AktivitetTransaksjonsType.REFERAT_ENDRET, Person.navIdent("Superman"));
 
             aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
                             .withMoteData(moteData.withReferatPublisert(true)),
-                    AktivitetTransaksjonsType.REFERAT_PUBLISERT, "Superman");
+                    AktivitetTransaksjonsType.REFERAT_PUBLISERT, Person.navIdent("Superman"));
 
             aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
                             .withMoteData(moteData.withReferatPublisert(true)
                                     .withReferat(publishedMoteReferat)),
-                    AktivitetTransaksjonsType.REFERAT_ENDRET, "Superman");
+                    AktivitetTransaksjonsType.REFERAT_ENDRET, Person.navIdent("Superman"));
 
 
             val hentVersjoner = new HentAktivitetVersjonerRequest();
@@ -235,7 +235,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
                     .build();
 
             val endreReq = new EndreAktivitetRequest();
-            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet("", aktivitet));
+            endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr(""), aktivitet));
             val resp = aktivitetsplanWS.endreAktivitet(endreReq);
 
             assertThat(resp.getAktivitet().getBeskrivelse(), equalTo(nyBeskrivelse));
@@ -248,7 +248,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
             val aktivitet = aktiviter().get(0);
 
             val endreReq = new EndreAktivitetRequest();
-            val endreAktivitet = AktivitetWSMapper.mapTilAktivitet("", aktivitet);
+            val endreAktivitet = AktivitetWSMapper.mapTilAktivitet(Person.fnr(""), aktivitet);
             endreAktivitet.setTom(xmlCalendar(new Date(0)));
             endreAktivitet.setBeskrivelse("bleeeeeee123");
             endreReq.setAktivitet(endreAktivitet);
@@ -338,13 +338,13 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
 
     private HentAktivitetsplanRequest getHentAktivitetsplanRequest() {
         val hentAktiviteterRequest = new HentAktivitetsplanRequest();
-        hentAktiviteterRequest.setPersonident(KJENT_IDENT);
+        hentAktiviteterRequest.setPersonident(KJENT_IDENT.get());
         return hentAktiviteterRequest;
     }
 
     private Aktivitet nyAktivitetWS() {
         Aktivitet aktivitet = new Aktivitet();
-        aktivitet.setPersonIdent(KJENT_IDENT);
+        aktivitet.setPersonIdent(KJENT_IDENT.get());
         aktivitet.setStatus(Status.values()[0]);
         aktivitet.setType(AktivitetType.EGENAKTIVITET);
         return aktivitet;

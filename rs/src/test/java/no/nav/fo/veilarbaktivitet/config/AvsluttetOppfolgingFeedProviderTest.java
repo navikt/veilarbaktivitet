@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Date;
 
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
 import org.junit.Test;
 
@@ -17,7 +18,7 @@ import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 
 public class AvsluttetOppfolgingFeedProviderTest {
 
-    private static final String AKTØR_ID = "aktørId";
+    private static final Person.AktorId AKTØR_ID = Person.aktorId("aktørId");
 
     private AktivitetService aktivitetService = mock(AktivitetService.class);
     private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO = mock(AvsluttetOppfolgingFeedDAO.class);    
@@ -45,7 +46,7 @@ public class AvsluttetOppfolgingFeedProviderTest {
     }
     
     private AvsluttetOppfolgingFeedDTO element(Date oppdatert) {
-        return new AvsluttetOppfolgingFeedDTO().setAktoerid(AKTØR_ID).setOppdatert(oppdatert);
+        return new AvsluttetOppfolgingFeedDTO().setAktoerid(AKTØR_ID.get()).setOppdatert(oppdatert);
     }
 
 }

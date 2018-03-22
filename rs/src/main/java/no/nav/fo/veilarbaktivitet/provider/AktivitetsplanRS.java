@@ -5,6 +5,7 @@ import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
@@ -59,7 +60,8 @@ public class AktivitetsplanRS implements AktivitetController {
 
     @Override
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-        return Optional.of(appService.hentArenaAktiviteter(getUserIdent()))
+        return getFnr()
+                .map(appService::hentArenaAktiviteter)
                 .orElseThrow(RuntimeException::new);
     }
 
@@ -121,8 +123,16 @@ public class AktivitetsplanRS implements AktivitetController {
         return new ReferatRessurs(aktivitetId, appService);
     }
 
-    private String getUserIdent() {
-        return Optional.ofNullable(requestProvider.get().getParameter("fnr"))
-                .orElseThrow(RuntimeException::new);
+    private Person getUserIdent() {
+        Optional<Person> fnr = Optional.ofNullable(requestProvider.get().getParameter("fnr")).map(Person::fnr);
+        Optional<Person> aktorId = Optional.ofNullable(requestProvider.get().getParameter("aktorId")).map(Person::aktorId);
+
+        return fnr.orElseGet(() -> aktorId.orElseThrow(RuntimeException::new));
+    }
+
+    private Optional<Person.Fnr> getFnr() {
+        return Optional.of(getUserIdent())
+                .filter((person) -> person instanceof Person.Fnr)
+                .map((person) -> (Person.Fnr)person);
     }
 }

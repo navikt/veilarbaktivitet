@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.service;
 import no.nav.apiapp.security.SubjectService;
 import no.nav.brukerdialog.security.domain.IdentType;
 import no.nav.dialogarena.aktor.AktorService;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -16,24 +17,35 @@ public class BrukerService {
     @Inject
     private AktorService aktorService;
 
-    public Optional<String> getAktorIdForFNR(String fnr) {
-        return aktorService.getAktorId(fnr);
+    public Optional<Person.AktorId> getAktorIdForPerson(Person person) {
+        if (person instanceof Person.AktorId) {
+            return Optional.of((Person.AktorId)person);
+        }
+        return aktorService.getAktorId(person.get())
+                .map(Person::aktorId);
     }
 
-    public Optional<String> getFNRForAktorId(String aktorId) {
-        return aktorService.getFnr(aktorId);
+    public Optional<Person.Fnr> getFNRForAktorId(Person.AktorId aktorId) {
+        return aktorService.getFnr(aktorId.get())
+                .map(Person::fnr);
     }
 
-    public Optional<String> getLoggedInnUser() {
-        return subjectService.getIdentType().flatMap(type -> {
-            if (IdentType.EksternBruker.equals(type)) return getAktorIdForEksternBruker();
-            else if (IdentType.InternBruker.equals(type)) return subjectService.getUserId();
-            else return Optional.empty();
-        });
-
+    public Optional<Person> getLoggedInnUser() {
+        return subjectService.getIdentType()
+                .flatMap((type) -> {
+                    if (IdentType.EksternBruker.equals(type)) {
+                        return getAktorIdForEksternBruker().map((id) -> (Person) id);
+                    }
+                    if (IdentType.InternBruker.equals(type)) {
+                        return subjectService.getUserId().map(Person::navIdent);
+                    }
+                    return Optional.empty();
+                });
     }
 
-    private Optional<String> getAktorIdForEksternBruker() {
-        return subjectService.getUserId().flatMap(this::getAktorIdForFNR);
+    private Optional<Person.AktorId> getAktorIdForEksternBruker() {
+        return subjectService.getUserId()
+                .map(Person::fnr)
+                .flatMap(this::getAktorIdForPerson);
     }
 }

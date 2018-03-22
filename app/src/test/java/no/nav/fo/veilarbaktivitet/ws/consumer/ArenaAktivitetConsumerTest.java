@@ -12,6 +12,7 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Date;
 
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -67,13 +68,13 @@ public class ArenaAktivitetConsumerTest {
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() + 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
-        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(1));
+        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(1));
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet = 
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() - 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedGammelAktivitet);
-        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(0));
+        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(0));
     }
 
     @Test
@@ -87,7 +88,7 @@ public class ArenaAktivitetConsumerTest {
                 responsMedTiltak(new Date());
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
-        assertThat(consumer.hentArenaAktivieter("123").size(), equalTo(1));
+        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(1));
     }
 
     private HentTiltakOgAktiviteterForBrukerResponse responsMedTiltak(Date date) {

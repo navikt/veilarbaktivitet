@@ -5,6 +5,7 @@ import no.nav.apiapp.soap.SoapTjeneste;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.mappers.ArenaAktivitetWSMapper;
@@ -38,9 +39,9 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
         return Optional.of(hentAktivitetsplanRequest)
                 .map(HentAktivitetsplanRequest::getPersonident)
                 .map(fnr -> appService
-                        .hentAktiviteterForIdent(fnr)
+                        .hentAktiviteterForIdent(Person.fnr(fnr))
                         .stream()
-                        .map(aktivitet -> mapTilAktivitet(fnr, aktivitet))
+                        .map(aktivitet -> mapTilAktivitet(Person.fnr(fnr), aktivitet))
                         .collect(Collectors.toList()))
                 .map(ResponseMapper::mapTilHentAktivitetsplanResponse)
                 .orElseThrow(RuntimeException::new);
@@ -50,6 +51,7 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
     public HentArenaAktiviteterResponse hentArenaAktiviteter(HentArenaAktiviteterRequest hentArenaAktiviteterRequest) {
         return Optional.of(hentArenaAktiviteterRequest)
                 .map(HentArenaAktiviteterRequest::getPersonident)
+                .map(Person::fnr)
                 .map(appService::hentArenaAktiviteter)
                 .map(aktivitetList -> aktivitetList
                         .stream()
@@ -112,8 +114,8 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
 
         return maybeAktivitet
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map(aktivitet -> appService.opprettNyAktivtet(fnr, aktivitet))
-                .map(aktivitetData -> mapTilAktivitet(fnr, aktivitetData))
+                .map(aktivitet -> appService.opprettNyAktivtet(Person.fnr(fnr), aktivitet))
+                .map(aktivitetData -> mapTilAktivitet(Person.fnr(fnr), aktivitetData))
                 .map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
     }

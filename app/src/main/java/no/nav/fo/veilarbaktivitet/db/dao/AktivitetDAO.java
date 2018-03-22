@@ -37,11 +37,11 @@ public class AktivitetDAO {
         this.database = database;
     }
 
-    public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
+    public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         return database.query(SELECT_AKTIVITET +
                         "WHERE A.aktor_id = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
-                aktorId
+                aktorId.get()
         );
     }
 
