@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.IntegrasjonsTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -22,7 +23,7 @@ import static org.junit.Assert.fail;
 
 public class AktivitetDAOTest extends IntegrasjonsTest {
 
-    private static final String AKTOR_ID = "1234";
+    private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private long versjon = 1;
 
     @Inject
@@ -191,7 +192,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
         val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
         val aktivitetMedId = aktivitet.toBuilder()
                 .id(id)
-                .aktorId(AKTOR_ID)
+                .aktorId(AKTOR_ID.get())
                 .build();
 
         val endret = new Date();

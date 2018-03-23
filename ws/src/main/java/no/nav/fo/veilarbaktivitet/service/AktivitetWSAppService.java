@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
@@ -36,9 +37,9 @@ public class AktivitetWSAppService extends AktivitetAppService {
         super(arenaAktivitetConsumer, aktivitetService, brukerService, pepClient);
     }
 
-    public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
-        sjekkTilgangTilFnr(ident);
-        return brukerService.getAktorIdForFNR(ident)
+    public AktivitetData opprettNyAktivtet(Person ident, AktivitetData aktivitetData) {
+        sjekkTilgangTilPerson(ident);
+        return brukerService.getAktorIdForPerson(ident)
                 .map(aktorId -> aktivitetService.opprettAktivitet(aktorId, aktivitetData, aktorId))
                 .map(this::hentAktivitet)
                 .orElseThrow(RuntimeException::new);

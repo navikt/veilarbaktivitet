@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.feed.consumer;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.stereotype.Component;
@@ -40,7 +41,7 @@ public class AvsluttetOppfolgingFeedConsumer {
 
         elements.stream()
                 .map(element -> {
-                    aktivitetService.settAktiviteterTilHistoriske(element.getAktoerid(), element.getSluttdato());
+                    aktivitetService.settAktiviteterTilHistoriske(Person.aktorId(element.getAktoerid()), element.getSluttdato());
                     return element.getOppdatert();
                 })
                 .reduce((a1, a2) -> a2)

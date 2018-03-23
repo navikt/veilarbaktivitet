@@ -42,7 +42,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
 
     @Before
     public void setup() {
-        mockHttpServletRequest.setParameter("fnr", KJENT_IDENT);
+        mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
     @After

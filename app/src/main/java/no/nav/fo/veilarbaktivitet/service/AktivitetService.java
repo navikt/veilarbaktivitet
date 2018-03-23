@@ -37,7 +37,7 @@ public class AktivitetService {
         this.kvpClient = kvpClient;
     }
 
-    public List<AktivitetData> hentAktiviteterForAktorId(String aktorId) {
+    public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
     }
 
@@ -57,7 +57,7 @@ public class AktivitetService {
         KvpDTO kvp;
 
         try {
-            kvp = kvpClient.get(a.getAktorId());
+            kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
         } catch (ForbiddenException e) {
             throw new Feil(Feil.Type.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
         } catch (InternalServerErrorException e) {
@@ -69,13 +69,13 @@ public class AktivitetService {
                 .orElse(a);
     }
 
-    public long opprettAktivitet(String aktorId, AktivitetData aktivitet, String endretAv) {
-
+    public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
+        val endretAv = Optional.ofNullable(endretAvPerson).map(Person::get).orElse(null);
         val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
         val nyAktivivitet = aktivitet
                 .toBuilder()
                 .id(aktivitetId)
-                .aktorId(aktorId)
+                .aktorId(aktorId.get())
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
@@ -90,7 +90,7 @@ public class AktivitetService {
     }
 
 
-    public void oppdaterStatus(AktivitetData aktivitet, String endretAv) {
+    public void oppdaterStatus(AktivitetData aktivitet, Person endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
@@ -100,13 +100,13 @@ public class AktivitetService {
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
-                .endretAv(endretAv)
+                .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
         insertAktivitet(nyAktivitet);
     }
 
-    public void oppdaterEtikett(AktivitetData aktivitet, String endretAv) {
+    public void oppdaterEtikett(AktivitetData aktivitet, Person endretAv) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
@@ -120,7 +120,7 @@ public class AktivitetService {
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-                .endretAv(endretAv)
+                .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
         insertAktivitet(nyAktivitet);
@@ -130,19 +130,19 @@ public class AktivitetService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
+    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
-                .endretAv(endretAv)
+                .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, String endretAv) {
+    public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
@@ -151,7 +151,7 @@ public class AktivitetService {
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
                 .moteData(ofNullable(orginalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
-                .endretAv(endretAv)
+                .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
@@ -159,14 +159,14 @@ public class AktivitetService {
     public void oppdaterReferat(
             AktivitetData aktivitet,
             AktivitetTransaksjonsType aktivitetTransaksjonsType,
-            String endretAv
+            Person endretAv
     ) {
         val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
         val merger = merge(orginalAktivitet, aktivitet);
         insertAktivitet(orginalAktivitet
-                .withEndretAv(endretAv)
+                .withEndretAv(endretAv.get())
                 .withTransaksjonsType(aktivitetTransaksjonsType)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -178,7 +178,7 @@ public class AktivitetService {
                 .withReferatPublisert(moteData.isReferatPublisert());
     }
 
-    public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, String endretAv) {
+    public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
         kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
 
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
@@ -196,7 +196,7 @@ public class AktivitetService {
                 .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)
                 .versjon(aktivitet.getVersjon())
-                .endretAv(endretAv)
+                .endretAv(endretAv != null ? endretAv.get() : null)
                 .avtalt(aktivitet.isAvtalt())
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
@@ -278,7 +278,7 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(String aktoerId, Date sluttDato) {
+    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))

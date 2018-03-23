@@ -4,6 +4,7 @@ import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
@@ -34,9 +35,9 @@ public abstract class AktivitetAppService {
         this.pepClient = pepClient;
     }
 
-    public List<AktivitetData> hentAktiviteterForIdent(String ident) {
-        sjekkTilgangTilFnr(ident);
-        List<AktivitetData> aktiviteter = brukerService.getAktorIdForFNR(ident)
+    public List<AktivitetData> hentAktiviteterForIdent(Person ident) {
+        sjekkTilgangTilPerson(ident);
+        List<AktivitetData> aktiviteter = brukerService.getAktorIdForPerson(ident)
                 .map(aktivitetService::hentAktiviteterForAktorId)
                 .orElseThrow(RuntimeException::new);
         return filterKontorsperret(aktiviteter);
@@ -44,13 +45,13 @@ public abstract class AktivitetAppService {
 
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
-        sjekkTilgangTilAktorId(aktivitetData.getAktorId());
+        sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
         assertCanAccessKvpActivity(aktivitetData);
         return aktivitetData;
     }
 
-    public List<ArenaAktivitetDTO> hentArenaAktiviteter(String ident) {
-        sjekkTilgangTilFnr(ident);
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
+        sjekkTilgangTilPerson(ident);
         return arenaAktivitetConsumer.hentArenaAktivieter(ident);
     }
 
@@ -59,7 +60,7 @@ public abstract class AktivitetAppService {
         return aktivitetService.hentAktivitetVersjoner(id);
     }
 
-    public abstract AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData);
+    public abstract AktivitetData opprettNyAktivtet(Person ident, AktivitetData aktivitetData);
 
     public abstract AktivitetData oppdaterAktivitet(AktivitetData aktivitet);
 
@@ -133,12 +134,14 @@ public abstract class AktivitetAppService {
         return hasAccess;
     }
 
-    protected String sjekkTilgangTilFnr(String ident) {
-        return pepClient.sjekkLeseTilgangTilFnr(ident);
-    }
-
-    protected void sjekkTilgangTilAktorId(String aktorId) {
-        sjekkTilgangTilFnr(brukerService.getFNRForAktorId(aktorId).orElseThrow(IngenTilgang::new));
+    protected Person sjekkTilgangTilPerson(Person person) {
+        if (person instanceof Person.Fnr) {
+            return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(person.get()));
+        } else if (person instanceof Person.AktorId){
+            return sjekkTilgangTilPerson(brukerService.getFNRForAktorId((Person.AktorId)person).orElseThrow(IngenTilgang::new));
+        } else {
+            throw new IngenTilgang();
+        }
     }
 
     protected void sjekkTilgangTilAktivitet(long id) {

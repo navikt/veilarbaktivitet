@@ -12,12 +12,12 @@ import static no.nav.fo.veilarbaktivitet.util.DateUtils.xmlCalendar;
 public class AktivitetWSMapper {
 
     public static Aktivitet mapTilAktivitet(AktivitetData aktivitet) {
-        return mapTilAktivitet("", aktivitet);
+        return mapTilAktivitet(Person.fnr(""), aktivitet);
     }
 
-    public static Aktivitet mapTilAktivitet(String fnr, AktivitetData aktivitet) {
+    public static Aktivitet mapTilAktivitet(Person.Fnr fnr, AktivitetData aktivitet) {
         val wsAktivitet = new Aktivitet();
-        wsAktivitet.setPersonIdent(fnr);
+        wsAktivitet.setPersonIdent(fnr.get());
         wsAktivitet.setAktivitetId(Long.toString(aktivitet.getId()));
         wsAktivitet.setVersjon(Long.toString(aktivitet.getVersjon()));
         wsAktivitet.setTittel(aktivitet.getTittel());

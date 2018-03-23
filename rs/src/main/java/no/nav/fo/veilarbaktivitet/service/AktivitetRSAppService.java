@@ -5,6 +5,7 @@ import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
@@ -26,11 +27,11 @@ public class AktivitetRSAppService extends AktivitetAppService {
         super(arenaAktivitetConsumer, aktivitetService, endretAv, pepClient);
     }
 
-    public AktivitetData opprettNyAktivtet(String ident, AktivitetData aktivitetData) {
-        sjekkTilgangTilFnr(ident);
+    public AktivitetData opprettNyAktivtet(Person ident, AktivitetData aktivitetData) {
+        sjekkTilgangTilPerson(ident);
         return brukerService.getLoggedInnUser()
                 .flatMap(userIdent -> brukerService
-                        .getAktorIdForFNR(ident)
+                        .getAktorIdForPerson(ident)
                         .map(aktorId -> aktivitetService.opprettAktivitet(aktorId, aktivitetData, userIdent))
                 ).map(this::hentAktivitet)
                 .orElseThrow(RuntimeException::new);

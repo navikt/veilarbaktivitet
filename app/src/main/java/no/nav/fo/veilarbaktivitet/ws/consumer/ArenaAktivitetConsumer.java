@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.ws.consumer;
 
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaStatusDTO;
@@ -66,10 +67,10 @@ public class ArenaAktivitetConsumer {
         }
     }
 
-    public List<ArenaAktivitetDTO> hentArenaAktivieter(String personident) {
+    public List<ArenaAktivitetDTO> hentArenaAktivieter(Person.Fnr personident) {
 
         val req = new HentTiltakOgAktiviteterForBrukerRequest();
-        req.setPersonident(personident);
+        req.setPersonident(personident.get());
         List<ArenaAktivitetDTO> result = new ArrayList<>();
 
         try {
