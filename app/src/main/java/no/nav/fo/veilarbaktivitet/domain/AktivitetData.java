@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.domain;
 
 import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.Wither;
 
@@ -9,6 +10,7 @@ import java.util.Date;
 @Value
 @Builder(toBuilder = true)
 @Wither
+@ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt"})
 public class AktivitetData {
 
     Long id;
