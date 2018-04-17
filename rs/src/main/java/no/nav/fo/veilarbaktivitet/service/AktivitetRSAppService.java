@@ -9,6 +9,7 @@ import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 
@@ -38,6 +39,7 @@ public class AktivitetRSAppService extends AktivitetAppService {
     }
 
     @Override
+    @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         val original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
 
@@ -59,6 +61,7 @@ public class AktivitetRSAppService extends AktivitetAppService {
     }
 
     @Override
+    @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         sjekkTilgangTilAktivitet(aktivitet.getId());
         AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
@@ -66,6 +69,7 @@ public class AktivitetRSAppService extends AktivitetAppService {
         return aktivitetData;
     }
 
+    @Transactional
     public AktivitetData oppdaterReferat(AktivitetData aktivitet, AktivitetTransaksjonsType aktivitetTransaksjonsType) {
         aktivitetService.oppdaterReferat(
                 aktivitet,
