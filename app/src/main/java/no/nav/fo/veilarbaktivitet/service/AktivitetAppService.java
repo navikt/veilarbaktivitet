@@ -10,6 +10,8 @@ import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -64,6 +66,8 @@ public abstract class AktivitetAppService {
 
     public abstract AktivitetData oppdaterAktivitet(AktivitetData aktivitet);
 
+    public abstract AktivitetData oppdaterStatus(AktivitetData aktivitet);
+
     protected AktivitetData internalOppdaterStatus(AktivitetData aktivitetData) {
         return brukerService.getLoggedInnUser()
                 .map(userIdent -> {
@@ -73,8 +77,7 @@ public abstract class AktivitetAppService {
                 .orElseThrow(RuntimeException::new);
     }
 
-    public abstract AktivitetData oppdaterStatus(AktivitetData aktivitet);
-
+    @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         long aktivitetId = aktivitet.getId();
         sjekkTilgangTilAktivitet(aktivitetId);

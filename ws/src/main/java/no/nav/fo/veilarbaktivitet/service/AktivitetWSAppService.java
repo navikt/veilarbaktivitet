@@ -8,6 +8,7 @@ import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import java.util.Arrays;
@@ -46,6 +47,7 @@ public class AktivitetWSAppService extends AktivitetAppService {
     }
 
     @Override
+    @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if(TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())){
@@ -57,6 +59,7 @@ public class AktivitetWSAppService extends AktivitetAppService {
     }
 
     @Override
+    @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         if (originalAktivitet.isAvtalt() || !TYPER_SOM_KAN_ENDRES.contains(originalAktivitet.getAktivitetType())) {
