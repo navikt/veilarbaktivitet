@@ -13,7 +13,7 @@ import javax.inject.Inject;
 @Configuration
 @EnableScheduling
 public class MetricsReporterConfig {
-    private static final int MINUTE = 10 * 1000;
+    private static final int MINUTE = 60 * 1000;
 
     @Inject
     JdbcTemplate jdbc;
