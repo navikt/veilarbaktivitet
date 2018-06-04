@@ -33,7 +33,9 @@ public class ViewTest extends IntegrasjonsTest {
                 "DVH_EGENAKTIVITET",
                 "DVH_MOTE",
                 "DVH_KANAL_TYPE",
-                "DVH_SLETTEDE_AKTIVITETER"
+                "DVH_SLETTEDE_AKTIVITETER",
+                "DVH_JOBB_STATUS_TYPE",
+                "DVH_IJOBB"
         };
     }
 
