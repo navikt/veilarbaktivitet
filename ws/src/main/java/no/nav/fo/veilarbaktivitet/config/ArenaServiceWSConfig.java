@@ -5,8 +5,6 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static java.lang.System.getProperty;
-
 @Configuration
 
 public class ArenaServiceWSConfig {
