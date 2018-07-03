@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
-import no.nav.fo.IntegrasjonsTestUtenArenaMock;
+import no.nav.fo.IntegrasjonsTestMedPepOgBrukerServiceMock;
 import no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.domain.*;
@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
-public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
+public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceMock {
 
     @Inject
     private AktivitetsplanRS aktivitetController;
@@ -298,7 +298,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestUtenArenaMock {
                 .setLagtInnAv(aktivitet.getLagtInnAv())
                 .setTransaksjonsType(aktivitet.transaksjonsType)
                 .setEndretDato(aktivitet.endretDato)
-                .setEndretAv(IntegrasjonsTestUtenArenaMock.INNLOGGET_NAV_IDENT)
+                .setEndretAv(IntegrasjonsTestMedPepOgBrukerServiceMock.INNLOGGET_NAV_IDENT)
         ));
     }
 

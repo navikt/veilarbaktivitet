@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
-import no.nav.fo.IntegrasjonsTestUtenArenaMock;
+import no.nav.fo.IntegrasjonsTestMedPepOgBrukerServiceMock;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper;
@@ -26,7 +26,7 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
-public class AktivitetsplanWSTest extends IntegrasjonsTestUtenArenaMock {
+public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceMock {
 
 
     @Nested

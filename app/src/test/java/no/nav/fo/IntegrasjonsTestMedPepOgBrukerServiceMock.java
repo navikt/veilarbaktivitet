@@ -19,7 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
-public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjonsTest {
+public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends AbstractIntegrasjonsTest {
 
     protected static final String INNLOGGET_NAV_IDENT = "Z999999";
 
@@ -27,7 +27,7 @@ public abstract class IntegrasjonsTestUtenArenaMock extends AbstractIntegrasjons
     @BeforeClass
     public static void setupContext() {
         setupContext(
-                IntegrasjonsTestUtenArenaMock.Config.class,
+                IntegrasjonsTestMedPepOgBrukerServiceMock.Config.class,
                 IntegrasjonsTest.JndiBean.class,
                 IntegrasjonsTest.Request.class,
                 AktorConfig.class
