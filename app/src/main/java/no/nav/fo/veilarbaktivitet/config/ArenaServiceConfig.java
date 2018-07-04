@@ -13,6 +13,7 @@ public class ArenaServiceConfig {
     public static CXFClient<TiltakOgAktivitetV1> tiltakOgAktivitetV1Client() {
         return new CXFClient<>(TiltakOgAktivitetV1.class)
                 .address(getProperty("tiltakOgAktivitet.endpoint.url"))
+                .withMetrics()
                 .withOutInterceptor(new LoggingOutInterceptor());
     }
 }
