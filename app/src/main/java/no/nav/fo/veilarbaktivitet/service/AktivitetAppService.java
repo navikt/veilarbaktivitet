@@ -10,7 +10,6 @@ import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
