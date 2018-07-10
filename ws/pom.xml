@@ -31,30 +31,6 @@
             <scope>test</scope>
         </dependency>
 
-
-        <!--Nav felles-->
-        <dependency>
-            <groupId>no.nav.sbl</groupId>
-            <artifactId>api-app</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-core</artifactId>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-core-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-loginmodule</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
-
         <!--Tjenester-->
         <dependency>
             <groupId>no.nav.tjenester</groupId>
@@ -93,16 +69,16 @@
 
         <!--Annet-->
         <dependency>
+            <groupId>no.nav.sbl</groupId>
+            <artifactId>api-app</artifactId>
+        </dependency>
+        <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
             <artifactId>common-cxf</artifactId>
         </dependency>
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.modig</groupId>
-            <artifactId>modig-security-ws</artifactId>
         </dependency>
         <dependency>
             <groupId>no.nav.sbl.dialogarena</groupId>
