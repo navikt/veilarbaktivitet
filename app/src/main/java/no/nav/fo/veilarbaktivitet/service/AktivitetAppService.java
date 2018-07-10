@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.service;
 
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.FeilType;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
@@ -111,7 +112,7 @@ public abstract class AktivitetAppService {
     private void assertCanAccessKvpActivity(AktivitetData aktivitet) {
         if (!canAccessKvpActivity(aktivitet)) {
             FunksjonelleMetrikker.reportIngenTilgangGrunnetKontorsperre();
-            throw new Feil(Feil.Type.INGEN_TILGANG);
+            throw new Feil(FeilType.INGEN_TILGANG);
         }
     }
 
@@ -128,7 +129,7 @@ public abstract class AktivitetAppService {
                     try {
                         return pepClient.harTilgangTilEnhet(id);
                     } catch (PepException e) {
-                        throw new Feil(Feil.Type.SERVICE_UNAVAILABLE, "Kan ikke kontakte ABAC for utleding av kontorsperre.");
+                        throw new Feil(FeilType.SERVICE_UNAVAILABLE, "Kan ikke kontakte ABAC for utleding av kontorsperre.");
                     }
                 })
                 .orElse(true);
