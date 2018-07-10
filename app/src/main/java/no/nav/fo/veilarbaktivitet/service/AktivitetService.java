@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.FeilType;
 import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -59,9 +60,9 @@ public class AktivitetService {
         try {
             kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
         } catch (ForbiddenException e) {
-            throw new Feil(Feil.Type.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
+            throw new Feil(FeilType.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
         } catch (InternalServerErrorException e) {
-            throw new Feil(Feil.Type.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
+            throw new Feil(FeilType.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
         }
 
         return Optional.ofNullable(kvp)

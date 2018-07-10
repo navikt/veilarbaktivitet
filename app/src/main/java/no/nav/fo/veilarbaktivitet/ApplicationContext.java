@@ -13,18 +13,4 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableAspectJAutoProxy
 @ComponentScan("no.nav.fo.veilarbaktivitet")
 @Import(AktorConfig.class)
-public class ApplicationContext implements ApiApplication {
-
-    public final String APPLICATION_NAME = "veilarbaktivitet";
-
-    @Override
-    public String getApplicationName() {
-        return APPLICATION_NAME;
-    }
-
-    @Override
-    public Sone getSone() {
-        return Sone.FSS;
-    }
-
-}
+public class ApplicationContext implements ApiApplication { }
