@@ -12,13 +12,6 @@
         <listener-class>no.nav.apiapp.ApiAppServletContextListener</listener-class>
     </listener>
 
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>All pages</web-resource-name>
-            <url-pattern>/*</url-pattern>
-        </web-resource-collection>
-    </security-constraint>
-
     <resource-ref>
         <res-ref-name>jdbc/AktivitetDS</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
