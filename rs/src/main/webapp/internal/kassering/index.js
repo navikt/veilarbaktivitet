@@ -58,7 +58,7 @@ function handleSok(e) {
     }
 }
 
-function handleClick(e) {
+function handleClick(event) {
     const target = event.target;
     const aktivitetId = target.dataset.aktivitetid;
 
