@@ -50,7 +50,7 @@ function handleSok(e) {
     const aktivitetId = aktivitetIdInput.value;
 
     if (aktivitetId && aktivitetId.length > 0) {
-        fetch(`/veilarbaktivitet/api/aktivitet/${aktivitetId}`)
+        fetch(`/veilarbaktivitet/api/aktivitet/${aktivitetId}`, {credentials: 'same-origin'})
             .then(sjekkStatus)
             .then(toJson)
             .then(handleData)
