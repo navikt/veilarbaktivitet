@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.apiapp.util.ObjectUtils.notEqual;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.BLE_HISTORISK;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
@@ -180,8 +177,6 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
-
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
@@ -259,23 +254,6 @@ public class AktivitetService {
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
-    }
-
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (notEqual(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new VersjonsKonflikt();
-        }
-        if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre aktivitet aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
-        }
-    }
-
-    private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
-        AktivitetStatus status = aktivitetData.getStatus();
-        return AVBRUTT.equals(status) || FULLFORT.equals(status) || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional

@@ -29,7 +29,7 @@ public class FeedConfig {
 
         feedController.addFeed(AktivitetFeedData.FEED_NAME, aktivitetFeed);
 
-        if (isMasterNode()) {
+        if (isMasterNode()) { // todo. this needs to be rewritten
             feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
         }
 

@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import no.nav.apiapp.security.SubjectService;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.domain.Person;
 import org.springframework.stereotype.Component;
@@ -41,6 +42,20 @@ public class BrukerService {
                     }
                     return Optional.empty();
                 });
+    }
+
+    public static boolean erEksternBruker() {
+        return SubjectHandler
+                .getIdentType()
+                .map(identType -> IdentType.EksternBruker == identType)
+                .orElse(false);
+    }
+
+    public static boolean erInternBruker() {
+        return SubjectHandler
+                .getIdentType()
+                .map(identType -> IdentType.InternBruker == identType)
+                .orElse(false);
     }
 
     private Optional<Person.AktorId> getAktorIdForEksternBruker() {
