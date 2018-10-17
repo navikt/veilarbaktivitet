@@ -76,7 +76,7 @@ public abstract class AktivitetAppService {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        sjekkTilgangTilAktivitet(id);
+        hentAktivitet(id); // innebærer tilgangskontroll;
         return aktivitetService.hentAktivitetVersjoner(id)
                 .stream()
                 .filter(AktivitetAppService::erEksternBrukerOgEndringenSkalVereSynnelig)
@@ -115,7 +115,7 @@ public abstract class AktivitetAppService {
                 brukerService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         long id = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
-        return this.hentAktivitet(id);
+        return this.hentAktivitet(id); // this is done because of KVP
     }
 
     @Transactional
@@ -136,7 +136,7 @@ public abstract class AktivitetAppService {
                 aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
             }
 
-            return hentAktivitet(aktivitet.getId());
+            return aktivitetService.hentAktivitet(aktivitet.getId());
 
         } else if (erEksternBruker()) {
             if (original.isAvtalt() || !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType())) {
@@ -144,7 +144,7 @@ public abstract class AktivitetAppService {
             }
 
             aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
-            return hentAktivitet(aktivitet.getId());
+            return aktivitetService.hentAktivitet(aktivitet.getId());
         }
 
         // not a valid user
@@ -172,15 +172,21 @@ public abstract class AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         kanEndreAktivitetGuard(originalAktivitet, aktivitet);
 
+        Person endretAv = brukerService
+                .getLoggedInnUser()
+                .orElseThrow(() -> new Feil(FeilType.SERVICE_UNAVAILABLE, "Aktor tjenesten er nede"));
+
         if (erInternBruker()) {
-            AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
-            FunksjonelleMetrikker.oppdatertStatusAvNAV(aktivitetData);
-            return aktivitetData;
+            aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
+            val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
+            FunksjonelleMetrikker.oppdatertStatusAvNAV(newAktivitet);
+            return newAktivitet;
         } else if (erEksternBruker()) {
             if (TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
-                AktivitetData aktivitetData = internalOppdaterStatus(aktivitet);
-                FunksjonelleMetrikker.oppdatertStatusAvBruker(aktivitetData);
-                return aktivitetData;
+                aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
+                val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
+                FunksjonelleMetrikker.oppdatertStatusAvBruker(newAktivitet);
+                return newAktivitet;
             } else {
                 throw new UgyldigRequest();
             }
@@ -190,30 +196,19 @@ public abstract class AktivitetAppService {
         throw new IngenTilgang();
     }
 
-
-    AktivitetData internalOppdaterStatus(AktivitetData aktivitetData) {
-        return brukerService.getLoggedInnUser()
-                .map(userIdent -> {
-                    aktivitetService.oppdaterStatus(aktivitetData, userIdent);
-                    return aktivitetService.hentAktivitet(aktivitetData.getId());
-                })
-                .orElseThrow(RuntimeException::new);
-    }
-
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
-        long aktivitetId = aktivitet.getId();
-        sjekkTilgangTilAktivitet(aktivitetId); // todo remove with hentAktivitet
+        val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         return brukerService.getLoggedInnUser()
                 .map(userIdent -> {
-                    aktivitetService.oppdaterEtikett(aktivitet, userIdent);
-                    return aktivitetService.hentAktivitet(aktivitetId);
+                    aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);
+                    return aktivitetService.hentAktivitet(aktivitet.getId());
                 })
                 .orElseThrow(RuntimeException::new);
     }
 
     public void slettAktivitet(long aktivitetId) {
-        sjekkTilgangTilAktivitet(aktivitetId);
+        hentAktivitet(aktivitetId); // innebærer tilgangskontroll
 
         if (erEksternBruker()) {
             aktivitetService.slettAktivitet(aktivitetId);
@@ -223,18 +218,22 @@ public abstract class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterReferat(AktivitetData aktivitet, AktivitetTransaksjonsType aktivitetTransaksjonsType) {
+    public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
         if (erEksternBruker()) {
             throw new IngenTilgang();
         }
 
+        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
+
         aktivitetService.oppdaterReferat(
+                originalAktivitet,
                 aktivitet,
-                aktivitetTransaksjonsType, brukerService.getLoggedInnUser().orElseThrow(IngenTilgang::new)
+                brukerService.getLoggedInnUser().orElseThrow(IngenTilgang::new)
         );
+
         return hentAktivitet(aktivitet.getId());
     }
-
     /**
      * Take a list of activities, filter out any that can not be accessed due
      * to insufficient kontorsperre privileges, and return the remainder.
@@ -286,10 +285,5 @@ public abstract class AktivitetAppService {
         } else {
             throw new IngenTilgang();
         }
-    }
-
-    void sjekkTilgangTilAktivitet(long id) {
-        AktivitetData aktivitet = hentAktivitet(id);
-        assertCanAccessKvpActivity(aktivitet); // todo. this seems wrong
     }
 }

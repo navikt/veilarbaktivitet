@@ -16,7 +16,6 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -118,8 +117,8 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Path("{aktivitetId}/referat")
-    public ReferatRessurs referatRessurs(@PathParam("aktivitetId") long aktivitetId) {
-        return new ReferatRessurs(aktivitetId, appService);
+    public ReferatRessurs referatRessurs() {
+        return new ReferatRessurs(appService);
     }
 
     private Person getContextUserIdent() {
