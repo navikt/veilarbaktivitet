@@ -9,8 +9,10 @@ import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,12 +23,25 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.service.BrukerService.erEksternBruker;
 import static no.nav.fo.veilarbaktivitet.service.BrukerService.erInternBruker;
 
+@Component
 public class AktivitetAppService {
+
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
     private final PepClient pepClient;
+    private final AktivitetService aktivitetService;
+    private final BrukerService brukerService;
 
-    protected final AktivitetService aktivitetService;
-    protected final BrukerService brukerService;
+    @Inject
+    AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
+                        PepClient pepClient,
+                        AktivitetService aktivitetService,
+                        BrukerService brukerService) {
+        this.arenaAktivitetConsumer = arenaAktivitetConsumer;
+        this.pepClient = pepClient;
+        this.aktivitetService = aktivitetService;
+        this.brukerService = brukerService;
+    }
+
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             EGENAKTIVITET,
@@ -235,6 +250,7 @@ public class AktivitetAppService {
 
         return hentAktivitet(aktivitet.getId());
     }
+
     /**
      * Take a list of activities, filter out any that can not be accessed due
      * to insufficient kontorsperre privileges, and return the remainder.
@@ -278,7 +294,7 @@ public class AktivitetAppService {
         return hasAccess;
     }
 
-    Person sjekkTilgangTilPerson(Person person) {
+    private Person sjekkTilgangTilPerson(Person person) {
         if (person instanceof Person.Fnr) {
             return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(person.get()));
         } else if (person instanceof Person.AktorId) {
