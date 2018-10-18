@@ -21,7 +21,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static no.nav.fo.veilarbaktivitet.service.BrukerService.erEksternBruker;
 import static no.nav.fo.veilarbaktivitet.service.BrukerService.erInternBruker;
 
-public abstract class AktivitetAppService {
+public class AktivitetAppService {
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
     private final PepClient pepClient;
 
@@ -199,6 +199,7 @@ public abstract class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
         return brukerService.getLoggedInnUser()
                 .map(userIdent -> {
                     aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);

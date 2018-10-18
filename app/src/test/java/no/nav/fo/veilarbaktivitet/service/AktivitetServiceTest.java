@@ -17,7 +17,6 @@ import org.springframework.dao.DuplicateKeyException;
 import java.util.Date;
 
 import static java.util.Arrays.asList;
-import static junit.framework.TestCase.fail;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
@@ -95,7 +94,7 @@ public class AktivitetServiceTest {
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
                 .build();
-        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
+        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -117,7 +116,7 @@ public class AktivitetServiceTest {
                 .build();
 
         when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(true);
-        aktivitetService.oppdaterStatus(oppdatertAktivitet, null);
+        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, null);
     }
 
     @Test
@@ -132,7 +131,7 @@ public class AktivitetServiceTest {
                         .getStillingsSoekAktivitetData()
                         .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
                 .build();
-        aktivitetService.oppdaterEtikett(oppdatertAktivitet, null);
+        aktivitetService.oppdaterEtikett(aktivitet, oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -201,55 +200,6 @@ public class AktivitetServiceTest {
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), null);
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
-    }
-
-
-    @Test
-    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
-        val aktivitet = lagEnNyAktivitet().toBuilder().status(AktivitetStatus.AVBRUTT).build();
-        mockHentAktivitet(aktivitet);
-
-        testAlleOppdateringsmetoder(aktivitet);
-
-    }
-
-    @Test
-    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = lagEnNyAktivitet().toBuilder().historiskDato(new Date()).build();
-        mockHentAktivitet(aktivitet);
-
-        testAlleOppdateringsmetoder(aktivitet);
-
-    }
-
-    private void testAlleOppdateringsmetoder(final no.nav.fo.veilarbaktivitet.domain.AktivitetData aktivitet) {
-        try {
-            aktivitetService.oppdaterStatus(aktivitet, null);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            aktivitetService.oppdaterEtikett(aktivitet, null);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet, null);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet, null);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
-        try {
-            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
-
-        verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
