@@ -112,8 +112,8 @@ public class AktivitetAppService {
     }
 
     private static boolean erReferatetEndretForDetErPublisert(AktivitetData aktivitetData) {
-        boolean referatEndret = aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_ENDRET ||
-                aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_OPPRETTET;
+        boolean referatEndret = AktivitetTransaksjonsType.REFERAT_ENDRET.equals(aktivitetData.getTransaksjonsType()) ||
+                AktivitetTransaksjonsType.REFERAT_OPPRETTET.equals(aktivitetData.getTransaksjonsType());
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
