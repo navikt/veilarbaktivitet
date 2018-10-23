@@ -2,15 +2,12 @@ package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
 import no.nav.apiapp.soap.SoapTjeneste;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.mappers.ArenaAktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.mappers.ResponseMapper;
-import no.nav.fo.veilarbaktivitet.service.AktivitetWSAppService;
+import no.nav.fo.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.BehandleAktivitetsplanV1;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.binding.HentAktivitetsplanSikkerhetsbegrensing;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Aktivitet;
@@ -27,10 +24,10 @@ import static no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper.mapTilAktivit
 @SoapTjeneste("/Aktivitet")
 public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
 
-    private final AktivitetWSAppService appService;
+    private final AktivitetAppService appService;
 
     @Inject
-    public AktivitetsplanWS(AktivitetWSAppService appService) {
+    public AktivitetsplanWS(AktivitetAppService appService) {
         this.appService = appService;
     }
 
@@ -79,27 +76,10 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
                 .map(appService::hentAktivitetVersjoner)
                 .map(aktivitetList -> aktivitetList
                         .stream()
-                        .filter(this::erSynligForEksterne)
                         .map(AktivitetWSMapper::mapTilAktivitet)
                         .collect(Collectors.toList())
                 ).map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
                 .orElseThrow(RuntimeException::new);
-    }
-
-    private boolean erSynligForEksterne(AktivitetData aktivitetData) {
-        return !(kanHaInterneForandringer(aktivitetData) && erReferatetEndretForDetErPublisert(aktivitetData));
-
-    }
-
-    private boolean kanHaInterneForandringer(AktivitetData aktivitetData) {
-        return aktivitetData.getAktivitetType() == AktivitetTypeData.MOTE ||
-                aktivitetData.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT;
-    }
-
-    private boolean erReferatetEndretForDetErPublisert(AktivitetData aktivitetData) {
-        val referatEndret = aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_ENDRET ||
-                aktivitetData.getTransaksjonsType() == AktivitetTransaksjonsType.REFERAT_OPPRETTET;
-        return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
     @Override

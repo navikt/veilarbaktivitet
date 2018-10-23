@@ -30,7 +30,7 @@ public class AktivitetDataMapper {
                 .status(aktivitetStatus(aktivitet.getStatus()))
                 .lagtInnAv(InnsenderData.BRUKER) // vet at fra denne siden er det alltid BRUKER
                 .lenke(aktivitet.getLenke())
-                .opprettetDato(getDate(aktivitet.getOpprettet()))
+                .opprettetDato(getDate(aktivitet.getOpprettet())) // note: not used!! so don't worry about it
                 .avtalt(ofNullable(aktivitet.getAvtalt()).orElse(false))
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .egenAktivitetData(mapTilEgenAktivitetData(aktivitet.getEgenAktivitet()))

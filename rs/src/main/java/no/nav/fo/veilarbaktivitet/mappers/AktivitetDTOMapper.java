@@ -4,6 +4,7 @@ import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.*;
 
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
+import static no.nav.fo.veilarbaktivitet.service.BrukerService.erInternBruker;
 import static no.nav.fo.veilarbaktivitet.util.FunctionUtils.nullSafe;
 
 public class AktivitetDTOMapper {
@@ -24,10 +25,13 @@ public class AktivitetDTOMapper {
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
-                .setEndretAv(aktivitet.getEndretAv())
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType())
                 ;
+
+        if (erInternBruker()) {
+            aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
+        }
 
         nullSafe(AktivitetDTOMapper::mapStillingSokData).accept(aktivitetDTO, aktivitet.getStillingsSoekAktivitetData());
         nullSafe(AktivitetDTOMapper::mapEgenAktivitetData).accept(aktivitetDTO, aktivitet.getEgenAktivitetData());

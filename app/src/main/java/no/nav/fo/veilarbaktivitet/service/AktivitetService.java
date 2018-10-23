@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.apiapp.util.ObjectUtils.notEqual;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
-import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.BLE_HISTORISK;
+import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
+import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.*;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
@@ -91,10 +89,7 @@ public class AktivitetService {
     }
 
 
-    public void oppdaterStatus(AktivitetData aktivitet, Person endretAv) {
-        val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
-
+    public void oppdaterStatus(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
         val nyAktivitet = orginalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -107,10 +102,7 @@ public class AktivitetService {
         insertAktivitet(nyAktivitet);
     }
 
-    public void oppdaterEtikett(AktivitetData aktivitet, Person endretAv) {
-        val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
-
+    public void oppdaterEtikett(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
         val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
 
         val orginalStillingsAktivitet = orginalAktivitet.getStillingsSoekAktivitetData();
@@ -132,7 +124,6 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
@@ -144,7 +135,6 @@ public class AktivitetService {
     }
 
     public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitetData);
         val oppdatertAktivitetMedNyFrist = orginalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
@@ -158,19 +148,29 @@ public class AktivitetService {
     }
 
     public void oppdaterReferat(
-            AktivitetData aktivitet,
-            AktivitetTransaksjonsType aktivitetTransaksjonsType,
+            AktivitetData orginalAktivitet,
+            AktivitetData aktivitetData,
             Person endretAv
     ) {
-        val orginalAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
+        val transaksjon = getReferatTransakjsonType(orginalAktivitet, aktivitetData);
 
-        val merger = merge(orginalAktivitet, aktivitet);
+        val merger = merge(orginalAktivitet, aktivitetData);
         insertAktivitet(orginalAktivitet
                 .withEndretAv(endretAv.get())
-                .withTransaksjonsType(aktivitetTransaksjonsType)
+                .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
+    }
+
+    private AktivitetTransaksjonsType getReferatTransakjsonType(AktivitetData orginalAktivitet,
+                                                                AktivitetData aktivitetData) {
+        val transaksjon = nullOrEmpty(orginalAktivitet.getMoteData().getReferat())
+                ? REFERAT_OPPRETTET : REFERAT_ENDRET;
+
+        if (!orginalAktivitet.getMoteData().isReferatPublisert() && aktivitetData.getMoteData().isReferatPublisert()) {
+            return REFERAT_PUBLISERT;
+        }
+        return transaksjon;
     }
 
     private MoteData mergeReferat(MoteData orginalMoteData, MoteData moteData) {
@@ -180,8 +180,6 @@ public class AktivitetService {
     }
 
     public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        kanEndreAktivitetGuard(orginalAktivitet, aktivitet);
-
         val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
@@ -259,23 +257,6 @@ public class AktivitetService {
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
-    }
-
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (notEqual(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new VersjonsKonflikt();
-        }
-        if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre aktivitet aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
-        }
-    }
-
-    private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
-        AktivitetStatus status = aktivitetData.getStatus();
-        return AVBRUTT.equals(status) || FULLFORT.equals(status) || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional

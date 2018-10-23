@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.brukerdialog.security.context.SubjectRule;
+import no.nav.common.auth.Subject;
 import no.nav.fo.IntegrasjonsTestMedPepOgBrukerServiceMock;
 import no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.fo.veilarbaktivitet.db.Database;
@@ -9,6 +11,7 @@ import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -19,6 +22,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
+import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.TestData.*;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,6 +44,9 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
 
     @Inject
     private Database database;
+
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
 
     @Before
     public void setup() {
@@ -86,13 +94,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
         gitt_at_jeg_har_laget_en_aktivtet();
         nar_jeg_lagrer_aktivteten();
         da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan();
-    }
-
-    @Test
-    public void slett_aktivitet() {
-        gitt_at_jeg_har_aktiviter();
-        nar_jeg_sletter_en_aktivitet_fra_min_aktivitetsplan();
-        da_skal_jeg_ha_mindre_aktiviter_i_min_aktivitetsplan();
     }
 
     @Test
@@ -201,11 +202,6 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
                         .setEtikett(EtikettTypeDTO.AVSLAG)
                         .setTilDato(new Date())
         );
-    }
-
-    private void nar_jeg_sletter_en_aktivitet_fra_min_aktivitetsplan() {
-        val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);
-        aktivitetController.slettAktivitet(aktivitet.getId());
     }
 
     private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;

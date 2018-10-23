@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.*;
 import java.util.Optional;
 
 import static no.nav.fo.veilarbaktivitet.mappers.Helpers.*;
+import static no.nav.fo.veilarbaktivitet.service.BrukerService.erEksternBruker;
 
 public class AktivitetDataMapper {
     public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
@@ -29,7 +30,7 @@ public class AktivitetDataMapper {
                 .status(aktivitetDTO.getStatus())
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
-                .lagtInnAv(InnsenderData.NAV) // Vet at det alltid er fra NAV på denne siden
+                .lagtInnAv(erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .lenke(aktivitetDTO.getLenke());
 
         switch (aktivitetType){

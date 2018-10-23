@@ -14,10 +14,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.annotation.*;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.util.Optional;
+
 import static no.nav.fo.veilarbaktivitet.domain.Person.navIdent;
 import static org.mockito.Mockito.*;
-
-import java.util.Optional;
 
 public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends AbstractIntegrasjonsTest {
 

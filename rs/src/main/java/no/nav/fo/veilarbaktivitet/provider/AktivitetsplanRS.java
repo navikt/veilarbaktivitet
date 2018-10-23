@@ -1,6 +1,7 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
@@ -8,28 +9,29 @@ import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
-import no.nav.fo.veilarbaktivitet.service.AktivitetRSAppService;
+import no.nav.fo.veilarbaktivitet.service.AktivitetAppService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static no.nav.fo.veilarbaktivitet.service.BrukerService.erEksternBruker;
 
 
 @Component
 public class AktivitetsplanRS implements AktivitetController {
 
-    private final AktivitetRSAppService appService;
+    private final AktivitetAppService appService;
     private final Provider<HttpServletRequest> requestProvider;
 
     @Inject
     public AktivitetsplanRS(
-            AktivitetRSAppService appService,
+            AktivitetAppService appService,
             Provider<HttpServletRequest> requestProvider
     ) {
         this.appService = appService;
@@ -39,7 +41,7 @@ public class AktivitetsplanRS implements AktivitetController {
     @Override
     public AktivitetsplanDTO hentAktivitetsplan() {
         val aktiviter = appService
-                .hentAktiviteterForIdent(getUserIdent())
+                .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .collect(Collectors.toList());
@@ -62,10 +64,22 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Override
+    public List<AktivitetDTO> hentAktivitetVersjoner(String aktivitetId) {
+        return Optional.of(aktivitetId)
+                .map(Long::parseLong)
+                .map(appService::hentAktivitetVersjoner)
+                .map(aktivitetList -> aktivitetList
+                        .stream()
+                        .map(AktivitetDTOMapper::mapTilAktivitetDTO)
+                        .collect(Collectors.toList())
+                ).orElseThrow(RuntimeException::new);
+    }
+
+    @Override
     public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map((aktivitetData) -> appService.opprettNyAktivtet(getUserIdent(), aktivitetData))
+                .map((aktivitetData) -> appService.opprettNyAktivtet(getContextUserIdent(), aktivitetData))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
@@ -102,32 +116,23 @@ public class AktivitetsplanRS implements AktivitetController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
-    public List<AktivitetDTO> hentAktivitetVersjoner(String aktivitetId) {
-        return Optional.of(aktivitetId)
-                .map(Long::parseLong)
-                .map(appService::hentAktivitetVersjoner)
-                .map(aktivitetList -> aktivitetList
-                        .stream()
-                        .map(AktivitetDTOMapper::mapTilAktivitetDTO)
-                        .collect(Collectors.toList())
-                ).orElseThrow(RuntimeException::new);
-    }
-
     @Path("{aktivitetId}/referat")
-    public ReferatRessurs referatRessurs(@PathParam("aktivitetId") long aktivitetId) {
-        return new ReferatRessurs(aktivitetId, appService);
+    public ReferatRessurs referatRessurs() {
+        return new ReferatRessurs(appService);
     }
 
-    private Person getUserIdent() {
+    private Person getContextUserIdent() {
+        if (erEksternBruker()) {
+            return SubjectHandler.getIdent().map(Person::fnr).orElseThrow(RuntimeException::new);
+        }
+
         Optional<Person> fnr = Optional.ofNullable(requestProvider.get().getParameter("fnr")).map(Person::fnr);
         Optional<Person> aktorId = Optional.ofNullable(requestProvider.get().getParameter("aktorId")).map(Person::aktorId);
-
         return fnr.orElseGet(() -> aktorId.orElseThrow(RuntimeException::new));
     }
 
     private Optional<Person.Fnr> getFnr() {
-        return Optional.of(getUserIdent())
+        return Optional.of(getContextUserIdent())
                 .filter((person) -> person instanceof Person.Fnr)
                 .map((person) -> (Person.Fnr)person);
     }

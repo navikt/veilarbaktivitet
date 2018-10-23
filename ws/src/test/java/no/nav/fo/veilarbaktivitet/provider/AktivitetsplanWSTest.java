@@ -1,20 +1,27 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.apiapp.feil.UgyldigRequest;
+import no.nav.brukerdialog.security.context.SubjectExtension;
+import no.nav.common.auth.Subject;
 import no.nav.fo.IntegrasjonsTestMedPepOgBrukerServiceMock;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.fo.veilarbaktivitet.mappers.AktivitetWSMapper;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.*;
 import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.meldinger.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 
+import static no.nav.brukerdialog.security.domain.IdentType.EksternBruker;
+import static no.nav.common.auth.SsoToken.saml;
 import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.fo.TestData.KJENT_IDENT;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.*;
@@ -26,12 +33,16 @@ import static org.hamcrest.Matchers.*;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 
 
+@ExtendWith(SubjectExtension.class)
 public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceMock {
 
+    @BeforeEach
+    public void setup(SubjectExtension.SubjectStore subjectStore) {
+        subjectStore.setSubject(new Subject("testident", EksternBruker, saml("token")));
+    }
 
     @Nested
     public class hentAktivitetsplan {
-
         @Test
         public void skal_hente_alle_aktiviteter() throws Exception {
             opprett_aktivitet();
@@ -126,10 +137,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
             samtalsAktivitet.withStatus(AktivitetStatus.GJENNOMFORES);
             endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), samtalsAktivitet));
 
-            val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
-            Aktivitet res1Aktivitet = res1.getAktivitet();
-
-            assertThat(res1Aktivitet.getStatus(), equalTo(Status.PLANLAGT));
+            Assertions.assertThrows(UgyldigRequest.class, () -> aktivitetsplanWS.endreAktivitetStatus(endreReq));
         }
 
         @Test
@@ -140,10 +148,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
             samtalsAktivitet.withStatus(AktivitetStatus.FULLFORT);
             endreReq.setAktivitet(AktivitetWSMapper.mapTilAktivitet(Person.fnr("123"), samtalsAktivitet));
 
-            val res1 = aktivitetsplanWS.endreAktivitetStatus(endreReq);
-            Aktivitet res1Aktivitet = res1.getAktivitet();
-
-            assertThat(res1Aktivitet.getStatus(), equalTo(Status.GJENNOMFOERT));
+            Assertions.assertThrows(UgyldigRequest.class, () -> aktivitetsplanWS.endreAktivitetStatus(endreReq));
         }
 
     }
@@ -193,21 +198,26 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
             val moteData = aktivitet.getMoteData();
 
             val publishedMoteReferat = "published";
-            aktivitetService.oppdaterReferat(aktivitet.withMoteData(moteData.withReferat("this is fun")),
-                    AktivitetTransaksjonsType.REFERAT_OPPRETTET, Person.navIdent("Superman"));
+            aktivitetService.oppdaterReferat(aktivitet,
+                    aktivitet.withMoteData(moteData.withReferat("this is fun")),
+                    Person.navIdent("Superman"));
 
-            aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
-                            .withMoteData(moteData.withReferat("test2")),
-                    AktivitetTransaksjonsType.REFERAT_ENDRET, Person.navIdent("Superman"));
+            val aktivitetV2 = aktivitetService.hentAktivitet(aktivitet.getId());
 
-            aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
-                            .withMoteData(moteData.withReferatPublisert(true)),
-                    AktivitetTransaksjonsType.REFERAT_PUBLISERT, Person.navIdent("Superman"));
+            aktivitetService.oppdaterReferat(aktivitetV2,
+                    aktivitetV2.withMoteData(moteData.withReferat("test2")),
+                    Person.navIdent("Superman"));
 
-            aktivitetService.oppdaterReferat(aktivitetService.hentAktivitet(aktivitet.getId())
-                            .withMoteData(moteData.withReferatPublisert(true)
-                                    .withReferat(publishedMoteReferat)),
-                    AktivitetTransaksjonsType.REFERAT_ENDRET, Person.navIdent("Superman"));
+            val aktivitetV3 = aktivitetService.hentAktivitet(aktivitet.getId());
+            aktivitetService.oppdaterReferat(aktivitetV3,
+                    aktivitetV3.withMoteData(moteData.withReferatPublisert(true)),
+                    Person.navIdent("Superman"));
+
+            val aktivitetV4 = aktivitetService.hentAktivitet(aktivitet.getId());
+            aktivitetService.oppdaterReferat(aktivitetV4,
+                    aktivitetV4.withMoteData(moteData.withReferatPublisert(true)
+                            .withReferat(publishedMoteReferat)),
+                    Person.navIdent("Superman"));
 
 
             val hentVersjoner = new HentAktivitetVersjonerRequest();
@@ -253,16 +263,7 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
             endreAktivitet.setBeskrivelse("bleeeeeee123");
             endreReq.setAktivitet(endreAktivitet);
 
-            val resp = aktivitetsplanWS.endreAktivitet(endreReq);
-            val respAktivitet = AktivitetDataMapper
-                    .mapTilAktivitetData(resp.getAktivitet());
-            assertThat(aktivitet.toBuilder()
-                            .aktorId(null)
-                            .transaksjonsType(null)
-                            .endretDato(null)
-                            .historiskDato(null)
-                            .build(),
-                    equalTo(respAktivitet));
+            Assertions.assertThrows(UgyldigRequest.class, () -> aktivitetsplanWS.endreAktivitet(endreReq));
         }
     }
 
@@ -286,8 +287,8 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
     }
 
-    private AktivitetData opprett_aktivitet_med_type_og_status(AktivitetTypeData aktivitetsType, AktivitetStatus aktivitetsStatus){
-        val aktivitet= nyAktivitet()
+    private AktivitetData opprett_aktivitet_med_type_og_status(AktivitetTypeData aktivitetsType, AktivitetStatus aktivitetsStatus) {
+        val aktivitet = nyAktivitet()
                 .aktivitetType(aktivitetsType)
                 .status(aktivitetsStatus)
                 .build();
