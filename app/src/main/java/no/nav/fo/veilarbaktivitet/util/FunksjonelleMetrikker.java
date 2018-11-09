@@ -2,15 +2,20 @@ package no.nav.fo.veilarbaktivitet.util;
 
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
+import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
 public class FunksjonelleMetrikker {
 
     public static void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
-        MetricsFactory.createEvent("aktivitet.ny")
+        final Event event = MetricsFactory.createEvent("aktivitet.ny")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
-                .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
-                .report();
+                .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV));
+
+        if (!"".equals(aktivitetData.getMalid())) {
+            event.addFieldToReport("malid", aktivitetData.getMalid());
+        }
+        event.report();
     }
 
     public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt) {

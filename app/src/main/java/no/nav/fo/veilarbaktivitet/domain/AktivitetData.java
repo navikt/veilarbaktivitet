@@ -32,6 +32,7 @@ public class AktivitetData {
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
     String kontorsperreEnhetId;
+    String malid;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

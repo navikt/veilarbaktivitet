@@ -5,9 +5,7 @@ import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
 import org.springframework.transaction.annotation.Transactional;
-
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -75,8 +73,8 @@ public class AktivitetDAO {
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, mal_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -96,7 +94,8 @@ public class AktivitetDAO {
                 true,
                 getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),
-                aktivitet.getKontorsperreEnhetId()
+                aktivitet.getKontorsperreEnhetId(),
+                aktivitet.getMalid()
         );
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());

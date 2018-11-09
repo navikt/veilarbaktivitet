@@ -27,6 +27,7 @@ public class AktivitetDTO {
     public boolean avtalt;
     public String lagtInnAv;
     public AktivitetTransaksjonsType transaksjonsType;
+    public String malid;
 
     // stillingaktivitet
     public EtikettTypeDTO etikett;
