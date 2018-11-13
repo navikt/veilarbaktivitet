@@ -80,6 +80,7 @@ public class AktivitetService {
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
                 .malid(aktivitet.getMalid())
+                .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
         val kvpAktivivitet = tagUsingKVP(nyAktivivitet);

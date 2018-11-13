@@ -70,7 +70,7 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
     }
 
     @Test
-    public void opprette_og_hente_behandlingaktiviete() {
+    public void opprette_og_hente_behandlingaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_behandling();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 

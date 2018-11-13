@@ -29,6 +29,7 @@ public class AktivitetDTO {
     public AktivitetTransaksjonsType transaksjonsType;
     public String malid;
     public Date lestAvBrukerForsteGang;
+    public boolean automatiskOpprettet;
 
     // stillingaktivitet
     public EtikettTypeDTO etikett;

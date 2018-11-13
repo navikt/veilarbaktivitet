@@ -94,7 +94,7 @@ public class AktivitetsplanWS implements BehandleAktivitetsplanV1 {
 
         return maybeAktivitet
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map(aktivitet -> appService.opprettNyAktivtet(Person.fnr(fnr), aktivitet))
+                .map(aktivitet -> appService.opprettNyAktivitet(Person.fnr(fnr), aktivitet))
                 .map(aktivitetData -> mapTilAktivitet(Person.fnr(fnr), aktivitetData))
                 .map(ResponseMapper::mapTilOpprettNyAktivitetResponse)
                 .orElseThrow(RuntimeException::new);

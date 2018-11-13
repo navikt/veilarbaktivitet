@@ -58,12 +58,12 @@ public class AktivitetsplanWSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
         public void skal_hente_en_aktivitet() throws Exception {
             opprett_aktivitet();
             val req = new HentAktivitetRequest();
-            val aktiviet = aktiviter().get(0);
-            req.setAktivitetId(aktiviet.getId().toString());
+            val aktivitet = aktiviter().get(0);
+            req.setAktivitetId(aktivitet.getId().toString());
 
             val res = aktivitetsplanWS.hentAktivitet(req);
-            assertThat(res.getAktivitet().getAktivitetId(), equalTo(aktiviet.getId().toString()));
-            assertThat(res.getAktivitet().getTittel(), equalTo(aktiviet.getTittel()));
+            assertThat(res.getAktivitet().getAktivitetId(), equalTo(aktivitet.getId().toString()));
+            assertThat(res.getAktivitet().getTittel(), equalTo(aktivitet.getTittel()));
         }
     }
 

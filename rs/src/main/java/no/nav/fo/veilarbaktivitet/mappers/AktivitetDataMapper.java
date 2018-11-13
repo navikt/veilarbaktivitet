@@ -33,7 +33,8 @@ public class AktivitetDataMapper {
                 .lagtInnAv(erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
-                .lestAvBrukerForsteGang(aktivitetDTO.getLestAvBrukerForsteGang());
+                .lestAvBrukerForsteGang(aktivitetDTO.getLestAvBrukerForsteGang())
+                .automatiskOpprettet(aktivitetDTO.isAutomatiskOpprettet());
 
         switch (aktivitetType){
             case EGENAKTIVITET:

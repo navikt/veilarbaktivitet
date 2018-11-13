@@ -184,7 +184,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
     }
 
     private void nar_jeg_lagrer_aktivteten() {
-        aktivitet = aktivitetController.opprettNyAktivitet(aktivitet);
+        aktivitet = aktivitetController.opprettNyAktivitet(aktivitet, false);
     }
 
     private AktivitetDTO orignalAktivitet;
@@ -196,7 +196,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
                 .setFraDato(aktivitet.getFraDato())
                 .setId(aktivitet.getId());
 
-        aktivitet = aktivitetController.oppdaterAktiviet(
+        aktivitet = aktivitetController.oppdaterAktivitet(
                 aktivitet.setBeskrivelse("noe tull")
                         .setArbeidsgiver("Justice league")
                         .setEtikett(EtikettTypeDTO.AVSLAG)
@@ -239,7 +239,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
                 .avsluttetKommentar(nyAvsluttetKommentar)
                 .build();
 
-        this.aktivitet = aktivitetController.oppdaterAktiviet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
+        this.aktivitet = aktivitetController.oppdaterAktivitet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
         this.lagredeAktivitetsIder.set(0, Long.parseLong(this.aktivitet.getId()));
     }
 

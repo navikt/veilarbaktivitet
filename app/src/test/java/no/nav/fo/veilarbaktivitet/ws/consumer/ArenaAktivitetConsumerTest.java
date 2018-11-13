@@ -1,5 +1,21 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
+import no.nav.fo.veilarbaktivitet.domain.Person;
+import no.nav.fo.veilarbaktivitet.util.DateUtils;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Deltakerstatuser;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Periode;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerResponse;
+import org.junit.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+
+import java.util.Arrays;
+import java.util.Date;
+
 import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.DATOFILTER_PROPERTY_NAME;
 import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.parseDato;
 import static org.hamcrest.Matchers.equalTo;
@@ -8,23 +24,6 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Date;
-
-import no.nav.fo.veilarbaktivitet.domain.Person;
-import org.junit.Test;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import no.nav.fo.veilarbaktivitet.util.DateUtils;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Deltakerstatuser;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Periode;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerResponse;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 public class ArenaAktivitetConsumerTest {
 
@@ -68,13 +67,13 @@ public class ArenaAktivitetConsumerTest {
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() + 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
-        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(1));
+        assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(1));
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet = 
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() - 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedGammelAktivitet);
-        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(0));
+        assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(0));
     }
 
     @Test
@@ -88,7 +87,7 @@ public class ArenaAktivitetConsumerTest {
                 responsMedTiltak(new Date());
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
-        assertThat(consumer.hentArenaAktivieter(Person.fnr("123")).size(), equalTo(1));
+        assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(1));
     }
 
     private HentTiltakOgAktiviteterForBrukerResponse responsMedTiltak(Date date) {

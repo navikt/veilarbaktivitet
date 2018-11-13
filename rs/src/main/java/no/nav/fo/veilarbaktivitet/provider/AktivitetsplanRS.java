@@ -76,16 +76,17 @@ public class AktivitetsplanRS implements AktivitetController {
     }
 
     @Override
-    public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet) {
+    public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, boolean automatisk) {
+        aktivitet.setAutomatiskOpprettet(automatisk);
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map((aktivitetData) -> appService.opprettNyAktivtet(getContextUserIdent(), aktivitetData))
+                .map((aktivitetData) -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
 
     @Override
-    public AktivitetDTO oppdaterAktiviet(AktivitetDTO aktivitet) {
+    public AktivitetDTO oppdaterAktivitet(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)

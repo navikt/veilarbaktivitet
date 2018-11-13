@@ -34,6 +34,7 @@ public class AktivitetData {
     String kontorsperreEnhetId;
     String malid;
     Date lestAvBrukerForsteGang;
+    boolean automatiskOpprettet;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
