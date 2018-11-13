@@ -44,7 +44,7 @@ public class AvsluttetOppfolgingFeedConfig {
         );
 
         FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
-                .lockProvider(lockProvider(dataSource), 5)
+                .lockProvider(lockProvider(dataSource), 10  * 60 * 1000)
                 .callback(avsluttetOppfolgingFeedConsumer::lesAvsluttetOppfolgingFeed)
                 .interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
 
