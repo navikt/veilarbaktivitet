@@ -27,7 +27,8 @@ public class AktivitetDTOMapper {
                 .setEndretDato(aktivitet.getEndretDato())
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType())
-                ;
+                .setMalid(aktivitet.getMalid())
+                .setLestAvBrukerForsteGang(aktivitet.getLestAvBrukerForsteGang());
 
         if (erInternBruker()) {
             aktivitetDTO.setEndretAv(aktivitet.getEndretAv());

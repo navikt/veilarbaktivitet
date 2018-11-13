@@ -308,7 +308,7 @@ public class AktivitetsplanRSTest extends IntegrasjonsTestMedPepOgBrukerServiceM
                 .setFraDato(new Date())
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt")
-                ;
+                .setMalid("1");
     }
 
 }

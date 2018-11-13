@@ -33,6 +33,7 @@ public class AktivitetData {
     Date historiskDato;
     String kontorsperreEnhetId;
     String malid;
+    Date lestAvBrukerForsteGang;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

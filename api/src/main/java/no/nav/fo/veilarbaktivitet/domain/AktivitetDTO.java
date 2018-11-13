@@ -28,6 +28,7 @@ public class AktivitetDTO {
     public String lagtInnAv;
     public AktivitetTransaksjonsType transaksjonsType;
     public String malid;
+    public Date lestAvBrukerForsteGang;
 
     // stillingaktivitet
     public EtikettTypeDTO etikett;

@@ -16,7 +16,9 @@ import java.util.Optional;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.*;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.*;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -127,6 +129,15 @@ public class AktivitetDAOTest extends IntegrasjonsTest {
                     }
                 }
         );
+    }
+
+    @Test
+    public void skal_legge_til_lest_av_bruker_forste_gang() {
+        val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
+        aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitet.getId());
+
+        val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        assertThat(hentetAktivitet.getLestAvBrukerForsteGang(), is(notNullValue()));
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {

@@ -232,6 +232,13 @@ public class AktivitetServiceTest {
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
+    @Test
+    public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
+        gitt_aktivitet(lagEnNyAktivitet());
+        aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
+        verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);
+    }
+
     private void gitt_aktivitet(AktivitetData aktivitetData) {
         when(aktivitetDAO.hentAktiviteterForAktorId(any(Person.AktorId.class))).thenReturn(asList(aktivitetData));
     }

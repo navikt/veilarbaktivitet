@@ -80,6 +80,7 @@ public class AktivitetAppService {
 
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
+        settLestAvBrukerHvisUlest(aktivitetData);
         sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
         assertCanAccessKvpActivity(aktivitetData);
         return aktivitetData;
@@ -96,6 +97,13 @@ public class AktivitetAppService {
                 .stream()
                 .filter(AktivitetAppService::erEksternBrukerOgEndringenSkalVereSynnelig)
                 .collect(Collectors.toList());
+    }
+
+    public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
+        if (erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
+            AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());
+            FunksjonelleMetrikker.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet);
+        }
     }
 
     private static boolean erEksternBrukerOgEndringenSkalVereSynnelig(AktivitetData aktivitetData) {

@@ -12,16 +12,16 @@ public class FunksjonelleMetrikker {
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV));
 
-        if (!"".equals(aktivitetData.getMalid())) {
-            event.addFieldToReport("malid", aktivitetData.getMalid());
-        }
-        event.report();
+        leggTilMalIdHvisEksisterer(aktivitetData, event)
+                .report();
     }
 
     public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt) {
-        MetricsFactory.createEvent("aktivitet.oppdatert")
+        Event event = MetricsFactory.createEvent("aktivitet.oppdatert")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
-                .addFieldToReport("blittAvtalt", blittAvtalt)
+                .addFieldToReport("blittAvtalt", blittAvtalt);
+
+        leggTilMalIdHvisEksisterer(aktivitetData, event)
                 .report();
     }
 
@@ -44,6 +44,15 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
+    public static void reportAktivitetLestAvBrukerForsteGang(AktivitetData aktivitetData) {
+        MetricsFactory.createEvent("aktivitet.lestAvBrukerForsteGang")
+                .addTagToReport("type", aktivitetData.getAktivitetType().toString())
+                .addFieldToReport("malid", aktivitetData.getMalid())
+                .addFieldToReport("lestTidspunkt", aktivitetData.getLestAvBrukerForsteGang().getTime())
+                .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData))
+                .report();
+    }
+
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
@@ -55,5 +64,16 @@ public class FunksjonelleMetrikker {
 
     private static long tidMellomOpprettetOgOppdatert(AktivitetData aktivitetData) {
         return aktivitetData.getEndretDato().getTime() - aktivitetData.getOpprettetDato().getTime();
+    }
+
+    private static long tidMellomOpprettetOgLestForsteGang(AktivitetData aktivitetData) {
+        return aktivitetData.getLestAvBrukerForsteGang().getTime() - aktivitetData.getOpprettetDato().getTime();
+    }
+
+    private static Event leggTilMalIdHvisEksisterer(AktivitetData aktivitetData, Event event) {
+        if (aktivitetData.getMalid() != null) {
+            event.addFieldToReport("malid", aktivitetData.getMalid());
+        }
+        return event;
     }
 }
