@@ -20,6 +20,8 @@ import java.util.Collections;
 @Configuration
 public class AvsluttetOppfolgingFeedConfig {
 
+    private static final int LOCK_HOLDING_LIMIT_IN_MS = 10 * 60 * 1000;
+
     @Value("${veilarboppfolging.api.url}")
     private String host;
 
@@ -44,7 +46,7 @@ public class AvsluttetOppfolgingFeedConfig {
         );
 
         FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
-                .lockProvider(lockProvider(dataSource), 10  * 60 * 1000)
+                .lockProvider(lockProvider(dataSource), LOCK_HOLDING_LIMIT_IN_MS)
                 .callback(avsluttetOppfolgingFeedConsumer::lesAvsluttetOppfolgingFeed)
                 .interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
 
