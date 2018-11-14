@@ -31,10 +31,7 @@ public class AktivitetDataMapper {
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
                 .lagtInnAv(erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
-                .lenke(aktivitetDTO.getLenke())
-                .malid(aktivitetDTO.getMalid())
-                .lestAvBrukerForsteGang(aktivitetDTO.getLestAvBrukerForsteGang())
-                .automatiskOpprettet(aktivitetDTO.isAutomatiskOpprettet());
+                .lenke(aktivitetDTO.getLenke());
 
         switch (aktivitetType){
             case EGENAKTIVITET:
