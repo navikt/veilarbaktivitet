@@ -2,28 +2,23 @@ package no.nav.fo.veilarbaktivitet.util;
 
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
-import no.nav.metrics.Event;
 import no.nav.metrics.MetricsFactory;
 
 public class FunksjonelleMetrikker {
 
     public static void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
-        final Event event = MetricsFactory.createEvent("aktivitet.ny")
+        MetricsFactory.createEvent("aktivitet.ny")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
-                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet());
-
-        leggTilMalIdHvisEksisterer(aktivitetData, event)
+                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .report();
     }
 
     public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt) {
-        Event event = MetricsFactory.createEvent("aktivitet.oppdatert")
+        MetricsFactory.createEvent("aktivitet.oppdatert")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
-                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet());
-
-        leggTilMalIdHvisEksisterer(aktivitetData, event)
+                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .report();
     }
 
@@ -47,25 +42,21 @@ public class FunksjonelleMetrikker {
     }
 
     public static void reportAktivitetLestAvBrukerForsteGang(AktivitetData aktivitetData) {
-        final Event event = MetricsFactory.createEvent("aktivitet.lestAvBrukerForsteGang")
+        MetricsFactory.createEvent("aktivitet.lestAvBrukerForsteGang")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport("lestTidspunkt", aktivitetData.getLestAvBrukerForsteGang().getTime())
-                .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData));
-
-        leggTilMalIdHvisEksisterer(aktivitetData, event)
+                .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData))
                 .report();
     }
 
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
-        final Event event = MetricsFactory.createEvent("aktivitet.oppdatert.status")
+        MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("status", aktivitetData.getStatus())
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
-                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet());
-
-        leggTilMalIdHvisEksisterer(aktivitetData, event)
+                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .report();
     }
 
@@ -77,10 +68,4 @@ public class FunksjonelleMetrikker {
         return aktivitetData.getLestAvBrukerForsteGang().getTime() - aktivitetData.getOpprettetDato().getTime();
     }
 
-    private static Event leggTilMalIdHvisEksisterer(AktivitetData aktivitetData, Event event) {
-        if (aktivitetData.getMalid() != null) {
-            event.addFieldToReport("malid", aktivitetData.getMalid());
-        }
-        return event;
-    }
 }

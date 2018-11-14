@@ -32,7 +32,6 @@ public class AktivitetData {
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
     String kontorsperreEnhetId;
-    String malid;
     Date lestAvBrukerForsteGang;
     boolean automatiskOpprettet;
 

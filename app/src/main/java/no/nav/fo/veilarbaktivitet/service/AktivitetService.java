@@ -79,7 +79,6 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
-                .malid(aktivitet.getMalid())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
