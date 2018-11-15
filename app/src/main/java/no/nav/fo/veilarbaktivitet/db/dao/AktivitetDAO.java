@@ -5,9 +5,7 @@ import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
 import org.springframework.transaction.annotation.Transactional;
-
 
 import javax.inject.Inject;
 import java.util.Date;
@@ -75,8 +73,8 @@ public class AktivitetDAO {
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -96,7 +94,8 @@ public class AktivitetDAO {
                 true,
                 getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),
-                aktivitet.getKontorsperreEnhetId()
+                aktivitet.getKontorsperreEnhetId(),
+                aktivitet.isAutomatiskOpprettet()
         );
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
@@ -244,5 +243,11 @@ public class AktivitetDAO {
                 .sum();
 
         return oppdaterteRader > 0;
+    }
+
+    @Transactional
+    public void insertLestAvBrukerTidspunkt(long aktivitetId) {
+        database.update("UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP " +
+                "WHERE aktivitet_id = ?", aktivitetId);
     }
 }

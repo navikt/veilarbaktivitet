@@ -80,6 +80,7 @@ public class AktivitetAppService {
 
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
+        settLestAvBrukerHvisUlest(aktivitetData);
         sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
         assertCanAccessKvpActivity(aktivitetData);
         return aktivitetData;
@@ -87,7 +88,7 @@ public class AktivitetAppService {
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
         sjekkTilgangTilPerson(ident);
-        return arenaAktivitetConsumer.hentArenaAktivieter(ident);
+        return arenaAktivitetConsumer.hentArenaAktiviteter(ident);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
@@ -96,6 +97,13 @@ public class AktivitetAppService {
                 .stream()
                 .filter(AktivitetAppService::erEksternBrukerOgEndringenSkalVereSynnelig)
                 .collect(Collectors.toList());
+    }
+
+    public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
+        if (erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
+            AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());
+            FunksjonelleMetrikker.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet);
+        }
     }
 
     private static boolean erEksternBrukerOgEndringenSkalVereSynnelig(AktivitetData aktivitetData) {
@@ -117,7 +125,7 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
-    public AktivitetData opprettNyAktivtet(Person ident, AktivitetData aktivitetData) {
+    public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
         sjekkTilgangTilPerson(ident);
 
         if (erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {

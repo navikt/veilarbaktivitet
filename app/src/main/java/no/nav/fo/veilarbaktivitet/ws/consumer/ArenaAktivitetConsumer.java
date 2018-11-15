@@ -67,7 +67,7 @@ public class ArenaAktivitetConsumer {
         }
     }
 
-    public List<ArenaAktivitetDTO> hentArenaAktivieter(Person.Fnr personident) {
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
 
         val req = new HentTiltakOgAktiviteterForBrukerRequest();
         req.setPersonident(personident.get());

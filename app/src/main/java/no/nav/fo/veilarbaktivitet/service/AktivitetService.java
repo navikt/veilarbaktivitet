@@ -79,6 +79,7 @@ public class AktivitetService {
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
+                .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
         val kvpAktivivitet = tagUsingKVP(nyAktivivitet);
@@ -272,4 +273,8 @@ public class AktivitetService {
         return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
+    public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
+        aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
+        return hentAktivitet(aktivitetId);
+    }
 }

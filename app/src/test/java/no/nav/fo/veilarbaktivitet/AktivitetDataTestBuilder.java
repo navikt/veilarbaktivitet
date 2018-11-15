@@ -24,6 +24,7 @@ public class AktivitetDataTestBuilder {
                 .opprettetDato(nyDato())
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+                .lestAvBrukerForsteGang(null)
                 .historiskDato(null);
     }
 

@@ -27,11 +27,11 @@ public interface AktivitetController {
 
     @POST
     @Path("/ny")
-    AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet);
+    AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, @DefaultValue("false") @QueryParam("automatisk") boolean automatisk);
 
     @PUT
     @Path("/{id}")
-    AktivitetDTO oppdaterAktiviet(AktivitetDTO aktivitet);
+    AktivitetDTO oppdaterAktivitet(AktivitetDTO aktivitet);
 
     @GET
     @Path("/{id}")

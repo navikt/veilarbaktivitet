@@ -32,6 +32,8 @@ public class AktivitetData {
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
     String kontorsperreEnhetId;
+    Date lestAvBrukerForsteGang;
+    boolean automatiskOpprettet;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
