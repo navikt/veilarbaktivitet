@@ -90,8 +90,8 @@ public class AktivitetService {
     }
 
 
-    public void oppdaterStatus(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        val nyAktivitet = orginalAktivitet
+    public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+        val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .lagtInnAv(aktivitet.getLagtInnAv())
@@ -103,13 +103,13 @@ public class AktivitetService {
         insertAktivitet(nyAktivitet);
     }
 
-    public void oppdaterEtikett(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
         val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
 
-        val orginalStillingsAktivitet = orginalAktivitet.getStillingsSoekAktivitetData();
-        val nyStillingsAktivitet = orginalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
+        val originalStillingsAktivitet = originalAktivitet.getStillingsSoekAktivitetData();
+        val nyStillingsAktivitet = originalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
 
-        val nyAktivitet = orginalAktivitet
+        val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
@@ -124,8 +124,8 @@ public class AktivitetService {
         aktivitetDAO.slettAktivitet(aktivitetId);
     }
 
-    public void oppdaterAktivitetFrist(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
-        val oppdatertAktivitetMedNyFrist = orginalAktivitet
+    public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
+        val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
@@ -135,57 +135,57 @@ public class AktivitetService {
         insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidOgSted(AktivitetData orginalAktivitet, AktivitetData aktivitetData, Person endretAv) {
-        val oppdatertAktivitetMedNyFrist = orginalAktivitet
+    public void oppdaterMoteTidOgSted(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
+        val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET )
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
-                .moteData(ofNullable(orginalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterReferat(
-            AktivitetData orginalAktivitet,
+            AktivitetData originalAktivitet,
             AktivitetData aktivitetData,
             Person endretAv
     ) {
-        val transaksjon = getReferatTransakjsonType(orginalAktivitet, aktivitetData);
+        val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
-        val merger = merge(orginalAktivitet, aktivitetData);
-        insertAktivitet(orginalAktivitet
+        val merger = merge(originalAktivitet, aktivitetData);
+        insertAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
     }
 
-    private AktivitetTransaksjonsType getReferatTransakjsonType(AktivitetData orginalAktivitet,
+    private AktivitetTransaksjonsType getReferatTransakjsonType(AktivitetData originalAktivitet,
                                                                 AktivitetData aktivitetData) {
-        val transaksjon = nullOrEmpty(orginalAktivitet.getMoteData().getReferat())
+        val transaksjon = nullOrEmpty(originalAktivitet.getMoteData().getReferat())
                 ? REFERAT_OPPRETTET : REFERAT_ENDRET;
 
-        if (!orginalAktivitet.getMoteData().isReferatPublisert() && aktivitetData.getMoteData().isReferatPublisert()) {
+        if (!originalAktivitet.getMoteData().isReferatPublisert() && aktivitetData.getMoteData().isReferatPublisert()) {
             return REFERAT_PUBLISERT;
         }
         return transaksjon;
     }
 
-    private MoteData mergeReferat(MoteData orginalMoteData, MoteData moteData) {
-        return orginalMoteData
+    private MoteData mergeReferat(MoteData originalMoteData, MoteData moteData) {
+        return originalMoteData
                 .withReferat(moteData.getReferat())
                 .withReferatPublisert(moteData.isReferatPublisert());
     }
 
-    public void oppdaterAktivitet(AktivitetData orginalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        val blittAvtalt = orginalAktivitet.isAvtalt() != aktivitet.isAvtalt();
+    public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+        val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
-        val merger = merge(orginalAktivitet, aktivitet);
-        insertAktivitet(orginalAktivitet
+        val merger = merge(originalAktivitet, aktivitet);
+        insertAktivitet(originalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -198,7 +198,6 @@ public class AktivitetService {
                 .versjon(aktivitet.getVersjon())
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .avtalt(aktivitet.isAvtalt())
-                .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
@@ -207,7 +206,7 @@ public class AktivitetService {
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .build()
         );
-        FunksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt);
+        FunksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
@@ -231,15 +230,15 @@ public class AktivitetService {
                 .withAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
     }
 
-    private EgenAktivitetData mergeEgenAktivitetData(EgenAktivitetData orginalEgenAktivitetData, EgenAktivitetData egenAktivitetData) {
-        return orginalEgenAktivitetData
+    private EgenAktivitetData mergeEgenAktivitetData(EgenAktivitetData originalEgenAktivitetData, EgenAktivitetData egenAktivitetData) {
+        return originalEgenAktivitetData
                 .withOppfolging(egenAktivitetData.getOppfolging())
                 .withHensikt(egenAktivitetData.getHensikt());
     }
 
-    private MoteData mergeMoteData(MoteData orginalMoteData, MoteData moteData) {
+    private MoteData mergeMoteData(MoteData originalMoteData, MoteData moteData) {
         // Referat-felter settes gjennom egne operasjoner, se oppdaterReferat()
-        return orginalMoteData
+        return originalMoteData
                 .withAdresse(moteData.getAdresse())
                 .withForberedelser(moteData.getForberedelser())
                 .withKanal(moteData.getKanal());

@@ -14,11 +14,11 @@ public class FunksjonelleMetrikker {
                 .report();
     }
 
-    public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt) {
+    public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt, boolean erAutomatiskOpprettet) {
         MetricsFactory.createEvent("aktivitet.oppdatert")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
-                .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
+                .addFieldToReport("automatiskOpprettet", erAutomatiskOpprettet)
                 .report();
     }
 
