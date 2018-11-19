@@ -198,6 +198,7 @@ public class AktivitetService {
                 .versjon(aktivitet.getVersjon())
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .avtalt(aktivitet.isAvtalt())
+                .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
