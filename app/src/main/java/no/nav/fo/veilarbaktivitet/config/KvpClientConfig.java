@@ -14,22 +14,9 @@ public class KvpClientConfig {
     @Value("${veilarboppfolging.api.url}")
     private String VEILARBOPPFOLGING_API_URL;
 
-    @Value("${kvp.connect.timeout.ms:1000}")
-    private int KVP_CONNECT_TIMEOUT;
-
-    @Value("${kvp.read.timeout.ms:1000}")
-    private int KVP_READ_TIMEOUT;
-
     @Bean
     public KvpClient kvpClient() {
-        RestUtils.RestConfig.RestConfigBuilder configBuilder = RestUtils.RestConfig.builder();
-
-        configBuilder.readTimeout(KVP_READ_TIMEOUT);
-        configBuilder.connectTimeout(KVP_CONNECT_TIMEOUT);
-
-        RestUtils.RestConfig config = configBuilder.build();
-        Client client = RestUtils.createClient(config);
-
+        Client client = RestUtils.createClient();
         return new KvpClient(VEILARBOPPFOLGING_API_URL, client);
     }
 }
