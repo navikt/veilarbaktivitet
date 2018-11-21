@@ -5,12 +5,11 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.fo.veilarbaktivitet.domain.EtikettTypeDTO;
 import no.nav.fo.veilarbaktivitet.domain.KanalDTO;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.tjeneste.domene.brukerdialog.behandleaktivitetsplan.v1.informasjon.Etikett;
 
 import javax.ws.rs.*;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 
 @Path("/aktivitet")
@@ -40,15 +39,13 @@ public interface AktivitetController {
     @GET
     @Path("/etiketter")
     default List<EtikettTypeDTO> hentEtiketter() {
-        return Arrays.stream(Etikett.values())
-                .map(EtikettTypeDTO::getDtoType)
-                .collect(Collectors.toList());
+        return asList(EtikettTypeDTO.values());
     }
 
     @GET
     @Path("/kanaler")
     default List<KanalDTO> hentKanaler() {
-        return Arrays.asList(KanalDTO.values());
+        return asList(KanalDTO.values());
     }
 
     @PUT
