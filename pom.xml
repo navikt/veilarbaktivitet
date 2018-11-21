@@ -15,14 +15,6 @@
     </parent>
 
     <version>1</version>
-    <modules>
-        <module>api</module>
-        <module>app</module>
-        <module>rs</module>
-        <module>ws</module>
-        <module>config</module>
-        <module>ear</module>
-    </modules>
 
     <name>veilarbaktivitet</name>
 
