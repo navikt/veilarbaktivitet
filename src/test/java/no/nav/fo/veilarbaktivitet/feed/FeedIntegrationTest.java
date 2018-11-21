@@ -13,9 +13,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import javax.inject.Inject;
 import java.util.Date;
 
+import static java.lang.System.setProperty;
 import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
 import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbaktivitet.AktivitetDataTestBuilder.nyAktivitet;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.ISO8601FromDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.dateFromISO8601;
 
@@ -33,9 +35,9 @@ public class FeedIntegrationTest extends IntegrasjonsTest implements FeedProduce
     private AktivitetDAO aktivitetDAO;
 
     @BeforeEach
-    public void setup(SubjectExtension.SubjectStore subjectStore){
+    public void setup(SubjectExtension.SubjectStore subjectStore) {
         subjectStore.setSubject(new Subject(TEST_IDENT, InternBruker, oidcToken("token")));
-        System.setProperty("aktiviteter.feed.brukertilgang", TEST_IDENT);
+        setProperty(AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY, TEST_IDENT);
     }
 
     @Override
@@ -46,8 +48,8 @@ public class FeedIntegrationTest extends IntegrasjonsTest implements FeedProduce
     @Override
     public void opprettElementForFeed(String feedName, String id) {
         aktivitetDAO.insertAktivitet(nyAktivitet()
-                .aktivitetType(AktivitetTypeData.values()[0])
-                .build(),
+                        .aktivitetType(AktivitetTypeData.values()[0])
+                        .build(),
                 dateFromISO8601(id)
         );
     }

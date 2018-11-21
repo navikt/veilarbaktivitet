@@ -5,14 +5,15 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.context.annotation.Configuration;
 
-import static java.lang.System.getProperty;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 public class ArenaServiceConfig {
 
     public static CXFClient<TiltakOgAktivitetV1> tiltakOgAktivitetV1Client() {
         return new CXFClient<>(TiltakOgAktivitetV1.class)
-                .address(getProperty("tiltakOgAktivitet.endpoint.url"))
+                .address(getRequiredProperty(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY))
                 .withMetrics()
                 .withOutInterceptor(new LoggingOutInterceptor());
     }

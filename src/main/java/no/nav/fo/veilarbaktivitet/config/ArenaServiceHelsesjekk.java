@@ -5,27 +5,26 @@ import no.nav.apiapp.selftest.HelsesjekkMetadata;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import org.springframework.stereotype.Component;
 
-import static java.lang.System.getProperty;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.config.ArenaServiceConfig.tiltakOgAktivitetV1Client;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 
 @Component
 public class ArenaServiceHelsesjekk implements Helsesjekk {
+
     @Override
     public void helsesjekk() {
         final TiltakOgAktivitetV1 tiltakOgAktivitetV1 = tiltakOgAktivitetV1Client()
-                .configureStsForSystemUserInFSS()
+                .configureStsForSystemUser()
                 .build();
-
         tiltakOgAktivitetV1.ping();
     }
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        String tiltakUri = getProperty("tiltakOgAktivitet.endpoint.url");
-
         return new HelsesjekkMetadata(
                 "TILTAKOGAKTIVITET_V1",
-                tiltakUri,
+                getRequiredProperty(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY),
                 "Ping av tjeneste for å hente tiltak og aktiviteter.",
                 false
         );

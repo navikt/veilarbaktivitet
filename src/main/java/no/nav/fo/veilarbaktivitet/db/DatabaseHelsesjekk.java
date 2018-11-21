@@ -24,11 +24,10 @@ public class DatabaseHelsesjekk implements Helsesjekk {
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        String dbUri = System.getProperty("veilarbaktivitetDataSource.url");
         return new HelsesjekkMetadata(
-                "db",
-                dbUri,
-                "Lokal database for VeilArbAktivitet",
+                "veilarbaktivitetDS",
+                "N/A",
+                "Database for VeilArbAktivitet",
                 true
         );
     }

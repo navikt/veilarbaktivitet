@@ -9,7 +9,6 @@ import no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
 import no.nav.fo.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -17,16 +16,13 @@ import javax.inject.Inject;
 import javax.sql.DataSource;
 import java.util.Collections;
 
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+
 @Configuration
 public class AvsluttetOppfolgingFeedConfig {
 
     private static final int LOCK_HOLDING_LIMIT_IN_MS = 10 * 60 * 1000;
-
-    @Value("${veilarboppfolging.api.url}")
-    private String host;
-
-    @Value("${avsluttoppfolging.feed.pollingintervalseconds: 10}")
-    private int pollingIntervalInSeconds;
 
     @Inject
     private DataSource dataSource;
@@ -41,11 +37,11 @@ public class AvsluttetOppfolgingFeedConfig {
         BaseConfig<AvsluttetOppfolgingFeedDTO> baseConfig = new BaseConfig<>(
                 AvsluttetOppfolgingFeedDTO.class,
                 avsluttetOppfolgingFeedConsumer::sisteKjenteId,
-                host,
+                getRequiredProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY),
                 AvsluttetOppfolgingFeedDTO.FEED_NAME
         );
 
-        FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(pollingIntervalInSeconds))
+        FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(10))
                 .lockProvider(lockProvider(dataSource), LOCK_HOLDING_LIMIT_IN_MS)
                 .callback(avsluttetOppfolgingFeedConsumer::lesAvsluttetOppfolgingFeed)
                 .interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
