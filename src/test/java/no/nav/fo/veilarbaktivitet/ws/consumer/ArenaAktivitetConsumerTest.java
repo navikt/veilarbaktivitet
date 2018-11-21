@@ -16,7 +16,9 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import java.util.Arrays;
 import java.util.Date;
 
-import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.DATOFILTER_PROPERTY_NAME;
+import static java.lang.System.clearProperty;
+import static java.lang.System.setProperty;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer.parseDato;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
@@ -32,7 +34,7 @@ public class ArenaAktivitetConsumerTest {
         context.getBeanFactory().registerSingleton("TiltakOgAktivitetV1", arena);
         context.register(PropertySourcesPlaceholderConfigurer.class);
         context.register(ArenaAktivitetConsumer.class);
-        
+
         context.refresh();
         context.start();
         return context;
@@ -41,18 +43,18 @@ public class ArenaAktivitetConsumerTest {
 
     @Test
     public void springInitialiseringSkalLeseVariabelOgParseDato() {
-        System.clearProperty(DATOFILTER_PROPERTY_NAME);
+        clearProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY);
         ApplicationContext context = setupContext(mock(TiltakOgAktivitetV1.class));
         ArenaAktivitetConsumer consumer = context.getBean(ArenaAktivitetConsumer.class);
         assertThat(consumer.arenaAktivitetFilterDato, nullValue());
 
-        System.setProperty(DATOFILTER_PROPERTY_NAME, "2017-08-30");
+        setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-08-30");
         context = setupContext(mock(TiltakOgAktivitetV1.class));
         consumer = context.getBean(ArenaAktivitetConsumer.class);
         assertThat(consumer.arenaAktivitetFilterDato, equalTo(parseDato("2017-08-30")));
 
     }
-    
+
     @Test
     public void skalFiltrereArenaAktiviteterBasertPaaDato() throws Exception {
 
@@ -63,13 +65,13 @@ public class ArenaAktivitetConsumerTest {
 
         Date arenaAktivitetFilterDato = consumer.arenaAktivitetFilterDato;
 
-        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = 
+        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet =
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() + 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
         assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(1));
 
-        HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet = 
+        HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet =
                 responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() - 1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedGammelAktivitet);
@@ -83,7 +85,7 @@ public class ArenaAktivitetConsumerTest {
         ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(null);
         consumer.tiltakOgAktivitetV1 = arena;
 
-        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = 
+        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet =
                 responsMedTiltak(new Date());
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);

@@ -7,7 +7,6 @@ import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -17,6 +16,9 @@ import javax.ws.rs.PathParam;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
+
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.VEILARB_KASSERING_IDENTER_PROPERTY;
+import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 
 @Slf4j
 @Component
@@ -32,8 +34,7 @@ public class KasserService {
     @Inject
     private AktorService aktorService;
 
-    @Value("${veilarb.kassering.identer:Z990322}")
-    String godkjenteIdenter;
+    private String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
     @PUT
     @Path("/{aktivitetId}")

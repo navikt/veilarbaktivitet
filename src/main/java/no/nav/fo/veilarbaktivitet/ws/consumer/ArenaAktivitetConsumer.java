@@ -1,5 +1,6 @@
 package no.nav.fo.veilarbaktivitet.ws.consumer;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.Person;
@@ -16,8 +17,6 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -34,18 +33,16 @@ import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.api.AktivitetController.ARENA_PREFIX;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.*;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.getDate;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.mergeDateTime;
-import static org.slf4j.LoggerFactory.getLogger;
+import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
 
+@Slf4j
 @Component
 public class ArenaAktivitetConsumer {
-
-    static final String DATOFILTER_PROPERTY_NAME = "arena.aktivitet.datofilter";
-
-    private static final Logger LOG = getLogger(ArenaAktivitetConsumer.class);
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
@@ -54,15 +51,15 @@ public class ArenaAktivitetConsumer {
 
     Date arenaAktivitetFilterDato;
 
-    public ArenaAktivitetConsumer(@Value("${" + DATOFILTER_PROPERTY_NAME + ":}") String datoStreng) {
-        this.arenaAktivitetFilterDato = parseDato(datoStreng);
+    public ArenaAktivitetConsumer(String datoStreng) {
+        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(datoStreng));
     }
 
     static Date parseDato(String konfigurertDato) {
         try {
             return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
         } catch (Exception e) {
-            LOG.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
         }
     }
@@ -91,7 +88,7 @@ public class ArenaAktivitetConsumer {
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
-            LOG.warn("Klarte ikke hente aktiviteter fra Arena.", e);
+            log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
         }
     }

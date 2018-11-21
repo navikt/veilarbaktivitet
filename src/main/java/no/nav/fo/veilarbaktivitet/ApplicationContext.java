@@ -25,6 +25,7 @@ import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 public class ApplicationContext implements NaisApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbaktivitet";
+    public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String AKTOER_V2_URL_PROPERTY = "AKTOER_V2_ENDPOINTURL";
     public static final String VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
     public static final String VEILARBAZUREADPROXY_DISCOVERY_URL_PROPERTY = "VEILARBAZUREADPROXY_DISCOVERY_URL";
@@ -32,7 +33,8 @@ public class ApplicationContext implements NaisApiApplication {
     public static final String AAD_B2C_CLIENTID_PASSWORD_PROPERTY = "AAD_B2C_CLIENTID_PASSWORD";
     public static final String VEILARBOPPFOLGINGAPI_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY = "VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL";
-    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "aktiviteter.feed.brukertilgang";
+    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "AKTIVITETER_FEED_BRUKERTILGANG";
+    public static final String VEILARB_KASSERING_IDENTER_PROPERTY = "VEILARB_KASSERING_IDENTER";
 
     @Inject
     private DataSource dataSource;
