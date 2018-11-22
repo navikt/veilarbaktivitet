@@ -8,6 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.inject.Inject;
@@ -40,9 +41,18 @@ public class ApplicationContext implements NaisApiApplication {
     @Inject
     private DataSource dataSource;
 
+    @Inject
+    private JdbcTemplate jdbcTemplate;
+
     @Override
     public void startup(ServletContext servletContext) {
         setProperty(AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbportefolje", PUBLIC);
+
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-576708121 WHERE \"version\" = '1.2'");
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=324315784 WHERE \"version\" = '1.3'");
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=926415975 WHERE \"version\" = '1.11'");
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=-611426416 WHERE \"version\" = '1.12'");
+        jdbcTemplate.update("UPDATE \"schema_version\" SET \"checksum\"=1422450486 WHERE \"version\" = '1.15'");
         migrateDatabase(dataSource);
     }
 
