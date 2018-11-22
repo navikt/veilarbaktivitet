@@ -18,7 +18,7 @@ import java.util.Optional;
 
 import static java.lang.System.setProperty;
 import static no.nav.fo.veilarbaktivitet.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
-import static no.nav.fo.veilarbaktivitet.ApplicationContext.VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL_PROPERTY;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.domain.Person.navIdent;
 import static org.mockito.Mockito.*;
 
@@ -29,7 +29,7 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
     @BeforeAll
     @BeforeClass
     public static void setupContext() {
-        setProperty(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL_PROPERTY, "https://localhost");
+        setProperty(VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY, "https://localhost");
         setProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY, "https://localhost");
         setupContext(
                 IntegrasjonsTestMedPepOgBrukerServiceMock.Config.class,
