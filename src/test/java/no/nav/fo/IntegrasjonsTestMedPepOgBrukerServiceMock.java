@@ -28,7 +28,6 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
     public static void setupContext() {
         setupContext(
                 IntegrasjonsTestMedPepOgBrukerServiceMock.Config.class,
-                IntegrasjonsTest.JndiBean.class,
                 IntegrasjonsTest.Request.class,
                 AktorConfig.class
         );
@@ -68,5 +67,5 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
             return brukerService;
         }
     }
-    
+
 }

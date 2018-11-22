@@ -3,7 +3,7 @@ package no.nav.fo.veilarbaktivitet;
 import no.nav.apiapp.ApiApplication.NaisApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
-import org.flywaydb.core.Flyway;
+import no.nav.fo.veilarbaktivitet.db.DatabaseContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
+import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.migrateDatabase;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
@@ -32,8 +33,8 @@ public class ApplicationContext implements NaisApiApplication {
     public static final String AAD_B2C_CLIENTID_USERNAME_PROPERTY = "AAD_B2C_CLIENTID_USERNAME";
     public static final String AAD_B2C_CLIENTID_PASSWORD_PROPERTY = "AAD_B2C_CLIENTID_PASSWORD";
     public static final String VEILARBOPPFOLGINGAPI_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
-    public static final String VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY = "VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL";
-    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "AKTIVITETER_FEED_BRUKERTILGANG";
+    public static final String VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL_PROPERTY = "VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL";
+    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "aktiviteter.feed.brukertilgang";
     public static final String VEILARB_KASSERING_IDENTER_PROPERTY = "VEILARB_KASSERING_IDENTER";
 
     @Inject
@@ -42,10 +43,7 @@ public class ApplicationContext implements NaisApiApplication {
     @Override
     public void startup(ServletContext servletContext) {
         setProperty(AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY, "srvveilarbportefolje", PUBLIC);
-
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
+        migrateDatabase(dataSource);
     }
 
     @Override

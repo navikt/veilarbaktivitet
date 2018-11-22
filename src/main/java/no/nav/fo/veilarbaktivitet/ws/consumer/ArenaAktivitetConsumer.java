@@ -51,8 +51,8 @@ public class ArenaAktivitetConsumer {
 
     Date arenaAktivitetFilterDato;
 
-    public ArenaAktivitetConsumer(String datoStreng) {
-        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(datoStreng));
+    ArenaAktivitetConsumer() {
+        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
     }
 
     static Date parseDato(String konfigurertDato) {

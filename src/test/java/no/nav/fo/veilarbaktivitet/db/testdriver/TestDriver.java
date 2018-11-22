@@ -10,10 +10,10 @@ import static java.sql.DriverManager.registerDriver;
 
 public class TestDriver implements Driver {
 
-
     private static final String BASE_URL = TestDriver.class.getSimpleName();
 
     private static int count;
+
     public static String getURL() {
         return BASE_URL + "-" + count++;
     }
@@ -33,17 +33,14 @@ public class TestDriver implements Driver {
         return ProxyUtils.proxy(new ConnectionInvocationHandler(driver.connect(getH2Url(url), info)), Connection.class);
     }
 
-    private String getH2Url(String url) {
+    public static String getH2Url(String url) {
         String uniktNavn = url.substring(BASE_URL.length());
-        return String.format(
-            "jdbc:h2:mem:veilarbaktivitet-%s;DB_CLOSE_DELAY=-1;MODE=Oracle",
-            uniktNavn
-        );
+        return String.format("jdbc:h2:mem:veilarbaktivitet-%s;DB_CLOSE_DELAY=-1;MODE=Oracle", uniktNavn);
     }
 
     @Override
-    public boolean acceptsURL(String url) throws SQLException {
-        return driver.acceptsURL(url);
+    public boolean acceptsURL(String url) {
+        return url.startsWith(BASE_URL);
     }
 
     @Override

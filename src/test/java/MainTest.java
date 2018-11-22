@@ -47,7 +47,7 @@ public class MainTest {
         setProperty(UNLEASH_API_URL_PROPERTY_NAME, "https://unleash.nais.adeo.no/api/"); // getRestService(UNLEASH_API_ALIAS, getDefaultEnvironment()).getUrl());
 
         setProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY, getRestService(VEIL_ARB_OPPFOLGING_API_ALIAS, getDefaultEnvironment()).getUrl());
-        setProperty(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_URL_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ALIAS, getDefaultEnvironment()).getUrl());
+        setProperty(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ENDPOINTURL_PROPERTY, getWebServiceEndpoint(VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ALIAS, getDefaultEnvironment()).getUrl());
 
         ServiceUser isso_rp_user = getServiceUser("isso-rp-user", APPLICATION_NAME);
         String loginUrl = getRestService(VEILARBLOGIN_REDIRECT_URL_ALIAS, getDefaultEnvironment()).getUrl();

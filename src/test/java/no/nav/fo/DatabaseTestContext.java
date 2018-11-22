@@ -53,7 +53,6 @@ public class DatabaseTestContext {
 
     private static void createTables(AbstractDataSource ds) {
         Flyway flyway = new Flyway();
-        flyway.setLocations("db/migration/veilarbaktivitetDataSource");
         flyway.setDataSource(ds);
         int migrate = flyway.migrate();
         assertThat(migrate, greaterThan(0));

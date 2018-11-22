@@ -59,7 +59,7 @@ public class ArenaAktivitetConsumerTest {
     public void skalFiltrereArenaAktiviteterBasertPaaDato() throws Exception {
 
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
-        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(null);
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
         consumer.tiltakOgAktivitetV1 = arena;
         consumer.arenaAktivitetFilterDato = new Date();
 
@@ -82,7 +82,7 @@ public class ArenaAktivitetConsumerTest {
     public void skalIkkeFiltrereArenaAktiviteterHvisFilterDatoErNull() throws Exception {
 
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
-        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(null);
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer();
         consumer.tiltakOgAktivitetV1 = arena;
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet =
