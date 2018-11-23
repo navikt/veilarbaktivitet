@@ -139,6 +139,10 @@
             <groupId>no.nav.common</groupId>
             <artifactId>feature-toggle</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+        </dependency>
 
         <!-- Tjenester -->
         <dependency>
@@ -191,11 +195,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
