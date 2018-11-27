@@ -11,6 +11,7 @@ public class FunksjonelleMetrikker {
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
+                .addFieldToReport("malId", aktivitetData.getMalid())
                 .report();
     }
 
@@ -19,6 +20,7 @@ public class FunksjonelleMetrikker {
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
                 .addFieldToReport("automatiskOpprettet", erAutomatiskOpprettet)
+                .addFieldToReport("malId", aktivitetData.getMalid())
                 .report();
     }
 
@@ -47,6 +49,7 @@ public class FunksjonelleMetrikker {
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport("lestTidspunkt", aktivitetData.getLestAvBrukerForsteGang().getTime())
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData))
+                .addFieldToReport("malId", aktivitetData.getMalid())
                 .report();
     }
 
@@ -57,6 +60,7 @@ public class FunksjonelleMetrikker {
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
+                .addFieldToReport("malId", aktivitetData.getMalid())
                 .report();
     }
 
