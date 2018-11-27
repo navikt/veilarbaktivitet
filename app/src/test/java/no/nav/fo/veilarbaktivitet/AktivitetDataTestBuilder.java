@@ -25,7 +25,8 @@ public class AktivitetDataTestBuilder {
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
                 .lestAvBrukerForsteGang(null)
-                .historiskDato(null);
+                .historiskDato(null)
+                .malid("2");
     }
 
     public static StillingsoekAktivitetData nyttStillingssøk() {

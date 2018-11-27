@@ -38,7 +38,8 @@ public class AktivitetDataRowMapper {
                 .historiskDato(hentDato(rs, "historisk_dato"))
                 .kontorsperreEnhetId(rs.getString("kontorsperre_enhet_id"))
                 .lestAvBrukerForsteGang(hentDato(rs, "lest_av_bruker_forste_gang"))
-                .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"));
+                .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
+                .malid(rs.getString("mal_id"));
 
         switch (type) {
             case EGENAKTIVITET:
