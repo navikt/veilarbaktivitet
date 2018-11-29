@@ -23,7 +23,7 @@ resources:
     memory: 1024Mi
   requests:
     cpu: 200m
-    memory: 512Mi
+    memory: 768Mi
 fasitResources:
   used:
   - alias: loadbalancer:veilarbaktivitet
