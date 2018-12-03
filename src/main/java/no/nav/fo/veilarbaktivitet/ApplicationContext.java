@@ -7,7 +7,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.inject.Inject;
@@ -39,9 +38,6 @@ public class ApplicationContext implements NaisApiApplication {
 
     @Inject
     private DataSource dataSource;
-
-    @Inject
-    private JdbcTemplate jdbcTemplate;
 
     @Override
     public void startup(ServletContext servletContext) {
