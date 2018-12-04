@@ -1,8 +1,9 @@
 package no.nav.fo;
 
 import lombok.SneakyThrows;
-import no.nav.dialogarena.config.DevelopmentSecurity;
+import no.nav.fo.veilarbaktivitet.TestContext;
 import no.nav.fo.veilarbaktivitet.db.testdriver.TestDriver;
+import no.nav.testconfig.ApiAppTest;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -18,9 +19,14 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import javax.sql.DataSource;
 
-import static no.nav.fo.veilarbaktivitet.TestConfig.APPLICATION_NAME;
+import static java.lang.System.setProperty;
+import static no.nav.brukerdialog.security.Constants.OIDC_REDIRECT_URL_PROPERTY_NAME;
+import static no.nav.dialogarena.aktor.AktorConfig.AKTOER_ENDPOINT_URL;
+import static no.nav.fo.veilarbaktivitet.ApplicationContext.*;
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.*;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
+import static no.nav.testconfig.ApiAppTest.Config.builder;
 
 public abstract class AbstractIntegrasjonsTest {
 
@@ -30,16 +36,16 @@ public abstract class AbstractIntegrasjonsTest {
 
     @SneakyThrows
     public static void setupContext(Class<?>... classes) {
-        DevelopmentSecurity.setupIntegrationTestSecurity(new DevelopmentSecurity.IntegrationTestConfig(APPLICATION_NAME));
-
+        ApiAppTest.setupTestContext(builder().applicationName(APPLICATION_NAME).build());
+        TestContext.setup();
+        setProperty(AKTOER_ENDPOINT_URL, getRequiredProperty(AKTOER_V2_URL_PROPERTY));
+        setProperty(OIDC_REDIRECT_URL_PROPERTY_NAME, getRequiredProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY));
         setTemporaryProperty(VEILARBAKTIVITETDATASOURCE_URL_PROPERTY, TestDriver.getURL(), () -> {
             setTemporaryProperty(VEILARBAKTIVITETDATASOURCE_USERNAME_PROPERTY, "sa", () -> {
                 setTemporaryProperty(VEILARBAKTIVITETDATASOURCE_PASSWORD_PROPERTY, "pw", () -> {
-
                     annotationConfigApplicationContext = new AnnotationConfigApplicationContext(classes);
                     annotationConfigApplicationContext.start();
                     platformTransactionManager = getBean(PlatformTransactionManager.class);
-
                     migrateDatabase(getBean(DataSource.class));
                 });
             });
