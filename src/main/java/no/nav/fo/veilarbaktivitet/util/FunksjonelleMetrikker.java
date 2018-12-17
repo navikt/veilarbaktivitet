@@ -4,6 +4,8 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.InnsenderData;
 import no.nav.metrics.MetricsFactory;
 
+import java.util.Optional;
+
 public class FunksjonelleMetrikker {
 
     public static void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
@@ -16,11 +18,12 @@ public class FunksjonelleMetrikker {
     }
 
     public static void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt, boolean erAutomatiskOpprettet) {
+        String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         MetricsFactory.createEvent("aktivitet.oppdatert")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
                 .addFieldToReport("automatiskOpprettet", erAutomatiskOpprettet)
-                .addFieldToReport("malId", aktivitetData.getMalid())
+                .addFieldToReport("malId", malId)
                 .report();
     }
 
