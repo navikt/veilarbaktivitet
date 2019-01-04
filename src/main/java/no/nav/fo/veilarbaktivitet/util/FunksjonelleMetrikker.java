@@ -9,11 +9,12 @@ import java.util.Optional;
 public class FunksjonelleMetrikker {
 
     public static void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
+        String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         MetricsFactory.createEvent("aktivitet.ny")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
-                .addFieldToReport("malId", aktivitetData.getMalid())
+                .addFieldToReport("malId", malId)
                 .report();
     }
 
@@ -47,23 +48,25 @@ public class FunksjonelleMetrikker {
     }
 
     public static void reportAktivitetLestAvBrukerForsteGang(AktivitetData aktivitetData) {
+        String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         MetricsFactory.createEvent("aktivitet.lestAvBrukerForsteGang")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport("lestTidspunkt", aktivitetData.getLestAvBrukerForsteGang().getTime())
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData))
-                .addFieldToReport("malId", aktivitetData.getMalid())
+                .addFieldToReport("malId", malId)
                 .report();
     }
 
     private static void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
+        String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         MetricsFactory.createEvent("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("status", aktivitetData.getStatus())
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
-                .addFieldToReport("malId", aktivitetData.getMalid())
+                .addFieldToReport("malId", malId)
                 .report();
     }
 
