@@ -62,10 +62,11 @@ fasitResources:
     resourceType: credential
   - alias: veilarblogin.redirect-url
     resourceType: restservice
+
   - alias: aad_b2c_clientid
     resourceType: credential
-  - alias: veilarbazureadproxy_discovery
-    resourceType: restservice
+  - alias: aad_b2c_discovery
+    resourceType: baseurl
 
   exposed:
   - alias: veilArbAktivitetAPI

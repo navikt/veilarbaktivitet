@@ -5,6 +5,7 @@ import no.nav.dialogarena.config.fasit.ServiceUser;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 
 import static no.nav.brukerdialog.security.Constants.*;
+import static no.nav.brukerdialog.security.oidc.provider.AzureADB2CConfig.AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME;
 import static no.nav.dialogarena.config.fasit.FasitUtils.Zone.FSS;
 import static no.nav.dialogarena.config.fasit.FasitUtils.*;
 import static no.nav.fo.veilarbaktivitet.ApplicationContext.*;
@@ -23,7 +24,7 @@ public class TestContext {
     private static final String AKTOER_V2_ALIAS = "Aktoer_v2";
     private static final String VEIL_ARB_OPPFOLGING_API_ALIAS = "veilArbOppfolgingAPI";
     private static final String VEILARBLOGIN_REDIRECT_URL_ALIAS = "veilarblogin.redirect-url";
-    private static final String VEILARBAZUREADPROXY_DISCOVERY_ALIAS = "veilarbazureadproxy_discovery";
+    private static final String AZURE_AD_B2C_DISCOVERY_ALIAS = "aad_b2c_discovery";
     private static final String AAD_B2C_CLIENTID_ALIAS = "aad_b2c_clientid";
     private static final String UNLEASH_API_ALIAS = "unleash-api";
     private static final String VIRKSOMHET_TILTAK_OG_AKTIVITET_V1_ALIAS = "virksomhet:TiltakOgAktivitet_v1";
@@ -59,7 +60,7 @@ public class TestContext {
         setProperty(VEILARBLOGIN_REDIRECT_URL_URL_PROPERTY, loginUrl, PUBLIC);
 
         ServiceUser aadB2cUser = getServiceUser(AAD_B2C_CLIENTID_ALIAS, APPLICATION_NAME);
-        setProperty(VEILARBAZUREADPROXY_DISCOVERY_URL_PROPERTY, getRestService(VEILARBAZUREADPROXY_DISCOVERY_ALIAS, getDefaultEnvironment()).getUrl(), PUBLIC);
+        setProperty(AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS), PUBLIC);
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername(), PUBLIC);
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword(), PUBLIC);
     }
