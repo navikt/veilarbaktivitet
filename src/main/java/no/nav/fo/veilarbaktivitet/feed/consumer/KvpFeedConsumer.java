@@ -28,9 +28,10 @@ public class KvpFeedConsumer {
 
     public void lesKvpFeed(String lastEntryId, List<KvpDTO> elements) {
         elements.stream()
-                .filter(element -> element.getAvsluttetDato()!= null)
                 .map(element -> {
-                    aktivitetService.settAktiviteterTilHistoriske(Person.aktorId(element.getAktorId()), element.getAvsluttetDato());
+                    if(element.getAvsluttetDato()!= null) {
+                        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId(element.getAktorId()), element.getAvsluttetDato());
+                    }
                     return element.getSerial();
                 })
                 .reduce((a1, a2) -> a2)
