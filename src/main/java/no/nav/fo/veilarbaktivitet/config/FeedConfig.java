@@ -9,6 +9,7 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetFeedData;
 import no.nav.fo.veilarbaktivitet.feed.producer.AktivitetFeedProvider;
 import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
+import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,7 +24,8 @@ public class FeedConfig {
     @Bean
     public FeedController feedController(
             FeedProducer<AktivitetFeedData> aktivitetFeed,
-            FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer
+            FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer,
+            FeedConsumer<KvpDTO> kvpFeedItemFeedConsumer
     ) {
         FeedController feedController = new FeedController();
 
@@ -31,6 +33,7 @@ public class FeedConfig {
 
         if (isMasterNode()) { // todo. this needs to be rewritten
             feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
+            feedController.addFeed(KvpDTO.FEED_NAME, kvpFeedItemFeedConsumer);
         }
 
         return feedController;
