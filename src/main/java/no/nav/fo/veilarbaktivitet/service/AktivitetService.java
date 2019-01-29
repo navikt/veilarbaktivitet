@@ -277,4 +277,18 @@ public class AktivitetService {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
         return hentAktivitet(aktivitetId);
     }
+
+    @Transactional
+    public void settAktiviteterInomKVPPeriodeTilHistoriske(Person.AktorId aktoerId,Date startDato, Date sluttDato) {
+        hentAktiviteterForAktorId(aktoerId)
+                .stream()
+                .filter(a -> skalBliKVPHistorisk(a, startDato, sluttDato))
+                .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
+                .forEach(aktivitetDAO::insertAktivitet);
+    }
+
+    private boolean skalBliKVPHistorisk(AktivitetData aktivitetData, Date startDato, Date sluttdato) {
+        return skalBliHistorisk(aktivitetData, sluttdato) && aktivitetData.getOpprettetDato().after(startDato);
+    }
+
 }
