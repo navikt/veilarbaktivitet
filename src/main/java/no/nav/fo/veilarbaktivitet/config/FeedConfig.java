@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbaktivitet.config;
 
 
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbc.JdbcLockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedAuthorizationModule;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.controller.FeedController;
@@ -13,13 +15,20 @@ import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.inject.Inject;
+import javax.sql.DataSource;
+
 @Configuration
 public class FeedConfig {
 
-    public static boolean isMasterNode() {
-        String isMasterString = System.getProperty("cluster.ismasternode", "false");
-        return Boolean.parseBoolean(isMasterString);
+    @Inject
+    private DataSource dataSource;
+
+    @Bean
+    public LockProvider lockProvider(DataSource dataSource) {
+        return new JdbcLockProvider(dataSource);
     }
+
 
     @Bean
     public FeedController feedController(
@@ -31,10 +40,9 @@ public class FeedConfig {
 
         feedController.addFeed(AktivitetFeedData.FEED_NAME, aktivitetFeed);
 
-        if (isMasterNode()) { // todo. this needs to be rewritten
-            feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
-            feedController.addFeed(KvpDTO.FEED_NAME, kvpFeedItemFeedConsumer);
-        }
+        feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
+        feedController.addFeed(KvpDTO.FEED_NAME, kvpFeedItemFeedConsumer);
+
 
         return feedController;
     }

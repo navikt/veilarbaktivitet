@@ -24,16 +24,9 @@ public class AvsluttetOppfolgingFeedConfig {
 
     private static final int LOCK_HOLDING_LIMIT_IN_MS = 10 * 60 * 1000;
 
-    @Inject
-    private DataSource dataSource;
 
     @Bean
-    public LockProvider lockProvider(DataSource dataSource) {
-        return new JdbcLockProvider(dataSource);
-    }
-
-    @Bean
-    public FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer(AvsluttetOppfolgingFeedConsumer avsluttetOppfolgingFeedConsumer) {
+    public FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer(AvsluttetOppfolgingFeedConsumer avsluttetOppfolgingFeedConsumer, LockProvider lockProvider) {
         BaseConfig<AvsluttetOppfolgingFeedDTO> baseConfig = new BaseConfig<>(
                 AvsluttetOppfolgingFeedDTO.class,
                 avsluttetOppfolgingFeedConsumer::sisteKjenteId,
@@ -42,7 +35,7 @@ public class AvsluttetOppfolgingFeedConfig {
         );
 
         FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new SimplePollingConfig(10))
-                .lockProvider(lockProvider(dataSource), LOCK_HOLDING_LIMIT_IN_MS)
+                .lockProvider(lockProvider, LOCK_HOLDING_LIMIT_IN_MS)
                 .callback(avsluttetOppfolgingFeedConsumer::lesAvsluttetOppfolgingFeed)
                 .interceptors(Collections.singletonList(new OidcFeedOutInterceptor()));
 

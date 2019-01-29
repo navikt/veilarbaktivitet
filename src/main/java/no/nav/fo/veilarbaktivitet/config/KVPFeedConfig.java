@@ -8,7 +8,6 @@ import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.inject.Inject;
 import java.util.Collections;
 
 import static no.nav.fo.veilarbaktivitet.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
@@ -19,11 +18,9 @@ public class KVPFeedConfig {
 
     private static final int LOCK_HOLDING_LIMIT_IN_MS = 10 * 60 * 1000;
 
-    @Inject
-    public LockProvider lockProvider;
 
     @Bean
-    public FeedConsumer<KvpDTO> kvpDTOFeedConsumer(KvpFeedConsumer kvpFeedConsumer) {
+    public FeedConsumer<KvpDTO> kvpDTOFeedConsumer(KvpFeedConsumer kvpFeedConsumer, LockProvider lockProvider) {
         FeedConsumerConfig.BaseConfig<KvpDTO> baseConfig = new FeedConsumerConfig.BaseConfig<>(
                 KvpDTO.class,
                 kvpFeedConsumer::sisteKjenteKvpId,
