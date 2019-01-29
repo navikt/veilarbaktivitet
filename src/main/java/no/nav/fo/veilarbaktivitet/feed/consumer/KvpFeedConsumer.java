@@ -30,7 +30,7 @@ public class KvpFeedConsumer {
         elements.stream()
                 .map(element -> {
                     if(element.getAvsluttetDato()!= null) {
-                        aktivitetService.settAktiviteterInomKVPPeriodeTilHistoriske(Person.aktorId(element.getAktorId()), element.getOpprettetDato(), element.getAvsluttetDato());
+                        aktivitetService.settAktiviteterInomKVPPeriodeTilHistoriske(Person.aktorId(element.getAktorId()), element.getAvsluttetDato());
                     }
                     return element.getSerial();
                 })

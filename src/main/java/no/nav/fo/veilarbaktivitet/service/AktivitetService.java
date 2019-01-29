@@ -279,16 +279,16 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterInomKVPPeriodeTilHistoriske(Person.AktorId aktoerId,Date startDato, Date sluttDato) {
+    public void settAktiviteterInomKVPPeriodeTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
-                .filter(a -> skalBliKVPHistorisk(a, startDato, sluttDato))
+                .filter(a -> skalBliKVPHistorisk(a))
                 .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
-    private boolean skalBliKVPHistorisk(AktivitetData aktivitetData, Date startDato, Date sluttdato) {
-        return skalBliHistorisk(aktivitetData, sluttdato) && aktivitetData.getOpprettetDato().after(startDato);
+    private boolean skalBliKVPHistorisk(AktivitetData aktivitetData) {
+        return aktivitetData.getHistoriskDato() == null && aktivitetData.getKontorsperreEnhetId() != null;
     }
 
 }
