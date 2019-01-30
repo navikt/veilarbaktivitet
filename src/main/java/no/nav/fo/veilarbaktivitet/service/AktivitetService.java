@@ -279,16 +279,25 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterInomKVPPeriodeTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
+    public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
-                .filter(a -> skalBliKVPHistorisk(a))
-                .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
+                .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
+                .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
-    private boolean skalBliKVPHistorisk(AktivitetData aktivitetData) {
-        return aktivitetData.getHistoriskDato() == null && aktivitetData.getKontorsperreEnhetId() != null;
+    private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
+        AktivitetStatus aktivitetStatus = aktivitetData.getStatus();
+        return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
+    }
+
+    private AktivitetData settKVPAktivitetTilAvbrutt(AktivitetData aktivitetData, String avsluttetBegrunnelse, Date avsluttetDato) {
+        return aktivitetData
+                .withTransaksjonsType(STATUS_ENDRET)
+                .withStatus(AktivitetStatus.AVBRUTT)
+                .withAvsluttetKommentar(avsluttetBegrunnelse)
+                .withEndretDato(avsluttetDato);
     }
 
 }
