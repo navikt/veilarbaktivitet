@@ -1,12 +1,11 @@
 package no.nav.fo.veilarbaktivitet;
 
-import no.nav.apiapp.ApiApplication.NaisApiApplication;
+import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.dialogarena.aktor.AktorConfig;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Import;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
+import org.springframework.context.annotation.*;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.inject.Inject;
@@ -22,7 +21,7 @@ import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 @EnableAspectJAutoProxy
 @ComponentScan("no.nav.fo.veilarbaktivitet")
 @Import(AktorConfig.class)
-public class ApplicationContext implements NaisApiApplication {
+public class ApplicationContext implements ApiApplication {
 
     public static final String APPLICATION_NAME = "veilarbaktivitet";
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
@@ -52,4 +51,10 @@ public class ApplicationContext implements NaisApiApplication {
                 .issoLogin()
         ;
     }
+
+    @Bean
+    public UnleashService unleashService(){
+        return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
+    }
+
 }

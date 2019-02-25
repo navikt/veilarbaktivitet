@@ -6,6 +6,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +34,9 @@ public class AktivitetAppServiceTest {
 
     @Mock
     private PepClient pepClient;
+
+    @Mock
+    private UnleashService unleashService;
 
     @Mock
     private AktivitetService aktivitetService;

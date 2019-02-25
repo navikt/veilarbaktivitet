@@ -9,6 +9,7 @@ import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.Person.AktorId;
 import no.nav.fo.veilarbaktivitet.service.BrukerService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.annotation.*;
@@ -61,6 +62,11 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
         @Bean
         public KvpClient kvpClient() {
             return mock(KvpClient.class);
+        }
+
+        @Bean
+        public UnleashService unleashService() {
+            return mock(UnleashService.class);
         }
 
         @Bean

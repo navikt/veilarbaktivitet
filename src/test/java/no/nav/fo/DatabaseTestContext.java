@@ -1,8 +1,8 @@
 package no.nav.fo;
 
-import no.nav.dialogarena.config.fasit.DbCredentials;
-import no.nav.dialogarena.config.fasit.FasitUtils;
-import no.nav.dialogarena.config.fasit.TestEnvironment;
+import no.nav.fasit.DbCredentials;
+import no.nav.fasit.FasitUtils;
+import no.nav.fasit.TestEnvironment;
 import no.nav.fo.veilarbaktivitet.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.context.annotation.Configuration;
