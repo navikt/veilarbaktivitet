@@ -9,6 +9,7 @@ import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
 import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,16 +31,23 @@ public class AktivitetAppService {
     private final PepClient pepClient;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
+    private final UnleashService unleashService;
+    private final VeilArbAbacService veilArbAbacService;
 
     @Inject
     AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
                         PepClient pepClient,
                         AktivitetService aktivitetService,
-                        BrukerService brukerService) {
+                        BrukerService brukerService,
+                        UnleashService unleashService,
+                        VeilArbAbacService veilArbAbacService
+    ) {
         this.arenaAktivitetConsumer = arenaAktivitetConsumer;
         this.pepClient = pepClient;
         this.aktivitetService = aktivitetService;
         this.brukerService = brukerService;
+        this.unleashService = unleashService;
+        this.veilArbAbacService = veilArbAbacService;
     }
 
 
@@ -56,19 +64,6 @@ public class AktivitetAppService {
             JOBBSOEKING,
             IJOBB
     ));
-
-
-    AktivitetAppService(
-            ArenaAktivitetConsumer arenaAktivitetConsumer,
-            AktivitetService aktivitetService,
-            BrukerService brukerService,
-            PepClient pepClient
-    ) {
-        this.arenaAktivitetConsumer = arenaAktivitetConsumer;
-        this.aktivitetService = aktivitetService;
-        this.brukerService = brukerService;
-        this.pepClient = pepClient;
-    }
 
     public List<AktivitetData> hentAktiviteterForIdent(Person ident) {
         sjekkTilgangTilPerson(ident);
@@ -306,7 +301,12 @@ public class AktivitetAppService {
         if (person instanceof Person.Fnr) {
             return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(person.get()));
         } else if (person instanceof Person.AktorId) {
-            return sjekkTilgangTilPerson(brukerService.getFNRForAktorId((Person.AktorId) person).orElseThrow(IngenTilgang::new));
+            Person.AktorId aktorId = (Person.AktorId) person;
+            if (unleashService.isEnabled("veilarbabac.aktor")) {
+                veilArbAbacService.sjekkLeseTilgangTilAktor(aktorId.get());
+                return aktorId;
+            }
+            return sjekkTilgangTilPerson(brukerService.getFNRForAktorId(aktorId).orElseThrow(IngenTilgang::new));
         } else {
             throw new IngenTilgang();
         }
