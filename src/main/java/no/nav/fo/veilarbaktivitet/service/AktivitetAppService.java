@@ -302,7 +302,7 @@ public class AktivitetAppService {
             return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(person.get()));
         } else if (person instanceof Person.AktorId) {
             Person.AktorId aktorId = (Person.AktorId) person;
-            if (unleashService.isEnabled("veilarbabac.aktor")) {
+            if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.aktor")) {
                 veilArbAbacService.sjekkLeseTilgangTilAktor(aktorId.get());
                 return aktorId;
             }
