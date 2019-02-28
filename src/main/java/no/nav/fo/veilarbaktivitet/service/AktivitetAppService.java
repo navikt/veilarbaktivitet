@@ -286,6 +286,10 @@ public class AktivitetAppService {
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
         boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
                 .map(id -> {
+                    if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.enhet")) {
+                        return veilArbAbacService.harTilgangTilEnhet(id);
+                    }
+
                     try {
                         return pepClient.harTilgangTilEnhet(id);
                     } catch (PepException e) {
@@ -299,7 +303,12 @@ public class AktivitetAppService {
 
     private Person sjekkTilgangTilPerson(Person person) {
         if (person instanceof Person.Fnr) {
-            return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(person.get()));
+            String fnr = person.get();
+            if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.fnr")) {
+                veilArbAbacService.sjekkLeseTilgangTilFnr(fnr);
+                return person;
+            }
+            return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(fnr));
         } else if (person instanceof Person.AktorId) {
             Person.AktorId aktorId = (Person.AktorId) person;
             if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.aktor")) {
