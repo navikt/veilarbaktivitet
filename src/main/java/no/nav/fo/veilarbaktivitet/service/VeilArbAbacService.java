@@ -3,11 +3,12 @@ package no.nav.fo.veilarbaktivitet.service;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
-import no.nav.common.auth.SsoToken;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.function.Supplier;
 
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 import static no.nav.apiapp.util.UrlUtils.clusterUrlForApplication;
@@ -22,17 +23,45 @@ public class VeilArbAbacService implements Helsesjekk {
             .orElseGet(() -> clusterUrlForApplication("veilarbabac"));
 
     public void sjekkLeseTilgangTilAktor(String aktorId) {
-        if(!harLeseTilgangTilAktor(aktorId)){
+        sjekkErTrue(() -> harLeseTilgangTilAktor(aktorId));
+    }
+
+    public void sjekkSkriveTilgangTilAktor(String fnr) {
+        sjekkErTrue(() -> harSkriveTilgangTilAktor(fnr));
+    }
+
+    public void sjekkLeseTilgangTilFnr(String fnr) {
+        sjekkErTrue(() -> harLeseTilgangTilFnr(fnr));
+    }
+
+    private void sjekkErTrue(Supplier<Boolean> asdf) {
+        if (!asdf.get()) {
             throw new IngenTilgang();
         }
     }
 
+    public boolean harTilgangTilEnhet(String enhetId) {
+        return harTilgang(Resource.enhet, Action.read, "enhetId", enhetId);
+    }
+
     private boolean harLeseTilgangTilAktor(String aktorId) {
+        return harTilgang(Resource.person, Action.read, "aktorId", aktorId);
+    }
+
+    private boolean harSkriveTilgangTilAktor(String fnr) {
+        return harTilgang(Resource.person, Action.update, "aktorId", fnr);
+    }
+
+    private boolean harLeseTilgangTilFnr(String fnr) {
+        return harTilgang(Resource.person, Action.read, "fnr", fnr);
+    }
+
+    private boolean harTilgang(Resource resource, Action action, String identParameterNavn, String ident) {
         return "permit".equals(RestUtils.withClient(c -> c.target(abacTargetUrl)
                 .path("self")
-                .path("person")
-                .queryParam("aktorId", aktorId)
-                .queryParam("action", "read")
+                .path(resource.name())
+                .queryParam(identParameterNavn, ident)
+                .queryParam("action", action.name())
                 .request()
                 .header(AUTHORIZATION, "Bearer " + SubjectHandler.getSsoToken(OIDC).orElseThrow(IllegalStateException::new))
                 .get(String.class)
@@ -61,5 +90,16 @@ public class VeilArbAbacService implements Helsesjekk {
                 true
         );
     }
+
+    private enum Action {
+        read,
+        update
+    }
+
+    private enum Resource {
+        person,
+        enhet
+    }
+
 
 }

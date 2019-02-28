@@ -1,7 +1,9 @@
 package no.nav.fo.veilarbaktivitet;
 
 import no.nav.fasit.DbCredentials;
+import no.nav.fasit.FasitUtils;
 import no.nav.fasit.ServiceUser;
+import no.nav.fo.veilarbaktivitet.service.VeilArbAbacService;
 import no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants;
 
 import static no.nav.brukerdialog.security.Constants.*;
@@ -10,6 +12,7 @@ import static no.nav.fasit.FasitUtils.*;
 import static no.nav.fasit.FasitUtils.Zone.FSS;
 import static no.nav.fo.veilarbaktivitet.ApplicationContext.*;
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.*;
+import static no.nav.fo.veilarbaktivitet.service.VeilArbAbacService.VEILARBABAC_HOSTNAME_PROPERTY;
 import static no.nav.sbl.dialogarena.common.abac.pep.service.AbacServiceConfig.ABAC_ENDPOINT_URL_PROPERTY_NAME;
 import static no.nav.sbl.dialogarena.common.cxf.StsSecurityConstants.*;
 import static no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig.UNLEASH_API_URL_PROPERTY_NAME;
@@ -63,5 +66,7 @@ public class TestContext {
         setProperty(AZUREAD_B2C_DISCOVERY_URL_PROPERTY_NAME, getBaseUrl(AZURE_AD_B2C_DISCOVERY_ALIAS), PUBLIC);
         setProperty(AAD_B2C_CLIENTID_USERNAME_PROPERTY, aadB2cUser.getUsername(), PUBLIC);
         setProperty(AAD_B2C_CLIENTID_PASSWORD_PROPERTY, aadB2cUser.getPassword(), PUBLIC);
+
+        setProperty(VEILARBABAC_HOSTNAME_PROPERTY, "https://veilarbabac-" + FasitUtils.getDefaultEnvironment() + ".nais.preprod.local/", PUBLIC);
     }
 }
