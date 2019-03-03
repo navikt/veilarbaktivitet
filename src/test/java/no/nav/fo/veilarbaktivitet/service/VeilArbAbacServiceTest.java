@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.brukerdialog.security.context.SubjectRule;
 import no.nav.brukerdialog.security.domain.IdentType;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.Subject;
 import no.nav.sbl.dialogarena.test.junit.SystemPropertiesRule;
 import org.junit.Before;
@@ -19,6 +20,7 @@ import static no.nav.common.auth.SsoToken.oidcToken;
 import static no.nav.fo.veilarbaktivitet.service.VeilArbAbacService.VEILARBABAC_HOSTNAME_PROPERTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 
 public class VeilArbAbacServiceTest {
 
@@ -35,12 +37,14 @@ public class VeilArbAbacServiceTest {
     @Rule
     public SubjectRule subjectRule = new SubjectRule(new Subject("test-subject", IdentType.EksternBruker, oidcToken("test", emptyMap())));
 
+    private final SystemUserTokenProvider systemUserTokenProvider = mock(SystemUserTokenProvider.class);
+
     private VeilArbAbacService veilArbAbacService;
 
     @Before
     public void setup() {
         systemPropertiesRule.setProperty(VEILARBABAC_HOSTNAME_PROPERTY, "http://localhost:" + wireMockRule.port());
-        veilArbAbacService = new VeilArbAbacService();
+        veilArbAbacService = new VeilArbAbacService(systemUserTokenProvider);
     }
 
     @Test
@@ -61,12 +65,12 @@ public class VeilArbAbacServiceTest {
 
     @Test
     public void leseTilgangTilAktor() {
-        givenThat(get(urlEqualTo("/self/person?aktorId=test-aktorId&action=read"))
+        givenThat(get(urlEqualTo("/person?aktorId=test-aktorId&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("deny"))
         );
         assertThatThrownBy(() -> veilArbAbacService.sjekkLeseTilgangTilAktor(AKTOR_ID)).isInstanceOf(IngenTilgang.class);
 
-        givenThat(get(urlEqualTo("/self/person?aktorId=test-aktorId&action=read"))
+        givenThat(get(urlEqualTo("/person?aktorId=test-aktorId&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("permit"))
         );
         veilArbAbacService.sjekkLeseTilgangTilAktor(AKTOR_ID);
@@ -75,12 +79,12 @@ public class VeilArbAbacServiceTest {
 
     @Test
     public void skriveTilgangTilAktor() {
-        givenThat(get(urlEqualTo("/self/person?aktorId=test-aktorId&action=update"))
+        givenThat(get(urlEqualTo("/person?aktorId=test-aktorId&action=update"))
                 .willReturn(aResponse().withStatus(200).withBody("deny"))
         );
         assertThatThrownBy(() -> veilArbAbacService.sjekkSkriveTilgangTilAktor(AKTOR_ID)).isInstanceOf(IngenTilgang.class);
 
-        givenThat(get(urlEqualTo("/self/person?aktorId=test-aktorId&action=update"))
+        givenThat(get(urlEqualTo("/person?aktorId=test-aktorId&action=update"))
                 .willReturn(aResponse().withStatus(200).withBody("permit"))
         );
         veilArbAbacService.sjekkSkriveTilgangTilAktor(AKTOR_ID);
@@ -88,12 +92,12 @@ public class VeilArbAbacServiceTest {
 
     @Test
     public void leseTilgangTilFnr() {
-        givenThat(get(urlEqualTo("/self/person?fnr=test-fnr&action=read"))
+        givenThat(get(urlEqualTo("/person?fnr=test-fnr&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("deny"))
         );
         assertThatThrownBy(() -> veilArbAbacService.sjekkLeseTilgangTilFnr(FNR)).isInstanceOf(IngenTilgang.class);
 
-        givenThat(get(urlEqualTo("/self/person?fnr=test-fnr&action=read"))
+        givenThat(get(urlEqualTo("/person?fnr=test-fnr&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("permit"))
         );
         veilArbAbacService.sjekkLeseTilgangTilFnr(FNR);
@@ -101,12 +105,12 @@ public class VeilArbAbacServiceTest {
 
     @Test
     public void leseTilgangTilEnhet() {
-        givenThat(get(urlEqualTo("/self/enhet?enhetId=test-enhet&action=read"))
+        givenThat(get(urlEqualTo("/enhet?enhetId=test-enhet&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("deny"))
         );
         assertThat(veilArbAbacService.harTilgangTilEnhet(ENHET)).isFalse();
 
-        givenThat(get(urlEqualTo("/self/enhet?enhetId=test-enhet&action=read"))
+        givenThat(get(urlEqualTo("/enhet?enhetId=test-enhet&action=read"))
                 .willReturn(aResponse().withStatus(200).withBody("permit"))
         );
         assertThat(veilArbAbacService.harTilgangTilEnhet(ENHET)).isTrue();

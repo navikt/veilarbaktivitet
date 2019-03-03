@@ -3,6 +3,7 @@ package no.nav.fo.veilarbaktivitet.service;
 import no.nav.apiapp.feil.IngenTilgang;
 import no.nav.apiapp.selftest.Helsesjekk;
 import no.nav.apiapp.selftest.HelsesjekkMetadata;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.sbl.rest.RestUtils;
 import no.nav.sbl.util.EnvironmentUtils;
@@ -21,6 +22,12 @@ public class VeilArbAbacService implements Helsesjekk {
 
     private final String abacTargetUrl = EnvironmentUtils.getOptionalProperty(VEILARBABAC_HOSTNAME_PROPERTY)
             .orElseGet(() -> clusterUrlForApplication("veilarbabac"));
+
+    private final SystemUserTokenProvider systemUserTokenProvider;
+
+    public VeilArbAbacService(SystemUserTokenProvider systemUserTokenProvider) {
+        this.systemUserTokenProvider = systemUserTokenProvider;
+    }
 
     public void sjekkLeseTilgangTilAktor(String aktorId) {
         sjekkErTrue(() -> harLeseTilgangTilAktor(aktorId));
@@ -58,12 +65,12 @@ public class VeilArbAbacService implements Helsesjekk {
 
     private boolean harTilgang(Resource resource, Action action, String identParameterNavn, String ident) {
         return "permit".equals(RestUtils.withClient(c -> c.target(abacTargetUrl)
-                .path("self")
                 .path(resource.name())
                 .queryParam(identParameterNavn, ident)
                 .queryParam("action", action.name())
                 .request()
-                .header(AUTHORIZATION, "Bearer " + SubjectHandler.getSsoToken(OIDC).orElseThrow(IllegalStateException::new))
+                .header("subject", SubjectHandler.getSsoToken(OIDC).orElseThrow(IllegalStateException::new))
+                .header(AUTHORIZATION, "Bearer " + systemUserTokenProvider.getToken())
                 .get(String.class)
         ));
     }
