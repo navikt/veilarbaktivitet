@@ -2,6 +2,8 @@ package no.nav.fo.veilarbaktivitet;
 
 import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProviderConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
@@ -55,6 +57,11 @@ public class ApplicationContext implements ApiApplication {
     @Bean
     public UnleashService unleashService(){
         return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
+    }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider(){
+        return new SystemUserTokenProvider(SystemUserTokenProviderConfig.resolveFromSystemProperties());
     }
 
 }

@@ -1,6 +1,7 @@
 package no.nav.fo;
 
 import no.nav.apiapp.security.PepClient;
+import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
@@ -67,6 +68,11 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
         @Bean
         public UnleashService unleashService() {
             return mock(UnleashService.class);
+        }
+
+        @Bean
+        public SystemUserTokenProvider systemUserTokenProvider() {
+            return mock(SystemUserTokenProvider.class);
         }
 
         @Bean
