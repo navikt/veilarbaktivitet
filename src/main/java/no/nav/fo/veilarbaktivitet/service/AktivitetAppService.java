@@ -2,14 +2,13 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.apiapp.feil.*;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.fo.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import no.nav.metrics.aspects.Timed;
-import no.nav.sbl.dialogarena.common.abac.pep.exception.PepException;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,26 +27,20 @@ import static no.nav.fo.veilarbaktivitet.service.BrukerService.erInternBruker;
 public class AktivitetAppService {
 
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
-    private final PepClient pepClient;
+    private final VeilarbAbacPepClient pepClient;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
-    private final UnleashService unleashService;
-    private final VeilArbAbacService veilArbAbacService;
 
     @Inject
     AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
-                        PepClient pepClient,
+                        VeilarbAbacPepClient pepClient,
                         AktivitetService aktivitetService,
-                        BrukerService brukerService,
-                        UnleashService unleashService,
-                        VeilArbAbacService veilArbAbacService
+                        BrukerService brukerService
     ) {
         this.arenaAktivitetConsumer = arenaAktivitetConsumer;
         this.pepClient = pepClient;
         this.aktivitetService = aktivitetService;
         this.brukerService = brukerService;
-        this.unleashService = unleashService;
-        this.veilArbAbacService = veilArbAbacService;
     }
 
 
@@ -285,39 +278,26 @@ public class AktivitetAppService {
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
         boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
-                .map(id -> {
-                    if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.enhet")) {
-                        return veilArbAbacService.harTilgangTilEnhet(id);
-                    }
-
-                    try {
-                        return pepClient.harTilgangTilEnhet(id);
-                    } catch (PepException e) {
-                        throw new Feil(FeilType.SERVICE_UNAVAILABLE, "Kan ikke kontakte ABAC for utleding av kontorsperre.");
-                    }
-                })
+                .map(pepClient::harTilgangTilEnhet)
                 .orElse(true);
         FunksjonelleMetrikker.reportFilterAktivitet(aktivitet, hasAccess);
         return hasAccess;
     }
 
-    private Person sjekkTilgangTilPerson(Person person) {
+    private void sjekkTilgangTilPerson(Person person) {
+
+        Bruker bruker;
+
         if (person instanceof Person.Fnr) {
-            String fnr = person.get();
-            if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.fnr")) {
-                veilArbAbacService.sjekkLeseTilgangTilFnr(fnr);
-                return person;
-            }
-            return Person.fnr(pepClient.sjekkLeseTilgangTilFnr(fnr));
+            bruker = Bruker.fraFnr(person.get())
+             .medAktoerIdSupplier(()->brukerService.getAktorIdForPerson(person).orElseThrow(IngenTilgang::new).get());
         } else if (person instanceof Person.AktorId) {
-            Person.AktorId aktorId = (Person.AktorId) person;
-            if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.aktor")) {
-                veilArbAbacService.sjekkLeseTilgangTilAktor(aktorId.get());
-                return aktorId;
-            }
-            return sjekkTilgangTilPerson(brukerService.getFNRForAktorId(aktorId).orElseThrow(IngenTilgang::new));
+            bruker = Bruker.fraAktoerId(person.get())
+                .medFoedselnummerSupplier(()->brukerService.getFNRForAktorId((Person.AktorId)person).orElseThrow(IngenTilgang::new).get());
         } else {
             throw new IngenTilgang();
         }
+
+        pepClient.sjekkLesetilgangTilBruker(bruker);
     }
 }

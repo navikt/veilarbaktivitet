@@ -1,6 +1,9 @@
 package no.nav.fo;
 
+import no.nav.fasit.FasitUtils;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
+import no.nav.sbl.dialogarena.test.FasitAssumption;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -18,6 +21,10 @@ public abstract class IntegrasjonsTest extends AbstractIntegrasjonsTest {
     @BeforeAll
     @BeforeClass
     public static void setupContext() {
+
+        FasitAssumption.assumeFasitAccessible();
+        Assume.assumeFalse(FasitUtils.usingMock());
+
         setupContext(
                 ApplicationContext.class,
                 IntegrasjonsTest.Request.class
