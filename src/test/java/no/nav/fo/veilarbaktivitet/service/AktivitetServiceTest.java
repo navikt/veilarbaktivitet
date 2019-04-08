@@ -3,7 +3,6 @@ package no.nav.fo.veilarbaktivitet.service;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.apiapp.feil.VersjonsKonflikt;
-import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
@@ -37,9 +36,6 @@ public class AktivitetServiceTest {
 
     @Mock
     private KvpClient kvpClient;
-
-    @Mock
-    private PepClient pepClientMock;
 
     @Captor
     private ArgumentCaptor argumentCaptor;
@@ -84,7 +80,6 @@ public class AktivitetServiceTest {
     @Test
     public void oppdaterStatus() {
         val aktivitet = lagEnNyAktivitet();
-        mockHentAktivitet(aktivitet);
 
         val avsluttKommentar = "Alexander er best";
         val nyStatus = AktivitetStatus.GJENNOMFORES;
@@ -107,7 +102,6 @@ public class AktivitetServiceTest {
     public void oppdaterStatusMedKvpTilgang() {
         val aktivitet = lagEnNyAktivitet();
         val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
-        mockHentAktivitet(kvpAktivitet);
 
         val nyStatus = AktivitetStatus.GJENNOMFORES;
         val oppdatertAktivitet = kvpAktivitet
@@ -115,14 +109,12 @@ public class AktivitetServiceTest {
                 .status(nyStatus)
                 .build();
 
-        when(pepClientMock.harTilgangTilEnhet(KONTORSPERRE_ENHET_ID)).thenReturn(true);
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, null);
     }
 
     @Test
     public void oppdaterEtikett() {
         val aktivitet = lagEnNyAktivitet();
-        mockHentAktivitet(aktivitet);
 
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
@@ -250,10 +242,6 @@ public class AktivitetServiceTest {
                 .id(AKTIVITET_ID)
                 .stillingsSoekAktivitetData(stilling)
                 .build();
-    }
-
-    public void mockHentAktivitet(AktivitetData aktivitetData) {
-        when(aktivitetDAO.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitetData);
     }
 
     public void captureInsertAktivitetArgument() {

@@ -34,6 +34,7 @@ public abstract class AbstractIntegrasjonsTest {
     private static PlatformTransactionManager platformTransactionManager;
     private TransactionStatus transactionStatus;
 
+
     @SneakyThrows
     public static void setupContext(Class<?>... classes) {
         ApiAppTest.setupTestContext(builder().applicationName(APPLICATION_NAME).build());

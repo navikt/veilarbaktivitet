@@ -1,8 +1,9 @@
 package no.nav.fo;
 
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.dialogarena.aktor.AktorConfig;
+import no.nav.fasit.FasitUtils;
 import no.nav.fo.veilarbaktivitet.ApplicationContext;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.config.AbacConfig;
@@ -10,7 +11,9 @@ import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.domain.Person.AktorId;
 import no.nav.fo.veilarbaktivitet.service.BrukerService;
 import no.nav.sbl.dialogarena.common.abac.pep.Pep;
+import no.nav.sbl.dialogarena.test.FasitAssumption;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 import org.springframework.context.annotation.*;
@@ -31,6 +34,9 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
     @BeforeAll
     @BeforeClass
     public static void setupContext() {
+        FasitAssumption.assumeFasitAccessible();
+        Assume.assumeFalse(FasitUtils.usingMock());
+
         setProperty(VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY, "https://localhost");
         setProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY, "https://localhost");
         setupContext(
@@ -56,8 +62,8 @@ public abstract class IntegrasjonsTestMedPepOgBrukerServiceMock extends Abstract
         }
 
         @Bean
-        public PepClient pepClient() {
-            return mock(PepClient.class);
+        public VeilarbAbacPepClient pepClient() {
+            return mock(VeilarbAbacPepClient.class);
         }
 
         @Bean
