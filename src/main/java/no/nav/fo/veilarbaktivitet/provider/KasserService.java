@@ -2,13 +2,12 @@ package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
+import no.nav.apiapp.security.veilarbabac.Bruker;
+import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
-import no.nav.fo.veilarbaktivitet.service.VeilArbAbacService;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
@@ -31,13 +30,7 @@ public class KasserService {
     private AktivitetDAO aktivitetDAO;
 
     @Inject
-    private VeilArbAbacService veilArbAbacService;
-
-    @Inject
-    private UnleashService unleashService;
-
-    @Inject
-    private PepClient pep;
+    private VeilarbAbacPepClient pepClient;
 
     @Inject
     private AktorService aktorService;
@@ -55,12 +48,10 @@ public class KasserService {
 
     private boolean kjorHvisTilgang(String aktorId, String id, Supplier<Boolean> fn) {
 
-        if (unleashService.isEnabled("veilarbaktivitet.veilarbabac.aktor")) {
-            veilArbAbacService.sjekkSkriveTilgangTilAktor(aktorId);
-        } else {
-            String fnr = aktorService.getFnr(aktorId).orElseThrow(IngenTilgang::new);
-            pep.sjekkSkriveTilgangTilFnr(fnr);
-        }
+        Bruker bruker = Bruker.fraAktoerId(aktorId)
+                .medFoedselnummerSupplier(()->aktorService.getFnr(aktorId).orElseThrow(IngenTilgang::new));
+
+        pepClient.sjekkSkrivetilgangTilBruker(bruker);
 
         String veilederIdent = SubjectHandler.getIdent().orElse(null);
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split("[\\.\\s]"));

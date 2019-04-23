@@ -6,7 +6,7 @@
     <parent>
         <groupId>no.nav.common</groupId>
         <artifactId>mor-pom</artifactId>
-        <version>2019.02.25.10.19</version>
+        <version>1.2019.04.06-08.48-f277664c5491</version>
     </parent>
 
     <groupId>no.nav.fo</groupId>
@@ -19,7 +19,7 @@
     </build>
 
     <properties>
-        <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.0.3</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
+        <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
     </properties>
 
     <dependencyManagement>
@@ -34,10 +34,9 @@
 
             <!--Tjenester-->
             <dependency>
-                <groupId>no.nav.tjenester</groupId>
+                <groupId>no.nav.tjenestespesifikasjoner</groupId>
                 <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
                 <version>${nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version}</version>
-                <classifier>jaxws</classifier>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -158,9 +157,8 @@
             <artifactId>oidc-security</artifactId>
         </dependency>
         <dependency>
-            <groupId>no.nav.tjenester</groupId>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
-            <classifier>jaxws</classifier>
         </dependency>
 
         <!-- DB -->
