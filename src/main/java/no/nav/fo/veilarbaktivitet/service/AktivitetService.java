@@ -69,20 +69,20 @@ public class AktivitetService {
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
-        val endretAv = Optional.ofNullable(endretAvPerson).map(Person::get).orElse(null);
-        val aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
-        val nyAktivivitet = aktivitet
+        String endretAv = Optional.ofNullable(endretAvPerson).map(Person::get).orElse(null);
+        long aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
+        AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId.get())
                 .lagtInnAv(aktivitet.getLagtInnAv())
-                .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
+                .transaksjonsType(OPPRETTET)
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
-        val kvpAktivivitet = tagUsingKVP(nyAktivivitet);
+        AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
 
         aktivitetDAO.insertAktivitet(kvpAktivivitet);
         FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
@@ -227,6 +227,7 @@ public class AktivitetService {
     private SokeAvtaleAktivitetData mergeSokeAvtaleAktivitetData(SokeAvtaleAktivitetData originalSokeAvtaleAktivitetData, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         return originalSokeAvtaleAktivitetData
                 .withAntallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
+                .withAntallStillingerIUken(sokeAvtaleAktivitetData.getAntallStillingerIUken())
                 .withAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
     }
 

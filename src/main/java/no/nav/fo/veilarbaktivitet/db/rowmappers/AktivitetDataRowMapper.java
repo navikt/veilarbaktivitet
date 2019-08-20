@@ -98,6 +98,7 @@ public class AktivitetDataRowMapper {
     private static SokeAvtaleAktivitetData mapSokeAvtaleAktivitet(ResultSet rs) throws SQLException {
         return SokeAvtaleAktivitetData.builder()
                 .antallStillingerSokes(rs.getLong("antall_stillinger_sokes"))
+                .antallStillingerIUken(rs.getLong("antall_stillinger_i_uken"))
                 .avtaleOppfolging(rs.getString("avtale_oppfolging"))
                 .build();
     }

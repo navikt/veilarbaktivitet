@@ -67,6 +67,7 @@ public class AktivitetDTOMapper {
     private static void mapSokeAvtaleData(AktivitetDTO aktivitetDTO, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         aktivitetDTO
                 .setAntallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
+                .setAntallStillingerIUken(sokeAvtaleAktivitetData.getAntallStillingerIUken())
                 .setAvtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
     }
 

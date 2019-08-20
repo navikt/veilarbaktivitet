@@ -80,6 +80,7 @@ public class AktivitetDataMapper {
     private static SokeAvtaleAktivitetData sokeAvtaleAktivitetData(AktivitetDTO aktivitetDTO) {
         return SokeAvtaleAktivitetData.builder()
                 .antallStillingerSokes(aktivitetDTO.getAntallStillingerSokes())
+                .antallStillingerIUken(aktivitetDTO.getAntallStillingerIUken())
                 .avtaleOppfolging(aktivitetDTO.getAvtaleOppfolging())
                 .build();
     }
