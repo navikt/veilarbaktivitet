@@ -160,11 +160,12 @@ public class AktivitetDAO {
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
-                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, avtale_oppfolging) " +
-                                "VALUES(?,?,?,?)",
+                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
+                                "VALUES(?,?,?,?,?)",
                         aktivitetId,
                         versjon,
                         sokeAvtale.getAntallStillingerSokes(),
+                        sokeAvtale.getAntallStillingerIUken(),
                         sokeAvtale.getAvtaleOppfolging()
                 ));
     }
@@ -233,7 +234,7 @@ public class AktivitetDAO {
         int oppdaterteRader = Stream.of(
                 "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV'",
                 "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV'",
-                "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, AVTALE_OPPFOLGING = 'Kassert av NAV'",
+                "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV'",
                 "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV'",
                 "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV'",
                 "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",

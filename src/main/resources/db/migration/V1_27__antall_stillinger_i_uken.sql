@@ -1,0 +1,1 @@
+alter table SOKEAVTALE add ANTALL_STILLINGER_I_UKEN number(19)
