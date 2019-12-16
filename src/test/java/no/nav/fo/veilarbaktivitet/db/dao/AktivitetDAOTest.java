@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.db.DatabaseTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.fo.veilarbaktivitet.domain.Person;
@@ -23,7 +23,7 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class AktivitetDAOTest extends IntegrasjonsTest {
+public class AktivitetDAOTest extends DatabaseTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private long versjon = 1;

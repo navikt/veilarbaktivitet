@@ -8,13 +8,13 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.Date;
 
+import no.nav.fo.veilarbaktivitet.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
 import org.junit.Test;
 
 import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
-import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 
 public class AvsluttetOppfolgingFeedProviderTest {
 

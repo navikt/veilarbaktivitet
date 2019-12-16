@@ -7,8 +7,8 @@ import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.BaseConfig;
 import no.nav.fo.feed.consumer.FeedConsumerConfig.SimplePollingConfig;
+import no.nav.fo.veilarbaktivitet.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.fo.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
-import no.nav.fo.veilarboppfolging.rest.domain.AvsluttetOppfolgingFeedDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -1,7 +1,7 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
 import lombok.val;
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.db.DatabaseTest;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetFeedData;
 import org.junit.Test;
 
@@ -15,7 +15,7 @@ import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.fo.veilarbaktivitet.util.DateUtils.dateFromISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AktivitetFeedDAOTest extends IntegrasjonsTest {
+public class AktivitetFeedDAOTest extends DatabaseTest {
 
     @Inject
     private AktivitetDAO aktivitetDAO;

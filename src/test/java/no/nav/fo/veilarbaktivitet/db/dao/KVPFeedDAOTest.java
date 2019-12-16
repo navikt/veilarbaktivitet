@@ -1,13 +1,13 @@
 package no.nav.fo.veilarbaktivitet.db.dao;
 
-import no.nav.fo.IntegrasjonsTest;
+import no.nav.fo.veilarbaktivitet.db.DatabaseTest;
 import org.junit.Test;
 
 import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class KVPFeedDAOTest extends IntegrasjonsTest {
+public class KVPFeedDAOTest extends DatabaseTest {
 
     @Inject
     private KVPFeedDAO kvpFeedDAO;

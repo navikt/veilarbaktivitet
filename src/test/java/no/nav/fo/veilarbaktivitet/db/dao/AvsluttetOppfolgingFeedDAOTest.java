@@ -6,11 +6,10 @@ import java.util.Date;
 
 import javax.inject.Inject;
 
+import no.nav.fo.veilarbaktivitet.db.DatabaseTest;
 import org.junit.Test;
 
-import no.nav.fo.IntegrasjonsTest;
-
-public class AvsluttetOppfolgingFeedDAOTest extends IntegrasjonsTest {
+public class AvsluttetOppfolgingFeedDAOTest extends DatabaseTest {
 
     @Inject
     private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;

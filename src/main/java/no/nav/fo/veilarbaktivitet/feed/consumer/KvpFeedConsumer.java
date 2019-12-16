@@ -1,9 +1,9 @@
 package no.nav.fo.veilarbaktivitet.feed.consumer;
 
 import no.nav.fo.veilarbaktivitet.db.dao.KVPFeedDAO;
+import no.nav.fo.veilarbaktivitet.domain.KvpDTO;
 import no.nav.fo.veilarbaktivitet.domain.Person;
 import no.nav.fo.veilarbaktivitet.service.AktivitetService;
-import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
