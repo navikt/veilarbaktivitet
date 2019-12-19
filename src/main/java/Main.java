@@ -54,6 +54,7 @@ public class Main {
                 "SECURITYTOKENSERVICE_URL",
                 "ABAC_PDP_ENDPOINT_URL",
                 "ABAC_PDP_ENDPOINT_DESCRIPTION",
+                "AAD_B2C_DISCOVERY_URL",
                 "ISSO_HOST_URL",
                 "ISSO_JWKS_URL",
                 "ISSO_ISSUER_URL",
