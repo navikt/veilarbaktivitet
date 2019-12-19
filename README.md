@@ -1,6 +1,12 @@
-# Brukerflate
+# Veilarbaktivitet
+Backend applikasjon for aktivitetsplan. Tilbyr REST tjenester for å hente/opprette/endre aktiviteter.
 
-## Oppsett lokalt
+### Komme i gang
 
-1. Kjør `mvn clean install`
-2. Start jetty-test: `web/src/test/java/no/nav/fo/StartJetty`
+```sh
+mvn clean install
+```
+
+### Kontakt og spørsmål
+
+Opprett en issue i GitHub for eventuelle spørsmål.
