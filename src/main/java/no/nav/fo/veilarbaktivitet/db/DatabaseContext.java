@@ -18,7 +18,7 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @EnableTransactionManagement(proxyTargetClass = true)
 public class DatabaseContext {
 
-    public static final String VEILARBAKTIVITETDATASOURCE_URL_PROPERTY = "VEILARBAKTIVITETDATASOURCE_URL";
+    public static final String VEILARBAKTIVITETDATASOURCE_URL_PROPERTY = "VEILARBAKTIVITETDB_URL";
     public static final String VEILARBAKTIVITETDATASOURCE_USERNAME_PROPERTY = "VEILARBAKTIVITETDATASOURCE_USERNAME";
     public static final String VEILARBAKTIVITETDATASOURCE_PASSWORD_PROPERTY = "VEILARBAKTIVITETDATASOURCE_PASSWORD";
 
