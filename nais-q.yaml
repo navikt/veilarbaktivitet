@@ -34,9 +34,8 @@ spec:
     requests:
       cpu: 200m
       memory: 768Mi
-  configMaps:
-    files:
-      - pto-config
+  filesFrom:
+    - configmap: pto-config
   vault:
     enabled: true
     paths:
