@@ -34,7 +34,7 @@ spec:
     requests:
       cpu: 200m
       memory: 1536Mi
-  filesFrom:
+  envFrom:
     - configmap: pto-config
   vault:
     enabled: true
@@ -47,7 +47,5 @@ spec:
         mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
   env:
-    - APPDYNAMICS_AGENT_ACCOUNT_NAME
-    - APPDYNAMICS_CONTROLLER_HOST_NAME
-    - APPDYNAMICS_CONTROLLER_PORT
-    - APPDYNAMICS_CONTROLLER_SSL_ENABLED
+    - name: APP_ENVIRONMENT_NAME
+      value: p

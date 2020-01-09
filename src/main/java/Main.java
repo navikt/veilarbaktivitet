@@ -18,8 +18,6 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 public class Main {
 
     public static void main(String... args) {
-        readFromConfigMap();
-
         setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2017-12-04");
 
         NaisUtils.Credentials serviceUser = getCredentials("service_user");
@@ -48,32 +46,4 @@ public class Main {
 
         ApiApp.runApp(ApplicationContext.class, args);
     }
-
-    private static void readFromConfigMap() {
-        NaisUtils.addConfigMapToEnv("pto-config",
-                "SECURITYTOKENSERVICE_URL",
-                "ABAC_PDP_ENDPOINT_URL",
-                "ABAC_PDP_ENDPOINT_DESCRIPTION",
-                "AAD_B2C_DISCOVERY_URL",
-                "ISSO_HOST_URL",
-                "ISSO_JWKS_URL",
-                "ISSO_ISSUER_URL",
-                "ISSO_ISALIVE_URL",
-                "VEILARBLOGIN_REDIRECT_URL_DESCRIPTION",
-                "VEILARBLOGIN_REDIRECT_URL_URL",
-                "AKTOER_V2_SECURITYTOKEN",
-                "AKTOER_V2_ENDPOINTURL",
-                "AKTOER_V2_WSDLURL",
-                "VIRKSOMHET_TILTAKOGAKTIVITET_V1_SECURITYTOKEN",
-                "VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL",
-                "VIRKSOMHET_TILTAKOGAKTIVITET_V1_WSDLURL",
-                "LOGINSERVICE_OIDC_CALLBACKURI",
-                "LOGINSERVICE_OIDC_DISCOVERYURI",
-                "UNLEASH_API_URL",
-                "AKTOERREGISTER_API_V1_URL",
-                "SECURITY_TOKEN_SERVICE_OPENID_CONFIGURATION_URL",
-                "VEILARBOPPFOLGINGAPI_URL"
-        );
-    }
-
 }
