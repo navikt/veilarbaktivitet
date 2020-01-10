@@ -1,6 +1,5 @@
 package no.nav.fo.veilarbaktivitet.db;
 
-import no.nav.fo.IntegrasjonsTest;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -9,7 +8,7 @@ import javax.inject.Inject;
 import static org.hamcrest.collection.IsEmptyCollection.empty;
 import static org.junit.Assert.assertThat;
 
-public class MigrerDatabaseTest extends IntegrasjonsTest {
+public class MigrerDatabaseTest extends DatabaseTest {
 
     @Inject
     private JdbcTemplate jdbcTemplate;

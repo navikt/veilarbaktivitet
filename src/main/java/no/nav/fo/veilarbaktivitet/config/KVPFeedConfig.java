@@ -3,8 +3,8 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import no.nav.brukerdialog.security.oidc.OidcFeedOutInterceptor;
 import no.nav.fo.feed.consumer.FeedConsumer;
 import no.nav.fo.feed.consumer.FeedConsumerConfig;
+import no.nav.fo.veilarbaktivitet.domain.KvpDTO;
 import no.nav.fo.veilarbaktivitet.feed.consumer.KvpFeedConsumer;
-import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

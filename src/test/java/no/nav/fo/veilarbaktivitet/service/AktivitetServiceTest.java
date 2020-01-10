@@ -6,7 +6,6 @@ import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;

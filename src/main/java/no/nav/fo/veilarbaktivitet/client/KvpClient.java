@@ -1,8 +1,8 @@
 package no.nav.fo.veilarbaktivitet.client;
 
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
+import no.nav.fo.veilarbaktivitet.domain.KvpDTO;
 import no.nav.fo.veilarbaktivitet.domain.Person;
-import no.nav.fo.veilarboppfolging.rest.domain.KvpDTO;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Invocation;
