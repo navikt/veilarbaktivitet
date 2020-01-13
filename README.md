@@ -5,6 +5,7 @@ Backend applikasjon for aktivitetsplan. Tilbyr REST tjenester for å hente/oppre
 
 ```sh
 mvn clean install
+mvn test
 ```
 
 ## Kontakt og spørsmål
