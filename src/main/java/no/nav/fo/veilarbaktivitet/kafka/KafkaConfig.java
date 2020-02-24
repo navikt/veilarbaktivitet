@@ -4,7 +4,6 @@ import no.nav.fo.veilarbaktivitet.db.DatabaseContext;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.config.SaslConfigs;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
@@ -23,8 +22,8 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 public class KafkaConfig {
 
     public static final String KAFKA_AKTIVITETER_TOPIC = getRequiredProperty("KAFKA_AKTIVITETER_TOPIC");
+    public static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
 
-    private static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
     private static final String USERNAME = getRequiredProperty(SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(SYSTEMUSER_PASSWORD);
     private static final String KAFKA_TRANSACTIONAL_ID = getRequiredProperty("KAFKA_AKTIVITETER_TRANSACTIONAL_ID");
