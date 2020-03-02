@@ -13,6 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Properties;
 
+import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants.SYSTEMUSER_USERNAME;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -26,8 +27,6 @@ public class KafkaConfig {
 
     private static final String USERNAME = getRequiredProperty(SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(SYSTEMUSER_PASSWORD);
-    private static final String KAFKA_TRANSACTIONAL_ID_AKTIVITETER = getRequiredProperty("KAFKA_TRANSACTIONAL_ID_AKTIVITETER");
-
 
     public static Properties producerConfig() {
         Properties properties = new Properties();
@@ -40,7 +39,7 @@ public class KafkaConfig {
         properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         properties.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, KAFKA_TRANSACTIONAL_ID_AKTIVITETER);
+        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, generateId());
         return properties;
     }
 
