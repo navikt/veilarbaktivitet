@@ -5,6 +5,8 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
 import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.fo.veilarbaktivitet.db.dao.KVPFeedDAO;
+import no.nav.fo.veilarbaktivitet.kafka.KafkaDAO;
+import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 

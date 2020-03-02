@@ -6,6 +6,7 @@ import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -35,6 +36,9 @@ public class AktivitetServiceTest {
 
     @Mock
     private KvpClient kvpClient;
+
+    @Mock
+    private KafkaService kafkaService;
 
     @Captor
     private ArgumentCaptor argumentCaptor;
@@ -165,6 +169,7 @@ public class AktivitetServiceTest {
                 .beskrivelse("Alexander er den beste")
                 .lenke("www.alexander-er-best.no")
                 .build();
+
         aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, null);
 
         captureInsertAktivitetArgument();
