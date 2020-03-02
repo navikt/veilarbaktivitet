@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_AKTIVITETER_TOPIC;
+import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
 
 @Slf4j
 @Component
@@ -42,7 +42,7 @@ public class KafkaService {
 
     private void send(KafkaAktivitetMelding melding) {
         String key = melding.getAktorId();
-        ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_AKTIVITETER_TOPIC, key, JsonUtils.toJson(melding));
+        ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
 
         try {
             producer.beginTransaction();

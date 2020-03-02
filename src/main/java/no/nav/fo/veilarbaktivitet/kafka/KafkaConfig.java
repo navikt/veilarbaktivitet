@@ -21,12 +21,12 @@ import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 @Import({DatabaseContext.class})
 public class KafkaConfig {
 
-    public static final String KAFKA_AKTIVITETER_TOPIC = getRequiredProperty("KAFKA_AKTIVITETER_TOPIC");
+    public static final String KAFKA_TOPIC_AKTIVITETER = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER");
     public static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
 
     private static final String USERNAME = getRequiredProperty(SYSTEMUSER_USERNAME);
     private static final String PASSWORD = getRequiredProperty(SYSTEMUSER_PASSWORD);
-    private static final String KAFKA_TRANSACTIONAL_ID = getRequiredProperty("KAFKA_AKTIVITETER_TRANSACTIONAL_ID");
+    private static final String KAFKA_TRANSACTIONAL_ID_AKTIVITETER = getRequiredProperty("KAFKA_TRANSACTIONAL_ID_AKTIVITETER");
 
 
     public static Properties producerConfig() {
@@ -40,7 +40,7 @@ public class KafkaConfig {
         properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         properties.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, KAFKA_TRANSACTIONAL_ID);
+        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, KAFKA_TRANSACTIONAL_ID_AKTIVITETER);
         return properties;
     }
 

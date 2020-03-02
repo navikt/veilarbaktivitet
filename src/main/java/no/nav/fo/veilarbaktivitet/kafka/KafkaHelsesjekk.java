@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
-import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_AKTIVITETER_TOPIC;
+import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
 import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_BROKERS;
 
 @Component
@@ -22,12 +22,12 @@ public class KafkaHelsesjekk implements Helsesjekk {
 
     @Override
     public void helsesjekk() throws Throwable {
-        kafka.partitionsFor(KAFKA_AKTIVITETER_TOPIC);
+        kafka.partitionsFor(KAFKA_TOPIC_AKTIVITETER);
     }
 
     @Override
     public HelsesjekkMetadata getMetadata() {
-        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, KAFKA_AKTIVITETER_TOPIC, false);
+        return new HelsesjekkMetadata("kafka", KAFKA_BROKERS, KAFKA_TOPIC_AKTIVITETER, false);
     }
 
 

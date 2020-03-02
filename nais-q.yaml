@@ -49,5 +49,5 @@ spec:
   env:
     - name: APP_ENVIRONMENT_NAME
       value: {{namespace}}
-    - name: KAFKA_TRANSACTIONAL_ID
+    - name: KAFKA_TRANSACTIONAL_ID_AKTIVITETER
       value: veilarbaktivitet_tx_{{namespace}}
