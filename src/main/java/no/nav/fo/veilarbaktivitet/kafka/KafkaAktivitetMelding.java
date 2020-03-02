@@ -8,6 +8,7 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 
 import java.time.Instant;
+import java.util.Date;
 
 @Value
 @Builder
@@ -28,12 +29,16 @@ public class KafkaAktivitetMelding {
                 .meldingId(IdUtils.generateId())
                 .aktorId(aktivitet.getAktorId())
                 .aktivitetId(aktivitet.getId())
-                .fraDato(aktivitet.getFraDato().toInstant())
-                .tilDato(aktivitet.getTilDato().toInstant())
-                .endretDato(aktivitet.getEndretDato().toInstant())
+                .fraDato(toInstantOrNull(aktivitet.getFraDato()))
+                .tilDato(toInstantOrNull(aktivitet.getTilDato()))
+                .endretDato(toInstantOrNull(aktivitet.getEndretDato()))
                 .aktivitetType(aktivitet.getAktivitetType())
                 .aktivitetStatus(aktivitet.getStatus())
                 .avtalt(aktivitet.isAvtalt())
                 .build();
+    }
+
+    private static Instant toInstantOrNull(Date date) {
+        return date == null ? null : date.toInstant();
     }
 }
