@@ -95,7 +95,7 @@ public class KafkaServiceTest {
         System.setProperty("KAFKA_BROKERS_URL", "mock_url");
         System.setProperty(SYSTEMUSER_USERNAME, "mock_user");
         System.setProperty(SYSTEMUSER_PASSWORD, "mock_pwd");
-        System.setProperty("KAFKA_AKTIVITETER_TRANSACTIONAL_ID", "mock_transaction");
+        System.setProperty("KAFKA_TRANSACTIONAL_ID_AKTIVITETER", "mock_transaction");
     }
 
 }
