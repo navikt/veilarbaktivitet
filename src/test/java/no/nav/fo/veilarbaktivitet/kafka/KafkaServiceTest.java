@@ -91,7 +91,7 @@ public class KafkaServiceTest {
     }
 
     private void setProperties() {
-        System.setProperty("KAFKA_AKTIVITETER_TOPIC", "mock_topic");
+        System.setProperty("KAFKA_TOPIC_AKTIVITETER", "mock_topic");
         System.setProperty("KAFKA_BROKERS_URL", "mock_url");
         System.setProperty(SYSTEMUSER_USERNAME, "mock_user");
         System.setProperty(SYSTEMUSER_PASSWORD, "mock_pwd");
