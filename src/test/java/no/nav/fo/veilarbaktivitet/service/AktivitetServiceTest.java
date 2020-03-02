@@ -7,6 +7,7 @@ import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -39,6 +40,9 @@ public class AktivitetServiceTest {
 
     @Mock
     private KafkaService kafkaService;
+
+    @Mock
+    private UnleashService unleashService;
 
     @Captor
     private ArgumentCaptor argumentCaptor;

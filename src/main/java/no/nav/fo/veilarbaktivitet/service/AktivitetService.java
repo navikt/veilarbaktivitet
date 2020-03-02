@@ -9,6 +9,7 @@ import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,12 +32,14 @@ public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
     private final KafkaService kafkaService;
+    private final UnleashService unleash;
 
     @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService, UnleashService unleash) {
         this.aktivitetDAO = aktivitetDAO;
         this.kvpClient = kvpClient;
         this.kafkaService = kafkaService;
+        this.unleash = unleash;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
@@ -259,7 +262,9 @@ public class AktivitetService {
     private void lagreAktivitet(AktivitetData aktivitetData) {
         try {
             aktivitetDAO.insertAktivitet(aktivitetData);
-            kafkaService.sendMelding(of(aktivitetData));
+            if (unleash.isEnabled("veilarbaktivitet.kafka")) {
+                kafkaService.sendMelding(of(aktivitetData));
+            }
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
