@@ -8,7 +8,6 @@ import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
 import org.slf4j.MDC;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.Optional;
 
@@ -20,9 +19,9 @@ public class KafkaAktivitetMelding {
     String meldingId;
     Long aktivitetId;
     String aktorId;
-    Instant fraDato;
-    Instant tilDato;
-    Instant endretDato;
+    Date fraDato;
+    Date tilDato;
+    Date endretDato;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
     Boolean avtalt;
@@ -35,16 +34,12 @@ public class KafkaAktivitetMelding {
                 .meldingId(correlationId)
                 .aktorId(aktivitet.getAktorId())
                 .aktivitetId(aktivitet.getId())
-                .fraDato(toInstantOrNull(aktivitet.getFraDato()))
-                .tilDato(toInstantOrNull(aktivitet.getTilDato()))
-                .endretDato(toInstantOrNull(aktivitet.getEndretDato()))
+                .fraDato(aktivitet.getFraDato())
+                .tilDato(aktivitet.getTilDato())
+                .endretDato(aktivitet.getEndretDato())
                 .aktivitetType(aktivitet.getAktivitetType())
                 .aktivitetStatus(aktivitet.getStatus())
                 .avtalt(aktivitet.isAvtalt())
                 .build();
-    }
-
-    private static Instant toInstantOrNull(Date date) {
-        return date == null ? null : date.toInstant();
     }
 }
