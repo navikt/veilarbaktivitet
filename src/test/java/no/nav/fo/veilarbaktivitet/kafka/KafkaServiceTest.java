@@ -9,9 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.nio.file.Paths;
+import java.util.Date;
 
 import static java.nio.file.Files.newBufferedReader;
-import static java.time.Instant.now;
 import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.PLANLAGT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
@@ -68,6 +68,7 @@ public class KafkaServiceTest {
     }
 
     private KafkaAktivitetMelding createMelding() {
+
         return KafkaAktivitetMelding.builder()
                 .meldingId(generateId())
                 .aktivitetId(1L)
@@ -76,9 +77,9 @@ public class KafkaServiceTest {
                 .aktivitetType(JOBBSOEKING)
                 .avtalt(true)
                 .historisk(false)
-                .endretDato(now())
-                .fraDato(now())
-                .tilDato(now().plusMillis(60_000))
+                .endretDato(new Date())
+                .fraDato(new Date())
+                .tilDato(new Date(Long.MAX_VALUE))
                 .build();
     }
 
