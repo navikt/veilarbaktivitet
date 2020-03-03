@@ -3,8 +3,6 @@ package no.nav.fo.veilarbaktivitet.db.dao;
 import no.nav.fo.veilarbaktivitet.db.Database;
 import no.nav.fo.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.fo.veilarbaktivitet.kafka.KafkaAktivitetMelding;
-import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
