@@ -107,6 +107,7 @@ public class AktivitetDAO {
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
 
         LOG.info("opprettet {}", aktivitet);
+
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {

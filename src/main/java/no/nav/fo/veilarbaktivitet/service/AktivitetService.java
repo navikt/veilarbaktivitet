@@ -7,7 +7,9 @@ import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
+import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
+import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,17 +24,22 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetTransaksjonsType.*;
+import static no.nav.fo.veilarbaktivitet.kafka.KafkaAktivitetMelding.of;
 import static no.nav.fo.veilarbaktivitet.util.MappingUtils.merge;
 
 @Component
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
+    private final KafkaService kafkaService;
+    private final UnleashService unleash;
 
     @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient) {
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService, UnleashService unleash) {
         this.aktivitetDAO = aktivitetDAO;
         this.kvpClient = kvpClient;
+        this.kafkaService = kafkaService;
+        this.unleash = unleash;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
@@ -82,8 +89,8 @@ public class AktivitetService {
                 .build();
 
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
+        lagreAktivitet(kvpAktivivitet);
 
-        aktivitetDAO.insertAktivitet(kvpAktivivitet);
         FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
@@ -99,7 +106,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        insertAktivitet(nyAktivitet);
+        lagreAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -116,7 +123,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        insertAktivitet(nyAktivitet);
+        lagreAktivitet(nyAktivitet);
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -131,7 +138,7 @@ public class AktivitetService {
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        insertAktivitet(oppdatertAktivitetMedNyFrist);
+        lagreAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterMoteTidOgSted(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
@@ -144,7 +151,7 @@ public class AktivitetService {
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        insertAktivitet(oppdatertAktivitetMedNyFrist);
+        lagreAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterReferat(
@@ -155,7 +162,7 @@ public class AktivitetService {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = merge(originalAktivitet, aktivitetData);
-        insertAktivitet(originalAktivitet
+        lagreAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
@@ -184,7 +191,7 @@ public class AktivitetService {
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val merger = merge(originalAktivitet, aktivitet);
-        insertAktivitet(originalAktivitet
+        lagreAktivitet(originalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -252,9 +259,12 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    private void insertAktivitet(AktivitetData aktivitetData) {
+    private void lagreAktivitet(AktivitetData aktivitetData) {
         try {
             aktivitetDAO.insertAktivitet(aktivitetData);
+            if (unleash.isEnabled("veilarbaktivitet.kafka")) {
+                kafkaService.sendMelding(of(aktivitetData));
+            }
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
@@ -266,7 +276,7 @@ public class AktivitetService {
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(aktivitetDAO::insertAktivitet);
+                .forEach(this::lagreAktivitet);
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
@@ -285,7 +295,7 @@ public class AktivitetService {
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
                 .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(aktivitetDAO::insertAktivitet);
+                .forEach(this::lagreAktivitet);
     }
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
