@@ -45,16 +45,12 @@ public class KafkaService {
         ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
 
         try {
-            producer.beginTransaction();
             producer.send(record);
-            producer.commitTransaction();
         } catch (Exception e) {
             log.error("Sending av aktivitet {} til kafka med correlationId {} for bruker med aktørId {} feilet", melding.getAktivitetId(), melding.getMeldingId(), melding.getAktorId());
-            producer.abortTransaction();
             database.lagre(melding);
             return;
         }
-
         log.info("Sendte aktivitet {} på kafka med correlationId {} for bruker med aktørId {}", melding.getAktivitetId(), melding.getMeldingId(), melding.getAktorId());
     }
 }
