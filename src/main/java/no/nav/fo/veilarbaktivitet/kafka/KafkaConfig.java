@@ -39,15 +39,12 @@ public class KafkaConfig {
         properties.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SASL_SSL");
         properties.put(SaslConfigs.SASL_MECHANISM, "PLAIN");
         properties.put(SaslConfigs.SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + USERNAME + "\" password=\"" + PASSWORD + "\";");
-        properties.put(ProducerConfig.TRANSACTIONAL_ID_CONFIG, generateId());
         return properties;
     }
 
     @Bean
     public KafkaProducer<String, String> kafkaProducer() {
-        KafkaProducer<String, String> producer = new KafkaProducer<>(producerConfig());
-        producer.initTransactions();
-        return producer;
+        return new KafkaProducer<>(producerConfig());
     }
 
     @Bean
