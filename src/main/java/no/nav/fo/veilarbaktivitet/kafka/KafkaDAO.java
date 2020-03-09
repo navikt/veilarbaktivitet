@@ -39,8 +39,8 @@ public class KafkaDAO {
                 .value("ENDRET_DATO", melding.getEndretDato())
                 .value("AKTIVITET_TYPE", melding.getAktivitetType().name())
                 .value("AKTIVITET_STATUS", melding.getAktivitetStatus().name())
-                .value("AVTALT", melding.getAvtalt())
-                .value("HISTORISK", melding.getHistorisk())
+                .value("AVTALT", melding.isAvtalt())
+                .value("HISTORISK", melding.isHistorisk())
                 .execute();
     }
 
@@ -60,7 +60,7 @@ public class KafkaDAO {
     private SQLFunction<ResultSet, KafkaAktivitetMelding> mapper() {
         return rs -> KafkaAktivitetMelding.builder()
                 .navCallId(rs.getString("MELDING_ID"))
-                .aktivitetId(rs.getLong("AKTIVITET_ID"))
+                .aktivitetId(String.valueOf(rs.getLong("AKTIVITET_ID")))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .fraDato(rs.getTimestamp("FRA_DATO"))
                 .tilDato(rs.getTimestamp("TIL_DATO"))

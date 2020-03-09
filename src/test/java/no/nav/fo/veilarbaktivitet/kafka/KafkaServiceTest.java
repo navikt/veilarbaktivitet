@@ -71,7 +71,7 @@ public class KafkaServiceTest {
 
         return KafkaAktivitetMelding.builder()
                 .navCallId(generateId())
-                .aktivitetId(1L)
+                .aktivitetId("1")
                 .aktorId("test_aktoer_id")
                 .aktivitetStatus(PLANLAGT)
                 .aktivitetType(JOBBSOEKING)
