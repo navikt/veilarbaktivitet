@@ -2,10 +2,8 @@ package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.common.auth.SubjectHandler;
-import no.nav.dialogarena.aktor.AktorService;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import org.springframework.stereotype.Component;
@@ -30,10 +28,7 @@ public class KasserService {
     private AktivitetDAO aktivitetDAO;
 
     @Inject
-    private VeilarbAbacPepClient pepClient;
-
-    @Inject
-    private AktorService aktorService;
+    private PepClient pepClient;
 
     private String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
@@ -48,10 +43,7 @@ public class KasserService {
 
     private boolean kjorHvisTilgang(String aktorId, String id, Supplier<Boolean> fn) {
 
-        Bruker bruker = Bruker.fraAktoerId(aktorId)
-                .medFoedselnummerSupplier(()->aktorService.getFnr(aktorId).orElseThrow(IngenTilgang::new));
-
-        pepClient.sjekkSkrivetilgangTilBruker(bruker);
+        pepClient.sjekkSkrivetilgangTilAktorId(aktorId);
 
         String veilederIdent = SubjectHandler.getIdent().orElse(null);
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));
