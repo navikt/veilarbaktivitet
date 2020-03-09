@@ -16,24 +16,24 @@ import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 @Value
 @Builder
 public class KafkaAktivitetMelding {
-    String meldingId;
-    Long aktivitetId;
+    String navCallId;
+    String aktivitetId;
     String aktorId;
     Date fraDato;
     Date tilDato;
     Date endretDato;
     AktivitetTypeData aktivitetType;
     AktivitetStatus aktivitetStatus;
-    Boolean avtalt;
-    Boolean historisk;
+    boolean avtalt;
+    boolean historisk;
 
     public static KafkaAktivitetMelding of(AktivitetData aktivitet) {
-        String correlationId = Optional.ofNullable(MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME)).orElse(IdUtils.generateId());
+        String navCallId = Optional.ofNullable(MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME)).orElse(IdUtils.generateId());
 
         return KafkaAktivitetMelding.builder()
-                .meldingId(correlationId)
+                .navCallId(navCallId)
                 .aktorId(aktivitet.getAktorId())
-                .aktivitetId(aktivitet.getId())
+                .aktivitetId(String.valueOf(aktivitet.getId()))
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
                 .endretDato(aktivitet.getEndretDato())

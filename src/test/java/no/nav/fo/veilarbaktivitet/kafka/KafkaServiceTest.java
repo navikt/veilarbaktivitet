@@ -70,7 +70,7 @@ public class KafkaServiceTest {
     private KafkaAktivitetMelding createMelding() {
 
         return KafkaAktivitetMelding.builder()
-                .meldingId(generateId())
+                .navCallId(generateId())
                 .aktivitetId(1L)
                 .aktorId("test_aktoer_id")
                 .aktivitetStatus(PLANLAGT)

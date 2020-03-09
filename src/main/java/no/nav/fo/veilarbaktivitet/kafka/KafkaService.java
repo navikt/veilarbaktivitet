@@ -47,10 +47,10 @@ public class KafkaService {
         try {
             producer.send(record);
         } catch (Exception e) {
-            log.error("Sending av aktivitet {} til kafka med correlationId {} for bruker med aktørId {} feilet", melding.getAktivitetId(), melding.getMeldingId(), melding.getAktorId());
+            log.error("Sending av aktivitet {} til kafka med callId {} for bruker med aktørId {} feilet", melding.getAktivitetId(), melding.getNavCallId(), melding.getAktorId());
             database.lagre(melding);
             return;
         }
-        log.info("Sendte aktivitet {} på kafka med correlationId {} for bruker med aktørId {}", melding.getAktivitetId(), melding.getMeldingId(), melding.getAktorId());
+        log.info("Sendte aktivitet {} på kafka med callId {} for bruker med aktørId {}", melding.getAktivitetId(), melding.getNavCallId(), melding.getAktorId());
     }
 }
