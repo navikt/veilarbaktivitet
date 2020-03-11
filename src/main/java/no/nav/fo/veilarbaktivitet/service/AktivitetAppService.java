@@ -2,8 +2,7 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.val;
 import no.nav.apiapp.feil.*;
-import no.nav.apiapp.security.veilarbabac.Bruker;
-import no.nav.apiapp.security.veilarbabac.VeilarbAbacPepClient;
+import no.nav.apiapp.security.PepClient;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
@@ -27,13 +26,13 @@ import static no.nav.fo.veilarbaktivitet.service.BrukerService.erInternBruker;
 public class AktivitetAppService {
 
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
-    private final VeilarbAbacPepClient pepClient;
+    private final PepClient pepClient;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
 
     @Inject
     AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
-                        VeilarbAbacPepClient pepClient,
+                        PepClient pepClient,
                         AktivitetService aktivitetService,
                         BrukerService brukerService
     ) {
@@ -285,19 +284,7 @@ public class AktivitetAppService {
     }
 
     private void sjekkTilgangTilPerson(Person person) {
-
-        Bruker bruker;
-
-        if (person instanceof Person.Fnr) {
-            bruker = Bruker.fraFnr(person.get())
-             .medAktoerIdSupplier(()->brukerService.getAktorIdForPerson(person).orElseThrow(IngenTilgang::new).get());
-        } else if (person instanceof Person.AktorId) {
-            bruker = Bruker.fraAktoerId(person.get())
-                .medFoedselnummerSupplier(()->brukerService.getFNRForAktorId((Person.AktorId)person).orElseThrow(IngenTilgang::new).get());
-        } else {
-            throw new IngenTilgang();
-        }
-
-        pepClient.sjekkLesetilgangTilBruker(bruker);
+        Person.AktorId aktorId = brukerService.getAktorIdForPerson(person).orElseThrow(() -> new IngenTilgang());
+        pepClient.sjekkLesetilgangTilAktorId(aktorId.get());
     }
 }

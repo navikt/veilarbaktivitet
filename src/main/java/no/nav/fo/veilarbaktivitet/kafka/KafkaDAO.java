@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.List;
 
 import static no.nav.metrics.MetricsFactory.getMeterRegistry;
@@ -32,7 +31,7 @@ public class KafkaDAO {
     @SneakyThrows
     public void lagre(KafkaAktivitetMelding melding) {
         SqlUtils.insert(jdbcTemplate, TABLE_NAME)
-                .value("MELDING_ID", melding.getMeldingId())
+                .value("MELDING_ID", melding.getNavCallId())
                 .value("AKTIVITET_ID", melding.getAktivitetId())
                 .value("AKTOR_ID", melding.getAktorId())
                 .value("FRA_DATO", melding.getFraDato())
@@ -40,14 +39,14 @@ public class KafkaDAO {
                 .value("ENDRET_DATO", melding.getEndretDato())
                 .value("AKTIVITET_TYPE", melding.getAktivitetType().name())
                 .value("AKTIVITET_STATUS", melding.getAktivitetStatus().name())
-                .value("AVTALT", melding.getAvtalt())
-                .value("HISTORISK", melding.getHistorisk())
+                .value("AVTALT", melding.isAvtalt())
+                .value("HISTORISK", melding.isHistorisk())
                 .execute();
     }
 
     public void slett(KafkaAktivitetMelding melding) {
         SqlUtils.delete(jdbcTemplate, TABLE_NAME)
-                .where(WhereClause.equals("MELDING_ID", melding.getMeldingId()))
+                .where(WhereClause.equals("MELDING_ID", melding.getNavCallId()))
                 .execute();
     }
 
@@ -60,8 +59,8 @@ public class KafkaDAO {
 
     private SQLFunction<ResultSet, KafkaAktivitetMelding> mapper() {
         return rs -> KafkaAktivitetMelding.builder()
-                .meldingId(rs.getString("MELDING_ID"))
-                .aktivitetId(rs.getLong("AKTIVITET_ID"))
+                .navCallId(rs.getString("MELDING_ID"))
+                .aktivitetId(String.valueOf(rs.getLong("AKTIVITET_ID")))
                 .aktorId(rs.getString("AKTOR_ID"))
                 .fraDato(rs.getTimestamp("FRA_DATO"))
                 .tilDato(rs.getTimestamp("TIL_DATO"))
