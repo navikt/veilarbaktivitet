@@ -86,7 +86,7 @@ public class AktivitetAppServiceTest {
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any(), any());
         verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any(), any());
         verify(aktivitetService, never()).oppdaterEtikett(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidOgSted(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any(), any());
         verify(aktivitetService, never()).oppdaterReferat(any(), any(), any());
 
     }

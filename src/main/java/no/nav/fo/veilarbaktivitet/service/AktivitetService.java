@@ -141,14 +141,17 @@ public class AktivitetService {
         lagreAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidOgSted(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
+    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET )
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
-                .moteData(ofNullable(originalAktivitet.getMoteData()).map(d -> d.withAdresse(aktivitetData.getMoteData().getAdresse())).orElse(null))
+                .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
+                        moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
+                                .withKanal(aktivitetData.getMoteData().getKanal())
+                        ).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         lagreAktivitet(oppdatertAktivitetMedNyFrist);

@@ -138,7 +138,7 @@ public class AktivitetAppService {
         if (erInternBruker()) {
             if (original.isAvtalt()) {
                 if (original.getAktivitetType() == MOTE) {
-                    aktivitetService.oppdaterMoteTidOgSted(original, aktivitet, loggedInnUser);
+                    aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet, loggedInnUser);
                 } else {
                     aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
                 }
