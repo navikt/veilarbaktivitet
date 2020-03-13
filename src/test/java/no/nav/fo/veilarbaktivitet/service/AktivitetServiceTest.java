@@ -155,7 +155,7 @@ public class AktivitetServiceTest {
 
         val nyFrist = new Date();
         String nyAdresse = "ny adresse";
-        aktivitetService.oppdaterMoteTidOgSted(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
+        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
 
         captureInsertAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
