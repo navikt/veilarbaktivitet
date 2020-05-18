@@ -59,12 +59,10 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
     }
 
-    @Transactional
     public void insertAktivitet(AktivitetData aktivitet) {
         insertAktivitet(aktivitet, new Date());
     }
 
-    @Transactional
     public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);

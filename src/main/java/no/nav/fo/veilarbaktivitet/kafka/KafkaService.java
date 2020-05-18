@@ -1,56 +1,48 @@
 package no.nav.fo.veilarbaktivitet.kafka;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.utils.IdUtils;
 import no.nav.json.JsonUtils;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 import javax.inject.Inject;
 
 import static no.nav.fo.veilarbaktivitet.kafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
+import static no.nav.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
 @Component
 public class KafkaService {
     private Producer<String, String> producer;
-    private KafkaDAO database;
 
     @Inject
-    public KafkaService(Producer<String, String> producer, KafkaDAO kafkaDAO) {
+    public KafkaService(Producer<String, String> producer) {
         this.producer = producer;
-        this.database = kafkaDAO;
     }
 
+    @SneakyThrows
     public void sendMelding(KafkaAktivitetMelding melding) {
-        sjekkFeiledeMeldinger();
-        send(melding);
-    }
-
-    private void sjekkFeiledeMeldinger() {
-        Long antallFeiledeMeldinger = database.antallFeiledeMeldinger();
-
-        if (antallFeiledeMeldinger > 0) {
-            log.info("Fant {} feilede Kafka-meldinger, prøver å sende disse på nytt", antallFeiledeMeldinger);
-
-            database.hentFeiledeMeldinger().forEach(feiletMelding -> {
-                database.slett(feiletMelding);
-                send(feiletMelding);
-            });
-        }
-    }
-
-    private void send(KafkaAktivitetMelding melding) {
         String key = melding.getAktorId();
         ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
+        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes()));
+        producer.send(record).get(); // BLOCKAR TRÅDEN TILLS VI HAR FÅTT SVAR PGA VI VILL RULLA TILLBAKA DB-ENDRINGERNE VID FEIL
+    }
 
-        try {
-            producer.send(record);
-        } catch (Exception e) {
-            log.error("Sending av aktivitet {} til kafka med callId {} for bruker med aktørId {} feilet", melding.getAktivitetId(), melding.getNavCallId(), melding.getAktorId());
-            database.lagre(melding);
-            return;
+    static byte[] getCorrelationIdAsBytes() {
+        String correlationId = MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME);
+
+        if (correlationId == null) {
+            correlationId = MDC.get("jobId");
         }
-        log.info("Sendte aktivitet {} på kafka med callId {} for bruker med aktørId {}", melding.getAktivitetId(), melding.getNavCallId(), melding.getAktorId());
+        if (correlationId == null) {
+            correlationId = IdUtils.generateId();
+        }
+
+        return correlationId.getBytes();
     }
 }

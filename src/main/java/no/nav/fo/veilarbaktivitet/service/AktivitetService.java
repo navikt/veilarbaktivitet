@@ -3,14 +3,12 @@ package no.nav.fo.veilarbaktivitet.service;
 import lombok.val;
 import no.nav.apiapp.feil.Feil;
 import no.nav.apiapp.feil.FeilType;
-import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.fo.veilarbaktivitet.kafka.KafkaService;
 import no.nav.fo.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -151,7 +149,7 @@ public class AktivitetService {
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
-                        ).orElse(null))
+                ).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         lagreAktivitet(oppdatertAktivitetMedNyFrist);
@@ -263,17 +261,12 @@ public class AktivitetService {
     }
 
     private void lagreAktivitet(AktivitetData aktivitetData) {
-        try {
-            aktivitetDAO.insertAktivitet(aktivitetData);
-            if (unleash.isEnabled("veilarbaktivitet.kafka")) {
-                kafkaService.sendMelding(of(aktivitetData));
-            }
-        } catch (DuplicateKeyException e) {
-            throw new VersjonsKonflikt();
+        aktivitetDAO.insertAktivitet(aktivitetData);
+        if (unleash.isEnabled("veilarbaktivitet.kafka")) {
+            kafkaService.sendMelding(of(aktivitetData));
         }
     }
 
-    @Transactional
     public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
