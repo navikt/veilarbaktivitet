@@ -2,6 +2,7 @@ package no.nav.fo.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.apiapp.feil.VersjonsKonflikt;
 import no.nav.fo.veilarbaktivitet.client.KvpClient;
 import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.fo.veilarbaktivitet.domain.*;
@@ -180,7 +181,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
 
-    @Test(expected = DuplicateKeyException.class)
+    @Test(expected = VersjonsKonflikt.class)
     public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).insertAktivitet(any());
