@@ -246,7 +246,6 @@ public class AktivitetDAO {
         return oppdaterteRader > 0;
     }
 
-    @Transactional
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
         database.update("UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP " +
                 "WHERE aktivitet_id = ?", aktivitetId);

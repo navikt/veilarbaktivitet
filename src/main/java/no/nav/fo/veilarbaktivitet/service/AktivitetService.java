@@ -260,7 +260,8 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    private void lagreAktivitet(AktivitetData aktivitetData) {
+    @Transactional
+    public void lagreAktivitet(AktivitetData aktivitetData) {
         aktivitetDAO.insertAktivitet(aktivitetData);
         if (unleash.isEnabled("veilarbaktivitet.kafka")) {
             kafkaService.sendMelding(of(aktivitetData));
@@ -279,12 +280,12 @@ public class AktivitetService {
         return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
+    @Transactional
     public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
         return hentAktivitet(aktivitetId);
     }
 
-    @Transactional
     public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
