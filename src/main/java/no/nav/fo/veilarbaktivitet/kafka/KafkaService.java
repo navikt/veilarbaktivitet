@@ -30,7 +30,7 @@ public class KafkaService {
         String key = melding.getAktorId();
         ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
         record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes()));
-        producer.send(record).get(); // BLOCKAR TRÅDEN TILLS VI HAR FÅTT SVAR PGA VI VILL RULLA TILLBAKA DB-ENDRINGERNE VID FEIL
+        producer.send(record).get();
     }
 
     static byte[] getCorrelationIdAsBytes() {
