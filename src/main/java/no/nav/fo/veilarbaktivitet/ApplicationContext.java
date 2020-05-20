@@ -4,6 +4,8 @@ import no.nav.apiapp.ApiApplication;
 import no.nav.apiapp.config.ApiAppConfigurator;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProvider;
 import no.nav.brukerdialog.security.oidc.SystemUserTokenProviderConfig;
+import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProvider;
+import no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig;
 import no.nav.dialogarena.aktor.AktorConfig;
 import no.nav.sbl.featuretoggle.unleash.UnleashService;
 import no.nav.sbl.featuretoggle.unleash.UnleashServiceConfig;
@@ -14,8 +16,10 @@ import javax.inject.Inject;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
 
+import static no.nav.brukerdialog.security.oidc.provider.SecurityTokenServiceOidcProviderConfig.STS_OIDC_CONFIGURATION_URL_PROPERTY;
 import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.migrateDatabase;
 import static no.nav.sbl.util.EnvironmentUtils.Type.PUBLIC;
+import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
 import static no.nav.sbl.util.EnvironmentUtils.setProperty;
 
 @Configuration
@@ -49,20 +53,29 @@ public class ApplicationContext implements ApiApplication {
 
     @Override
     public void configure(ApiAppConfigurator apiAppConfigurator) {
+        SecurityTokenServiceOidcProvider stsProvider = new SecurityTokenServiceOidcProvider(
+                SecurityTokenServiceOidcProviderConfig
+                        .builder()
+                        .discoveryUrl(getRequiredProperty(STS_OIDC_CONFIGURATION_URL_PROPERTY))
+                        .build()
+        );
+
         apiAppConfigurator
                 .sts()
                 .azureADB2CLogin()
+                .oidcProvider(stsProvider)
                 .issoLogin()
         ;
+
     }
 
     @Bean
-    public UnleashService unleashService(){
+    public UnleashService unleashService() {
         return new UnleashService(UnleashServiceConfig.resolveFromEnvironment());
     }
 
     @Bean
-    public SystemUserTokenProvider systemUserTokenProvider(){
+    public SystemUserTokenProvider systemUserTokenProvider() {
         return new SystemUserTokenProvider(SystemUserTokenProviderConfig.resolveFromSystemProperties());
     }
 
