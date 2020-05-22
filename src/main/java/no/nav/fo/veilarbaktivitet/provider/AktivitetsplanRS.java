@@ -1,6 +1,8 @@
 package no.nav.fo.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.apiapp.feil.Feil;
+import no.nav.apiapp.feil.FeilType;
 import no.nav.common.auth.SubjectHandler;
 import no.nav.fo.veilarbaktivitet.api.AktivitetController;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetDTO;
@@ -53,7 +55,7 @@ public class AktivitetsplanRS implements AktivitetController {
     public AktivitetDTO hentAktivitet(String aktivitetId) {
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new Feil(FeilType.FINNES_IKKE));
     }
 
     @Override
@@ -72,7 +74,7 @@ public class AktivitetsplanRS implements AktivitetController {
                         .stream()
                         .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                         .collect(Collectors.toList())
-                ).orElseThrow(RuntimeException::new);
+                ).orElseThrow(() -> new Feil(FeilType.FINNES_IKKE));
     }
 
     @Override
