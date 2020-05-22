@@ -28,12 +28,14 @@ public class KafkaService {
     @SneakyThrows
     public void sendMelding(KafkaAktivitetMelding melding) {
         String key = melding.getAktorId();
+        String correlationId = getCorrelationId();
         ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
-        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationIdAsBytes()));
+        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
+        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {}", melding.getAktivitetId(), correlationId, melding.getAktorId());
         producer.send(record).get();
     }
 
-    static byte[] getCorrelationIdAsBytes() {
+    static String getCorrelationId() {
         String correlationId = MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME);
 
         if (correlationId == null) {
@@ -43,6 +45,6 @@ public class KafkaService {
             correlationId = IdUtils.generateId();
         }
 
-        return correlationId.getBytes();
+        return correlationId;
     }
 }
