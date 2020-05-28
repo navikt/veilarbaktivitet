@@ -31,7 +31,7 @@ public class KafkaService {
         String correlationId = getCorrelationId();
         ProducerRecord<String, String> record = new ProducerRecord<>(KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
         record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
-        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {}", melding.getAktivitetId(), correlationId, melding.getAktorId());
+        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {} på topic {}", melding.getAktivitetId(), correlationId, melding.getAktorId(), KAFKA_TOPIC_AKTIVITETER);
         producer.send(record).get();
     }
 
