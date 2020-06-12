@@ -15,6 +15,7 @@ import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
 import static no.nav.apiapp.util.ObjectUtils.notEqual;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.fo.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
@@ -163,7 +164,7 @@ public class AktivitetAppService {
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
         if (notEqual(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new VersjonsKonflikt();
+            throw new Feil(UGYLDIG_HANDLING);
         } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
             throw new IllegalArgumentException(
                     String.format("Kan ikke endre aktivitet [%s] i en ferdig status",

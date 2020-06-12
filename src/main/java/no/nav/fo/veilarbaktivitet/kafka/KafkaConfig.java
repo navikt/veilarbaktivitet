@@ -9,11 +9,9 @@ import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Properties;
 
-import static no.nav.common.utils.IdUtils.generateId;
 import static no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants.SYSTEMUSER_PASSWORD;
 import static no.nav.sbl.dialogarena.common.abac.pep.CredentialConstants.SYSTEMUSER_USERNAME;
 import static no.nav.sbl.util.EnvironmentUtils.getRequiredProperty;
@@ -48,12 +46,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaService kafkaService(JdbcTemplate jdbcTemplate) {
-        return new KafkaService(kafkaProducer(), kafkaDAO(jdbcTemplate));
-    }
-
-    @Bean
-    public KafkaDAO kafkaDAO(JdbcTemplate jdbcTemplate) {
-        return new KafkaDAO(jdbcTemplate);
+    public KafkaService kafkaService() {
+        return new KafkaService(kafkaProducer());
     }
 }

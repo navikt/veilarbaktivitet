@@ -151,7 +151,7 @@ public class AktivitetService {
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
-                        ).orElse(null))
+                ).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
         lagreAktivitet(oppdatertAktivitetMedNyFrist);
@@ -262,7 +262,8 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    private void lagreAktivitet(AktivitetData aktivitetData) {
+    @Transactional
+    public void lagreAktivitet(AktivitetData aktivitetData) {
         try {
             aktivitetDAO.insertAktivitet(aktivitetData);
             if (unleash.isEnabled("veilarbaktivitet.kafka")) {
@@ -273,7 +274,6 @@ public class AktivitetService {
         }
     }
 
-    @Transactional
     public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
@@ -286,12 +286,12 @@ public class AktivitetService {
         return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
+    @Transactional
     public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
         return hentAktivitet(aktivitetId);
     }
 
-    @Transactional
     public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
