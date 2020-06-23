@@ -4,9 +4,11 @@ import lombok.Builder;
 import lombok.Value;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetData;
 import no.nav.fo.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.fo.veilarbaktivitet.domain.AktivitetTypeDTO;
 
 import java.util.Date;
+
+import static no.nav.fo.veilarbaktivitet.mappers.Helpers.typeMap;
 
 @Value
 @Builder
@@ -16,7 +18,7 @@ public class KafkaAktivitetMelding {
     Date fraDato;
     Date tilDato;
     Date endretDato;
-    AktivitetTypeData aktivitetType;
+    AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
     boolean avtalt;
     boolean historisk;
@@ -28,7 +30,7 @@ public class KafkaAktivitetMelding {
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
                 .endretDato(aktivitet.getEndretDato())
-                .aktivitetType(aktivitet.getAktivitetType())
+                .aktivitetType(typeMap.get(aktivitet.getAktivitetType()))
                 .aktivitetStatus(aktivitet.getStatus())
                 .avtalt(aktivitet.isAvtalt())
                 .build();
