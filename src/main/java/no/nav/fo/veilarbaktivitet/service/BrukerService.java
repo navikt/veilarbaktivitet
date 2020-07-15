@@ -40,6 +40,9 @@ public class BrukerService {
                     if (IdentType.InternBruker.equals(type)) {
                         return subjectService.getUserId().map(Person::navIdent);
                     }
+                    if (IdentType.Systemressurs.equals(type)) {
+                        return subjectService.getUserId().map(Person::navIdent);
+                    }
                     return Optional.empty();
                 });
     }
