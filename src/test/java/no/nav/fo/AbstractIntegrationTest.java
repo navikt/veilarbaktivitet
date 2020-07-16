@@ -1,19 +1,11 @@
 package no.nav.fo;
 
-import no.nav.fo.veilarbaktivitet.db.Database;
-import no.nav.fo.veilarbaktivitet.db.DatabaseContext;
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.fo.veilarbaktivitet.db.dao.AktivitetFeedDAO;
-import no.nav.fo.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
-import no.nav.fo.veilarbaktivitet.db.dao.KVPFeedDAO;
-import no.nav.fo.veilarbaktivitet.db.testdriver.TestDriver;
+import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -22,9 +14,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 
-import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.*;
-import static no.nav.fo.veilarbaktivitet.db.DatabaseContext.migrateDatabase;
 import static no.nav.sbl.dialogarena.test.SystemProperties.setTemporaryProperty;
+import static no.nav.veilarbaktivitet.db.DatabaseContext.migrateDatabase;
 
 public abstract class AbstractIntegrationTest {
 

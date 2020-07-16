@@ -1,6 +1,6 @@
 package no.nav.fo;
 
-import no.nav.fo.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.domain.Person;
 
 public class TestData {
 

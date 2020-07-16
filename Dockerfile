@@ -1,2 +1,2 @@
-FROM navikt/pus-nais-java-app
-COPY /target/veilarbaktivitet /app
+FROM docker.pkg.github.com/navikt/pus-nais-java-app/pus-nais-java-app:java11
+COPY /target/veilarbaktivitet.jar app.jar
