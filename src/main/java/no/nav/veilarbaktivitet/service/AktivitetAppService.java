@@ -1,42 +1,41 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.apiapp.feil.*;
-import no.nav.apiapp.security.PepClient;
-import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.metrics.aspects.Timed;
+import no.nav.common.types.feil.IngenTilgang;
+import no.nav.common.types.feil.UgyldigRequest;
+import no.nav.common.types.feil.UlovligHandling;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static no.nav.apiapp.feil.FeilType.UGYLDIG_HANDLING;
-import static no.nav.apiapp.util.ObjectUtils.notEqual;
 
 @Component
 public class AktivitetAppService {
 
     private final ArenaAktivitetConsumer arenaAktivitetConsumer;
-    private final PepClient pepClient;
+    private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
+    private final FunksjonelleMetrikker funksjonelleMetrikker;
 
-    @Inject
+    @Autowired
     AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
-                        PepClient pepClient,
+                        AuthService authService,
                         AktivitetService aktivitetService,
-                        BrukerService brukerService
-    ) {
+                        BrukerService brukerService,
+                        FunksjonelleMetrikker funksjonelleMetrikker) {
         this.arenaAktivitetConsumer = arenaAktivitetConsumer;
-        this.pepClient = pepClient;
+        this.authService = authService;
         this.aktivitetService = aktivitetService;
         this.brukerService = brukerService;
+        this.funksjonelleMetrikker = funksjonelleMetrikker;
     }
 
 
@@ -55,7 +54,7 @@ public class AktivitetAppService {
     ));
 
     public List<AktivitetData> hentAktiviteterForIdent(Person ident) {
-        sjekkTilgangTilPerson(ident);
+        authService.sjekkTilgangTilPerson(ident);
         List<AktivitetData> aktiviteter = brukerService.getAktorIdForPerson(ident)
                 .map(aktivitetService::hentAktiviteterForAktorId)
                 .orElseThrow(RuntimeException::new);
@@ -65,13 +64,13 @@ public class AktivitetAppService {
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
         settLestAvBrukerHvisUlest(aktivitetData);
-        sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
         assertCanAccessKvpActivity(aktivitetData);
         return aktivitetData;
     }
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
-        sjekkTilgangTilPerson(ident);
+        authService.sjekkTilgangTilPerson(ident);
         return arenaAktivitetConsumer.hentArenaAktiviteter(ident);
     }
 
@@ -86,7 +85,7 @@ public class AktivitetAppService {
     public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
         if (BrukerService.erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
             AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());
-            FunksjonelleMetrikker.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet);
+            funksjonelleMetrikker.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet);
         }
     }
 
@@ -110,7 +109,7 @@ public class AktivitetAppService {
     }
 
     public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
-        sjekkTilgangTilPerson(ident);
+        authService.sjekkTilgangTilPerson(ident);
 
         if (BrukerService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
             throw new UgyldigRequest();
@@ -159,8 +158,8 @@ public class AktivitetAppService {
     }
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (notEqual(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new Feil(UGYLDIG_HANDLING);
+        if (!orginalAktivitet.getVersjon().equals(aktivitet.getVersjon())) {
+            throw new UlovligHandling();
         } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
             throw new IllegalArgumentException(
                     String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
@@ -181,18 +180,18 @@ public class AktivitetAppService {
 
         Person endretAv = brukerService
                 .getLoggedInnUser()
-                .orElseThrow(() -> new Feil(FeilType.SERVICE_UNAVAILABLE, "Aktor tjenesten er nede"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
 
         if (BrukerService.erInternBruker()) {
             aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
             val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
-            FunksjonelleMetrikker.oppdatertStatusAvNAV(newAktivitet);
+            funksjonelleMetrikker.oppdatertStatusAvNAV(newAktivitet);
             return newAktivitet;
         } else if (BrukerService.erEksternBruker()) {
             if (TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
                 aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
                 val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
-                FunksjonelleMetrikker.oppdatertStatusAvBruker(newAktivitet);
+                funksjonelleMetrikker.oppdatertStatusAvBruker(newAktivitet);
                 return newAktivitet;
             } else {
                 throw new UgyldigRequest();
@@ -247,7 +246,6 @@ public class AktivitetAppService {
      * Take a list of activities, filter out any that can not be accessed due
      * to insufficient kontorsperre privileges, and return the remainder.
      */
-    @Timed(name = "kontorsperre.filter.aktivitet")
     private List<AktivitetData> filterKontorsperret(List<AktivitetData> list) {
         return list.stream().sequential()
                 .filter(this::canAccessKvpActivity)
@@ -260,8 +258,8 @@ public class AktivitetAppService {
      */
     private void assertCanAccessKvpActivity(AktivitetData aktivitet) {
         if (!canAccessKvpActivity(aktivitet)) {
-            FunksjonelleMetrikker.reportIngenTilgangGrunnetKontorsperre();
-            throw new Feil(FeilType.INGEN_TILGANG);
+            funksjonelleMetrikker.reportIngenTilgangGrunnetKontorsperre();
+            throw new IngenTilgang();
         }
     }
 
@@ -274,14 +272,9 @@ public class AktivitetAppService {
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
         boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
-                .map(pepClient::harTilgangTilEnhet)
+                .map(authService::sjekkTilgangTilEnhet)
                 .orElse(true);
-        FunksjonelleMetrikker.reportFilterAktivitet(aktivitet, hasAccess);
+        funksjonelleMetrikker.reportFilterAktivitet(aktivitet, hasAccess);
         return hasAccess;
-    }
-
-    private void sjekkTilgangTilPerson(Person person) {
-        Person.AktorId aktorId = brukerService.getAktorIdForPerson(person).orElseThrow(() -> new IngenTilgang());
-        pepClient.sjekkLesetilgangTilAktorId(aktorId.get());
     }
 }

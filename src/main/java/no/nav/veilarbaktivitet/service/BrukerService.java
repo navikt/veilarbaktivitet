@@ -1,47 +1,47 @@
 package no.nav.veilarbaktivitet.service;
 
-import no.nav.apiapp.security.SubjectService;
-import no.nav.brukerdialog.security.domain.IdentType;
-import no.nav.common.auth.SubjectHandler;
-import no.nav.dialogarena.aktor.AktorService;
+import no.nav.common.auth.subject.IdentType;
+import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarbaktivitet.domain.Person;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.Optional;
 
 @Component
 public class BrukerService {
 
-    private final SubjectService subjectService = new SubjectService();
+    private final AktorregisterClient aktorService;
 
-    @Inject
-    private AktorService aktorService;
+    public BrukerService(AktorregisterClient aktorService) {
+        this.aktorService = aktorService;
+    }
 
     public Optional<Person.AktorId> getAktorIdForPerson(Person person) {
         if (person instanceof Person.AktorId) {
             return Optional.of((Person.AktorId)person);
         }
-        return aktorService.getAktorId(person.get())
-                .map(Person::aktorId);
+        var aktorId = aktorService.hentAktorId(person.get());
+        return Optional.ofNullable(aktorId).map(Person::aktorId);
     }
 
     public Optional<Person.Fnr> getFNRForAktorId(Person.AktorId aktorId) {
-        return aktorService.getFnr(aktorId.get())
-                .map(Person::fnr);
+        var fnr = aktorService.hentFnr(aktorId.get());
+        return Optional.ofNullable(fnr).map(Person::fnr);
     }
 
     public Optional<Person> getLoggedInnUser() {
-        return subjectService.getIdentType()
+        return SubjectHandler
+                .getIdentType()
                 .flatMap((type) -> {
                     if (IdentType.EksternBruker.equals(type)) {
                         return getAktorIdForEksternBruker().map((id) -> (Person) id);
                     }
                     if (IdentType.InternBruker.equals(type)) {
-                        return subjectService.getUserId().map(Person::navIdent);
+                        return SubjectHandler.getIdent().map(Person::navIdent);
                     }
                     if (IdentType.Systemressurs.equals(type)) {
-                        return subjectService.getUserId().map(Person::navIdent);
+                        return SubjectHandler.getIdent().map(Person::navIdent);
                     }
                     return Optional.empty();
                 });
@@ -62,7 +62,8 @@ public class BrukerService {
     }
 
     private Optional<Person.AktorId> getAktorIdForEksternBruker() {
-        return subjectService.getUserId()
+        return SubjectHandler
+                .getIdent()
                 .map(Person::fnr)
                 .flatMap(this::getAktorIdForPerson);
     }

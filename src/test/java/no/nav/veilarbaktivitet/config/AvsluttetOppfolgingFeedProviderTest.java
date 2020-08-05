@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.config;
 import no.nav.veilarbaktivitet.db.dao.AvsluttetOppfolgingFeedDAO;
 import no.nav.veilarbaktivitet.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.feed.consumer.AvsluttetOppfolgingFeedConsumer;
+import no.nav.veilarbaktivitet.feed.AvsluttetOppfolgingFeedConsumer;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.junit.Test;
 

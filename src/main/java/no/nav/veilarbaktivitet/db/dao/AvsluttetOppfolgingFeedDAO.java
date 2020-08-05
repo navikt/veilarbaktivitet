@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.db.Database;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.Date;
 
 @Component
@@ -11,7 +10,6 @@ public class AvsluttetOppfolgingFeedDAO {
 
     private final Database database;
 
-    @Inject
     public AvsluttetOppfolgingFeedDAO(Database database) {
         this.database = database;
     }

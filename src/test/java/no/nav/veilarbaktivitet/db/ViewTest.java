@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.db;
 
-import no.nav.json.JsonUtils;
+import no.nav.common.json.JsonUtils;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +9,6 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -39,7 +38,6 @@ public class ViewTest extends DatabaseTest {
     }
 
 
-    @Inject
     private JdbcTemplate jdbcTemplate;
 
     @Parameter(value = 0)

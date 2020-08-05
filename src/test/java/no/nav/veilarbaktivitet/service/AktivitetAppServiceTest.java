@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.apiapp.security.PepClient;
+import no.nav.common.abac.VeilarbPep;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
@@ -27,7 +27,7 @@ public class AktivitetAppServiceTest {
     private static final long AKTIVITET_ID = 666L;
 
     @Mock
-    private PepClient pepClient;
+    private VeilarbPep pepClient;
 
     @Mock
     private AktivitetService aktivitetService;

@@ -5,7 +5,6 @@ import no.nav.veilarbaktivitet.db.rowmappers.AktivitetFeedDataRowMapper;
 import no.nav.veilarbaktivitet.domain.AktivitetFeedData;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 
@@ -14,7 +13,6 @@ public class AktivitetFeedDAO {
 
     private final Database database;
 
-    @Inject
     public AktivitetFeedDAO(Database database) {
         this.database = database;
     }

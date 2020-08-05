@@ -1,14 +1,13 @@
 package no.nav.veilarbaktivitet.provider;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.apiapp.feil.IngenTilgang;
-import no.nav.apiapp.security.PepClient;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.types.feil.IngenTilgang;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -16,7 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
+import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERING_IDENTER_PROPERTY;
 
 @Slf4j
@@ -24,13 +23,15 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERIN
 @Path("/kassering")
 public class KasserService {
 
-    @Inject
-    private AktivitetDAO aktivitetDAO;
+    private final AktivitetDAO aktivitetDAO;
+    private final AuthService auth;
 
-    @Inject
-    private PepClient pepClient;
+    private final String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
-    private String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
+    public KasserService(AktivitetDAO aktivitetDAO, AuthService auth) {
+        this.aktivitetDAO = aktivitetDAO;
+        this.auth = auth;
+    }
 
     @PUT
     @Path("/{aktivitetId}")
@@ -43,7 +44,7 @@ public class KasserService {
 
     private boolean kjorHvisTilgang(String aktorId, String id, Supplier<Boolean> fn) {
 
-        pepClient.sjekkSkrivetilgangTilAktorId(aktorId);
+        auth.sjekkVeilederHarSkriveTilgangTilPerson(aktorId);
 
         String veilederIdent = SubjectHandler.getIdent().orElse(null);
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));

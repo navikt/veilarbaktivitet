@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.kafka;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.json.JsonUtils;
 import no.nav.common.utils.IdUtils;
-import no.nav.json.JsonUtils;
 import no.nav.veilarbaktivitet.config.KafkaConfig;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;

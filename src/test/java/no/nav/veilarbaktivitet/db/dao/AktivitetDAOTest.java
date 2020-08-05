@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.domain.Person;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
@@ -28,9 +27,7 @@ public class AktivitetDAOTest extends DatabaseTest {
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private long versjon = 1;
 
-    @Inject
     private AktivitetDAO aktivitetDAO;
-    @Inject
     private JdbcTemplate db;
 
     @Test

@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.feed.util;
 
 import lombok.SneakyThrows;
-import no.nav.pto.veilarbportefolje.feed.exception.InvalidUrlException;
+import no.nav.veilarbaktivitet.feed.exception.InvalidUrlException;
 
 import java.util.regex.Pattern;
 

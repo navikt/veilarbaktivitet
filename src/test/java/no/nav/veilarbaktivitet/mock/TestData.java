@@ -1,4 +1,4 @@
-package no.nav.fo;
+package no.nav.veilarbaktivitet.mock;
 
 import no.nav.veilarbaktivitet.domain.Person;
 

@@ -1,23 +1,20 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.feil.FeilType;
-import no.nav.apiapp.feil.VersjonsKonflikt;
-import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.common.types.feil.VersjonsKonflikt;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kafka.KafkaAktivitetMelding;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
-import no.nav.veilarbaktivitet.util.FunksjonelleMetrikker;
 import no.nav.veilarbaktivitet.util.MappingUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
@@ -25,21 +22,21 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.apiapp.util.StringUtils.nullOrEmpty;
+import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 @Component
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
     private final KafkaService kafkaService;
-    private final UnleashService unleash;
+    private final FunksjonelleMetrikker funksjonelleMetrikker;
 
-    @Inject
-    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService, UnleashService unleash) {
+    @Autowired
+    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService, FunksjonelleMetrikker funksjonelleMetrikker) {
         this.aktivitetDAO = aktivitetDAO;
         this.kvpClient = kvpClient;
         this.kafkaService = kafkaService;
-        this.unleash = unleash;
+        this.funksjonelleMetrikker = funksjonelleMetrikker;
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
@@ -64,9 +61,9 @@ public class AktivitetService {
         try {
             kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
         } catch (ForbiddenException e) {
-            throw new Feil(FeilType.UKJENT, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
         } catch (InternalServerErrorException e) {
-            throw new Feil(FeilType.UKJENT, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
         }
 
         return Optional.ofNullable(kvp)
@@ -91,7 +88,7 @@ public class AktivitetService {
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
         lagreAktivitet(kvpAktivivitet);
 
-        FunksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
+        funksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
 
@@ -215,7 +212,7 @@ public class AktivitetService {
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .build()
         );
-        FunksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
+        funksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
@@ -266,9 +263,7 @@ public class AktivitetService {
     public void lagreAktivitet(AktivitetData aktivitetData) {
         try {
             aktivitetDAO.insertAktivitet(aktivitetData);
-            if (unleash.isEnabled("veilarbaktivitet.kafka")) {
-                kafkaService.sendMelding(KafkaAktivitetMelding.of(aktivitetData));
-            }
+            kafkaService.sendMelding(KafkaAktivitetMelding.of(aktivitetData));
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }

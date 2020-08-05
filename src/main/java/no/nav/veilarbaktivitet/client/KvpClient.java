@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.client;
 
 import no.nav.common.auth.subject.SsoToken;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -11,16 +10,21 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
+
+@Component
 public class KvpClient {
 
     private final String baseUrl;
     private final OkHttpClient client;
 
-    public KvpClient(String baseUrl) {
-        this.baseUrl = baseUrl;
-        this.client = RestClient.baseClient();
+    public KvpClient(OkHttpClient client) {
+        this.baseUrl = getRequiredProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY);
+        this.client = client;
     }
 
     public static String createBearerToken() {

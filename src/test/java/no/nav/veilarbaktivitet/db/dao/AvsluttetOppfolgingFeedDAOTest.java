@@ -3,14 +3,12 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.db.DatabaseTest;
 import org.junit.Test;
 
-import javax.inject.Inject;
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AvsluttetOppfolgingFeedDAOTest extends DatabaseTest {
 
-    @Inject
     private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;
 
     @Test

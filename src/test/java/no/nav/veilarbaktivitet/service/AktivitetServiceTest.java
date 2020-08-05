@@ -2,9 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.apiapp.feil.VersjonsKonflikt;
-import no.nav.fo.veilarbaktivitet.domain.*;
-import no.nav.sbl.featuretoggle.unleash.UnleashService;
+import no.nav.common.types.feil.VersjonsKonflikt;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -19,9 +17,9 @@ import org.springframework.dao.DuplicateKeyException;
 import java.util.Date;
 
 import static java.util.Arrays.asList;
-import static no.nav.fo.TestData.KJENT_AKTOR_ID;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
+import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.any;
@@ -41,10 +39,6 @@ public class AktivitetServiceTest {
 
     @Mock
     private KafkaService kafkaService;
-
-    @Mock
-    private UnleashService unleashService;
-
     @Captor
     private ArgumentCaptor argumentCaptor;
 

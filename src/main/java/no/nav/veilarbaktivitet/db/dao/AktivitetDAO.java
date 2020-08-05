@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.db.dao;
 
-import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
@@ -9,7 +8,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
@@ -31,7 +29,6 @@ public class AktivitetDAO {
 
     private final Database database;
 
-    @Inject
     public AktivitetDAO(Database database) {
         this.database = database;
     }

@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.feed.exception;
 
-import no.nav.pto.veilarbportefolje.feed.common.FeedWebhookResponse;
+
+import no.nav.veilarbaktivitet.feed.common.FeedWebhookResponse;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;

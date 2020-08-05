@@ -30,7 +30,16 @@ class DatabaseSyntaxMapper {
     }
 
     static String syntax(String sql) {
-        return syntaxMap.getOrDefault(sql, sql);
+        String fixedSql = sql;
+         /*
+         Fikser en bug i Flyway som gjør at installed_by ikke blir satt i Oracle modus med H2.
+         Dette har blitt fikset i en nyere versjon av Flyway, men denne versjonen støtter ikke gammle Oracle databaser som vi i dag bruker.
+        */
+        if (sql.contains("installed_by")) {
+            fixedSql = sql.replace("\"installed_by\" VARCHAR(100) NOT NULL", "\"installed_by\" VARCHAR(100) DEFAULT 'local_test'");
+        }
+
+        return syntaxMap.getOrDefault(fixedSql, fixedSql);
     }
 
 }

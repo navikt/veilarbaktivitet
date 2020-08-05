@@ -3,14 +3,11 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.db.Database;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
-
 @Component
 public class KVPFeedDAO {
 
     private final Database database;
 
-    @Inject
     public KVPFeedDAO(Database database) {
         this.database = database;
     }

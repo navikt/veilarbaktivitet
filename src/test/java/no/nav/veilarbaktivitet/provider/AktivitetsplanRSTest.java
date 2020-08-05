@@ -1,27 +1,24 @@
 package no.nav.veilarbaktivitet.provider;
 
 import lombok.val;
-import no.nav.brukerdialog.security.context.SubjectRule;
-import no.nav.common.auth.Subject;
-import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AktivitetService;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import javax.inject.Inject;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.brukerdialog.security.domain.IdentType.InternBruker;
-import static no.nav.common.auth.SsoToken.oidcToken;
-import static no.nav.fo.TestData.*;
+import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -30,20 +27,10 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 @Ignore
 public class AktivitetsplanRSTest {
 
-    @Inject
     private AktivitetsplanRS aktivitetController;
-
-    @Inject
     private MockHttpServletRequest mockHttpServletRequest;
-
-    @Inject
     private AktivitetService aktivitetService;
-
-    @Inject
     private Database database;
-
-    @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token")));
 
     @Before
     public void setup() {

@@ -17,9 +17,9 @@ import no.nav.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.inject.Inject;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -33,7 +33,7 @@ import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.sbl.util.EnvironmentUtils.getOptionalProperty;
+import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.api.AktivitetController.ARENA_PREFIX;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
@@ -44,12 +44,13 @@ public class ArenaAktivitetConsumer {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
 
-    @Inject
-    TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+    private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
     Date arenaAktivitetFilterDato;
 
-    ArenaAktivitetConsumer() {
+    @Autowired
+    ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
+        this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
         this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
     }
 

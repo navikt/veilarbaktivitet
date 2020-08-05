@@ -3,13 +3,10 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.db.DatabaseTest;
 import org.junit.Test;
 
-import javax.inject.Inject;
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class KVPFeedDAOTest extends DatabaseTest {
 
-    @Inject
     private KVPFeedDAO kvpFeedDAO;
 
     @Test

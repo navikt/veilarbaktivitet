@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.feed.controller;
 
-import no.nav.pto.veilarbportefolje.feed.common.*;
-import no.nav.pto.veilarbportefolje.feed.consumer.FeedConsumer;
+import no.nav.veilarbaktivitet.feed.common.Authorization;
+import no.nav.veilarbaktivitet.feed.consumer.FeedConsumer;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 

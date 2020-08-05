@@ -1,9 +1,7 @@
 package no.nav.veilarbaktivitet.provider;
 
 import lombok.val;
-import no.nav.apiapp.feil.Feil;
-import no.nav.apiapp.feil.FeilType;
-import no.nav.common.auth.SubjectHandler;
+import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarbaktivitet.api.AktivitetController;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
@@ -13,10 +11,10 @@ import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.BrukerService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Path;
 import java.util.List;
@@ -28,12 +26,11 @@ import java.util.stream.Collectors;
 public class AktivitetsplanRS implements AktivitetController {
 
     private final AktivitetAppService appService;
-    private final Provider<HttpServletRequest> requestProvider;
+    private final HttpServletRequest requestProvider;
 
-    @Inject
     public AktivitetsplanRS(
             AktivitetAppService appService,
-            Provider<HttpServletRequest> requestProvider
+            HttpServletRequest requestProvider
     ) {
         this.appService = appService;
         this.requestProvider = requestProvider;
@@ -54,7 +51,7 @@ public class AktivitetsplanRS implements AktivitetController {
     public AktivitetDTO hentAktivitet(String aktivitetId) {
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
-                .orElseThrow(() -> new Feil(FeilType.FINNES_IKKE));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -73,7 +70,7 @@ public class AktivitetsplanRS implements AktivitetController {
                         .stream()
                         .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                         .collect(Collectors.toList())
-                ).orElseThrow(() -> new Feil(FeilType.FINNES_IKKE));
+                ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -128,8 +125,8 @@ public class AktivitetsplanRS implements AktivitetController {
             return SubjectHandler.getIdent().map(Person::fnr).orElseThrow(RuntimeException::new);
         }
 
-        Optional<Person> fnr = Optional.ofNullable(requestProvider.get().getParameter("fnr")).map(Person::fnr);
-        Optional<Person> aktorId = Optional.ofNullable(requestProvider.get().getParameter("aktorId")).map(Person::aktorId);
+        Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);
+        Optional<Person> aktorId = Optional.ofNullable(requestProvider.getParameter("aktorId")).map(Person::aktorId);
         return fnr.orElseGet(() -> aktorId.orElseThrow(RuntimeException::new));
     }
 

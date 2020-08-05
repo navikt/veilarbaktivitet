@@ -1,15 +1,13 @@
 package no.nav.veilarbaktivitet.db.rowmappers;
 
 import lombok.val;
-import no.nav.fo.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import static no.nav.apiapp.util.EnumUtils.valueOfOptional;
+import java.util.Optional;
 
 public class AktivitetDataRowMapper {
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
@@ -71,7 +69,7 @@ public class AktivitetDataRowMapper {
         return MoteData.builder()
                 .adresse(rs.getString("adresse"))
                 .forberedelser(rs.getString("forberedelser"))
-                .kanal(valueOfOptional(KanalDTO.class, rs.getString("kanal")).orElse(null))
+                .kanal(Optional.ofNullable(rs.getString("kanal")).map(KanalDTO::valueOf).orElse(null))
                 .referat(rs.getString("referat"))
                 .referatPublisert(rs.getBoolean("referat_publisert"))
                 .build()

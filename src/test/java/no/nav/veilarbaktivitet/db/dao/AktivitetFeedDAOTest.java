@@ -9,16 +9,12 @@ import no.nav.veilarbaktivitet.util.DateUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import javax.inject.Inject;
 import java.util.Date;
 import java.util.List;
 
 public class AktivitetFeedDAOTest extends DatabaseTest {
 
-    @Inject
     private AktivitetDAO aktivitetDAO;
-
-    @Inject
     private AktivitetFeedDAO aktivitetFeedDAO;
 
     @Test
