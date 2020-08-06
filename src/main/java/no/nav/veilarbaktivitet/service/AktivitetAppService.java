@@ -158,7 +158,7 @@ public class AktivitetAppService {
     }
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!orginalAktivitet.getVersjon().equals(aktivitet.getVersjon())) {
+        if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
             throw new UlovligHandling();
         } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
             throw new IllegalArgumentException(

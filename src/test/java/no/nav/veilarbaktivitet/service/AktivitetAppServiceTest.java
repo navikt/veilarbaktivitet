@@ -1,12 +1,9 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.common.abac.VeilarbPep;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.Person;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -14,7 +11,6 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import java.util.Date;
-import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
@@ -27,10 +23,13 @@ public class AktivitetAppServiceTest {
     private static final long AKTIVITET_ID = 666L;
 
     @Mock
-    private VeilarbPep pepClient;
+    private AuthService authService;
 
     @Mock
     private AktivitetService aktivitetService;
+
+    @Mock
+    private FunksjonelleMetrikker funksjonelleMetrikker;
 
     @Mock
     private BrukerService brukerService;
@@ -44,11 +43,6 @@ public class AktivitetAppServiceTest {
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);
-    }
-
-    @Before
-    public void init() {
-        when(brukerService.getAktorIdForPerson(any())).thenReturn(Optional.of(Person.aktorId("123")));
     }
 
     @Test
