@@ -2,20 +2,31 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.db.DatabaseTest;
+import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetFeedData;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.assertj.core.api.Assertions;
+import org.junit.Before;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
 import java.util.List;
 
-public class AktivitetFeedDAOTest extends DatabaseTest {
+public class AktivitetFeedDAOTest {
 
-    private AktivitetDAO aktivitetDAO;
-    private AktivitetFeedDAO aktivitetFeedDAO;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final Database database = new Database(jdbcTemplate);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    private AktivitetFeedDAO aktivitetFeedDAO = new AktivitetFeedDAO(database);
+
+    @Before
+    public void cleanUp(){
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
+    }
 
     @Test
     public void hent_aktiviteter_for_feed() {
