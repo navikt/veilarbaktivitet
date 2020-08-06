@@ -1,15 +1,19 @@
 package no.nav.veilarbaktivitet.db.dao;
 
-import no.nav.veilarbaktivitet.db.DatabaseTest;
+import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AvsluttetOppfolgingFeedDAOTest extends DatabaseTest {
+public class AvsluttetOppfolgingFeedDAOTest {
 
-    private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final Database database = new Database(jdbcTemplate);
+    private AvsluttetOppfolgingFeedDAO avsluttetOppfolgingFeedDAO = new AvsluttetOppfolgingFeedDAO(database);
 
     @Test
     public void siste_kjente_id_skal_være_null_forste_gang() {
