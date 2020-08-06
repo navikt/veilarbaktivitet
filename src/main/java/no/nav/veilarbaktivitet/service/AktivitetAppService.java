@@ -26,7 +26,7 @@ public class AktivitetAppService {
     private final FunksjonelleMetrikker funksjonelleMetrikker;
 
     @Autowired
-    AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
+    public AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
                         AuthService authService,
                         AktivitetService aktivitetService,
                         BrukerService brukerService,

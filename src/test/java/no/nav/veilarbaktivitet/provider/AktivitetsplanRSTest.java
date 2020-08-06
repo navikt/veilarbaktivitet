@@ -1,36 +1,64 @@
 package no.nav.veilarbaktivitet.provider;
 
 import lombok.val;
+import no.nav.common.auth.subject.Subject;
+import no.nav.common.auth.subject.SubjectHandler;
+import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.kafka.KafkaService;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.service.AktivitetService;
+import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.mock.SubjectRule;
+import no.nav.veilarbaktivitet.service.*;
+import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import static no.nav.common.auth.subject.IdentType.InternBruker;
+import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.mockito.Mockito.mock;
 
-//fixme in the future
-@Ignore
 public class AktivitetsplanRSTest {
 
-    private AktivitetsplanRS aktivitetController;
-    private MockHttpServletRequest mockHttpServletRequest;
-    private AktivitetService aktivitetService;
-    private Database database;
+    private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
+
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final Database database = new Database(jdbcTemplate);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+
+
+    private KvpClient kvpClient = mock(KvpClient.class);
+    private KafkaService kafkaService = mock(KafkaService.class);
+    private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
+
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, kafkaService, funksjonelleMetrikker);
+    private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
+    private BrukerService brukerService = new BrukerService(aktorregisterClient);
+    private AuthService authService = mock(AuthService.class);
+    private ArenaAktivitetConsumer arenaAktivitetConsumer = mock(ArenaAktivitetConsumer.class);
+    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+
+    private AktivitetsplanRS aktivitetController = new AktivitetsplanRS(appService, mockHttpServletRequest);
+
+    @Rule
+    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token", new HashMap<>())));
 
     @Before
     public void setup() {
@@ -39,14 +67,7 @@ public class AktivitetsplanRSTest {
 
     @After
     public void cleanup() {
-        database.update("DELETE FROM EGENAKTIVITET");
-        database.update("DELETE FROM SOKEAVTALE");
-        database.update("DELETE FROM BEHANDLING");
-        database.update("DELETE FROM IJOBB");
-        database.update("DELETE FROM MOTE");
-        database.update("DELETE FROM STILLINGSSOK");
-
-        database.update("DELETE FROM AKTIVITET");
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 
     @Test
@@ -278,7 +299,7 @@ public class AktivitetsplanRSTest {
                 .setLagtInnAv(aktivitet.getLagtInnAv())
                 .setTransaksjonsType(aktivitet.transaksjonsType)
                 .setEndretDato(aktivitet.endretDato)
-                .setEndretAv("Z1234")
+                .setEndretAv(SubjectHandler.getIdent().get())
         ));
     }
 
