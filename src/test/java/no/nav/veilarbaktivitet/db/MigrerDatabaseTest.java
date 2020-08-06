@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.db;
 
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -8,7 +9,7 @@ import static org.junit.Assert.assertThat;
 
 public class MigrerDatabaseTest extends DatabaseTest {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
 
     @Test
     public void kanQueryeDatabasen() {
