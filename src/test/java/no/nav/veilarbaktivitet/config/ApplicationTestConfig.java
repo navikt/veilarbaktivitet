@@ -8,9 +8,11 @@ import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
+import no.nav.veilarbaktivitet.provider.AktivitetsplanRS;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -20,6 +22,9 @@ import static org.mockito.Mockito.when;
 
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
+@Import({
+        AktivitetsplanRS.class,
+})
 public class ApplicationTestConfig {
     @Bean
     public Credentials serviceUserCredentials() {

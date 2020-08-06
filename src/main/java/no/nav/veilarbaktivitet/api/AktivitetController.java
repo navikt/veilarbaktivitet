@@ -5,64 +5,54 @@ import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.domain.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.domain.KanalDTO;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import org.springframework.web.bind.annotation.*;
 
-import javax.ws.rs.*;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 
 
-@Path("/aktivitet")
-@Produces("application/json")
+@RestController
+@RequestMapping("/aktivitet")
 public interface AktivitetController {
     String ARENA_PREFIX = "ARENA";
 
-    @GET
+    @GetMapping
     AktivitetsplanDTO hentAktivitetsplan();
 
-    @GET
-    @Path("/arena")
+    @GetMapping("/arena")
     List<ArenaAktivitetDTO> hentArenaAktiviteter();
 
-    @POST
-    @Path("/ny")
-    AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, @DefaultValue("false") @QueryParam("automatisk") boolean automatisk);
+    @PostMapping("/ny")
+    AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, @RequestParam(defaultValue = "false") boolean automatisk);
 
-    @PUT
-    @Path("/{id}")
+    @PutMapping("/{id}")
     AktivitetDTO oppdaterAktivitet(AktivitetDTO aktivitet);
 
-    @GET
-    @Path("/{id}")
-    AktivitetDTO hentAktivitet(@PathParam("id") String aktivitetId);
+    @GetMapping("/{id}")
+    AktivitetDTO hentAktivitet(@PathVariable("id") String aktivitetId);
 
-    @GET
-    @Path("/etiketter")
+    @GetMapping("/etiketter")
     default List<EtikettTypeDTO> hentEtiketter() {
         return asList(EtikettTypeDTO.values());
     }
 
-    @GET
-    @Path("/kanaler")
+    @GetMapping("/kanaler")
     default List<KanalDTO> hentKanaler() {
         return asList(KanalDTO.values());
     }
 
-    @PUT
-    @Path("/{id}/etikett")
+    @PutMapping("/{id}/etikett")
     AktivitetDTO oppdaterEtikett(AktivitetDTO aktivitet);
 
 
-    @DELETE
-    @Path("/{id}")
-    void slettAktivitet(@PathParam("id") String id);
+    @DeleteMapping("/{id}")
+    void slettAktivitet(@PathVariable("id") String id);
 
-    @PUT
-    @Path("/{id}/status")
+    @PutMapping("/{id}/status")
     AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet);
 
-    @GET
-    @Path("/{id}/versjoner")
-    List<AktivitetDTO> hentAktivitetVersjoner(@PathParam("id") String aktivitetId);
+    @GetMapping("/{id}/versjoner")
+    List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") String aktivitetId);
 
 }
