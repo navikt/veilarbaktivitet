@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.db;
 
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.json.JSONArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,7 +39,7 @@ public class ViewTest extends DatabaseTest {
     }
 
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
 
     @Parameter(value = 0)
     public String viewName;
