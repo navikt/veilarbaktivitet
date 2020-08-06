@@ -39,6 +39,10 @@ public class AktivitetServiceTest {
 
     @Mock
     private KafkaService kafkaService;
+
+    @Mock
+    private FunksjonelleMetrikker funksjonelleMetrikker;
+
     @Captor
     private ArgumentCaptor argumentCaptor;
 
