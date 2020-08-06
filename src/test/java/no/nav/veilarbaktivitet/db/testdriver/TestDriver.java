@@ -12,6 +12,7 @@ public class TestDriver implements Driver {
 
     private static volatile boolean isInitialized = false;
 
+
     public static synchronized void init() {
         if (isInitialized) {
             return;

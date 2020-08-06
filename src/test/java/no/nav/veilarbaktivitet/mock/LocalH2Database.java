@@ -1,11 +1,12 @@
 package no.nav.veilarbaktivitet.mock;
 
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
-import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+
+import static no.nav.veilarbaktivitet.db.DbTestUtils.createTestDataSource;
+import static no.nav.veilarbaktivitet.db.DbTestUtils.initDb;
 
 public class LocalH2Database {
 
@@ -14,10 +15,7 @@ public class LocalH2Database {
     public static JdbcTemplate getDb() {
         if (db == null) {
             TestDriver.init();
-            DriverManagerDataSource dataSource = new DriverManagerDataSource();
-            dataSource.setDriverClassName(TestDriver.class.getName());
-            dataSource.setUrl("jdbc:h2:mem:veilarbaktivitet-local;DB_CLOSE_DELAY=-1;MODE=Oracle;");
-
+            DataSource dataSource = createTestDataSource("jdbc:h2:mem:veilarbaktivitet-local;DB_CLOSE_DELAY=-1;MODE=Oracle;");
             db = new JdbcTemplate(dataSource);
             initDb(dataSource);
         }
@@ -25,11 +23,4 @@ public class LocalH2Database {
 
         return db;
     }
-
-    private static void initDb(DataSource dataSource) {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.migrate();
-    }
-
 }

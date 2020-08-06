@@ -2,11 +2,14 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.db.DatabaseTest;
+import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -22,13 +25,19 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-public class AktivitetDAOTest extends DatabaseTest {
+public class AktivitetDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
-    private long versjon = 1;
 
-    private AktivitetDAO aktivitetDAO;
-    private JdbcTemplate db;
+    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final Database database = new Database(jdbcTemplate);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+
+
+    @Before
+    public void cleanUp(){
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
+    }
 
     @Test
     public void opprette_og_hente_egenaktivitet() {
@@ -209,6 +218,6 @@ public class AktivitetDAOTest extends DatabaseTest {
     }
 
     int hentAntallSlettedeAktiviteter() {
-        return db.queryForObject("SELECT COUNT(*) as ANTALL_SLETTET FROM SLETTEDE_AKTIVITETER", Integer.class);
+        return jdbcTemplate.queryForObject("SELECT COUNT(*) as ANTALL_SLETTET FROM SLETTEDE_AKTIVITETER", Integer.class);
     }
 }
