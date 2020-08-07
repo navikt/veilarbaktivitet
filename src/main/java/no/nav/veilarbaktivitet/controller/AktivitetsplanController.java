@@ -1,18 +1,16 @@
-package no.nav.veilarbaktivitet.provider;
+package no.nav.veilarbaktivitet.controller;
 
 import lombok.val;
 import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.veilarbaktivitet.api.AktivitetController;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.BrukerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -21,14 +19,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static java.util.Arrays.asList;
 
-@Component
-public class AktivitetsplanRS implements AktivitetController {
+
+@RestController
+@RequestMapping("/api/aktivitet")
+public class AktivitetsplanController {
 
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
 
-    public AktivitetsplanRS(
+    @Autowired
+    public AktivitetsplanController(
             AktivitetAppService appService,
             HttpServletRequest requestProvider
     ) {
@@ -36,7 +38,7 @@ public class AktivitetsplanRS implements AktivitetController {
         this.requestProvider = requestProvider;
     }
 
-    @Override
+    @GetMapping
     public AktivitetsplanDTO hentAktivitetsplan() {
         val aktiviter = appService
                 .hentAktiviteterForIdent(getContextUserIdent())
@@ -47,22 +49,22 @@ public class AktivitetsplanRS implements AktivitetController {
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);
     }
 
-    @Override
-    public AktivitetDTO hentAktivitet(String aktivitetId) {
+    @GetMapping("/{id}")
+    public AktivitetDTO hentAktivitet(@PathVariable("id") String aktivitetId) {
         return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    @Override
+    @GetMapping("/arena")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         return getFnr()
                 .map(appService::hentArenaAktiviteter)
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
-    public List<AktivitetDTO> hentAktivitetVersjoner(String aktivitetId) {
+    @GetMapping("/{id}/versjoner")
+    public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") String aktivitetId) {
         return Optional.of(aktivitetId)
                 .map(Long::parseLong)
                 .map(appService::hentAktivitetVersjoner)
@@ -73,17 +75,17 @@ public class AktivitetsplanRS implements AktivitetController {
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    @Override
-    public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, boolean automatiskOpprettet) {
+    @PostMapping("/ny")
+    public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, @RequestParam(defaultValue = "false") boolean automatisk) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatiskOpprettet))
+                .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
                 .map((aktivitetData) -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
+    @PutMapping("/{id}")
     public AktivitetDTO oppdaterAktivitet(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
@@ -92,7 +94,7 @@ public class AktivitetsplanRS implements AktivitetController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
+    @PutMapping("/{id}/etikett")
     public AktivitetDTO oppdaterEtikett(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
@@ -101,12 +103,12 @@ public class AktivitetsplanRS implements AktivitetController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Override
-    public void slettAktivitet(String aktivitetId) {
-        appService.slettAktivitet(Long.parseLong(aktivitetId));
+    @DeleteMapping("/{id}")
+    public void slettAktivitet(@PathVariable("id") String id) {
+        appService.slettAktivitet(Long.parseLong(id));
     }
 
-    @Override
+    @PutMapping("/{id}/status")
     public AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
@@ -115,9 +117,19 @@ public class AktivitetsplanRS implements AktivitetController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @Path("{aktivitetId}/referat")
-    public ReferatRessurs referatRessurs() {
-        return new ReferatRessurs(appService);
+    @PutMapping("/{aktivitetId}/referat")
+    public AktivitetDTO oppdaterReferat(AktivitetDTO aktivitetDTO) {
+        return Optional.of(aktivitetDTO)
+                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(appService::oppdaterReferat)
+                .map(AktivitetDTOMapper::mapTilAktivitetDTO)
+                .orElseThrow(RuntimeException::new);
+    }
+
+    @PutMapping
+    @Path("/{aktivitetId}/referat/publiser")
+    public AktivitetDTO publiserReferat(AktivitetDTO aktivitetDTO) {
+        return oppdaterReferat(aktivitetDTO);
     }
 
     private Person getContextUserIdent() {
@@ -130,9 +142,19 @@ public class AktivitetsplanRS implements AktivitetController {
         return fnr.orElseGet(() -> aktorId.orElseThrow(RuntimeException::new));
     }
 
+    @GetMapping("/etiketter")
+    public List<EtikettTypeDTO> hentEtiketter() {
+        return asList(EtikettTypeDTO.values());
+    }
+
+    @GetMapping("/kanaler")
+    public List<KanalDTO> hentKanaler() {
+        return asList(KanalDTO.values());
+    }
+
     private Optional<Person.Fnr> getFnr() {
         return Optional.of(getContextUserIdent())
                 .filter((person) -> person instanceof Person.Fnr)
-                .map((person) -> (Person.Fnr)person);
+                .map((person) -> (Person.Fnr) person);
     }
 }

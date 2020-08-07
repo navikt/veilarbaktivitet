@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.veilarbaktivitet.client.KvpClient;
+import no.nav.veilarbaktivitet.client.KvpClientImpl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -37,5 +39,10 @@ public class ClientConfig {
                     .build();
             return chain.proceed(newReq);
         }
+    }
+
+    @Bean
+    public KvpClient kvpClient(OkHttpClient client) {
+        return new KvpClientImpl(client);
     }
 }

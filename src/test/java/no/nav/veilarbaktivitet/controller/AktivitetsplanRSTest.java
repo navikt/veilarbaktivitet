@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.provider;
+package no.nav.veilarbaktivitet.controller;
 
 import lombok.val;
 import no.nav.common.auth.subject.Subject;
@@ -55,7 +55,7 @@ public class AktivitetsplanRSTest {
     private ArenaAktivitetConsumer arenaAktivitetConsumer = mock(ArenaAktivitetConsumer.class);
     private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, brukerService, funksjonelleMetrikker);
 
-    private AktivitetsplanRS aktivitetController = new AktivitetsplanRS(appService, mockHttpServletRequest);
+    private AktivitetsplanController aktivitetController = new AktivitetsplanController(appService, mockHttpServletRequest);
 
     @Rule
     public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token", new HashMap<>())));

@@ -3,9 +3,7 @@ package no.nav.veilarbaktivitet.db;
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
@@ -25,10 +23,6 @@ public class DbTestUtils {
 
     public static void cleanupTestDb(JdbcTemplate db) {
         ALL_TABLES.forEach((table) -> deleteAllFromTable(db, table));
-    }
-
-    public static TransactionTemplate getTransactor(JdbcTemplate db) {
-        return new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
     }
 
     public static DataSource createTestDataSource(String dbUrl) {

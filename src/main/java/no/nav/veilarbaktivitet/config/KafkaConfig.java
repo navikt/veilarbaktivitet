@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
+import no.nav.veilarbaktivitet.kafka.KafkaServiceImpl;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -47,6 +48,6 @@ public class KafkaConfig {
 
     @Bean
     public KafkaService kafkaService() {
-        return new KafkaService(kafkaProducer());
+        return new KafkaServiceImpl(kafkaProducer());
     }
 }

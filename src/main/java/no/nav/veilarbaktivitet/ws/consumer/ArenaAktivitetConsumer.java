@@ -34,7 +34,6 @@ import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
-import static no.nav.veilarbaktivitet.api.AktivitetController.ARENA_PREFIX;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
@@ -43,6 +42,8 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 public class ArenaAktivitetConsumer {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
+    private static final String ARENA_PREFIX = "ARENA";
+
 
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 

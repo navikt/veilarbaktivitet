@@ -5,7 +5,8 @@ import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
@@ -15,7 +16,7 @@ import java.util.stream.Stream;
 import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
-@Component
+@Repository
 public class AktivitetDAO {
 
     private static final Logger LOG = getLogger(AktivitetDAO.class);
@@ -29,6 +30,7 @@ public class AktivitetDAO {
 
     private final Database database;
 
+    @Autowired
     public AktivitetDAO(Database database) {
         this.database = database;
     }

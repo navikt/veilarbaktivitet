@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.provider;
+package no.nav.veilarbaktivitet.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.subject.SubjectHandler;
@@ -20,15 +20,15 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERIN
 
 @Slf4j
 @Component
-@Path("/kassering")
-public class KasserService {
+@Path("/api/kassering")
+public class KasserController {
 
     private final AktivitetDAO aktivitetDAO;
     private final AuthService auth;
 
     private final String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
-    public KasserService(AktivitetDAO aktivitetDAO, AuthService auth) {
+    public KasserController(AktivitetDAO aktivitetDAO, AuthService auth) {
         this.aktivitetDAO = aktivitetDAO;
         this.auth = auth;
     }
