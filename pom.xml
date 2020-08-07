@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2020.07.09_15.11-43231b4bf93d</common.version>
+        <common.version>2.2020.08.06_11.28-05c901c817c2</common.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
     </properties>
