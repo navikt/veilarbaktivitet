@@ -37,6 +37,7 @@ import static org.mockito.Mockito.when;
         ArenaAktivitetConsumer.class,
         AktivitetAppService.class,
         AktivitetsplanController.class,
+        FeedConfig.class
         FilterTestConfig.class,
 })
 public class ApplicationTestConfig {
