@@ -1,6 +1,9 @@
 package no.nav.veilarbaktivitet.feed.consumer;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import no.nav.common.json.JsonMapper;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.feed.common.*;
 import okhttp3.HttpUrl;
@@ -73,6 +76,8 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
         }
     }
 
+    private static final ObjectMapper objectMapper = JsonMapper.defaultObjectMapper();
+
     @SneakyThrows
     public synchronized Response poll() {
         String lastEntry = this.config.lastEntrySupplier.get();
@@ -83,7 +88,8 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
         Request request = new Request.Builder().url(httpBuilder.build()).build();
         try (Response response = this.config.client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            var entity = RestUtils.parseJsonResponse(response, FeedResponse.class).get();
+            FeedResponse<DOMAINOBJECT> entity = objectMapper.readValue(response.body().string(), new TypeReference<FeedResponse<DOMAINOBJECT>>() {
+            });
             List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
             if (elements != null && !elements.isEmpty()) {
                 List<DOMAINOBJECT> data = elements
