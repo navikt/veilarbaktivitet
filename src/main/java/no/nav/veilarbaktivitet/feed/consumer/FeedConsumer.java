@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.feed.consumer;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonMapper;
@@ -88,8 +87,7 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
         Request request = new Request.Builder().url(httpBuilder.build()).build();
         try (Response response = this.config.client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            FeedResponse<DOMAINOBJECT> entity = objectMapper.readValue(response.body().string(), new TypeReference<FeedResponse<DOMAINOBJECT>>() {
-            });
+            FeedResponse<DOMAINOBJECT> entity = objectMapper.readValue(response.body().string(), objectMapper.getTypeFactory().constructParametricType(FeedResponse.class, this.config.domainobject));
             List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
             if (elements != null && !elements.isEmpty()) {
                 List<DOMAINOBJECT> data = elements
