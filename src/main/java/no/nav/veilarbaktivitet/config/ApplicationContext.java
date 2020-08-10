@@ -89,7 +89,7 @@ public class ApplicationContext {
         return new CXFClient<>(TiltakOgAktivitetV1.class)
                 .address(getRequiredProperty(ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY))
                 .withOutInterceptor(new LoggingOutInterceptor())
-                .configureStsForSystemUser(stsConfig)
+                .configureStsForSubject(stsConfig)
                 .build();
 
     }
