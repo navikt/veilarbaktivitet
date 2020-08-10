@@ -1,9 +1,11 @@
 package no.nav.veilarbaktivitet.feed.common;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 @Data
+@AllArgsConstructor
 @Accessors(chain = true)
 public class FeedElement<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> implements Comparable<FeedElement<DOMAINOBJECT>> {
     protected String id;
