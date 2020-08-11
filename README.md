@@ -1,5 +1,5 @@
 # Veilarbaktivitet
-Backend applikasjon for aktivitetsplan. Tilbyr REST tjenester for å hente/opprette/endre aktiviteter.
+Backend applikasjon for aktivitetsplanen. Tilbyr REST tjenester for å hente/opprette/endre aktiviteter.
 
 ## Komme i gang
 
