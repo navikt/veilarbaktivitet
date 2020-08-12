@@ -9,6 +9,5 @@ mvn test
 ```
 
 ## Kontakt og spørsmål
-
 Opprett en issue i GitHub for eventuelle spørsmål.
 
