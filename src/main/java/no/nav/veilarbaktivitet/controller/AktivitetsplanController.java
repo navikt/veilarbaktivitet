@@ -76,7 +76,7 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    public AktivitetDTO opprettNyAktivitet(AktivitetDTO aktivitet, @RequestParam(defaultValue = "false") boolean automatisk) {
+    public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(defaultValue = "false") boolean automatisk) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
@@ -86,7 +86,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}")
-    public AktivitetDTO oppdaterAktivitet(AktivitetDTO aktivitet) {
+    public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)
@@ -95,7 +95,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}/etikett")
-    public AktivitetDTO oppdaterEtikett(AktivitetDTO aktivitet) {
+    public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterEtikett)
@@ -109,7 +109,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}/status")
-    public AktivitetDTO oppdaterStatus(AktivitetDTO aktivitet) {
+    public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
@@ -118,7 +118,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{aktivitetId}/referat")
-    public AktivitetDTO oppdaterReferat(AktivitetDTO aktivitetDTO) {
+    public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return Optional.of(aktivitetDTO)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterReferat)
@@ -128,7 +128,7 @@ public class AktivitetsplanController {
 
     @PutMapping
     @Path("/{aktivitetId}/referat/publiser")
-    public AktivitetDTO publiserReferat(AktivitetDTO aktivitetDTO) {
+    public AktivitetDTO publiserReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return oppdaterReferat(aktivitetDTO);
     }
 
