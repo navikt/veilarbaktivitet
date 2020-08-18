@@ -189,7 +189,7 @@ public class AktivitetsplanRSTest {
     }
 
     private void nar_jeg_lagrer_aktivteten() {
-        aktivitet = aktivitetController.opprettNyAktivitet(aktivitet, false);
+        aktivitet = aktivitetController.opprettNyAktivitet(aktivitet);
     }
 
     private AktivitetDTO orignalAktivitet;
