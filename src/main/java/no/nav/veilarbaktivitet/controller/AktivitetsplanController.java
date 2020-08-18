@@ -76,7 +76,8 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(defaultValue = "false") boolean automatisk) {
+    public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet,
+                                           @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
