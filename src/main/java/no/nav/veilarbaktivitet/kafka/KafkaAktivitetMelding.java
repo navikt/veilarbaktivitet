@@ -33,6 +33,7 @@ public class KafkaAktivitetMelding {
                 .aktivitetType(typeMap.get(aktivitet.getAktivitetType()))
                 .aktivitetStatus(aktivitet.getStatus())
                 .avtalt(aktivitet.isAvtalt())
+                .historisk(aktivitet.getHistoriskDato() != null)
                 .build();
     }
 }
