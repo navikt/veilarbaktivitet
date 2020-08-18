@@ -31,6 +31,10 @@ public class KvpClientImpl implements KvpClient {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == 204) {
+                return Optional.empty();
+            }
+
             return RestUtils.parseJsonResponse(response, KvpDTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot" + request.url().toString(), e);
