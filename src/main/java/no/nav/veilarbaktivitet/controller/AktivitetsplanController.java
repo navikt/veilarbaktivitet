@@ -76,10 +76,10 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet) {
+    public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
-                .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(false))
+                .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
                 .map((aktivitetData) -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);

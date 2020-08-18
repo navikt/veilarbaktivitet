@@ -15,6 +15,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static java.util.Arrays.asList;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
@@ -54,7 +55,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
-        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(null);
+        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
 
         captureInsertAktivitetArgument();
@@ -75,7 +76,7 @@ public class AktivitetServiceTest {
         KvpDTO kvp = new KvpDTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
-        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(kvp);
+        when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
 
         captureInsertAktivitetArgument();

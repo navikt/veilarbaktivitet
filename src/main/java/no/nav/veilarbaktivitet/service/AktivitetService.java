@@ -56,19 +56,16 @@ public class AktivitetService {
      * er satt dersom brukeren er under KVP.
      */
     private AktivitetData tagUsingKVP(AktivitetData a) {
-        KvpDTO kvp;
-
         try {
-            kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
+            Optional<KvpDTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
+            return kvp
+                    .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
+                    .orElse(a);
         } catch (ForbiddenException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
         } catch (InternalServerErrorException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
         }
-
-        return Optional.ofNullable(kvp)
-                .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
-                .orElse(a);
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
