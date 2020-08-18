@@ -14,7 +14,7 @@ spec:
   port: 8080
   prometheus:
     enabled: true
-    path: veilarbaktivitet/internal/metrics
+    path: veilarbaktivitet/internal/prometheus
   liveness:
     path: veilarbaktivitet/internal/isAlive
     port: 8080
@@ -46,6 +46,7 @@ spec:
       - kvPath: /kv/preprod/fss/veilarbaktivitet/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
   webproxy: true
+  leaderElection: true
   env:
     - name: APP_ENVIRONMENT_NAME
       value: {{namespace}}
