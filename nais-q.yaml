@@ -18,12 +18,12 @@ spec:
   liveness:
     path: veilarbaktivitet/internal/isAlive
     port: 8080
-    initialDelay: 20
+    initialDelay: 60
     timeout: 10
   readiness:
     path: veilarbaktivitet/internal/isReady
     port: 8080
-    initialDelay: 20
+    initialDelay: 60
     timeout: 10
   replicas:
     min: 1
