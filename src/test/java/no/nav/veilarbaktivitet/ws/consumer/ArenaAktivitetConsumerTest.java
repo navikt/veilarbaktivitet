@@ -101,4 +101,19 @@ public class ArenaAktivitetConsumerTest {
         when(arenaResponse.getTiltaksaktivitetListe()).thenReturn(Arrays.asList(tiltak));
         return arenaResponse;
     }
+
+    @Test
+    public void skalViseTiltaksvariantPaaGruppeAMO () throws Exception {
+        TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
+        ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(arena);
+
+        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = responsMedTiltak(new Date());
+        responsMedNyAktivitet.getTiltaksaktivitetListe().get(0).setTiltaksnavn("Gruppe AMO");
+
+        when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
+                .thenReturn(responsMedNyAktivitet);
+
+        var aktivitet = consumer.hentArenaAktiviteter(Person.fnr("123")).get(0);
+        assertThat(aktivitet.getTittel(), equalTo("Gruppe AMO: " + aktivitet.getTiltakLokaltNavn()));
+    }
 }
