@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.common.auth.subject.IdentType;
+import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.types.feil.IngenTilgang;
 import no.nav.common.types.feil.UgyldigRequest;
 import no.nav.common.types.feil.UlovligHandling;
@@ -271,6 +273,10 @@ public class AktivitetAppService {
      * This function reports real usage through the metric system.
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
+        if (SubjectHandler.getSubject().map(sub -> sub.getIdentType() == IdentType.EksternBruker).orElse(false)) {
+            return true;
+        }
+
         boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
                 .map(authService::sjekkTilgangTilEnhet)
                 .orElse(true);
