@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -126,8 +125,7 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @PutMapping
-    @Path("/{aktivitetId}/referat/publiser")
+    @PutMapping("/{aktivitetId}/referat/publiser")
     public AktivitetDTO publiserReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return oppdaterReferat(aktivitetDTO);
     }
