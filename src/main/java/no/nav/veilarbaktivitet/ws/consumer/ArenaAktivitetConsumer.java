@@ -99,6 +99,24 @@ public class ArenaAktivitetConsumer {
 
     private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
     private static final String JOBBKLUBB_NAVN = "Jobbklubb";
+    private static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
+
+
+    private String getTittel(Tiltaksaktivitet tiltaksaktivitet){
+        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(VANLIG_AMO_NAVN);
+        if (erVanligAmo) {
+            return "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn();
+        }
+
+        val erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(GRUPPE_AMO_NAVN);
+        if (erGruppeAmo){
+            return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
+        }
+
+        return tiltaksaktivitet.getTiltaksnavn();
+    }
 
     private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
@@ -117,14 +135,10 @@ public class ArenaAktivitetConsumer {
                 .setStatusSistEndret(DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret()))
                 .setOpprettetDato(DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret()));
 
-
         val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(VANLIG_AMO_NAVN);
 
-        val tittel = erVanligAmo ?
-                "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn() : tiltaksaktivitet.getTiltaksnavn();
-
-        arenaAktivitetDTO.setTittel(tittel);
+        arenaAktivitetDTO.setTittel(getTittel(tiltaksaktivitet));
 
         val erJobbKlubb = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(JOBBKLUBB_NAVN);
