@@ -34,11 +34,11 @@ public class KasserController {
     }
 
     @PutMapping("/{aktivitetId}")
-    public boolean kasserAktivitet(@PathVariable("aktivitetId") String aktivitetId) {
+    public void kasserAktivitet(@PathVariable("aktivitetId") String aktivitetId) {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
 
-        return kjorHvisTilgang(aktivitetData.getAktorId(), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
+        kjorHvisTilgang(aktivitetData.getAktorId(), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
     }
 
     private boolean kjorHvisTilgang(String aktorId, String id, Supplier<Boolean> fn) {
