@@ -6,10 +6,12 @@ import no.nav.common.types.feil.IngenTilgang;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.service.AuthService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +36,7 @@ public class KasserController {
     }
 
     @PutMapping("/{aktivitetId}")
+    @ResponseStatus(value = HttpStatus.OK)
     public void kasserAktivitet(@PathVariable("aktivitetId") String aktivitetId) {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
