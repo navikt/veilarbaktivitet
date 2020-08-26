@@ -32,7 +32,7 @@ spec:
   resources:
     limits:
       cpu: "2"
-      memory: 2048Mi
+      memory: 8092Mi
     requests:
       cpu: 200m
       memory: 1536Mi
