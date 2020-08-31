@@ -18,7 +18,9 @@ public class DbTestUtils {
             "IJOBB",
             "MOTE",
             "BEHANDLING",
-            "AKTIVITET"
+            "AKTIVITET",
+            "MOTE_SMS_HISTORIKK",
+            "GJELDENDE_MOTE_SMS"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {

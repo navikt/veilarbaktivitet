@@ -135,6 +135,31 @@
             <artifactId>types</artifactId>
             <version>${common.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.ibm.mq</groupId>
+            <artifactId>com.ibm.mq.allclient</artifactId>
+            <version>9.1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.jms</groupId>
+            <artifactId>javax.jms-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>varsel-inn</artifactId>
+            <version>1.2019.09.25-00.21-49b69f0625e0</version>
+        </dependency>
+
+
+
+        <!-- Tjenester -->
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
@@ -166,6 +191,12 @@
             <version>${common.version}</version>
         </dependency>
         <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>feature-toggle</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>net.sourceforge.collections</groupId>
             <artifactId>collections-generic</artifactId>
             <version>4.01</version>
@@ -194,6 +225,12 @@
         </dependency>
 
         <dependency>
+            <groupId>no.nav.tjenestespesifikasjoner</groupId>
+            <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
+            <version>${nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
@@ -211,13 +248,6 @@
             <version>1.4.200</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
-            <version>${nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version}</version>
-        </dependency>
-
     </dependencies>
 
 </project>
