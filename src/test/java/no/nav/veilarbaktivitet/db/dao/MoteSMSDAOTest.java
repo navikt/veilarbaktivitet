@@ -65,8 +65,8 @@ public class MoteSMSDAOTest {
         AktivitetData mote1_2 = insertMote(10, date_0);
 
         moteSmsDAO.insertSmsSendt(mote1.getId(), mote1.getVersjon(), date_0, "kake");
-        moteSmsDAO.insertSmsSendt(mote2.getId(), mote2.getVersjon(), date_2, "kake");
-        moteSmsDAO.insertSmsSendt(mote1_2.getId(), mote1_2.getVersjon(), date, "kake");
+        moteSmsDAO.insertSmsSendt(mote2.getId(), mote2.getVersjon(), date_2, "kake1");
+        moteSmsDAO.insertSmsSendt(mote1_2.getId(), mote1_2.getVersjon(), date, "kake2");
 
         long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
         long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
