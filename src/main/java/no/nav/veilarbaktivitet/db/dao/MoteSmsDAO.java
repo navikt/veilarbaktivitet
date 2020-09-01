@@ -14,10 +14,6 @@ import java.util.List;
 @Component
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class MoteSmsDAO {
-    private static final String aktivitetId = "Id";
-    private static final String aktivetVerson = "Verson";
-    private static final String motettid = "Motetid";
-    private static final String aktorId = "Aktor";
 
     private final Database database;
 
@@ -41,7 +37,6 @@ public class MoteSmsDAO {
                         " where AKTIVITET_TYPE_KODE  = 'MOTE'" +
                         " and GJELDENDE = 1" +
                         " and FRA_DATO between ? and ?" +
-                        " and (MOTETID != FRA_DATO or MOTETID is null)" +
                         " order by FRA_DATO asc"
                 ,
                 this::mapper,
@@ -57,7 +52,8 @@ public class MoteSmsDAO {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getLong("AKTIVITET.AKTIVITET_ID"))
                 .aktivtetVersion(rs.getLong("AKTIVITET.versjon"))
-                .MoteTid(rs.getDate("FRA_DATO"))
+                .MoteTidAktivitet(rs.getDate("FRA_DATO"))
+                .SmsSendtMoteTid(rs.getDate("MOTETID"))
                 .build();
     }
 
@@ -84,7 +80,7 @@ public class MoteSmsDAO {
         //language=sql
         database.update(
                 "insert into MOTE_SMS_HISTORIKK" +
-                        " (AKTIVITET_ID, AKTIVITET_VERSJON, MOTETID, VARSEL_ID, SENDT) VALUES" +
+                        " (AKTIVITET_ID, VERSJON, MOTETID, VARSEL_ID, SENDT) VALUES" +
                         " (?,?,?,?,?)"
                 , aktiviteteId
                 , aktivtetVerson

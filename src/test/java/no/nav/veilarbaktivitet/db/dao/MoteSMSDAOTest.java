@@ -42,7 +42,9 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalInserteNy() {
-        moteSmsDAO.insertSmsSendt(10L, 1L, new Date(), "kake");
+        AktivitetData aktivitetData = insertMote(10, new Date());
+
+        moteSmsDAO.insertSmsSendt(aktivitetData.getId(), aktivitetData.getVersjon(), new Date(), "kake");
 
         long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
         long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
@@ -58,9 +60,13 @@ public class MoteSMSDAOTest {
         Date date_2 = new Date(60*60*1000);
         Date date = new Date();
 
-        moteSmsDAO.insertSmsSendt(10L, 1L, date_0, "kake");
-        moteSmsDAO.insertSmsSendt(12L, 1L, date_2, "kake");
-        moteSmsDAO.insertSmsSendt(10L, 2L, date, "kake");
+        AktivitetData mote1 = insertMote(10, date_0);
+        AktivitetData mote2 = insertMote(12, date_2);
+        AktivitetData mote1_2 = insertMote(10, date_0);
+
+        moteSmsDAO.insertSmsSendt(mote1.getId(), mote1.getVersjon(), date_0, "kake");
+        moteSmsDAO.insertSmsSendt(mote2.getId(), mote2.getVersjon(), date_2, "kake");
+        moteSmsDAO.insertSmsSendt(mote1_2.getId(), mote1_2.getVersjon(), date, "kake");
 
         long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
         long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
@@ -75,14 +81,9 @@ public class MoteSMSDAOTest {
     }
 
     @Test
-    public void tet() {
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(new Date(), new Date());
-    }
-
-    @Test
     public void skalHenteMoterMellom() {
-        inserMote(2, betwheen2);
-        inserMote(4, betwheen);
+        insertMote(2, betwheen2);
+        insertMote(4, betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -97,40 +98,25 @@ public class MoteSMSDAOTest {
     }
 
     @Test
-    public void skalIkkeHneteMoterMedSmSskalIkkeHenteMoterMedAleredeSmsForTidspunkt() throws InterruptedException {
-
-        inserMote(2, betwheen);
-        inserMote(2, betwheen2); //oppdaterer id2
-        inserMote(2, betwheen2); //oppdaterer id2
-
-        moteSmsDAO.insertSmsSendt(1,1,betwheen2, "kake");
-
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(earlyCuttoff, lateCuttof);
-
-        //assertThat(smsAktivitetData.size()).isEqualTo(0); //tilsynelatende andledes tolkgning mellom h2 og oracle
-        //eller så er den en feil jeg ikke ser
-    }
-
-    @Test
     public void skalIkkeHneteMoterUtenfor() {
-        inserMote(2,bofore);
-        inserMote(3, after);
+        insertMote(2,bofore);
+        insertMote(3, after);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(earlyCuttoff, lateCuttof);
 
         assertThat(smsAktivitetData.size()).isEqualTo(0);
     }
 
-    private Date createDate(int month) {
-        return Date.from(LocalDateTime.of(2016,month, 1, 1,1).toInstant(ZoneOffset.UTC));
+    private Date createDate(int hour) {
+        return Date.from(LocalDateTime.of(2016,1, 1, hour,1).toInstant(ZoneOffset.UTC));
     }
 
 
-    private void inserMote(long id, Date fraDato) {
-        insertAktivitet(id, fraDato, AktivitetTypeData.MOTE);
+    private AktivitetData insertMote(long id, Date fraDato) {
+        return insertAktivitet(id, fraDato, AktivitetTypeData.MOTE);
     }
 
-    private void insertAktivitet(long id, Date fraDato, AktivitetTypeData type) {
+    private AktivitetData insertAktivitet(long id, Date fraDato, AktivitetTypeData type) {
         AktivitetData aktivitet = AktivitetDataTestBuilder
                 .nyAktivitet()
                 .id(id)
@@ -140,6 +126,8 @@ public class MoteSMSDAOTest {
                 .build();
 
         aktivitetDAO.insertAktivitet(aktivitet);
+
+        return aktivitetDAO.hentAktivitet(aktivitet.getId());
     }
 
     private long selectCountFrom(String tabelname, JdbcTemplate template) {

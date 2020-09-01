@@ -1,11 +1,13 @@
 package no.nav.veilarbaktivitet.service;
 
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashService;
+import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
-import no.nav.veilarbaktivitet.util.IsLeader;
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLAktoerId;
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLParameter;
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarsel;
@@ -19,7 +21,7 @@ import javax.xml.bind.JAXBContext;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
@@ -42,39 +44,62 @@ public class MoteSMSService {
 
     private final UnleashService unleash;
 
-    public MoteSMSService(JmsTemplate varselQueue, MoteSmsDAO moteSmsDAO, UnleashService unleash) {
+    private final LeaderElectionClient leaderElectionClient;
+
+    private final MeterRegistry registry;
+
+    public MoteSMSService(JmsTemplate varselQueue,
+                          MoteSmsDAO moteSmsDAO,
+                          UnleashService unleash,
+                          LeaderElectionClient leaderElectionClient,
+                          MeterRegistry registry) {
         this.varselQueue = varselQueue;
         this.moteSmsDAO = moteSmsDAO;
         this.unleash = unleash;
+        this.leaderElectionClient = leaderElectionClient;
+        this.registry = registry;
     }
 
     @Scheduled(cron = "0 0/2 * * * *")
     public void sendSms() {
-        if (IsLeader.isLeader()) {
+        if (leaderElectionClient.isLeader()) {
             faktiskSendSms();
         }
     }
 
     private void faktiskSendSms() {
-        List<SmsAktivitetData> aktiviteter = moteSmsDAO.hentMoterMellom(omTimer(1), omTimer(24));
+        Stream<SmsAktivitetData> aktiviteter = moteSmsDAO.hentMoterMellom(omTimer(1), omTimer(24)).stream();
+
+        Stream<SmsAktivitetData> filtrerte = aktiviteter
+                .filter(a -> !a.getMoteTidAktivitet().equals(a.getSmsSendtMoteTid()));
 
         boolean enabled = unleash.isEnabled("veilarbaktivitet.motesms");
 
-        log.info("aktiviteter hentet for mote sms" + aktiviteter.size());
+        registry.counter("moteSMSHendtet").increment(aktiviteter.count());
+        Counter moteSMSSendt = registry.counter("moteSMSSendt");
+        Counter moteSMSOppdatert = registry.counter("moteSMSOppdatert");
+        registry.gauge("moteSMSSistStartet", new Date().getTime());
 
-        if(enabled) {
+        if (enabled) {
             log.info("sender meldinger");
-            for (SmsAktivitetData aktivitetData : aktiviteter) {
-                String varselId = randomUUID().toString();
-                String aktor = aktivitetData.getAktorId();
-                String moteTid = formaterDato(aktivitetData.getMoteTid());
-                String url = AKTIVITETSPLAN_URL + "/aktivitet/vis/" + aktivitetData.getAktivitetId();
+            filtrerte.forEach(
+                    aktivitetData -> {
+                        String varselId = randomUUID().toString();
+                        String aktor = aktivitetData.getAktorId();
+                        String moteTid = formaterDato(aktivitetData.getMoteTidAktivitet());
+                        String url = AKTIVITETSPLAN_URL + "/aktivitet/vis/" + aktivitetData.getAktivitetId();
 
-                sendVarsel(aktor, url, moteTid, varselId);
-                moteSmsDAO.insertSmsSendt(aktivitetData.getAktivitetId(), aktivitetData.getAktivtetVersion(), aktivitetData.getMoteTid(), varselId);
-            }
+                        sendVarsel(aktor, url, moteTid, varselId);
+                        moteSmsDAO.insertSmsSendt(aktivitetData.getAktivitetId(), aktivitetData.getAktivtetVersion(), aktivitetData.getMoteTidAktivitet(), varselId);
+
+                        moteSMSSendt.increment();
+                        if (aktivitetData.getMoteTidAktivitet() != null) {
+                            moteSMSOppdatert.increment();
+                        }
+                    }
+            );
         }
-
+        registry.gauge("moteSMSSistSluttet", new Date().getTime());
     }
 
     private String formaterDato(Date date) {

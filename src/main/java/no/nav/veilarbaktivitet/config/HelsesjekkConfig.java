@@ -21,7 +21,6 @@ public class HelsesjekkConfig {
                                          Pep pep,
                                          DatabaseHelsesjekk databaseHelsesjekk,
                                          KafkaHelsesjekk kafkaHelsesjekk,
-                                         VarselQueHelsesjekk varselQueHelsesjekk,
                                          UnleashHelsesjekk unleashHelsesjekk) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
@@ -29,7 +28,6 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
-                new SelfTestCheck("Servicevarsel", false, varselQueHelsesjekk),
                 new SelfTestCheck("Unleash", false, unleashHelsesjekk)
         );
 

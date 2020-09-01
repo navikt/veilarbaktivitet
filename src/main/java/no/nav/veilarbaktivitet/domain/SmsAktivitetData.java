@@ -11,5 +11,6 @@ public class SmsAktivitetData {
     String aktorId;
     Long aktivitetId;
     Long aktivtetVersion;
-    Date MoteTid;
+    Date MoteTidAktivitet;
+    Date SmsSendtMoteTid;
 }
