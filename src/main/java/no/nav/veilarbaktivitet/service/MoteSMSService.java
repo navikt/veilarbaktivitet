@@ -68,7 +68,7 @@ public class MoteSMSService {
     }
 
     private void faktiskSendSms() {
-        Stream<SmsAktivitetData> aktiviteter = moteSmsDAO.hentMoterMellom(omTimer(1), omTimer(24)).stream();
+        Stream<SmsAktivitetData> aktiviteter = moteSmsDAO.hentIkkeAvbrutteMoterMellom(omTimer(1), omTimer(24)).stream();
 
         Stream<SmsAktivitetData> filtrerte = aktiviteter
                 .filter(a -> !a.getMoteTidAktivitet().equals(a.getSmsSendtMoteTid()));

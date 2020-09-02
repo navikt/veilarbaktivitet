@@ -22,7 +22,7 @@ public class MoteSmsDAO {
     }
 
 
-    public List<SmsAktivitetData> hentMoterMellom(Date fra, Date til) {
+    public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
         //language=sql
 
         return database.query(
@@ -36,6 +36,7 @@ public class MoteSmsDAO {
                         " left join GJELDENDE_MOTE_SMS on AKTIVITET.AKTIVITET_ID = GJELDENDE_MOTE_SMS.AKTIVITET_ID" +
                         " where AKTIVITET_TYPE_KODE  = 'MOTE'" +
                         " and GJELDENDE = 1" +
+                        " and livslopstatus_kode != 'AVBRUTT'" +
                         " and FRA_DATO between ? and ?" +
                         " order by FRA_DATO asc"
                 ,

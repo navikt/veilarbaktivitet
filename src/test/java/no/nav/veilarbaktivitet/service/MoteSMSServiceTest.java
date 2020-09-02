@@ -6,7 +6,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
@@ -54,7 +53,7 @@ public class MoteSMSServiceTest {
         when(registry.gauge(any(), any())).thenReturn(Mockito.mock(Gauge.class));
         when(leaderElectionClient.isLeader()).thenReturn(true);
         when(unleash.isEnabled("veilarbaktivitet.motesms")).thenReturn(true);
-        when(moteSmsDAO.hentMoterMellom(any(), any())).thenReturn(List.of());
+        when(moteSmsDAO.hentIkkeAvbrutteMoterMellom(any(), any())).thenReturn(List.of());
         System.setProperty("AKTIVITETSPLAN_URL", "kake");
         
     }

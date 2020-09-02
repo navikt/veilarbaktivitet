@@ -3,10 +3,7 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
+import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
@@ -85,7 +82,7 @@ public class MoteSMSDAOTest {
         insertMote(2, betwheen2);
         insertMote(4, betwheen);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
         assertThat(smsAktivitetData.size()).isEqualTo(2);
 
@@ -98,11 +95,32 @@ public class MoteSMSDAOTest {
     }
 
     @Test
+    public void skalHenteEnVersonAvMote() {
+        insertMote(2, betwheen2);
+        insertMote(2, betwheen);
+
+        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+
+        assertThat(smsAktivitetData.size()).isEqualTo(1);
+
+    }
+
+    @Test
+    public void skalIkkeHenteAvbrutt() {
+        insertAktivitet(1l, betwheen, AktivitetTypeData.MOTE,AktivitetStatus.AVBRUTT);
+
+        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+
+        assertThat(smsAktivitetData.size()).isEqualTo(0);
+
+    }
+
+    @Test
     public void skalIkkeHneteMoterUtenfor() {
         insertMote(2,bofore);
         insertMote(3, after);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
         assertThat(smsAktivitetData.size()).isEqualTo(0);
     }
@@ -113,14 +131,15 @@ public class MoteSMSDAOTest {
 
 
     private AktivitetData insertMote(long id, Date fraDato) {
-        return insertAktivitet(id, fraDato, AktivitetTypeData.MOTE);
+        return insertAktivitet(id, fraDato, AktivitetTypeData.MOTE, AktivitetStatus.GJENNOMFORES);
     }
 
-    private AktivitetData insertAktivitet(long id, Date fraDato, AktivitetTypeData type) {
+    private AktivitetData insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
         AktivitetData aktivitet = AktivitetDataTestBuilder
                 .nyAktivitet()
                 .id(id)
                 .aktivitetType(type)
+                .status(aktivitetStatus)
                 .fraDato(fraDato)
                 .aktorId(AKTOR_ID.get())
                 .build();
