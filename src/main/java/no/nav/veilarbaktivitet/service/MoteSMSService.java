@@ -14,6 +14,7 @@ import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarsel;
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarslingstyper;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -29,6 +30,7 @@ import static no.nav.veilarbaktivitet.service.MessageQueueUtils.*;
 import static no.nav.veilarbaktivitet.util.DateUtils.omTimer;
 
 @Component
+@EnableScheduling
 @Slf4j
 public class MoteSMSService {
 
@@ -75,7 +77,7 @@ public class MoteSMSService {
 
         boolean enabled = unleash.isEnabled("veilarbaktivitet.motesms");
 
-        registry.counter("moteSMSHendtet").increment(aktiviteter.count());
+        registry.counter("moterHentetTilSMSFiltrering").increment(aktiviteter.count());
         Counter moteSMSSendt = registry.counter("moteSMSSendt");
         Counter moteSMSOppdatert = registry.counter("moteSMSOppdatert");
         registry.gauge("moteSMSSistStartet", new Date().getTime());
