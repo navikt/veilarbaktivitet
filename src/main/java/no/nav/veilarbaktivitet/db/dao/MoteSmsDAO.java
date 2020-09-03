@@ -30,15 +30,15 @@ public class MoteSmsDAO {
         return database.query(
                 "select " +
                         " AKTOR_ID " +
-                        ", AKTIVITET.AKTIVITET_ID " +
-                        ", AKTIVITET.versjon " +
+                        ", AKTIVITET.AKTIVITET_ID as ID " +
+                        ", VERSJON " +
                         ", FRA_DATO " +
                         ", MOTETID "+
                         " from AKTIVITET" +
                         " left join GJELDENDE_MOTE_SMS on AKTIVITET.AKTIVITET_ID = GJELDENDE_MOTE_SMS.AKTIVITET_ID" +
                         " where AKTIVITET_TYPE_KODE  = 'MOTE'" +
                         " and GJELDENDE = 1" +
-                        " and livslopstatus_kode != 'AVBRUTT'" +
+                        " and LIVSLOPSTATUS_KODE != 'AVBRUTT'" +
                         " and FRA_DATO between ? and ?" +
                         " order by FRA_DATO asc"
                 ,
@@ -53,8 +53,8 @@ public class MoteSmsDAO {
         return SmsAktivitetData
                 .builder()
                 .aktorId(rs.getString("AKTOR_ID"))
-                .aktivitetId(rs.getLong("AKTIVITET.AKTIVITET_ID"))
-                .aktivtetVersion(rs.getLong("AKTIVITET.versjon"))
+                .aktivitetId(rs.getLong("ID"))
+                .aktivtetVersion(rs.getLong("VERSJON"))
                 .MoteTidAktivitet(rs.getDate("FRA_DATO"))
                 .SmsSendtMoteTid(rs.getDate("MOTETID"))
                 .build();
