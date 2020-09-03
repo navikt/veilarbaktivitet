@@ -7,7 +7,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -61,9 +60,8 @@ public class DateUtils {
     }
 
     public static Date omTimer(int timer) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.HOUR_OF_DAY, timer);
-        return calendar.getTime();
+        long time = new Date().getTime();
+        return new Date(time + timer * 1000 * 60 * 60);
     }
 
 }
