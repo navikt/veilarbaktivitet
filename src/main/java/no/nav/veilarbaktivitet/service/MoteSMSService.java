@@ -87,10 +87,10 @@ public class MoteSMSService {
         log.info("moteSMS antallHentet: " + smsAktivitetData.size());
         log.info("moteSMS antallFiltrerte: " + filtrerte.count());
 
-        registry.counter("moterHentetTilSMSFiltrering").increment(aktiviteter.count());
-        Counter moteSMSSendt = registry.counter("moteSMSSendt");
-        Counter moteSMSOppdatert = registry.counter("moteSMSOppdatert");
-        registry.gauge("moteSMSSistStartet", new Date().getTime());
+        //registry.counter("moterHentetTilSMSFiltrering").increment(aktiviteter.count());
+        //Counter moteSMSSendt = registry.counter("moteSMSSendt");
+        //Counter moteSMSOppdatert = registry.counter("moteSMSOppdatert");
+        //registry.gauge("moteSMSSistStartet", new Date().getTime());
 
         if (enabled) {
             log.info("sender meldinger");
@@ -104,9 +104,9 @@ public class MoteSMSService {
                         sendVarsel(aktor, url, moteTid, varselId);
                         moteSmsDAO.insertSmsSendt(aktivitetData.getAktivitetId(), aktivitetData.getAktivtetVersion(), aktivitetData.getMoteTidAktivitet(), varselId);
 
-                        moteSMSSendt.increment();
+                        //moteSMSSendt.increment();
                         if (aktivitetData.getMoteTidAktivitet() != null) {
-                            moteSMSOppdatert.increment();
+                        //    moteSMSOppdatert.increment();
                         }
                     }
             );
