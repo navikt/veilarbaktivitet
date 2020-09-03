@@ -76,16 +76,12 @@ public class MoteSMSService {
 
     private void faktiskSendSms() {
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(omTimer(1), omTimer(24));
-        Stream<SmsAktivitetData> aktiviteter = smsAktivitetData.stream();
-
-        Stream<SmsAktivitetData> filtrerte = aktiviteter
-                .filter(a -> !a.getMoteTidAktivitet().equals(a.getSmsSendtMoteTid()));
 
         boolean enabled = unleash.isEnabled("veilarbaktivitet.motesms");
 
         log.info("er moteSMS skrudd paa: " + enabled);
         log.info("moteSMS antallHentet: " + smsAktivitetData.size());
-        log.info("moteSMS antallFiltrerte: " + filtrerte.count());
+        //log.info("moteSMS antallFiltrerte: " + filtrerte.count());
 
         //registry.counter("moterHentetTilSMSFiltrering").increment(aktiviteter.count());
         //Counter moteSMSSendt = registry.counter("moteSMSSendt");
@@ -94,7 +90,8 @@ public class MoteSMSService {
 
         if (enabled) {
             log.info("sender meldinger");
-            filtrerte.forEach(
+            smsAktivitetData.stream()
+                    .filter(a -> !a.getMoteTidAktivitet().equals(a.getSmsSendtMoteTid())).forEach(
                     aktivitetData -> {
                         String varselId = randomUUID().toString();
                         String aktor = aktivitetData.getAktorId();
