@@ -1,17 +1,17 @@
 package no.nav.veilarbaktivitet.db.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 @Component
+@Slf4j
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class MoteSmsDAO {
 
@@ -23,8 +23,10 @@ public class MoteSmsDAO {
 
 
     public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
-        //language=sql
 
+        log.info("henter moter mellom " + fra + " og " + til);
+
+        //language=sql
         return database.query(
                 "select " +
                         " AKTOR_ID " +
