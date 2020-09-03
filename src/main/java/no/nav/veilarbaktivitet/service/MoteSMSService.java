@@ -22,6 +22,7 @@ import javax.xml.bind.JAXBContext;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.UUID.randomUUID;
@@ -64,18 +65,27 @@ public class MoteSMSService {
 
     @Scheduled(cron = "0 0/2 * * * *")
     public void sendSms() {
-        if (leaderElectionClient.isLeader()) {
+
+        boolean leader = leaderElectionClient.isLeader();
+        log.info("motesms er ledaer : " + leader);
+
+        if (leader) {
             faktiskSendSms();
         }
     }
 
     private void faktiskSendSms() {
-        Stream<SmsAktivitetData> aktiviteter = moteSmsDAO.hentIkkeAvbrutteMoterMellom(omTimer(1), omTimer(24)).stream();
+        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(omTimer(1), omTimer(24));
+        Stream<SmsAktivitetData> aktiviteter = smsAktivitetData.stream();
 
         Stream<SmsAktivitetData> filtrerte = aktiviteter
                 .filter(a -> !a.getMoteTidAktivitet().equals(a.getSmsSendtMoteTid()));
 
         boolean enabled = unleash.isEnabled("veilarbaktivitet.motesms");
+
+        log.info("er moteSMS skrudd paa: " + enabled);
+        log.info("moteSMS antallHentet: " + smsAktivitetData.size());
+        log.info("moteSMS antallFiltrerte: " + filtrerte.count());
 
         registry.counter("moterHentetTilSMSFiltrering").increment(aktiviteter.count());
         Counter moteSMSSendt = registry.counter("moteSMSSendt");
