@@ -59,4 +59,9 @@ public class DateUtils {
         return date;
     }
 
+    public static Date omTimer(int timer) {
+        long time = new Date().getTime();
+        return new Date(time + timer * 1000 * 60 * 60);
+    }
+
 }

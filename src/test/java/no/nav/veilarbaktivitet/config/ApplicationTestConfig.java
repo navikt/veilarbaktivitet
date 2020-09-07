@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
@@ -10,14 +11,17 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
 import no.nav.veilarbaktivitet.mock.*;
 import no.nav.veilarbaktivitet.service.*;
 import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jms.core.JmsTemplate;
 
 import javax.sql.DataSource;
 
@@ -30,8 +34,10 @@ import static org.mockito.Mockito.when;
         Database.class,
         ClientTestConfig.class,
         AktivitetDAO.class,
+        MoteSmsDAO.class,
         BrukerService.class,
         FunksjonelleMetrikker.class,
+        MoteSMSService.class,
         AuthService.class,
         AktivitetService.class,
         ArenaAktivitetConsumer.class,
@@ -59,6 +65,14 @@ public class ApplicationTestConfig {
     @Bean
     public MetricsClient metricsClient() {
         return new MetricsClientMock();
+    }
+
+    @Bean
+    public JmsTemplate varselQueue() { return Mockito.mock(JmsTemplate.class); }
+
+    @Bean
+    public UnleashService unleashService() {
+        return Mockito.mock(UnleashService.class);
     }
 
     @Bean

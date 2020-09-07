@@ -15,6 +15,8 @@ public class VeilarbAktivitetTestApp {
         // We need to initialize the driver before spring starts or Flyway will not be able to use the driver
         TestDriver.init();
 
+        System.setProperty("AKTIVITETSPLAN_URL", "kake");
+
         SpringApplication application = new SpringApplication(VeilarbAktivitetTestApp.class);
         application.setAdditionalProfiles("local");
         application.run(args);
