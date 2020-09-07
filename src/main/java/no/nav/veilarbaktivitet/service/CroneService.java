@@ -18,7 +18,7 @@ public class CroneService {
         this.leaderElectionClient = leaderElectionClient;
     }
 
-    @Scheduled(cron = "0 0/2 * * * *")
+    @Scheduled(fixedDelay = 60000, initialDelay = 60000)
     public void sendSms() {
         boolean leader = leaderElectionClient.isLeader();
         log.info("motesms er ledaer : " + leader);
