@@ -52,8 +52,6 @@ public class MoteSMSServiceTest {
     @InjectMocks
     private VarselQueService varselQueue;
 
-
-
     private final Date before = createDate(1);
     private final Date earlyCuttoff = createDate(2);
     private final Date betwheen = createDate(3);
@@ -107,11 +105,15 @@ public class MoteSMSServiceTest {
     public void skalIkkeSendeFlereVarselrForEnAktivitet() {
         insertMote(1, betwheen);
         insertMote(1, betwheen2);
-        insertMote(1, betwheen);
-
         moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(1,0);
+
+        verify(varselQueue).sendMoteSms(smsCapture.capture());
+        SmsAktivitetData value = smsCapture.getValue();
+        assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
+        assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
+        assertThat(value.getAktivitetId()).isEqualTo(1);
     }
 
     @Test
@@ -122,7 +124,6 @@ public class MoteSMSServiceTest {
         moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
-
     }
 
 

@@ -55,8 +55,8 @@ public class MoteSmsDAO {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getLong("ID"))
                 .aktivtetVersion(rs.getLong("VERSJON"))
-                .moteTidAktivitet(rs.getTime("FRA_DATO"))
-                .smsSendtMoteTid(rs.getTime("MOTETID"))
+                .moteTidAktivitet(rs.getTimestamp("FRA_DATO"))
+                .smsSendtMoteTid(rs.getTimestamp("MOTETID"))
                 .build();
     }
 
