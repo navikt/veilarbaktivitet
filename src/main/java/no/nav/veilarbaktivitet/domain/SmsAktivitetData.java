@@ -11,6 +11,11 @@ public class SmsAktivitetData {
     String aktorId;
     Long aktivitetId;
     Long aktivtetVersion;
-    Date MoteTidAktivitet;
-    Date SmsSendtMoteTid;
+    Date moteTidAktivitet;
+    Date smsSendtMoteTid;
+
+    public boolean skalSendeServicevarsel() {
+        return !moteTidAktivitet.equals(smsSendtMoteTid);
+
+    }
 }

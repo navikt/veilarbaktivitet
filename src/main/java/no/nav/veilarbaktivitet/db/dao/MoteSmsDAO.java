@@ -55,12 +55,16 @@ public class MoteSmsDAO {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getLong("ID"))
                 .aktivtetVersion(rs.getLong("VERSJON"))
-                .MoteTidAktivitet(rs.getDate("FRA_DATO"))
-                .SmsSendtMoteTid(rs.getDate("MOTETID"))
+                .moteTidAktivitet(rs.getTime("FRA_DATO"))
+                .smsSendtMoteTid(rs.getTime("MOTETID"))
                 .build();
     }
 
-    public void insertSmsSendt(long aktiviteteId, long aktivtetVerson, Date motetTid, String varselId) {
+    public void insertSmsSendt(SmsAktivitetData smsAktivitetData, String varselId) {
+        Date motetTid = smsAktivitetData.getMoteTidAktivitet();
+        Long aktiviteteId = smsAktivitetData.getAktivitetId();
+        Long aktivtetVersion = smsAktivitetData.getAktivtetVersion();
+
         //language=sql
         int antall = database.update(
                 "update GJELDENDE_MOTE_SMS" +
@@ -86,7 +90,7 @@ public class MoteSmsDAO {
                         " (AKTIVITET_ID, VERSJON, MOTETID, VARSEL_ID, SENDT) VALUES" +
                         " (?,?,?,?,?)"
                 , aktiviteteId
-                , aktivtetVerson
+                , aktivtetVersion
                 , motetTid
                 , varselId
                 , new Date()
