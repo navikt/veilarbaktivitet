@@ -29,7 +29,7 @@ public class VarselQueService {
 
     private static final java.util.Locale norge = new java.util.Locale("no");
     private static final SimpleDateFormat DatoFormaterer = new SimpleDateFormat("dd. MMMM yyyy", norge);
-    private static final SimpleDateFormat KlokkeFormaterer = new SimpleDateFormat("hh:mm", norge);
+    private static final SimpleDateFormat KlokkeFormaterer = new SimpleDateFormat("HH:mm", norge);
 
     public VarselQueService(JmsTemplate varselQueue) {
         this.varselQueue = varselQueue;
