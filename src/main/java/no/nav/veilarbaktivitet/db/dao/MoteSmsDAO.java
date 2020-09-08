@@ -40,6 +40,7 @@ public class MoteSmsDAO {
                         " and GJELDENDE = 1" +
                         " and LIVSLOPSTATUS_KODE != 'AVBRUTT'" +
                         " and FRA_DATO between ? and ?" +
+                        " and HISTORISK_DATO is null " +
                         " order by FRA_DATO asc"
                 ,
                 this::mapper,

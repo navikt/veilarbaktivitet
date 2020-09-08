@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
@@ -70,10 +69,7 @@ public class ApplicationTestConfig {
     @Bean
     public JmsTemplate varselQueue() { return Mockito.mock(JmsTemplate.class); }
 
-    @Bean
-    public UnleashService unleashService() {
-        return Mockito.mock(UnleashService.class);
-    }
+
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {

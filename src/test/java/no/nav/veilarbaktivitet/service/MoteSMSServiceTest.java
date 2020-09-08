@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.service;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import no.nav.common.featuretoggle.UnleashService;
 import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
@@ -38,9 +37,6 @@ import static org.mockito.Mockito.verify;
 @Import(ApplicationTestConfig.class)
 @RunWith(MockitoJUnitRunner.class)
 public class MoteSMSServiceTest {
-
-    @Mock
-    private UnleashService unleash;
 
     @Mock
     private JmsTemplate varselQueueJsm;
@@ -83,16 +79,11 @@ public class MoteSMSServiceTest {
 
         moteSMSService = new MoteSMSService(varselQueue,
                 moteSmsDAO,
-                unleash,
                 meterRegistry
         );
 
     }
 
-    @Before
-    public void setupMock() {
-        when(unleash.isEnabled(eq("veilarbaktivitet.motesms"), any())).thenReturn(true);
-    }
 
     @Test
     public void skalIkkeFeileMedTomListe() {
