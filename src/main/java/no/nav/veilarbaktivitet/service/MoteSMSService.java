@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 
+import com.ibm.mq.ese.util.DuplicateKeyException;
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -51,12 +52,18 @@ public class MoteSMSService {
                 .forEach(
                         aktivitetData -> {
 
-                            String varselId = varselQueue.sendMoteSms(aktivitetData);
-                            moteSmsDAO.insertSmsSendt(aktivitetData, varselId);
+                            try {
+                                String varselId = varselQueue.sendMoteSms(aktivitetData);
+                                moteSmsDAO.insertSmsSendt(aktivitetData, varselId);
 
-                            antallSMSSendt.increment();
-                            if (aktivitetData.getSmsSendtMoteTid() != null) {
-                                antalSMSOppdatert.increment();
+                                antallSMSSendt.increment();
+                                if (aktivitetData.getSmsSendtMoteTid() != null) {
+                                    antalSMSOppdatert.increment();
+                                }
+                            } catch (DuplicateKeyException e) { //TODO endre til error når ferdig
+                                log.info("duplikat feil");
+                            } catch (Exception e) {
+                                log.error("feil med varsel paa motesms for aktivitetId " + aktivitetData.getAktivitetId(), e);
                             }
                         }
                 );
