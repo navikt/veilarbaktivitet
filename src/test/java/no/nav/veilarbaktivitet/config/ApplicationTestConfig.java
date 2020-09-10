@@ -34,15 +34,18 @@ import static org.mockito.Mockito.when;
         ClientTestConfig.class,
         AktivitetDAO.class,
         MoteSmsDAO.class,
+        VarselQueService.class,
+        MoteSmsSenderService.class,
         BrukerService.class,
         FunksjonelleMetrikker.class,
-        MoteSMSService.class,
+        MoteSMSMangagerService.class,
         AuthService.class,
         AktivitetService.class,
         ArenaAktivitetConsumer.class,
         AktivitetAppService.class,
         AktivitetsplanController.class,
         FilterTestConfig.class,
+        CroneService.class,
 })
 public class ApplicationTestConfig {
 
@@ -68,8 +71,6 @@ public class ApplicationTestConfig {
 
     @Bean
     public JmsTemplate varselQueue() { return Mockito.mock(JmsTemplate.class); }
-
-
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {

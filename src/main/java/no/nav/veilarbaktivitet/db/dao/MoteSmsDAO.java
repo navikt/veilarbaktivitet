@@ -21,7 +21,6 @@ public class MoteSmsDAO {
         this.database = database;
     }
 
-
     public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
 
         log.info("henter moter mellom " + fra + " og " + til);
@@ -41,7 +40,7 @@ public class MoteSmsDAO {
                         " and LIVSLOPSTATUS_KODE != 'AVBRUTT'" +
                         " and FRA_DATO between ? and ?" +
                         " and HISTORISK_DATO is null " +
-                        " order by FRA_DATO asc"
+                        " order by FRA_DATO"
                 ,
                 this::mapper,
                 fra,
@@ -96,5 +95,15 @@ public class MoteSmsDAO {
                 , varselId
                 , new Date()
         );
+    }
+
+    public long antallAktivteterSendtSmsPaa() {
+        //language=sql
+        return database.queryForObject("select count(*) from GJELDENDE_MOTE_SMS", Long.class);
+    }
+
+    public long antallSmsSendt() {
+        //language=sql
+        return database.queryForObject("select count(*) from MOTE_SMS_HISTORIKK", Long.class);
     }
 }

@@ -10,22 +10,18 @@ import org.springframework.stereotype.Component;
 @Component
 @EnableScheduling
 public class CroneService {
-    private final MoteSMSService moteSMSService;
+    private final MoteSMSMangagerService moteSMSMangagerService;
     private final LeaderElectionClient leaderElectionClient;
 
-    public CroneService(MoteSMSService moteSMSService, LeaderElectionClient leaderElectionClient) {
-        this.moteSMSService = moteSMSService;
+    public CroneService(MoteSMSMangagerService moteSMSService, LeaderElectionClient leaderElectionClient) {
+        this.moteSMSMangagerService = moteSMSService;
         this.leaderElectionClient = leaderElectionClient;
     }
 
-    @Scheduled(fixedDelay = 60000, initialDelay = 60000)
-    public void sendSms() {
-        boolean leader = leaderElectionClient.isLeader();
-        log.info("motesms er ledaer : " + leader);
-
-        if (leader) {
-            moteSMSService.sendServicemelding();
+    @Scheduled(fixedRate = 60000, initialDelay = 60000)
+    public void sendMoteServicemelding() {
+        if (leaderElectionClient.isLeader()) {
+            moteSMSMangagerService.servicemeldingForMoterNesteDogn();
         }
     }
-
 }

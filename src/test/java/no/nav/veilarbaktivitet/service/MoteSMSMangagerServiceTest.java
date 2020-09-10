@@ -16,10 +16,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.jta.JtaTransactionManager;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -36,7 +41,7 @@ import static org.mockito.Mockito.verify;
 @EnableAutoConfiguration
 @Import(ApplicationTestConfig.class)
 @RunWith(MockitoJUnitRunner.class)
-public class MoteSMSServiceTest {
+public class MoteSMSMangagerServiceTest {
 
     @Mock
     private JmsTemplate varselQueueJsm;
@@ -66,7 +71,11 @@ public class MoteSMSServiceTest {
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
-    private MoteSMSService moteSMSService;
+    private MoteSMSMangagerService moteSMSService;
+
+
+    private PlatformTransactionManager transactionManager;
+
 
     @BeforeClass
     public static void settup() {
@@ -77,17 +86,20 @@ public class MoteSMSServiceTest {
     public void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
 
-        moteSMSService = new MoteSMSService(varselQueue,
-                moteSmsDAO,
-                meterRegistry
-        );
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+        transactionManager.setDataSource(jdbcTemplate.getDataSource());
+
+        MoteSmsSenderService moteSmsSenderService = new MoteSmsSenderService(
+                varselQueue, moteSmsDAO, transactionManager);
+
+        moteSMSService = new MoteSMSMangagerService(
+                moteSmsSenderService, moteSmsDAO, meterRegistry);
 
     }
 
-
     @Test
     public void skalIkkeFeileMedTomListe() {
-        moteSMSService.sendServicemelding();
+        moteSMSService.servicemeldingForMoterNesteDogn();
 
         assertThatMeldingerSendt(0,0);
     }
@@ -96,11 +108,11 @@ public class MoteSMSServiceTest {
     public void skalIkkeSendeFlereVarselrForEnAktivitet() {
         insertMote(1, betwheen);
         insertMote(1, betwheen2);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(1,0);
 
-        verify(varselQueue).sendMoteSms(smsCapture.capture());
+        verify(varselQueue).sendMoteSms(smsCapture.capture(), anyString());
         SmsAktivitetData value = smsCapture.getValue();
         assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
         assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
@@ -112,18 +124,32 @@ public class MoteSMSServiceTest {
         insertMote(1, betwheen);
         insertMote(2, betwheen);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
     }
 
+    @Test
+    public void skalIkkeInsetteForException() {
+        insertMote(1, betwheen);
+        insertMote(2, betwheen);
+
+        doThrow(RuntimeException.class)
+                .doNothing()
+                .when(varselQueueJsm).send(any());
+
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
+
+        assertThatHistorikkInneholder(1);
+        assertThatGjeldendeInneholder(1);
+    }
 
     @Test
     public void skalIkkeSendeSmsForAktiviteterUtenfor() {
         insertMote(1, after);
         insertMote(2, before);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(0,0);
     }
@@ -131,11 +157,11 @@ public class MoteSMSServiceTest {
     @Test
     public void skalIkkeSendeFlereGanger() {
         insertMote(1, betwheen);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
     }
 
@@ -144,12 +170,12 @@ public class MoteSMSServiceTest {
     public void skalSendePaaNyttHvisOppdatert() {
         insertMote(1, betwheen);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen2);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
 
     }
@@ -162,7 +188,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
         }
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.servicemeldingForMoter(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(values.length - 1,0);
 
@@ -176,7 +202,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
         }
 
-        moteSMSService.sendServicemelding(before, after);
+        moteSMSService.servicemeldingForMoter(before, after);
 
         assertThatMeldingerSendt(1,0);
     }
@@ -201,7 +227,7 @@ public class MoteSMSServiceTest {
     private void assertThatMeldingerSendt(int nyeMoterMelding, int moterOppdatertMelding) {
         int totMeldinger = nyeMoterMelding + moterOppdatertMelding;
 
-        verify(varselQueue, times(totMeldinger)).sendMoteSms(any());
+        verify(varselQueue, times(totMeldinger)).sendMoteSms(any(), anyString());
         verify(varselQueueJsm, times(totMeldinger)).send(any());
 
         assertThatGjeldendeInneholder(nyeMoterMelding);
