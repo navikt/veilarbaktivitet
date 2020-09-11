@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.db.dao;
 
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
@@ -34,6 +34,7 @@ public class MoteSMSDAOTest {
 
     @Before
     public void cleanUp(){
+        System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 

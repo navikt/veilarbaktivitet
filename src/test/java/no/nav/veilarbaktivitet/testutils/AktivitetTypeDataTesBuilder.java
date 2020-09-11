@@ -1,33 +1,10 @@
-package no.nav.veilarbaktivitet;
+package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.domain.*;
 
-import java.util.Date;
 import java.util.Random;
 
-import static java.util.Calendar.SECOND;
-import static no.nav.veilarbaktivitet.domain.AktivitetData.AktivitetDataBuilder;
-import static org.apache.commons.lang3.time.DateUtils.truncate;
-
-public class AktivitetDataTestBuilder {
-
-    public static AktivitetDataBuilder nyAktivitet() {
-        return AktivitetData.builder()
-                .id(new Random().nextLong())
-                .fraDato(nyDato())
-                .tilDato(nyDato())
-                .tittel("tittel")
-                .beskrivelse("beskrivelse")
-                .status(AktivitetStatus.values()[0])
-                .avsluttetKommentar("avsluttetKommentar")
-                .lagtInnAv(InnsenderData.values()[0])
-                .opprettetDato(nyDato())
-                .lenke("lenke")
-                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .lestAvBrukerForsteGang(null)
-                .historiskDato(null)
-                .malid("2");
-    }
+public class AktivitetTypeDataTesBuilder {
 
     public static StillingsoekAktivitetData nyttStillingssøk() {
         return StillingsoekAktivitetData.builder()
@@ -89,10 +66,4 @@ public class AktivitetDataTestBuilder {
                 .referatPublisert(false)
                 .build();
     }
-
-    public static Date nyDato() {
-        return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
-    }
-
-
 }
