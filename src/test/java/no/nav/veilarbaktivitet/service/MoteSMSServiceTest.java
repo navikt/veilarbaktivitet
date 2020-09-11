@@ -156,6 +156,25 @@ public class MoteSMSServiceTest {
         assertThatMeldingerSendt(1,0);
     }
 
+    @Test
+    public void skalIkkeSendePaaNyttForOppdatertMoteform() {
+        //Skal endres til skal sende paa nytt når vi har oppdatert varsel
+        insertMote(1, betwheen);
+
+        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
+        AktivitetData oppdatert1 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE));
+        aktivitetDAO.insertAktivitet(oppdatert1);
+
+        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+
+        AktivitetData oppdatert2 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON));
+        aktivitetDAO.insertAktivitet(oppdatert2);
+
+        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+    }
+
 
     @Test
     public void skalSendePaaNyttHvisOppdatert() {

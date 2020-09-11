@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXBContext;
 
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.veilarbaktivitet.service.MessageQueueUtils.*;
 
 
@@ -22,8 +21,6 @@ public class VarselQueService {
 
     private static final String VARSEL_ID = "AktivitetsplanMoteVarsel";
     private static final JAXBContext VARSEL_CONTEXT = jaxbContext(XMLVarsel.class, XMLVarslingstyper.class);
-    private static final String AKTIVITETSPLAN_URL = getRequiredProperty("AKTIVITETSPLAN_URL");
-
 
     public VarselQueService(JmsTemplate varselQueue) {
         this.varselQueue = varselQueue;
@@ -40,6 +37,7 @@ public class VarselQueService {
                 .withVarslingstype(new XMLVarslingstyper(VARSEL_ID, null, null))
                 .withParameterListes(
                         new XMLParameter("motedato", aktivitetData.formatertMoteTid()),
+                        new XMLParameter("motetype", aktivitetData.moteType()),
                         new XMLParameter("aktiviteturl", aktivitetData.url())
                 );
 
