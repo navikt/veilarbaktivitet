@@ -34,6 +34,7 @@ import static org.mockito.Mockito.when;
         ClientTestConfig.class,
         AktivitetDAO.class,
         MoteSmsDAO.class,
+        VarselQueService.class,
         BrukerService.class,
         FunksjonelleMetrikker.class,
         MoteSMSService.class,
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.when;
         AktivitetAppService.class,
         AktivitetsplanController.class,
         FilterTestConfig.class,
+        CroneService.class,
 })
 public class ApplicationTestConfig {
 
@@ -69,8 +71,6 @@ public class ApplicationTestConfig {
     @Bean
     public JmsTemplate varselQueue() { return Mockito.mock(JmsTemplate.class); }
 
-
-
     @Bean
     public LeaderElectionClient leaderElectionClient() {
         var client = mock(LeaderElectionClient.class);
@@ -80,12 +80,12 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getDb().getDataSource();
+        return LocalH2Database.getPresistentDb().getDataSource();
     }
 
     @Bean
     public JdbcTemplate jdbcTemplate() {
-        return LocalH2Database.getDb();
+        return LocalH2Database.getPresistentDb();
     }
 
     @Bean
