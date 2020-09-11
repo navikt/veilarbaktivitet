@@ -5,36 +5,47 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.health.HealthCheck;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.util.UUID.randomUUID;
 import static no.nav.veilarbaktivitet.util.DateUtils.omTimer;
 
 @Component
 @Slf4j
-public class MoteSMSMangagerService {
-
-    private final MoteSmsSenderService moteSmsSenderService;
+public class MoteSMSService implements HealthCheck {
     private final MoteSmsDAO moteSmsDAO;
+    private final VarselQueService varselQueue;
+    private final TransactionTemplate transactionTemplate;
+
 
     private final MeterRegistry registry;
     private final Counter antalSMSFeilet;
     private final Counter antellGangerGjenomfort;
     private AtomicLong smserSendt;
     private AtomicLong aktivterSendtSmsPaa;
+    private final AtomicBoolean healty = new AtomicBoolean(true);
+    private final AtomicBoolean healtyThisRound = new AtomicBoolean(true);
 
-    public MoteSMSMangagerService(
-            MoteSmsSenderService moteSmsSenderService,
-            MoteSmsDAO moteSmsDAO,
-            MeterRegistry registry
-    ) {
-        this.moteSmsSenderService = moteSmsSenderService;
+    public MoteSMSService(
+                                  MoteSmsDAO moteSmsDAO,
+                                  VarselQueService varselQueue,
+                                  PlatformTransactionManager platformTransactionManager,
+                                  MeterRegistry registry) {
+
         this.moteSmsDAO = moteSmsDAO;
+        this.varselQueue = varselQueue;
+        this.transactionTemplate =  new TransactionTemplate(platformTransactionManager);
 
         this.registry = registry;
         antalSMSFeilet = registry.counter("antalSMSFeilet");
@@ -42,11 +53,11 @@ public class MoteSMSMangagerService {
     }
 
     @Timed(value = "moteservicemlding", longTask = true, histogram = true)
-    public void servicemeldingForMoterNesteDogn() {
-        servicemeldingForMoter(omTimer(1), omTimer(24));
+    public void sendServicemeldingerForNesteDogn() {
+        endServicemeldinger(omTimer(1), omTimer(24));
     }
 
-    protected void servicemeldingForMoter(Date fra, Date til) {
+    protected void endServicemeldinger(Date fra, Date til) {
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(fra, til);
 
         log.info("moteSMS antall hentet: " + smsAktivitetData.size());
@@ -58,15 +69,28 @@ public class MoteSMSMangagerService {
         oppdaterMoteSmsMetrikker();
         antellGangerGjenomfort.increment();
         log.info("mote sms ferdig");
+
+        healty.set(healtyThisRound.get());
+        healtyThisRound.set(true);
     }
 
     private void trySendServicemelding(SmsAktivitetData aktivitetData) {
         try {
-            moteSmsSenderService.sendServiceMelding(aktivitetData);
+            sendServiceMelding(aktivitetData);
         } catch (Exception e) {
             log.error("feil med varsel paa motesms for aktivitetId " + aktivitetData.getAktivitetId(), e);
             antalSMSFeilet.increment();
+            healty.set(false);
+            healtyThisRound.set(false);
         }
+    }
+
+    private void sendServiceMelding(SmsAktivitetData aktivitetData) {
+        transactionTemplate.executeWithoutResult(aktivitetdata -> {
+            String varselId = randomUUID().toString();
+            moteSmsDAO.insertSmsSendt(aktivitetData, varselId);
+            varselQueue.sendMoteSms(aktivitetData, varselId);
+        });
     }
 
     private void oppdaterMoteSmsMetrikker() {
@@ -84,5 +108,10 @@ public class MoteSMSMangagerService {
         } else {
             aktivterSendtSmsPaa.set(oppdatertSmsSendt);
         }
+    }
+
+    @Override
+    public HealthCheckResult checkHealth() {
+        return healty.get() ? HealthCheckResult.healthy() : HealthCheckResult.unhealthy("Sending av motesms feiler");
     }
 }

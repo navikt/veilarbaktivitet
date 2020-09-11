@@ -35,10 +35,9 @@ import static org.mockito.Mockito.when;
         AktivitetDAO.class,
         MoteSmsDAO.class,
         VarselQueService.class,
-        MoteSmsSenderService.class,
         BrukerService.class,
         FunksjonelleMetrikker.class,
-        MoteSMSMangagerService.class,
+        MoteSMSService.class,
         AuthService.class,
         AktivitetService.class,
         ArenaAktivitetConsumer.class,
@@ -81,12 +80,12 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getDb().getDataSource();
+        return LocalH2Database.getPresistentDb().getDataSource();
     }
 
     @Bean
     public JdbcTemplate jdbcTemplate() {
-        return LocalH2Database.getDb();
+        return LocalH2Database.getPresistentDb();
     }
 
     @Bean

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Component
 @Slf4j
-@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class MoteSmsDAO {
 
     private final Database database;

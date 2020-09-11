@@ -30,7 +30,7 @@ public class SmsAktivitetData {
     }
 
     private static final java.util.Locale norge = new java.util.Locale("no");
-    private static final SimpleDateFormat DatoFormaterer = new SimpleDateFormat("dd. MMMM yyyy", norge);
+    private static final SimpleDateFormat DatoFormaterer = new SimpleDateFormat("d. MMMM yyyy", norge);
     private static final SimpleDateFormat KlokkeFormaterer = new SimpleDateFormat("HH:mm", norge);
 
     private static final String AKTIVITETSPLAN_URL = getRequiredProperty("AKTIVITETSPLAN_URL");
