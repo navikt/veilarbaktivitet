@@ -80,8 +80,8 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalHenteMoterMellom() {
-        insertMote(2, betwheen2);
-        insertMote(4, betwheen);
+        AktivitetData aktivitetData1 = insertMote(2, betwheen2);
+        AktivitetData aktivitetData2 = insertMote(4, betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -91,7 +91,7 @@ public class MoteSMSDAOTest {
 
         assertThat(aktivitetData.getAktivitetId()).isEqualTo(4);
 
-        assertThat(smsAktivitetData.get(1).getAktorId()).isEqualTo("1234");
+        assertThat(smsAktivitetData.get(1).getAktorId()).isEqualTo(aktivitetData2.getAktorId());
 
     }
 
@@ -108,7 +108,7 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalIkkeHenteAvbrutt() {
-        insertAktivitet(1l, betwheen, AktivitetTypeData.MOTE,AktivitetStatus.AVBRUTT);
+        insertAbrutMote(1l, betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -132,22 +132,29 @@ public class MoteSMSDAOTest {
 
 
     private AktivitetData insertMote(long id, Date fraDato) {
-        return insertAktivitet(id, fraDato, AktivitetTypeData.MOTE, AktivitetStatus.GJENNOMFORES);
-    }
-
-    private AktivitetData insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
-        AktivitetData aktivitet = AktivitetDataTestBuilder
-                .nyAktivitet()
+        AktivitetData build = AktivitetDataTestBuilder
+                .nyMoteAktivitet()
+                .toBuilder()
+                .status(AktivitetStatus.GJENNOMFORES)
                 .id(id)
-                .aktivitetType(type)
-                .status(aktivitetStatus)
                 .fraDato(fraDato)
-                .aktorId(AKTOR_ID.get())
                 .build();
 
-        aktivitetDAO.insertAktivitet(aktivitet);
+        aktivitetDAO.insertAktivitet(build);
+        return aktivitetDAO.hentAktivitet(id);
+    }
 
-        return aktivitetDAO.hentAktivitet(aktivitet.getId());
+    private AktivitetData insertAbrutMote(long id, Date fraDato) {
+        AktivitetData build = AktivitetDataTestBuilder
+                .nyMoteAktivitet()
+                .toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .id(id)
+                .fraDato(fraDato)
+                .build();
+
+        aktivitetDAO.insertAktivitet(build);
+        return aktivitetDAO.hentAktivitet(id);
     }
 
     private long selectCountFrom(String tabelname, JdbcTemplate template) {
