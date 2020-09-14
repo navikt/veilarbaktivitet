@@ -199,7 +199,14 @@ public class MoteSMSServiceTest {
     }
 
     private void insertMote(long id, Date fraDato) {
-        insertAktivitet(id, fraDato, AktivitetTypeData.MOTE, AktivitetStatus.GJENNOMFORES);
+        aktivitetDAO.insertAktivitet(AktivitetDataTestBuilder
+                .nyMoteAktivitet()
+                .toBuilder()
+                .fraDato(fraDato)
+                .id(id)
+                .status(AktivitetStatus.GJENNOMFORES)
+                .aktorId(AKTOR_ID.get())
+                .build());
     }
 
     private void insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
