@@ -157,8 +157,7 @@ public class MoteSMSServiceTest {
     }
 
     @Test
-    public void skalIkkeSendePaaNyttForOppdatertMoteform() {
-        //Skal endres til skal sende paa nytt når vi har oppdatert varsel
+    public void skalSendePaaNyttForOppdatertMoteform() {
         insertMote(1, betwheen);
 
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
@@ -172,7 +171,7 @@ public class MoteSMSServiceTest {
         aktivitetDAO.insertAktivitet(oppdatert2);
 
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,0);
+        assertThatMeldingerSendt(1,1);
     }
 
 
