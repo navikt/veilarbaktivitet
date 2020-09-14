@@ -16,9 +16,21 @@ public class SmsAktivitetData {
     Long aktivtetVersion;
     Date moteTidAktivitet;
     Date smsSendtMoteTid;
+    String aktivitetKanal;
+    String smsKanal;
 
     public boolean skalSendeServicevarsel() {
         return !moteTidAktivitet.equals(smsSendtMoteTid);
+    }
+
+    public String moteType() {
+        if(KanalDTO.INTERNETT.toString().equals(aktivitetKanal)) {
+            return "videomøte";
+        }
+        if(KanalDTO.TELEFON.toString().equals(aktivitetKanal)) {
+            return "telefonmøte";
+        }
+        return "møte";
     }
 
     public String formatertMoteTid() {

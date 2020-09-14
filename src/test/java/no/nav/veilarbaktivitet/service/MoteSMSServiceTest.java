@@ -99,7 +99,7 @@ public class MoteSMSServiceTest {
     public void skalIkkeSendeFlereVarselrForEnAktivitet() {
         insertMote(1, betwheen);
         insertMote(1, betwheen2);
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(1,0);
 
@@ -115,7 +115,7 @@ public class MoteSMSServiceTest {
         insertMote(1, betwheen);
         insertMote(2, betwheen);
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
     }
@@ -129,7 +129,7 @@ public class MoteSMSServiceTest {
                 .doNothing()
                 .when(varselQueueJsm).send(any());
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatHistorikkInneholder(1);
         assertThatGjeldendeInneholder(1);
@@ -140,7 +140,7 @@ public class MoteSMSServiceTest {
         insertMote(1, after);
         insertMote(2, before);
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(0,0);
     }
@@ -148,11 +148,30 @@ public class MoteSMSServiceTest {
     @Test
     public void skalIkkeSendeFlereGanger() {
         insertMote(1, betwheen);
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen);
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+    }
+
+    @Test
+    public void skalIkkeSendePaaNyttForOppdatertMoteform() {
+        //Skal endres til skal sende paa nytt når vi har oppdatert varsel
+        insertMote(1, betwheen);
+
+        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
+        AktivitetData oppdatert1 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE));
+        aktivitetDAO.insertAktivitet(oppdatert1);
+
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+
+        AktivitetData oppdatert2 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON));
+        aktivitetDAO.insertAktivitet(oppdatert2);
+
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
     }
 
@@ -161,12 +180,12 @@ public class MoteSMSServiceTest {
     public void skalSendePaaNyttHvisOppdatert() {
         insertMote(1, betwheen);
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen2);
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
 
     }
@@ -179,7 +198,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
         }
 
-        moteSMSService.endServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(values.length - 1,0);
 
@@ -193,7 +212,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
         }
 
-        moteSMSService.endServicemeldinger(before, after);
+        moteSMSService.sendServicemeldinger(before, after);
 
         assertThatMeldingerSendt(1,0);
     }

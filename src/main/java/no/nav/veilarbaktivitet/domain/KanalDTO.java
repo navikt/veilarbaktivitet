@@ -4,5 +4,4 @@ public enum KanalDTO {
     OPPMOTE,
     TELEFON,
     INTERNETT;
-
 }
