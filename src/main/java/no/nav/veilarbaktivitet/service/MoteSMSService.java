@@ -54,10 +54,10 @@ public class MoteSMSService implements HealthCheck {
 
     @Timed(value = "moteservicemlding", longTask = true, histogram = true)
     public void sendServicemeldingerForNesteDogn() {
-        endServicemeldinger(omTimer(1), omTimer(24));
+        sendServicemeldinger(omTimer(1), omTimer(24));
     }
 
-    protected void endServicemeldinger(Date fra, Date til) {
+    protected void sendServicemeldinger(Date fra, Date til) {
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(fra, til);
 
         log.info("moteSMS antall hentet: " + smsAktivitetData.size());
