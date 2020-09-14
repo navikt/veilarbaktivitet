@@ -1,11 +1,14 @@
 package no.nav.veilarbaktivitet;
 
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.testutils.InsertAktiviteter;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 
 @EnableAutoConfiguration
@@ -23,5 +26,10 @@ public class VeilarbAktivitetTestApp {
         SpringApplication application = new SpringApplication(VeilarbAktivitetTestApp.class);
         application.setAdditionalProfiles("local");
         application.run(args);
+
+        //uncoment for og lage aktiviteter /slette all data
+        JdbcTemplate jdbcTemplate = LocalH2Database.getPresistentDb();
+        //InsertAktiviteter.insertAktiviteter(jdbcTemplate);
+        //DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 }

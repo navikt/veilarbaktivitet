@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import org.junit.Test;
@@ -14,6 +14,7 @@ import java.util.Date;
 
 import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -39,7 +40,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
-        val aktivitet = lagEnNyAktivitet().toBuilder().status(AktivitetStatus.AVBRUTT).build();
+        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);
@@ -47,7 +48,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = lagEnNyAktivitet().toBuilder().historiskDato(new Date()).build();
+        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);
@@ -86,17 +87,6 @@ public class AktivitetAppServiceTest {
 
     public void mockHentAktivitet(AktivitetData aktivitetData) {
         when(aktivitetService.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitetData);
-    }
-
-
-    public AktivitetData lagEnNyAktivitet() {
-        val stilling = AktivitetDataTestBuilder.nyttStillingssøk();
-        return AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(JOBBSOEKING)
-                .id(AKTIVITET_ID)
-                .aktorId("haha")
-                .stillingsSoekAktivitetData(stilling)
-                .build();
     }
 
 }
