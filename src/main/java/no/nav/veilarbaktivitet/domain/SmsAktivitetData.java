@@ -20,14 +20,18 @@ public class SmsAktivitetData {
     String smsKanal;
 
     public boolean skalSendeServicevarsel() {
-        return !moteTidAktivitet.equals(smsSendtMoteTid);
+        return !moteTidAktivitet.equals(smsSendtMoteTid) || !sendtMoteType(aktivitetKanal).equals(sendtMoteType(smsKanal));
     }
 
     public String moteType() {
-        if(KanalDTO.INTERNETT.toString().equals(aktivitetKanal)) {
+        return sendtMoteType(aktivitetKanal);
+    }
+
+    private String sendtMoteType(String kanal) {
+        if(KanalDTO.INTERNETT.toString().equals(kanal)) {
             return "videomøte";
         }
-        if(KanalDTO.TELEFON.toString().equals(aktivitetKanal)) {
+        if(KanalDTO.TELEFON.toString().equals(kanal)) {
             return "telefonmøte";
         }
         return "møte";
