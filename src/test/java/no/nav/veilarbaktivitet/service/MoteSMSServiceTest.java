@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -19,6 +19,7 @@ import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 
 import java.time.LocalDateTime;
@@ -61,12 +62,12 @@ public class MoteSMSServiceTest {
     private final Database database = new Database(jdbcTemplate);
 
     private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
-
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
     private MoteSMSService moteSMSService;
+
 
     @BeforeClass
     public static void settup() {
@@ -77,17 +78,19 @@ public class MoteSMSServiceTest {
     public void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
 
-        moteSMSService = new MoteSMSService(varselQueue,
+        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+        transactionManager.setDataSource(jdbcTemplate.getDataSource());
+
+        moteSMSService = new MoteSMSService(
                 moteSmsDAO,
-                meterRegistry
-        );
-
+                varselQueue,
+                transactionManager,
+                meterRegistry);
     }
-
 
     @Test
     public void skalIkkeFeileMedTomListe() {
-        moteSMSService.sendServicemelding();
+        moteSMSService.sendServicemeldingerForNesteDogn();
 
         assertThatMeldingerSendt(0,0);
     }
@@ -96,11 +99,11 @@ public class MoteSMSServiceTest {
     public void skalIkkeSendeFlereVarselrForEnAktivitet() {
         insertMote(1, betwheen);
         insertMote(1, betwheen2);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(1,0);
 
-        verify(varselQueue).sendMoteSms(smsCapture.capture());
+        verify(varselQueue).sendMoteSms(smsCapture.capture(), anyString());
         SmsAktivitetData value = smsCapture.getValue();
         assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
         assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
@@ -112,18 +115,32 @@ public class MoteSMSServiceTest {
         insertMote(1, betwheen);
         insertMote(2, betwheen);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
     }
 
+    @Test
+    public void skalIkkeInsetteForException() {
+        insertMote(1, betwheen);
+        insertMote(2, betwheen);
+
+        doThrow(RuntimeException.class)
+                .doNothing()
+                .when(varselQueueJsm).send(any());
+
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+
+        assertThatHistorikkInneholder(1);
+        assertThatGjeldendeInneholder(1);
+    }
 
     @Test
     public void skalIkkeSendeSmsForAktiviteterUtenfor() {
         insertMote(1, after);
         insertMote(2, before);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(0,0);
     }
@@ -131,11 +148,30 @@ public class MoteSMSServiceTest {
     @Test
     public void skalIkkeSendeFlereGanger() {
         insertMote(1, betwheen);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen);
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+    }
+
+    @Test
+    public void skalIkkeSendePaaNyttForOppdatertMoteform() {
+        //Skal endres til skal sende paa nytt når vi har oppdatert varsel
+        insertMote(1, betwheen);
+
+        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
+        AktivitetData oppdatert1 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE));
+        aktivitetDAO.insertAktivitet(oppdatert1);
+
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        assertThatMeldingerSendt(1,0);
+
+        AktivitetData oppdatert2 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON));
+        aktivitetDAO.insertAktivitet(oppdatert2);
+
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
     }
 
@@ -144,12 +180,12 @@ public class MoteSMSServiceTest {
     public void skalSendePaaNyttHvisOppdatert() {
         insertMote(1, betwheen);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         insertMote(1, betwheen2);
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
 
     }
@@ -162,7 +198,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
         }
 
-        moteSMSService.sendServicemelding(earlyCuttoff, lateCuttof);
+        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(values.length - 1,0);
 
@@ -176,13 +212,20 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
         }
 
-        moteSMSService.sendServicemelding(before, after);
+        moteSMSService.sendServicemeldinger(before, after);
 
         assertThatMeldingerSendt(1,0);
     }
 
     private void insertMote(long id, Date fraDato) {
-        insertAktivitet(id, fraDato, AktivitetTypeData.MOTE, AktivitetStatus.GJENNOMFORES);
+        aktivitetDAO.insertAktivitet(AktivitetDataTestBuilder
+                .nyMoteAktivitet()
+                .toBuilder()
+                .fraDato(fraDato)
+                .id(id)
+                .status(AktivitetStatus.GJENNOMFORES)
+                .aktorId(AKTOR_ID.get())
+                .build());
     }
 
     private void insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
@@ -201,7 +244,7 @@ public class MoteSMSServiceTest {
     private void assertThatMeldingerSendt(int nyeMoterMelding, int moterOppdatertMelding) {
         int totMeldinger = nyeMoterMelding + moterOppdatertMelding;
 
-        verify(varselQueue, times(totMeldinger)).sendMoteSms(any());
+        verify(varselQueue, times(totMeldinger)).sendMoteSms(any(), anyString());
         verify(varselQueueJsm, times(totMeldinger)).send(any());
 
         assertThatGjeldendeInneholder(nyeMoterMelding);

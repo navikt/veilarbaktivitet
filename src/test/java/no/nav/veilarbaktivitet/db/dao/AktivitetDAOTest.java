@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
@@ -122,9 +122,9 @@ public class AktivitetDAOTest {
 
     @Test
     public void transaksjonsTypene_er_rett_satt_opp() {
-        val aktivitetBuilder = AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.EGENAKTIVITET)
-                .egenAktivitetData(AktivitetDataTestBuilder.nyEgenaktivitet());
+        val aktivitetBuilder = AktivitetDataTestBuilder
+                .nyEgenaktivitet()
+                .toBuilder();
 
         Arrays.asList(AktivitetTransaksjonsType.values()).forEach(t -> {
                     aktivitetBuilder.transaksjonsType(t);
@@ -147,62 +147,37 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.JOBBSOEKING)
-                .stillingsSoekAktivitetData(AktivitetDataTestBuilder.nyttStillingssøk())
-                .build();
+        val aktivitet = AktivitetDataTestBuilder.nyttStillingssøk();
 
-        return insertAktivitet(aktivitet);
+        return insertAktivitet(AktivitetDataTestBuilder.nyttStillingssøk());
     }
 
     private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.EGENAKTIVITET)
-                .egenAktivitetData(AktivitetDataTestBuilder.nyEgenaktivitet())
-                .build();
+        val aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet();
 
         return insertAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.SOKEAVTALE)
-                .sokeAvtaleAktivitetData(AktivitetDataTestBuilder.nySokeAvtaleAktivitet())
-                .build();
+        val aktivitet = AktivitetDataTestBuilder.nySokeAvtaleAktivitet();
 
         return insertAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_ijobb() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.IJOBB)
-                .iJobbAktivitetData(AktivitetDataTestBuilder.nyIJobbAktivitet())
-                .build()
-        );
+        return insertAktivitet(AktivitetDataTestBuilder.nyIJobbAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_en_behandling() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.BEHANDLING)
-                .behandlingAktivitetData(AktivitetDataTestBuilder.nyBehandlingAktivitet())
-                .build()
-        );
+        return insertAktivitet(AktivitetDataTestBuilder.nyBehandlingAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_et_mote() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.MOTE)
-                .moteData(AktivitetDataTestBuilder.moteData())
-                .build()
-        );
+        return insertAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
-                .moteData(AktivitetDataTestBuilder.moteData())
-                .build()
-        );
+        return insertAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
     }
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {

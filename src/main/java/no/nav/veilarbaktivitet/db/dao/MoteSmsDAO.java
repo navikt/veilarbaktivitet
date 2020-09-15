@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.domain.KanalDTO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,6 @@ import java.util.List;
 
 @Component
 @Slf4j
-@SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection"})
 public class MoteSmsDAO {
 
     private final Database database;
@@ -20,7 +20,6 @@ public class MoteSmsDAO {
     public MoteSmsDAO(Database database) {
         this.database = database;
     }
-
 
     public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
 
@@ -31,17 +30,20 @@ public class MoteSmsDAO {
                 "select " +
                         " AKTOR_ID " +
                         ", AKTIVITET.AKTIVITET_ID as ID " +
-                        ", VERSJON " +
+                        ", AKTIVITET.VERSJON as AKTIVITET_VERSJON" +
                         ", FRA_DATO " +
-                        ", MOTETID "+
+                        ", MOTETID " +
+                        ", MOTE.KANAL as AKTIVITET_KANAL" +
+                        ", GJELDENDE_MOTE_SMS.KANAL as SMS_KANAL"+
                         " from AKTIVITET" +
+                        " left join MOTE on AKTIVITET.AKTIVITET_ID = MOTE.AKTIVITET_ID and AKTIVITET.VERSJON = MOTE.VERSJON"+
                         " left join GJELDENDE_MOTE_SMS on AKTIVITET.AKTIVITET_ID = GJELDENDE_MOTE_SMS.AKTIVITET_ID" +
                         " where AKTIVITET_TYPE_KODE  = 'MOTE'" +
                         " and GJELDENDE = 1" +
                         " and LIVSLOPSTATUS_KODE != 'AVBRUTT'" +
                         " and FRA_DATO between ? and ?" +
                         " and HISTORISK_DATO is null " +
-                        " order by FRA_DATO asc"
+                        " order by FRA_DATO"
                 ,
                 this::mapper,
                 fra,
@@ -55,9 +57,11 @@ public class MoteSmsDAO {
                 .builder()
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getLong("ID"))
-                .aktivtetVersion(rs.getLong("VERSJON"))
+                .aktivtetVersion(rs.getLong("AKTIVITET_VERSJON"))
                 .moteTidAktivitet(rs.getTimestamp("FRA_DATO"))
                 .smsSendtMoteTid(rs.getTimestamp("MOTETID"))
+                .aktivitetKanal(rs.getString("AKTIVITET_KANAL"))
+                .smsKanal(rs.getString("SMS_KANAL"))
                 .build();
     }
 
@@ -65,36 +69,48 @@ public class MoteSmsDAO {
         Date motetTid = smsAktivitetData.getMoteTidAktivitet();
         Long aktiviteteId = smsAktivitetData.getAktivitetId();
         Long aktivtetVersion = smsAktivitetData.getAktivtetVersion();
+        String kanal = smsAktivitetData.getAktivitetKanal();
 
         //language=sql
         int antall = database.update(
-                "update GJELDENDE_MOTE_SMS" +
-                        " set MOTETID = ?" +
-                        " where AKTIVITET_ID = ?"
+                "update GJELDENDE_MOTE_SMS set MOTETID = ?, KANAL = ? where AKTIVITET_ID = ?"
                 , motetTid
+                , kanal
                 , aktiviteteId
         );
 
         if (antall == 0) {
             //language=sql
             database.update(
-                    "insert into GJELDENDE_MOTE_SMS (AKTIVITET_ID, MOTETID)" +
-                            " values (?, ?)"
+                    "insert into GJELDENDE_MOTE_SMS (AKTIVITET_ID, MOTETID, KANAL)" +
+                            " values (?, ?, ?)"
                     , aktiviteteId
                     , motetTid
+                    , kanal
             );
         }
 
         //language=sql
         database.update(
                 "insert into MOTE_SMS_HISTORIKK" +
-                        " (AKTIVITET_ID, VERSJON, MOTETID, VARSEL_ID, SENDT) VALUES" +
-                        " (?,?,?,?,?)"
+                        " (AKTIVITET_ID, VERSJON, MOTETID, VARSEL_ID, KANAL, SENDT) VALUES" +
+                        " (?,?,?,?,?,?)"
                 , aktiviteteId
                 , aktivtetVersion
                 , motetTid
                 , varselId
+                , kanal
                 , new Date()
         );
+    }
+
+    public long antallAktivteterSendtSmsPaa() {
+        //language=sql
+        return database.queryForObject("select count(*) from GJELDENDE_MOTE_SMS", Long.class);
+    }
+
+    public long antallSmsSendt() {
+        //language=sql
+        return database.queryForObject("select count(*) from MOTE_SMS_HISTORIKK", Long.class);
     }
 }

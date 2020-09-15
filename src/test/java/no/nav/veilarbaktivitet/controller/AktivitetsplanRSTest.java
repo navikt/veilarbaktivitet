@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -140,17 +141,11 @@ public class AktivitetsplanRSTest {
     }
 
 
-    private AktivitetData nyStillingAktivitet() {
-        return AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.JOBBSOEKING)
-                .stillingsSoekAktivitetData(AktivitetDataTestBuilder.nyttStillingssøk())
-                .build();
-    }
 
     private List<Long> lagredeAktivitetsIder;
 
     private List<AktivitetData> aktiviter = Arrays.asList(
-            nyStillingAktivitet(), nyStillingAktivitet()
+            nyttStillingssøk(), nyttStillingssøk()
     );
 
     private AktivitetDTO aktivitet;
@@ -161,16 +156,16 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
         gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
-                nyStillingAktivitet(),
-                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
-                nyStillingAktivitet(),
-                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssøk(),
+                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
+                nyttStillingssøk(),
+                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
         ));
     }
 
     private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
         gitt_at_jeg_har_folgende_aktiviteter(Collections.singletonList(
-                nyStillingAktivitet().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
         ));
     }
 

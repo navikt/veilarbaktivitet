@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.service;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.feil.VersjonsKonflikt;
-import no.nav.veilarbaktivitet.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
@@ -151,9 +151,9 @@ public class AktivitetServiceTest {
 
     @Test
     public void oppdaterMoteTidOgSted() {
-        val aktivitet = lagEnNyAktivitet().withAktivitetType(MOTE).withMoteData(AktivitetDataTestBuilder.moteData());
+        AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
-        val nyFrist = new Date();
+        Date nyFrist = new Date();
         String nyAdresse = "ny adresse";
         aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
 
@@ -244,12 +244,7 @@ public class AktivitetServiceTest {
     }
 
     public AktivitetData lagEnNyAktivitet() {
-        val stilling = AktivitetDataTestBuilder.nyttStillingssøk();
-        return AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(JOBBSOEKING)
-                .id(AKTIVITET_ID)
-                .stillingsSoekAktivitetData(stilling)
-                .build();
+        return AktivitetDataTestBuilder.nyttStillingssøk();
     }
 
     public void captureInsertAktivitetArgument() {
