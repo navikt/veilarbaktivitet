@@ -39,7 +39,7 @@ public class LocalH2Database {
 
         if (db == null) {
             TestDriver.init();
-            DataSource dataSource = createTestDataSource("jdbc:h2:file:~/database/veilarbaktivitet-local;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;");
+            DataSource dataSource = createTestDataSource("jdbc:h2:file:~/database/veilarbaktivitet;DB_CLOSE_DELAY=-1;MODE=Oracle;AUTO_SERVER=TRUE;");
             db = new JdbcTemplate(dataSource);
             initDb(dataSource);
         }

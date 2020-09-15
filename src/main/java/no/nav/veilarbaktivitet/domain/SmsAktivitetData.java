@@ -34,7 +34,7 @@ public class SmsAktivitetData {
     }
 
     public String formatertMoteTid() {
-        return DatoFormaterer.format(moteTidAktivitet) + " klokken " + KlokkeFormaterer.format(moteTidAktivitet);
+        return DatoFormaterer.format(moteTidAktivitet) + " kl. " + KlokkeFormaterer.format(moteTidAktivitet);
     }
 
     public String url() {

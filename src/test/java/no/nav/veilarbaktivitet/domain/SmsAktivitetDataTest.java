@@ -64,7 +64,7 @@ class SmsAktivitetDataTest {
                 .build()
                 .formatertMoteTid();
 
-        assertThat(moteTid).isEqualTo("2. april 2020 klokken 10:01");
+        assertThat(moteTid).isEqualTo("2. april 2020 kl. 10:01");
     }
 
     @Test
@@ -80,7 +80,7 @@ class SmsAktivitetDataTest {
                 .build()
                 .formatertMoteTid();
 
-        assertThat(moteTid).isEqualTo("2. april 2020 klokken 22:01");
+        assertThat(moteTid).isEqualTo("2. april 2020 kl. 22:01");
     }
 
     @Test
