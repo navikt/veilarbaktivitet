@@ -38,16 +38,33 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void skalIkkeSendeServiceVarselForLiksSMSMoteTid() {
+    void skalIkkeSendeServiceVarselForLiksSMSMoteTidOgLikKanal() {
         Date date = new Date();
 
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
+                .smsKanal("")
+                .aktivitetKanal("")
                 .moteTidAktivitet(date)
                 .smsSendtMoteTid(date)
                 .build();
 
         assertThat(build.skalSendeServicevarsel()).isFalse();
+    }
+
+    @Test
+    void SkalSendeServicevarselUlikKanal() {
+        Date date = new Date();
+
+        SmsAktivitetData build = SmsAktivitetData
+                .builder()
+                .smsKanal(KanalDTO.INTERNETT.toString())
+                .aktivitetKanal(KanalDTO.TELEFON.toString())
+                .moteTidAktivitet(date)
+                .smsSendtMoteTid(date)
+                .build();
+
+        assertThat(build.skalSendeServicevarsel()).isTrue();
     }
 
 
