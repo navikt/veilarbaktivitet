@@ -23,7 +23,7 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 public class FilterConfig {
 
     private final List<String> ALLOWED_SERVICE_USERS = List.of(
-            "srvveilarbportefolje", "srvveilarbdirigent"
+            "srvveilarbportefolje", "srvveilarbdirigent", "srvveilarboppfolging"
     );
 
     private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
@@ -81,6 +81,15 @@ public class FilterConfig {
     }
 
     @Bean
+    public FilterRegistrationBean logFilterRegistrationBean() {
+        FilterRegistrationBean<LogFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new LogFilter(requireApplicationName(), isDevelopment().orElse(false)));
+        registration.setOrder(2);
+        registration.addUrlPatterns("/*");
+        return registration;
+    }
+
+    @Bean
     public FilterRegistrationBean authenticationFilterRegistrationBean(EnvironmentProperties properties) {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
@@ -94,17 +103,8 @@ public class FilterConfig {
         );
 
         registration.setFilter(authenticationFilter);
-        registration.setOrder(2);
-        registration.addUrlPatterns("/api/*");
-        return registration;
-    }
-
-    @Bean
-    public FilterRegistrationBean logFilterRegistrationBean() {
-        FilterRegistrationBean<LogFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new LogFilter(requireApplicationName(), isDevelopment().orElse(false)));
         registration.setOrder(3);
-        registration.addUrlPatterns("/*");
+        registration.addUrlPatterns("/api/*");
         return registration;
     }
 
