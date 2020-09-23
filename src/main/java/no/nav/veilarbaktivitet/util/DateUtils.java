@@ -1,9 +1,11 @@
 package no.nav.veilarbaktivitet.util;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -12,8 +14,10 @@ import java.util.GregorianCalendar;
 
 import static java.util.Optional.ofNullable;
 
+@Slf4j
 public class DateUtils {
 
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
 
     private static final DatatypeFactory datatypeFactory = getDatatypeFactory();
 
@@ -40,6 +44,15 @@ public class DateUtils {
     public static Date dateFromISO8601(String date) {
         Instant instant =  ZonedDateTime.parse(date).toInstant();
         return Date.from(instant);
+    }
+
+    public static Date parseDato(String konfigurertDato) {
+        try {
+            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+        } catch (Exception e) {
+            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            return null;
+        }
     }
 
     public static String ISO8601FromDate(Date date) {

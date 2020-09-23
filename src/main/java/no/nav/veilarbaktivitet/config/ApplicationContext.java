@@ -27,20 +27,13 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationContext {
+
     public static final String APPLICATION_NAME = "veilarbaktivitet";
 
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String VEILARBOPPFOLGINGAPI_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY = "VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL";
-    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "aktiviteter.feed.brukertilgang";
     public static final String VEILARB_KASSERING_IDENTER_PROPERTY = "VEILARB_KASSERING_IDENTER";
-
-    public static final String AKTOER_V2_ENDPOINTURL = "AKTOER_V2_ENDPOINTURL";
-    public static final String REDIRECT_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
-    public static final String SECURITYTOKENSERVICE_URL = "SECURITYTOKENSERVICE_URL";
-    public static final String ABAC_PDP_ENDPOINT_URL = "ABAC_PDP_ENDPOINT_URL";
-    public static final String AKTOERREGISTER_API_V1_URL = "AKTOERREGISTER_API_V1_URL";
-
 
     @Bean
     public Credentials serviceUserCredentials() {
@@ -78,19 +71,4 @@ public class ApplicationContext {
         );
     }
 
-    @Bean
-    public static TiltakOgAktivitetV1 tiltakOgAktivitetV1Client(EnvironmentProperties properties, Credentials credentials) {
-        StsConfig stsConfig = StsConfig.builder()
-                .url(properties.getCxfStsUrl())
-                .username(credentials.username)
-                .password(credentials.password)
-                .build();
-
-        return new CXFClient<>(TiltakOgAktivitetV1.class)
-                .address(getRequiredProperty(ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY))
-                .withOutInterceptor(new LoggingOutInterceptor())
-                .configureStsForSubject(stsConfig)
-                .build();
-
-    }
 }

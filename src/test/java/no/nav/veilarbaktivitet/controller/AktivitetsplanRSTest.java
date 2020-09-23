@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
+import no.nav.veilarbaktivitet.client.ArenaAktivitetClient;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -16,7 +16,6 @@ import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.SubjectRule;
 import no.nav.veilarbaktivitet.service.*;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -53,8 +52,8 @@ public class AktivitetsplanRSTest {
     private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
     private BrukerService brukerService = new BrukerService(aktorregisterClient);
     private AuthService authService = mock(AuthService.class);
-    private ArenaAktivitetConsumer arenaAktivitetConsumer = mock(ArenaAktivitetConsumer.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+    private ArenaAktivitetClient arenaAktivitetClient = mock(ArenaAktivitetClient.class);
+    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetClient, authService, aktivitetService, brukerService, funksjonelleMetrikker);
 
     private AktivitetsplanController aktivitetController = new AktivitetsplanController(appService, mockHttpServletRequest);
 

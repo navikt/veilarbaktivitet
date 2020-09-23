@@ -1,7 +1,10 @@
-package no.nav.veilarbaktivitet.ws.consumer;
+package no.nav.veilarbaktivitet.client;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.common.cxf.CXFClient;
+import no.nav.common.cxf.StsConfig;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerUgyldigInput;
@@ -17,6 +20,7 @@ import no.nav.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -32,38 +36,29 @@ import java.util.function.Function;
 import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
 @Slf4j
-@Component
-public class ArenaAktivitetConsumer {
+public class ArenaAktivitetClientImpl implements ArenaAktivitetClient {
 
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
-
 
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    Date arenaAktivitetFilterDato;
+    private final Date arenaAktivitetFilterDato;
 
-    @Autowired
-    ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
+    public ArenaAktivitetClientImpl(TiltakOgAktivitetV1 tiltakOgAktivitetV1, Date arenaAktivitetFilterDato) {
+        this.arenaAktivitetFilterDato = arenaAktivitetFilterDato;
         this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
-        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
     }
 
-    static Date parseDato(String konfigurertDato) {
-        try {
-            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
-        } catch (Exception e) {
-            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
-            return null;
-        }
-    }
-
+    @Override
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
 
         val req = new HentTiltakOgAktiviteterForBrukerRequest();
@@ -72,15 +67,15 @@ public class ArenaAktivitetConsumer {
 
         try {
             val aktiviteter = tiltakOgAktivitetV1.hentTiltakOgAktiviteterForBruker(req);
-            Optional.ofNullable(aktiviteter.getTiltaksaktivitetListe()).ifPresent((tiltakList) ->
+            ofNullable(aktiviteter.getTiltaksaktivitetListe()).ifPresent((tiltakList) ->
                     result.addAll(tiltakList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            Optional.ofNullable(aktiviteter.getGruppeaktivitetListe()).ifPresent((gruppeList) ->
+            ofNullable(aktiviteter.getGruppeaktivitetListe()).ifPresent((gruppeList) ->
                     result.addAll(gruppeList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            Optional.ofNullable(aktiviteter.getUtdanningsaktivitetListe()).ifPresent((utdanningList) ->
+            ofNullable(aktiviteter.getUtdanningsaktivitetListe()).ifPresent((utdanningList) ->
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
@@ -90,6 +85,17 @@ public class ArenaAktivitetConsumer {
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
+        }
+    }
+
+    @Override
+    public HealthCheckResult checkHealth() {
+        try {
+            tiltakOgAktivitetV1.ping();
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            log.warn("Feil ved ping av TiltakOgAktivitetV1", e);
+            return HealthCheckResult.unhealthy("Helsesjekk feilet mot Arena tiltak", e);
         }
     }
 
@@ -164,7 +170,7 @@ public class ArenaAktivitetConsumer {
 
     private ArenaAktivitetDTO mapTilAktivitet(Gruppeaktivitet gruppeaktivitet) {
         List<MoteplanDTO> motePlan = new ArrayList<>();
-        Optional.ofNullable(gruppeaktivitet.getMoeteplanListe())
+        ofNullable(gruppeaktivitet.getMoeteplanListe())
                 .ifPresent(moeteplanListe -> moeteplanListe.stream()
                         .map(this::mapTilMoteplan)
                         .forEach(motePlan::add)
@@ -224,7 +230,7 @@ public class ArenaAktivitetConsumer {
     }
 
     private Date mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
-        return Optional.ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
+        return ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
     }
 
     private enum ArenaStatus {

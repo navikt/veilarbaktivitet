@@ -5,6 +5,7 @@ import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
+import no.nav.veilarbaktivitet.client.ArenaAktivitetClient;
 import no.nav.veilarbaktivitet.helsesjekk.*;
 import no.nav.veilarbaktivitet.service.MoteSMSService;
 import org.springframework.context.annotation.Bean;
@@ -17,15 +18,17 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(ArenaServiceHelsesjekk arenaServiceHelsesjekk,
-                                         AktorregisterClient aktorregisterClient,
-                                         Pep pep,
-                                         DatabaseHelsesjekk databaseHelsesjekk,
-                                         KafkaHelsesjekk kafkaHelsesjekk,
-                                         UnleashHelsesjekk unleashHelsesjekk,
-                                         MoteSMSService moteSMSService) {
+    public SelfTestChecks selfTestChecks(
+            ArenaAktivitetClient arenaAktivitetClient,
+            AktorregisterClient aktorregisterClient,
+            Pep pep,
+            DatabaseHelsesjekk databaseHelsesjekk,
+            KafkaHelsesjekk kafkaHelsesjekk,
+            UnleashHelsesjekk unleashHelsesjekk,
+            MoteSMSService moteSMSService
+    ) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
+                new SelfTestCheck("TiltakOgAktivitetV1", false, arenaAktivitetClient),
                 new SelfTestCheck("Aktorregister", true, aktorregisterClient),
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),

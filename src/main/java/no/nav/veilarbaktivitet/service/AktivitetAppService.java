@@ -6,9 +6,9 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.types.feil.IngenTilgang;
 import no.nav.common.types.feil.UgyldigRequest;
 import no.nav.common.types.feil.UlovligHandling;
+import no.nav.veilarbaktivitet.client.ArenaAktivitetClient;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -21,19 +21,19 @@ import java.util.stream.Collectors;
 @Component
 public class AktivitetAppService {
 
-    private final ArenaAktivitetConsumer arenaAktivitetConsumer;
+    private final ArenaAktivitetClient arenaAktivitetClient;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
     private final FunksjonelleMetrikker funksjonelleMetrikker;
 
     @Autowired
-    public AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
+    public AktivitetAppService(ArenaAktivitetClient arenaAktivitetClient,
                         AuthService authService,
                         AktivitetService aktivitetService,
                         BrukerService brukerService,
                         FunksjonelleMetrikker funksjonelleMetrikker) {
-        this.arenaAktivitetConsumer = arenaAktivitetConsumer;
+        this.arenaAktivitetClient = arenaAktivitetClient;
         this.authService = authService;
         this.aktivitetService = aktivitetService;
         this.brukerService = brukerService;
@@ -73,7 +73,7 @@ public class AktivitetAppService {
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
         authService.sjekkTilgangTilPerson(ident);
-        return arenaAktivitetConsumer.hentArenaAktiviteter(ident);
+        return arenaAktivitetClient.hentArenaAktiviteter(ident);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
