@@ -4,10 +4,8 @@ import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.GregorianCalendar;
 
 import static java.util.Optional.ofNullable;
@@ -22,31 +20,29 @@ public class DateUtils {
         return DatatypeFactory.newInstance();
     }
 
-    public static XMLGregorianCalendar xmlCalendar(Date date) {
+    public static XMLGregorianCalendar xmlCalendar(ZonedDateTime date) {
         return ofNullable(date).map(d->{
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(date);
+            GregorianCalendar cal = GregorianCalendar.from(date);
             return datatypeFactory.newXMLGregorianCalendar(cal);
         }).orElse(null);
     }
 
-    public static Date getDate(XMLGregorianCalendar xmlGregorianCalendar){
+    public static ZonedDateTime getDate(XMLGregorianCalendar xmlGregorianCalendar){
         return ofNullable(xmlGregorianCalendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
-                .map(GregorianCalendar::getTime)
+                .map(GregorianCalendar::toZonedDateTime)
                 .orElse(null);
     }
 
-    public static Date dateFromISO8601(String date) {
-        Instant instant =  ZonedDateTime.parse(date).toInstant();
-        return Date.from(instant);
+    public static ZonedDateTime dateFromISO8601(String date) {
+        return ZonedDateTime.parse(date);
     }
 
-    public static String ISO8601FromDate(Date date) {
+    public static String ISO8601FromDate(ZonedDateTime date) {
         return ISO8601FromDate(date, ZoneId.systemDefault());
     }
 
-    public static String ISO8601FromDate(Date date, ZoneId zoneId) {
+    public static String ISO8601FromDate(ZonedDateTime date, ZoneId zoneId) {
         return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
     }
 
@@ -59,9 +55,9 @@ public class DateUtils {
         return date;
     }
 
-    public static Date omTimer(int timer) {
-        long time = new Date().getTime();
-        return new Date(time + timer * 1000 * 60 * 60);
+    public static ZonedDateTime omTimer(int timer) {
+        ZonedDateTime now = ZonedDateTime.now();
+        return now.plusHours(timer);
     }
 
 }

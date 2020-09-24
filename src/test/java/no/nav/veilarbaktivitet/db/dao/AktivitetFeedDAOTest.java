@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class AktivitetFeedDAOTest {
@@ -74,7 +74,7 @@ public class AktivitetFeedDAOTest {
         Assertions.assertThat(hentetAktiviteter).isEmpty();
     }
 
-    private List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date fra) {
+    private List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(ZonedDateTime fra) {
         return aktivitetFeedDAO.hentAktiviteterEtterTidspunkt(fra, 10);
     }
 

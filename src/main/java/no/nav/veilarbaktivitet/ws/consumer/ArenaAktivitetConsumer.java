@@ -21,10 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -47,7 +47,7 @@ public class ArenaAktivitetConsumer {
 
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    Date arenaAktivitetFilterDato;
+    ZonedDateTime arenaAktivitetFilterDato;
 
     @Autowired
     ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
@@ -55,9 +55,9 @@ public class ArenaAktivitetConsumer {
         this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
     }
 
-    static Date parseDato(String konfigurertDato) {
+    static ZonedDateTime parseDato(String konfigurertDato) {
         try {
-            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+            return ZonedDateTime.parse(konfigurertDato, DateTimeFormatter.ofPattern(DATO_FORMAT));
         } catch (Exception e) {
             log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
             return null;
@@ -93,8 +93,8 @@ public class ArenaAktivitetConsumer {
         }
     }
 
-    private boolean etterFilterDato(Date tilDato) {
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
+    private boolean etterFilterDato(ZonedDateTime tilDato) {
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.isBefore(tilDato);
     }
 
     private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
@@ -170,8 +170,8 @@ public class ArenaAktivitetConsumer {
                         .forEach(motePlan::add)
                 );
 
-        Date startDato = motePlan.get(0).getStartDato();
-        Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
+        ZonedDateTime startDato = motePlan.get(0).getStartDato();
+        ZonedDateTime sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
         AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
@@ -188,8 +188,8 @@ public class ArenaAktivitetConsumer {
     }
 
     private ArenaAktivitetDTO mapTilAktivitet(Utdanningsaktivitet utdanningsaktivitet) {
-        Date startDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
-        Date sluttDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
+        ZonedDateTime startDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
+        ZonedDateTime sluttDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
 
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
@@ -207,7 +207,7 @@ public class ArenaAktivitetConsumer {
         return ARENA_PREFIX + arenaId;
     }
 
-    private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
+    private AktivitetStatus mapTilAktivitetsStatus(ZonedDateTime startDato, ZonedDateTime sluttDato) {
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
@@ -223,7 +223,7 @@ public class ArenaAktivitetConsumer {
                 .setSluttDato(DateUtils.getDate(DateUtils.mergeDateTime(moeteplan.getSluttDato(), moeteplan.getSluttKlokkeslett())));
     }
 
-    private Date mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
+    private ZonedDateTime mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
         return Optional.ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
     }
 

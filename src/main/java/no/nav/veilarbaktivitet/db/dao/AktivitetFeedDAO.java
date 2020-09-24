@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.db.rowmappers.AktivitetFeedDataRowMapper;
 import no.nav.veilarbaktivitet.domain.AktivitetFeedData;
 import org.springframework.stereotype.Component;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Component
@@ -18,7 +18,7 @@ public class AktivitetFeedDAO {
     }
 
 
-    public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(Date date, int pageSize) {
+    public List<AktivitetFeedData> hentAktiviteterEtterTidspunkt(ZonedDateTime date, int pageSize) {
         return database.query(
                 "SELECT * FROM (" +
                         "SELECT " +

@@ -14,7 +14,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
@@ -142,7 +142,7 @@ public class AktivitetServiceTest {
     public void oppdaterAktivitetFrist() {
         val aktivitet = lagEnNyAktivitet();
 
-        val nyFrist = new Date();
+        val nyFrist = ZonedDateTime.now();
         aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build(), null);
 
         captureInsertAktivitetArgument();
@@ -153,7 +153,7 @@ public class AktivitetServiceTest {
     public void oppdaterMoteTidOgSted() {
         AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
-        Date nyFrist = new Date();
+        val nyFrist = ZonedDateTime.now();
         String nyAdresse = "ny adresse";
         aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
 
@@ -205,30 +205,30 @@ public class AktivitetServiceTest {
     @Test
     public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
         gitt_aktivitet(lagEnNyAktivitet());
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), ZonedDateTime.now());
         verify(aktivitetDAO).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_harHistoriskDato_oppdaterIkkeAktivitet() {
-        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
+        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(ZonedDateTime.now().minusDays(5)));
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), ZonedDateTime.now());
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
-        Date sluttdato = new Date();
-        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(sluttdato.getTime() + 1)));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
+        ZonedDateTime now = ZonedDateTime.now();
+        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(now.plusDays(1)));
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), now);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 
     @Test
     public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
-        Date sluttdato = new Date();
-        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(sluttdato));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
+        ZonedDateTime now = ZonedDateTime.now();
+        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(now));
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), now);
         verify(aktivitetDAO, never()).insertAktivitet(any());
     }
 

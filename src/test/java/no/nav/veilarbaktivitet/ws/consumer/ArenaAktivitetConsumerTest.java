@@ -13,8 +13,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 
 import static java.lang.System.clearProperty;
 import static java.lang.System.setProperty;
@@ -58,18 +58,18 @@ public class ArenaAktivitetConsumerTest {
 
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
         ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(arena);
-        consumer.arenaAktivitetFilterDato = new Date();
+        consumer.arenaAktivitetFilterDato = ZonedDateTime.now();
 
-        Date arenaAktivitetFilterDato = consumer.arenaAktivitetFilterDato;
+        ZonedDateTime arenaAktivitetFilterDato = consumer.arenaAktivitetFilterDato;
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet =
-                responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() + 1));
+                responsMedTiltak(arenaAktivitetFilterDato.plusHours(1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
         assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(1));
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedGammelAktivitet =
-                responsMedTiltak(new Date(arenaAktivitetFilterDato.getTime() - 1));
+                responsMedTiltak(arenaAktivitetFilterDato.minusHours(1));
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedGammelAktivitet);
         assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(0));
@@ -82,13 +82,13 @@ public class ArenaAktivitetConsumerTest {
         ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(arena);
 
         HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet =
-                responsMedTiltak(new Date());
+                responsMedTiltak(ZonedDateTime.now());
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))
                 .thenReturn(responsMedNyAktivitet);
         assertThat(consumer.hentArenaAktiviteter(Person.fnr("123")).size(), equalTo(1));
     }
 
-    private HentTiltakOgAktiviteterForBrukerResponse responsMedTiltak(Date date) {
+    private HentTiltakOgAktiviteterForBrukerResponse responsMedTiltak(ZonedDateTime date) {
         HentTiltakOgAktiviteterForBrukerResponse arenaResponse = mock(HentTiltakOgAktiviteterForBrukerResponse.class);
         Tiltaksaktivitet tiltak = new Tiltaksaktivitet();
         Periode periode = new Periode();
@@ -107,7 +107,7 @@ public class ArenaAktivitetConsumerTest {
         TiltakOgAktivitetV1 arena = mock(TiltakOgAktivitetV1.class);
         ArenaAktivitetConsumer consumer = new ArenaAktivitetConsumer(arena);
 
-        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = responsMedTiltak(new Date());
+        HentTiltakOgAktiviteterForBrukerResponse responsMedNyAktivitet = responsMedTiltak(ZonedDateTime.now());
         responsMedNyAktivitet.getTiltaksaktivitetListe().get(0).setTiltaksnavn("Gruppe AMO");
 
         when(arena.hentTiltakOgAktiviteterForBruker(any(HentTiltakOgAktiviteterForBrukerRequest.class)))

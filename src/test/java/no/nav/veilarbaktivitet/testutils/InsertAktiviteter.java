@@ -10,6 +10,8 @@ public class InsertAktiviteter {
 
     public static void insertAktiviteter(JdbcTemplate jdbcTemplate) {
         AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbcTemplate));
+        insertEnAvHver("4321", aktivitetDAO);
+
         for (int i = 0; i < 10; i++) {
             insertEnAvHver(i + "auto", aktivitetDAO);
         }

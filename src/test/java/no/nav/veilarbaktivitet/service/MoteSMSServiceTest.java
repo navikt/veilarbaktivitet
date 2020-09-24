@@ -23,12 +23,13 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
@@ -49,12 +50,12 @@ public class MoteSMSServiceTest {
     @InjectMocks
     private VarselQueService varselQueue;
 
-    private final Date before = createDate(1);
-    private final Date earlyCuttoff = createDate(2);
-    private final Date betwheen = createDate(3);
-    private final Date betwheen2 = createDate(4);
-    private final Date lateCuttof = createDate(5);
-    private final Date after = createDate(6);
+    private final ZonedDateTime before = createDate(1);
+    private final ZonedDateTime earlyCuttoff = createDate(2);
+    private final ZonedDateTime betwheen = createDate(3);
+    private final ZonedDateTime betwheen2 = createDate(4);
+    private final ZonedDateTime lateCuttof = createDate(5);
+    private final ZonedDateTime after = createDate(6);
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 
 
@@ -108,6 +109,7 @@ public class MoteSMSServiceTest {
         assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
         assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
         assertThat(value.getAktivitetId()).isEqualTo(1);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
     }
 
     @Test
@@ -118,6 +120,8 @@ public class MoteSMSServiceTest {
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
     }
 
     @Test
@@ -143,6 +147,8 @@ public class MoteSMSServiceTest {
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(0,0);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
     }
 
     @Test
@@ -154,6 +160,8 @@ public class MoteSMSServiceTest {
         insertMote(1, betwheen);
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
     }
 
     @Test
@@ -172,6 +180,8 @@ public class MoteSMSServiceTest {
 
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
     }
 
 
@@ -186,6 +196,7 @@ public class MoteSMSServiceTest {
 
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
 
     }
 
@@ -200,6 +211,8 @@ public class MoteSMSServiceTest {
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(values.length - 1,0);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
 
     }
 
@@ -214,9 +227,11 @@ public class MoteSMSServiceTest {
         moteSMSService.sendServicemeldinger(before, after);
 
         assertThatMeldingerSendt(1,0);
+        assertTrue(moteSMSService.checkHealth().isHealthy());
+
     }
 
-    private void insertMote(long id, Date fraDato) {
+    private void insertMote(long id, ZonedDateTime fraDato) {
         aktivitetDAO.insertAktivitet(AktivitetDataTestBuilder
                 .nyMoteAktivitet()
                 .toBuilder()
@@ -227,7 +242,7 @@ public class MoteSMSServiceTest {
                 .build());
     }
 
-    private void insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
+    private void insertAktivitet(long id, ZonedDateTime fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
         AktivitetData aktivitet = AktivitetDataTestBuilder
                 .nyAktivitet()
                 .id(id)
@@ -269,7 +284,8 @@ public class MoteSMSServiceTest {
         return jdbcTemplate.queryForList("select * from MOTE_SMS_HISTORIKK");
     }
 
-    private Date createDate(int hour) {
-        return Date.from(LocalDateTime.of(2016, 1, 1, hour, 1).toInstant(ZoneOffset.UTC));
+    private ZonedDateTime createDate(int hour) {
+        LocalDateTime localTime = LocalDateTime.of(2016,1, 1, hour,1);
+        return ZonedDateTime.of(localTime, ZoneId.systemDefault());
     }
 }
