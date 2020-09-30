@@ -204,8 +204,9 @@ public class AktivitetServiceTest {
 
     @Test
     public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
-        gitt_aktivitet(lagEnNyAktivitet());
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), ZonedDateTime.now());
+        ZonedDateTime now = ZonedDateTime.now();
+        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(now.minusDays(1)));
+        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), now);
         verify(aktivitetDAO).insertAktivitet(any());
     }
 

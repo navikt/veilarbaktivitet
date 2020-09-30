@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -64,6 +63,7 @@ public class AktivitetsplanRSTest {
 
     @Before
     public void setup() {
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 

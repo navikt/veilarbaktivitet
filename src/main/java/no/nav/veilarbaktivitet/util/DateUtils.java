@@ -31,19 +31,8 @@ public class DateUtils {
         return ofNullable(xmlGregorianCalendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
                 .map(GregorianCalendar::toZonedDateTime)
+                .map(datetime -> datetime.withZoneSameLocal(ZoneId.systemDefault()))
                 .orElse(null);
-    }
-
-    public static ZonedDateTime dateFromISO8601(String date) {
-        return ZonedDateTime.parse(date);
-    }
-
-    public static String ISO8601FromDate(ZonedDateTime date) {
-        return ISO8601FromDate(date, ZoneId.systemDefault());
-    }
-
-    public static String ISO8601FromDate(ZonedDateTime date, ZoneId zoneId) {
-        return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
     }
 
     public static XMLGregorianCalendar mergeDateTime(XMLGregorianCalendar date, XMLGregorianCalendar time) {
