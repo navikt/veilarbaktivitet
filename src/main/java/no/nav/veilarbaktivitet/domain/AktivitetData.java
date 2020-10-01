@@ -5,7 +5,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.experimental.Wither;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 @Value
 @Builder(toBuilder = true)
@@ -22,17 +22,17 @@ public class AktivitetData {
     AktivitetStatus status;
     String avsluttetKommentar;
     InnsenderData lagtInnAv;
-    Date fraDato;
-    Date tilDato;
+    ZonedDateTime fraDato;
+    ZonedDateTime tilDato;
     String lenke;
-    Date opprettetDato;
-    Date endretDato;
+    ZonedDateTime opprettetDato;
+    ZonedDateTime endretDato;
     String endretAv;
     boolean avtalt;
     AktivitetTransaksjonsType transaksjonsType;
-    Date historiskDato;
+    ZonedDateTime historiskDato;
     String kontorsperreEnhetId;
-    Date lestAvBrukerForsteGang;
+    ZonedDateTime lestAvBrukerForsteGang;
     boolean automatiskOpprettet;
     String malid;
 

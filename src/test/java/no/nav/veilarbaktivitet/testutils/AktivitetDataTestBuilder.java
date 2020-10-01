@@ -2,29 +2,30 @@ package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.domain.*;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
-import static java.util.Calendar.SECOND;
 import static no.nav.veilarbaktivitet.domain.AktivitetData.AktivitetDataBuilder;
-import static org.apache.commons.lang3.time.DateUtils.truncate;
 
 public class AktivitetDataTestBuilder {
 
     public static AktivitetDataBuilder nyAktivitet() {
+        ZonedDateTime fraDato = nyDato();
+
         return AktivitetData.builder()
                 .id(new Random().nextLong())
                 .aktorId("kake")
-                .fraDato(nyDato())
-                .tilDato(nyDato())
+                .fraDato(fraDato)
+                .tilDato(fraDato.plusDays(1))
                 .tittel("tittel")
                 .beskrivelse("beskrivelse")
                 .status(AktivitetStatus.values()[0])
                 .avsluttetKommentar("avsluttetKommentar")
                 .lagtInnAv(InnsenderData.values()[0])
-                .opprettetDato(nyDato())
+                .opprettetDato(fraDato.minusDays(1))
                 .lenke("lenke")
-                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
+                .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .lestAvBrukerForsteGang(null)
                 .historiskDato(null)
                 .malid("2");
@@ -82,10 +83,10 @@ public class AktivitetDataTestBuilder {
                 .build();
     }
 
-
-    public static Date nyDato() {
-        return truncate(new Date(new Random().nextLong() % System.currentTimeMillis()), SECOND);
+    public static ZonedDateTime nyDato() {
+        return ZonedDateTime.now()
+                .plusDays(ThreadLocalRandom.current().nextInt(30))
+                .minusHours(ThreadLocalRandom.current().nextInt(24));
     }
-
 
 }

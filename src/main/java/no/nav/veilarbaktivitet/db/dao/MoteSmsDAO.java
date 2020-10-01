@@ -2,14 +2,17 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.domain.KanalDTO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
+
+import static no.nav.veilarbaktivitet.db.Database.hentDatoMedTidssone;
 
 @Component
 @Slf4j
@@ -21,7 +24,7 @@ public class MoteSmsDAO {
         this.database = database;
     }
 
-    public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
+    public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(ZonedDateTime fra, ZonedDateTime til) {
 
         log.info("henter moter mellom " + fra + " og " + til);
 
@@ -58,15 +61,16 @@ public class MoteSmsDAO {
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getLong("ID"))
                 .aktivtetVersion(rs.getLong("AKTIVITET_VERSJON"))
-                .moteTidAktivitet(rs.getTimestamp("FRA_DATO"))
-                .smsSendtMoteTid(rs.getTimestamp("MOTETID"))
+                .moteTidAktivitet(hentDatoMedTidssone(rs, "FRA_DATO"))
+                .smsSendtMoteTid(hentDatoMedTidssone(rs, "MOTETID"))
                 .aktivitetKanal(rs.getString("AKTIVITET_KANAL"))
                 .smsKanal(rs.getString("SMS_KANAL"))
                 .build();
     }
 
     public void insertSmsSendt(SmsAktivitetData smsAktivitetData, String varselId) {
-        Date motetTid = smsAktivitetData.getMoteTidAktivitet();
+        Timestamp moteTid = Timestamp.valueOf(smsAktivitetData.getMoteTidAktivitet().toLocalDateTime());
+        Timestamp now = Timestamp.valueOf(ZonedDateTime.now().toLocalDateTime());
         Long aktiviteteId = smsAktivitetData.getAktivitetId();
         Long aktivtetVersion = smsAktivitetData.getAktivtetVersion();
         String kanal = smsAktivitetData.getAktivitetKanal();
@@ -74,7 +78,7 @@ public class MoteSmsDAO {
         //language=sql
         int antall = database.update(
                 "update GJELDENDE_MOTE_SMS set MOTETID = ?, KANAL = ? where AKTIVITET_ID = ?"
-                , motetTid
+                , moteTid
                 , kanal
                 , aktiviteteId
         );
@@ -85,7 +89,7 @@ public class MoteSmsDAO {
                     "insert into GJELDENDE_MOTE_SMS (AKTIVITET_ID, MOTETID, KANAL)" +
                             " values (?, ?, ?)"
                     , aktiviteteId
-                    , motetTid
+                    , moteTid
                     , kanal
             );
         }
@@ -97,10 +101,10 @@ public class MoteSmsDAO {
                         " (?,?,?,?,?,?)"
                 , aktiviteteId
                 , aktivtetVersion
-                , motetTid
+                , moteTid
                 , varselId
                 , kanal
-                , new Date()
+                , now
         );
     }
 
