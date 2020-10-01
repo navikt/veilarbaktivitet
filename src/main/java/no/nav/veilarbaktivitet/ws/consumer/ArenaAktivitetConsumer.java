@@ -21,9 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,35 +31,19 @@ import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
-import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
 @Slf4j
 @Component
 public class ArenaAktivitetConsumer {
 
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
 
-
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
-
-    ZonedDateTime arenaAktivitetFilterDato;
 
     @Autowired
     ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
         this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
-        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
-    }
-
-    static ZonedDateTime parseDato(String konfigurertDato) {
-        try {
-            return ZonedDateTime.parse(konfigurertDato, DateTimeFormatter.ofPattern(DATO_FORMAT));
-        } catch (Exception e) {
-            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
-            return null;
-        }
     }
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
@@ -84,17 +66,13 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).collect(toList());
+            return result;
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
         }
-    }
-
-    private boolean etterFilterDato(ZonedDateTime tilDato) {
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.isBefore(tilDato);
     }
 
     private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
