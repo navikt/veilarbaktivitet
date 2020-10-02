@@ -90,6 +90,7 @@ public class ApplicationContext {
                 .address(getRequiredProperty(ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY))
                 .withOutInterceptor(new LoggingOutInterceptor())
                 .configureStsForSubject(stsConfig)
+                .timeout(10_000, 5_000) // sett ned read timeout til 5s, mulig 2s er et bedre tall om arena tregheter fortsatt er et problem
                 .build();
 
     }
