@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.feed.AvsluttetOppfolgingFeedConsumer;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.junit.Test;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 import static java.util.Arrays.asList;
 import static org.mockito.Mockito.*;
@@ -23,8 +23,8 @@ public class AvsluttetOppfolgingFeedProviderTest {
     @Test
     public void skal_ta_vare_paa_siste_kjente_id() {
 
-        ZonedDateTime oppdatert1 = ZonedDateTime.now();
-        ZonedDateTime oppdatert2 = oppdatert1.plusHours(5);
+        Date oppdatert1 = new Date();
+        Date oppdatert2 = new Date(oppdatert1.getTime() + 1000);
         feedProvider.lesAvsluttetOppfolgingFeed(null, asList(element(oppdatert1), element(oppdatert2)));
         verify(avsluttetOppfolgingFeedDAO).oppdaterSisteFeedId(oppdatert2);
     }
@@ -35,13 +35,13 @@ public class AvsluttetOppfolgingFeedProviderTest {
         doThrow(new RuntimeException()).when(aktivitetService).settAktiviteterTilHistoriske(AKTØR_ID, null);
         
         try {
-            feedProvider.lesAvsluttetOppfolgingFeed(null, asList(element(ZonedDateTime.now())));
+            feedProvider.lesAvsluttetOppfolgingFeed(null, asList(element(new Date())));
         } finally {
             verifyNoMoreInteractions(avsluttetOppfolgingFeedDAO);
         }
     }
     
-    private AvsluttetOppfolgingFeedDTO element(ZonedDateTime oppdatert) {
+    private AvsluttetOppfolgingFeedDTO element(Date oppdatert) {
         return new AvsluttetOppfolgingFeedDTO().setAktoerid(AKTØR_ID.get()).setOppdatert(oppdatert);
     }
 

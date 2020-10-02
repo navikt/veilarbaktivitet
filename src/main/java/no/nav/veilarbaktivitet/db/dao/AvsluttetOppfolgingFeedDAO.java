@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.db.dao;
 import no.nav.veilarbaktivitet.db.Database;
 import org.springframework.stereotype.Component;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Component
 public class AvsluttetOppfolgingFeedDAO {
@@ -14,14 +14,14 @@ public class AvsluttetOppfolgingFeedDAO {
         this.database = database;
     }
 
-    public ZonedDateTime hentSisteKjenteId() {
+    public Date hentSisteKjenteId() {
         return database.queryForObject("SELECT SISTE_FEED_ELEMENT_ID FROM FEED_METADATA",
-                (rs) -> Database.hentDatoMedTidssone(rs, "SISTE_FEED_ELEMENT_ID")
+                (rs) -> Database.hentDato(rs, "SISTE_FEED_ELEMENT_ID")
         );
 
     }
 
-    public void oppdaterSisteFeedId(ZonedDateTime id) {
+    public void oppdaterSisteFeedId(Date id) {
         database.update(
                 "UPDATE FEED_METADATA SET SISTE_FEED_ELEMENT_ID = ?", 
                 id

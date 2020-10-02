@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
@@ -14,9 +14,9 @@ public class AktivitetFeedData implements Comparable<AktivitetFeedData> {
     String aktivitetId;
     String aktorId;
 
-    ZonedDateTime fraDato;
-    ZonedDateTime tilDato;
-    ZonedDateTime endretDato;
+    Date fraDato;
+    Date tilDato;
+    Date endretDato;
 
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus status;

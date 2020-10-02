@@ -4,7 +4,7 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
@@ -16,10 +16,10 @@ public class KvpDTO implements Comparable<KvpDTO> {
     private String aktorId;
     private String enhet;
     private String opprettetAv;
-    private ZonedDateTime opprettetDato;
+    private Date opprettetDato;
     private String opprettetBegrunnelse;
     private String avsluttetAv;
-    private ZonedDateTime avsluttetDato;
+    private Date avsluttetDato;
     private String avsluttetBegrunnelse;
 
     @Override

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,7 +57,7 @@ public class MoteSMSService implements HealthCheck {
         sendServicemeldinger(omTimer(1), omTimer(24));
     }
 
-    protected void sendServicemeldinger(ZonedDateTime fra, ZonedDateTime til) {
+    protected void sendServicemeldinger(Date fra, Date til) {
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(fra, til);
 
         log.info("moteSMS antall hentet: " + smsAktivitetData.size());

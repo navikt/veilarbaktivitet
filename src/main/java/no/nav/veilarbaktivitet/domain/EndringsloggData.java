@@ -3,13 +3,13 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
 public class EndringsloggData {
     String endringsBeskrivelse;
     String endretAv;
-    ZonedDateTime endretDato;
+    Date endretDato;
 }
 
