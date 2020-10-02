@@ -18,11 +18,11 @@ public class AktivitetFeedDataRowMapper {
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
                 .setAktivitetType(Helpers.typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"))))
-                .setFraDato(Database.hentDatoMedTidssone(rs, "fra_dato"))
-                .setTilDato(Database.hentDatoMedTidssone(rs, "til_dato"))
-                .setHistorisk(Optional.ofNullable(Database.hentDatoMedTidssone(rs, "historisk_dato")).isPresent())
+                .setFraDato(Database.hentDato(rs, "fra_dato"))
+                .setTilDato(Database.hentDato(rs, "til_dato"))
+                .setHistorisk(Optional.ofNullable(Database.hentDato(rs, "historisk_dato")).isPresent())
                 .setStatus(EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode")))
-                .setEndretDato(Database.hentDatoMedTidssone(rs, "endret_dato"))
+                .setEndretDato(Database.hentDato(rs, "endret_dato"))
                 .setAvtalt(rs.getBoolean("avtalt"));
     }
 }

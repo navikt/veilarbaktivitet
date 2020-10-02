@@ -6,8 +6,6 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Component
@@ -67,7 +65,7 @@ public class FunksjonelleMetrikker {
         Event ev = new Event("aktivitet.lestAvBrukerForsteGang")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("automatiskOpprettet", aktivitetData.isAutomatiskOpprettet())
-                .addFieldToReport("lestTidspunkt", getTime(aktivitetData.getLestAvBrukerForsteGang()))
+                .addFieldToReport("lestTidspunkt", aktivitetData.getLestAvBrukerForsteGang().getTime())
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgLestForsteGang(aktivitetData))
                 .addFieldToReport("malId", malId);
         metricsClient.report(ev);
@@ -87,15 +85,11 @@ public class FunksjonelleMetrikker {
     }
 
     private static long tidMellomOpprettetOgOppdatert(AktivitetData aktivitetData) {
-        return getTime(aktivitetData.getEndretDato()) - getTime(aktivitetData.getOpprettetDato());
+        return aktivitetData.getEndretDato().getTime() - aktivitetData.getOpprettetDato().getTime();
     }
 
     private static long tidMellomOpprettetOgLestForsteGang(AktivitetData aktivitetData) {
-        return getTime(aktivitetData.getLestAvBrukerForsteGang()) - getTime(aktivitetData.getOpprettetDato());
-    }
-
-    private static long getTime(ZonedDateTime date) {
-        return Timestamp.valueOf(date.toLocalDateTime()).getTime();
+        return aktivitetData.getLestAvBrukerForsteGang().getTime() - aktivitetData.getOpprettetDato().getTime();
     }
 
 }

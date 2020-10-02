@@ -9,8 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.ZonedDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -61,13 +60,12 @@ public class AktivitetDAO {
     }
 
     public void insertAktivitet(AktivitetData aktivitet) {
-        insertAktivitet(aktivitet, ZonedDateTime.now());
+        insertAktivitet(aktivitet, new Date());
     }
 
     @Transactional
-    public void insertAktivitet(AktivitetData aktivitet, ZonedDateTime endretDato) {
+    public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
-        Timestamp endret = Timestamp.valueOf(endretDato.toLocalDateTime());
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
         long versjon = nesteVersjon();
@@ -87,7 +85,7 @@ public class AktivitetDAO {
                 EnumUtils.getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetKommentar(),
                 aktivitet.getOpprettetDato(),
-                endret,
+                endretDato,
                 aktivitet.getEndretAv(),
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),

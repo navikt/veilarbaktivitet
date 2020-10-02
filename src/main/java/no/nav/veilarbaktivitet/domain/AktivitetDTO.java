@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 @Data
 @Accessors(chain = true)
@@ -17,10 +17,10 @@ public class AktivitetDTO {
     public String lenke;
     public AktivitetTypeDTO type;
     public AktivitetStatus status;
-    public ZonedDateTime fraDato;
-    public ZonedDateTime tilDato;
-    public ZonedDateTime opprettetDato;
-    public ZonedDateTime endretDato;
+    public Date fraDato;
+    public Date tilDato;
+    public Date opprettetDato;
+    public Date endretDato;
     public String endretAv;
     public boolean historisk;
     public String avsluttetKommentar;

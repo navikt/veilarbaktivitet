@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 
@@ -15,9 +15,9 @@ import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 public class KafkaAktivitetMelding {
     String aktivitetId;
     String aktorId;
-    ZonedDateTime fraDato;
-    ZonedDateTime tilDato;
-    ZonedDateTime endretDato;
+    Date fraDato;
+    Date tilDato;
+    Date endretDato;
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
     boolean avtalt;

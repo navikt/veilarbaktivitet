@@ -21,8 +21,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.*;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
@@ -31,19 +33,35 @@ import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
 @Slf4j
 @Component
 public class ArenaAktivitetConsumer {
 
+    private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
 
+
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+
+    Date arenaAktivitetFilterDato;
 
     @Autowired
     ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
         this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
+        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
+    }
+
+    static Date parseDato(String konfigurertDato) {
+        try {
+            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+        } catch (Exception e) {
+            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
+            return null;
+        }
     }
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
@@ -66,13 +84,17 @@ public class ArenaAktivitetConsumer {
                     result.addAll(utdanningList.stream()
                             .map(this::mapTilAktivitet)
                             .collect(toList())));
-            return result;
+            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).collect(toList());
         } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
                 HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
         }
+    }
+
+    private boolean etterFilterDato(Date tilDato) {
+        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
     }
 
     private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
@@ -148,8 +170,8 @@ public class ArenaAktivitetConsumer {
                         .forEach(motePlan::add)
                 );
 
-        ZonedDateTime startDato = motePlan.get(0).getStartDato();
-        ZonedDateTime sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
+        Date startDato = motePlan.get(0).getStartDato();
+        Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
         AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
@@ -166,8 +188,8 @@ public class ArenaAktivitetConsumer {
     }
 
     private ArenaAktivitetDTO mapTilAktivitet(Utdanningsaktivitet utdanningsaktivitet) {
-        ZonedDateTime startDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
-        ZonedDateTime sluttDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
+        Date startDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
+        Date sluttDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
 
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
@@ -185,7 +207,7 @@ public class ArenaAktivitetConsumer {
         return ARENA_PREFIX + arenaId;
     }
 
-    private AktivitetStatus mapTilAktivitetsStatus(ZonedDateTime startDato, ZonedDateTime sluttDato) {
+    private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         LocalDateTime now = LocalDateTime.now();
 
         LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
@@ -201,7 +223,7 @@ public class ArenaAktivitetConsumer {
                 .setSluttDato(DateUtils.getDate(DateUtils.mergeDateTime(moeteplan.getSluttDato(), moeteplan.getSluttKlokkeslett())));
     }
 
-    private ZonedDateTime mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
+    private Date mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
         return Optional.ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
     }
 

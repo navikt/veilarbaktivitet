@@ -10,7 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.time.ZonedDateTime;
+import java.util.Date;
 
 import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
@@ -48,7 +48,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(ZonedDateTime.now()).build();
+        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);

@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Builder;
 import lombok.Value;
 
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 
@@ -14,8 +14,8 @@ public class SmsAktivitetData {
     String aktorId;
     Long aktivitetId;
     Long aktivtetVersion;
-    ZonedDateTime moteTidAktivitet;
-    ZonedDateTime smsSendtMoteTid;
+    Date moteTidAktivitet;
+    Date smsSendtMoteTid;
     String aktivitetKanal;
     String smsKanal;
 
@@ -38,22 +38,17 @@ public class SmsAktivitetData {
     }
 
     public String formatertMoteTid() {
-        return formattertDateTime(moteTidAktivitet, DATO_FORMAT) + " kl. " + formattertDateTime(moteTidAktivitet, KLOKKE_FORMAT);
+        return DatoFormaterer.format(moteTidAktivitet) + " kl. " + KlokkeFormaterer.format(moteTidAktivitet);
     }
 
     public String url() {
         return AKTIVITETSPLAN_URL +  "/aktivitet/vis/" + aktivitetId;
     }
 
-    private String formattertDateTime(ZonedDateTime dateTime, String pattern) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern).withLocale(norge);
-        return dateTime.format(formatter);
-    }
-
     private static final java.util.Locale norge = new java.util.Locale("no");
+    private static final SimpleDateFormat DatoFormaterer = new SimpleDateFormat("d. MMMM yyyy", norge);
+    private static final SimpleDateFormat KlokkeFormaterer = new SimpleDateFormat("HH:mm", norge);
 
-    private static final String DATO_FORMAT = "d. MMMM yyyy";
-    private static final String KLOKKE_FORMAT = "HH:mm";
     private static final String AKTIVITETSPLAN_URL = getRequiredProperty("AKTIVITETSPLAN_URL");
 
 }
