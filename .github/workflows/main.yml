@@ -27,7 +27,7 @@ jobs:
   test-build-and-push:
     name: Test, build and push
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/spring-boot'
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/master' || github.ref == 'refs/heads/spring-boot' || github.ref == 'refs/heads/revert-72-revert-70-datefix'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
@@ -67,7 +67,7 @@ jobs:
           VAR: version=${{ env.IMAGE_TAG }},namespace=q0
   deploy-q1:
     name: Deploy application to Q1
-    if: github.ref == 'refs/heads/dev'
+    if: github.ref == 'refs/heads/revert-72-revert-70-datefix'
     needs: test-build-and-push
     runs-on: ubuntu-latest
     steps:
