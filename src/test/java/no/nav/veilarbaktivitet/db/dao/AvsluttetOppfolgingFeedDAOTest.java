@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,9 +22,9 @@ public class AvsluttetOppfolgingFeedDAOTest {
 
     @Test
     public void skal_kunne_sette_og_hente_siste_kjente_id() {
-        Date id = new Date();
+        ZonedDateTime id = ZonedDateTime.now();
         avsluttetOppfolgingFeedDAO.oppdaterSisteFeedId(id);
-        Date sisteKjenteId = avsluttetOppfolgingFeedDAO.hentSisteKjenteId();
+        ZonedDateTime sisteKjenteId = avsluttetOppfolgingFeedDAO.hentSisteKjenteId();
         assertThat(sisteKjenteId).isEqualTo(id);
     }
 

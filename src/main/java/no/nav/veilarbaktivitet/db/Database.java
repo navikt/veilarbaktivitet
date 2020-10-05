@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static java.util.Optional.ofNullable;
@@ -41,15 +41,10 @@ public class Database {
         return jdbcTemplate.queryForObject("select " + sekvensNavn + ".nextval from dual", Long.class);
     }
 
-    public static Date hentDato(ResultSet rs, String kolonneNavn) throws SQLException {
+    public static ZonedDateTime hentDatoMedTidssone(ResultSet rs, String kolonneNavn) throws SQLException {
         return ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(Date::new)
+                .map(timestamp -> timestamp.toLocalDateTime().atZone(ZoneId.systemDefault()))
                 .orElse(null);
-    }
-
-    private String timerNavn(String sql) {
-        return (sql + ".db").replaceAll("[^\\w]","-");
     }
 
     @FunctionalInterface

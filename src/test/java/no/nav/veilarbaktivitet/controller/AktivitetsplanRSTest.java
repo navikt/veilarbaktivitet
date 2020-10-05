@@ -4,7 +4,6 @@ import lombok.val;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -24,6 +23,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -63,6 +63,7 @@ public class AktivitetsplanRSTest {
 
     @Before
     public void setup() {
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
@@ -200,7 +201,7 @@ public class AktivitetsplanRSTest {
                 aktivitet.setBeskrivelse("noe tull")
                         .setArbeidsgiver("Justice league")
                         .setEtikett(EtikettTypeDTO.AVSLAG)
-                        .setTilDato(new Date())
+                        .setTilDato(ZonedDateTime.now())
         );
     }
 
@@ -225,7 +226,7 @@ public class AktivitetsplanRSTest {
 
     private String nyLenke;
     private String nyAvsluttetKommentar;
-    private Date oldOpprettetDato;
+    private ZonedDateTime oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
         val originalAktivitet = aktivitetService.hentAktivitet(lagredeAktivitetsIder.get(0));
@@ -256,16 +257,13 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo(((AktivitetDTO)aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
+                equalTo((aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
         assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
 
-    private void da_skal_jeg_ha_mindre_aktiviter_i_min_aktivitetsplan() {
-        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
-    }
 
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
@@ -281,7 +279,7 @@ public class AktivitetsplanRSTest {
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {
-        val lagretAktivitet = (AktivitetDTO)aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
+        val lagretAktivitet = aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
         assertThat(lagretAktivitet.getLenke(), equalTo(nyLenke));
         assertThat(lagretAktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
         assertThat(lagretAktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));
@@ -305,8 +303,8 @@ public class AktivitetsplanRSTest {
                 .setLenke("lenke")
                 .setType(AktivitetTypeDTO.STILLING)
                 .setStatus(AktivitetStatus.GJENNOMFORES)
-                .setFraDato(new Date())
-                .setTilDato(new Date())
+                .setFraDato(ZonedDateTime.now())
+                .setTilDato(ZonedDateTime.now())
                 .setKontaktperson("kontakt");
     }
 

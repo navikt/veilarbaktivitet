@@ -10,8 +10,8 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,12 +25,12 @@ public class MoteSMSDAOTest {
     private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
 
 
-    private final Date bofore = createDate(1);
-    private final Date earlyCuttoff = createDate(2);
-    private final Date betwheen = createDate(3);
-    private final Date betwheen2 = createDate(4);
-    private final Date lateCuttof = createDate(5);
-    private final Date after = createDate(6);
+    private final ZonedDateTime bofore = createDate(1);
+    private final ZonedDateTime earlyCuttoff = createDate(2);
+    private final ZonedDateTime betwheen = createDate(3);
+    private final ZonedDateTime betwheen2 = createDate(4);
+    private final ZonedDateTime lateCuttof = createDate(5);
+    private final ZonedDateTime after = createDate(6);
 
     @Before
     public void cleanUp(){
@@ -39,48 +39,8 @@ public class MoteSMSDAOTest {
     }
 
     @Test
-    public void skalInserteNy() {
-        AktivitetData aktivitetData = insertMote(10, new Date());
-
-       // moteSmsDAO.insertSmsSendt(aktivitetData.getId(), aktivitetData.getVersjon(), new Date(), "kake");
-
-        long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
-        long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
-
-        //assertThat(antall).isEqualTo(1);
-        //assertThat(antall_historisk).isEqualTo(1);
-    }
-
-    @Test
-    public void skalOppdatereGjeldende() {
-
-        Date date_0 = new Date(0);
-        Date date_2 = new Date(60*60*1000);
-        Date date = new Date();
-
-        AktivitetData mote1 = insertMote(10, date_0);
-        AktivitetData mote2 = insertMote(12, date_2);
-        AktivitetData mote1_2 = insertMote(10, date_0);
-
-//        moteSmsDAO.insertSmsSendt(mote1.getId(), mote1.getVersjon(), date_0, "kake");
-//        moteSmsDAO.insertSmsSendt(mote2.getId(), mote2.getVersjon(), date_2, "kake1");
-//        moteSmsDAO.insertSmsSendt(mote1_2.getId(), mote1_2.getVersjon(), date, "kake2");
-
-   //      long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
-   //      long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
- //
-   //      Date oppdatert = jdbcTemplate.queryForObject("select MOTETID from GJELDENDE_MOTE_SMS where AKTIVITET_ID = 10", Date.class);
-   //      Date ikke_oppdatert = jdbcTemplate.queryForObject("select MOTETID from GJELDENDE_MOTE_SMS where AKTIVITET_ID = 12", Date.class);
- //
-   //      assertThat(date).isEqualTo(oppdatert); //må vere denne veien da equals ikke virker andre veien.
-   //      assertThat(date_2).isEqualTo(ikke_oppdatert); //må vere denne veien da equals ikke virker andre veien.
-   //      assertThat(antall).isEqualTo(2);
-   //      assertThat(antall_historisk).isEqualTo(3);
-    }
-
-    @Test
     public void skalHenteMoterMellom() {
-        AktivitetData aktivitetData1 = insertMote(2, betwheen2);
+        insertMote(2, betwheen2);
         AktivitetData aktivitetData2 = insertMote(4, betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
@@ -126,12 +86,13 @@ public class MoteSMSDAOTest {
         assertThat(smsAktivitetData.size()).isEqualTo(0);
     }
 
-    private Date createDate(int hour) {
-        return Date.from(LocalDateTime.of(2016,1, 1, hour,1).toInstant(ZoneOffset.UTC));
+    private ZonedDateTime createDate(int hour) {
+        LocalDateTime localTime = LocalDateTime.of(2016,1, 1, hour,1);
+        return ZonedDateTime.of(localTime, ZoneId.systemDefault());
     }
 
 
-    private AktivitetData insertMote(long id, Date fraDato) {
+    private AktivitetData insertMote(long id, ZonedDateTime fraDato) {
         AktivitetData build = AktivitetDataTestBuilder
                 .nyMoteAktivitet()
                 .toBuilder()
@@ -144,7 +105,7 @@ public class MoteSMSDAOTest {
         return aktivitetDAO.hentAktivitet(id);
     }
 
-    private AktivitetData insertAbrutMote(long id, Date fraDato) {
+    private AktivitetData insertAbrutMote(long id, ZonedDateTime fraDato) {
         AktivitetData build = AktivitetDataTestBuilder
                 .nyMoteAktivitet()
                 .toBuilder()
@@ -155,9 +116,5 @@ public class MoteSMSDAOTest {
 
         aktivitetDAO.insertAktivitet(build);
         return aktivitetDAO.hentAktivitet(id);
-    }
-
-    private long selectCountFrom(String tabelname, JdbcTemplate template) {
-        return template.queryForObject("select count(*) from " + tabelname, Long.class);
     }
 }

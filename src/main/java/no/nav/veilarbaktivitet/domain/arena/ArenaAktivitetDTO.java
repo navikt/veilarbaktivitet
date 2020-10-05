@@ -4,7 +4,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Data
@@ -16,9 +16,9 @@ public class ArenaAktivitetDTO {
     ArenaAktivitetTypeDTO type;
     String tittel;
     String beskrivelse;
-    Date fraDato;
-    Date tilDato;
-    Date opprettetDato;
+    ZonedDateTime fraDato;
+    ZonedDateTime tilDato;
+    ZonedDateTime opprettetDato;
     boolean avtalt;
     public ArenaStatusDTO etikett;
 
@@ -29,7 +29,7 @@ public class ArenaAktivitetDTO {
     String arrangoer;
     String bedriftsnummer;
     Float antallDagerPerUke;
-    Date statusSistEndret;
+    ZonedDateTime statusSistEndret;
 
     // Gruppeaktivitet
     List<MoteplanDTO> moeteplanListe;

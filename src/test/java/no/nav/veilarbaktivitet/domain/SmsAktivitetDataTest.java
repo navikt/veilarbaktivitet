@@ -3,9 +3,9 @@ package no.nav.veilarbaktivitet.domain;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
-import java.util.Calendar;
-import java.util.Date;
+import java.sql.Timestamp;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,7 +20,7 @@ class SmsAktivitetDataTest {
     void skalSendeServicevarselUtenSmsTid() {
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
-                .moteTidAktivitet(new Date())
+                .moteTidAktivitet(ZonedDateTime.now())
                 .build();
 
         assertThat(build.skalSendeServicevarsel()).isTrue();
@@ -28,10 +28,12 @@ class SmsAktivitetDataTest {
 
     @Test
     void SkalSendeServicevarselUlikSMSTid() {
+        ZonedDateTime now = ZonedDateTime.now();
+
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
-                .moteTidAktivitet(new Date())
-                .smsSendtMoteTid(new Date(0))
+                .moteTidAktivitet(now)
+                .smsSendtMoteTid(now.minusDays(1))
                 .build();
 
         assertThat(build.skalSendeServicevarsel()).isTrue();
@@ -39,14 +41,14 @@ class SmsAktivitetDataTest {
 
     @Test
     void skalIkkeSendeServiceVarselForLiksSMSMoteTidOgLikKanal() {
-        Date date = new Date();
+        ZonedDateTime now = ZonedDateTime.now();
 
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
                 .smsKanal("")
                 .aktivitetKanal("")
-                .moteTidAktivitet(date)
-                .smsSendtMoteTid(date)
+                .moteTidAktivitet(now)
+                .smsSendtMoteTid(now)
                 .build();
 
         assertThat(build.skalSendeServicevarsel()).isFalse();
@@ -54,14 +56,14 @@ class SmsAktivitetDataTest {
 
     @Test
     void SkalSendeServicevarselUlikKanal() {
-        Date date = new Date();
+        ZonedDateTime now = ZonedDateTime.now();
 
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
                 .smsKanal(KanalDTO.INTERNETT.toString())
                 .aktivitetKanal(KanalDTO.TELEFON.toString())
-                .moteTidAktivitet(date)
-                .smsSendtMoteTid(date)
+                .moteTidAktivitet(now)
+                .smsSendtMoteTid(now)
                 .build();
 
         assertThat(build.skalSendeServicevarsel()).isTrue();
@@ -70,11 +72,8 @@ class SmsAktivitetDataTest {
 
     @Test
     void formatertMoteTid() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2020, Calendar.APRIL, 2, 10, 1);
-        Instant instant = calendar.toInstant();
-        Date date = new Date(instant.toEpochMilli());
 
+        ZonedDateTime date = ZonedDateTime.of(2020, 4, 2, 10, 1, 0, 0, ZoneId.systemDefault());
         String moteTid = SmsAktivitetData
                 .builder()
                 .moteTidAktivitet(date)
@@ -86,10 +85,7 @@ class SmsAktivitetDataTest {
 
     @Test
     void formatertMoteTidSkalVere24TimersKlokke() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(2020, Calendar.APRIL, 2, 22, 1);
-        Instant instant = calendar.toInstant();
-        Date date = new Date(instant.toEpochMilli());
+        ZonedDateTime date = ZonedDateTime.of(2020, 4, 2, 22, 1, 0, 0, ZoneId.systemDefault());
 
         String moteTid = SmsAktivitetData
                 .builder()
@@ -98,6 +94,20 @@ class SmsAktivitetDataTest {
                 .formatertMoteTid();
 
         assertThat(moteTid).isEqualTo("2. april 2020 kl. 22:01");
+    }
+
+    @Test
+    void formatertMoteTidSkalStotteDbFormat() {
+        Timestamp timestamp = Timestamp.valueOf("2020-09-25 13:00:50.865939");
+        ZonedDateTime date = timestamp.toLocalDateTime().atZone(ZoneId.systemDefault());
+
+        String moteTid = SmsAktivitetData
+                .builder()
+                .moteTidAktivitet(date)
+                .build()
+                .formatertMoteTid();
+
+        assertThat(moteTid).isEqualTo("25. september 2020 kl. 13:00");
     }
 
     @Test

@@ -27,7 +27,8 @@ public class AvsluttetOppfolgingFeedConsumer {
     }
 
     public String sisteKjenteId() {
-        Date sisteKjenteId = ofNullable(avsluttetOppfolgingFeedDAO.hentSisteKjenteId()).orElseGet(() -> new Date(0));
+        ZonedDateTime dateEpoch = new Date(0).toInstant().atZone(ZoneId.systemDefault());
+        ZonedDateTime sisteKjenteId = ofNullable(avsluttetOppfolgingFeedDAO.hentSisteKjenteId()).orElseGet(()->dateEpoch);
         return ZonedDateTime.ofInstant(sisteKjenteId.toInstant(), ZoneId.systemDefault()).toString();
     }
 

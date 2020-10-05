@@ -6,15 +6,14 @@ import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Optional;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -147,8 +146,6 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyttStillingssøk();
-
         return insertAktivitet(AktivitetDataTestBuilder.nyttStillingssøk());
     }
 
@@ -181,13 +178,16 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
+        return insertAktivitetMedDato(aktivitet, ZonedDateTime.now());
+    }
+
+    private AktivitetData insertAktivitetMedDato(AktivitetData aktivitet, ZonedDateTime endret) {
         val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
         val aktivitetMedId = aktivitet.toBuilder()
                 .id(id)
                 .aktorId(AKTOR_ID.get())
                 .build();
 
-        val endret = new Date();
         aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
         return aktivitetDAO.hentAktivitet(id);
     }

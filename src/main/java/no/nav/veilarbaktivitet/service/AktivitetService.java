@@ -17,7 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
-import java.util.Date;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,7 +77,7 @@ public class AktivitetService {
                 .aktorId(aktorId.get())
                 .lagtInnAv(aktivitet.getLagtInnAv())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .opprettetDato(new Date())
+                .opprettetDato(ZonedDateTime.now())
                 .endretAv(endretAv)
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
@@ -266,7 +266,7 @@ public class AktivitetService {
         }
     }
 
-    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
+    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, ZonedDateTime sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
@@ -274,8 +274,8 @@ public class AktivitetService {
                 .forEach(this::lagreAktivitet);
     }
 
-    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
-        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, ZonedDateTime sluttdato) {
+        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().isBefore(sluttdato);
     }
 
     @Transactional
@@ -284,11 +284,11 @@ public class AktivitetService {
         return hentAktivitet(aktivitetId);
     }
 
-    public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
+    public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, ZonedDateTime avsluttetDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
-                .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
+                .filter(aktitet -> aktitet.getOpprettetDato().isBefore(avsluttetDato))
                 .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
                 .forEach(this::lagreAktivitet);
     }
@@ -298,7 +298,7 @@ public class AktivitetService {
         return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
     }
 
-    private AktivitetData settKVPAktivitetTilAvbrutt(AktivitetData aktivitetData, String avsluttetBegrunnelse, Date avsluttetDato) {
+    private AktivitetData settKVPAktivitetTilAvbrutt(AktivitetData aktivitetData, String avsluttetBegrunnelse, ZonedDateTime avsluttetDato) {
         return aktivitetData
                 .withTransaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .withStatus(AktivitetStatus.AVBRUTT)
