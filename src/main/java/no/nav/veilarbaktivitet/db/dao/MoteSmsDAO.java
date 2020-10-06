@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
+import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -48,8 +48,8 @@ public class MoteSmsDAO {
                         " order by FRA_DATO"
                 ,
                 this::mapper,
-                toInstant(fra),
-                toInstant(til)
+                toTimestamp(fra),
+                toTimestamp(til)
                 );
     }
 
@@ -68,8 +68,8 @@ public class MoteSmsDAO {
     }
 
     public void insertSmsSendt(SmsAktivitetData smsAktivitetData, String varselId) {
-        Instant moteTid = toInstant(smsAktivitetData.getMoteTidAktivitet());
-        Instant now = toInstant(ZonedDateTime.now());
+        Timestamp moteTid = toTimestamp(smsAktivitetData.getMoteTidAktivitet());
+        Timestamp now = toTimestamp(ZonedDateTime.now());
         Long aktiviteteId = smsAktivitetData.getAktivitetId();
         Long aktivtetVersion = smsAktivitetData.getAktivtetVersion();
         String kanal = smsAktivitetData.getAktivitetKanal();
@@ -117,10 +117,10 @@ public class MoteSmsDAO {
         return database.queryForObject("select count(*) from MOTE_SMS_HISTORIKK", Long.class);
     }
 
-    public Instant toInstant(ZonedDateTime date) {
+    public Timestamp toTimestamp(ZonedDateTime date) {
         if(date == null) {
             return null;
         }
-        return date.toInstant();
+        return Timestamp.valueOf(date.toLocalDateTime());
     }
 }

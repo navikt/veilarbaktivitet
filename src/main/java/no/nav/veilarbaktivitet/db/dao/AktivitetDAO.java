@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -79,21 +81,21 @@ public class AktivitetDAO {
                 versjon,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
-                toInstant(aktivitet.getFraDato()),
-                toInstant(aktivitet.getTilDato()),
+                toTimestamp(aktivitet.getFraDato()),
+                toTimestamp(aktivitet.getTilDato()),
                 aktivitet.getTittel(),
                 aktivitet.getBeskrivelse(),
                 EnumUtils.getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetKommentar(),
-                toInstant(aktivitet.getOpprettetDato()),
-                toInstant(endretDato),
+                toTimestamp(aktivitet.getOpprettetDato()),
+                toTimestamp(endretDato),
                 aktivitet.getEndretAv(),
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
-                toInstant(aktivitet.getHistoriskDato()),
+                toTimestamp(aktivitet.getHistoriskDato()),
                 aktivitet.getKontorsperreEnhetId(),
                 aktivitet.isAutomatiskOpprettet(),
                 aktivitet.getMalid()
@@ -253,10 +255,10 @@ public class AktivitetDAO {
                 "WHERE aktivitet_id = ?", aktivitetId);
     }
 
-    public Instant toInstant(ZonedDateTime date) {
+    public Timestamp toTimestamp(ZonedDateTime date) {
         if(date == null) {
             return null;
         }
-        return date.toInstant();
+        return Timestamp.valueOf(date.toLocalDateTime());
     }
 }
