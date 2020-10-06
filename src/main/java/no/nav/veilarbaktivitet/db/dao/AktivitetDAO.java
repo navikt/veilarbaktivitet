@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Stream;
@@ -67,7 +67,6 @@ public class AktivitetDAO {
     @Transactional
     public void insertAktivitet(AktivitetData aktivitet, ZonedDateTime endretDato) {
         long aktivitetId = aktivitet.getId();
-        Timestamp endret = Timestamp.valueOf(endretDato.toLocalDateTime());
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
         long versjon = nesteVersjon();
@@ -80,21 +79,21 @@ public class AktivitetDAO {
                 versjon,
                 aktivitet.getAktorId(),
                 aktivitet.getAktivitetType().name(),
-                aktivitet.getFraDato(),
-                aktivitet.getTilDato(),
+                toInstant(aktivitet.getFraDato()),
+                toInstant(aktivitet.getTilDato()),
                 aktivitet.getTittel(),
                 aktivitet.getBeskrivelse(),
                 EnumUtils.getName(aktivitet.getStatus()),
                 aktivitet.getAvsluttetKommentar(),
-                aktivitet.getOpprettetDato(),
-                endret,
+                toInstant(aktivitet.getOpprettetDato()),
+                toInstant(endretDato),
                 aktivitet.getEndretAv(),
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
-                aktivitet.getHistoriskDato(),
+                toInstant(aktivitet.getHistoriskDato()),
                 aktivitet.getKontorsperreEnhetId(),
                 aktivitet.isAutomatiskOpprettet(),
                 aktivitet.getMalid()
@@ -252,5 +251,12 @@ public class AktivitetDAO {
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
         database.update("UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP " +
                 "WHERE aktivitet_id = ?", aktivitetId);
+    }
+
+    public Instant toInstant(ZonedDateTime date) {
+        if(date == null) {
+            return null;
+        }
+        return date.toInstant();
     }
 }
