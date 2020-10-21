@@ -14,18 +14,27 @@ import org.springframework.stereotype.Component;
 @Component
 public class TiltakOgAktivitetMock implements TiltakOgAktivitetV1  {
 
+    private Tiltaksaktivitet opprettTiltaktivitet(String status, String id) {
+        Tiltaksaktivitet tiltaksaktivitet = new Tiltaksaktivitet();
+        Deltakerstatuser ds = new Deltakerstatuser();
+        ds.setValue(status);
+        tiltaksaktivitet.setTiltaksnavn("Arbeidsmarkedsopplæring (AMO)");
+        tiltaksaktivitet.setAktivitetId(id);
+        tiltaksaktivitet.setTiltakLokaltNavn("Arbeidslivskunnskap med praksis og bransjenorsk");
+        tiltaksaktivitet.setDeltakerStatus(ds);
+        return tiltaksaktivitet;
+    }
+
     @Override
     public HentTiltakOgAktiviteterForBrukerResponse hentTiltakOgAktiviteterForBruker(HentTiltakOgAktiviteterForBrukerRequest hentTiltakOgAktiviteterForBrukerRequest) throws HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet, HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning, HentTiltakOgAktiviteterForBrukerUgyldigInput {
-        HentTiltakOgAktiviteterForBrukerResponseMock tiltak = new HentTiltakOgAktiviteterForBrukerResponseMock();
-        Tiltaksaktivitet t1 = new Tiltaksaktivitet();
-        Deltakerstatuser ds = new Deltakerstatuser();
-        ds.setValue("GJENN_AVB");
-        t1.setTiltaksnavn("Arbeidsmarkedsopplæring (AMO)");
-        t1.setAktivitetId("11");
-        t1.setTiltakLokaltNavn("Arbeidslivskunnskap med praksis og bransjenorsk");
-        t1.setDeltakerStatus(ds);
-        tiltak.setTiltak(t1);
-        return tiltak;
+        HentTiltakOgAktiviteterForBrukerResponseMock tiltakResponseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
+        Tiltaksaktivitet t1 = opprettTiltaktivitet("GJENN_AVB","11");
+        tiltakResponseMock.leggTilTiltak(t1);
+
+        Tiltaksaktivitet t2 = opprettTiltaktivitet("GJENN", "12");
+        tiltakResponseMock.leggTilTiltak(t2);
+
+        return tiltakResponseMock;
     }
 
     @Override

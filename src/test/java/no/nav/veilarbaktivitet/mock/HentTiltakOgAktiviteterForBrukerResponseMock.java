@@ -6,7 +6,7 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAkt
 import java.util.*;
 
 public class HentTiltakOgAktiviteterForBrukerResponseMock extends HentTiltakOgAktiviteterForBrukerResponse {
-    public void setTiltak(Tiltaksaktivitet tiltak) {
+    public void leggTilTiltak(Tiltaksaktivitet tiltak) {
         tiltaksaktivitetListe = new ArrayList<Tiltaksaktivitet>();
         tiltaksaktivitetListe.add(tiltak);
     }
