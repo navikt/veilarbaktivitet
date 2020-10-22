@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class TiltakOgAktivitetMock implements TiltakOgAktivitetV1  {
 
-    private Tiltaksaktivitet opprettTiltaktivitet(String status, String id) {
+    private static Tiltaksaktivitet opprettTiltaksaktivitet(String status, String id) {
         Tiltaksaktivitet tiltaksaktivitet = new Tiltaksaktivitet();
         Deltakerstatuser ds = new Deltakerstatuser();
         ds.setValue(status);
@@ -25,13 +25,21 @@ public class TiltakOgAktivitetMock implements TiltakOgAktivitetV1  {
         return tiltaksaktivitet;
     }
 
+    public static Tiltaksaktivitet opprettAktivTiltaksaktivitet() {
+        return opprettTiltaksaktivitet("GJENN", "12");
+    }
+
+    public static Tiltaksaktivitet opprettInaktivTiltaksaktivitet() {
+        return opprettTiltaksaktivitet("GJENN_AVB","11");
+    }
+
     @Override
     public HentTiltakOgAktiviteterForBrukerResponse hentTiltakOgAktiviteterForBruker(HentTiltakOgAktiviteterForBrukerRequest hentTiltakOgAktiviteterForBrukerRequest) throws HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet, HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning, HentTiltakOgAktiviteterForBrukerUgyldigInput {
         HentTiltakOgAktiviteterForBrukerResponseMock tiltakResponseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
-        Tiltaksaktivitet t1 = opprettTiltaktivitet("GJENN_AVB","11");
+        Tiltaksaktivitet t1 = opprettInaktivTiltaksaktivitet();
         tiltakResponseMock.leggTilTiltak(t1);
 
-        Tiltaksaktivitet t2 = opprettTiltaktivitet("GJENN", "12");
+        Tiltaksaktivitet t2 = opprettAktivTiltaksaktivitet();
         tiltakResponseMock.leggTilTiltak(t2);
 
         return tiltakResponseMock;

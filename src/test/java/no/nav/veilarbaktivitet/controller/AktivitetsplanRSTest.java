@@ -6,7 +6,6 @@ import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Deltakerstatuser;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
 import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.client.KvpClient;
@@ -34,10 +33,12 @@ import java.util.stream.Collectors;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
+import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -80,9 +81,8 @@ public class AktivitetsplanRSTest {
 
     @SneakyThrows
     @Test
-    public void hentHarTiltak_harAktiveTiltak_returnererTrue(){
-        String aktivStatus = "GJENN";
-        Tiltaksaktivitet tiltak = opprettTiltaktivitet(aktivStatus, "1");
+    public void hentHarTiltak_harAktiveTiltak_returnererTrue() {
+        Tiltaksaktivitet tiltak = opprettAktivTiltaksaktivitet();
         HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
         responseMock.leggTilTiltak(tiltak);
 
@@ -95,6 +95,24 @@ public class AktivitetsplanRSTest {
 
         boolean harTiltak = aktivitetsplanController.hentHarTiltak();
         assertTrue(harTiltak);
+    }
+
+    @SneakyThrows
+    @Test
+    public void hentHarTiltak_harIkkeAktiveTiltak_returnererFalse() {
+        Tiltaksaktivitet tiltak = opprettInaktivTiltaksaktivitet();
+        HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
+        responseMock.leggTilTiltak(tiltak);
+
+        TiltakOgAktivitetV1 tiltakOgAktivitet = mock(TiltakOgAktivitetV1.class);
+        when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
+
+        ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
+
+        boolean harTiltak = aktivitetsplanController.hentHarTiltak();
+        assertFalse(harTiltak);
     }
 
     @Test
@@ -335,15 +353,4 @@ public class AktivitetsplanRSTest {
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt");
     }
-    private Tiltaksaktivitet opprettTiltaktivitet(String status, String id) {
-        Tiltaksaktivitet tiltaksaktivitet = new Tiltaksaktivitet();
-        Deltakerstatuser ds = new Deltakerstatuser();
-        ds.setValue(status);
-        tiltaksaktivitet.setTiltaksnavn("Arbeidsmarkedsopplæring (AMO)");
-        tiltaksaktivitet.setAktivitetId(id);
-        tiltaksaktivitet.setTiltakLokaltNavn("Arbeidslivskunnskap med praksis og bransjenorsk");
-        tiltaksaktivitet.setDeltakerStatus(ds);
-        return tiltaksaktivitet;
-    }
-
 }
