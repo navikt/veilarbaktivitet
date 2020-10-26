@@ -13,8 +13,8 @@ public class EnvironmentProperties {
     private String openAmRefreshUrl;
     private String azureAdDiscoveryUrl;
     private String azureAdClientId;
-    private String azureAdB2cDiscoveryUrl;
-    private String azureAdB2cClientId;
+    private String loginserviceIdportenDiscoveryUrl;
+    private String loginserviceIdportenAudience;
     private String naisStsDiscoveryUrl;
     private String abacUrl;
     private String aktorregisterUrl;

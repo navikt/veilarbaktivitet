@@ -60,10 +60,10 @@ public class FilterConfig {
                 .withIdentType(IdentType.InternBruker);
     }
 
-    private OidcAuthenticatorConfig azureAdB2CAuthConfig(EnvironmentProperties properties) {
+    private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getAzureAdB2cDiscoveryUrl())
-                .withClientId(properties.getAzureAdB2cClientId())
+                .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
+                .withClientId(properties.getLoginserviceIdportenAudience())
                 .withIdTokenCookieName(AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME)
                 .withIdentType(IdentType.EksternBruker);
     }
@@ -96,7 +96,7 @@ public class FilterConfig {
                 fromConfigs(
                         openAmAuthConfig(properties),
                         azureAdAuthConfig(properties),
-                        azureAdB2CAuthConfig(properties),
+                        loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties)
                 )
