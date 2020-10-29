@@ -32,13 +32,6 @@ public class InternalController {
 
     @GetMapping("/isReady")
     public void isReady() {
-        HealthCheckUtils.findFirstFailingCheck(
-                selftestChecks.getSelfTestChecks().stream().
-                        map(SelfTestCheck::getCheck)
-                        .collect(Collectors.toList())
-        ).ifPresent((failedCheck) -> {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        });
     }
 
     @GetMapping("/isAlive")
