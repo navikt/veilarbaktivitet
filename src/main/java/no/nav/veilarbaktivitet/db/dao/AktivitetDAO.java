@@ -17,6 +17,7 @@ import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Repository
+
 public class AktivitetDAO {
 
     private static final Logger LOG = getLogger(AktivitetDAO.class);
@@ -59,6 +60,7 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
     }
 
+    @Transactional
     public void insertAktivitet(AktivitetData aktivitet) {
         insertAktivitet(aktivitet, new Date());
     }
