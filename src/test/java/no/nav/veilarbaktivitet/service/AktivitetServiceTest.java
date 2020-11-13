@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.*;
@@ -47,8 +48,15 @@ public class AktivitetServiceTest {
     @Captor
     private ArgumentCaptor argumentCaptor;
 
-    @InjectMocks
+    private LagreAktivitetService lagreAktivitetService;
+
     private AktivitetService aktivitetService;
+
+    @Before
+    public void setup() {
+        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
+        aktivitetService = new AktivitetService(aktivitetDAO,kvpClient,funksjonelleMetrikker,lagreAktivitetService);
+    }
 
     @Test
     public void opprettAktivitet() {

@@ -47,9 +47,11 @@ public class AktivitetsplanRSTest {
 
     private KvpClient kvpClient = mock(KvpClient.class);
     private KafkaService kafkaService = mock(KafkaService.class);
+    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
     private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, kafkaService, funksjonelleMetrikker);
+
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker, lagreAktivitetService);
     private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
     private BrukerService brukerService = new BrukerService(aktorregisterClient);
     private AuthService authService = mock(AuthService.class);
