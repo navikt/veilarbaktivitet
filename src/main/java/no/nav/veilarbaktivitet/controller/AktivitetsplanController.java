@@ -19,6 +19,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static no.nav.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
+import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
 
 @RestController
@@ -60,6 +62,16 @@ public class AktivitetsplanController {
         return getFnr()
                 .map(appService::hentArenaAktiviteter)
                 .orElseThrow(RuntimeException::new);
+    }
+
+    @GetMapping("/harTiltak")
+    public boolean hentHarTiltak() {
+        return getFnr()
+                .map(appService::hentArenaAktiviteter)
+                .orElseThrow(RuntimeException::new)
+                .stream()
+                .map(ArenaAktivitetDTO::getStatus)
+                .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
     @GetMapping("/{id}/versjoner")

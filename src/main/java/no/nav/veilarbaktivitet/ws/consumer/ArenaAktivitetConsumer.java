@@ -50,7 +50,7 @@ public class ArenaAktivitetConsumer {
     Date arenaAktivitetFilterDato;
 
     @Autowired
-    ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
+    public ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
         this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
         this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
     }
