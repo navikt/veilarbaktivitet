@@ -48,6 +48,8 @@ spec:
         mountPath: /var/run/secrets/nais.io/service_user
       - kvPath: /kv/prod/fss/veilarbaktivitet/default
         mountPath: /var/run/secrets/nais.io/vault
+      - kvPath: /oracle/data/prod/config/veilarbaktivitet
+        mountPath: /var/run/secrets/nais.io/oracle_config
   webproxy: true
   leaderElection: true
   env:
