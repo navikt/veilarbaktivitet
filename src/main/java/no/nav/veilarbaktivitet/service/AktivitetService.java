@@ -1,15 +1,11 @@
 package no.nav.veilarbaktivitet.service;
 
+import lombok.AllArgsConstructor;
 import lombok.val;
-import no.nav.common.types.feil.VersjonsKonflikt;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.kafka.KafkaAktivitetMelding;
-import no.nav.veilarbaktivitet.kafka.KafkaService;
 import no.nav.veilarbaktivitet.util.MappingUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,19 +21,13 @@ import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
 @Component
+@AllArgsConstructor
 public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
-    private final KafkaService kafkaService;
     private final FunksjonelleMetrikker funksjonelleMetrikker;
+    private final LagreAktivitetService lagreAktivitetService;
 
-    @Autowired
-    public AktivitetService(AktivitetDAO aktivitetDAO, KvpClient kvpClient, KafkaService kafkaService, FunksjonelleMetrikker funksjonelleMetrikker) {
-        this.aktivitetDAO = aktivitetDAO;
-        this.kvpClient = kvpClient;
-        this.kafkaService = kafkaService;
-        this.funksjonelleMetrikker = funksjonelleMetrikker;
-    }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
@@ -83,7 +73,7 @@ public class AktivitetService {
                 .build();
 
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
-        lagreAktivitet(kvpAktivivitet);
+        lagreAktivitetService.lagreAktivitet(kvpAktivivitet);
 
         funksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
@@ -100,7 +90,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        lagreAktivitet(nyAktivitet);
+        lagreAktivitetService.lagreAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -117,7 +107,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        lagreAktivitet(nyAktivitet);
+        lagreAktivitetService.lagreAktivitet(nyAktivitet);
     }
 
     public void slettAktivitet(long aktivitetId) {
@@ -132,7 +122,7 @@ public class AktivitetService {
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        lagreAktivitet(oppdatertAktivitetMedNyFrist);
+        lagreAktivitetService.lagreAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
@@ -148,7 +138,7 @@ public class AktivitetService {
                 ).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        lagreAktivitet(oppdatertAktivitetMedNyFrist);
+        lagreAktivitetService.lagreAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterReferat(
@@ -159,7 +149,7 @@ public class AktivitetService {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
-        lagreAktivitet(originalAktivitet
+        lagreAktivitetService.lagreAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
@@ -188,7 +178,7 @@ public class AktivitetService {
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        lagreAktivitet(originalAktivitet
+        lagreAktivitetService.lagreAktivitet(originalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -256,22 +246,12 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    @Transactional
-    public void lagreAktivitet(AktivitetData aktivitetData) {
-        try {
-            aktivitetDAO.insertAktivitet(aktivitetData);
-            kafkaService.sendMelding(KafkaAktivitetMelding.of(aktivitetData));
-        } catch (DuplicateKeyException e) {
-            throw new VersjonsKonflikt();
-        }
-    }
-
     public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(this::lagreAktivitet);
+                .forEach(lagreAktivitetService::lagreAktivitet);
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
@@ -290,7 +270,7 @@ public class AktivitetService {
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
                 .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(this::lagreAktivitet);
+                .forEach(lagreAktivitetService::lagreAktivitet);
     }
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {

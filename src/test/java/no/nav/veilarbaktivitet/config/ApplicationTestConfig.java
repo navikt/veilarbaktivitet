@@ -39,6 +39,7 @@ import static org.mockito.Mockito.when;
         FunksjonelleMetrikker.class,
         MoteSMSService.class,
         AuthService.class,
+        LagreAktivitetService.class,
         AktivitetService.class,
         ArenaAktivitetConsumer.class,
         AktivitetAppService.class,
