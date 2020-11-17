@@ -1,10 +1,13 @@
 package no.nav.veilarbaktivitet.controller;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.auth.subject.Subject;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
+import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
+import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -30,11 +33,16 @@ import java.util.stream.Collectors;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
+import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AktivitetsplanRSTest {
 
@@ -47,9 +55,11 @@ public class AktivitetsplanRSTest {
 
     private KvpClient kvpClient = mock(KvpClient.class);
     private KafkaService kafkaService = mock(KafkaService.class);
+    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
     private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, kafkaService, funksjonelleMetrikker);
+
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker, lagreAktivitetService);
     private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
     private BrukerService brukerService = new BrukerService(aktorregisterClient);
     private AuthService authService = mock(AuthService.class);
@@ -69,6 +79,42 @@ public class AktivitetsplanRSTest {
     @After
     public void cleanup() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
+    }
+
+    @SneakyThrows
+    @Test
+    public void hentHarTiltak_harAktiveTiltak_returnererTrue() {
+        Tiltaksaktivitet tiltak = opprettAktivTiltaksaktivitet();
+        HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
+        responseMock.leggTilTiltak(tiltak);
+
+        TiltakOgAktivitetV1 tiltakOgAktivitet = mock(TiltakOgAktivitetV1.class);
+        when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
+
+        ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
+
+        boolean harTiltak = aktivitetsplanController.hentHarTiltak();
+        assertTrue(harTiltak);
+    }
+
+    @SneakyThrows
+    @Test
+    public void hentHarTiltak_harIkkeAktiveTiltak_returnererFalse() {
+        Tiltaksaktivitet tiltak = opprettInaktivTiltaksaktivitet();
+        HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
+        responseMock.leggTilTiltak(tiltak);
+
+        TiltakOgAktivitetV1 tiltakOgAktivitet = mock(TiltakOgAktivitetV1.class);
+        when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
+
+        ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
+
+        boolean harTiltak = aktivitetsplanController.hentHarTiltak();
+        assertFalse(harTiltak);
     }
 
     @Test
@@ -309,5 +355,4 @@ public class AktivitetsplanRSTest {
                 .setTilDato(new Date())
                 .setKontaktperson("kontakt");
     }
-
 }
