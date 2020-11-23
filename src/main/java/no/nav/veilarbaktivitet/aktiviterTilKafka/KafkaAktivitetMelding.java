@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.kafka;
+package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 import lombok.Builder;
 import lombok.Value;
