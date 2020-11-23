@@ -19,7 +19,7 @@ public class AktiviteterTilKafkaService {
         List<KafkaAktivitetMeldingV2> meldinger = dao.hentOppTil1000MeldingerUtenKafka();
         for (KafkaAktivitetMeldingV2 melding : meldinger) {
             kafka.sendMeldingV2(melding);
-            dao.meldingSendtPaaKafka(melding);
+            dao.insertMeldingSendtPaaKafka(melding);
         }
     }
 }

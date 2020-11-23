@@ -33,7 +33,7 @@ public class KafkaAktivitetDAO {
         );
     }
 
-    public void meldingSendtPaaKafka(KafkaAktivitetMeldingV2 meldingV2) {
+    public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV2 meldingV2) {
         // language=sql
         database.update("" +
                         " insert into AKTIVITET_SENDT_PAA_KAFKA " +

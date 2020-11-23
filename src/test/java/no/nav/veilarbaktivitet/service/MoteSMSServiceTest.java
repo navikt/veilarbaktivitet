@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
@@ -75,6 +76,7 @@ public class MoteSMSServiceTest {
     }
 
     @Before
+    @SneakyThrows
     public void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
 
