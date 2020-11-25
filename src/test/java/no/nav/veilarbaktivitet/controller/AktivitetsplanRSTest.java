@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.controller;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.auth.subject.Subject;
@@ -7,7 +8,6 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
-import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
+import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.SubjectRule;
 import no.nav.veilarbaktivitet.service.*;
@@ -33,7 +34,8 @@ import java.util.stream.Collectors;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.*;
+import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettAktivTiltaksaktivitet;
+import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettInaktivTiltaksaktivitet;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -55,7 +57,7 @@ public class AktivitetsplanRSTest {
 
     private KvpClient kvpClient = mock(KvpClient.class);
     private KafkaService kafkaService = mock(KafkaService.class);
-    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
+    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService, new SimpleMeterRegistry());
     private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
 
 
@@ -187,7 +189,6 @@ public class AktivitetsplanRSTest {
     }
 
 
-
     private List<Long> lagredeAktivitetsIder;
 
     private List<AktivitetData> aktiviter = Arrays.asList(
@@ -302,7 +303,7 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo(((AktivitetDTO)aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
+                equalTo(((AktivitetDTO) aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
@@ -327,7 +328,7 @@ public class AktivitetsplanRSTest {
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {
-        val lagretAktivitet = (AktivitetDTO)aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
+        val lagretAktivitet = (AktivitetDTO) aktivitetController.hentAktivitet(this.lagredeAktivitetsIder.get(0).toString());
         assertThat(lagretAktivitet.getLenke(), equalTo(nyLenke));
         assertThat(lagretAktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));
         assertThat(lagretAktivitet.getOpprettetDato(), equalTo(oldOpprettetDato));

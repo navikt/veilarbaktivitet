@@ -1,17 +1,21 @@
 package no.nav.veilarbaktivitet.service;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.common.types.feil.VersjonsKonflikt;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kafka.KafkaService;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.*;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.DuplicateKeyException;
 
@@ -19,8 +23,6 @@ import java.util.Date;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
-import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -54,8 +56,8 @@ public class AktivitetServiceTest {
 
     @Before
     public void setup() {
-        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
-        aktivitetService = new AktivitetService(aktivitetDAO,kvpClient,funksjonelleMetrikker,lagreAktivitetService);
+        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService, new SimpleMeterRegistry());
+        aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker, lagreAktivitetService);
     }
 
     @Test
