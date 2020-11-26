@@ -41,7 +41,7 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaProducer kafkaProducer() {
+    public KafkaProducer<String, String> kafkaProducer() {
         return new KafkaProducer(producerConfig());
     }
 

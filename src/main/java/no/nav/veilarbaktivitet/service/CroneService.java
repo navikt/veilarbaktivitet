@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.leaderelection.LeaderElectionClient;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.AktiviteterTilKafkaService;
@@ -12,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @EnableScheduling
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class CroneService {
     private final MoteSMSService moteSMSService;
     private final LeaderElectionClient leaderElectionClient;
