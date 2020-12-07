@@ -27,7 +27,7 @@ public class KafkaAktivitetDAO {
                         " select 1 from AKTIVITET_SENDT_PAA_KAFKA kafka " +
                         " where kafka.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID " +
                         " and kafka.AKTIVITET_VERSJON = AKTIVITET.VERSJON" +
-                        " )" +
+                        " ) order by VERSJON " +
                         " FETCH NEXT 1000 ROWS ONLY",
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV2
         );
