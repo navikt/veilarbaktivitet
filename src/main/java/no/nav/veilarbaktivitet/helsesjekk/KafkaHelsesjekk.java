@@ -5,7 +5,7 @@ import no.nav.common.health.HealthCheckResult;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.springframework.stereotype.Component;
 
-import static no.nav.veilarbaktivitet.config.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
+import static no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
 
 @Component
 public class KafkaHelsesjekk implements HealthCheck {

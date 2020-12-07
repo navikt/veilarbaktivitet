@@ -13,7 +13,7 @@ import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.kafka.KafkaService;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;

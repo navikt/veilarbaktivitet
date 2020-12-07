@@ -1,8 +1,6 @@
-package no.nav.veilarbaktivitet.config;
+package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.kafka.KafkaService;
-import no.nav.veilarbaktivitet.kafka.KafkaServiceImpl;
 import org.apache.kafka.clients.CommonClientConfigs;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -19,6 +17,7 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 public class KafkaConfig {
 
     public static final String KAFKA_TOPIC_AKTIVITETER = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER");
+    public static final String KAFKA_TOPIC_AKTIVITETER_V2 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V2");
     public static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
 
     private final Credentials serviceUserCredentials;
@@ -43,11 +42,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaProducer<String, String> kafkaProducer() {
-        return new KafkaProducer<>(producerConfig());
+        return new KafkaProducer(producerConfig());
     }
 
-    @Bean
-    public KafkaService kafkaService() {
-        return new KafkaServiceImpl(kafkaProducer());
-    }
 }
