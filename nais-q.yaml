@@ -11,6 +11,7 @@ spec:
   ingresses:
     - https://veilarbaktivitet-{{namespace}}.nais.preprod.local
     - https://app-{{namespace}}.adeo.no/veilarbaktivitet
+    - https://app-{{namespace}}.dev.adeo.no/veilarbaktivitet
   port: 8080
   prometheus:
     enabled: true

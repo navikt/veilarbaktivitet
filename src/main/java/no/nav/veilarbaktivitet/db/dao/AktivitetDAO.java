@@ -17,7 +17,6 @@ import static java.util.Optional.ofNullable;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Repository
-
 public class AktivitetDAO {
 
     private static final Logger LOG = getLogger(AktivitetDAO.class);

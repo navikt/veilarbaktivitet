@@ -1,10 +1,17 @@
 package no.nav.veilarbaktivitet.mock;
 
-import no.nav.veilarbaktivitet.kafka.KafkaAktivitetMelding;
-import no.nav.veilarbaktivitet.kafka.KafkaService;
+import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMelding;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMeldingV2;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 
 public class KafkaServiceMock implements KafkaService {
-    @Override
     public void sendMelding(KafkaAktivitetMelding melding) {
     }
+
+    public void sendMeldingV2(KafkaAktivitetMeldingV2 meldingV2) {
+
+    }
+
+
 }

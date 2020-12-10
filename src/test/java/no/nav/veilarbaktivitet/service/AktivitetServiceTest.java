@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.kafka.KafkaService;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,8 +19,6 @@ import java.util.Date;
 import java.util.Optional;
 
 import static java.util.Arrays.asList;
-import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
-import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.MOTE;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
