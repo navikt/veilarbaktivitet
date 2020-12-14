@@ -28,7 +28,7 @@ public class AktiviteterTilKafkaService {
         try {
             sendMelding(melding);
         } catch (Exception e) {
-            log.error("feilet ved sending av melding til kafka", e);
+            log.error("feilet ved sending av melding for aktivitet ID: " + melding.getAktivitetId() + " version: " + melding.getVersion() + " til kafka", e);
         }
     }
 
