@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
@@ -17,6 +18,8 @@ import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 @AllArgsConstructor
 public class KafkaAktivitetDAO {
     private final Database database;
+
+    @Timed
     public List<KafkaAktivitetMeldingV2> hentOppTil1000MeldingerUtenKafka() {
         // language=sql
         return database.query(""+
@@ -33,6 +36,7 @@ public class KafkaAktivitetDAO {
         );
     }
 
+    @Timed
     public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV2 meldingV2) {
         // language=sql
         database.update("" +
