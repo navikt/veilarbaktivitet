@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.controller;
 
+import no.nav.common.health.HealthCheck;
+import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.health.selftest.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,14 @@ public class InternalController {
 
     @GetMapping("/isAlive")
     public void isAlive() {
+        List<HealthCheck> healthChecks = List.of(
+                () -> checkDbHealth(db)
+        );
+
+        HealthCheckUtils.findFirstFailingCheck(healthChecks)
+                .ifPresent((failedCheck) -> {
+                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+                });
     }
 
     @GetMapping("/selftest")
@@ -48,6 +58,15 @@ public class InternalController {
                 .status(status)
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
+    }
+
+    public static HealthCheckResult checkDbHealth(JdbcTemplate db) {
+        try {
+            db.query("SELECT 1 FROM DUAL", resultSet -> {});
+            return HealthCheckResult.healthy();
+        } catch (Exception e) {
+            return HealthCheckResult.unhealthy("Fikk ikke kontakt med databasen", e);
+        }
     }
 
 }
