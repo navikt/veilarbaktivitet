@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.service;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.leaderelection.LeaderElectionClient;
