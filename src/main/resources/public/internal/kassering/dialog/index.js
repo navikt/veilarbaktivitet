@@ -48,7 +48,7 @@ function handleData(json) {
     henvendelserContainer.innerHTML = '';
     const table = document.getElementById('table');
     json
-        .sort((d1, d2) => d1.sisteDato.localeCompare(d2.sisteDato))
+        .sort((d1, d2) => d1.sisteDato - d2.sisteDato)
         .map((dialog) => lagDialog(dialog))
         .forEach((elementer) => Array.from(elementer).forEach((element) => table.appendChild(element)));
 }
@@ -63,7 +63,7 @@ function lagDialog(dialog) {
         <td><button data-dialogid="${dialog.id}" data-action="GET">Se henvendelser</button></td>
         <td><button data-dialogid="${dialog.id}" data-action="DEL">Kasser hele</button></td>
         <td class="hidden-content">
-            ${dialog.henvendelser.sort((h1, h2) => h1.sendt.localeCompare(h2.sendt)).map(lagHenvendelse).join('')}
+            ${dialog.henvendelser.sort((h1, h2) => h1.sendt - h2.sendt).map(lagHenvendelse).join('')}
         </td>
 </tr>
 `;
