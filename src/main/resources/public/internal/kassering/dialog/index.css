@@ -1,0 +1,44 @@
+html {
+    font-size: 16px;
+}
+.app {
+    display: grid;
+    grid-template-areas: "sok ." "data henv";
+    grid-template-columns: auto 60rem;
+}
+
+.sok {
+    grid-area: sok;
+}
+#data {
+    grid-area: data;
+}
+#henvendelser {
+    grid-area: henv;
+    position: relative;
+}
+#henvendelseContainer {
+    position: fixed;
+    height: calc(100vh - 200px);
+    overflow: auto;
+    width: 50vw;
+}
+
+#henvendelseContainer div:nth-child(2n) {
+    background-color: #ccc;
+}
+
+#henvendelseContainer div {
+    border-bottom: 1px solid black;
+    padding: 1rem
+}
+
+.hidden-content {
+    display: none;
+}
+.content {}
+
+tr:nth-child(2n) {
+    background-color: #ccc;
+}
+

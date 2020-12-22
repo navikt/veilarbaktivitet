@@ -9,6 +9,9 @@ public class CustomWebMvcConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        registry.addViewController("/internal/kassering/dialog").setViewName("redirect:/internal/kassering/dialog/");
+        registry.addViewController("/internal/kassering/dialog/").setViewName("forward:/internal/kassering/dialog/index.html");
+
         registry.addViewController("/internal/kassering").setViewName("redirect:/internal/kassering/");
         registry.addViewController("/internal/kassering/").setViewName("forward:/internal/kassering/index.html");
     }
