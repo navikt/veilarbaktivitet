@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kassering her</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+<h1>Kassering for dialog/henvendelser</h1>
+<div class="app">
+    <div class="sok">
+        <form>
+            <p>Fyll ut <i>fnr</i> eller <i>dialogId</i></p>
+            <input type="text" id="fnr" placeholder="fnr">
+            <input type="text" id="dialogId" placeholder="dialogId">
+            <button>Søk</button>
+        </form>
+    </div>
+    <div id="data"></div>
+    <div id="henvendelser">
+        <div id="henvendelseContainer"></div>
+    </div>
+</div>
+</body>
+<script src="index.js" type="application/javascript"></script>
+</html>
