@@ -16,9 +16,11 @@ public class KafkaAktivitetMeldingV2 {
     Date fraDato;
     Date tilDato;
     Date endretDato;
+    String sisteEndringsType;
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
     boolean avtalt;
     boolean historisk;
+    boolean ny;
 
 }

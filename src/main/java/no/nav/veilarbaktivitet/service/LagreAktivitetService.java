@@ -18,6 +18,11 @@ public class LagreAktivitetService {
 
     @Transactional
     public void lagreAktivitet(AktivitetData aktivitetData) {
+        lagreAktivitet(aktivitetData, false);
+    }
+
+    @Transactional
+    public void lagreAktivitet(AktivitetData aktivitetData, boolean nyAktivitet) {
         try {
             aktivitetDAO.insertAktivitet(aktivitetData);
             kafkaService.sendMelding(KafkaAktivitetMelding.of(aktivitetData));

@@ -73,7 +73,7 @@ public class AktivitetService {
                 .build();
 
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
-        lagreAktivitetService.lagreAktivitet(kvpAktivivitet);
+        lagreAktivitetService.lagreAktivitet(kvpAktivivitet, true);
 
         funksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
