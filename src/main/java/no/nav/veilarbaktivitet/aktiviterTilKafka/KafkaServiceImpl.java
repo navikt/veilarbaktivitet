@@ -37,7 +37,7 @@ public class KafkaServiceImpl implements KafkaService {
         String correlationId = getCorrelationId();
         ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V2, key, JsonUtils.toJson(melding));
         record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
-        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {} på topic {}", melding.getAktivitetId(), correlationId, melding.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER);
+        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {} på topic {}", melding.getAktivitetId(), correlationId, melding.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V2);
         producer.send(record).get();
     }
 
