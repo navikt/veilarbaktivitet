@@ -27,7 +27,7 @@ public class KafkaAktivitetDAO {
                         " from AKTIVITET " +
                         " where GJELDENDE = 1" +
                         " and not exists(" +
-                        " select 1 from AKTIVITET_SENDT_PAA_KAFKA_V3 kafka " +
+                        " select 1 from AKTIVITET_SENDT_KAFKA_V3 kafka " +
                         " where kafka.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID " +
                         " and kafka.AKTIVITET_VERSJON = AKTIVITET.VERSJON" +
                         " ) order by VERSJON desc " +
@@ -40,7 +40,7 @@ public class KafkaAktivitetDAO {
     public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV3 meldingV3, Long offset) {
         // language=sql
         database.update("" +
-                        " insert into AKTIVITET_SENDT_PAA_KAFKA_V3 " +
+                        " insert into AKTIVITET_SENDT_KAFKA_V3 " +
                         " (aktivitet_id, aktivitet_versjon, sendt, offset) " +
                         " values ( ?,?, CURRENT_TIMESTAMP, ? )",
                 meldingV3.getAktivitetId(), meldingV3.getVersion(), offset);
