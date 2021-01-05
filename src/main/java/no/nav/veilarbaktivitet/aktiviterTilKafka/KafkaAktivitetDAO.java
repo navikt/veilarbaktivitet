@@ -37,13 +37,13 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
-    public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV3 meldingV2, Long offset) {
+    public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV3 meldingV3, Long offset) {
         // language=sql
         database.update("" +
                         " insert into AKTIVITET_SENDT_PAA_KAFKA_V3 " +
                         " (aktivitet_id, aktivitet_versjon, sendt, offset) " +
                         " values ( ?,?, CURRENT_TIMESTAMP, ? )",
-                meldingV2.getAktivitetId(), meldingV2.getVersion(), offset);
+                meldingV3.getAktivitetId(), meldingV3.getVersion(), offset);
     }
 
     private static KafkaAktivitetMeldingV3 mapKafkaAktivitetMeldingV3(ResultSet rs) throws SQLException {
