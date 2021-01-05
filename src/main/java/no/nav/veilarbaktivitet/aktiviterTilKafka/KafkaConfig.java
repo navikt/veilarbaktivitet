@@ -17,7 +17,7 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 public class KafkaConfig {
 
     public static final String KAFKA_TOPIC_AKTIVITETER = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER");
-    public static final String KAFKA_TOPIC_AKTIVITETER_V2 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V2");
+    public static final String KAFKA_TOPIC_AKTIVITETER_V3 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V3");
     public static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
 
     private final Credentials serviceUserCredentials;
