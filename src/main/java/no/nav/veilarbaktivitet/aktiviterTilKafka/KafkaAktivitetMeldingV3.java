@@ -9,7 +9,7 @@ import java.util.Date;
 
 @Value
 @Builder
-public class KafkaAktivitetMeldingV2 {
+public class KafkaAktivitetMeldingV3 {
     String aktivitetId;
     String version;
     String aktorId;
