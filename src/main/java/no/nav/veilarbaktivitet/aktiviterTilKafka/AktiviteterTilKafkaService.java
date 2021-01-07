@@ -17,14 +17,14 @@ public class AktiviteterTilKafkaService {
     private final MeterRegistry registry;
 
     @Timed
-    public void sendOppTil1000AktiviterPaaKafka() {
-        List<KafkaAktivitetMeldingV2> meldinger = dao.hentOppTil1000MeldingerUtenKafka();
-        for (KafkaAktivitetMeldingV2 melding : meldinger) {
+    public void sendOppTil5000AktiviterPaaKafka() {
+        List<KafkaAktivitetMeldingV3> meldinger = dao.hentOppTil5000MeldingerUtenKafka();
+        for (KafkaAktivitetMeldingV3 melding : meldinger) {
             trySendMelding(melding);
         }
     }
 
-    private void trySendMelding(KafkaAktivitetMeldingV2 melding) {
+    private void trySendMelding(KafkaAktivitetMeldingV3 melding) {
         try {
             sendMelding(melding);
         } catch (Exception e) {
@@ -32,10 +32,10 @@ public class AktiviteterTilKafkaService {
         }
     }
 
-    private void sendMelding(KafkaAktivitetMeldingV2 melding) {
+    private void sendMelding(KafkaAktivitetMeldingV3 melding) {
         registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            kafka.sendMeldingV2(melding);
-            dao.insertMeldingSendtPaaKafka(melding);
+            long offset = kafka.sendMeldingV3(melding);
+            dao.insertMeldingSendtPaaKafka(melding, offset);
         });
     }
 }
