@@ -55,7 +55,7 @@ public class KafkaAktivitetDAO {
                 .builder()
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getString("ID"))
-                .version(rs.getString("VERSJON"))
+                .version(rs.getLong("VERSJON"))
                 .fraDato(rs.getDate("FRA_DATO"))
                 .tilDato(rs.getDate("TIL_DATO"))
                 .endretDato(rs.getDate("ENDRET_DATO"))

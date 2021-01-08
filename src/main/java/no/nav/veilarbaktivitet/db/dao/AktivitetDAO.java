@@ -60,12 +60,12 @@ public class AktivitetDAO {
     }
 
     @Transactional
-    public void insertAktivitet(AktivitetData aktivitet) {
-        insertAktivitet(aktivitet, new Date());
+    public long insertAktivitet(AktivitetData aktivitet) {
+        return insertAktivitet(aktivitet, new Date());
     }
 
     @Transactional
-    public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
+    public long insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
@@ -107,7 +107,7 @@ public class AktivitetDAO {
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
 
         LOG.info("opprettet {}", aktivitet);
-
+        return versjon;
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {

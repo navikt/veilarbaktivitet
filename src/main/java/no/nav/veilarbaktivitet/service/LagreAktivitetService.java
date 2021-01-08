@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
 import no.nav.common.types.feil.VersjonsKonflikt;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMeldingV3;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMelding;
@@ -18,14 +19,9 @@ public class LagreAktivitetService {
 
     @Transactional
     public void lagreAktivitet(AktivitetData aktivitetData) {
-        lagreAktivitet(aktivitetData, false);
-    }
-
-    @Transactional
-    public void lagreAktivitet(AktivitetData aktivitetData, boolean nyAktivitet) {
         try {
-            aktivitetDAO.insertAktivitet(aktivitetData);
-            kafkaService.sendMelding(KafkaAktivitetMelding.of(aktivitetData));
+            long version = aktivitetDAO.insertAktivitet(aktivitetData);
+            kafkaService.sendMeldingV3(KafkaAktivitetMeldingV3.of(aktivitetData.withVersjon(version)));
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }
