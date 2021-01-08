@@ -18,8 +18,10 @@ spec:
         sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet",protocol="http"}[3h])) > 0
       for: 1m
       severity: danger
-      action: Read app logs(kubectl logs appname). Read Application events (kubectl descibe deployment appname)
+      #rekefolgen i slack meldingen
       description: The app might crash sometimes due to startup errors
-      documentation: https://github.com/navikt/aura-doc/naisvakt/alerts.md#app_unavailable
+      action: Read app logs(kubectl logs appname). Read Application events (kubectl descibe deployment appname)
       sla: respond within 1h, during office hours
+      #slutt
+      documentation: https://github.com/navikt/aura-doc/naisvakt/alerts.md#app_unavailable
 
