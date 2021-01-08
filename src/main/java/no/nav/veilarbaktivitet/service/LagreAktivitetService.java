@@ -5,7 +5,6 @@ import no.nav.common.types.feil.VersjonsKonflikt;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMeldingV3;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMelding;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -21,7 +20,7 @@ public class LagreAktivitetService {
     public void lagreAktivitet(AktivitetData aktivitetData) {
         try {
             long version = aktivitetDAO.insertAktivitet(aktivitetData);
-            kafkaService.sendMeldingV3(KafkaAktivitetMeldingV3.of(aktivitetData.withVersjon(version)));
+            kafkaService.sendMelding(KafkaAktivitetMeldingV3.of(aktivitetData.withVersjon(version)));
         } catch (DuplicateKeyException e) {
             throw new VersjonsKonflikt();
         }

@@ -34,7 +34,7 @@ public class AktiviteterTilKafkaService {
 
     private void sendMelding(KafkaAktivitetMeldingV3 melding) {
         registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            long offset = kafka.sendMeldingV3(melding);
+            long offset = kafka.sendMelding(melding);
             dao.insertMeldingSendtPaaKafka(melding, offset);
         });
     }
