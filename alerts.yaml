@@ -1,0 +1,25 @@
+apiVersion: "nais.io/v1"
+kind: "Alert"
+metadata:
+  name: veilarbaktivitet-alarm
+  namespace: pto
+  labels:
+    team: pto
+spec:
+  receivers:
+    slack:
+      channel: '#team_dab_alerts_dev'
+      prependText: '<!here> | '
+  alerts:
+    - alert: burntest
+      expr: |
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet",protocol="http",code=~"4.."}[3h]))
+        /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet",protocol="http"}[3h])) > 0
+      for: 1m
+      severity: danger
+      action: Read app logs(kubectl logs appname). Read Application events (kubectl descibe deployment appname)
+      description: The app might crash sometimes due to startup errors
+      documentation: https://github.com/navikt/aura-doc/naisvakt/alerts.md#app_unavailable
+      sla: respond within 1h, during office hours
+
