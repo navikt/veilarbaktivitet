@@ -5,6 +5,7 @@ import lombok.Value;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 import java.util.Date;
 
@@ -22,12 +23,13 @@ public class KafkaAktivitetMeldingV3 {
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
     SisteEndringKategori sisteEndringKategori;
+    InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
 
     public static KafkaAktivitetMeldingV3 of(AktivitetData aktivitet) {
         AktivitetTypeDTO typeDTO = typeMap.get(aktivitet.getAktivitetType());
-        SisteEndringKategori sisteEndringKategori = SisteEndringKategori.getKategori(aktivitet.getLagtInnAv(), aktivitet.getStatus(), typeDTO, aktivitet.getTransaksjonsType());
+        SisteEndringKategori sisteEndringKategori = SisteEndringKategori.getKategori(aktivitet.getStatus(), typeDTO, aktivitet.getTransaksjonsType());
 
         return KafkaAktivitetMeldingV3.builder()
                 .aktivitetId(String.valueOf(aktivitet.getId()))
@@ -39,6 +41,7 @@ public class KafkaAktivitetMeldingV3 {
                 .aktivitetType(typeDTO)
                 .aktivitetStatus(aktivitet.getStatus())
                 .sisteEndringKategori(sisteEndringKategori)
+                .lagtInnAv(aktivitet.getLagtInnAv())
                 .avtalt(aktivitet.isAvtalt())
                 .historisk(aktivitet.getHistoriskDato() != null)
                 .build();

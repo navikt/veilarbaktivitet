@@ -23,18 +23,16 @@ public enum SisteEndringKategori {
     AVBRUTT_BEHANDLING,
     AVBRUTT_SOKEAVTALE;
 
-    public static SisteEndringKategori getKategori(InnsenderData lagtInnAv, AktivitetStatus aktivitetStatus, AktivitetTypeDTO aktivitetType, AktivitetTransaksjonsType transaksjonsType) {
-        if(lagtInnAv.equals(InnsenderData.BRUKER)) {
-            String potensiellSisteEndringsKategori = null;
-            if (transaksjonsType.equals(AktivitetTransaksjonsType.OPPRETTET)) {
-                potensiellSisteEndringsKategori = "NY_"+aktivitetType.name();
-            } else if (transaksjonsType.equals(AktivitetTransaksjonsType.STATUS_ENDRET)){
-                potensiellSisteEndringsKategori = aktivitetStatus + "_" + aktivitetType.name();
-            }
+    public static SisteEndringKategori getKategori( AktivitetStatus aktivitetStatus, AktivitetTypeDTO aktivitetType, AktivitetTransaksjonsType transaksjonsType) {
+        String potensiellSisteEndringsKategori = null;
+        if (transaksjonsType.equals(AktivitetTransaksjonsType.OPPRETTET)) {
+            potensiellSisteEndringsKategori = "NY_"+aktivitetType.name();
+        } else if (transaksjonsType.equals(AktivitetTransaksjonsType.STATUS_ENDRET)){
+            potensiellSisteEndringsKategori = aktivitetStatus + "_" + aktivitetType.name();
+        }
 
-            if(contains(potensiellSisteEndringsKategori)){
-                return SisteEndringKategori.valueOf(potensiellSisteEndringsKategori);
-            }
+        if(contains(potensiellSisteEndringsKategori)){
+            return SisteEndringKategori.valueOf(potensiellSisteEndringsKategori);
         }
         return null;
     }
