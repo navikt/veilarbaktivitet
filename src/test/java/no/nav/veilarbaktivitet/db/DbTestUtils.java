@@ -12,7 +12,7 @@ import java.util.List;
 public class DbTestUtils {
 
     private final static List<String> ALL_TABLES = Arrays.asList(
-            "AKTIVITET_SENDT_PAA_KAFKA",
+            "AKTIVITET_SENDT_PAA_KAFKA_V3",
             "MOTE_SMS_HISTORIKK",
             "GJELDENDE_MOTE_SMS",
             "STILLINGSSOK",

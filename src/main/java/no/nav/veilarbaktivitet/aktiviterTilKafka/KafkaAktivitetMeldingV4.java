@@ -26,24 +26,4 @@ public class KafkaAktivitetMeldingV4 {
     InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
-
-    public static KafkaAktivitetMeldingV4 of(AktivitetData aktivitet) {
-        AktivitetTypeDTO typeDTO = typeMap.get(aktivitet.getAktivitetType());
-        SisteEndringKategori sisteEndringKategori = SisteEndringKategori.getKategori(aktivitet.getStatus(), typeDTO, aktivitet.getTransaksjonsType());
-
-        return KafkaAktivitetMeldingV4.builder()
-                .aktivitetId(String.valueOf(aktivitet.getId()))
-                .version(aktivitet.getVersjon())
-                .aktorId(aktivitet.getAktorId())
-                .fraDato(aktivitet.getFraDato())
-                .tilDato(aktivitet.getTilDato())
-                .endretDato(aktivitet.getEndretDato())
-                .aktivitetType(typeDTO)
-                .aktivitetStatus(aktivitet.getStatus())
-                .sisteEndringKategori(sisteEndringKategori)
-                .lagtInnAv(aktivitet.getLagtInnAv())
-                .avtalt(aktivitet.isAvtalt())
-                .historisk(aktivitet.getHistoriskDato() != null)
-                .build();
-    }
 }

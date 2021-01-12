@@ -3,7 +3,10 @@ package no.nav.veilarbaktivitet.aktiviterTilKafka;
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
+import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
@@ -37,6 +40,19 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
+    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendt() {
+        // language=sql
+        return database.query(""+
+                        " select AKTOR_ID, AKTIVITET.AKTIVITET_ID as ID, VERSJON,  FRA_DATO, TIL_DATO, ENDRET_DATO, AKTIVITET_TYPE_KODE, LIVSLOPSTATUS_KODE, AVTALT, HISTORISK_DATO " +
+                        " from AKTIVITET " +
+                        " where PORTEFOLJE_KAFKA_OFFSET = NULL" +
+                        " order by VERSJON " +
+                        " FETCH NEXT 5000 ROWS ONLY",
+                KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
+        );
+    }
+
+    @Timed
     public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV3 meldingV3, Long offset) {
         // language=sql
         database.update("" +
@@ -44,6 +60,16 @@ public class KafkaAktivitetDAO {
                         " (aktivitet_id, aktivitet_versjon, sendt, offset) " +
                         " values ( ?,?, CURRENT_TIMESTAMP, ? )",
                 meldingV3.getAktivitetId(), meldingV3.getVersion(), offset);
+    }
+
+    @Timed
+    public void updateVeilarbOffset(KafkaAktivitetMeldingV4 meldingV3, Long kafkaOffset) {
+        // language=sql
+        database.update("" +
+                        " update AKTIVITET " +
+                        " SET PORTEFOLJE_KAFKA_OFFSET = ?" +
+                        " WHERE VERSJON = ?",
+                kafkaOffset, meldingV3.getVersion());
     }
 
     private static KafkaAktivitetMeldingV3 mapKafkaAktivitetMeldingV3(ResultSet rs) throws SQLException {
@@ -65,5 +91,26 @@ public class KafkaAktivitetDAO {
                 .historisk(rs.getDate("HISTORISK_DATO") != null)
                 .build();
 
+    }
+
+    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs) throws SQLException {
+        AktivitetData aktivitet = AktivitetDataRowMapper.mapAktivitet(rs);
+        AktivitetTypeDTO typeDTO = typeMap.get(aktivitet.getAktivitetType());
+        SisteEndringKategori sisteEndringKategori = SisteEndringKategori.getKategori(aktivitet.getStatus(), typeDTO, aktivitet.getTransaksjonsType());
+
+        return KafkaAktivitetMeldingV4.builder()
+                .aktivitetId(String.valueOf(aktivitet.getId()))
+                .version(aktivitet.getVersjon())
+                .aktorId(aktivitet.getAktorId())
+                .fraDato(aktivitet.getFraDato())
+                .tilDato(aktivitet.getTilDato())
+                .endretDato(aktivitet.getEndretDato())
+                .aktivitetType(typeDTO)
+                .aktivitetStatus(aktivitet.getStatus())
+                .sisteEndringKategori(sisteEndringKategori)
+                .lagtInnAv(aktivitet.getLagtInnAv())
+                .avtalt(aktivitet.isAvtalt())
+                .historisk(aktivitet.getHistoriskDato() != null)
+                .build();
     }
 }

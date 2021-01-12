@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 import java.util.Date;
 

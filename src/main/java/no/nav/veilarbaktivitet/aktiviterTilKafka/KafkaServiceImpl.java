@@ -33,6 +33,18 @@ public class KafkaServiceImpl implements KafkaService {
         return recordMetadata.offset();
     }
 
+    @Counted
+    @SneakyThrows
+    public long sendMeldingV4(KafkaAktivitetMeldingV4 meldingV4) {
+        String key = meldingV4.getAktivitetId();
+        String correlationId = getCorrelationId();
+        ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4, key, JsonUtils.toJson(meldingV4));
+        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
+        RecordMetadata recordMetadata = producer.send(record).get();
+        log.info("Sender aktivitet {}, version {} på kafka med callId {} for bruker med aktørId {} på topic {} ofcet {}", meldingV4.getAktivitetId(), meldingV4.getVersion(), correlationId, meldingV4.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4, recordMetadata.offset());
+        return recordMetadata.offset();
+    }
+
     static String getCorrelationId() {
         String correlationId = MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME);
 
