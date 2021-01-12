@@ -63,13 +63,13 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
-    public void updateVeilarbOffset(KafkaAktivitetMeldingV4 meldingV3, Long kafkaOffset) {
+    public void updateVeilarbOffset(KafkaAktivitetMeldingV4 melding, Long kafkaOffset) {
         // language=sql
         database.update("" +
                         " update AKTIVITET " +
-                        " SET PORTEFOLJE_KAFKA_OFFSET = ?" +
-                        " WHERE VERSJON = ?",
-                kafkaOffset, meldingV3.getVersion());
+                        " set PORTEFOLJE_KAFKA_OFFSET = ?" +
+                        " where VERSJON = ?",
+                kafkaOffset, melding.getVersion());
     }
 
     private static KafkaAktivitetMeldingV3 mapKafkaAktivitetMeldingV3(ResultSet rs) throws SQLException {

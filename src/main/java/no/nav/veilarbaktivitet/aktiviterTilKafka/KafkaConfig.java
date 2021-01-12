@@ -16,10 +16,7 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 @Configuration
 public class KafkaConfig {
 
-    // TODO: fjern denne fra health check
-    public static final String KAFKA_TOPIC_AKTIVITETER = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER");
-    public static final String KAFKA_TOPIC_AKTIVITETER_V3 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V3");
-    // TODO: Legg til topic
+   public static final String KAFKA_TOPIC_AKTIVITETER_V3 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V3");
     public static final String KAFKA_TOPIC_AKTIVITETER_V4 = getRequiredProperty("KAFKA_TOPIC_AKTIVITETER_V4");
     public static final String KAFKA_BROKERS = getRequiredProperty("KAFKA_BROKERS_URL");
 
