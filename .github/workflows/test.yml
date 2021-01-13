@@ -1,5 +1,9 @@
 name: Deploy alerts to prod
-on: [push]
+on:
+  push:
+    branches-ignore: 
+      - master
+      - dev
 
 jobs:
   test:
