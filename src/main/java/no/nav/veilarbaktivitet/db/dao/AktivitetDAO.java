@@ -20,7 +20,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AktivitetDAO {
 
     private static final Logger LOG = getLogger(AktivitetDAO.class);
-    private static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
+    public static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
             "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +

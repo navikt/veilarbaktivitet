@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import static no.nav.veilarbaktivitet.db.dao.AktivitetDAO.SELECT_AKTIVITET;
 import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 
 @Repository
@@ -43,9 +44,8 @@ public class KafkaAktivitetDAO {
     public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendt() {
         // language=sql
         return database.query(""+
-                        " select AKTOR_ID, AKTIVITET.AKTIVITET_ID as ID, VERSJON,  FRA_DATO, TIL_DATO, ENDRET_DATO, AKTIVITET_TYPE_KODE, LIVSLOPSTATUS_KODE, AVTALT, HISTORISK_DATO " +
-                        " from AKTIVITET " +
-                        " where PORTEFOLJE_KAFKA_OFFSET = NULL" +
+                        SELECT_AKTIVITET +
+                        " where PORTEFOLJE_KAFKA_OFFSET IS NULL" +
                         " order by VERSJON " +
                         " FETCH NEXT 5000 ROWS ONLY",
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4

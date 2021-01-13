@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktiviterTilKafka;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 public enum SisteEndringKategori {
     NY_STILLING,
