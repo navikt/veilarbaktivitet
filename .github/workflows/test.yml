@@ -1,4 +1,4 @@
-name: Deploy alerts to prod
+name: run tests
 on:
   push:
     branches-ignore: 

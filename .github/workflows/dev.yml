@@ -1,4 +1,4 @@
-name: Deploy alerts to prod
+name: Dev
 on:
   push:
     branches:
