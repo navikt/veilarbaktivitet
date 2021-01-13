@@ -1,9 +1,5 @@
 name: Deploy alerts to prod
-on:
-  push:
-    branches:
-      - '!master'
-      - '!dev'
+on: [push]
 
 jobs:
   test:
