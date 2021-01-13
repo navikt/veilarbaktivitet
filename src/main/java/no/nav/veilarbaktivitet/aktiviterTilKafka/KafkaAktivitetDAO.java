@@ -2,12 +2,10 @@ package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
+import lombok.val;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
 
@@ -44,7 +42,8 @@ public class KafkaAktivitetDAO {
     public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendt() {
         // language=sql
         return database.query(""+
-                        SELECT_AKTIVITET +
+                        " SELECT *" +
+                        " FROM AKTIVITET" +
                         " where PORTEFOLJE_KAFKA_OFFSET IS NULL" +
                         " order by VERSJON " +
                         " FETCH NEXT 5000 ROWS ONLY",
@@ -63,13 +62,13 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
-    public void updateVeilarbOffset(KafkaAktivitetMeldingV4 melding, Long kafkaOffset) {
+    public void updateSendtPaKafka(Long versjon, Long kafkaOffset) {
         // language=sql
         database.update("" +
                         " update AKTIVITET " +
                         " set PORTEFOLJE_KAFKA_OFFSET = ?" +
                         " where VERSJON = ?",
-                kafkaOffset, melding.getVersion());
+                kafkaOffset, versjon);
     }
 
     private static KafkaAktivitetMeldingV3 mapKafkaAktivitetMeldingV3(ResultSet rs) throws SQLException {
@@ -94,23 +93,24 @@ public class KafkaAktivitetDAO {
     }
 
     public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs) throws SQLException {
-        AktivitetData aktivitet = AktivitetDataRowMapper.mapAktivitet(rs);
-        AktivitetTypeDTO typeDTO = typeMap.get(aktivitet.getAktivitetType());
-        SisteEndringKategori sisteEndringKategori = SisteEndringKategori.getKategori(aktivitet.getStatus(), typeDTO, aktivitet.getTransaksjonsType());
+        AktivitetTypeDTO typeDTO = typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")));
+        AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
+        InnsenderData lagt_inn_av = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
+        EndringsType transaksjons_type = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
 
         return KafkaAktivitetMeldingV4.builder()
-                .aktivitetId(String.valueOf(aktivitet.getId()))
-                .version(aktivitet.getVersjon())
-                .aktorId(aktivitet.getAktorId())
-                .fraDato(aktivitet.getFraDato())
-                .tilDato(aktivitet.getTilDato())
-                .endretDato(aktivitet.getEndretDato())
+                .aktivitetId(String.valueOf(rs.getLong("aktivitet_id")))
+                .version(rs.getLong("versjon"))
+                .aktorId(rs.getString("aktor_id"))
+                .fraDato(Database.hentDato(rs, "fra_dato"))
+                .tilDato(Database.hentDato(rs, "til_dato"))
+                .endretDato(Database.hentDato(rs, "endret_dato"))
                 .aktivitetType(typeDTO)
-                .aktivitetStatus(aktivitet.getStatus())
-                .sisteEndringKategori(sisteEndringKategori)
-                .lagtInnAv(aktivitet.getLagtInnAv())
-                .avtalt(aktivitet.isAvtalt())
-                .historisk(aktivitet.getHistoriskDato() != null)
+                .aktivitetStatus(status)
+                .lagtInnAv(lagt_inn_av)
+                .endringsType(transaksjons_type)
+                .avtalt(rs.getBoolean("avtalt"))
+                .historisk(rs.getTimestamp( "historisk_dato") != null)
                 .build();
     }
 }

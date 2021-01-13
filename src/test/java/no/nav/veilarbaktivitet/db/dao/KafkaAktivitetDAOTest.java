@@ -57,7 +57,7 @@ public class KafkaAktivitetDAOTest {
         val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
         assertThat(usendteAktiviteter, hasSize(1));
 
-        kafkaAktivitetDAO.updateVeilarbOffset(usendteAktiviteter.get(0), 1L);
+        kafkaAktivitetDAO.updateSendtPaKafka(usendteAktiviteter.get(0).getVersion(), 1L);
 
         val usendteAktiviteter_tom = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
         assertThat(usendteAktiviteter_tom, hasSize(0));

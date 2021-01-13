@@ -22,7 +22,7 @@ public class KafkaAktivitetMeldingV4 {
     Date endretDato;
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
-    SisteEndringKategori sisteEndringKategori;
+    EndringsType endringsType;
     InnsenderData lagtInnAv;
     boolean avtalt;
     boolean historisk;
