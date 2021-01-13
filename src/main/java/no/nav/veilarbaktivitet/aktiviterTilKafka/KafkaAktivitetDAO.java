@@ -2,9 +2,7 @@ package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
-import lombok.val;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
@@ -13,7 +11,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import static no.nav.veilarbaktivitet.db.dao.AktivitetDAO.SELECT_AKTIVITET;
 import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 
 @Repository
