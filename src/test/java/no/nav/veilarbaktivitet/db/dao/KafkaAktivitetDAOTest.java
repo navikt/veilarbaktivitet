@@ -35,48 +35,43 @@ public class KafkaAktivitetDAOTest {
 
 
     @Test
-    public void hentOppTil5000MeldingerSomIkkeErSendt_AktivitetErSendOgIkkeSendt_returnererKunDeUsendte() {
-        val usendt_1 = opprettEgenaktivitet();
-        val usendt_2 = opprettEgenaktivitet();
-        val usendt_3 = opprettEgenaktivitet();
-        val sendt_1 = opprettEgenaktivitet();
+    public void hentOppTil5000MeldingerSomIkkeErSendt_AktivitetErSendOgIkkeSendt_returnererKunUsendte() {
+        val usendt = opprettEgenaktivitet();
+        val sendt = opprettEgenaktivitet();
 
         val usendteAktiviteter_pre = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
-        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, usendt_1));
-        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, usendt_2));
-        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, usendt_3));
-        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, sendt_1));
+        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, usendt.getVersjon()));
+        Assert.assertTrue(containsVersion(usendteAktiviteter_pre, sendt.getVersjon()));
 
-        kafkaAktivitetDAO.updateSendtPaKafka(sendt_1.getVersjon(), 1L);
+        kafkaAktivitetDAO.updateSendtPaKafka(sendt.getVersjon(), 1L);
         val usendteAktiviteter_post = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
-        Assert.assertTrue(containsVersion(usendteAktiviteter_post, usendt_1));
-        Assert.assertTrue(containsVersion(usendteAktiviteter_post, usendt_2));
-        Assert.assertTrue(containsVersion(usendteAktiviteter_post, usendt_3));
-        Assert.assertFalse(containsVersion(usendteAktiviteter_post, sendt_1));
+        Assert.assertTrue(containsVersion(usendteAktiviteter_post, usendt.getVersjon()));
+        Assert.assertFalse(containsVersion(usendteAktiviteter_post, sendt.getVersjon()));
     }
 
     @Test
     public void hentOppTil5000MeldingerSomIkkeErSendt_AktivitetErIkkeSendt_returnererEnAktivitet() {
         val aktivitet = opprettEgenaktivitet();
         val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
-        Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet));
+        Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet.getVersjon()));
     }
 
     @Test
     public void hentOppTil5000MeldingerSomIkkeErSendt_kunSendteAktiviteter_returnererIngen() {
         val aktivitet = opprettEgenaktivitet();
         val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
-        Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet));
+        Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet.getVersjon()));
 
         kafkaAktivitetDAO.updateSendtPaKafka(aktivitet.getVersjon(), 1L);
         val usendteAktiviteter_tom = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
-        Assert.assertFalse(containsVersion(usendteAktiviteter_tom, aktivitet));
+        Assert.assertFalse(containsVersion(usendteAktiviteter_tom, aktivitet.getVersjon()));
 
     }
 
-    private boolean containsVersion(List<KafkaAktivitetMeldingV4> list, AktivitetData aktivitet){
+    private boolean containsVersion(List<KafkaAktivitetMeldingV4> list, Long version){
         return list.stream()
-                .filter(e -> e.getVersion().equals(aktivitet.getVersjon())).count() == 1;
+                .filter(e -> e.getVersion().equals(version))
+                .count() == 1;
     }
 
     private AktivitetData opprettEgenaktivitet() {
