@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.db.rowmappers;
 
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -29,6 +30,11 @@ public class AktivitetDataRowMapper {
                 .endretAv(rs.getString("endret_av"))
                 .lagtInnAv(EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .avtalt(rs.getBoolean("avtalt"))
+                .forhaandsorientering(Forhaandsorientering
+                        .builder()
+                        .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
+                        .tekst(rs.getString("fho_tekst"))
+                        .build())
                 .lenke(rs.getString("lenke"))
                 .transaksjonsType(
                         EnumUtils.valueOf(AktivitetTransaksjonsType.class,

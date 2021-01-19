@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 import lombok.With;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 
 import java.util.Date;
 
@@ -29,6 +30,7 @@ public class AktivitetData {
     Date endretDato;
     String endretAv;
     boolean avtalt;
+    Forhaandsorientering forhaandsorientering;
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
     String kontorsperreEnhetId;
@@ -42,6 +44,5 @@ public class AktivitetData {
     IJobbAktivitetData iJobbAktivitetData;
     BehandlingAktivitetData behandlingAktivitetData;
     MoteData moteData;
-
 }
 
