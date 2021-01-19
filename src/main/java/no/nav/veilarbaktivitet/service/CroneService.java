@@ -31,7 +31,6 @@ public class CroneService {
     public void sendMeldingerPaaKafka() {
         if (leaderElectionClient.isLeader()) {
             aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
-            aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafkaV4();
         }
 
     }
