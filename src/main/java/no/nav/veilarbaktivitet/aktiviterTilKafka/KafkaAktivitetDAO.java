@@ -3,7 +3,8 @@ package no.nav.veilarbaktivitet.aktiviterTilKafka;
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
 
@@ -36,19 +37,6 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
-    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendt() {
-        // language=sql
-        return database.query(""+
-                        " SELECT *" +
-                        " FROM AKTIVITET" +
-                        " where PORTEFOLJE_KAFKA_OFFSET IS NULL" +
-                        " order by VERSJON " +
-                        " FETCH NEXT 5000 ROWS ONLY",
-                KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
-        );
-    }
-
-    @Timed
     public void insertMeldingSendtPaaKafka(KafkaAktivitetMeldingV3 meldingV3, Long offset) {
         // language=sql
         database.update("" +
@@ -56,16 +44,6 @@ public class KafkaAktivitetDAO {
                         " (aktivitet_id, aktivitet_versjon, sendt, offset) " +
                         " values ( ?,?, CURRENT_TIMESTAMP, ? )",
                 meldingV3.getAktivitetId(), meldingV3.getVersion(), offset);
-    }
-
-    @Timed
-    public void updateSendtPaKafka(Long versjon, Long kafkaOffset) {
-        // language=sql
-        database.update("" +
-                        " update AKTIVITET " +
-                        " set PORTEFOLJE_KAFKA_OFFSET = ?" +
-                        " where VERSJON = ?",
-                kafkaOffset, versjon);
     }
 
     private static KafkaAktivitetMeldingV3 mapKafkaAktivitetMeldingV3(ResultSet rs) throws SQLException {
@@ -77,7 +55,7 @@ public class KafkaAktivitetDAO {
                 .builder()
                 .aktorId(rs.getString("AKTOR_ID"))
                 .aktivitetId(rs.getString("ID"))
-                .version(rs.getLong("VERSJON"))
+                .version(rs.getString("VERSJON"))
                 .fraDato(rs.getDate("FRA_DATO"))
                 .tilDato(rs.getDate("TIL_DATO"))
                 .endretDato(rs.getDate("ENDRET_DATO"))
@@ -87,27 +65,5 @@ public class KafkaAktivitetDAO {
                 .historisk(rs.getDate("HISTORISK_DATO") != null)
                 .build();
 
-    }
-
-    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs) throws SQLException {
-        AktivitetTypeDTO typeDTO = typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")));
-        AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
-        InnsenderData lagt_inn_av = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
-        EndringsType transaksjons_type = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
-
-        return KafkaAktivitetMeldingV4.builder()
-                .aktivitetId(String.valueOf(rs.getLong("aktivitet_id")))
-                .version(rs.getLong("versjon"))
-                .aktorId(rs.getString("aktor_id"))
-                .fraDato(Database.hentDato(rs, "fra_dato"))
-                .tilDato(Database.hentDato(rs, "til_dato"))
-                .endretDato(Database.hentDato(rs, "endret_dato"))
-                .aktivitetType(typeDTO)
-                .aktivitetStatus(status)
-                .lagtInnAv(lagt_inn_av)
-                .endringsType(transaksjons_type)
-                .avtalt(rs.getBoolean("avtalt"))
-                .historisk(rs.getTimestamp( "historisk_dato") != null)
-                .build();
     }
 }

@@ -14,14 +14,14 @@ spec:
     - alert: Høy feilrate veilarbaktivitet
       expr: |
         (((
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[5m] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[5m]) ) )  > (14.4*0.001) ) and ( (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[1h] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[1h] ) ) )  > (14.4*0.001) )) or ( ( (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[30m] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[30m] ) ) )  > (6*0.001) ) and ( (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[6h] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[6h] ) ) )  > (6*0.001)))
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[5m] ) ) /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[5m]) ) )  > (14.4*0.001) ) and ( (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[1h] ) ) /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[1h] ) ) )  > (14.4*0.001) )) or ( ( (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[30m] ) ) /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[30m] ) ) )  > (6*0.001) ) and ( (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[6h] ) ) /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[6h] ) ) )  > (6*0.001)))
       for: 1s
       severity: danger
       description: Høy feilrate mot veilarbaktivitet.
@@ -30,14 +30,14 @@ spec:
     - alert: Vedvarende feilrate i veilarbaktivitet
       expr: |
         (((
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[24h]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[24h]    )    ) )  > (3*0.001) )  and  (  (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[2h]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[2h]    )    ) )  > (3*0.001) ) ) or ( (   (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[3d]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[3d]    )    ) )  > 0.001 )  and  (  (
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[6h]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[6h]    )    ) )  > 0.001 ) )
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[24h]    )  )  /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[24h]    )    ) )  > (3*0.001) )  and  (  (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[2h]    )  )  /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[2h]    )    ) )  > (3*0.001) ) ) or ( (   (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[3d]    )  )  /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[3d]    )    ) )  > 0.001 )  and  (  (
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'^[23].*'}[6h]    )  )  /
+        sum(rate(traefik_backend_request_duration_seconds_bucket{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[6h]    )    ) )  > 0.001 ) )
       for: 1s
       severity: warning
       description: Vedvarende feilrate i veilarbaktivitet

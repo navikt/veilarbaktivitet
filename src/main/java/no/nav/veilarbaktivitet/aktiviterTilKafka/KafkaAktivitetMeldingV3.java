@@ -11,7 +11,7 @@ import java.util.Date;
 @Builder
 public class KafkaAktivitetMeldingV3 {
     String aktivitetId;
-    Long version;
+    String version;
     String aktorId;
     Date fraDato;
     Date tilDato;

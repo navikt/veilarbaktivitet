@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
@@ -53,7 +54,8 @@ public class AktivitetsplanRSTest {
 
 
     private KvpClient kvpClient = mock(KvpClient.class);
-    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO);
+    private KafkaService kafkaService = mock(KafkaService.class);
+    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
     private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
 
 

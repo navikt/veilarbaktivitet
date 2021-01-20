@@ -34,31 +34,8 @@ public class AktiviteterTilKafkaService {
 
     private void sendMelding(KafkaAktivitetMeldingV3 melding) {
         registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            long offset = kafka.sendMelding(melding);
+            long offset = kafka.sendMeldingV3(melding);
             dao.insertMeldingSendtPaaKafka(melding, offset);
-        });
-    }
-
-    @Timed
-    public void sendOppTil5000AktiviterPaaKafkaV4() {
-        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendt();
-        for (KafkaAktivitetMeldingV4 melding : meldinger) {
-            trySendMelding(melding);
-        }
-    }
-
-    private void trySendMelding(KafkaAktivitetMeldingV4 melding) {
-        try {
-            sendMeldingV4(melding);
-        } catch (Exception e) {
-            log.error("feilet ved sending av melding for aktivitet ID: " + melding.getAktivitetId() + " version: " + melding.getVersion() + " til kafka V4", e);
-        }
-    }
-
-    private void sendMeldingV4(KafkaAktivitetMeldingV4 melding) {
-        registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            long offset = kafka.sendMeldingV4(melding);
-            dao.updateSendtPaKafka(melding.getVersion(), offset);
         });
     }
 }

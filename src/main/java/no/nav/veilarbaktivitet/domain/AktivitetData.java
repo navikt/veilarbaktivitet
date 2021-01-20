@@ -3,13 +3,13 @@ package no.nav.veilarbaktivitet.domain;
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
-import lombok.With;
+import lombok.experimental.Wither;
 
 import java.util.Date;
 
 @Value
-@With
 @Builder(toBuilder = true)
+@Wither
 @ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt"})
 public class AktivitetData {
 
