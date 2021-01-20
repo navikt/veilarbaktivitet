@@ -5,7 +5,7 @@ import no.nav.common.health.HealthCheckResult;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.springframework.stereotype.Component;
 
-import static no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4;
+import static no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER;
 
 @Component
 public class KafkaHelsesjekk implements HealthCheck {
@@ -19,7 +19,7 @@ public class KafkaHelsesjekk implements HealthCheck {
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            kafka.partitionsFor(KAFKA_TOPIC_AKTIVITETER_V4);
+            kafka.partitionsFor(KAFKA_TOPIC_AKTIVITETER);
         } catch (Throwable t){
             return HealthCheckResult.unhealthy("Helsesjekk feilet mot kafka feilet", t);
         }
