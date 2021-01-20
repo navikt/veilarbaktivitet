@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 public interface KafkaService {
-    void sendMelding(KafkaAktivitetMelding melding);
+    long sendMelding(KafkaAktivitetMeldingV3 meldingV3);
 
-    long sendMeldingV3(KafkaAktivitetMeldingV3 meldingV3);
+    long sendMeldingV4(KafkaAktivitetMeldingV4 meldingV4);
 }
