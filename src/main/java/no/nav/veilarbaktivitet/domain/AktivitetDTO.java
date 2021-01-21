@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.domain;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 
 import java.util.Date;
 
@@ -25,6 +26,7 @@ public class AktivitetDTO {
     public boolean historisk;
     public String avsluttetKommentar;
     public boolean avtalt;
+    public Forhaandsorientering forhaandsorientering;
     public String lagtInnAv;
     public AktivitetTransaksjonsType transaksjonsType;
     public String malid;

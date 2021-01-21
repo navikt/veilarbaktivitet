@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.common.auth.subject.IdentType;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.types.feil.IngenTilgang;
 import no.nav.common.types.feil.UgyldigRequest;
 import no.nav.common.types.feil.UlovligHandling;
@@ -66,8 +64,7 @@ public class AktivitetAppService {
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
         settLestAvBrukerHvisUlest(aktivitetData);
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
-        assertCanAccessKvpActivity(aktivitetData);
+        authService.sjekkTilgang(aktivitetData.getAktorId(), aktivitetData.getKontorsperreEnhetId());
         return aktivitetData;
     }
 
@@ -269,16 +266,6 @@ public class AktivitetAppService {
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Checks the activity for KVP status, and throws an exception if the
-     * current user does not have access to the activity.
-     */
-    private void assertCanAccessKvpActivity(AktivitetData aktivitet) {
-        if (!canAccessKvpActivity(aktivitet)) {
-            funksjonelleMetrikker.reportIngenTilgangGrunnetKontorsperre();
-            throw new IngenTilgang();
-        }
-    }
 
     /**
      * Checks the activity for KVP status, and returns true if the current user
@@ -288,14 +275,6 @@ public class AktivitetAppService {
      * This function reports real usage through the metric system.
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        if (SubjectHandler.getSubject().map(sub -> sub.getIdentType() == IdentType.EksternBruker).orElse(false)) {
-            return true;
-        }
-
-        boolean hasAccess = Optional.ofNullable(aktivitet.getKontorsperreEnhetId())
-                .map(authService::sjekkTilgangTilEnhet)
-                .orElse(true);
-        funksjonelleMetrikker.reportFilterAktivitet(aktivitet, hasAccess);
-        return hasAccess;
+        return authService.sjekKvpTilgang(aktivitet.getKontorsperreEnhetId());
     }
 }

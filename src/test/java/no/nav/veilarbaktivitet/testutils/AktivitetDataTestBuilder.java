@@ -30,6 +30,27 @@ public class AktivitetDataTestBuilder {
                 .malid("2");
     }
 
+    public static AktivitetData nyAktivitet(AktivitetTypeData aktivitetTypeData) {
+        switch (aktivitetTypeData) {
+            case MOTE:
+                return nyMoteAktivitet();
+            case IJOBB:
+                return nyIJobbAktivitet();
+            case BEHANDLING:
+                return nyBehandlingAktivitet();
+            case SOKEAVTALE:
+                return nySokeAvtaleAktivitet();
+            case JOBBSOEKING:
+                return nyttStillingssøk();
+            case EGENAKTIVITET:
+                return nyEgenaktivitet();
+            case SAMTALEREFERAT:
+                return nytSamtaleReferat();
+            default: throw new IllegalArgumentException("ukjent type");
+        }
+
+    }
+
     public static AktivitetData nyttStillingssøk() {
 
         return AktivitetDataTestBuilder.nyAktivitet()
