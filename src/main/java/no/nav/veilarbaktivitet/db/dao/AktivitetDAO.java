@@ -69,6 +69,14 @@ public class AktivitetDAO {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
+        String forhaandsorienteringType = null;
+        String forhaandsorienteringTekst = null;
+
+        if(aktivitet.getForhaandsorientering() != null) {
+            forhaandsorienteringType = aktivitet.getForhaandsorientering().getType().name();
+            forhaandsorienteringTekst = aktivitet.getForhaandsorientering().getTekst();
+        }
+
         long versjon = nesteVersjon();
         //language=SQL
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
@@ -92,8 +100,8 @@ public class AktivitetDAO {
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
-                aktivitet.getForhaandsorientering().getType(),
-                aktivitet.getForhaandsorientering().getTekst(),
+                forhaandsorienteringType,
+                forhaandsorienteringTekst,
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),

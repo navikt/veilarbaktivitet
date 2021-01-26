@@ -5,7 +5,6 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.FunksjonelleMetrikker;
@@ -35,8 +34,7 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten eksisterer ikke");
         }
 
-
-        authService.sjekkTilgang(aktivitet.getAktorId(), aktivitet.getKontorsperreEnhetId());
+        authService.sjekkTilgangOgInternBruker(aktivitet.getAktorId(), aktivitet.getKontorsperreEnhetId());
         validerInput(avtaltMedNav, aktivitet, forhaandsorientering);
 
         if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
@@ -61,6 +59,10 @@ public class AvtaltMedNavController {
     private void validerInput(AvtaltMedNav avtaltMedNav, AktivitetData aktivitet, Forhaandsorientering forhaandsorientering) {
         if (avtaltMedNav.getAktivitetVersjon() != aktivitet.getVersjon()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
+        }
+
+        if (forhaandsorientering == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering kan ikke være null");
         }
 
         if (forhaandsorientering.getType() == null) {

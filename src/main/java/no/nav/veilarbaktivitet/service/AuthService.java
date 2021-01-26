@@ -39,6 +39,13 @@ public class AuthService {
         }
     }
 
+    public void sjekkTilgangOgInternBruker(String aktorid, String enhet) {
+        if(!BrukerService.erInternBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        sjekkTilgang(aktorid, enhet);
+    }
+
     public void sjekkTilgang(String aktorid, String enhet) {
         sjekkTilgangTilPerson(Person.aktorId(aktorid));
 
