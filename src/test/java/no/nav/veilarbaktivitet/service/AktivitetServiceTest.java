@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,9 +37,6 @@ public class AktivitetServiceTest {
     private KvpClient kvpClient;
 
     @Mock
-    private KafkaService kafkaService;
-
-    @Mock
     private FunksjonelleMetrikker funksjonelleMetrikker;
 
     @Captor
@@ -52,7 +48,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void setup() {
-        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO, kafkaService);
+        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO);
         aktivitetService = new AktivitetService(aktivitetDAO,kvpClient,funksjonelleMetrikker,lagreAktivitetService);
     }
 

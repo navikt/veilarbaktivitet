@@ -21,25 +21,15 @@ import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 public class KafkaServiceImpl implements KafkaService {
     private Producer<String, String> producer;
 
-    @SneakyThrows
-    public void sendMelding(KafkaAktivitetMelding melding) {
-        String key = melding.getAktorId();
-        String correlationId = getCorrelationId();
-        ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConfig.KAFKA_TOPIC_AKTIVITETER, key, JsonUtils.toJson(melding));
-        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
-        producer.send(record).get();
-        log.info("Sender aktivitet {} på kafka med callId {} for bruker med aktørId {} på topic {}", melding.getAktivitetId(), correlationId, melding.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER);
-    }
-
     @Counted
     @SneakyThrows
-    public long sendMeldingV3(KafkaAktivitetMeldingV3 melding) {
-        String key = melding.getAktivitetId();
+    public long sendMelding(KafkaAktivitetMeldingV4 meldingV4) {
+        String key = meldingV4.getAktivitetId();
         String correlationId = getCorrelationId();
-        ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V3, key, JsonUtils.toJson(melding));
+        ProducerRecord<String, String> record = new ProducerRecord<>(KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4, key, JsonUtils.toJson(meldingV4));
         record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, correlationId.getBytes()));
         RecordMetadata recordMetadata = producer.send(record).get();
-        log.info("Sender aktivitet {}, version {} på kafka med callId {} for bruker med aktørId {} på topic {} ofcet {}", melding.getAktivitetId(), melding.getVersion(), correlationId, melding.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V3, recordMetadata.offset());
+        log.info("Sender aktivitet {}, version {} på kafka med callId {} for bruker med aktørId {} på topic {} ofcet {}", meldingV4.getAktivitetId(), meldingV4.getVersion(), correlationId, meldingV4.getAktorId(), KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4, recordMetadata.offset());
         return recordMetadata.offset();
     }
 
