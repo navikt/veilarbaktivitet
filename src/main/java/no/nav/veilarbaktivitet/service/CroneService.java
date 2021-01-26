@@ -30,7 +30,6 @@ public class CroneService {
     @Scheduled(fixedRate = 500, initialDelay = 5000)
     public void sendMeldingerPaaKafka() {
         if (leaderElectionClient.isLeader()) {
-            aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
             aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafkaV4();
         }
 

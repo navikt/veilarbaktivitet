@@ -1,10 +1,11 @@
-package no.nav.veilarbaktivitet.db.dao;
+package no.nav.veilarbaktivitet.aktiviterTilKafka;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetDAO;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
