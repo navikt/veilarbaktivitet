@@ -110,10 +110,6 @@ public class AktivitetService {
         lagreAktivitetService.lagreAktivitet(nyAktivitet);
     }
 
-    public void slettAktivitet(long aktivitetId) {
-        aktivitetDAO.slettAktivitet(aktivitetId);
-    }
-
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()

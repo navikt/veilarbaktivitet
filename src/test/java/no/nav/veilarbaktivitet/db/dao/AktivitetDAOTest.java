@@ -103,16 +103,6 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void slett_aktivitet() {
-        val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
-
-        aktivitetDAO.slettAktivitet(aktivitet.getId());
-
-        assertThat(aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID), empty());
-        assertThat(hentAntallSlettedeAktiviteter(), equalTo(1));
-    }
-
-    @Test
     public void hent_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
