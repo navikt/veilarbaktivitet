@@ -231,16 +231,6 @@ public class AktivitetAppService {
                 .orElseThrow(RuntimeException::new);
     }
 
-    public void slettAktivitet(long aktivitetId) {
-        hentAktivitet(aktivitetId); // innebærer tilgangskontroll
-
-        if (BrukerService.erEksternBruker()) {
-            aktivitetService.slettAktivitet(aktivitetId);
-        } else {
-            throw new IngenTilgang();
-        }
-    }
-
     @Transactional
     public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
         if (BrukerService.erEksternBruker()) {
