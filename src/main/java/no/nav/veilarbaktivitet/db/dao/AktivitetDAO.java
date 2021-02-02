@@ -201,25 +201,6 @@ public class AktivitetDAO {
                 });
     }
 
-    @Transactional
-    public void slettAktivitet(long aktivitetId) {
-        int oppdaterteRader = Stream.of(
-                "DELETE FROM EGENAKTIVITET WHERE aktivitet_id = ?",
-                "DELETE FROM STILLINGSSOK WHERE aktivitet_id = ?",
-                "DELETE FROM SOKEAVTALE WHERE aktivitet_id = ?",
-                "DELETE FROM IJOBB WHERE aktivitet_id = ?",
-                "DELETE FROM BEHANDLING WHERE aktivitet_id = ?",
-                "DELETE FROM MOTE WHERE aktivitet_id = ?",
-                "DELETE FROM AKTIVITET WHERE aktivitet_id = ?"
-        )
-                .mapToInt((sql) -> database.update(sql, aktivitetId))
-                .sum();
-
-        if (oppdaterteRader > 0) {
-            database.update("INSERT INTO SLETTEDE_AKTIVITETER(aktivitet_id, tidspunkt) VALUES(?, CURRENT_TIMESTAMP)", aktivitetId);
-        }
-    }
-
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
         return database.query(SELECT_AKTIVITET +
                         "WHERE A.aktivitet_id = ? " +
