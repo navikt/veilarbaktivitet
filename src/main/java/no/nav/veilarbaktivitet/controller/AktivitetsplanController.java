@@ -114,10 +114,6 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @DeleteMapping("/{id}")
-    public void slettAktivitet(@PathVariable("id") String id) {
-        appService.slettAktivitet(Long.parseLong(id));
-    }
 
     @PutMapping("/{id}/status")
     public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
