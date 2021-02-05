@@ -53,11 +53,10 @@ public class AktivitetsplanRSTest {
 
 
     private KvpClient kvpClient = mock(KvpClient.class);
-    private LagreAktivitetService lagreAktivitetService = new LagreAktivitetService(aktivitetDAO);
     private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
 
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker, lagreAktivitetService);
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker);
     private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
     private BrukerService brukerService = new BrukerService(aktorregisterClient);
     private AuthService authService = mock(AuthService.class);

@@ -42,14 +42,11 @@ public class AktivitetServiceTest {
     @Captor
     private ArgumentCaptor argumentCaptor;
 
-    private LagreAktivitetService lagreAktivitetService;
-
     private AktivitetService aktivitetService;
 
     @Before
     public void setup() {
-        lagreAktivitetService = new LagreAktivitetService(aktivitetDAO);
-        aktivitetService = new AktivitetService(aktivitetDAO,kvpClient,funksjonelleMetrikker,lagreAktivitetService);
+        aktivitetService = new AktivitetService(aktivitetDAO,kvpClient,funksjonelleMetrikker);
     }
 
     @Test
