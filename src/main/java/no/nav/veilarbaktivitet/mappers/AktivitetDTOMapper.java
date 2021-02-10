@@ -22,6 +22,7 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
+                .setForhaandsorientering(aktivitet.getForhaandsorientering())
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
