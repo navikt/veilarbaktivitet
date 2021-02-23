@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.config;
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
@@ -34,7 +33,7 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
-                new SelfTestCheck("Unleash", false, HealthCheckResult::healthy),
+                new SelfTestCheck("Unleash", false, unleashClient),
                 new SelfTestCheck("MoteServicemelding", false, moteSMSService)
         );
 

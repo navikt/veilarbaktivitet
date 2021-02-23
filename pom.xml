@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.02.16_10.55-dc7ccfbaf5db</common.version>
+        <common.version>2.2021.02.23_11.33-7091f10a35ba</common.version>
         <junit.version>4.13.1</junit.version>
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
