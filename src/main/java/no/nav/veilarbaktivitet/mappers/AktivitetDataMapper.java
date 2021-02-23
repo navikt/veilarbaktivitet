@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.service.BrukerService;
 
 import java.util.Optional;
 
@@ -28,7 +28,8 @@ public class AktivitetDataMapper {
                 .status(aktivitetDTO.getStatus())
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
-                .lagtInnAv(BrukerService.erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
+                // TODO: Ikke bruk statiske ting som dette inne i en mapper
+                .lagtInnAv(AuthContextHolderThreadLocal.instance().erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid());
 

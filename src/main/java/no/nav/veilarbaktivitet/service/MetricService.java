@@ -4,16 +4,16 @@ import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Component
-public class FunksjonelleMetrikker {
+@Service
+public class MetricService {
 
     private final MetricsClient metricsClient;
 
-    public FunksjonelleMetrikker(MetricsClient metricsClient) {
+    public MetricService(MetricsClient metricsClient) {
         this.metricsClient = metricsClient;
     }
 

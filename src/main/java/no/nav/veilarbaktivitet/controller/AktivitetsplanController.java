@@ -1,13 +1,12 @@
 package no.nav.veilarbaktivitet.controller;
 
 import lombok.val;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
-import no.nav.veilarbaktivitet.service.BrukerService;
+import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +26,17 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 @RequestMapping("/api/aktivitet")
 public class AktivitetsplanController {
 
+    private final AuthService authService;
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
 
     @Autowired
     public AktivitetsplanController(
+            AuthService authService,
             AktivitetAppService appService,
             HttpServletRequest requestProvider
     ) {
+        this.authService = authService;
         this.appService = appService;
         this.requestProvider = requestProvider;
     }
@@ -139,8 +141,10 @@ public class AktivitetsplanController {
     }
 
     private Person getContextUserIdent() {
-        if (BrukerService.erEksternBruker()) {
-            return SubjectHandler.getIdent().map(Person::fnr).orElseThrow(RuntimeException::new);
+        if (authService.erEksternBruker()) {
+            return authService.getInnloggetBrukerIdent()
+                    .map(Person::fnr)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke ident for innlogget bruker"));
         }
 
         Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);

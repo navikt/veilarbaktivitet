@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import org.junit.Test;
@@ -13,7 +12,6 @@ import org.mockito.junit.MockitoJUnitRunner;
 import java.util.Date;
 
 import static junit.framework.TestCase.fail;
-import static no.nav.veilarbaktivitet.domain.AktivitetTypeData.JOBBSOEKING;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -30,10 +28,7 @@ public class AktivitetAppServiceTest {
     private AktivitetService aktivitetService;
 
     @Mock
-    private FunksjonelleMetrikker funksjonelleMetrikker;
-
-    @Mock
-    private BrukerService brukerService;
+    private MetricService metricService;
 
     @InjectMocks
     private AktivitetAppService appService;

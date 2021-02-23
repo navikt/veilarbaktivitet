@@ -7,14 +7,13 @@ import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarslingstyper;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import javax.xml.bind.JAXBContext;
 
-import static no.nav.veilarbaktivitet.service.MessageQueueUtils.*;
+import static no.nav.veilarbaktivitet.util.MessageQueueUtils.*;
 
-
-@Component
+@Service
 public class VarselQueService {
 
     private final JmsTemplate varselQueue;
