@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarbaktivitet.domain.*;
@@ -8,7 +9,6 @@ import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.BrukerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,20 +24,12 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/aktivitet")
 public class AktivitetsplanController {
 
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
-
-    @Autowired
-    public AktivitetsplanController(
-            AktivitetAppService appService,
-            HttpServletRequest requestProvider
-    ) {
-        this.appService = appService;
-        this.requestProvider = requestProvider;
-    }
 
     @GetMapping
     public AktivitetsplanDTO hentAktivitetsplan() {

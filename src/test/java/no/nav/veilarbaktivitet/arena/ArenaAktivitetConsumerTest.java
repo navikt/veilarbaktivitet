@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.ws.consumer;
+package no.nav.veilarbaktivitet.arena;
 
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Deltakerstatuser;
@@ -6,6 +6,7 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Periode;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerResponse;
+import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.junit.Test;

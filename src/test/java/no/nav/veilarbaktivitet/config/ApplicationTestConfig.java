@@ -16,7 +16,7 @@ import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.mock.*;
 import no.nav.veilarbaktivitet.service.*;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

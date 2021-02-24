@@ -25,8 +25,11 @@ public class BrukerService {
         return Optional.ofNullable(aktorId).map(Person::aktorId);
     }
 
-    public Optional<Person.Fnr> getFNRForAktorId(Person.AktorId aktorId) {
-        var fnr = aktorService.hentFnr(aktorId.get());
+    public Optional<Person.Fnr> getFNR(Person person) {
+        if (person instanceof Person.Fnr) {
+            return Optional.of((Person.Fnr)person);
+        }
+        var fnr = aktorService.hentFnr(person.get());
         return Optional.ofNullable(fnr).map(Person::fnr);
     }
 

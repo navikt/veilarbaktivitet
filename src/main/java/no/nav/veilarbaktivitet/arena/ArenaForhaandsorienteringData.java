@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.arena;
 import lombok.Builder;
 import lombok.Data;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
-import no.nav.veilarbaktivitet.domain.Person;
 
 import java.util.Date;
 
