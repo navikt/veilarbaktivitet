@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.Optional;
 
 @Transactional
@@ -25,36 +26,33 @@ public class ArenaController {
     private final HttpServletRequest requestProvider;
     private final BrukerService brukerService;
     private final AuthService authService;
+    private final ArenaService arenaService;
 
     @PutMapping("/forhaandsorientering")
-    public ArenaAktivitetDTO sendForhaandsorientering(@RequestBody ForhaandsorienteringBody forhaandsorienteringData, @RequestParam String arenaaktivitetId) {
+    public ArenaAktivitetDTO sendForhaandsorientering(@RequestBody Forhaandsorientering forhaandsorientering, @RequestParam String arenaaktivitetId) {
 
         Person person = getContextUserIdent();
         Person.AktorId aktorId = brukerService.getAktorIdForPerson(person).orElseThrow(RuntimeException::new);
+        Person.Fnr fnr = brukerService.getFNR(person).orElseThrow(RuntimeException::new);
         authService.sjekkTilgangOgInternBruker(aktorId.get(), null);
-
-        Forhaandsorientering forhaandsorientering = forhaandsorienteringData.getForhaandsorientering();
 
         validerInput(forhaandsorientering);
 
-        //TODO: Sjekke at FHO ikke allerede er sendt
+        List<ArenaAktivitetDTO> arenaAktiviteter = arenaService.hentAktiviteter(fnr);
 
-        //TODO: Sjekke mot arena for å sjekke om aktiviteten finnes?
-        //ArenaAktivitetDTO aktivitet = hentArenaaktivitet(arenaaktivitetId);
+        ArenaAktivitetDTO arenaAktivitet = arenaAktiviteter
+                .stream()
+                .filter(arenaAktivitetDTO -> arenaAktivitetDTO.getId().equals(arenaaktivitetId))
+                .findAny()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten eksisterer ikke"));
 
-        if (aktivitet == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten eksisterer ikke");
-        }
-
-        if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
-            forhaandsorientering.setTekst(null);
+        if (arenaAktivitet.getForhaandsorientering() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede lagt til forhåndsorientering på denne aktiviteten");
         }
 
         forhaandsorienteringDAO.insertForhaandsorientering(arenaaktivitetId, aktorId, forhaandsorientering);
 
-        //TODO: returnere arenaaktivitet med FHO
-        return ArenaAktivitetDTO.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(arenaaktivitetId));
-
+        return arenaAktivitet.setForhaandsorientering(forhaandsorientering);
     }
 
     private Person getContextUserIdent() {
@@ -74,6 +72,10 @@ public class ArenaController {
 
         if (forhaandsorientering.getType() == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.type kan ikke være null");
+        }
+
+        if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.tekst kan ikke være null");
         }
     }
 }

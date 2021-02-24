@@ -1,13 +1,13 @@
 package no.nav.veilarbaktivitet.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.common.types.feil.IngenTilgang;
 import no.nav.common.types.feil.UgyldigRequest;
 import no.nav.common.types.feil.UlovligHandling;
+import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,27 +17,14 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final ArenaAktivitetConsumer arenaAktivitetConsumer;
+    private final ArenaService arenaService;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final BrukerService brukerService;
     private final FunksjonelleMetrikker funksjonelleMetrikker;
-
-    @Autowired
-    public AktivitetAppService(ArenaAktivitetConsumer arenaAktivitetConsumer,
-                        AuthService authService,
-                        AktivitetService aktivitetService,
-                        BrukerService brukerService,
-                        FunksjonelleMetrikker funksjonelleMetrikker) {
-        this.arenaAktivitetConsumer = arenaAktivitetConsumer;
-        this.authService = authService;
-        this.aktivitetService = aktivitetService;
-        this.brukerService = brukerService;
-        this.funksjonelleMetrikker = funksjonelleMetrikker;
-    }
-
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -70,7 +57,7 @@ public class AktivitetAppService {
 
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
         authService.sjekkTilgangTilPerson(ident);
-        return arenaAktivitetConsumer.hentArenaAktiviteter(ident);
+        return arenaService.hentAktiviteter(ident);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
