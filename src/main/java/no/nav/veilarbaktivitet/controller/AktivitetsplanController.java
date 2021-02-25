@@ -49,6 +49,8 @@ public class AktivitetsplanController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     @GetMapping("/arena")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         return getFnr()
@@ -56,6 +58,8 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     @GetMapping("/harTiltak")
     public boolean hentHarTiltak() {
         return getFnr()

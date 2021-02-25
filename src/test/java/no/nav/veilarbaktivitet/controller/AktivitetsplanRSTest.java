@@ -7,6 +7,7 @@ import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
+import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.client.KvpClient;
@@ -30,8 +31,7 @@ import java.util.stream.Collectors;
 import static no.nav.common.auth.subject.IdentType.InternBruker;
 import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettAktivTiltaksaktivitet;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettInaktivTiltaksaktivitet;
+import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -88,7 +88,7 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv);
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
         AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, brukerService, funksjonelleMetrikker);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
 
@@ -107,7 +107,7 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv);
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
         AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, brukerService, funksjonelleMetrikker);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
 

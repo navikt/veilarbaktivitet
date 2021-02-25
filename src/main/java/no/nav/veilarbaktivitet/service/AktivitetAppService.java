@@ -55,6 +55,8 @@ public class AktivitetAppService {
         return aktivitetData;
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
         authService.sjekkTilgangTilPerson(ident);
         return arenaService.hentAktiviteter(ident);
