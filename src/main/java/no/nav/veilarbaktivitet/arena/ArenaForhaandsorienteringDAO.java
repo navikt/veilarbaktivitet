@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.arena;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,16 +13,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Repository
 @Slf4j
+@Repository
+@RequiredArgsConstructor
 public class ArenaForhaandsorienteringDAO {
 
     private final Database database;
-
-    @Autowired
-    public ArenaForhaandsorienteringDAO(Database database) {
-        this.database = database;
-    }
 
     @Transactional
     public void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
@@ -48,14 +44,7 @@ public class ArenaForhaandsorienteringDAO {
         log.info("opprettet {}", forhaandsorientering);
     }
 
-    public ArenaForhaandsorienteringData hentForhaandsorientering(String arenaaktivitetId) {
-        //language=SQL
-        return database.queryForObject("SELECT * FROM ARENA_FORHAANDSORIENTERING A WHERE A.arenaaktivitet_id = ?",
-                ForhaandsorienteringDataRowMapper::mapForhaandsorientering,
-                arenaaktivitetId
-        );
-    }
-
+    @Transactional
     public List<ArenaForhaandsorienteringData> hentForhaandsorienteringer(List<ArenaAktivitetDTO> aktiviteter) {
         List<String> aktivitetIder = aktiviteter.stream().map(ArenaAktivitetDTO::getId).collect(Collectors.toList());
 
