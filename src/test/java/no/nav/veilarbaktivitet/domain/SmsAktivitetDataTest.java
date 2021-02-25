@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.domain;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.time.Instant;
 import java.util.Calendar;
@@ -11,13 +11,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class SmsAktivitetDataTest {
 
-    @BeforeAll
+    @Before
     static void setup() {
         System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
     }
 
     @Test
-    void skalSendeServicevarselUtenSmsTid() {
+    public void skalSendeServicevarselUtenSmsTid() {
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
                 .moteTidAktivitet(new Date())
@@ -27,7 +27,7 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void SkalSendeServicevarselUlikSMSTid() {
+    public void SkalSendeServicevarselUlikSMSTid() {
         SmsAktivitetData build = SmsAktivitetData
                 .builder()
                 .moteTidAktivitet(new Date())
@@ -38,7 +38,7 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void skalIkkeSendeServiceVarselForLiksSMSMoteTidOgLikKanal() {
+    public void skalIkkeSendeServiceVarselForLiksSMSMoteTidOgLikKanal() {
         Date date = new Date();
 
         SmsAktivitetData build = SmsAktivitetData
@@ -53,7 +53,7 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void SkalSendeServicevarselUlikKanal() {
+    public void SkalSendeServicevarselUlikKanal() {
         Date date = new Date();
 
         SmsAktivitetData build = SmsAktivitetData
@@ -69,7 +69,7 @@ class SmsAktivitetDataTest {
 
 
     @Test
-    void formatertMoteTid() {
+    public void formatertMoteTid() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2020, Calendar.APRIL, 2, 10, 1);
         Instant instant = calendar.toInstant();
@@ -85,7 +85,7 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void formatertMoteTidSkalVere24TimersKlokke() {
+    public void formatertMoteTidSkalVere24TimersKlokke() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(2020, Calendar.APRIL, 2, 22, 1);
         Instant instant = calendar.toInstant();
@@ -101,7 +101,7 @@ class SmsAktivitetDataTest {
     }
 
     @Test
-    void url() {
+    public void url() {
         String url = SmsAktivitetData.builder().aktivitetId(1L).build().url();
 
         assertThat(url).isEqualTo("aktivitesplan_url/aktivitet/vis/1");
