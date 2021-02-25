@@ -39,6 +39,21 @@ public class AuthService {
         }
     }
 
+    public void sjekkTilgangOgInternBruker(String aktorid, String enhet) {
+        if(!BrukerService.erInternBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+        sjekkTilgang(aktorid, enhet);
+    }
+
+    public void sjekkTilgang(String aktorid, String enhet) {
+        sjekkTilgangTilPerson(Person.aktorId(aktorid));
+
+        if(!sjekKvpTilgang(enhet)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
+
     private String getAktorIdForPerson(Person person){
         if (person instanceof Person.AktorId) {
             return person.get();
@@ -49,8 +64,11 @@ public class AuthService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
+    public boolean sjekKvpTilgang(String enhet) {
+        if (BrukerService.erEksternBruker() || enhet == null) {
+            return true;
+        }
 
-    public boolean sjekkTilgangTilEnhet(String enhet) {
         return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), enhet);
     }
 
@@ -68,5 +86,6 @@ public class AuthService {
                 .map(Subject::getUid)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke ident for innlogget veileder"));
     }
+
 
 }

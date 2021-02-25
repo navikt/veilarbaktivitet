@@ -69,12 +69,21 @@ public class AktivitetDAO {
         long aktivitetId = aktivitet.getId();
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
+        String forhaandsorienteringType = null;
+        String forhaandsorienteringTekst = null;
+
+        if(aktivitet.getForhaandsorientering() != null) {
+            forhaandsorienteringType = aktivitet.getForhaandsorientering().getType().name();
+            forhaandsorienteringTekst = aktivitet.getForhaandsorientering().getTekst();
+        }
+
         long versjon = nesteVersjon();
+        //language=SQL
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, fho_type, fho_tekst, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -91,6 +100,8 @@ public class AktivitetDAO {
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
+                forhaandsorienteringType,
+                forhaandsorienteringTekst,
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),

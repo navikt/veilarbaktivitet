@@ -26,7 +26,6 @@ public class AktivitetService {
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
     private final FunksjonelleMetrikker funksjonelleMetrikker;
-    private final LagreAktivitetService lagreAktivitetService;
 
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
@@ -73,7 +72,7 @@ public class AktivitetService {
                 .build();
 
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
-        lagreAktivitetService.lagreAktivitet(kvpAktivivitet);
+        aktivitetDAO.insertAktivitet(kvpAktivivitet);
 
         funksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
@@ -90,7 +89,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        lagreAktivitetService.lagreAktivitet(nyAktivitet);
+        aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -107,7 +106,7 @@ public class AktivitetService {
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
 
-        lagreAktivitetService.lagreAktivitet(nyAktivitet);
+        aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
@@ -118,7 +117,7 @@ public class AktivitetService {
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        lagreAktivitetService.lagreAktivitet(oppdatertAktivitetMedNyFrist);
+        aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
@@ -134,7 +133,7 @@ public class AktivitetService {
                 ).orElse(null))
                 .endretAv(endretAv != null ? endretAv.get() : null)
                 .build();
-        lagreAktivitetService.lagreAktivitet(oppdatertAktivitetMedNyFrist);
+        aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterReferat(
@@ -145,7 +144,7 @@ public class AktivitetService {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
-        lagreAktivitetService.lagreAktivitet(originalAktivitet
+        aktivitetDAO.insertAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
@@ -174,7 +173,7 @@ public class AktivitetService {
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        lagreAktivitetService.lagreAktivitet(originalAktivitet
+        aktivitetDAO.insertAktivitet(originalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -247,7 +246,7 @@ public class AktivitetService {
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(lagreAktivitetService::lagreAktivitet);
+                .forEach(aktivitetDAO::insertAktivitet);
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
@@ -266,7 +265,7 @@ public class AktivitetService {
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
                 .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(lagreAktivitetService::lagreAktivitet);
+                .forEach(aktivitetDAO::insertAktivitet);
     }
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {

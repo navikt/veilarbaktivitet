@@ -15,7 +15,7 @@ public class InsertAktiviteter {
         }
     }
 
-    private static void insertEnAvHver(String akotrid, AktivitetDAO aktivitetDAO) {
+    public static void insertEnAvHver(String akotrid, AktivitetDAO aktivitetDAO) {
         insertNyAktivitet(AktivitetDataTestBuilder.nyBehandlingAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyIJobbAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet(), akotrid, aktivitetDAO);
