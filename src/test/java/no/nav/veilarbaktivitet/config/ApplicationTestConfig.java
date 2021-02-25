@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.config;
 
 
 import no.nav.common.abac.Pep;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
@@ -48,6 +50,11 @@ import javax.sql.DataSource;
         CronService.class,
 })
 public class ApplicationTestConfig {
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
+    }
 
     @Bean
     public Credentials serviceUserCredentials() {

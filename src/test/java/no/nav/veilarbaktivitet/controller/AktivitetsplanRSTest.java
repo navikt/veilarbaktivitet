@@ -25,10 +25,7 @@ import org.junit.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
@@ -69,6 +66,8 @@ public class AktivitetsplanRSTest {
 
     @Before
     public void setup() {
+        when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_IDENT));
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
@@ -173,6 +172,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void oppdater_aktivtet() {
+        when(authService.erEksternBruker()).thenReturn(true);
         gitt_at_jeg_har_aktiviter();
         nar_jeg_oppdaterer_en_av_aktiviten();
         da_skal_jeg_aktiviten_vare_endret();
@@ -180,11 +180,16 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
-        gitt_at_jeg_har_laget_en_aktivtet();
-        gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
-        nar_jeg_lagrer_aktivteten();
-        nar_jeg_oppdaterer_aktiviten();
-        da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.getInnloggetBrukerIdent()).thenReturn(Optional.of(KJENT_IDENT.get()));
+
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_IDENT.get()), () -> {
+            gitt_at_jeg_har_laget_en_aktivtet();
+            gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
+            nar_jeg_lagrer_aktivteten();
+            nar_jeg_oppdaterer_aktiviten();
+            da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
+        });
     }
 
 
