@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
@@ -21,7 +21,7 @@ public class HelsesjekkConfig {
 
     @Bean
     public SelfTestChecks selfTestChecks(ArenaServiceHelsesjekk arenaServiceHelsesjekk,
-                                         AktorregisterClient aktorregisterClient,
+                                         AktorOppslagClient aktorOppslagClient,
                                          Pep pep,
                                          DatabaseHelsesjekk databaseHelsesjekk,
                                          KafkaHelsesjekk kafkaHelsesjekk,
@@ -29,7 +29,7 @@ public class HelsesjekkConfig {
                                          MoteSMSService moteSMSService) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
-                new SelfTestCheck("Aktorregister", true, aktorregisterClient),
+                new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
