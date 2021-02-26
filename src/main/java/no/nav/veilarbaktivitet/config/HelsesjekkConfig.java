@@ -2,10 +2,13 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.veilarbaktivitet.helsesjekk.*;
+import no.nav.veilarbaktivitet.helsesjekk.ArenaServiceHelsesjekk;
+import no.nav.veilarbaktivitet.helsesjekk.DatabaseHelsesjekk;
+import no.nav.veilarbaktivitet.helsesjekk.KafkaHelsesjekk;
 import no.nav.veilarbaktivitet.service.MoteSMSService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +25,7 @@ public class HelsesjekkConfig {
                                          Pep pep,
                                          DatabaseHelsesjekk databaseHelsesjekk,
                                          KafkaHelsesjekk kafkaHelsesjekk,
-                                         UnleashHelsesjekk unleashHelsesjekk,
+                                         UnleashClient unleashClient,
                                          MoteSMSService moteSMSService) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
@@ -30,7 +33,7 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
-                new SelfTestCheck("Unleash", false, unleashHelsesjekk),
+                new SelfTestCheck("Unleash", false, unleashClient),
                 new SelfTestCheck("MoteServicemelding", false, moteSMSService)
         );
 

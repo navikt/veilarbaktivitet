@@ -2,18 +2,20 @@ package no.nav.veilarbaktivitet.config;
 
 
 import no.nav.common.abac.Pep;
-import no.nav.common.client.aktorregister.AktorregisterClient;
-import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.AktiviteterTilKafkaService;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetDAO;
+import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.mock.*;
 import no.nav.veilarbaktivitet.service.*;
 import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
@@ -26,9 +28,6 @@ import org.springframework.jms.core.JmsTemplate;
 
 import javax.sql.DataSource;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 
 @Configuration
 @Import({
@@ -38,9 +37,8 @@ import static org.mockito.Mockito.when;
         KafkaAktivitetDAO.class,
         MoteSmsDAO.class,
         VarselQueService.class,
-        BrukerService.class,
         AktiviteterTilKafkaService.class,
-        FunksjonelleMetrikker.class,
+        MetricService.class,
         MoteSMSService.class,
         AuthService.class,
         AktivitetService.class,
@@ -49,9 +47,14 @@ import static org.mockito.Mockito.when;
         AktivitetAppService.class,
         AktivitetsplanController.class,
         FilterTestConfig.class,
-        CroneService.class,
+        CronService.class,
 })
 public class ApplicationTestConfig {
+
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
+    }
 
     @Bean
     public Credentials serviceUserCredentials() {
@@ -64,8 +67,8 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public AktorregisterClient aktorregisterClient() {
-        return new AktorregisterClientMock();
+    public AktorOppslagClient aktorOppslagClient() {
+        return new AktorOppslackMock();
     }
 
     @Bean
@@ -78,9 +81,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {
-        var client = mock(LeaderElectionClient.class);
-        when(client.isLeader()).thenAnswer(a -> true);
-        return client;
+        return () -> true;
     }
 
     @Bean

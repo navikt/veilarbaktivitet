@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.FunksjonelleMetrikker;
+import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +24,8 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 
 
 @RunWith(MockitoJUnitRunner.class)
@@ -32,7 +33,7 @@ public class AvtaltMedNavControllerTest {
     private String aktorid = "12345678";
 
     @Mock
-    private FunksjonelleMetrikker funksjonelleMetrikker;
+    private MetricService metricService;
 
 
     private JdbcTemplate jdbc = LocalH2Database.getDb();
@@ -46,7 +47,7 @@ public class AvtaltMedNavControllerTest {
 
     @Before
     public void setup() {
-        avtaltMedNavController = new AvtaltMedNavController(funksjonelleMetrikker, aktivitetDAO, authService);
+        avtaltMedNavController = new AvtaltMedNavController(metricService, aktivitetDAO, authService);
     }
 
     @Before

@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,13 +20,13 @@ import java.util.Optional;
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
 
-@Component
+@Service
 @AllArgsConstructor
 public class AktivitetService {
+
     private final AktivitetDAO aktivitetDAO;
     private final KvpClient kvpClient;
-    private final FunksjonelleMetrikker funksjonelleMetrikker;
-
+    private final MetricService metricService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
@@ -74,7 +74,7 @@ public class AktivitetService {
         AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
         aktivitetDAO.insertAktivitet(kvpAktivivitet);
 
-        funksjonelleMetrikker.opprettNyAktivitetMetrikk(aktivitet);
+        metricService.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
 
@@ -194,7 +194,7 @@ public class AktivitetService {
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .build()
         );
-        funksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
+        metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {

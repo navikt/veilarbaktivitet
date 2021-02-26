@@ -2,9 +2,9 @@ package no.nav.veilarbaktivitet.controller;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.common.auth.subject.Subject;
-import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.common.client.aktorregister.AktorregisterClient;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.auth.context.UserRole;
+import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
 import no.nav.veilarbaktivitet.client.KvpClient;
@@ -13,11 +13,13 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.mock.AktorregisterClientMock;
+import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.mock.SubjectRule;
-import no.nav.veilarbaktivitet.service.*;
+import no.nav.veilarbaktivitet.service.AktivitetAppService;
+import no.nav.veilarbaktivitet.service.AktivitetService;
+import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.junit.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,8 +28,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.common.auth.subject.IdentType.InternBruker;
-import static no.nav.common.auth.subject.SsoToken.oidcToken;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettAktivTiltaksaktivitet;
 import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettInaktivTiltaksaktivitet;
@@ -51,23 +51,23 @@ public class AktivitetsplanRSTest {
 
 
     private KvpClient kvpClient = mock(KvpClient.class);
-    private FunksjonelleMetrikker funksjonelleMetrikker = mock(FunksjonelleMetrikker.class);
+    private MetricService metricService = mock(MetricService.class);
 
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, funksjonelleMetrikker);
-    private AktorregisterClient aktorregisterClient = new AktorregisterClientMock();
-    private BrukerService brukerService = new BrukerService(aktorregisterClient);
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, metricService);
     private AuthService authService = mock(AuthService.class);
     private ArenaAktivitetConsumer arenaAktivitetConsumer = mock(ArenaAktivitetConsumer.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, brukerService, funksjonelleMetrikker);
+    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, metricService);
 
-    private AktivitetsplanController aktivitetController = new AktivitetsplanController(appService, mockHttpServletRequest);
+    private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
 
     @Rule
-    public SubjectRule subjectRule = new SubjectRule(new Subject("testident", InternBruker, oidcToken("token", new HashMap<>())));
+    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, "testident"));
 
     @Before
     public void setup() {
+        when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_IDENT));
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
@@ -87,8 +87,8 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, brukerService, funksjonelleMetrikker);
-        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, metricService);
+        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 
         boolean harTiltak = aktivitetsplanController.hentHarTiltak();
         assertTrue(harTiltak);
@@ -105,8 +105,8 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, brukerService, funksjonelleMetrikker);
-        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(aktivitetAppService, mockHttpServletRequest);
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, metricService);
+        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 
         boolean harTiltak = aktivitetsplanController.hentHarTiltak();
         assertFalse(harTiltak);
@@ -172,6 +172,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void oppdater_aktivtet() {
+        when(authService.erEksternBruker()).thenReturn(true);
         gitt_at_jeg_har_aktiviter();
         nar_jeg_oppdaterer_en_av_aktiviten();
         da_skal_jeg_aktiviten_vare_endret();
@@ -179,11 +180,16 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
-        gitt_at_jeg_har_laget_en_aktivtet();
-        gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
-        nar_jeg_lagrer_aktivteten();
-        nar_jeg_oppdaterer_aktiviten();
-        da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.getInnloggetBrukerIdent()).thenReturn(Optional.of(KJENT_IDENT.get()));
+
+        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_IDENT.get()), () -> {
+            gitt_at_jeg_har_laget_en_aktivtet();
+            gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
+            nar_jeg_lagrer_aktivteten();
+            nar_jeg_oppdaterer_aktiviten();
+            da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
+        });
     }
 
 
@@ -340,7 +346,7 @@ public class AktivitetsplanRSTest {
                 .setLagtInnAv(aktivitet.getLagtInnAv())
                 .setTransaksjonsType(aktivitet.transaksjonsType)
                 .setEndretDato(aktivitet.endretDato)
-                .setEndretAv(SubjectHandler.getIdent().get())
+                .setEndretAv(AuthContextHolderThreadLocal.instance().getSubject().orElseThrow())
         ));
     }
 

@@ -1,15 +1,20 @@
 package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPep;
+import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
+import no.nav.common.auth.context.AuthContextHolder;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.CachedAktorOppslagClient;
 import no.nav.common.client.aktorregister.AktorregisterClient;
 import no.nav.common.client.aktorregister.AktorregisterHttpClient;
-import no.nav.common.client.aktorregister.CachedAktorregisterClient;
 import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
-import no.nav.common.leaderelection.LeaderElectionClient;
-import no.nav.common.leaderelection.LeaderElectionHttpClient;
+import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.featuretoggle.UnleashClientImpl;
+import no.nav.common.job.leader_election.LeaderElectionClient;
+import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
@@ -32,15 +37,17 @@ public class ApplicationContext {
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String VEILARBOPPFOLGINGAPI_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";
     public static final String VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY = "VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL";
-    public static final String AKTIVITETER_FEED_BRUKERTILGANG_PROPERTY = "aktiviteter.feed.brukertilgang";
     public static final String VEILARB_KASSERING_IDENTER_PROPERTY = "VEILARB_KASSERING_IDENTER";
 
-    public static final String AKTOER_V2_ENDPOINTURL = "AKTOER_V2_ENDPOINTURL";
-    public static final String REDIRECT_URL_PROPERTY = "VEILARBLOGIN_REDIRECT_URL_URL";
-    public static final String SECURITYTOKENSERVICE_URL = "SECURITYTOKENSERVICE_URL";
-    public static final String ABAC_PDP_ENDPOINT_URL = "ABAC_PDP_ENDPOINT_URL";
-    public static final String AKTOERREGISTER_API_V1_URL = "AKTOERREGISTER_API_V1_URL";
+    @Bean
+    public UnleashClient unleashClient(EnvironmentProperties properties) {
+        return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME);
+    }
 
+    @Bean
+    public AuthContextHolder authContextHolder() {
+        return AuthContextHolderThreadLocal.instance();
+    }
 
     @Bean
     public Credentials serviceUserCredentials() {
@@ -53,11 +60,12 @@ public class ApplicationContext {
     }
 
     @Bean
-    public AktorregisterClient aktorregisterClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
+    public AktorOppslagClient aktorOppslagClient(EnvironmentProperties properties, SystemUserTokenProvider tokenProvider) {
         AktorregisterClient aktorregisterClient = new AktorregisterHttpClient(
                 properties.getAktorregisterUrl(), APPLICATION_NAME, tokenProvider::getSystemUserToken
         );
-        return new CachedAktorregisterClient(aktorregisterClient);
+
+        return new CachedAktorOppslagClient(aktorregisterClient);
     }
 
     @Bean
@@ -72,7 +80,7 @@ public class ApplicationContext {
 
     @Bean
     public Pep veilarbPep(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return new VeilarbPep(
+        return VeilarbPepFactory.get(
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
