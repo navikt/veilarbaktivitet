@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -20,7 +19,6 @@ public class ArenaForhaandsorienteringDAO {
 
     private final Database database;
 
-    @Transactional
     public void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
         String forhaandsorienteringType = null;
         String forhaandsorienteringTekst = null;
@@ -44,7 +42,6 @@ public class ArenaForhaandsorienteringDAO {
         log.info("opprettet {}", forhaandsorientering);
     }
 
-    @Transactional
     public List<ArenaForhaandsorienteringData> hentForhaandsorienteringer(List<ArenaAktivitetDTO> aktiviteter) {
         List<String> aktivitetIder = aktiviteter.stream().map(ArenaAktivitetDTO::getId).collect(Collectors.toList());
 
