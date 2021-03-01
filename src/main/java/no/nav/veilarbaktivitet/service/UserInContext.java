@@ -25,13 +25,32 @@ public class UserInContext {
     }
 
     public Optional<Person.Fnr> getFnr() {
-        return getUserIdent()
-                .flatMap(authService::getFNR);
+        Optional<Person> userIdent = getUserIdent();
+        if (userIdent.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Person person = userIdent.get();
+        if (person instanceof Person.Fnr) {
+            return Optional.of((Person.Fnr)person);
+        }
+
+        if (person instanceof Person.AktorId) {
+            return authService.getFnrForAktorId((Person.AktorId)person);
+        }
+
+        return Optional.empty();
     }
 
     public Optional<Person.AktorId> getAktorId() {
-        return getUserIdent()
-                .flatMap(authService::getAktorIdForPerson);
+        Optional<Person> userIdent = getUserIdent();
+
+        if (userIdent.isEmpty()) {
+            return Optional.empty();
+        }
+
+        return authService.getAktorIdForPersonBrukerService(userIdent.get());
+
     }
 
 }
