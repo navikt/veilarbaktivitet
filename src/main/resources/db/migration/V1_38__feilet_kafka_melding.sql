@@ -1,0 +1,10 @@
+
+CREATE TABLE FEILET_KAFKA_MELDING (
+    ID                      BIGSERIAL PRIMARY KEY NOT NULL,
+    TOPIC                   VARCHAR(100) NOT NULL,
+    KEY                     VARCHAR(40) NOT NULL,
+    PAYLOAD                 CLOB NOT NULL,
+    MESSAGE_TYPE            VARCHAR(20) NOT NULL,
+    MESSAGE_OFFSET          BIGINT,
+    CREATED_AT              TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL
+);

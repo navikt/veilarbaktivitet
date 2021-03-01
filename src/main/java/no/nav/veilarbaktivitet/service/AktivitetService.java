@@ -264,7 +264,7 @@ public class AktivitetService {
                 .stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
-                .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
+                .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
