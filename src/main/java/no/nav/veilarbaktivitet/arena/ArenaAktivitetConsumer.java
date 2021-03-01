@@ -45,7 +45,6 @@ public class ArenaAktivitetConsumer {
     private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
 
-
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
     Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));;
@@ -59,7 +58,7 @@ public class ArenaAktivitetConsumer {
         }
     }
 
-    protected List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
+    List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
 
         val req = new HentTiltakOgAktiviteterForBrukerRequest();
         req.setPersonident(personident.get());
@@ -152,7 +151,6 @@ public class ArenaAktivitetConsumer {
         } else {
             arenaAktivitetDTO.setEtikett(arenaEtikett);
         }
-
 
         return arenaAktivitetDTO;
     }
