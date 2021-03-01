@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.subject.SubjectHandler;
-import no.nav.common.types.feil.IngenTilgang;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.service.AuthService;
@@ -12,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,12 +24,14 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERIN
 @RequestMapping("/api/kassering")
 public class KasserController {
 
+    private final AuthService authService;
     private final AktivitetDAO aktivitetDAO;
     private final AuthService auth;
 
     private final String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
-    public KasserController(AktivitetDAO aktivitetDAO, AuthService auth) {
+    public KasserController(AuthService authService, AktivitetDAO aktivitetDAO, AuthService auth) {
+        this.authService = authService;
         this.aktivitetDAO = aktivitetDAO;
         this.auth = auth;
     }
@@ -48,11 +49,12 @@ public class KasserController {
 
         auth.sjekkVeilederHarSkriveTilgangTilPerson(aktorId);
 
-        String veilederIdent = SubjectHandler.getIdent().orElse(null);
+        String veilederIdent = authService.getInnloggetBrukerIdent().orElse(null);
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));
+
         if (!godkjente.contains(veilederIdent)) {
             log.error("[KASSERING] {} har ikke tilgang til kassering av {} aktivitet", veilederIdent, aktorId);
-            throw new IngenTilgang(String.format("[KASSERING] %s har ikke tilgang til kassinger av %s aktivitet", veilederIdent, aktorId));
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("[KASSERING] %s har ikke tilgang til kassinger av %s aktivitet", veilederIdent, aktorId));
         }
 
         boolean updated = fn.get();

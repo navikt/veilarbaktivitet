@@ -2,18 +2,19 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.leaderelection.LeaderElectionClient;
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.AktiviteterTilKafkaService;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-@Component
+@Service
 @EnableScheduling
 @RequiredArgsConstructor
-public class CroneService {
+public class CronService {
+
     private final MoteSMSService moteSMSService;
     private final LeaderElectionClient leaderElectionClient;
     private final AktiviteterTilKafkaService aktiviteterTilKafkaService;
