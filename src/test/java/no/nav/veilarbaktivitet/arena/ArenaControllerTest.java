@@ -48,8 +48,11 @@ public class ArenaControllerTest {
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid.get(), null);
 
+        Mockito.when(context.getUserIdent()).thenReturn(Optional.of(fnr));
         Mockito.when(context.getFnr()).thenReturn(Optional.of(fnr));
-        Mockito.when(context.getAktorId()).thenReturn(Optional.of(aktorid));
+        Mockito.when(context.getFnr(fnr)).thenReturn(Optional.of(fnr));
+        Mockito.when(context.getFnr(aktorid)).thenReturn(Optional.of(fnr));
+        Mockito.when(context.getAktorId(any())).thenReturn(Optional.of(aktorid));
     }
 
     @Test

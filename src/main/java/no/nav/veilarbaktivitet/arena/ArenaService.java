@@ -42,11 +42,6 @@ public class ArenaService {
         return hentAktiviteter(ident).stream().filter(arenaAktivitetDTO -> aktivitetId.equals(arenaAktivitetDTO.getId())).findAny();
     }
 
-    ArenaAktivitetDTO lagreForhaandsorientering(ArenaAktivitetDTO arenaAktivitetDTO, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
-        dao.insertForhaandsorientering(arenaAktivitetDTO.getId(), aktorId, forhaandsorientering);
-        return arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
-    }
-
     private Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<ArenaForhaandsorienteringData> forhaandsorienteringData) {
         return arenaAktivitetDTO -> arenaAktivitetDTO.setForhaandsorientering(forhaandsorienteringData
                 .stream()
@@ -67,6 +62,5 @@ public class ArenaService {
         } catch (DuplicateKeyException e) {
             throw new BadRequestException("Det er allerede sendt forhaandsorientering på aktiviteten");
         }
-
     }
 }

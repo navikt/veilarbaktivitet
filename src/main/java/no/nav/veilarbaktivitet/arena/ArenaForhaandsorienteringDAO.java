@@ -24,22 +24,15 @@ public class ArenaForhaandsorienteringDAO {
     private final Database database;
 
     void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
-        String forhaandsorienteringType = null;
-        String forhaandsorienteringTekst = null;
         Date fhoOpprettetDato = new Date();
-
-        if(forhaandsorientering != null) {
-            forhaandsorienteringType = forhaandsorientering.getType().name();
-            forhaandsorienteringTekst = forhaandsorientering.getTekst();
-        }
 
         //language=SQL
         database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato) " +
                         "VALUES (?,?,?,?,?)",
                 arenaaktivitetId,
                 aktorId.get(),
-                forhaandsorienteringType,
-                forhaandsorienteringTekst,
+                forhaandsorientering.getType(),
+                forhaandsorientering.getTekst(),
                 fhoOpprettetDato
         );
 

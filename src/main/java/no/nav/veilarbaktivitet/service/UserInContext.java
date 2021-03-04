@@ -25,12 +25,11 @@ public class UserInContext {
     }
 
     public Optional<Person.Fnr> getFnr() {
-        Optional<Person> userIdent = getUserIdent();
-        if (userIdent.isEmpty()) {
-            return Optional.empty();
-        }
+        return getUserIdent()
+                .flatMap(this::getFnr);
+    }
 
-        Person person = userIdent.get();
+    public Optional<Person.Fnr> getFnr(Person person) {
         if (person instanceof Person.Fnr) {
             return Optional.of((Person.Fnr)person);
         }
@@ -42,15 +41,8 @@ public class UserInContext {
         return Optional.empty();
     }
 
-    public Optional<Person.AktorId> getAktorId() {
-        Optional<Person> userIdent = getUserIdent();
-
-        if (userIdent.isEmpty()) {
-            return Optional.empty();
-        }
-
-        return authService.getAktorIdForPersonBrukerService(userIdent.get());
-
+    public Optional<Person.AktorId> getAktorId(Person person) {
+        return authService.getAktorIdForPersonBrukerService(person);
     }
 
 }
