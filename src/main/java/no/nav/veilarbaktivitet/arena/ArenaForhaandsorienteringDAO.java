@@ -31,7 +31,7 @@ public class ArenaForhaandsorienteringDAO {
                         "VALUES (?,?,?,?,?)",
                 arenaaktivitetId,
                 aktorId.get(),
-                forhaandsorientering.getType(),
+                forhaandsorientering.getType().name(),
                 forhaandsorientering.getTekst(),
                 fhoOpprettetDato
         );
