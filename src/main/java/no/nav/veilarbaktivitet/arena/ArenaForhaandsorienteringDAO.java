@@ -40,7 +40,7 @@ public class ArenaForhaandsorienteringDAO {
     }
 
     List<ArenaForhaandsorienteringData> hentForhaandsorienteringer(List<ArenaAktivitetDTO> aktiviteter) {
-        if(aktiviteter.isEmpty()) {
+        if (aktiviteter.isEmpty()) { //sql in kan ikke ta inn tomme lister
             return Collections.emptyList();
         }
 
