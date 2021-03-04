@@ -1,10 +1,10 @@
 package no.nav.veilarbaktivitet.service;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
+import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,25 +14,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final ArenaAktivitetConsumer arenaAktivitetConsumer;
+    private final ArenaService arenaService;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
-
-    @Autowired
-    public AktivitetAppService(
-            ArenaAktivitetConsumer arenaAktivitetConsumer,
-            AuthService authService,
-            AktivitetService aktivitetService,
-            MetricService metricService
-    ) {
-        this.arenaAktivitetConsumer = arenaAktivitetConsumer;
-        this.authService = authService;
-        this.aktivitetService = aktivitetService;
-        this.metricService = metricService;
-    }
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -63,9 +51,11 @@ public class AktivitetAppService {
         return aktivitetData;
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
         authService.sjekkTilgangTilPerson(ident);
-        return arenaAktivitetConsumer.hentArenaAktiviteter(ident);
+        return arenaService.hentAktiviteter(ident);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {

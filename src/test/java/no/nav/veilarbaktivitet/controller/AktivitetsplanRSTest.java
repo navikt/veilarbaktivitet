@@ -7,6 +7,9 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
+import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.arena.ArenaService;
+import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.client.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -14,14 +17,13 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
-import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
 import org.junit.*;
+import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -56,8 +58,8 @@ public class AktivitetsplanRSTest {
 
     private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, metricService);
     private AuthService authService = mock(AuthService.class);
-    private ArenaAktivitetConsumer arenaAktivitetConsumer = mock(ArenaAktivitetConsumer.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaAktivitetConsumer, authService, aktivitetService, metricService);
+    private ArenaService arenaService = mock(ArenaService.class);
+    private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
 
     private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
 
@@ -87,7 +89,8 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, metricService);
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 
         boolean harTiltak = aktivitetsplanController.hentHarTiltak();
@@ -105,7 +108,8 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaAktivitetConsumerAktiv, authService, aktivitetService, metricService);
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
+        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 
         boolean harTiltak = aktivitetsplanController.hentHarTiltak();

@@ -11,6 +11,9 @@ import no.nav.common.utils.Credentials;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.AktiviteterTilKafkaService;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetDAO;
+import no.nav.veilarbaktivitet.arena.ArenaController;
+import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
@@ -18,7 +21,7 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.mock.*;
 import no.nav.veilarbaktivitet.service.*;
-import no.nav.veilarbaktivitet.ws.consumer.ArenaAktivitetConsumer;
+import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -43,7 +46,11 @@ import javax.sql.DataSource;
         AuthService.class,
         AktivitetService.class,
         TimedConfiguration.class,
+        ArenaForhaandsorienteringDAO.class,
+        UserInContext.class,
         ArenaAktivitetConsumer.class,
+        ArenaService.class,
+        ArenaController.class,
         AktivitetAppService.class,
         AktivitetsplanController.class,
         FilterTestConfig.class,
