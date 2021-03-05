@@ -25,22 +25,16 @@ public class ArenaController {
 
     @PutMapping("/forhaandsorientering")
     ArenaAktivitetDTO sendForhaandsorientering(@RequestBody Forhaandsorientering forhaandsorientering, @RequestParam String arenaaktivitetId) {
+        if (!authService.erInternBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
+        }
 
-        Person person = userInContext.getUserIdent().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        Person.AktorId aktorId = userInContext.getAktorId(person).orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-
-        authService.sjekkTilgangOgInternBruker(aktorId.get(), null);
+        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
 
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
                 .ifPresent( feilmelding -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding);});
 
-        Person.Fnr fnr = userInContext.getFnr(person).orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Finner ikke fnr for bruker"));
-
-        try {
-            return arenaService.lagreForhaandsorientering(arenaaktivitetId, aktorId, fnr, forhaandsorientering);
-        } catch (BadRequestException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
-        }
+        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering);
     }
 
     @GetMapping("/tiltak")

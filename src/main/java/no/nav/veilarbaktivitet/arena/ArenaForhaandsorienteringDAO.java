@@ -5,16 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -39,15 +36,9 @@ public class ArenaForhaandsorienteringDAO {
         log.info("opprettet {}", forhaandsorientering);
     }
 
-    List<ArenaForhaandsorienteringData> hentForhaandsorienteringer(List<ArenaAktivitetDTO> aktiviteter) {
-        if (aktiviteter.isEmpty()) { //sql in kan ikke ta inn tomme lister
-            return Collections.emptyList();
-        }
-
-        List<String> aktivitetIder = aktiviteter.stream().map(ArenaAktivitetDTO::getId).collect(Collectors.toList());
-
+    List<ArenaForhaandsorienteringData> hentForhaandsorienteringer(Person.AktorId aktorId) {
         //language=SQL
-        return database.query("SELECT * FROM ARENA_FORHAANDSORIENTERING A WHERE A.arenaaktivitet_id IN (?)", ArenaForhaandsorienteringDAO::mapForhaandsorientering, aktivitetIder);
+        return database.query("SELECT * FROM ARENA_FORHAANDSORIENTERING WHERE aktor_id = ?", ArenaForhaandsorienteringDAO::mapForhaandsorientering, aktorId.get());
     }
 
     private static ArenaForhaandsorienteringData mapForhaandsorientering(ResultSet rs) throws SQLException {

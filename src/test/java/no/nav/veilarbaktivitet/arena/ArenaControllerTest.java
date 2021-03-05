@@ -29,7 +29,7 @@ public class ArenaControllerTest {
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final ArenaForhaandsorienteringDAO dao = new ArenaForhaandsorienteringDAO(new Database(jdbc));
-    private final ArenaService service = new ArenaService(consumer, dao);
+    private final ArenaService service = new ArenaService(consumer, dao, authService);
     private final ArenaController controller = new ArenaController(context, authService, service);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
@@ -48,11 +48,9 @@ public class ArenaControllerTest {
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid.get(), null);
 
-        Mockito.when(context.getUserIdent()).thenReturn(Optional.of(fnr));
+        Mockito.when(authService.erInternBruker()).thenReturn(true);
+        Mockito.when(authService.getAktorIdForPersonBrukerService(fnr)).thenReturn(Optional.of(aktorid));
         Mockito.when(context.getFnr()).thenReturn(Optional.of(fnr));
-        Mockito.when(context.getFnr(fnr)).thenReturn(Optional.of(fnr));
-        Mockito.when(context.getFnr(aktorid)).thenReturn(Optional.of(fnr));
-        Mockito.when(context.getAktorId(any())).thenReturn(Optional.of(aktorid));
     }
 
     @Test
