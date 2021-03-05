@@ -89,7 +89,7 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database), authService);
         AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 
@@ -108,7 +108,7 @@ public class AktivitetsplanRSTest {
         when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
 
         ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database));
+        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database), authService);
         AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
         AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
 

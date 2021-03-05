@@ -13,23 +13,24 @@ public class UserInContext {
     private final HttpServletRequest requestProvider;
     private final AuthService authService;
 
-    public Optional<Person> getUserIdent() {
+    public Optional<Person.Fnr> getFnr() {
         if (authService.erEksternBruker()) {
             return authService.getInnloggetBrukerIdent().map(Person::fnr);
         }
 
-        Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);
-        Optional<Person> aktorId = Optional.ofNullable(requestProvider.getParameter("aktorId")).map(Person::aktorId);
+        Optional<Person> fnr = Optional
+                .ofNullable(requestProvider.getParameter("fnr"))
+                .map(Person::fnr);
 
-        return fnr.or(() -> aktorId);
-    }
+        Optional<Person> aktorId = Optional
+                .ofNullable(requestProvider.getParameter("aktorId"))
+                .map(Person::aktorId);
 
-    public Optional<Person.Fnr> getFnr() {
-        return getUserIdent()
+        return fnr.or(() -> aktorId)
                 .flatMap(this::getFnr);
     }
 
-    public Optional<Person.Fnr> getFnr(Person person) {
+    private Optional<Person.Fnr> getFnr(Person person) {
         if (person instanceof Person.Fnr) {
             return Optional.of((Person.Fnr)person);
         }
@@ -40,9 +41,4 @@ public class UserInContext {
 
         return Optional.empty();
     }
-
-    public Optional<Person.AktorId> getAktorId(Person person) {
-        return authService.getAktorIdForPersonBrukerService(person);
-    }
-
 }
