@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.config;
 
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.domain.AvsluttetOppfolgingFeedDTO;
 import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.feed.AvsluttetOppfolgingFeedConsumer;
@@ -30,7 +31,7 @@ public class FeedConfig {
     }
 
     @Bean
-    public FeedConsumer<KvpDTO> kvpDTOFeedConsumer(KvpFeedConsumer kvpFeedConsumer, OkHttpClient client) {
+    public FeedConsumer<KvpDTO> kvpDTOFeedConsumer(KvpFeedConsumer kvpFeedConsumer, OkHttpClient client, LeaderElectionClient leaderElectionClient) {
         FeedConsumerConfig.BaseConfig<KvpDTO> baseConfig = new FeedConsumerConfig.BaseConfig<>(
                 KvpDTO.class,
                 kvpFeedConsumer::sisteKjenteKvpId,
@@ -38,7 +39,7 @@ public class FeedConfig {
                 KvpDTO.FEED_NAME
         );
 
-        FeedConsumerConfig<KvpDTO> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(10))
+        FeedConsumerConfig<KvpDTO> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(10), leaderElectionClient)
                 .restClient(client)
                 .callback(kvpFeedConsumer::lesKvpFeed);
 
@@ -46,7 +47,7 @@ public class FeedConfig {
     }
 
     @Bean
-    public FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer(AvsluttetOppfolgingFeedConsumer avsluttetOppfolgingFeedConsumer, OkHttpClient client) {
+    public FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer(AvsluttetOppfolgingFeedConsumer avsluttetOppfolgingFeedConsumer, OkHttpClient client, LeaderElectionClient leaderElectionClient) {
         FeedConsumerConfig.BaseConfig<AvsluttetOppfolgingFeedDTO> baseConfig = new FeedConsumerConfig.BaseConfig<>(
                 AvsluttetOppfolgingFeedDTO.class,
                 avsluttetOppfolgingFeedConsumer::sisteKjenteId,
@@ -54,7 +55,7 @@ public class FeedConfig {
                 AvsluttetOppfolgingFeedDTO.FEED_NAME
         );
 
-        FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(10))
+        FeedConsumerConfig<AvsluttetOppfolgingFeedDTO> config = new FeedConsumerConfig<>(baseConfig, new FeedConsumerConfig.SimplePollingConfig(10), leaderElectionClient)
                 .restClient(client)
                 .callback(avsluttetOppfolgingFeedConsumer::lesAvsluttetOppfolgingFeed);
 
