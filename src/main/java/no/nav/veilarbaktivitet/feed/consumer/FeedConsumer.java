@@ -79,31 +79,39 @@ public class FeedConsumer<DOMAINOBJECT extends Comparable<DOMAINOBJECT>> impleme
 
     @SneakyThrows
     public synchronized Response poll() {
-        String lastEntry = this.config.lastEntrySupplier.get();
-        HttpUrl.Builder httpBuilder = Objects.requireNonNull(HttpUrl.parse(getTargetUrl())).newBuilder();
-        httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
-        httpBuilder.addQueryParameter(QUERY_PARAM_PAGE_SIZE, String.valueOf(this.config.pageSize));
 
-        Request request = new Request.Builder().url(httpBuilder.build()).build();
-        try (Response response = this.config.client.newCall(request).execute()) {
-            RestUtils.throwIfNotSuccessful(response);
-            FeedResponse<DOMAINOBJECT> entity = objectMapper.readValue(response.body().string(), objectMapper.getTypeFactory().constructParametricType(FeedResponse.class, this.config.domainobject));
-            List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
-            if (elements != null && !elements.isEmpty()) {
-                List<DOMAINOBJECT> data = elements
-                        .stream()
-                        .map(FeedElement::getElement)
-                        .collect(Collectors.toList());
+        if(config.leaderElectionClient.isLeader()) {
+            LOG.info("er leder og oppdaterer feed "+ config.feedName);
+            String lastEntry = this.config.lastEntrySupplier.get();
+            HttpUrl.Builder httpBuilder = Objects.requireNonNull(HttpUrl.parse(getTargetUrl())).newBuilder();
+            httpBuilder.addQueryParameter(QUERY_PARAM_ID, lastEntry);
+            httpBuilder.addQueryParameter(QUERY_PARAM_PAGE_SIZE, String.valueOf(this.config.pageSize));
 
-                if (!(entity.hashCode() == lastResponseHash)) {
-                    this.config.callback.call(entity.getNextPageId(), data);
+            Request request = new Request.Builder().url(httpBuilder.build()).build();
+            try (Response response = this.config.client.newCall(request).execute()) {
+                RestUtils.throwIfNotSuccessful(response);
+                FeedResponse<DOMAINOBJECT> entity = objectMapper.readValue(response.body().string(), objectMapper.getTypeFactory().constructParametricType(FeedResponse.class, this.config.domainobject));
+                List<FeedElement<DOMAINOBJECT>> elements = entity.getElements();
+                if (elements != null && !elements.isEmpty()) {
+                    List<DOMAINOBJECT> data = elements
+                            .stream()
+                            .map(FeedElement::getElement)
+                            .collect(Collectors.toList());
+
+                    if (!(entity.hashCode() == lastResponseHash)) {
+                        this.config.callback.call(entity.getNextPageId(), data);
+                    }
+                    this.lastResponseHash = entity.hashCode();
                 }
-                this.lastResponseHash = entity.hashCode();
+
+
+                return response;
             }
-
-
-            return response;
+        }else {
+            LOG.info("ikke leader og oppdater ikke fead  " + config.feedName);
+            return null;
         }
+
     }
 
     @SneakyThrows
