@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.feed;
 
-
 import no.nav.veilarbaktivitet.db.dao.KVPFeedDAO;
 import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -8,7 +7,6 @@ import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-
 
 @Component
 public class KvpFeedConsumer {

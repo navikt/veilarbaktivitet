@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.service;
+package no.nav.veilarbaktivitet.util;
 
 import lombok.SneakyThrows;
 import org.springframework.jms.core.MessageCreator;

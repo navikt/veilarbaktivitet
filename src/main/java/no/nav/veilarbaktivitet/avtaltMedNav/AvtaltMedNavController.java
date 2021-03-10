@@ -7,13 +7,11 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.FunksjonelleMetrikker;
+import no.nav.veilarbaktivitet.service.MetricService;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Optional;
 
 @Transactional
 @RestController
@@ -21,7 +19,7 @@ import java.util.Optional;
 @RequestMapping("/api/avtaltMedNav")
 public class AvtaltMedNavController {
 
-    private final FunksjonelleMetrikker funksjonelleMetrikker;
+    private final MetricService metricService;
     private final AktivitetDAO aktivitetDAO;
     private final AuthService authService;
 
@@ -50,7 +48,7 @@ public class AvtaltMedNavController {
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
 
-        funksjonelleMetrikker.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId));
 

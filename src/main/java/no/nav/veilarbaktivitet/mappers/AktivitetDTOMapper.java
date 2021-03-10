@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
+import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.service.BrukerService;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
 import static no.nav.veilarbaktivitet.mappers.Helpers.*;
@@ -29,7 +29,8 @@ public class AktivitetDTOMapper {
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
 
-        if (BrukerService.erInternBruker()) {
+        // TODO: Ikke bruk statiske ting som dette inne i en mapper
+        if (AuthContextHolderThreadLocal.instance().erInternBruker()) {
             aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
         }
 

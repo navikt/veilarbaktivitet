@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2020.08.07_16.18-e6be6d6a09e6</common.version>
+        <common.version>2.2021.02.23_11.33-7091f10a35ba</common.version>
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
@@ -113,42 +113,12 @@
             <artifactId>ojdbc8</artifactId>
             <version>19.3.0.0</version>
         </dependency>
+
         <!--  Overskriv gammel avhengighet fra nimbus -->
         <dependency>
             <groupId>net.minidev</groupId>
             <artifactId>json-smart</artifactId>
             <version>2.3</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>metrics</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>leader-election</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>rest</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>client</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>util</artifactId>
-            <version>${common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.common</groupId>
-            <artifactId>types</artifactId>
-            <version>${common.version}</version>
         </dependency>
 
         <dependency>
@@ -165,16 +135,13 @@
             <artifactId>spring-jms</artifactId>
         </dependency>
 
-
+        <!-- Tjenester -->
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>varsel-inn</artifactId>
             <version>1.2019.09.25-00.21-49b69f0625e0</version>
         </dependency>
 
-
-
-        <!-- Tjenester -->
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
@@ -209,6 +176,42 @@
             <groupId>no.nav.common</groupId>
             <artifactId>feature-toggle</artifactId>
             <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>metrics</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>job</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>rest</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>client</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>util</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>types</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>test</artifactId>
+            <version>${common.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

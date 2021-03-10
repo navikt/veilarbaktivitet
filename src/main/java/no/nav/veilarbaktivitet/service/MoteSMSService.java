@@ -9,7 +9,7 @@ import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import static java.util.UUID.randomUUID;
 import static no.nav.veilarbaktivitet.util.DateUtils.omTimer;
 
-@Component
 @Slf4j
+@Service
 public class MoteSMSService implements HealthCheck {
     private final MoteSmsDAO moteSmsDAO;
     private final VarselQueService varselQueue;
@@ -38,16 +38,16 @@ public class MoteSMSService implements HealthCheck {
     private final AtomicBoolean healtyThisRound = new AtomicBoolean(true);
 
     public MoteSMSService(
-                                  MoteSmsDAO moteSmsDAO,
-                                  VarselQueService varselQueue,
-                                  PlatformTransactionManager platformTransactionManager,
-                                  MeterRegistry registry) {
-
+            MoteSmsDAO moteSmsDAO,
+            VarselQueService varselQueue,
+            PlatformTransactionManager platformTransactionManager,
+            MeterRegistry registry
+    ) {
         this.moteSmsDAO = moteSmsDAO;
         this.varselQueue = varselQueue;
-        this.transactionTemplate =  new TransactionTemplate(platformTransactionManager);
-
+        this.transactionTemplate = new TransactionTemplate(platformTransactionManager);
         this.registry = registry;
+
         antalSMSFeilet = registry.counter("antalSMSFeilet");
         antellGangerGjenomfort = registry.counter("antellGangerGjenomfort");
     }
@@ -97,13 +97,13 @@ public class MoteSMSService implements HealthCheck {
         long oppdatertSmsSendt = moteSmsDAO.antallSmsSendt();
         long oppdatertAktivterSendtSmsPaa = moteSmsDAO.antallAktivteterSendtSmsPaa();
 
-        if(smserSendt == null) {
+        if (smserSendt == null) {
             smserSendt = registry.gauge("antallSmsSendt", new AtomicLong(oppdatertSmsSendt));
         } else {
             smserSendt.set(oppdatertSmsSendt);
         }
 
-        if(aktivterSendtSmsPaa == null) {
+        if (aktivterSendtSmsPaa == null) {
             aktivterSendtSmsPaa = registry.gauge("antallAkteterSendtSmsPaa", new AtomicLong(oppdatertAktivterSendtSmsPaa));
         } else {
             aktivterSendtSmsPaa.set(oppdatertSmsSendt);

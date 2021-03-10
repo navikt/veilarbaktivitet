@@ -29,10 +29,7 @@ public class AktivitetAppServiceTest {
     private AktivitetService aktivitetService;
 
     @Mock
-    private FunksjonelleMetrikker funksjonelleMetrikker;
-
-    @Mock
-    private BrukerService brukerService;
+    private MetricService metricService;
 
     @InjectMocks
     private AktivitetAppService appService;

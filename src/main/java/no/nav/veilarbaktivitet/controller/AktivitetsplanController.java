@@ -1,14 +1,13 @@
 package no.nav.veilarbaktivitet.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.common.auth.subject.SubjectHandler;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
-import no.nav.veilarbaktivitet.service.BrukerService;
-import org.springframework.beans.factory.annotation.Autowired;
+import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,20 +23,13 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/aktivitet")
 public class AktivitetsplanController {
 
+    private final AuthService authService;
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
-
-    @Autowired
-    public AktivitetsplanController(
-            AktivitetAppService appService,
-            HttpServletRequest requestProvider
-    ) {
-        this.appService = appService;
-        this.requestProvider = requestProvider;
-    }
 
     @GetMapping
     public AktivitetsplanDTO hentAktivitetsplan() {
@@ -57,6 +49,8 @@ public class AktivitetsplanController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     @GetMapping("/arena")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         return getFnr()
@@ -64,6 +58,8 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
+    // TODO: 25/02/2021 slett denne etter flytting
+    @Deprecated
     @GetMapping("/harTiltak")
     public boolean hentHarTiltak() {
         return getFnr()
@@ -139,8 +135,10 @@ public class AktivitetsplanController {
     }
 
     private Person getContextUserIdent() {
-        if (BrukerService.erEksternBruker()) {
-            return SubjectHandler.getIdent().map(Person::fnr).orElseThrow(RuntimeException::new);
+        if (authService.erEksternBruker()) {
+            return authService.getInnloggetBrukerIdent()
+                    .map(Person::fnr)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke ident for innlogget bruker"));
         }
 
         Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);

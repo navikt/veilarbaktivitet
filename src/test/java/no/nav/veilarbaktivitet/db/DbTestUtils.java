@@ -20,7 +20,8 @@ public class DbTestUtils {
             "IJOBB",
             "MOTE",
             "BEHANDLING",
-            "AKTIVITET"
+            "AKTIVITET",
+            "ARENA_FORHAANDSORIENTERING"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {
