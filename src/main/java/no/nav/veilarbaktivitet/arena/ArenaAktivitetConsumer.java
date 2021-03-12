@@ -18,9 +18,12 @@ import no.nav.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.ws.WebServiceException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -84,6 +87,9 @@ public class ArenaAktivitetConsumer {
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
+        } catch (WebServiceException e) {
+            log.error("Feil mot arena", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Feil mot arena", e);
         }
     }
 
