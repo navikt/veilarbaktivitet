@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.client;
+package no.nav.veilarbaktivitet.kvp;
 
 import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;

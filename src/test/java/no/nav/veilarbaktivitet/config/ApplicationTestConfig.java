@@ -19,7 +19,10 @@ import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
+import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.mock.*;
+import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.motesms.VarselQueService;
 import no.nav.veilarbaktivitet.service.*;
 import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.mockito.Mockito;
@@ -40,6 +43,7 @@ import javax.sql.DataSource;
         KafkaAktivitetDAO.class,
         MoteSmsDAO.class,
         VarselQueService.class,
+        KvpService.class,
         AktiviteterTilKafkaService.class,
         MetricService.class,
         MoteSMSService.class,

@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.config;
 
-import no.nav.veilarbaktivitet.client.KvpClient;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.KvpClientMock;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

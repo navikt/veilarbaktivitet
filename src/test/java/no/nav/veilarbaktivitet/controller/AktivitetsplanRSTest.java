@@ -9,8 +9,9 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
 import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.arena.ArenaService;
+import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
-import no.nav.veilarbaktivitet.client.KvpClient;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -53,10 +54,11 @@ public class AktivitetsplanRSTest {
 
 
     private KvpClient kvpClient = mock(KvpClient.class);
+    private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
 
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpClient, metricService);
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpService, metricService);
     private AuthService authService = mock(AuthService.class);
     private ArenaService arenaService = mock(ArenaService.class);
     private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);

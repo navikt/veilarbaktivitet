@@ -9,7 +9,7 @@ import no.nav.common.health.selftest.SelfTestMeterBinder;
 import no.nav.veilarbaktivitet.helsesjekk.ArenaServiceHelsesjekk;
 import no.nav.veilarbaktivitet.helsesjekk.DatabaseHelsesjekk;
 import no.nav.veilarbaktivitet.helsesjekk.KafkaHelsesjekk;
-import no.nav.veilarbaktivitet.service.MoteSMSService;
+import no.nav.veilarbaktivitet.motesms.MoteSMSService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

@@ -2,9 +2,10 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.veilarbaktivitet.client.KvpClient;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -52,7 +53,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO,kvpClient, metricService);
+        aktivitetService = new AktivitetService(aktivitetDAO, new KvpService(kvpClient), metricService);
     }
 
     @Test
