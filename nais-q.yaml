@@ -53,6 +53,8 @@ spec:
         mountPath: /var/run/secrets/nais.io/oracle_config
   webproxy: true
   leaderElection: true
+  secureLogs:
+    enabled: true
   env:
     - name: APP_ENVIRONMENT_NAME
       value: {{namespace}}
