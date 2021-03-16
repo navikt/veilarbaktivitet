@@ -38,7 +38,7 @@ spec:
         sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[3d]    )    ) )  > 0.001 )  and  (  (
         sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http",code!~'(^[23].*)|(^502)'}[6h]    )  )  /
         sum(rate(traefik_backend_requests_total{backend=~"^app-q1.adeo.no/veilarbaktivitet|veilarbaktivitet.nais.adeo.no/|^app-q1.dev.adeo.no/veilarbaktivitet",protocol="http"}[6h]    )    ) )  > 0.001 ) )
-      for: 1s
+      for: 8h
       severity: warning
       description: Vedvarende feilrate i veilarbaktivitet
       action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa

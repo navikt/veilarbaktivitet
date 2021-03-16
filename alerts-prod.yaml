@@ -38,7 +38,7 @@ spec:
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[3d]    )    ) )  > 0.001 )  and  (  (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[6h]    )  )  /
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[6h]    )    ) )  > 0.001 ) )
-      for: 1s
+      for: 8h
       severity: warning
       description: Vedvarende feilrate i veilarbaktivitet
       action: https://logs.adeo.no/goto/9106e407dee95bb4692f316564dd5330  https://grafana.adeo.no/d/000000283/nais-app-dashbord?orgId=1&var-interval=$__auto_interval_interval&var-datasource=prod-fss&var-team=pto&var-app=veilarbaktivitet&var-namespace=All&var-docker_image=5e399fce17a0617acda62a3b4c969210d05abc17&var-ingress_url=All&from=now-4d&to=now
