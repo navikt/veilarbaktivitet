@@ -105,7 +105,7 @@ public class AvtaltMedNavControllerTest {
     public void skalTaVarePaaForhaandsOretneringsTekst() {
         AktivitetData orginal = opprettAktivitet(aktorid);
         AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake"));
+        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake", null));
         avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
 
         AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
@@ -159,7 +159,7 @@ public class AvtaltMedNavControllerTest {
 
     private AvtaltMedNav lagForhaandsorentering(AktivitetData orginal) {
         AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING, null));
+        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING, null, null));
         avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
         return avtaltMedNav;
     }

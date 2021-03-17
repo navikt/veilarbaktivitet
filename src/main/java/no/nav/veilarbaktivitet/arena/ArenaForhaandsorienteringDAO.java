@@ -50,8 +50,16 @@ public class ArenaForhaandsorienteringDAO {
                         .builder()
                         .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
                         .tekst(rs.getString("fho_tekst"))
+                        .lest(Database.hentDato(rs, "lest"))
                         .build())
                 .opprettetDato(Database.hentDato(rs, "fho_opprettet_dato"))
                 .build();
+    }
+
+    public boolean markerSomLest(Person.AktorId aktorId, String aktivitetId) {
+        //language=SQL
+        return 1L == database
+                .update("update ARENA_FORHAANDSORIENTERING set lest = current_timestamp where AKTOR_ID = ? and ARENAAKTIVITET_ID = ? and lest is null", aktorId.get(), aktivitetId) ;
+
     }
 }

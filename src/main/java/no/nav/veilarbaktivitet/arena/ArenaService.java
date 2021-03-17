@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ArenaService {
@@ -73,5 +75,17 @@ public class ArenaService {
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
         }
+    }
+
+    public void markerSomLest(Person.Fnr fnr, String aktivitetId) {
+        Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
+
+        boolean opdatert = dao.markerSomLest(aktorId, aktivitetId);
+        if(!opdatert) {
+            log.warn("kunne ikke markere forhondsorentering på arena aktivitet " + aktivitetId + " som lest");
+            throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke markere aktiviteten som lest");
+        }
+
     }
 }

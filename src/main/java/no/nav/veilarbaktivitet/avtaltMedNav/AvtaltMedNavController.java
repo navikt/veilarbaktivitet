@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
@@ -12,6 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Date;
 
 @Transactional
 @RestController
@@ -54,6 +57,33 @@ public class AvtaltMedNavController {
 
     }
 
+    @PutMapping("/lest")
+    public AktivitetDTO lest(@RequestBody LestDTO lestDTO) {
+
+        if (lestDTO.aktivitetId == null || lestDTO.aktivitetVersion == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "aktivitetId og aktivitetVersion må vere satt");
+        }
+
+        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(lestDTO.aktivitetId);
+
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
+
+        if (aktivitetData.getForhaandsorientering() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fho eksister ikke");
+        }
+        if (aktivitetData.getForhaandsorientering().getLest() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allerede lest");
+        }
+
+        Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
+
+        AktivitetData aktivitet = aktivitetData.toBuilder().forhaandsorientering(fho).build();
+
+        aktivitetDAO.insertAktivitet(aktivitet);
+
+        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(lestDTO.aktivitetId));
+    }
+
     private void validerInput(AvtaltMedNav avtaltMedNav, AktivitetData aktivitet, Forhaandsorientering forhaandsorientering) {
         if (avtaltMedNav.getAktivitetVersjon() != aktivitet.getVersjon()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
@@ -71,6 +101,5 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten er allerede avtalt med NAV");
         }
     }
-
 
 }

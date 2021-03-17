@@ -71,10 +71,12 @@ public class AktivitetDAO {
 
         String forhaandsorienteringType = null;
         String forhaandsorienteringTekst = null;
+        Date fhoLest = null;
 
         if(aktivitet.getForhaandsorientering() != null) {
             forhaandsorienteringType = aktivitet.getForhaandsorientering().getType().name();
             forhaandsorienteringTekst = aktivitet.getForhaandsorientering().getTekst();
+            fhoLest = aktivitet.getForhaandsorientering().getLest();
         }
 
         long versjon = nesteVersjon();
@@ -82,8 +84,8 @@ public class AktivitetDAO {
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, fho_type, fho_tekst, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, fho_type, fho_tekst, fho_lest, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -102,6 +104,7 @@ public class AktivitetDAO {
                 aktivitet.isAvtalt(),
                 forhaandsorienteringType,
                 forhaandsorienteringTekst,
+                fhoLest,
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),
