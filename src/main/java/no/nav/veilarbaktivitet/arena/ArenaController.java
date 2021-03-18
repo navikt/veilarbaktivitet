@@ -29,17 +29,17 @@ public class ArenaController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
         }
 
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
-
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
                 .ifPresent( feilmelding -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding);});
+
+        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
+        authService.sjekkTilgangTilPerson(fnr);
 
         return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering);
     }
 
     @GetMapping("/tiltak")
     List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
 
