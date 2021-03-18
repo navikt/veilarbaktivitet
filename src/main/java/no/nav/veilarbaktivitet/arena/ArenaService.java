@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -77,15 +78,19 @@ public class ArenaService {
         }
     }
 
-    public void markerSomLest(Person.Fnr fnr, String aktivitetId) {
+    @Transactional
+    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, String aktivitetId) {
         Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
 
         boolean opdatert = dao.markerSomLest(aktorId, aktivitetId);
         if(!opdatert) {
             log.warn("kunne ikke markere forhondsorentering på arena aktivitet " + aktivitetId + " som lest");
-            throw new  ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke markere aktiviteten som lest");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke markere aktiviteten som lest");
         }
+
+        return hentAktivitet(fnr, aktivitetId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kunne ikke hente aktiviteten"));
 
     }
 }

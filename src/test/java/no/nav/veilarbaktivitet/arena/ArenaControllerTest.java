@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -34,6 +35,9 @@ public class ArenaControllerTest {
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
+    private final Person.Fnr ikkeTilgangFnr = Person.fnr("10108000");
+    private final Person.AktorId ikkeTilgangAktorid = Person.aktorId("00080101");
+
     private final Forhaandsorientering forhaandsorientering = Forhaandsorientering.builder().type(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
 
     @Before
@@ -48,9 +52,18 @@ public class ArenaControllerTest {
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid.get(), null);
 
-        Mockito.when(authService.erInternBruker()).thenReturn(true);
-        Mockito.when(authService.getAktorIdForPersonBrukerService(fnr)).thenReturn(Optional.of(aktorid));
-        Mockito.when(context.getFnr()).thenReturn(Optional.of(fnr));
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangTilPerson(any());
+
+        doNothing()
+                .when(authService)
+                .sjekkTilgangTilPerson(fnr);
+
+        when(authService.erInternBruker()).thenReturn(true);
+        when(authService.getAktorIdForPersonBrukerService(fnr)).thenReturn(Optional.of(aktorid));
+        when(authService.getAktorIdForPersonBrukerService(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
+        when(context.getFnr()).thenReturn(Optional.of(fnr));
     }
 
     @Test
@@ -89,8 +102,6 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalFeileHvisArenaAktivitetenIkkeFinnes() {
-
-
         when(consumer.hentArenaAktiviteter(fnr))
                 .thenReturn(List.of(new ArenaAktivitetDTO()));
 
@@ -163,5 +174,83 @@ public class ArenaControllerTest {
                 .thenReturn(tiltak);
 
         assertEquals(tiltak, controller.hentArenaAktiviteter());
+    }
+
+    @Test
+    public void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
+        Date start = new Date();
+        ArenaAktivitetDTO a1 = new ArenaAktivitetDTO();
+        a1.setId("settTilLest");
+
+        when(consumer.hentArenaAktiviteter(fnr))
+                .thenReturn(List.of(a1));
+
+        ArenaAktivitetDTO sendtAktivitet = controller.sendForhaandsorientering(forhaandsorientering, a1.getId());
+
+        assertNull(sendtAktivitet.getForhaandsorientering().getLest());
+
+        ArenaAktivitetDTO lestAktivitet = controller.lest(sendtAktivitet.getId());
+
+        Date stopp = new Date();
+        Date lest = lestAktivitet.getForhaandsorientering().getLest();
+
+        assertNotNull(lestAktivitet.getForhaandsorientering().getLest());
+
+        assertTrue(start.before(lest) || start.equals(lest));
+        assertTrue(stopp.after(lest) || stopp.equals(lest));
+    }
+
+    @Test
+    public void tilgangskontrollPaaMarkerSomLestSkalFinnes() {
+        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.lest("errorId"));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+    }
+
+    @Test
+    public void tilgangskontrollPaaHentArenaAktiviteterSkalFinnes() {
+        ArenaAktivitetDTO t1 = new ArenaAktivitetDTO();
+        t1.setId("tilFho");
+        ArenaAktivitetDTO t2 = new ArenaAktivitetDTO();
+        t2.setId("ikkeTilFho");
+
+        List<ArenaAktivitetDTO> tiltak = List.of(t1, t2);
+
+        when(consumer.hentArenaAktiviteter(ikkeTilgangFnr))
+                .thenReturn(tiltak);
+
+        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentArenaAktiviteter);
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+    }
+
+    @Test
+    public void tilgangskontrollPaaHarTiltakSkalFinnes() {
+        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentHarTiltak);
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+    }
+
+    @Test
+    public void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
+        ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
+        tilFho.setId("tilFho");
+        ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
+        ikkeTilFho.setId("ikkeTilFho");
+
+        when(consumer.hentArenaAktiviteter(ikkeTilgangFnr))
+                .thenReturn(List.of(tilFho, ikkeTilFho));
+
+        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.sendForhaandsorientering(forhaandsorientering, tilFho.getId()));
+
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
     }
 }
