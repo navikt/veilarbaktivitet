@@ -20,9 +20,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
@@ -47,7 +48,8 @@ public class AvtaltMedNavControllerTest {
 
     @Before
     public void setup() {
-        avtaltMedNavController = new AvtaltMedNavController(metricService, aktivitetDAO, authService);
+        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO);
+        avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
     }
 
     @Before
@@ -105,7 +107,7 @@ public class AvtaltMedNavControllerTest {
     public void skalTaVarePaaForhaandsOretneringsTekst() {
         AktivitetData orginal = opprettAktivitet(aktorid);
         AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake"));
+        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake", null));
         avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
 
         AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
@@ -159,7 +161,7 @@ public class AvtaltMedNavControllerTest {
 
     private AvtaltMedNav lagForhaandsorentering(AktivitetData orginal) {
         AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING, null));
+        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING, null, null));
         avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
         return avtaltMedNav;
     }
@@ -173,5 +175,29 @@ public class AvtaltMedNavControllerTest {
 
         aktivitetDAO.insertAktivitet(aktivitetData);
         return aktivitetDAO.hentAktivitet(aktivitetData.getId());
+    }
+
+    @Test
+    public void markerForhaandsorienteringSomLest_skalVirke() {
+        Date start = new Date();
+        AktivitetData orginal = opprettAktivitet(aktorid);
+        AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
+        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake", null));
+        avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
+
+        AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
+        assertNull(markertSomAvtalt.forhaandsorientering.getLest());
+
+        LestDTO lestDTO = new LestDTO(Long.parseLong(markertSomAvtalt.getId()), Long.parseLong(markertSomAvtalt.getVersjon()));
+
+        AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
+
+        Date stopp = new Date();
+        Date lest = aktivitetDTO.forhaandsorientering.getLest();
+
+        assertNotNull(aktivitetDTO.forhaandsorientering.getLest());
+
+        assertTrue(start.before(lest) || start.equals(lest));
+        assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
 }

@@ -54,6 +54,13 @@ public class ArenaController {
         return arenaService.harAktiveTiltak(fnr);
     }
 
+    @PutMapping("/forhaandsorientering/lest")
+    ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
+        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+        authService.sjekkTilgangTilPerson(fnr);
+
+        return arenaService.markerSomLest(fnr, aktivitetId);
+    }
 
     private Optional<String> getInputFeilmelding(Forhaandsorientering forhaandsorientering, String arenaaktivitetId) {
         if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
