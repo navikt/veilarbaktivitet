@@ -48,7 +48,8 @@ public class AvtaltMedNavControllerTest {
 
     @Before
     public void setup() {
-        avtaltMedNavController = new AvtaltMedNavController(metricService, aktivitetDAO, authService);
+        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO);
+        avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
     }
 
     @Before

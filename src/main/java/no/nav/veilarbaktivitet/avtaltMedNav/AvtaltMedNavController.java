@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AuthService;
@@ -22,38 +21,38 @@ import java.util.Date;
 @RequestMapping("/api/avtaltMedNav")
 public class AvtaltMedNavController {
 
-    private final MetricService metricService;
-    private final AktivitetDAO aktivitetDAO;
     private final AuthService authService;
+    private final AvtaltMedNavService avtaltMedNavService;
 
     @PutMapping
     public AktivitetDTO markerSomAvtaltMedNav(@RequestBody AvtaltMedNav avtaltMedNav, @RequestParam long aktivitetId) {
-        AktivitetData aktivitet = aktivitetDAO.hentAktivitet(aktivitetId);
         Forhaandsorientering forhaandsorientering = avtaltMedNav.getForhaandsorientering();
 
+        if (forhaandsorientering == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering kan ikke være null");
+        }
+
+        if (forhaandsorientering.getType() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.type kan ikke være null");
+        }
+
+        AktivitetData aktivitet = avtaltMedNavService.hentAktivitet(aktivitetId);
+
         if (aktivitet == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten eksisterer ikke");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aktiviteten eksisterer ikke");
         }
 
         authService.sjekkTilgangOgInternBruker(aktivitet.getAktorId(), aktivitet.getKontorsperreEnhetId());
-        validerInput(avtaltMedNav, aktivitet, forhaandsorientering);
 
-        if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
-            forhaandsorientering.setTekst(null);
+        if (avtaltMedNav.getAktivitetVersjon() != aktivitet.getVersjon()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
         }
 
-        AktivitetData nyAktivitet = aktivitet
-                .toBuilder()
-                .avtalt(true)
-                .forhaandsorientering(forhaandsorientering)
-                .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                .build();
+        if (aktivitet.isAvtalt()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten er allerede avtalt med NAV");
+        }
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
-
-        metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
-
-        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId));
+        return avtaltMedNavService.markerSomAvtaltMedNav(aktivitetId, avtaltMedNav);
 
     }
 
@@ -64,42 +63,23 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "aktivitetId og aktivitetVersion må vere satt");
         }
 
-        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(lestDTO.aktivitetId);
+        AktivitetData aktivitet = avtaltMedNavService.hentAktivitet(lestDTO.aktivitetId);
 
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.getAktorId()));
-
-        if (aktivitetData.getForhaandsorientering() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fho eksister ikke");
-        }
-        if (aktivitetData.getForhaandsorientering().getLest() != null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Allerede lest");
+        if (aktivitet == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aktiviteten eksisterer ikke");
         }
 
-        Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitet.getAktorId()));
 
-        AktivitetData aktivitet = aktivitetData.toBuilder().forhaandsorientering(fho).build();
-
-        aktivitetDAO.insertAktivitet(aktivitet);
-
-        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(lestDTO.aktivitetId));
-    }
-
-    private void validerInput(AvtaltMedNav avtaltMedNav, AktivitetData aktivitet, Forhaandsorientering forhaandsorientering) {
-        if (avtaltMedNav.getAktivitetVersjon() != aktivitet.getVersjon()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
+        if (aktivitet.getForhaandsorientering() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Fho eksister ikke");
         }
 
-        if (forhaandsorientering == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering kan ikke være null");
+        if (aktivitet.getForhaandsorientering().getLest() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Allerede lest");
         }
 
-        if (forhaandsorientering.getType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.type kan ikke være null");
-        }
-
-        if (aktivitet.isAvtalt()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten er allerede avtalt med NAV");
-        }
+        return avtaltMedNavService.markerSomLest(aktivitet);
     }
 
 }
