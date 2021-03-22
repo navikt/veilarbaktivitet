@@ -83,8 +83,8 @@ public class ArenaService {
         Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
 
-        boolean opdatert = dao.markerSomLest(aktorId, aktivitetId);
-        if(!opdatert) {
+        boolean oppdatert = dao.markerSomLest(aktorId, aktivitetId);
+        if(!oppdatert) {
             log.warn("kunne ikke markere forhondsorentering på arena aktivitet " + aktivitetId + " som lest");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke markere aktiviteten som lest");
         }

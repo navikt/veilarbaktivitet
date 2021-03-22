@@ -194,7 +194,7 @@ public class ArenaControllerTest {
         Date stopp = new Date();
         Date lest = lestAktivitet.getForhaandsorientering().getLest();
 
-        assertNotNull(lestAktivitet.getForhaandsorientering().getLest());
+        assertNotNull(lest);
 
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));

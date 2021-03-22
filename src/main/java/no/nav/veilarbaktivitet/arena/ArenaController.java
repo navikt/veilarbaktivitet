@@ -54,7 +54,7 @@ public class ArenaController {
         return arenaService.harAktiveTiltak(fnr);
     }
 
-    @PutMapping("/lest")
+    @PutMapping("/forhaandsorientering/lest")
     ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);

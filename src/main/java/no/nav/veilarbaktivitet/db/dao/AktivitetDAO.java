@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.db.dao;
 
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
@@ -73,10 +74,12 @@ public class AktivitetDAO {
         String forhaandsorienteringTekst = null;
         Date fhoLest = null;
 
-        if(aktivitet.getForhaandsorientering() != null) {
-            forhaandsorienteringType = aktivitet.getForhaandsorientering().getType().name();
-            forhaandsorienteringTekst = aktivitet.getForhaandsorientering().getTekst();
-            fhoLest = aktivitet.getForhaandsorientering().getLest();
+        Forhaandsorientering fho = aktivitet.getForhaandsorientering();
+
+        if(fho != null) {
+            forhaandsorienteringType = fho.getType().name();
+            forhaandsorienteringTekst = fho.getTekst();
+            fhoLest = fho.getLest();
         }
 
         long versjon = nesteVersjon();
