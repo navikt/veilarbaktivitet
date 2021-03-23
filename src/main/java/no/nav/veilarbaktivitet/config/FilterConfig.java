@@ -110,7 +110,7 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean secureLogsfilterFilter(SecureLogsfilterFilter secureLogsfilterFilter) {
+    public FilterRegistrationBean secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
         FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(secureLogsfilterFilter);
         registration.setOrder(4);
