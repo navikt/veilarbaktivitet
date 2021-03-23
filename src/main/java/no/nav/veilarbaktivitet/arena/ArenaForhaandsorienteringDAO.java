@@ -20,17 +20,18 @@ public class ArenaForhaandsorienteringDAO {
 
     private final Database database;
 
-    void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
+    void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering, String opprettetAv) {
         Date fhoOpprettetDato = new Date();
 
         //language=SQL
-        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato) " +
-                        "VALUES (?,?,?,?,?)",
+        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato, oppretet_av_ident) " +
+                        "VALUES (?,?,?,?,?,?)",
                 arenaaktivitetId,
                 aktorId.get(),
                 forhaandsorientering.getType().name(),
                 forhaandsorientering.getTekst(),
-                fhoOpprettetDato
+                fhoOpprettetDato,
+                opprettetAv
         );
 
         log.info("opprettet {}", forhaandsorientering);

@@ -63,7 +63,7 @@ public class ArenaService {
         );
     }
 
-    public ArenaAktivitetDTO lagreForhaandsorientering(String arenaaktivitetId, Person.Fnr fnr, Forhaandsorientering forhaandsorientering) throws ResponseStatusException {
+    public ArenaAktivitetDTO lagreForhaandsorientering(String arenaaktivitetId, Person.Fnr fnr, Forhaandsorientering forhaandsorientering, String opprettetAv) throws ResponseStatusException {
         ArenaAktivitetDTO arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten finnes ikke"));
 
@@ -71,7 +71,7 @@ public class ArenaService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
 
         try {
-            dao.insertForhaandsorientering(arenaaktivitetId, aktorId, forhaandsorientering);
+            dao.insertForhaandsorientering(arenaaktivitetId, aktorId, forhaandsorientering, opprettetAv);
             return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
