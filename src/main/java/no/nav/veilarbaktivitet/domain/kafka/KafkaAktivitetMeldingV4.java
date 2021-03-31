@@ -1,15 +1,12 @@
-package no.nav.veilarbaktivitet.aktiviterTilKafka;
+package no.nav.veilarbaktivitet.domain.kafka;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 import java.util.Date;
-
-import static no.nav.veilarbaktivitet.mappers.Helpers.typeMap;
 
 @Value
 @Builder

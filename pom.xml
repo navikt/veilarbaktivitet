@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.02.23_11.33-7091f10a35ba</common.version>
+        <common.version>2.2021.03.31_05.53-03db85c8721a</common.version>
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
@@ -112,6 +112,11 @@
             <artifactId>ojdbc8</artifactId>
             <version>19.3.0.0</version>
         </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>4.21.0</version>
+        </dependency>
 
         <!--  Overskriv gammel avhengighet fra nimbus -->
         <dependency>
@@ -144,6 +149,11 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>kafka</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>

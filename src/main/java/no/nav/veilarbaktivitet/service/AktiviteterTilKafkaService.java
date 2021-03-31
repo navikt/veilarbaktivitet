@@ -1,9 +1,11 @@
-package no.nav.veilarbaktivitet.aktiviterTilKafka;
+package no.nav.veilarbaktivitet.service;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.db.dao.KafkaAktivitetDAO;
+import no.nav.veilarbaktivitet.domain.kafka.KafkaAktivitetMeldingV4;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AktiviteterTilKafkaService {
     private final KafkaAktivitetDAO dao;
-    private final KafkaService kafka;
+    private final KafkaProducerService producerService;
     private final MeterRegistry registry;
 
     @Timed
@@ -34,7 +36,7 @@ public class AktiviteterTilKafkaService {
 
     private void sendMeldingV4(KafkaAktivitetMeldingV4 melding) {
         registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            long offset = kafka.sendMelding(melding);
+            long offset = producerService.sendMelding(melding);
             dao.updateSendtPaKafka(melding.getVersion(), offset);
         });
     }

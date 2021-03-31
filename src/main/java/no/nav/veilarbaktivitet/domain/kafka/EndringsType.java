@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktiviterTilKafka;
+package no.nav.veilarbaktivitet.domain.kafka;
 
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 
