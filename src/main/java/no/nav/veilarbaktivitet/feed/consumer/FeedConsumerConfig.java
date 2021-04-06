@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.feed.consumer;
 
+import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.feed.common.FeedAuthorizationModule;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -21,6 +22,7 @@ public class FeedConsumerConfig<DOMAINOBJECT> {
 
     public final ScheduleCreator pollingConfig;
     public final WebhookScheduleCreator webhookPollingConfig;
+    public final LeaderElectionClient leaderElectionClient;
     public OkHttpClient client;
 
     FeedCallback<DOMAINOBJECT> callback;
@@ -31,17 +33,18 @@ public class FeedConsumerConfig<DOMAINOBJECT> {
     int lockHoldingLimitInMilliSeconds;
 
 
-    public FeedConsumerConfig(BaseConfig<DOMAINOBJECT> baseConfig, ScheduleCreator pollingConfig) {
-        this(baseConfig, pollingConfig, null);
+    public FeedConsumerConfig(BaseConfig<DOMAINOBJECT> baseConfig, ScheduleCreator pollingConfig, LeaderElectionClient leaderElectionClient) {
+        this(baseConfig, pollingConfig, null, leaderElectionClient);
     }
 
-    public FeedConsumerConfig(BaseConfig<DOMAINOBJECT> baseConfig, ScheduleCreator pollingConfig, WebhookScheduleCreator webhookPollingConfig) {
+    public FeedConsumerConfig(BaseConfig<DOMAINOBJECT> baseConfig, ScheduleCreator pollingConfig, WebhookScheduleCreator webhookPollingConfig, LeaderElectionClient leaderElectionClient) {
         this.domainobject = baseConfig.domainobject;
         this.lastEntrySupplier = baseConfig.lastEntrySupplier;
         this.host = baseConfig.host;
         this.feedName = baseConfig.feedName;
         this.pollingConfig = pollingConfig;
         this.webhookPollingConfig = webhookPollingConfig;
+        this.leaderElectionClient = leaderElectionClient;
 
         this.pageSize = 100;
     }

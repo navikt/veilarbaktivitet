@@ -1,5 +1,6 @@
-package no.nav.veilarbaktivitet.ws.consumer;
+package no.nav.veilarbaktivitet.arena;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet;
@@ -17,10 +18,12 @@ import no.nav.veilarbaktivitet.domain.arena.MoteplanDTO;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.ws.WebServiceException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -39,21 +42,15 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class ArenaAktivitetConsumer {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
 
-
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    Date arenaAktivitetFilterDato;
-
-    @Autowired
-    public ArenaAktivitetConsumer(TiltakOgAktivitetV1 tiltakOgAktivitetV1) {
-        this.tiltakOgAktivitetV1 = tiltakOgAktivitetV1;
-        this.arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
-    }
+    Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));;
 
     static Date parseDato(String konfigurertDato) {
         try {
@@ -64,7 +61,7 @@ public class ArenaAktivitetConsumer {
         }
     }
 
-    public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
+    List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
 
         val req = new HentTiltakOgAktiviteterForBrukerRequest();
         req.setPersonident(personident.get());
@@ -90,6 +87,9 @@ public class ArenaAktivitetConsumer {
                 HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
             log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
             return emptyList();
+        } catch (WebServiceException e) {
+            log.error("Feil mot arena", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Feil mot arena", e);
         }
     }
 
@@ -157,7 +157,6 @@ public class ArenaAktivitetConsumer {
         } else {
             arenaAktivitetDTO.setEtikett(arenaEtikett);
         }
-
 
         return arenaAktivitetDTO;
     }

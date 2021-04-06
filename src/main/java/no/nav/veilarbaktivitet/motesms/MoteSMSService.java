@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.service;
+package no.nav.veilarbaktivitet.motesms;
 
 
 import io.micrometer.core.annotation.Timed;

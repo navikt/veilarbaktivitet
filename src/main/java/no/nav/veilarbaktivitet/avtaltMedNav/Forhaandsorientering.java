@@ -4,8 +4,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Date;
+
 @Data
-@Builder
+@Builder(toBuilder = true)
 public class Forhaandsorientering {
 
     @RequiredArgsConstructor
@@ -19,6 +21,7 @@ public class Forhaandsorientering {
 
     private Type type;
     private String tekst;
+    private Date lest;
 
     public static ForhaandsorienteringBuilder builder() {
         return new CustomForhaandsorienteringBuilder();
