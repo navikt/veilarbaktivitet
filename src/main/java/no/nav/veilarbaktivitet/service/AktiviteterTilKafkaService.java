@@ -36,7 +36,7 @@ public class AktiviteterTilKafkaService {
 
     private void sendMeldingV4(KafkaAktivitetMeldingV4 melding) {
         registry.timer("send.aktivitet.paaa.kafka").record(() -> {
-            long offset = producerService.sendMelding(melding);
+            long offset = producerService.sendAktivitetMelding(melding);
             dao.updateSendtPaKafka(melding.getVersion(), offset);
         });
     }

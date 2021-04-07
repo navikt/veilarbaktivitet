@@ -27,10 +27,10 @@ public class KafkaProducerService {
 
     @Counted
     @SneakyThrows
-    public long sendMelding(KafkaAktivitetMeldingV4 meldingV4) {
-        String key = meldingV4.getAktivitetId();
+    public long sendAktivitetMelding(KafkaAktivitetMeldingV4 melding) {
+        String key = melding.getAktivitetId();
 
-        ProducerRecord<String, String> record = toJsonProducerRecord(kafkaProperties.getEndringPaaAktivitetTopic(), key, meldingV4);
+        ProducerRecord<String, String> record = toJsonProducerRecord(kafkaProperties.getEndringPaaAktivitetTopic(), key, melding);
         record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
         return producerClient.sendSync(record).offset();
