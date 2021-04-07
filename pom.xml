@@ -21,6 +21,11 @@
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
+
+        <!--   sonar cloud     -->
+        <sonar.projectKey>navikt_veilarbaktivitet</sonar.projectKey>
+        <sonar.organization>navit</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <build>
