@@ -4,10 +4,11 @@ import org.junit.BeforeClass;
 import org.junit.jupiter.api.BeforeAll;
 
 public abstract class DatabaseTest {
-    @BeforeAll
-    @BeforeClass
-    public static void setup() {
-        /*setupContext(
+
+	@BeforeAll
+	@BeforeClass
+	public static void setup() {
+		/*setupContext(
                 DatabaseContext.class,
                 Database.class,
                 AktivitetDAO.class,
@@ -17,5 +18,5 @@ public abstract class DatabaseTest {
         );
          */
 
-    }
+	}
 }

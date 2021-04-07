@@ -15,25 +15,23 @@ import org.springframework.stereotype.Service;
 @EnableScheduling
 @RequiredArgsConstructor
 public class CronService {
+	private final MoteSMSService moteSMSService;
+	private final LeaderElectionClient leaderElectionClient;
+	private final AktiviteterTilKafkaService aktiviteterTilKafkaService;
 
-    private final MoteSMSService moteSMSService;
-    private final LeaderElectionClient leaderElectionClient;
-    private final AktiviteterTilKafkaService aktiviteterTilKafkaService;
+	@Scheduled(fixedRate = 60000, initialDelay = 60000)
+	public void sendMoteServicemelding() {
+		if (leaderElectionClient.isLeader()) {
+			MDC.put("running.job", "moteSmsService");
+			moteSMSService.sendServicemeldingerForNesteDogn();
+			MDC.clear();
+		}
+	}
 
-    @Scheduled(fixedRate = 60000, initialDelay = 60000)
-    public void sendMoteServicemelding() {
-        if (leaderElectionClient.isLeader()) {
-            MDC.put("running.job", "moteSmsService");
-            moteSMSService.sendServicemeldingerForNesteDogn();
-            MDC.clear();
-        }
-    }
-
-    @Scheduled(fixedRate = 500, initialDelay = 5000)
-    public void sendMeldingerPaaKafka() {
-        if (leaderElectionClient.isLeader()) {
-            aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
-        }
-
-    }
+	@Scheduled(fixedRate = 500, initialDelay = 5000)
+	public void sendMeldingerPaaKafka() {
+		if (leaderElectionClient.isLeader()) {
+			aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
+		}
+	}
 }

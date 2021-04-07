@@ -1,5 +1,22 @@
 package no.nav.veilarbaktivitet.arena;
 
+import static java.time.ZoneId.systemDefault;
+import static java.time.ZonedDateTime.ofInstant;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
+
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.ws.WebServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -22,235 +39,325 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ResponseStatusException;
 
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.ws.WebServiceException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
-import static java.time.ZoneId.systemDefault;
-import static java.time.ZonedDateTime.ofInstant;
-import static java.util.Collections.emptyList;
-import static java.util.stream.Collectors.toList;
-import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
-import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
-
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class ArenaAktivitetConsumer {
+	private static final String DATO_FORMAT = "yyyy-MM-dd";
+	private static final String ARENA_PREFIX = "ARENA";
 
-    private static final String DATO_FORMAT = "yyyy-MM-dd";
-    private static final String ARENA_PREFIX = "ARENA";
+	private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
+	Date arenaAktivitetFilterDato = parseDato(
+		getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null)
+	);
 
-    Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));;
+	static Date parseDato(String konfigurertDato) {
+		try {
+			return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
+		} catch (Exception e) {
+			log.warn(
+				"Kunne ikke parse dato [{}] med datoformat [{}].",
+				konfigurertDato,
+				DATO_FORMAT
+			);
+			return null;
+		}
+	}
 
-    static Date parseDato(String konfigurertDato) {
-        try {
-            return new SimpleDateFormat(DATO_FORMAT).parse(konfigurertDato);
-        } catch (Exception e) {
-            log.warn("Kunne ikke parse dato [{}] med datoformat [{}].", konfigurertDato, DATO_FORMAT);
-            return null;
-        }
-    }
+	List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
+		val req = new HentTiltakOgAktiviteterForBrukerRequest();
+		req.setPersonident(personident.get());
+		List<ArenaAktivitetDTO> result = new ArrayList<>();
 
-    List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr personident) {
+		try {
+			val aktiviteter = tiltakOgAktivitetV1.hentTiltakOgAktiviteterForBruker(
+				req
+			);
+			Optional
+				.ofNullable(aktiviteter.getTiltaksaktivitetListe())
+				.ifPresent(
+					tiltakList ->
+						result.addAll(
+							tiltakList.stream().map(this::mapTilAktivitet).collect(toList())
+						)
+				);
+			Optional
+				.ofNullable(aktiviteter.getGruppeaktivitetListe())
+				.ifPresent(
+					gruppeList ->
+						result.addAll(
+							gruppeList.stream().map(this::mapTilAktivitet).collect(toList())
+						)
+				);
+			Optional
+				.ofNullable(aktiviteter.getUtdanningsaktivitetListe())
+				.ifPresent(
+					utdanningList ->
+						result.addAll(
+							utdanningList
+								.stream()
+								.map(this::mapTilAktivitet)
+								.collect(toList())
+						)
+				);
+			return result
+				.stream()
+				.filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()))
+				.collect(toList());
+		} catch (
+			HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet
+			| HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning
+			| HentTiltakOgAktiviteterForBrukerUgyldigInput e
+		) {
+			log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
+			return emptyList();
+		} catch (WebServiceException e) {
+			log.error("Feil mot arena", e);
+			throw new ResponseStatusException(
+				HttpStatus.BAD_GATEWAY,
+				"Feil mot arena",
+				e
+			);
+		}
+	}
 
-        val req = new HentTiltakOgAktiviteterForBrukerRequest();
-        req.setPersonident(personident.get());
-        List<ArenaAktivitetDTO> result = new ArrayList<>();
+	private boolean etterFilterDato(Date tilDato) {
+		return (
+			tilDato == null ||
+			arenaAktivitetFilterDato == null ||
+			arenaAktivitetFilterDato.before(tilDato)
+		);
+	}
 
-        try {
-            val aktiviteter = tiltakOgAktivitetV1.hentTiltakOgAktiviteterForBruker(req);
-            Optional.ofNullable(aktiviteter.getTiltaksaktivitetListe()).ifPresent((tiltakList) ->
-                    result.addAll(tiltakList.stream()
-                            .map(this::mapTilAktivitet)
-                            .collect(toList())));
-            Optional.ofNullable(aktiviteter.getGruppeaktivitetListe()).ifPresent((gruppeList) ->
-                    result.addAll(gruppeList.stream()
-                            .map(this::mapTilAktivitet)
-                            .collect(toList())));
-            Optional.ofNullable(aktiviteter.getUtdanningsaktivitetListe()).ifPresent((utdanningList) ->
-                    result.addAll(utdanningList.stream()
-                            .map(this::mapTilAktivitet)
-                            .collect(toList())));
-            return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).collect(toList());
-        } catch (HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet |
-                HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning |
-                HentTiltakOgAktiviteterForBrukerUgyldigInput e) {
-            log.warn("Klarte ikke hente aktiviteter fra Arena.", e);
-            return emptyList();
-        } catch (WebServiceException e) {
-            log.error("Feil mot arena", e);
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Feil mot arena", e);
-        }
-    }
+	private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
+	private static final String JOBBKLUBB_NAVN = "Jobbklubb";
+	private static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
 
-    private boolean etterFilterDato(Date tilDato) {
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
-    }
+	private String getTittel(Tiltaksaktivitet tiltaksaktivitet) {
+		val erVanligAmo = tiltaksaktivitet
+			.getTiltaksnavn()
+			.trim()
+			.equalsIgnoreCase(VANLIG_AMO_NAVN);
+		if (erVanligAmo) {
+			return "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn();
+		}
 
-    private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
-    private static final String JOBBKLUBB_NAVN = "Jobbklubb";
-    private static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
+		val erGruppeAmo = tiltaksaktivitet
+			.getTiltaksnavn()
+			.trim()
+			.equalsIgnoreCase(GRUPPE_AMO_NAVN);
+		if (erGruppeAmo) {
+			return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
+		}
 
+		return tiltaksaktivitet.getTiltaksnavn();
+	}
 
-    private String getTittel(Tiltaksaktivitet tiltaksaktivitet){
-        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
-                .equalsIgnoreCase(VANLIG_AMO_NAVN);
-        if (erVanligAmo) {
-            return "AMO-kurs: " + tiltaksaktivitet.getTiltakLokaltNavn();
-        }
+	private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
+		val arenaAktivitetDTO = new ArenaAktivitetDTO()
+			.setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
+			.setStatus(
+				EnumUtils
+					.valueOf(
+						ArenaStatus.class,
+						tiltaksaktivitet.getDeltakerStatus().getValue()
+					)
+					.getStatus()
+			)
+			.setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
+			.setFraDato(
+				mapPeriodeToDate(
+					tiltaksaktivitet.getDeltakelsePeriode(),
+					Periode::getFom
+				)
+			)
+			.setTilDato(
+				mapPeriodeToDate(
+					tiltaksaktivitet.getDeltakelsePeriode(),
+					Periode::getTom
+				)
+			)
+			.setAvtalt(true)
+			.setDeltakelseProsent(tiltaksaktivitet.getDeltakelseProsent())
+			.setTiltaksnavn(tiltaksaktivitet.getTiltaksnavn())
+			.setTiltakLokaltNavn(tiltaksaktivitet.getTiltakLokaltNavn())
+			.setArrangoer(tiltaksaktivitet.getArrangoer())
+			.setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
+			.setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
+			.setStatusSistEndret(
+				DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret())
+			)
+			.setOpprettetDato(
+				DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret())
+			);
 
-        val erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
-                .equalsIgnoreCase(GRUPPE_AMO_NAVN);
-        if (erGruppeAmo){
-            return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
-        }
+		val erVanligAmo = tiltaksaktivitet
+			.getTiltaksnavn()
+			.trim()
+			.equalsIgnoreCase(VANLIG_AMO_NAVN);
 
-        return tiltaksaktivitet.getTiltaksnavn();
-    }
+		arenaAktivitetDTO.setTittel(getTittel(tiltaksaktivitet));
 
-    private ArenaAktivitetDTO mapTilAktivitet(Tiltaksaktivitet tiltaksaktivitet) {
-        val arenaAktivitetDTO = new ArenaAktivitetDTO()
-                .setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
-                .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus().getValue()).getStatus())
-                .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
-                .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), Periode::getFom))
-                .setTilDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), Periode::getTom))
-                .setAvtalt(true)
-                .setDeltakelseProsent(tiltaksaktivitet.getDeltakelseProsent())
-                .setTiltaksnavn(tiltaksaktivitet.getTiltaksnavn())
-                .setTiltakLokaltNavn(tiltaksaktivitet.getTiltakLokaltNavn())
-                .setArrangoer(tiltaksaktivitet.getArrangoer())
-                .setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
-                .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
-                .setStatusSistEndret(DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret()))
-                .setOpprettetDato(DateUtils.getDate(tiltaksaktivitet.getStatusSistEndret()));
+		val erJobbKlubb = tiltaksaktivitet
+			.getTiltaksnavn()
+			.trim()
+			.equalsIgnoreCase(JOBBKLUBB_NAVN);
 
-        val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
-                .equalsIgnoreCase(VANLIG_AMO_NAVN);
+		if (erJobbKlubb) {
+			arenaAktivitetDTO.setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn());
+		}
 
-        arenaAktivitetDTO.setTittel(getTittel(tiltaksaktivitet));
+		val arenaEtikett = EnumUtils.valueOf(
+			ArenaStatusDTO.class,
+			tiltaksaktivitet.getDeltakerStatus().getValue()
+		);
 
-        val erJobbKlubb = tiltaksaktivitet.getTiltaksnavn().trim()
-                .equalsIgnoreCase(JOBBKLUBB_NAVN);
+		if (ArenaStatusDTO.TILBUD.equals(arenaEtikett)) {
+			if (erJobbKlubb || erVanligAmo) {
+				arenaAktivitetDTO.setEtikett(ArenaStatusDTO.TILBUD);
+			}
+		} else {
+			arenaAktivitetDTO.setEtikett(arenaEtikett);
+		}
 
-        if (erJobbKlubb) {
-            arenaAktivitetDTO.setBeskrivelse(tiltaksaktivitet.getTiltakLokaltNavn());
-        }
+		return arenaAktivitetDTO;
+	}
 
-        val arenaEtikett = EnumUtils.valueOf(ArenaStatusDTO.class,
-                tiltaksaktivitet.getDeltakerStatus().getValue());
+	private ArenaAktivitetDTO mapTilAktivitet(Gruppeaktivitet gruppeaktivitet) {
+		List<MoteplanDTO> motePlan = new ArrayList<>();
+		Optional
+			.ofNullable(gruppeaktivitet.getMoeteplanListe())
+			.ifPresent(
+				moeteplanListe ->
+					moeteplanListe
+						.stream()
+						.map(this::mapTilMoteplan)
+						.forEach(motePlan::add)
+			);
 
-        if (ArenaStatusDTO.TILBUD.equals(arenaEtikett)) {
-            if (erJobbKlubb || erVanligAmo) {
-                arenaAktivitetDTO.setEtikett(ArenaStatusDTO.TILBUD);
-            }
-        } else {
-            arenaAktivitetDTO.setEtikett(arenaEtikett);
-        }
+		Date startDato = motePlan.get(0).getStartDato();
+		Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
+		AktivitetStatus status = gruppeaktivitet
+				.getStatus()
+				.getValue()
+				.equals("AVBR")
+			? AVBRUTT
+			: mapTilAktivitetsStatus(startDato, sluttDato);
+		return new ArenaAktivitetDTO()
+			.setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
+			.setStatus(status)
+			.setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
+			.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
+			.setBeskrivelse(gruppeaktivitet.getBeskrivelse())
+			.setFraDato(startDato)
+			.setTilDato(sluttDato)
+			.setAvtalt(true)
+			.setOpprettetDato(startDato)
+			.setMoeteplanListe(motePlan);
+	}
 
-        return arenaAktivitetDTO;
-    }
+	private ArenaAktivitetDTO mapTilAktivitet(
+		Utdanningsaktivitet utdanningsaktivitet
+	) {
+		Date startDato = DateUtils.getDate(
+			utdanningsaktivitet.getAktivitetPeriode().getFom()
+		);
+		Date sluttDato = DateUtils.getDate(
+			utdanningsaktivitet.getAktivitetPeriode().getTom()
+		);
 
-    private ArenaAktivitetDTO mapTilAktivitet(Gruppeaktivitet gruppeaktivitet) {
-        List<MoteplanDTO> motePlan = new ArrayList<>();
-        Optional.ofNullable(gruppeaktivitet.getMoeteplanListe())
-                .ifPresent(moeteplanListe -> moeteplanListe.stream()
-                        .map(this::mapTilMoteplan)
-                        .forEach(motePlan::add)
-                );
+		return new ArenaAktivitetDTO()
+			.setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
+			.setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
+			.setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
+			.setTittel(utdanningsaktivitet.getAktivitetstype())
+			.setBeskrivelse(utdanningsaktivitet.getBeskrivelse())
+			.setFraDato(startDato)
+			.setTilDato(sluttDato)
+			.setOpprettetDato(startDato)
+			.setAvtalt(true);
+	}
 
-        Date startDato = motePlan.get(0).getStartDato();
-        Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
-        AktivitetStatus status = gruppeaktivitet.getStatus().getValue().equals("AVBR") ?
-                AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
-        return new ArenaAktivitetDTO()
-                .setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
-                .setStatus(status)
-                .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
-                .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
-                .setBeskrivelse(gruppeaktivitet.getBeskrivelse())
-                .setFraDato(startDato)
-                .setTilDato(sluttDato)
-                .setAvtalt(true)
-                .setOpprettetDato(startDato)
-                .setMoeteplanListe(motePlan);
-    }
+	private String prefixArenaId(String arenaId) {
+		return ARENA_PREFIX + arenaId;
+	}
 
-    private ArenaAktivitetDTO mapTilAktivitet(Utdanningsaktivitet utdanningsaktivitet) {
-        Date startDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
-        Date sluttDato = DateUtils.getDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
+	private AktivitetStatus mapTilAktivitetsStatus(
+		Date startDato,
+		Date sluttDato
+	) {
+		LocalDateTime now = LocalDateTime.now();
 
-        return new ArenaAktivitetDTO()
-                .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
-                .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
-                .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
-                .setTittel(utdanningsaktivitet.getAktivitetstype())
-                .setBeskrivelse(utdanningsaktivitet.getBeskrivelse())
-                .setFraDato(startDato)
-                .setTilDato(sluttDato)
-                .setOpprettetDato(startDato)
-                .setAvtalt(true);
-    }
+		LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault())
+			.toLocalDate()
+			.atStartOfDay();
+		LocalDateTime endOfDay = ofInstant(sluttDato.toInstant(), systemDefault())
+			.toLocalDate()
+			.plusDays(1)
+			.atStartOfDay();
 
-    private String prefixArenaId(String arenaId) {
-        return ARENA_PREFIX + arenaId;
-    }
+		return now.isBefore(startOfDay)
+			? PLANLAGT
+			: now.isBefore(endOfDay) ? GJENNOMFORES : FULLFORT;
+	}
 
-    private AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
-        LocalDateTime now = LocalDateTime.now();
+	private MoteplanDTO mapTilMoteplan(Moeteplan moeteplan) {
+		return new MoteplanDTO()
+			.setSted(moeteplan.getSted())
+			.setStartDato(
+				DateUtils.getDate(
+					DateUtils.mergeDateTime(
+						moeteplan.getStartDato(),
+						moeteplan.getStartKlokkeslett()
+					)
+				)
+			)
+			.setSluttDato(
+				DateUtils.getDate(
+					DateUtils.mergeDateTime(
+						moeteplan.getSluttDato(),
+						moeteplan.getSluttKlokkeslett()
+					)
+				)
+			);
+	}
 
-        LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = ofInstant(sluttDato.toInstant(), systemDefault()).toLocalDate().plusDays(1).atStartOfDay();
+	private Date mapPeriodeToDate(
+		Periode date,
+		Function<Periode, XMLGregorianCalendar> periodeDate
+	) {
+		return Optional
+			.ofNullable(date)
+			.map(periodeDate)
+			.map(DateUtils::getDate)
+			.orElse(null);
+	}
 
-        return now.isBefore(startOfDay) ? PLANLAGT : now.isBefore(endOfDay) ? GJENNOMFORES : FULLFORT;
-    }
+	private enum ArenaStatus {
+		AKTUELL(PLANLAGT),
+		AVSLAG(AVBRUTT),
+		DELAVB(AVBRUTT),
+		FULLF(FULLFORT),
+		GJENN(GJENNOMFORES),
+		GJENN_AVB(AVBRUTT),
+		GJENN_AVL(AVBRUTT),
+		IKKAKTUELL(AVBRUTT),
+		IKKEM(AVBRUTT),
+		INFOMOETE(PLANLAGT),
+		JATAKK(PLANLAGT),
+		NEITAKK(AVBRUTT),
+		TILBUD(PLANLAGT),
+		VENTELISTE(PLANLAGT);
 
-    private MoteplanDTO mapTilMoteplan(Moeteplan moeteplan) {
-        return new MoteplanDTO()
-                .setSted(moeteplan.getSted())
-                .setStartDato(DateUtils.getDate(DateUtils.mergeDateTime(moeteplan.getStartDato(), moeteplan.getStartKlokkeslett())))
-                .setSluttDato(DateUtils.getDate(DateUtils.mergeDateTime(moeteplan.getSluttDato(), moeteplan.getSluttKlokkeslett())));
-    }
+		ArenaStatus(AktivitetStatus status) {
+			this.status = status;
+		}
 
-    private Date mapPeriodeToDate(Periode date, Function<Periode, XMLGregorianCalendar> periodeDate) {
-        return Optional.ofNullable(date).map(periodeDate).map(DateUtils::getDate).orElse(null);
-    }
+		private AktivitetStatus status;
 
-    private enum ArenaStatus {
-        AKTUELL(PLANLAGT),
-        AVSLAG(AVBRUTT),
-        DELAVB(AVBRUTT),
-        FULLF(FULLFORT),
-        GJENN(GJENNOMFORES),
-        GJENN_AVB(AVBRUTT),
-        GJENN_AVL(AVBRUTT),
-        IKKAKTUELL(AVBRUTT),
-        IKKEM(AVBRUTT),
-        INFOMOETE(PLANLAGT),
-        JATAKK(PLANLAGT),
-        NEITAKK(AVBRUTT),
-        TILBUD(PLANLAGT),
-        VENTELISTE(PLANLAGT);
-
-        ArenaStatus(AktivitetStatus status) {
-            this.status = status;
-        }
-
-        private AktivitetStatus status;
-
-        AktivitetStatus getStatus() {
-            return status;
-        }
-    }
-
+		AktivitetStatus getStatus() {
+			return status;
+		}
+	}
 }

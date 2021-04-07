@@ -1,5 +1,9 @@
 package no.nav.veilarbaktivitet.controller;
 
+import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
+
+import java.util.List;
+import java.util.stream.Collectors;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
@@ -14,54 +18,48 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
-
 @RestController
 @RequestMapping("/internal")
 public class InternalController {
+	private final JdbcTemplate db;
+	private final SelfTestChecks selftestChecks;
 
-    private final JdbcTemplate db;
-    private final SelfTestChecks selftestChecks;
+	@Autowired
+	public InternalController(JdbcTemplate db, SelfTestChecks selftestChecks) {
+		this.db = db;
+		this.selftestChecks = selftestChecks;
+	}
 
-    @Autowired
-    public InternalController(JdbcTemplate db, SelfTestChecks selftestChecks) {
-        this.db = db;
-        this.selftestChecks = selftestChecks;
-    }
+	@GetMapping("/isReady")
+	public void isReady() {}
 
-    @GetMapping("/isReady")
-    public void isReady() {
-    }
+	@GetMapping("/isAlive")
+	public void isAlive() {
+		if (checkDbHealth(db).isUnhealthy()) {
+			throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+	}
 
-    @GetMapping("/isAlive")
-    public void isAlive() {
-        if(checkDbHealth(db).isUnhealthy()) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+	@GetMapping("/selftest")
+	public ResponseEntity selftest() {
+		List<SelftTestCheckResult> checkResults = checkAllParallel(
+			selftestChecks.getSelfTestChecks()
+		);
+		String html = SelftestHtmlGenerator.generate(checkResults);
+		int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
 
-    @GetMapping("/selftest")
-    public ResponseEntity selftest() {
-        List<SelftTestCheckResult> checkResults = checkAllParallel(selftestChecks.getSelfTestChecks());
-        String html = SelftestHtmlGenerator.generate(checkResults);
-        int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
+		return ResponseEntity
+			.status(status)
+			.contentType(MediaType.TEXT_HTML)
+			.body(html);
+	}
 
-        return ResponseEntity
-                .status(status)
-                .contentType(MediaType.TEXT_HTML)
-                .body(html);
-    }
-
-    public static HealthCheckResult checkDbHealth(JdbcTemplate db) {
-        try {
-            db.query("SELECT 1 FROM DUAL", resultSet -> {});
-            return HealthCheckResult.healthy();
-        } catch (Exception e) {
-            return HealthCheckResult.unhealthy("Fikk ikke kontakt med databasen", e);
-        }
-    }
-
+	public static HealthCheckResult checkDbHealth(JdbcTemplate db) {
+		try {
+			db.query("SELECT 1 FROM DUAL", resultSet -> {});
+			return HealthCheckResult.healthy();
+		} catch (Exception e) {
+			return HealthCheckResult.unhealthy("Fikk ikke kontakt med databasen", e);
+		}
+	}
 }

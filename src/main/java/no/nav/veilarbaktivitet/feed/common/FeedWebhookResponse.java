@@ -6,6 +6,6 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class FeedWebhookResponse {
-    private String melding;
-    public String webhookUrl;
+	private String melding;
+	public String webhookUrl;
 }

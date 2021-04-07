@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -11,73 +13,124 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
-import java.util.Optional;
-
 @Transactional
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/arena")
 public class ArenaController {
-    private final UserInContext userInContext;
-    private final AuthService authService;
-    private final ArenaService arenaService;
+	private final UserInContext userInContext;
+	private final AuthService authService;
+	private final ArenaService arenaService;
 
-    @PutMapping("/forhaandsorientering")
-    ArenaAktivitetDTO sendForhaandsorientering(@RequestBody Forhaandsorientering forhaandsorientering, @RequestParam String arenaaktivitetId) {
-        if (!authService.erInternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
-        }
+	@PutMapping("/forhaandsorientering")
+	ArenaAktivitetDTO sendForhaandsorientering(
+		@RequestBody Forhaandsorientering forhaandsorientering,
+		@RequestParam String arenaaktivitetId
+	) {
+		if (!authService.erInternBruker()) {
+			throw new ResponseStatusException(
+				HttpStatus.FORBIDDEN,
+				"Må være internbruker"
+			);
+		}
 
-        getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
-                .ifPresent( feilmelding -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding);});
+		getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
+			.ifPresent(
+				feilmelding -> {
+					throw new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						feilmelding
+					);
+				}
+			);
 
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
-        authService.sjekkTilgangTilPerson(fnr);
+		Person.Fnr fnr = userInContext
+			.getFnr()
+			.orElseThrow(
+				() ->
+					new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr")
+			);
+		authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering);
-    }
+		return arenaService.lagreForhaandsorientering(
+			arenaaktivitetId,
+			fnr,
+			forhaandsorientering
+		);
+	}
 
-    @GetMapping("/tiltak")
-    List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr);
+	@GetMapping("/tiltak")
+	List<ArenaAktivitetDTO> hentArenaAktiviteter() {
+		Person.Fnr fnr = userInContext
+			.getFnr()
+			.orElseThrow(
+				() ->
+					new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						"Må være på en bruker"
+					)
+			);
+		authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.hentAktiviteter(fnr);
-    }
+		return arenaService.hentAktiviteter(fnr);
+	}
 
-    @GetMapping("/harTiltak")
-    boolean hentHarTiltak() {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr);
+	@GetMapping("/harTiltak")
+	boolean hentHarTiltak() {
+		Person.Fnr fnr = userInContext
+			.getFnr()
+			.orElseThrow(
+				() ->
+					new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						"Må være på en bruker"
+					)
+			);
+		authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.harAktiveTiltak(fnr);
-    }
+		return arenaService.harAktiveTiltak(fnr);
+	}
 
-    @PutMapping("/forhaandsorientering/lest")
-    ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr);
+	@PutMapping("/forhaandsorientering/lest")
+	ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
+		Person.Fnr fnr = userInContext
+			.getFnr()
+			.orElseThrow(
+				() ->
+					new ResponseStatusException(
+						HttpStatus.BAD_REQUEST,
+						"Må være på en bruker"
+					)
+			);
+		authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.markerSomLest(fnr, aktivitetId);
-    }
+		return arenaService.markerSomLest(fnr, aktivitetId);
+	}
 
-    private Optional<String> getInputFeilmelding(Forhaandsorientering forhaandsorientering, String arenaaktivitetId) {
-        if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
-            return Optional.of("arenaaktivitetId kan ikke være null eller tom");
-        }
+	private Optional<String> getInputFeilmelding(
+		Forhaandsorientering forhaandsorientering,
+		String arenaaktivitetId
+	) {
+		if (arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
+			return Optional.of("arenaaktivitetId kan ikke være null eller tom");
+		}
 
-        if (forhaandsorientering == null) {
-            return Optional.of("forhaandsorientering kan ikke være null");
-        }
+		if (forhaandsorientering == null) {
+			return Optional.of("forhaandsorientering kan ikke være null");
+		}
 
-        if (forhaandsorientering.getType() == null) {
-            return Optional.of("forhaandsorientering.type kan ikke være null");
-        }
+		if (forhaandsorientering.getType() == null) {
+			return Optional.of("forhaandsorientering.type kan ikke være null");
+		}
 
-        if (forhaandsorientering.getTekst() == null || forhaandsorientering.getTekst().isEmpty()) {
-            return Optional.of("forhaandsorientering.tekst kan ikke være null eller tom");
-        }
-        return Optional.empty();
-    }
+		if (
+			forhaandsorientering.getTekst() == null ||
+			forhaandsorientering.getTekst().isEmpty()
+		) {
+			return Optional.of(
+				"forhaandsorientering.tekst kan ikke være null eller tom"
+			);
+		}
+		return Optional.empty();
+	}
 }

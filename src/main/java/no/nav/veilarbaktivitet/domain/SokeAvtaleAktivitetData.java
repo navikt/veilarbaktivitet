@@ -8,7 +8,7 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class SokeAvtaleAktivitetData {
-    public Long antallStillingerSokes;
-    public Long antallStillingerIUken;
-    public String avtaleOppfolging;
+	public Long antallStillingerSokes;
+	public Long antallStillingerIUken;
+	public String avtaleOppfolging;
 }

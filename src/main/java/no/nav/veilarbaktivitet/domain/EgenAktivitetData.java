@@ -10,6 +10,6 @@ import lombok.experimental.Wither;
 @Wither
 @Getter
 public class EgenAktivitetData {
-    String hensikt;
-    String oppfolging;
+	String hensikt;
+	String oppfolging;
 }

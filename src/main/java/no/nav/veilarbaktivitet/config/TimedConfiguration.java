@@ -11,18 +11,20 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @Configuration
 @EnableAspectJAutoProxy
 public class TimedConfiguration {
-    @Bean
-    MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
-        return registry -> registry.config().commonTags("application", "veilarbaktivitet");
-    }
 
-    @Bean
-    TimedAspect timedAspect(MeterRegistry registry) {
-        return new TimedAspect(registry);
-    }
+	@Bean
+	MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
+		return registry ->
+			registry.config().commonTags("application", "veilarbaktivitet");
+	}
 
-    @Bean
-    CountedAspect countedAspect(MeterRegistry registry) {
-        return new CountedAspect(registry);
-    }
+	@Bean
+	TimedAspect timedAspect(MeterRegistry registry) {
+		return new TimedAspect(registry);
+	}
+
+	@Bean
+	CountedAspect countedAspect(MeterRegistry registry) {
+		return new CountedAspect(registry);
+	}
 }

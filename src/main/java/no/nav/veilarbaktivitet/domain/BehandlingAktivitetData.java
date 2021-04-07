@@ -8,8 +8,8 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class BehandlingAktivitetData {
-    String behandlingType;
-    String behandlingSted;
-    String effekt;
-    String behandlingOppfolging;
+	String behandlingType;
+	String behandlingSted;
+	String effekt;
+	String behandlingOppfolging;
 }

@@ -9,13 +9,14 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FilterTestConfig {
 
-    @Bean
-    public FilterRegistrationBean testSubjectFilterRegistrationBean() {
-        FilterRegistrationBean<TestAuthContextFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new TestAuthContextFilter(UserRole.INTERN, "z123456"));
-        registration.setOrder(1);
-        registration.addUrlPatterns("/*");
-        return registration;
-    }
-
+	@Bean
+	public FilterRegistrationBean testSubjectFilterRegistrationBean() {
+		FilterRegistrationBean<TestAuthContextFilter> registration = new FilterRegistrationBean<>();
+		registration.setFilter(
+			new TestAuthContextFilter(UserRole.INTERN, "z123456")
+		);
+		registration.setOrder(1);
+		registration.addUrlPatterns("/*");
+		return registration;
+	}
 }

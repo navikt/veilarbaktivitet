@@ -6,7 +6,6 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 public class FeedRequest {
-    String sinceId;
-    int pageSize;
+	String sinceId;
+	int pageSize;
 }
-

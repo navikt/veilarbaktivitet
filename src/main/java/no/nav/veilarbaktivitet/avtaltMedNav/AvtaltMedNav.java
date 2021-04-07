@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 class AvtaltMedNav {
-    private long aktivitetVersjon;
-    private Forhaandsorientering forhaandsorientering;
+	private long aktivitetVersjon;
+	private Forhaandsorientering forhaandsorientering;
 }

@@ -12,42 +12,47 @@ import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock
 import org.springframework.stereotype.Component;
 
 @Component
-public class TiltakOgAktivitetMock implements TiltakOgAktivitetV1  {
+public class TiltakOgAktivitetMock implements TiltakOgAktivitetV1 {
 
-    private static Tiltaksaktivitet opprettTiltaksaktivitet(String status, String id) {
-        Tiltaksaktivitet tiltaksaktivitet = new Tiltaksaktivitet();
-        Deltakerstatuser ds = new Deltakerstatuser();
-        ds.setValue(status);
-        tiltaksaktivitet.setTiltaksnavn("Arbeidsmarkedsopplæring (AMO)");
-        tiltaksaktivitet.setAktivitetId(id);
-        tiltaksaktivitet.setTiltakLokaltNavn("Arbeidslivskunnskap med praksis og bransjenorsk");
-        tiltaksaktivitet.setDeltakerStatus(ds);
-        return tiltaksaktivitet;
-    }
+	private static Tiltaksaktivitet opprettTiltaksaktivitet(
+		String status,
+		String id
+	) {
+		Tiltaksaktivitet tiltaksaktivitet = new Tiltaksaktivitet();
+		Deltakerstatuser ds = new Deltakerstatuser();
+		ds.setValue(status);
+		tiltaksaktivitet.setTiltaksnavn("Arbeidsmarkedsopplæring (AMO)");
+		tiltaksaktivitet.setAktivitetId(id);
+		tiltaksaktivitet.setTiltakLokaltNavn(
+			"Arbeidslivskunnskap med praksis og bransjenorsk"
+		);
+		tiltaksaktivitet.setDeltakerStatus(ds);
+		return tiltaksaktivitet;
+	}
 
-    public static Tiltaksaktivitet opprettAktivTiltaksaktivitet() {
-        return opprettTiltaksaktivitet("GJENN", "12");
-    }
+	public static Tiltaksaktivitet opprettAktivTiltaksaktivitet() {
+		return opprettTiltaksaktivitet("GJENN", "12");
+	}
 
-    public static Tiltaksaktivitet opprettInaktivTiltaksaktivitet() {
-        return opprettTiltaksaktivitet("GJENN_AVB","11");
-    }
+	public static Tiltaksaktivitet opprettInaktivTiltaksaktivitet() {
+		return opprettTiltaksaktivitet("GJENN_AVB", "11");
+	}
 
-    @Override
-    public HentTiltakOgAktiviteterForBrukerResponse hentTiltakOgAktiviteterForBruker(HentTiltakOgAktiviteterForBrukerRequest hentTiltakOgAktiviteterForBrukerRequest) throws HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet, HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning, HentTiltakOgAktiviteterForBrukerUgyldigInput {
-        HentTiltakOgAktiviteterForBrukerResponseMock tiltakResponseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
-        Tiltaksaktivitet t1 = opprettInaktivTiltaksaktivitet();
-        tiltakResponseMock.leggTilTiltak(t1);
+	@Override
+	public HentTiltakOgAktiviteterForBrukerResponse hentTiltakOgAktiviteterForBruker(
+		HentTiltakOgAktiviteterForBrukerRequest hentTiltakOgAktiviteterForBrukerRequest
+	)
+		throws HentTiltakOgAktiviteterForBrukerPersonIkkeFunnet, HentTiltakOgAktiviteterForBrukerSikkerhetsbegrensning, HentTiltakOgAktiviteterForBrukerUgyldigInput {
+		HentTiltakOgAktiviteterForBrukerResponseMock tiltakResponseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
+		Tiltaksaktivitet t1 = opprettInaktivTiltaksaktivitet();
+		tiltakResponseMock.leggTilTiltak(t1);
 
-        Tiltaksaktivitet t2 = opprettAktivTiltaksaktivitet();
-        tiltakResponseMock.leggTilTiltak(t2);
+		Tiltaksaktivitet t2 = opprettAktivTiltaksaktivitet();
+		tiltakResponseMock.leggTilTiltak(t2);
 
-        return tiltakResponseMock;
-    }
+		return tiltakResponseMock;
+	}
 
-    @Override
-    public void ping() {
-
-    }
-
+	@Override
+	public void ping() {}
 }

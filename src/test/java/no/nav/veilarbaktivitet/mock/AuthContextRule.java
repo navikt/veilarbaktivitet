@@ -9,23 +9,28 @@ import org.junit.runners.model.Statement;
 
 @Slf4j
 public class AuthContextRule implements MethodRule {
+	private AuthContext context;
 
-    private AuthContext context;
+	public AuthContextRule() {}
 
-    public AuthContextRule() {
-    }
+	public AuthContextRule(AuthContext context) {
+		this.context = context;
+	}
 
-    public AuthContextRule(AuthContext context) {
-        this.context = context;
-    }
+	@Override
+	public Statement apply(
+		Statement statement,
+		FrameworkMethod frameworkMethod,
+		Object o
+	) {
+		return new Statement() {
 
-    @Override
-    public Statement apply(Statement statement, FrameworkMethod frameworkMethod, Object o) {
-        return new Statement() {
-            @Override
-            public void evaluate() {
-                AuthContextHolderThreadLocal.instance().withContext(context, statement::evaluate);
-            }
-        };
-    }
+			@Override
+			public void evaluate() {
+				AuthContextHolderThreadLocal
+					.instance()
+					.withContext(context, statement::evaluate);
+			}
+		};
+	}
 }

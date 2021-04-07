@@ -8,12 +8,9 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class StillingsoekAktivitetData {
-
-    public String arbeidsgiver;
-    String stillingsTittel;
-    String arbeidssted;
-    StillingsoekEtikettData stillingsoekEtikett;
-    String kontaktPerson;
-
+	public String arbeidsgiver;
+	String stillingsTittel;
+	String arbeidssted;
+	StillingsoekEtikettData stillingsoekEtikett;
+	String kontaktPerson;
 }
-

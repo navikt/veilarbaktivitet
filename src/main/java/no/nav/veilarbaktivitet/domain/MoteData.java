@@ -8,10 +8,10 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class MoteData {
-    String adresse;
-    String forberedelser;
-    KanalDTO kanal;
+	String adresse;
+	String forberedelser;
+	KanalDTO kanal;
 
-    String referat;
-    boolean referatPublisert;
+	String referat;
+	boolean referatPublisert;
 }

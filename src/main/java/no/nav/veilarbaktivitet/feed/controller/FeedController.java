@@ -1,58 +1,56 @@
 package no.nav.veilarbaktivitet.feed.controller;
 
-import no.nav.veilarbaktivitet.feed.common.Authorization;
-import no.nav.veilarbaktivitet.feed.consumer.FeedConsumer;
-import org.slf4j.Logger;
+import static java.util.Optional.ofNullable;
+import static org.slf4j.LoggerFactory.getLogger;
 
+import java.util.HashMap;
+import java.util.Map;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
-
+import no.nav.veilarbaktivitet.feed.common.Authorization;
+import no.nav.veilarbaktivitet.feed.consumer.FeedConsumer;
+import org.slf4j.Logger;
 
 @Path("/api/feed")
 public class FeedController {
+	private static final Logger LOG = getLogger(FeedController.class);
 
-    private static final Logger LOG = getLogger(FeedController.class);
+	private Map<String, FeedConsumer> consumers = new HashMap<>();
 
-    private Map<String, FeedConsumer> consumers = new HashMap<>();
+	public <DOMAINOBJECT extends Comparable<DOMAINOBJECT>> FeedController addFeed(
+		String clientFeedname,
+		FeedConsumer<DOMAINOBJECT> consumer
+	) {
+		LOG.info("ny feed-klient. navn={}", clientFeedname);
+		consumers.put(clientFeedname, consumer);
+		return this;
+	}
 
+	public FeedController() {
+		LOG.info("starter");
+	}
 
-    public <DOMAINOBJECT extends Comparable<DOMAINOBJECT>> FeedController addFeed(String clientFeedname, FeedConsumer<DOMAINOBJECT> consumer) {
-        LOG.info("ny feed-klient. navn={}", clientFeedname);
-        consumers.put(clientFeedname, consumer);
-        return this;
-    }
+	// CONSUMER CONTROLLER
 
-    public FeedController() {
-        LOG.info("starter");
-    }
+	@HEAD
+	@Path("{name}")
+	public Response webhookCallback(@PathParam("name") String feedname) {
+		return ofNullable(feedname)
+			.map(name -> consumers.get(name))
+			.map(consumer -> authorizeRequest(consumer, feedname))
+			.map(FeedConsumer::webhookCallback)
+			.map(hadCallback -> Response.status(hadCallback ? 200 : 404))
+			.orElse(Response.status(404))
+			.build();
+	}
 
-    // CONSUMER CONTROLLER
-
-    @HEAD
-    @Path("{name}")
-    public Response webhookCallback(@PathParam("name") String feedname) {
-        return ofNullable(feedname)
-                .map((name) -> consumers.get(name))
-                .map((consumer) -> authorizeRequest(consumer, feedname))
-                .map(FeedConsumer::webhookCallback)
-                .map((hadCallback) -> Response.status(hadCallback ? 200 : 404))
-                .orElse(Response.status(404))
-                .build();
-    }
-
-    private <T extends Authorization> T authorizeRequest(T feed, String name) {
-        if (!feed.getAuthorizationModule().isRequestAuthorized(name)) {
-            throw new WebApplicationException(Response.Status.FORBIDDEN);
-        }
-        return feed;
-    }
-
+	private <T extends Authorization> T authorizeRequest(T feed, String name) {
+		if (!feed.getAuthorizationModule().isRequestAuthorized(name)) {
+			throw new WebApplicationException(Response.Status.FORBIDDEN);
+		}
+		return feed;
+	}
 }

@@ -1,6 +1,13 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -19,185 +26,230 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-
-
 @RunWith(MockitoJUnitRunner.class)
 public class AvtaltMedNavControllerTest {
-    private String aktorid = "12345678";
+	private String aktorid = "12345678";
 
-    @Mock
-    private MetricService metricService;
+	@Mock
+	private MetricService metricService;
 
+	private JdbcTemplate jdbc = LocalH2Database.getDb();
 
-    private JdbcTemplate jdbc = LocalH2Database.getDb();
+	private AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc));
 
-    private AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc));
+	@Mock
+	private AuthService authService;
 
-    @Mock
-    private AuthService authService;
+	private AvtaltMedNavController avtaltMedNavController;
 
-    private AvtaltMedNavController avtaltMedNavController;
+	@Before
+	public void setup() {
+		AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(
+			metricService,
+			aktivitetDAO
+		);
+		avtaltMedNavController =
+			new AvtaltMedNavController(authService, avtaltMedNavService);
+	}
 
-    @Before
-    public void setup() {
-        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO);
-        avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
-    }
+	@Before
+	public void cleanup() {
+		DbTestUtils.cleanupTestDb(jdbc);
 
-    @Before
-    public void cleanup() {
-        DbTestUtils.cleanupTestDb(jdbc);
+		doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+			.when(authService)
+			.sjekkTilgangOgInternBruker(any(), any());
 
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(authService)
-                .sjekkTilgangOgInternBruker(any(), any());
+		doNothing().when(authService).sjekkTilgangOgInternBruker(aktorid, null);
+	}
 
-        doNothing()
-                .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
+	@Test(expected = ResponseStatusException.class)
+	public void skalSjekkeTilgangTilBruker() {
+		AktivitetData aktivitetData = opprettAktivitet("0987654");
 
-    }
+		avtaltMedNavController.markerSomAvtaltMedNav(
+			lagForhaandsorentering(aktivitetData),
+			aktivitetData.getId()
+		);
+	}
 
-    @Test(expected = ResponseStatusException.class)
-    public void skalSjekkeTilgangTilBruker() {
-        AktivitetData aktivitetData = opprettAktivitet("0987654");
+	@Test(expected = ResponseStatusException.class)
+	public void skalSjekkeKVP() {
+		AktivitetData aktivitetData = AktivitetDataTestBuilder
+			.nySokeAvtaleAktivitet()
+			.toBuilder()
+			.aktorId(aktorid)
+			.versjon(aktivitetDAO.getNextUniqueAktivitetId())
+			.kontorsperreEnhetId("1234")
+			.build();
 
-        avtaltMedNavController.markerSomAvtaltMedNav(lagForhaandsorentering(aktivitetData), aktivitetData.getId());
-    }
+		aktivitetDAO.insertAktivitet(aktivitetData);
 
-    @Test(expected = ResponseStatusException.class)
-    public void skalSjekkeKVP() {
-        AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
-                .toBuilder()
-                .aktorId(aktorid)
-                .versjon(aktivitetDAO.getNextUniqueAktivitetId())
-                .kontorsperreEnhetId("1234")
-                .build();
+		avtaltMedNavController.markerSomAvtaltMedNav(
+			lagForhaandsorentering(aktivitetData),
+			aktivitetData.getId()
+		);
+	}
 
-        aktivitetDAO.insertAktivitet(aktivitetData);
+	@Test(expected = ResponseStatusException.class)
+	public void forhandsorenteringSkallIkkeVereNull() {
+		AktivitetData aktivitetData = opprettAktivitet(aktorid);
+		AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
+		avtaltMedNav.setAktivitetVersjon(aktivitetData.getVersjon());
+		avtaltMedNavController.markerSomAvtaltMedNav(
+			avtaltMedNav,
+			aktivitetData.getId()
+		);
+	}
 
-        avtaltMedNavController.markerSomAvtaltMedNav(lagForhaandsorentering(aktivitetData), aktivitetData.getId());
-    }
+	@Test(expected = ResponseStatusException.class)
+	public void versjonskonfliktSkalGiException() {
+		AktivitetData aktivitetData = opprettAktivitet(aktorid);
+		AvtaltMedNav avtaltMedNav = lagForhaandsorentering(aktivitetData);
+		avtaltMedNav.setAktivitetVersjon(avtaltMedNav.getAktivitetVersjon() - 1);
+		avtaltMedNavController.markerSomAvtaltMedNav(
+			avtaltMedNav,
+			aktivitetData.getId()
+		);
+	}
 
-    @Test(expected = ResponseStatusException.class)
-    public void forhandsorenteringSkallIkkeVereNull() {
-        AktivitetData aktivitetData = opprettAktivitet(aktorid);
-        AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setAktivitetVersjon(aktivitetData.getVersjon());
-        avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, aktivitetData.getId());
-    }
+	@Test
+	public void skalTaVarePaaForhaandsOretneringsTekst() {
+		AktivitetData orginal = opprettAktivitet(aktorid);
+		AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
+		avtaltMedNav.setForhaandsorientering(
+			new Forhaandsorientering(
+				Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING,
+				"kake",
+				null
+			)
+		);
+		avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
 
-    @Test(expected = ResponseStatusException.class)
-    public void versjonskonfliktSkalGiException() {
-        AktivitetData aktivitetData = opprettAktivitet(aktorid);
-        AvtaltMedNav avtaltMedNav = lagForhaandsorentering(aktivitetData);
-        avtaltMedNav.setAktivitetVersjon(avtaltMedNav.getAktivitetVersjon() -1);
-        avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, aktivitetData.getId());
-    }
+		AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(
+			avtaltMedNav,
+			orginal.getId()
+		);
 
-    @Test
-    public void skalTaVarePaaForhaandsOretneringsTekst() {
-        AktivitetData orginal = opprettAktivitet(aktorid);
-        AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake", null));
-        avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
+		AktivitetData forventet = orginal
+			.toBuilder()
+			.avtalt(true)
+			.forhaandsorientering(avtaltMedNav.getForhaandsorientering())
+			.transaksjonsType(AktivitetTransaksjonsType.AVTALT)
+			//endres altid ved oppdatering
+			.versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
+			.endretDato(markertSomAvtalt.getEndretDato())
+			.build();
 
-        AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
+		AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(
+			forventet
+		);
 
-        AktivitetData forventet = orginal
-                .toBuilder()
-                .avtalt(true)
-                .forhaandsorientering(avtaltMedNav.getForhaandsorientering())
-                .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                //endres altid ved oppdatering
-                .versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
-                .endretDato(markertSomAvtalt.getEndretDato())
-                .build();
+		assertEquals(markertSomAvtalt, forventetDTO);
+	}
 
-        AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);
+	@Test
+	public void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
+		Arrays
+			.stream(AktivitetTypeData.values())
+			.map(AktivitetDataTestBuilder::nyAktivitet)
+			.map(
+				a ->
+					a
+						.toBuilder()
+						.id(aktivitetDAO.getNextUniqueAktivitetId())
+						.aktorId(aktorid)
+						.build()
+			)
+			.forEach(aktivitetDAO::insertAktivitet);
 
-        assertEquals(markertSomAvtalt, forventetDTO);
+		List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(
+			Person.aktorId(aktorid)
+		);
 
-    }
+		for (AktivitetData orginal : aktivitetData) {
+			AvtaltMedNav avtaltMedNav = lagForhaandsorentering(orginal);
+			AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(
+				avtaltMedNav,
+				orginal.getId()
+			);
 
-    @Test
-    public void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
-        Arrays.stream(AktivitetTypeData.values())
-                .map(AktivitetDataTestBuilder::nyAktivitet)
-                .map(a -> a.toBuilder().id(aktivitetDAO.getNextUniqueAktivitetId()).aktorId(aktorid).build())
-                .forEach(aktivitetDAO::insertAktivitet);
+			AktivitetData forventet = orginal
+				.toBuilder()
+				.avtalt(true)
+				.forhaandsorientering(avtaltMedNav.getForhaandsorientering())
+				.transaksjonsType(AktivitetTransaksjonsType.AVTALT)
+				//endres altid ved oppdatering
+				.versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
+				.endretDato(markertSomAvtalt.getEndretDato())
+				.build();
 
-        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorid));
+			AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(
+				forventet
+			);
 
-        for (AktivitetData orginal :
-                aktivitetData) {
+			assertEquals(markertSomAvtalt, forventetDTO);
+		}
+	}
 
-            AvtaltMedNav avtaltMedNav = lagForhaandsorentering(orginal);
-            AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
+	private AvtaltMedNav lagForhaandsorentering(AktivitetData orginal) {
+		AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
+		avtaltMedNav.setForhaandsorientering(
+			new Forhaandsorientering(
+				Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING,
+				null,
+				null
+			)
+		);
+		avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
+		return avtaltMedNav;
+	}
 
-            AktivitetData forventet = orginal
-                    .toBuilder()
-                    .avtalt(true)
-                    .forhaandsorientering(avtaltMedNav.getForhaandsorientering())
-                    .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                    //endres altid ved oppdatering
-                    .versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
-                    .endretDato(markertSomAvtalt.getEndretDato())
-                    .build();
+	private AktivitetData opprettAktivitet(String aktorid) {
+		AktivitetData aktivitetData = AktivitetDataTestBuilder
+			.nySokeAvtaleAktivitet()
+			.toBuilder()
+			.aktorId(aktorid)
+			.versjon(aktivitetDAO.getNextUniqueAktivitetId())
+			.build();
 
-            AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);
+		aktivitetDAO.insertAktivitet(aktivitetData);
+		return aktivitetDAO.hentAktivitet(aktivitetData.getId());
+	}
 
-            assertEquals(markertSomAvtalt, forventetDTO);
-        }
-    }
+	@Test
+	public void markerForhaandsorienteringSomLest_skalVirke() {
+		Date start = new Date();
+		AktivitetData orginal = opprettAktivitet(aktorid);
+		AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
+		avtaltMedNav.setForhaandsorientering(
+			new Forhaandsorientering(
+				Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING,
+				"kake",
+				null
+			)
+		);
+		avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
 
-    private AvtaltMedNav lagForhaandsorentering(AktivitetData orginal) {
-        AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.IKKE_SEND_FORHAANDSORIENTERING, null, null));
-        avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
-        return avtaltMedNav;
-    }
+		AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(
+			avtaltMedNav,
+			orginal.getId()
+		);
+		assertNull(markertSomAvtalt.forhaandsorientering.getLest());
 
-    private AktivitetData opprettAktivitet(String aktorid) {
-        AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
-                .toBuilder()
-                .aktorId(aktorid)
-                .versjon(aktivitetDAO.getNextUniqueAktivitetId())
-                .build();
+		LestDTO lestDTO = new LestDTO(
+			Long.parseLong(markertSomAvtalt.getId()),
+			Long.parseLong(markertSomAvtalt.getVersjon())
+		);
 
-        aktivitetDAO.insertAktivitet(aktivitetData);
-        return aktivitetDAO.hentAktivitet(aktivitetData.getId());
-    }
+		AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
 
-    @Test
-    public void markerForhaandsorienteringSomLest_skalVirke() {
-        Date start = new Date();
-        AktivitetData orginal = opprettAktivitet(aktorid);
-        AvtaltMedNav avtaltMedNav = new AvtaltMedNav();
-        avtaltMedNav.setForhaandsorientering(new Forhaandsorientering(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING, "kake", null));
-        avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
+		Date stopp = new Date();
+		Date lest = aktivitetDTO.forhaandsorientering.getLest();
 
-        AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
-        assertNull(markertSomAvtalt.forhaandsorientering.getLest());
+		assertNotNull(aktivitetDTO.forhaandsorientering.getLest());
 
-        LestDTO lestDTO = new LestDTO(Long.parseLong(markertSomAvtalt.getId()), Long.parseLong(markertSomAvtalt.getVersjon()));
-
-        AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
-
-        Date stopp = new Date();
-        Date lest = aktivitetDTO.forhaandsorientering.getLest();
-
-        assertNotNull(aktivitetDTO.forhaandsorientering.getLest());
-
-        assertTrue(start.before(lest) || start.equals(lest));
-        assertTrue(stopp.after(lest) || stopp.equals(lest));
-    }
+		assertTrue(start.before(lest) || start.equals(lest));
+		assertTrue(stopp.after(lest) || stopp.equals(lest));
+	}
 }

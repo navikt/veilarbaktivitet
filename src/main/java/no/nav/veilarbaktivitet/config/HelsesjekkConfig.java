@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.config;
 
+import java.util.Arrays;
+import java.util.List;
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -13,35 +15,36 @@ import no.nav.veilarbaktivitet.motesms.MoteSMSService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
-import java.util.List;
-
 @Configuration
 public class HelsesjekkConfig {
 
-    @Bean
-    public SelfTestChecks selfTestChecks(ArenaServiceHelsesjekk arenaServiceHelsesjekk,
-                                         AktorOppslagClient aktorOppslagClient,
-                                         Pep pep,
-                                         DatabaseHelsesjekk databaseHelsesjekk,
-                                         KafkaHelsesjekk kafkaHelsesjekk,
-                                         UnleashClient unleashClient,
-                                         MoteSMSService moteSMSService) {
-        List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
-                new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
-                new SelfTestCheck("ABAC", true, pep.getAbacClient()),
-                new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
-                new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
-                new SelfTestCheck("Unleash", false, unleashClient),
-                new SelfTestCheck("MoteServicemelding", false, moteSMSService)
-        );
+	@Bean
+	public SelfTestChecks selfTestChecks(
+		ArenaServiceHelsesjekk arenaServiceHelsesjekk,
+		AktorOppslagClient aktorOppslagClient,
+		Pep pep,
+		DatabaseHelsesjekk databaseHelsesjekk,
+		KafkaHelsesjekk kafkaHelsesjekk,
+		UnleashClient unleashClient,
+		MoteSMSService moteSMSService
+	) {
+		List<SelfTestCheck> selfTestChecks = Arrays.asList(
+			new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
+			new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
+			new SelfTestCheck("ABAC", true, pep.getAbacClient()),
+			new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
+			new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
+			new SelfTestCheck("Unleash", false, unleashClient),
+			new SelfTestCheck("MoteServicemelding", false, moteSMSService)
+		);
 
-        return new SelfTestChecks(selfTestChecks);
-    }
+		return new SelfTestChecks(selfTestChecks);
+	}
 
-    @Bean
-    public SelfTestMeterBinder selfTestMeterBinder(SelfTestChecks selfTestChecks) {
-        return new SelfTestMeterBinder(selfTestChecks);
-    }
+	@Bean
+	public SelfTestMeterBinder selfTestMeterBinder(
+		SelfTestChecks selfTestChecks
+	) {
+		return new SelfTestMeterBinder(selfTestChecks);
+	}
 }

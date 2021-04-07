@@ -8,7 +8,7 @@ import lombok.experimental.Wither;
 @Builder
 @Wither
 public class IJobbAktivitetData {
-    JobbStatusTypeData jobbStatusType;
-    String ansettelsesforhold;
-    String arbeidstid;
+	JobbStatusTypeData jobbStatusType;
+	String ansettelsesforhold;
+	String arbeidstid;
 }

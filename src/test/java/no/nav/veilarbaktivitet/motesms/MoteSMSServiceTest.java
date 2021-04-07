@@ -1,10 +1,17 @@
 package no.nav.veilarbaktivitet.motesms;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import no.nav.veilarbaktivitet.motesms.MoteSMSService;
-import no.nav.veilarbaktivitet.motesms.VarselQueService;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -12,6 +19,9 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.motesms.VarselQueService;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -24,254 +34,255 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.verify;
-
-
 @EnableAutoConfiguration
 @Import(ApplicationTestConfig.class)
 @RunWith(MockitoJUnitRunner.class)
 public class MoteSMSServiceTest {
+	@Mock
+	private JmsTemplate varselQueueJsm;
 
-    @Mock
-    private JmsTemplate varselQueueJsm;
+	@Captor
+	private ArgumentCaptor<SmsAktivitetData> smsCapture;
 
-    @Captor
-    private ArgumentCaptor<SmsAktivitetData> smsCapture;
+	@Spy
+	@InjectMocks
+	private VarselQueService varselQueue;
 
-    @Spy
-    @InjectMocks
-    private VarselQueService varselQueue;
+	private final Date before = createDate(1);
+	private final Date earlyCuttoff = createDate(2);
+	private final Date betwheen = createDate(3);
+	private final Date betwheen2 = createDate(4);
+	private final Date lateCuttof = createDate(5);
+	private final Date after = createDate(6);
+	private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 
-    private final Date before = createDate(1);
-    private final Date earlyCuttoff = createDate(2);
-    private final Date betwheen = createDate(3);
-    private final Date betwheen2 = createDate(4);
-    private final Date lateCuttof = createDate(5);
-    private final Date after = createDate(6);
-    private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
+	private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+	private final Database database = new Database(jdbcTemplate);
 
+	private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
+	private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
-    private final Database database = new Database(jdbcTemplate);
+	private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
-    private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+	private MoteSMSService moteSMSService;
 
-    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+	@BeforeClass
+	public static void settup() {
+		System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
+	}
 
-    private MoteSMSService moteSMSService;
+	@Before
+	public void cleanUp() {
+		DbTestUtils.cleanupTestDb(jdbcTemplate);
 
+		DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
+		transactionManager.setDataSource(jdbcTemplate.getDataSource());
 
-    @BeforeClass
-    public static void settup() {
-        System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
-    }
+		moteSMSService =
+			new MoteSMSService(
+				moteSmsDAO,
+				varselQueue,
+				transactionManager,
+				meterRegistry
+			);
+	}
 
-    @Before
-    public void cleanUp() {
-        DbTestUtils.cleanupTestDb(jdbcTemplate);
+	@Test
+	public void skalIkkeFeileMedTomListe() {
+		moteSMSService.sendServicemeldingerForNesteDogn();
 
-        DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
-        transactionManager.setDataSource(jdbcTemplate.getDataSource());
+		assertThatMeldingerSendt(0, 0);
+	}
 
-        moteSMSService = new MoteSMSService(
-                moteSmsDAO,
-                varselQueue,
-                transactionManager,
-                meterRegistry);
-    }
+	@Test
+	public void skalIkkeSendeFlereVarselrForEnAktivitet() {
+		insertMote(1, betwheen);
+		insertMote(1, betwheen2);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
-    @Test
-    public void skalIkkeFeileMedTomListe() {
-        moteSMSService.sendServicemeldingerForNesteDogn();
+		assertThatMeldingerSendt(1, 0);
 
-        assertThatMeldingerSendt(0,0);
-    }
+		verify(varselQueue).sendMoteSms(smsCapture.capture(), anyString());
+		SmsAktivitetData value = smsCapture.getValue();
+		assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
+		assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
+		assertThat(value.getAktivitetId()).isEqualTo(1);
+	}
 
-    @Test
-    public void skalIkkeSendeFlereVarselrForEnAktivitet() {
-        insertMote(1, betwheen);
-        insertMote(1, betwheen2);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+	@Test
+	public void skalSendeSMSForAktivteterMellom() {
+		insertMote(1, betwheen);
+		insertMote(2, betwheen);
 
-        assertThatMeldingerSendt(1,0);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
-        verify(varselQueue).sendMoteSms(smsCapture.capture(), anyString());
-        SmsAktivitetData value = smsCapture.getValue();
-        assertThat(value.getAktorId()).isEqualTo(AKTOR_ID.get());
-        assertThat(betwheen2).isEqualTo(value.getMoteTidAktivitet()); //må stå denne veien
-        assertThat(value.getAktivitetId()).isEqualTo(1);
-    }
+		assertThatMeldingerSendt(2, 0);
+	}
 
-    @Test
-    public void skalSendeSMSForAktivteterMellom() {
-        insertMote(1, betwheen);
-        insertMote(2, betwheen);
+	@Test
+	public void skalIkkeInsetteForException() {
+		insertMote(1, betwheen);
+		insertMote(2, betwheen);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		doThrow(RuntimeException.class)
+			.doNothing()
+			.when(varselQueueJsm)
+			.send(any());
 
-        assertThatMeldingerSendt(2,0);
-    }
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
-    @Test
-    public void skalIkkeInsetteForException() {
-        insertMote(1, betwheen);
-        insertMote(2, betwheen);
+		assertThatHistorikkInneholder(1);
+		assertThatGjeldendeInneholder(1);
+	}
 
-        doThrow(RuntimeException.class)
-                .doNothing()
-                .when(varselQueueJsm).send(any());
+	@Test
+	public void skalIkkeSendeSmsForAktiviteterUtenfor() {
+		insertMote(1, after);
+		insertMote(2, before);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
-        assertThatHistorikkInneholder(1);
-        assertThatGjeldendeInneholder(1);
-    }
+		assertThatMeldingerSendt(0, 0);
+	}
 
-    @Test
-    public void skalIkkeSendeSmsForAktiviteterUtenfor() {
-        insertMote(1, after);
-        insertMote(2, before);
+	@Test
+	public void skalIkkeSendeFlereGanger() {
+		insertMote(1, betwheen);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 0);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		insertMote(1, betwheen);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 0);
+	}
 
-        assertThatMeldingerSendt(0,0);
-    }
+	@Test
+	public void skalSendePaaNyttForOppdatertMoteform() {
+		insertMote(1, betwheen);
 
-    @Test
-    public void skalIkkeSendeFlereGanger() {
-        insertMote(1, betwheen);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,0);
+		AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
+		AktivitetData oppdatert1 = aktivitetData.withMoteData(
+			aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE)
+		);
+		aktivitetDAO.insertAktivitet(oppdatert1);
 
-        insertMote(1, betwheen);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,0);
-    }
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 0);
 
-    @Test
-    public void skalSendePaaNyttForOppdatertMoteform() {
-        insertMote(1, betwheen);
+		AktivitetData oppdatert2 = aktivitetData.withMoteData(
+			aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON)
+		);
+		aktivitetDAO.insertAktivitet(oppdatert2);
 
-        AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(1L);
-        AktivitetData oppdatert1 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE));
-        aktivitetDAO.insertAktivitet(oppdatert1);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 1);
+	}
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,0);
+	@Test
+	public void skalSendePaaNyttHvisOppdatert() {
+		insertMote(1, betwheen);
 
-        AktivitetData oppdatert2 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON));
-        aktivitetDAO.insertAktivitet(oppdatert2);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 0);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,1);
-    }
+		insertMote(1, betwheen2);
 
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+		assertThatMeldingerSendt(1, 1);
+	}
 
-    @Test
-    public void skalSendePaaNyttHvisOppdatert() {
-        insertMote(1, betwheen);
+	@Test
+	public void skalSendePaAlleUntatAvbrutt() {
+		AktivitetStatus[] values = AktivitetStatus.values();
+		for (int i = 0; i < values.length; i++) {
+			insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
+		}
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,0);
+		moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
-        insertMote(1, betwheen2);
+		assertThatMeldingerSendt(values.length - 1, 0);
+	}
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
-        assertThatMeldingerSendt(1,1);
+	@Test
+	public void skalIkkeSendeForAndreAktivitetTyper() {
+		AktivitetTypeData[] values = AktivitetTypeData.values();
 
-    }
+		for (int i = 0; i < values.length; i++) {
+			insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
+		}
 
-    @Test
-    public void skalSendePaAlleUntatAvbrutt() {
+		moteSMSService.sendServicemeldinger(before, after);
 
-        AktivitetStatus[] values = AktivitetStatus.values();
-        for (int i = 0; i < values.length; i++) {
-            insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
-        }
+		assertThatMeldingerSendt(1, 0);
+	}
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+	private void insertMote(long id, Date fraDato) {
+		aktivitetDAO.insertAktivitet(
+			AktivitetDataTestBuilder
+				.nyMoteAktivitet()
+				.toBuilder()
+				.fraDato(fraDato)
+				.id(id)
+				.status(AktivitetStatus.GJENNOMFORES)
+				.aktorId(AKTOR_ID.get())
+				.build()
+		);
+	}
 
-        assertThatMeldingerSendt(values.length - 1,0);
+	private void insertAktivitet(
+		long id,
+		Date fraDato,
+		AktivitetTypeData type,
+		AktivitetStatus aktivitetStatus
+	) {
+		AktivitetData aktivitet = AktivitetDataTestBuilder
+			.nyAktivitet()
+			.id(id)
+			.aktivitetType(type)
+			.status(aktivitetStatus)
+			.fraDato(fraDato)
+			.aktorId(AKTOR_ID.get())
+			.build();
 
-    }
+		aktivitetDAO.insertAktivitet(aktivitet);
+	}
 
-    @Test
-    public void skalIkkeSendeForAndreAktivitetTyper() {
-        AktivitetTypeData[] values = AktivitetTypeData.values();
+	private void assertThatMeldingerSendt(
+		int nyeMoterMelding,
+		int moterOppdatertMelding
+	) {
+		int totMeldinger = nyeMoterMelding + moterOppdatertMelding;
 
-        for (int i = 0; i < values.length; i++) {
-            insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
-        }
+		verify(varselQueue, times(totMeldinger)).sendMoteSms(any(), anyString());
+		verify(varselQueueJsm, times(totMeldinger)).send(any());
 
-        moteSMSService.sendServicemeldinger(before, after);
+		assertThatGjeldendeInneholder(nyeMoterMelding);
+		assertThatHistorikkInneholder(totMeldinger);
+	}
 
-        assertThatMeldingerSendt(1,0);
-    }
+	private void assertThatGjeldendeInneholder(int antall) {
+		int size = hentGjeldendeMoter().size();
 
-    private void insertMote(long id, Date fraDato) {
-        aktivitetDAO.insertAktivitet(AktivitetDataTestBuilder
-                .nyMoteAktivitet()
-                .toBuilder()
-                .fraDato(fraDato)
-                .id(id)
-                .status(AktivitetStatus.GJENNOMFORES)
-                .aktorId(AKTOR_ID.get())
-                .build());
-    }
+		assertThat(size).isEqualTo(antall);
+	}
 
-    private void insertAktivitet(long id, Date fraDato, AktivitetTypeData type, AktivitetStatus aktivitetStatus) {
-        AktivitetData aktivitet = AktivitetDataTestBuilder
-                .nyAktivitet()
-                .id(id)
-                .aktivitetType(type)
-                .status(aktivitetStatus)
-                .fraDato(fraDato)
-                .aktorId(AKTOR_ID.get())
-                .build();
+	private void assertThatHistorikkInneholder(int antall) {
+		int size = hentVarselHistorikk().size();
 
-        aktivitetDAO.insertAktivitet(aktivitet);
-    }
+		assertThat(size).isEqualTo(antall);
+	}
 
-    private void assertThatMeldingerSendt(int nyeMoterMelding, int moterOppdatertMelding) {
-        int totMeldinger = nyeMoterMelding + moterOppdatertMelding;
+	private java.util.List<java.util.Map<String, Object>> hentGjeldendeMoter() {
+		return jdbcTemplate.queryForList("select * from GJELDENDE_MOTE_SMS");
+	}
 
-        verify(varselQueue, times(totMeldinger)).sendMoteSms(any(), anyString());
-        verify(varselQueueJsm, times(totMeldinger)).send(any());
+	private List<Map<String, Object>> hentVarselHistorikk() {
+		return jdbcTemplate.queryForList("select * from MOTE_SMS_HISTORIKK");
+	}
 
-        assertThatGjeldendeInneholder(nyeMoterMelding);
-        assertThatHistorikkInneholder(totMeldinger);
-    }
-
-    private void assertThatGjeldendeInneholder(int antall) {
-        int size = hentGjeldendeMoter().size();
-
-        assertThat(size).isEqualTo(antall);
-    }
-
-    private void assertThatHistorikkInneholder(int antall) {
-        int size = hentVarselHistorikk().size();
-
-        assertThat(size).isEqualTo(antall);
-    }
-    private java.util.List<java.util.Map<String, Object>> hentGjeldendeMoter() {
-        return jdbcTemplate.queryForList("select * from GJELDENDE_MOTE_SMS");
-    }
-
-    private List<Map<String, Object>> hentVarselHistorikk() {
-        return jdbcTemplate.queryForList("select * from MOTE_SMS_HISTORIKK");
-    }
-
-    private Date createDate(int hour) {
-        return Date.from(LocalDateTime.of(2016, 1, 1, hour, 1).toInstant(ZoneOffset.UTC));
-    }
+	private Date createDate(int hour) {
+		return Date.from(
+			LocalDateTime.of(2016, 1, 1, hour, 1).toInstant(ZoneOffset.UTC)
+		);
+	}
 }

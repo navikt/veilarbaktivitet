@@ -21,14 +21,24 @@
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
+        <plugin.prettier.goal>write</plugin.prettier.goal>
     </properties>
 
     <build>
         <plugins>
             <plugin>
+                <groupId>com.hubspot.maven.plugins</groupId>
+                <artifactId>prettier-maven-plugin</artifactId>
+                <version>0.13</version>
+                <configuration>
+                    <useTabs>true</useTabs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+
         </plugins>
         <finalName>veilarbaktivitet</finalName>
     </build>
