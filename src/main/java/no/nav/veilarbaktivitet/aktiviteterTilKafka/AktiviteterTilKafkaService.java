@@ -1,11 +1,11 @@
-package no.nav.veilarbaktivitet.service;
+package no.nav.veilarbaktivitet.aktiviteterTilKafka;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.db.dao.KafkaAktivitetDAO;
-import no.nav.veilarbaktivitet.domain.kafka.KafkaAktivitetMeldingV4;
+import no.nav.veilarbaktivitet.service.KafkaProducerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

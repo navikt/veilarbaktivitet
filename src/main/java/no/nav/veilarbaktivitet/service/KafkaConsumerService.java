@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.kafka.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.domain.kafka.OppfolgingAvsluttetKafkaDTO;
+import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;

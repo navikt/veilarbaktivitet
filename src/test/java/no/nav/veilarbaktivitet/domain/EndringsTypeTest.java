@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
-import no.nav.veilarbaktivitet.domain.kafka.EndringsType;
+import no.nav.veilarbaktivitet.aktiviteterTilKafka.EndringsType;
 import org.junit.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

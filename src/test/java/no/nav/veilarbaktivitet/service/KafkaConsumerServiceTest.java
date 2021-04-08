@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.service;
 
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.kafka.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.domain.kafka.OppfolgingAvsluttetKafkaDTO;
+import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import org.junit.Test;
 
 import java.time.ZoneId;

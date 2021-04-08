@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.domain.kafka;
+package no.nav.veilarbaktivitet.kvp;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

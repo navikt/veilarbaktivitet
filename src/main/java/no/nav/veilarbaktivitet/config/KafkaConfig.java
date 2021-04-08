@@ -7,8 +7,8 @@ import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.domain.kafka.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.domain.kafka.OppfolgingAvsluttetKafkaDTO;
+import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.service.KafkaConsumerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,8 +26,8 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProduc
 @EnableConfigurationProperties({KafkaProperties.class})
 public class KafkaConfig {
 
-    public final static String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
-    public final static String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
+    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
+    public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
     @Autowired
     KafkaConsumerClient<String, String> consumerClient;

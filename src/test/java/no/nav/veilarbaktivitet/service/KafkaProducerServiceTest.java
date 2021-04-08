@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.service;
 
 import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.veilarbaktivitet.aktiviteterTilKafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.config.KafkaProperties;
-import no.nav.veilarbaktivitet.domain.kafka.KafkaAktivitetMeldingV4;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;

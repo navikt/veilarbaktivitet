@@ -10,8 +10,8 @@ import static java.lang.String.format;
 
 public class UrlUtils {
 
-    public final static String QUERY_PARAM_PAGE_SIZE = "page_size";
-    public final static String QUERY_PARAM_ID = "id";
+    public static final String QUERY_PARAM_PAGE_SIZE = "page_size";
+    public static final String QUERY_PARAM_ID = "id";
 
     private static Pattern pattern = Pattern.compile("([^:]\\/)\\/+");
 
