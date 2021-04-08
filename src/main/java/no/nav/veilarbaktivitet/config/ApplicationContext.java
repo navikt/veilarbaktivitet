@@ -1,7 +1,5 @@
 package no.nav.veilarbaktivitet.config;
 
-import net.javacrumbs.shedlock.core.LockProvider;
-import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.VeilarbPepFactory;
 import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
@@ -27,7 +25,6 @@ import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.common.utils.NaisUtils.getCredentials;
@@ -45,11 +42,6 @@ public class ApplicationContext {
     @Bean
     public UnleashClient unleashClient(EnvironmentProperties properties) {
         return new UnleashClientImpl(properties.getUnleashUrl(), APPLICATION_NAME);
-    }
-
-    @Bean
-    public LockProvider lockProvider(JdbcTemplate jdbcTemplate) {
-        return new JdbcTemplateLockProvider(jdbcTemplate);
     }
 
     @Bean
