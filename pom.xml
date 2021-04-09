@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.02.23_11.33-7091f10a35ba</common.version>
+        <common.version>2.2021.04.07_08.09-7849c92a72d0</common.version>
         <quartz.version>2.3.2</quartz.version>
         <springfox.version>2.9.2</springfox.version>
         <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
@@ -119,11 +119,6 @@
             <artifactId>okhttp</artifactId>
             <version>3.14.7</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.kafka</groupId>
-            <artifactId>kafka_2.12</artifactId>
-            <version>2.4.0</version>
-        </dependency>
 
         <dependency>
             <groupId>io.micrometer</groupId>
@@ -186,6 +181,11 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>abac</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>kafka</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
