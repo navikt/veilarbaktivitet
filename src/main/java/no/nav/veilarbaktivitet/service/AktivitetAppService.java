@@ -31,6 +31,7 @@ public class AktivitetAppService {
     ));
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_OPPRETTES_EKSTERNT = new HashSet<>(Arrays.asList(
+            AktivitetTypeData.BEHANDLING,
             AktivitetTypeData.EGENAKTIVITET,
             AktivitetTypeData.JOBBSOEKING,
             AktivitetTypeData.IJOBB
@@ -96,7 +97,7 @@ public class AktivitetAppService {
         authService.sjekkTilgangTilPerson(ident);
 
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Feil aktivitetstype " + aktivitetData.getAktivitetType());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
         }
 
         Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(ident).orElseThrow(RuntimeException::new);

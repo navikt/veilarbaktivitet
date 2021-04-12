@@ -2,9 +2,10 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
 import lombok.val;
-import no.nav.veilarbaktivitet.client.KvpClient;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,7 @@ import static no.nav.common.utils.StringUtils.nullOrEmpty;
 public class AktivitetService {
 
     private final AktivitetDAO aktivitetDAO;
-    private final KvpClient kvpClient;
+    private final KvpService kvpService;
     private final MetricService metricService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
@@ -38,23 +39,6 @@ public class AktivitetService {
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
-    }
-
-    /**
-     * Returnerer en kopi av AktivitetData-objektet hvor kontorsperreEnhetId
-     * er satt dersom brukeren er under KVP.
-     */
-    private AktivitetData tagUsingKVP(AktivitetData a) {
-        try {
-            Optional<KvpDTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
-            return kvp
-                    .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
-                    .orElse(a);
-        } catch (ForbiddenException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
-        } catch (InternalServerErrorException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarboppfolging har en intern bug, vennligst fiks applikasjonen.");
-        }
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
@@ -71,13 +55,12 @@ public class AktivitetService {
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
-        AktivitetData kvpAktivivitet = tagUsingKVP(nyAktivivitet);
+        AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
         aktivitetDAO.insertAktivitet(kvpAktivivitet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);
         return aktivitetId;
     }
-
 
     public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
         val nyAktivitet = originalAktivitet
@@ -264,7 +247,7 @@ public class AktivitetService {
                 .stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
-                .map( aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
+                .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
                 .forEach(aktivitetDAO::insertAktivitet);
     }
 
@@ -280,5 +263,4 @@ public class AktivitetService {
                 .withAvsluttetKommentar(avsluttetBegrunnelse)
                 .withEndretDato(avsluttetDato);
     }
-
 }

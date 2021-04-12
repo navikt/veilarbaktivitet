@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.config;
 
-
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
@@ -9,20 +8,24 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.AktiviteterTilKafkaService;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetDAO;
+import no.nav.veilarbaktivitet.aktiviteterTilKafka.AktiviteterTilKafkaService;
+import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.arena.ArenaService;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaService;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.db.dao.KafkaAktivitetDAO;
 import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
-import no.nav.veilarbaktivitet.mock.*;
+import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
+import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.mock.MetricsClientMock;
+import no.nav.veilarbaktivitet.mock.PepMock;
+import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.motesms.VarselQueService;
 import no.nav.veilarbaktivitet.service.*;
-import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
-import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -30,6 +33,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 
 import javax.sql.DataSource;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @Configuration
@@ -40,6 +47,7 @@ import javax.sql.DataSource;
         KafkaAktivitetDAO.class,
         MoteSmsDAO.class,
         VarselQueService.class,
+        KvpService.class,
         AktiviteterTilKafkaService.class,
         MetricService.class,
         MoteSMSService.class,
@@ -69,8 +77,10 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public KafkaService kafkaService() {
-        return new KafkaServiceMock();
+    public KafkaProducerService kafkaProducerService() {
+        KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
+        when(kafkaProducerService.sendAktivitetMelding(any())).thenReturn(0L);
+        return kafkaProducerService;
     }
 
     @Bean
@@ -84,7 +94,7 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public JmsTemplate varselQueue() { return Mockito.mock(JmsTemplate.class); }
+    public JmsTemplate varselQueue() { return mock(JmsTemplate.class); }
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {
@@ -110,4 +120,5 @@ public class ApplicationTestConfig {
     public Pep veilarbPep() {
         return new PepMock(null);
     }
+
 }

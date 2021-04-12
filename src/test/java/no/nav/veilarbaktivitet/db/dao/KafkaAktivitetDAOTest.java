@@ -1,8 +1,7 @@
 package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetDAO;
-import no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaAktivitetMeldingV4;
+import no.nav.veilarbaktivitet.aktiviteterTilKafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
