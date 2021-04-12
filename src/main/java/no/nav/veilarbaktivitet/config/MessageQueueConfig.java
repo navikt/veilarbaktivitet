@@ -24,18 +24,16 @@ public class MessageQueueConfig {
     private static final String VARSELPRODUKSJON_VARSLINGER_QUEUENAME_PROPERTY = "VARSELPRODUKSJON_VARSLINGER_QUEUENAME";
 
     @Bean
-    public JmsTemplate varselQueue(ConnectionFactory connectionFactory) {
-        return queue(connectionFactory, getRequiredProperty(VARSELPRODUKSJON_VARSLINGER_QUEUENAME_PROPERTY));
+    public JmsTemplate varselQueue(ConnectionFactory factory, JMSContext context) {
+        JmsTemplate jmsTemplate = new JmsTemplate();
+        jmsTemplate.setConnectionFactory(factory);
+        jmsTemplate.setDefaultDestination(context.createQueue(getRequiredProperty(VARSELPRODUKSJON_VARSLINGER_QUEUENAME_PROPERTY)));
+        return jmsTemplate;
     }
 
-    private JmsTemplate queue(ConnectionFactory connectionFactory, String queueName) {
-        JmsTemplate jmsTemplate = new JmsTemplate();
-        jmsTemplate.setConnectionFactory(connectionFactory);
-
-        JMSContext context = connectionFactory.createContext();
-        jmsTemplate.setDefaultDestination(context.createQueue(queueName));
-
-        return jmsTemplate;
+    @Bean
+    JMSContext jmsContext(ConnectionFactory factory) {
+        return factory.createContext();
     }
 
     @Bean
