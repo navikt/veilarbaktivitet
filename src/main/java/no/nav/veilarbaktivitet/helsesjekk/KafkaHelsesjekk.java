@@ -1,28 +1,28 @@
 package no.nav.veilarbaktivitet.helsesjekk;
 
+import lombok.RequiredArgsConstructor;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
-import org.apache.kafka.clients.producer.KafkaProducer;
+import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.veilarbaktivitet.config.KafkaProperties;
 import org.springframework.stereotype.Component;
 
-import static no.nav.veilarbaktivitet.aktiviterTilKafka.KafkaConfig.KAFKA_TOPIC_AKTIVITETER_V4;
-
+@RequiredArgsConstructor
 @Component
 public class KafkaHelsesjekk implements HealthCheck {
 
-    private KafkaProducer<String, String> kafka;
+    private final KafkaProducerClient<String, String> kafkaProducerClient;
 
-    public KafkaHelsesjekk(KafkaProducer<String, String> kafka) {
-        this.kafka = kafka;
-    }
+    private final KafkaProperties kafkaProperties;
 
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            kafka.partitionsFor(KAFKA_TOPIC_AKTIVITETER_V4);
-        } catch (Throwable t){
+            kafkaProducerClient.getProducer().partitionsFor(kafkaProperties.getEndringPaaAktivitetTopic());
+        } catch (Throwable t) {
             return HealthCheckResult.unhealthy("Helsesjekk feilet mot kafka feilet", t);
         }
+
         return HealthCheckResult.healthy();
     }
 }
