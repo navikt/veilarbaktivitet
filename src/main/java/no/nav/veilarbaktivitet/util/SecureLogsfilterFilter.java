@@ -1,7 +1,8 @@
 package no.nav.veilarbaktivitet.util;
 
 import lombok.RequiredArgsConstructor;
-import net.logstash.logback.marker.MapEntriesAppendingMarker;
+import no.nav.common.log.MarkerBuilder;
+import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.UserInContext;
 import org.slf4j.Logger;
@@ -12,8 +13,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -33,20 +33,23 @@ public class SecureLogsfilterFilter implements Filter {
 
         filterChain.doFilter(servletRequest, servletResponse);
 
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
+        HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
+        HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
-        Map<String, String> map = new HashMap<>();
-        userInContext.getFnr().map(it ->map.put("userContext", it.get()));
-        authService.getInnloggetBrukerIdent().map(it -> map.put("inloggetIdent", it));
-        map.put("status", ""+ response.getStatus());
-        map.put("metode", request.getMethod());
-        map.put("erinternbruker", ""+ authService.erInternBruker());
-        map.put("queryString", request.getQueryString());
+        Optional<String> innloggetBrukerIdent = authService.getInnloggetBrukerIdent();
+        userInContext.getFnr();
 
-        MapEntriesAppendingMarker markers = new MapEntriesAppendingMarker(map);
+        MarkerBuilder marker = new MarkerBuilder()
+                .field("status", httpResponse.getStatus())
+                .field("method", httpRequest.getMethod())
+                .field("host", httpRequest.getServerName())
+                .field("path", httpRequest.getRequestURI())
+                .field("erinternbruker", ""+ authService.erInternBruker())
+                .field("inloggetIdent", innloggetBrukerIdent.orElse(null))
+                .field("queryString", httpRequest.getQueryString())
+                .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
+                .log(log::info);
 
-        log.info(markers, request.getRequestURI());
     }
 
     @Override
