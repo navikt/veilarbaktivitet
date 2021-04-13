@@ -24,7 +24,7 @@ public class ArenaForhaandsorienteringDAO {
         Date fhoOpprettetDato = new Date();
 
         //language=SQL
-        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato, oppretet_av_ident) " +
+        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato, opprettet_av_ident) " +
                         "VALUES (?,?,?,?,?,?)",
                 arenaaktivitetId,
                 aktorId.get(),
