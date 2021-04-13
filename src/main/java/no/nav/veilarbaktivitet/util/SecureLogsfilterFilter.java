@@ -37,9 +37,8 @@ public class SecureLogsfilterFilter implements Filter {
         HttpServletResponse httpResponse = (HttpServletResponse) servletResponse;
 
         Optional<String> innloggetBrukerIdent = authService.getInnloggetBrukerIdent();
-        userInContext.getFnr();
 
-        MarkerBuilder marker = new MarkerBuilder()
+        new MarkerBuilder()
                 .field("status", httpResponse.getStatus())
                 .field("method", httpRequest.getMethod())
                 .field("host", httpRequest.getServerName())

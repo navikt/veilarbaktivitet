@@ -113,7 +113,7 @@ public class FilterConfig {
     public FilterRegistrationBean secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
         FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(secureLogsfilterFilter);
-        registration.addUrlPatterns("/*");
+        registration.addUrlPatterns("/api/*");
         registration.setOrder(4);
         return registration;
     }
