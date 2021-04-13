@@ -32,10 +32,14 @@ public class ArenaController {
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
                 .ifPresent( feilmelding -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding);});
 
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
+        Person.Fnr fnr = userInContext.getFnr()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
         authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering);
+        String ident = authService.getInnloggetBrukerIdent()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "finner ikke veileder ident"));
+
+        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering, ident);
     }
 
     @GetMapping("/tiltak")
