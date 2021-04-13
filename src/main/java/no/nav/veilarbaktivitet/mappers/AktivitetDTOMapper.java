@@ -5,8 +5,6 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
-import static no.nav.veilarbaktivitet.mappers.Helpers.*;
-
 public class AktivitetDTOMapper {
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
@@ -17,7 +15,7 @@ public class AktivitetDTOMapper {
                 .setTilDato(aktivitet.getTilDato())
                 .setFraDato(aktivitet.getFraDato())
                 .setStatus(aktivitet.getStatus())
-                .setType(typeMap.get(aktivitet.getAktivitetType()))
+                .setType(Helpers.Type.getDTO(aktivitet.getAktivitetType()))
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
@@ -61,7 +59,7 @@ public class AktivitetDTOMapper {
     }
 
     private static void mapIJobbData(AktivitetDTO aktivitetDTO, IJobbAktivitetData iJobbAktivitetData) {
-        aktivitetDTO.setJobbStatus(jobbStatusMap.get(iJobbAktivitetData.getJobbStatusType()))
+        aktivitetDTO.setJobbStatus(Helpers.JobbStatus.getDTO(iJobbAktivitetData.getJobbStatusType()))
                 .setAnsettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
                 .setArbeidstid(iJobbAktivitetData.getArbeidstid());
     }
@@ -81,7 +79,7 @@ public class AktivitetDTOMapper {
 
     private static AktivitetDTO mapStillingSokData(AktivitetDTO aktivitetDTO, StillingsoekAktivitetData stillingsoekAktivitetData) {
         return aktivitetDTO
-                .setEtikett(etikettMap.get(stillingsoekAktivitetData.getStillingsoekEtikett()))
+                .setEtikett(Helpers.Etikett.getDTO(stillingsoekAktivitetData.getStillingsoekEtikett()))
                 .setKontaktperson(stillingsoekAktivitetData.getKontaktPerson())
                 .setArbeidssted(stillingsoekAktivitetData.getArbeidssted())
                 .setArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
