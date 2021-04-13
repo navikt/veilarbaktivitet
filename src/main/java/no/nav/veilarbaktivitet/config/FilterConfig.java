@@ -110,7 +110,7 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
+    public FilterRegistrationBean<SecureLogsfilterFilter> secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
         FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(secureLogsfilterFilter);
         registration.addUrlPatterns("/api/*");
