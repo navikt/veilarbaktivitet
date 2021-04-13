@@ -23,10 +23,6 @@ public class SecureLogsfilterFilter implements Filter {
     private final AuthService authService;
     private final UserInContext userInContext;
 
-    @Override
-    public void init(FilterConfig filterConfig) {
-
-    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -49,10 +45,6 @@ public class SecureLogsfilterFilter implements Filter {
                 .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
                 .log(log::info);
 
-    }
-
-    @Override
-    public void destroy() {
     }
 
 }
