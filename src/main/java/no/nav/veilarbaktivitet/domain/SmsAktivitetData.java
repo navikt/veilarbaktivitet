@@ -5,6 +5,7 @@ import lombok.Value;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 
@@ -18,6 +19,9 @@ public class SmsAktivitetData {
     Date smsSendtMoteTid;
     String aktivitetKanal;
     String smsKanal;
+
+    private static final String AKTIVITETSPLAN_URL = getRequiredProperty("AKTIVITETSPLAN_URL");
+    SimpleDateFormat formatter = new SimpleDateFormat("d. MMMM yyyy 'kl.' HH:mm", new Locale("no"));
 
     public boolean skalSendeServicevarsel() {
         return !moteTidAktivitet.equals(smsSendtMoteTid) || !sendtMoteType(aktivitetKanal).equals(sendtMoteType(smsKanal));
@@ -38,17 +42,11 @@ public class SmsAktivitetData {
     }
 
     public String formatertMoteTid() {
-        return DatoFormaterer.format(moteTidAktivitet) + " kl. " + KlokkeFormaterer.format(moteTidAktivitet);
+        return formatter.format(moteTidAktivitet);
     }
 
     public String url() {
         return AKTIVITETSPLAN_URL +  "/aktivitet/vis/" + aktivitetId;
     }
-
-    private static final java.util.Locale norge = new java.util.Locale("no");
-    private static final SimpleDateFormat DatoFormaterer = new SimpleDateFormat("d. MMMM yyyy", norge);
-    private static final SimpleDateFormat KlokkeFormaterer = new SimpleDateFormat("HH:mm", norge);
-
-    private static final String AKTIVITETSPLAN_URL = getRequiredProperty("AKTIVITETSPLAN_URL");
 
 }
