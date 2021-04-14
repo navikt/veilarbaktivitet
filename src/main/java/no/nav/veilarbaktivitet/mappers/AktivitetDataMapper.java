@@ -14,7 +14,7 @@ public class AktivitetDataMapper {
                 .map(Long::parseLong)
                 .orElse(null);
         val versjon = Optional.ofNullable(aktivitetDTO.versjon).map(Long::parseLong).orElse(0L);
-        val aktivitetType = Helpers.typeMap.getKey(aktivitetDTO.getType());
+        val aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
 
         val aktivitetData = AktivitetData
                 .builder()
@@ -68,7 +68,7 @@ public class AktivitetDataMapper {
 
     private static StillingsoekAktivitetData stillingsoekAktivitetData(AktivitetDTO aktivitetDTO) {
         return StillingsoekAktivitetData.builder()
-                .stillingsoekEtikett(Helpers.etikettMap.getKey(aktivitetDTO.getEtikett()))
+                .stillingsoekEtikett(Helpers.Etikett.getData(aktivitetDTO.getEtikett()))
                 .kontaktPerson(aktivitetDTO.getKontaktperson())
                 .arbeidsgiver(aktivitetDTO.getArbeidsgiver())
                 .arbeidssted(aktivitetDTO.getArbeidssted())
@@ -86,7 +86,7 @@ public class AktivitetDataMapper {
 
     private static IJobbAktivitetData iJobbAktivitetData(AktivitetDTO aktivitetDTO) {
         return IJobbAktivitetData.builder()
-                .jobbStatusType(Helpers.jobbStatusMap.getKey(aktivitetDTO.getJobbStatus()))
+                .jobbStatusType(Helpers.JobbStatus.getData(aktivitetDTO.getJobbStatus()))
                 .ansettelsesforhold(aktivitetDTO.getAnsettelsesforhold())
                 .arbeidstid(aktivitetDTO.getArbeidstid())
                 .build();

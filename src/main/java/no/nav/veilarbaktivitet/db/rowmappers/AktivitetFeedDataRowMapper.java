@@ -17,7 +17,7 @@ public class AktivitetFeedDataRowMapper {
         return new AktivitetFeedData()
                 .setAktivitetId(String.valueOf(aktivitetId))
                 .setAktorId(rs.getString("aktor_id"))
-                .setAktivitetType(Helpers.typeMap.get(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"))))
+                .setAktivitetType(Helpers.Type.getDTO(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"))))
                 .setFraDato(Database.hentDato(rs, "fra_dato"))
                 .setTilDato(Database.hentDato(rs, "til_dato"))
                 .setHistorisk(Optional.ofNullable(Database.hentDato(rs, "historisk_dato")).isPresent())
