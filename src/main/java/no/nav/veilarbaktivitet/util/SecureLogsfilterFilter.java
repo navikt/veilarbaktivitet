@@ -39,8 +39,8 @@ public class SecureLogsfilterFilter implements Filter {
                 .field("method", httpRequest.getMethod())
                 .field("host", httpRequest.getServerName())
                 .field("path", httpRequest.getRequestURI())
-                .field("erinternbruker", ""+ authService.erInternBruker())
-                .field("inloggetIdent", innloggetBrukerIdent.orElse(null))
+                .field("erInternBruker", ""+ authService.erInternBruker())
+                .field("innloggetIdent", innloggetBrukerIdent.orElse(null))
                 .field("queryString", httpRequest.getQueryString())
                 .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
                 .log(log::info);
