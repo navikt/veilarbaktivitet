@@ -6,6 +6,7 @@ on:
     paths:
       - 'alerts-prod.yaml'
       - '.github/workflows/alerts-prod.yaml'
+      - '.github/workflows/alerts-prod-arena.yaml'
 jobs:
   apply-alerts:
     name: Apply alerts to prod
@@ -24,4 +25,4 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: alerts-arena.yaml
+          RESOURCE: alerts-prod-arena.yaml
