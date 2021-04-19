@@ -20,21 +20,23 @@ import java.util.List;
 public class HelsesjekkConfig {
 
     @Bean
-    public SelfTestChecks selfTestChecks(ArenaServiceHelsesjekk arenaServiceHelsesjekk,
-                                         AktorOppslagClient aktorOppslagClient,
-                                         Pep pep,
-                                         DatabaseHelsesjekk databaseHelsesjekk,
-                                         KafkaHelsesjekk kafkaHelsesjekk,
-                                         UnleashClient unleashClient,
-                                         MoteSMSService moteSMSService) {
+    public SelfTestChecks selfTestChecks(
+            ArenaServiceHelsesjekk arenaServiceHelsesjekk,
+            AktorOppslagClient aktorOppslagClient,
+            Pep pep,
+            DatabaseHelsesjekk databaseHelsesjekk,
+            UnleashClient unleashClient,
+            MoteSMSService moteSMSService,
+            KafkaHelsesjekk kafkaHelsesjekk
+    ) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
                 new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
-                new SelfTestCheck("KafkaHelsesjekk", false, kafkaHelsesjekk),
                 new SelfTestCheck("Unleash", false, unleashClient),
-                new SelfTestCheck("MoteServicemelding", false, moteSMSService)
+                new SelfTestCheck("MoteServicemelding", false, moteSMSService),
+                new SelfTestCheck("Kafka", false, kafkaHelsesjekk)
         );
 
         return new SelfTestChecks(selfTestChecks);

@@ -32,10 +32,14 @@ public class ArenaController {
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
                 .ifPresent( feilmelding -> {throw new ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding);});
 
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
+        Person.Fnr fnr = userInContext.getFnr()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
         authService.sjekkTilgangTilPerson(fnr);
 
-        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering);
+        String ident = authService.getInnloggetBrukerIdent()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "finner ikke veileder ident"));
+
+        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering, ident);
     }
 
     @GetMapping("/tiltak")
@@ -54,6 +58,13 @@ public class ArenaController {
         return arenaService.harAktiveTiltak(fnr);
     }
 
+    @PutMapping("/forhaandsorientering/lest")
+    ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
+        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+        authService.sjekkTilgangTilPerson(fnr);
+
+        return arenaService.markerSomLest(fnr, aktivitetId);
+    }
 
     private Optional<String> getInputFeilmelding(Forhaandsorientering forhaandsorientering, String arenaaktivitetId) {
         if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {

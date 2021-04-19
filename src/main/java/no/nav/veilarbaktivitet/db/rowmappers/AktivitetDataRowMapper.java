@@ -34,6 +34,7 @@ public class AktivitetDataRowMapper {
                         .builder()
                         .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
                         .tekst(rs.getString("fho_tekst"))
+                        .lest(Database.hentDato(rs, "fho_lest"))
                         .build())
                 .lenke(rs.getString("lenke"))
                 .transaksjonsType(

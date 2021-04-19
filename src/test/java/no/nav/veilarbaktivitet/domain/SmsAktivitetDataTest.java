@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.time.Instant;
@@ -9,10 +9,10 @@ import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class SmsAktivitetDataTest {
+public class SmsAktivitetDataTest {
 
-    @Before
-    static void setup() {
+    @BeforeClass
+    public static void setup() {
         System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
     }
 

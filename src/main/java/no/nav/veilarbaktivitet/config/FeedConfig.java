@@ -17,17 +17,23 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 @Configuration
 public class FeedConfig {
 
+//    TODO: Skru av konsumering av feeder som et midlertidig steg før fjerning etter migrering til kafka
+//    @Bean
+//    public FeedController feedController(
+//            FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer,
+//            FeedConsumer<KvpDTO> kvpFeedItemFeedConsumer
+//    ) {
+//        FeedController feedController = new FeedController();
+//
+//        feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
+//        feedController.addFeed(KvpDTO.FEED_NAME, kvpFeedItemFeedConsumer);
+//
+//        return feedController;
+//    }
+
     @Bean
-    public FeedController feedController(
-            FeedConsumer<AvsluttetOppfolgingFeedDTO> avsluttetOppfolgingFeedItemFeedConsumer,
-            FeedConsumer<KvpDTO> kvpFeedItemFeedConsumer
-    ) {
-        FeedController feedController = new FeedController();
-
-        feedController.addFeed(AvsluttetOppfolgingFeedDTO.FEED_NAME, avsluttetOppfolgingFeedItemFeedConsumer);
-        feedController.addFeed(KvpDTO.FEED_NAME, kvpFeedItemFeedConsumer);
-
-        return feedController;
+    public FeedController feedController() {
+        return new FeedController();
     }
 
     @Bean

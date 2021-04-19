@@ -8,6 +8,7 @@ import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.log.LogFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarbaktivitet.util.PingFilter;
+import no.nav.veilarbaktivitet.util.SecureLogsfilterFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -109,10 +110,19 @@ public class FilterConfig {
     }
 
     @Bean
+    public FilterRegistrationBean<SecureLogsfilterFilter> secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
+        FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(secureLogsfilterFilter);
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(4);
+        return registration;
+    }
+
+    @Bean
     public FilterRegistrationBean setStandardHeadersFilterRegistrationBean() {
         FilterRegistrationBean<SetStandardHttpHeadersFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new SetStandardHttpHeadersFilter());
-        registration.setOrder(4);
+        registration.setOrder(5);
         registration.addUrlPatterns("/*");
         return registration;
     }

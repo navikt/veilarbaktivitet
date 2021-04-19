@@ -20,17 +20,18 @@ public class ArenaForhaandsorienteringDAO {
 
     private final Database database;
 
-    void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering) {
+    void insertForhaandsorientering(String arenaaktivitetId, Person.AktorId aktorId, Forhaandsorientering forhaandsorientering, String opprettetAv) {
         Date fhoOpprettetDato = new Date();
 
         //language=SQL
-        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato) " +
-                        "VALUES (?,?,?,?,?)",
+        database.update("INSERT INTO ARENA_FORHAANDSORIENTERING(arenaaktivitet_id, aktor_id, fho_type, fho_tekst, fho_opprettet_dato, opprettet_av_ident) " +
+                        "VALUES (?,?,?,?,?,?)",
                 arenaaktivitetId,
                 aktorId.get(),
                 forhaandsorientering.getType().name(),
                 forhaandsorientering.getTekst(),
-                fhoOpprettetDato
+                fhoOpprettetDato,
+                opprettetAv
         );
 
         log.info("opprettet {}", forhaandsorientering);
@@ -50,8 +51,16 @@ public class ArenaForhaandsorienteringDAO {
                         .builder()
                         .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
                         .tekst(rs.getString("fho_tekst"))
+                        .lest(Database.hentDato(rs, "lest"))
                         .build())
                 .opprettetDato(Database.hentDato(rs, "fho_opprettet_dato"))
                 .build();
+    }
+
+    public boolean markerSomLest(Person.AktorId aktorId, String aktivitetId) {
+        //language=SQL
+        return 1L == database
+                .update("update ARENA_FORHAANDSORIENTERING set lest = current_timestamp where AKTOR_ID = ? and ARENAAKTIVITET_ID = ? and lest is null", aktorId.get(), aktivitetId) ;
+
     }
 }
