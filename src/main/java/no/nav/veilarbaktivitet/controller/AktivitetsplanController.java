@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
@@ -21,7 +22,7 @@ import static java.util.Arrays.asList;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
-
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/aktivitet")
@@ -53,6 +54,7 @@ public class AktivitetsplanController {
     @Deprecated
     @GetMapping("/arena")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
+        log.info("fortsatt i bruk: /arena ");
         return getFnr()
                 .map(appService::hentArenaAktiviteter)
                 .orElseThrow(RuntimeException::new);
@@ -62,6 +64,8 @@ public class AktivitetsplanController {
     @Deprecated
     @GetMapping("/harTiltak")
     public boolean hentHarTiltak() {
+        log.info("fortsatt i bruk: /harTiltak ");
+
         return getFnr()
                 .map(appService::hentArenaAktiviteter)
                 .orElseThrow(RuntimeException::new)
