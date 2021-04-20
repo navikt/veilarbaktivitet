@@ -60,7 +60,7 @@ public class AktivitetAppService {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        hentAktivitet(id); // innebærer tilgangskontroll;
+        hentAktivitet(id); // innebærer tilgangskontroll
         return aktivitetService.hentAktivitetVersjoner(id)
                 .stream()
                 .filter(this::erEksternBrukerOgEndringenSkalVereSynnelig)

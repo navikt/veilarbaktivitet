@@ -10,60 +10,60 @@ import java.util.Date;
 @Accessors(chain = true)
 public class AktivitetDTO {
 
-    public String id;
-    public String versjon;
+    private String id;
+    private String versjon;
 
-    public String tittel;
-    public String beskrivelse;
-    public String lenke;
-    public AktivitetTypeDTO type;
-    public AktivitetStatus status;
-    public Date fraDato;
-    public Date tilDato;
-    public Date opprettetDato;
-    public Date endretDato;
-    public String endretAv;
-    public boolean historisk;
-    public String avsluttetKommentar;
-    public boolean avtalt;
-    public Forhaandsorientering forhaandsorientering;
-    public String lagtInnAv;
-    public AktivitetTransaksjonsType transaksjonsType;
-    public String malid;
+    private String tittel;
+    private String beskrivelse;
+    private String lenke;
+    private AktivitetTypeDTO type;
+    private AktivitetStatus status;
+    private Date fraDato;
+    private Date tilDato;
+    private Date opprettetDato;
+    private Date endretDato;
+    private String endretAv;
+    private boolean historisk;
+    private String avsluttetKommentar;
+    private boolean avtalt;
+    private Forhaandsorientering forhaandsorientering;
+    private String lagtInnAv;
+    private AktivitetTransaksjonsType transaksjonsType;
+    private String malid;
 
     // stillingaktivitet
-    public EtikettTypeDTO etikett;
-    public String kontaktperson;
-    public String arbeidsgiver;
-    public String arbeidssted;
-    public String stillingsTittel;
+    private EtikettTypeDTO etikett;
+    private String kontaktperson;
+    private String arbeidsgiver;
+    private String arbeidssted;
+    private String stillingsTittel;
 
     // egenaktivitet
-    public String hensikt;
-    public String oppfolging;
+    private String hensikt;
+    private String oppfolging;
 
     //sokeAvtaleAktivitet
-    public Long antallStillingerSokes;
-    public Long antallStillingerIUken;
-    public String avtaleOppfolging;
+    private Long antallStillingerSokes;
+    private Long antallStillingerIUken;
+    private String avtaleOppfolging;
 
     //iJobbAktivitet
-    public JobbStatusTypeDTO jobbStatus;
-    public String ansettelsesforhold;
-    public String arbeidstid;
+    private JobbStatusTypeDTO jobbStatus;
+    private String ansettelsesforhold;
+    private String arbeidstid;
 
     //behandlingAktivitet
-    public String behandlingType;
-    public String behandlingSted;
-    public String effekt;
-    public String behandlingOppfolging;
+    private String behandlingType;
+    private String behandlingSted;
+    private String effekt;
+    private String behandlingOppfolging;
 
     //møte
-    public String adresse;
-    public String forberedelser;
-    public KanalDTO kanal;
-    public String referat;
-    public boolean erReferatPublisert;
+    private String adresse;
+    private String forberedelser;
+    private KanalDTO kanal;
+    private String referat;
+    private boolean erReferatPublisert;
 
 
 }
