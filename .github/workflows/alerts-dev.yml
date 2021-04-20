@@ -6,6 +6,7 @@ on:
     paths:
       - 'alerts-dev.yaml'
       - '.github/workflows/alerts-dev.yaml'
+      - '.github/workflows/alerts-dev-arena.yaml'
 jobs:
   apply-alerts:
     name: Apply alerts to dev
@@ -19,3 +20,9 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
           RESOURCE: alerts-dev.yaml
+      - name: deploy arena alert
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: alerts-dev-arena.yaml
