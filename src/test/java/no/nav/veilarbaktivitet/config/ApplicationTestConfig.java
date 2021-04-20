@@ -8,7 +8,7 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.veilarbaktivitet.aktiviteterTilKafka.AktiviteterTilKafkaService;
+import no.nav.veilarbaktivitet.aktiviteter_til_kafka.AktiviteterTilKafkaService;
 import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;

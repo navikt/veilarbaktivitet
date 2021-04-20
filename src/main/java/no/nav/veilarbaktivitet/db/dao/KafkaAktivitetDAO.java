@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
-import no.nav.veilarbaktivitet.aktiviteterTilKafka.EndringsType;
-import no.nav.veilarbaktivitet.aktiviteterTilKafka.KafkaAktivitetMeldingV4;
+import no.nav.veilarbaktivitet.aktiviteter_til_kafka.EndringsType;
+import no.nav.veilarbaktivitet.aktiviteter_til_kafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.Helpers;
