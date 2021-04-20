@@ -13,7 +13,7 @@ public class AktivitetDataMapper {
                 .filter((s) -> !s.isEmpty())
                 .map(Long::parseLong)
                 .orElse(null);
-        val versjon = Optional.ofNullable(aktivitetDTO.versjon).map(Long::parseLong).orElse(0L);
+        val versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
         val aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
 
         val aktivitetData = AktivitetData
