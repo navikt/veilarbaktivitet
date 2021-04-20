@@ -6,7 +6,8 @@ import org.junit.Test;
 import java.lang.reflect.Array;
 
 public class VeilarbAktivitetTestAppTest {
-    @Test
+
+    @Test(expected = Test.None.class)
     public void smokeTest()  {
         LocalH2Database.setUseInnMemmory();
         System.setProperty("server.port", "0");

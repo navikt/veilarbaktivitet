@@ -347,11 +347,11 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert() {
         assertThat(aktivitet, equalTo(orignalAktivitet
-                .setTilDato(aktivitet.tilDato)
-                .setVersjon(aktivitet.versjon) //automatiske felter satt av systemet
+                .setTilDato(aktivitet.getTilDato())
+                .setVersjon(aktivitet.getVersjon()) //automatiske felter satt av systemet
                 .setLagtInnAv(aktivitet.getLagtInnAv())
-                .setTransaksjonsType(aktivitet.transaksjonsType)
-                .setEndretDato(aktivitet.endretDato)
+                .setTransaksjonsType(aktivitet.getTransaksjonsType())
+                .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(AuthContextHolderThreadLocal.instance().getSubject().orElseThrow())
         ));
     }
