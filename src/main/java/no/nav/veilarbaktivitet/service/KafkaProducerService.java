@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.IdUtils;
-import no.nav.veilarbaktivitet.aktiviteterTilKafka.KafkaAktivitetMeldingV4;
+import no.nav.veilarbaktivitet.aktiviteter_til_kafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.config.KafkaProperties;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -30,10 +30,10 @@ public class KafkaProducerService {
     public long sendAktivitetMelding(KafkaAktivitetMeldingV4 melding) {
         String key = melding.getAktivitetId();
 
-        ProducerRecord<String, String> record = toJsonProducerRecord(kafkaProperties.getEndringPaaAktivitetTopic(), key, melding);
-        record.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
+        ProducerRecord<String, String> kafkaMelding = toJsonProducerRecord(kafkaProperties.getEndringPaaAktivitetTopic(), key, melding);
+        kafkaMelding.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
-        return producerClient.sendSync(record).offset();
+        return producerClient.sendSync(kafkaMelding).offset();
     }
 
     static String getCorrelationId() {

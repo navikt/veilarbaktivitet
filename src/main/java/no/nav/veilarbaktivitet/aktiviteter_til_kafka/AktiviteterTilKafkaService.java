@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktiviteterTilKafka;
+package no.nav.veilarbaktivitet.aktiviteter_til_kafka;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;

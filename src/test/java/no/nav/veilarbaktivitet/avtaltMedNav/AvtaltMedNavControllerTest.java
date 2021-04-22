@@ -186,16 +186,16 @@ public class AvtaltMedNavControllerTest {
         avtaltMedNav.setAktivitetVersjon(orginal.getVersjon());
 
         AktivitetDTO markertSomAvtalt = avtaltMedNavController.markerSomAvtaltMedNav(avtaltMedNav, orginal.getId());
-        assertNull(markertSomAvtalt.forhaandsorientering.getLest());
+        assertNull(markertSomAvtalt.getForhaandsorientering().getLest());
 
         LestDTO lestDTO = new LestDTO(Long.parseLong(markertSomAvtalt.getId()), Long.parseLong(markertSomAvtalt.getVersjon()));
 
         AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
 
         Date stopp = new Date();
-        Date lest = aktivitetDTO.forhaandsorientering.getLest();
+        Date lest = aktivitetDTO.getForhaandsorientering().getLest();
 
-        assertNotNull(aktivitetDTO.forhaandsorientering.getLest());
+        assertNotNull(aktivitetDTO.getForhaandsorientering().getLest());
 
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));
