@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final ArenaService arenaService;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
