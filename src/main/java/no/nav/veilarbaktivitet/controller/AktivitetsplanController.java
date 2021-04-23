@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
@@ -19,8 +18,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
-import static no.nav.veilarbaktivitet.domain.AktivitetStatus.AVBRUTT;
-import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
 @Slf4j
 @RestController
@@ -50,30 +47,6 @@ public class AktivitetsplanController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
-    // TODO: 25/02/2021 slett denne etter flytting
-    @Deprecated
-    @GetMapping("/arena")
-    public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-        log.info("fortsatt i bruk: /arena ");
-        return getFnr()
-                .map(appService::hentArenaAktiviteter)
-                .orElseThrow(RuntimeException::new);
-    }
-
-    // TODO: 25/02/2021 slett denne etter flytting
-    @Deprecated
-    @GetMapping("/harTiltak")
-    public boolean hentHarTiltak() {
-        log.info("fortsatt i bruk: /harTiltak ");
-
-        return getFnr()
-                .map(appService::hentArenaAktiviteter)
-                .orElseThrow(RuntimeException::new)
-                .stream()
-                .map(ArenaAktivitetDTO::getStatus)
-                .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
-    }
-
     @GetMapping("/{id}/versjoner")
     public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") String aktivitetId) {
         return Optional.of(aktivitetId)
@@ -91,7 +64,7 @@ public class AktivitetsplanController {
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
-                .map((aktivitetData) -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
+                .map(aktivitetData -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
                 .map(AktivitetDTOMapper::mapTilAktivitetDTO)
                 .orElseThrow(RuntimeException::new);
     }
@@ -158,11 +131,5 @@ public class AktivitetsplanController {
     @GetMapping("/kanaler")
     public List<KanalDTO> hentKanaler() {
         return asList(KanalDTO.values());
-    }
-
-    private Optional<Person.Fnr> getFnr() {
-        return Optional.of(getContextUserIdent())
-                .filter((person) -> person instanceof Person.Fnr)
-                .map((person) -> (Person.Fnr) person);
     }
 }
