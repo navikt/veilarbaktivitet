@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,13 +49,6 @@ public class AktivitetAppService {
         settLestAvBrukerHvisUlest(aktivitetData);
         authService.sjekkTilgang(aktivitetData.getAktorId(), aktivitetData.getKontorsperreEnhetId());
         return aktivitetData;
-    }
-
-    // TODO: 25/02/2021 slett denne etter flytting
-    @Deprecated
-    public List<ArenaAktivitetDTO> hentArenaAktiviteter(Person.Fnr ident) {
-        authService.sjekkTilgangTilPerson(ident);
-        return arenaService.hentAktiviteter(ident);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {

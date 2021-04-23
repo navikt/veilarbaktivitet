@@ -80,45 +80,7 @@ public class AktivitetsplanRSTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 
-    @SneakyThrows
-    @Test
-    public void hentHarTiltak_harAktiveTiltak_returnererTrue() {
-        Tiltaksaktivitet tiltak = opprettAktivTiltaksaktivitet();
-        HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
-        responseMock.leggTilTiltak(tiltak);
-
-        TiltakOgAktivitetV1 tiltakOgAktivitet = mock(TiltakOgAktivitetV1.class);
-        when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
-
-        ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database), authService);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
-        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
-
-        boolean harTiltak = aktivitetsplanController.hentHarTiltak();
-        assertTrue(harTiltak);
-    }
-
-    @SneakyThrows
-    @Test
-    public void hentHarTiltak_harIkkeAktiveTiltak_returnererFalse() {
-        Tiltaksaktivitet tiltak = opprettInaktivTiltaksaktivitet();
-        HentTiltakOgAktiviteterForBrukerResponseMock responseMock = new HentTiltakOgAktiviteterForBrukerResponseMock();
-        responseMock.leggTilTiltak(tiltak);
-
-        TiltakOgAktivitetV1 tiltakOgAktivitet = mock(TiltakOgAktivitetV1.class);
-        when(tiltakOgAktivitet.hentTiltakOgAktiviteterForBruker(any())).thenReturn(responseMock);
-
-        ArenaAktivitetConsumer arenaAktivitetConsumerAktiv = new ArenaAktivitetConsumer(tiltakOgAktivitet);
-        ArenaService arenaService = new ArenaService(arenaAktivitetConsumerAktiv, new ArenaForhaandsorienteringDAO(database), authService);
-        AktivitetAppService aktivitetAppService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
-        AktivitetsplanController aktivitetsplanController = new AktivitetsplanController(authService, aktivitetAppService, mockHttpServletRequest);
-
-        boolean harTiltak = aktivitetsplanController.hentHarTiltak();
-        assertFalse(harTiltak);
-    }
-
-    @Ignore // TODO: Må fikses
+    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void hent_aktivitsplan() {
         gitt_at_jeg_har_aktiviter();
@@ -131,7 +93,7 @@ public class AktivitetsplanRSTest {
         da_skal_jeg_kunne_hente_en_aktivitet();
     }
 
-    @Ignore // TODO: Må fikses
+    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void hent_aktivitetsplan_med_kontorsperre() {
         gitt_at_jeg_har_aktiviteter_med_kontorsperre();
@@ -151,7 +113,7 @@ public class AktivitetsplanRSTest {
         da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan();
     }
 
-    @Ignore // TODO: Må fikses
+    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void oppdater_status() {
         gitt_at_jeg_har_aktiviter();
@@ -159,7 +121,7 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_status();
     }
 
-    @Ignore // TODO: Må fikses
+    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void oppdater_etikett() {
         gitt_at_jeg_har_aktiviter();
@@ -167,7 +129,7 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_etikett();
     }
 
-    @Ignore // TODO: Må fikses
+    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void hent_aktivitet_versjoner() {
         gitt_at_jeg_har_aktiviter();
