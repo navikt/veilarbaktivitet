@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.kvp;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

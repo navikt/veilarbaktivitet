@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.mock;
 
 import no.nav.veilarbaktivitet.kvp.KvpClient;
-import no.nav.veilarbaktivitet.domain.KvpDTO;
+import no.nav.veilarbaktivitet.kvp.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 
 import java.util.Optional;

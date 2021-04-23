@@ -10,10 +10,7 @@ public abstract class DatabaseTest {
         /*setupContext(
                 DatabaseContext.class,
                 Database.class,
-                AktivitetDAO.class,
-                AktivitetFeedDAO.class,
-                AvsluttetOppfolgingFeedDAO.class,
-                KVPFeedDAO.class
+                AktivitetDAO.class
         );
          */
 

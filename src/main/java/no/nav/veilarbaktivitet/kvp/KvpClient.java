@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.kvp;
 
-import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 
 import java.util.Optional;

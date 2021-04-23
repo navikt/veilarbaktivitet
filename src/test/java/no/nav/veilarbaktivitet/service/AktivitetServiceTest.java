@@ -5,6 +5,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.kvp.KvpDTO;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
