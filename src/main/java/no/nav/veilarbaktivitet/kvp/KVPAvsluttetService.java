@@ -25,7 +25,7 @@ public class KVPAvsluttetService {
     }
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
-        AktivitetStatus aktivitetStatus = aktivitetData.getStatus();
+        var aktivitetStatus = aktivitetData.getStatus();
         return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
     }
 
