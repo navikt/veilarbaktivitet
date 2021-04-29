@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
