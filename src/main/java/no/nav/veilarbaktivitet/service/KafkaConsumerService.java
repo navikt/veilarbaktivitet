@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.service;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.kafka.OppfolgingAvsluttetKafkaDTO;
+import no.nav.veilarbaktivitet.kvp.KVPAvsluttetService;
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.Date;
 public class KafkaConsumerService {
 
     private final AktivitetService aktivitetService;
+    private final KVPAvsluttetService kvpAvsluttetService;
 
     public void behandleOppfolgingAvsluttet(OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetDto) {
         Person.AktorId aktorId = Person.aktorId(oppfolgingAvsluttetDto.getAktorId());
@@ -26,7 +28,7 @@ public class KafkaConsumerService {
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();
         Date sluttDato = new Date(kvpAvsluttetDto.getAvsluttetDato().toInstant().toEpochMilli());
 
-        aktivitetService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, begrunnelse, sluttDato);
+        kvpAvsluttetService.settAktiviteterInomKVPPeriodeTilAvbrutt(aktorId, begrunnelse, sluttDato);
     }
 
 }
