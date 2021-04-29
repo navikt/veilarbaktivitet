@@ -14,11 +14,10 @@ import java.util.Date;
 @Service
 @RequiredArgsConstructor
 public class KVPAvsluttetService {
-    private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
 
     public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
-        aktivitetService.hentAktiviteterForAktorId(aktoerId)
+        aktivitetDAO.hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
