@@ -15,13 +15,13 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 public class DbConfig {
 
-    @Value("app.datasource.url")
+    @Value("${app.datasource.url}")
     private String jdbcUrl;
 
-    @Value("app.datasource.username")
+    @Value("${app.datasource.username}")
     private String jdbcUsername;
 
-    @Value("app.datasource.password")
+    @Value("${app.datasource.password}")
     private String jdbcPassword;
 
     @Bean
