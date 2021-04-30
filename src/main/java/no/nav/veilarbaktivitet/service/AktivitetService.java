@@ -2,18 +2,14 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
 import lombok.val;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.util.MappingUtils;
-import org.springframework.http.HttpStatus;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.ws.rs.ForbiddenException;
-import javax.ws.rs.InternalServerErrorException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -107,7 +103,7 @@ public class AktivitetService {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
                 .lagtInnAv(aktivitetData.getLagtInnAv())
-                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET )
+                .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
                 .moteData(ofNullable(originalAktivitet.getMoteData()).map(moteData ->
@@ -242,25 +238,4 @@ public class AktivitetService {
         return hentAktivitet(aktivitetId);
     }
 
-    public void settAktiviteterInomKVPPeriodeTilAvbrutt(Person.AktorId aktoerId, String avsluttetBegrunnelse, Date avsluttetDato) {
-        hentAktiviteterForAktorId(aktoerId)
-                .stream()
-                .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
-                .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
-                .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(aktivitetDAO::insertAktivitet);
-    }
-
-    private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
-        AktivitetStatus aktivitetStatus = aktivitetData.getStatus();
-        return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
-    }
-
-    private AktivitetData settKVPAktivitetTilAvbrutt(AktivitetData aktivitetData, String avsluttetBegrunnelse, Date avsluttetDato) {
-        return aktivitetData
-                .withTransaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
-                .withStatus(AktivitetStatus.AVBRUTT)
-                .withAvsluttetKommentar(avsluttetBegrunnelse)
-                .withEndretDato(avsluttetDato);
-    }
 }
