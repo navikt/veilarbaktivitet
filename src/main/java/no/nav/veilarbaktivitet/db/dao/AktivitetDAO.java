@@ -254,8 +254,8 @@ public class AktivitetDAO {
                 "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",
                 "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV'"
         )
-                .map((sql) -> sql + " " + whereClause)
-                .mapToInt((sql) -> database.update(sql, aktivitetId))
+                .map(sql -> sql + " " + whereClause)
+                .mapToInt(sql -> database.update(sql, aktivitetId))
                 .sum();
 
         return oppdaterteRader > 0;
