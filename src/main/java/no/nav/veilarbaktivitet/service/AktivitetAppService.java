@@ -156,12 +156,15 @@ public class AktivitetAppService {
         }
     }
 
-    private Boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
+    private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
-        return AktivitetStatus.AVBRUTT.equals(status) || AktivitetStatus.FULLFORT.equals(status) || aktivitetData.getHistoriskDato() != null;
+        return AktivitetStatus.AVBRUTT.equals(status)
+                || AktivitetStatus.FULLFORT.equals(status)
+                || aktivitetData.getHistoriskDato() != null
+                || aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV;
     }
 
-    private Boolean skalIkkeKunneEndreAktivitetEtikett(AktivitetData aktivitetData) {
+    private boolean skalIkkeKunneEndreAktivitetEtikett(AktivitetData aktivitetData) {
         return aktivitetData.getHistoriskDato() != null;
     }
 

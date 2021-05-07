@@ -65,5 +65,5 @@ public class AktivitetDTO {
     private String referat;
     private boolean erReferatPublisert;
 
-
+    private StillingFraNavData stillingFraNavData;
 }
