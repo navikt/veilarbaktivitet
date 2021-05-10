@@ -21,6 +21,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class AktivitetDAO {
 
     private static final Logger LOG = getLogger(AktivitetDAO.class);
+
+    // language=sql
     private static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
             "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
@@ -37,14 +39,16 @@ public class AktivitetDAO {
     }
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
+        // language=sql
         return database.query(SELECT_AKTIVITET +
-                        "WHERE A.aktor_id = ? and A.gjeldende = 1",
+                        " WHERE A.aktor_id = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktorId.get()
         );
     }
 
     public AktivitetData hentAktivitet(long aktivitetId) {
+        // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
                         "WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
@@ -68,6 +72,8 @@ public class AktivitetDAO {
     @Transactional
     public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
+
+        // language=sql
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
 
         String forhaandsorienteringType = null;
@@ -76,7 +82,7 @@ public class AktivitetDAO {
 
         Forhaandsorientering fho = aktivitet.getForhaandsorientering();
 
-        if(fho != null) {
+        if (fho != null) {
             forhaandsorienteringType = fho.getType().name();
             forhaandsorienteringTekst = fho.getTekst();
             fhoLest = fho.getLest();
@@ -129,6 +135,7 @@ public class AktivitetDAO {
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         ofNullable(moteData).ifPresent(m -> {
+            // language=sql
             database.update("INSERT INTO MOTE(" +
                             "aktivitet_id, " +
                             "versjon, " +
@@ -152,6 +159,7 @@ public class AktivitetDAO {
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
         ofNullable(stillingsSoekAktivitet)
                 .ifPresent(stillingsoek -> {
+                    // language=sql
                     database.update("INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel," +
                                     "arbeidsgiver, arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?,?)",
                             aktivitetId,
@@ -166,6 +174,7 @@ public class AktivitetDAO {
     }
 
     private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
+        // language=sql
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
                                 "VALUES(?,?,?,?)",
@@ -178,6 +187,7 @@ public class AktivitetDAO {
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
+                // language=sql
                 .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
                                 "VALUES(?,?,?,?,?)",
                         aktivitetId,
@@ -191,6 +201,7 @@ public class AktivitetDAO {
     private void insertIJobb(long aktivitetId, long versjon, IJobbAktivitetData iJobbAktivitet) {
         ofNullable(iJobbAktivitet)
                 .ifPresent(iJobb -> {
+                    // language=sql
                     database.update("INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status," +
                                     " ansettelsesforhold, arbeidstid) VALUES(?,?,?,?,?)",
                             aktivitetId,
@@ -206,6 +217,7 @@ public class AktivitetDAO {
     private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
+                    // language=sql
                     database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type, " +
                                     "behandling_sted, effekt, behandling_oppfolging) VALUES(?,?,?,?,?,?)",
                             aktivitetId,
@@ -219,6 +231,7 @@ public class AktivitetDAO {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
+        // language=sql
         return database.query(SELECT_AKTIVITET +
                         "WHERE A.aktivitet_id = ? " +
                         "ORDER BY A.versjon desc",
@@ -229,7 +242,9 @@ public class AktivitetDAO {
 
     @Transactional
     public boolean kasserAktivitet(long aktivitetId) {
+        // language=sql
         String whereClause = "WHERE aktivitet_id = ?";
+        // language=sql
         int oppdaterteRader = Stream.of(
                 "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV'",
                 "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV'",
@@ -239,14 +254,15 @@ public class AktivitetDAO {
                 "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",
                 "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV'"
         )
-                .map((sql) -> sql + " " + whereClause)
-                .mapToInt((sql) -> database.update(sql, aktivitetId))
+                .map(sql -> sql + " " + whereClause)
+                .mapToInt(sql -> database.update(sql, aktivitetId))
                 .sum();
 
         return oppdaterteRader > 0;
     }
 
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
+        // language=sql
         database.update("UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP " +
                 "WHERE aktivitet_id = ?", aktivitetId);
     }
