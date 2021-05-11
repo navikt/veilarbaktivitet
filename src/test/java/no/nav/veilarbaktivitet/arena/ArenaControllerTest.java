@@ -1,10 +1,13 @@
 package no.nav.veilarbaktivitet.arena;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.UserInContext;
@@ -30,7 +33,8 @@ public class ArenaControllerTest {
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final ArenaForhaandsorienteringDAO dao = new ArenaForhaandsorienteringDAO(new Database(jdbc));
-    private final ArenaService service = new ArenaService(consumer, dao, authService);
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private final ArenaService service = new ArenaService(consumer, dao, authService,meterRegistry);
     private final ArenaController controller = new ArenaController(context, authService, service);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
@@ -77,7 +81,7 @@ public class ArenaControllerTest {
     @Test
     public void harTiltakSkalReturnereTrueMedTiltak() {
         when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(new ArenaAktivitetDTO()));
+                .thenReturn(List.of(new ArenaAktivitetDTO().setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)));
 
         assertTrue(controller.hentHarTiltak());
     }
@@ -117,6 +121,7 @@ public class ArenaControllerTest {
     public void sendForhaandsorienteringSkalFeileHvisAleredeSendtForhaandsorientering() {
         ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
         tilFho.setId("tilFho");
+        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
         ikkeTilFho.setId("ikkeTilFho");
 
@@ -134,6 +139,7 @@ public class ArenaControllerTest {
     public void sendForhaandsorienteringSkalreturnereAktivitetMedForhaandsorientering() {
         ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
         tilFho.setId("tilFho");
+        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
         ikkeTilFho.setId("ikkeTilFho");
 
@@ -149,6 +155,7 @@ public class ArenaControllerTest {
     public void sendForhaandsorienteringSkalOppdaterehentArenaAktiviteter() {
         ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
         tilFho.setId("tilFho");
+        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
         ikkeTilFho.setId("ikkeTilFho");
 
@@ -184,6 +191,7 @@ public class ArenaControllerTest {
         Date start = new Date();
         ArenaAktivitetDTO a1 = new ArenaAktivitetDTO();
         a1.setId("settTilLest");
+        a1.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
 
         when(consumer.hentArenaAktiviteter(fnr))
                 .thenReturn(List.of(a1));
@@ -244,6 +252,7 @@ public class ArenaControllerTest {
     public void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
         ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
         tilFho.setId("tilFho");
+        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
         ikkeTilFho.setId("ikkeTilFho");
 

@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -44,11 +46,14 @@ public class AvtaltMedNavControllerTest {
     @Mock
     private AuthService authService;
 
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+
+
     private AvtaltMedNavController avtaltMedNavController;
 
     @Before
     public void setup() {
-        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO);
+        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, meterRegistry, aktivitetDAO);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
     }
 

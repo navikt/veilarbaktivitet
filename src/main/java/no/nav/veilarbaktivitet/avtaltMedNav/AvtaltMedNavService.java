@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
@@ -19,6 +21,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AvtaltMedNavService {
     private final MetricService metricService;
+    private final MeterRegistry meterRegistry;
     private final AktivitetDAO dao;
 
     AktivitetData hentAktivitet(long aktivitetId) {
@@ -43,6 +46,7 @@ public class AvtaltMedNavService {
         dao.insertAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        meterRegistry.counter("aktivitet.avtal.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
     }

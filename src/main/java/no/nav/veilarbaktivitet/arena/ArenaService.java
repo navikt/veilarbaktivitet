@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arena;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
@@ -27,6 +28,7 @@ public class ArenaService {
     private final ArenaAktivitetConsumer consumer;
     private final ArenaForhaandsorienteringDAO dao;
     private final AuthService authService;
+    private final MeterRegistry meterRegistry;
 
     public List<ArenaAktivitetDTO> hentAktiviteter(Person.Fnr fnr) {
         List<ArenaAktivitetDTO> aktiviteterFraArena = consumer.hentArenaAktiviteter(fnr);
@@ -72,6 +74,7 @@ public class ArenaService {
 
         try {
             dao.insertForhaandsorientering(arenaaktivitetId, aktorId, forhaandsorientering, opprettetAv);
+            meterRegistry.counter("arena.avtalt.med.nav", forhaandsorientering.getType().name(), arenaAktivitetDTO.getType().name()).increment();
             return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
