@@ -24,6 +24,7 @@ public enum EndringsType {
             case REFERAT_OPPRETTET:
             case REFERAT_ENDRET:
             case REFERAT_PUBLISERT:
+            case FHO_LEST:
                 return REDIGERT;
             default:
                 throw new IllegalArgumentException(transaksjonsType.toString());
