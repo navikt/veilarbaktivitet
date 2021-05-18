@@ -74,11 +74,12 @@ public class ArenaService {
 
         try {
             dao.insertForhaandsorientering(arenaaktivitetId, aktorId, forhaandsorientering, opprettetAv);
-            meterRegistry.counter("arena.avtalt.med.nav", forhaandsorientering.getType().name(), arenaAktivitetDTO.getType().name()).increment();
-            return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
         } catch (DuplicateKeyException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
         }
+
+        meterRegistry.counter("arena.avtalt.med.nav", forhaandsorientering.getType().name(), arenaAktivitetDTO.getType().name()).increment();
+        return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
     }
 
     @Transactional
