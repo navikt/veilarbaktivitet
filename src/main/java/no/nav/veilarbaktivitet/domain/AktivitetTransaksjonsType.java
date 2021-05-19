@@ -12,5 +12,5 @@ public enum AktivitetTransaksjonsType {
     REFERAT_ENDRET,
     REFERAT_PUBLISERT,
     BLE_HISTORISK,
-    FHO_LEST
+    FORHAANDSORIENTERING_LEST
 }

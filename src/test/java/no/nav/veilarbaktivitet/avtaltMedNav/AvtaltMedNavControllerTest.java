@@ -193,7 +193,7 @@ public class AvtaltMedNavControllerTest {
 
         AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
 
-        Assertions.assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FHO_LEST);
+        Assertions.assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST);
 
         Date stopp = new Date();
         Date lest = aktivitetDTO.getForhaandsorientering().getLest();
