@@ -7,10 +7,8 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
@@ -51,7 +49,11 @@ public class AvtaltMedNavService {
 
         Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
 
-        AktivitetData aktivitet = aktivitetData.toBuilder().forhaandsorientering(fho).build();
+        AktivitetData aktivitet = aktivitetData
+                .toBuilder()
+                .forhaandsorientering(fho)
+                .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
+                .build();
 
         dao.insertAktivitet(aktivitet);
 

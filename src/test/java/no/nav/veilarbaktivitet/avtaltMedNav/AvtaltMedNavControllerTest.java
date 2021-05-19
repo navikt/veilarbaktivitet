@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -191,6 +192,8 @@ public class AvtaltMedNavControllerTest {
         LestDTO lestDTO = new LestDTO(Long.parseLong(markertSomAvtalt.getId()), Long.parseLong(markertSomAvtalt.getVersjon()));
 
         AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
+
+        Assertions.assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST);
 
         Date stopp = new Date();
         Date lest = aktivitetDTO.getForhaandsorientering().getLest();
