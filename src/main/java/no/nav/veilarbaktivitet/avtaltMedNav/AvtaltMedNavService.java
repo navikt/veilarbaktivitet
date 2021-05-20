@@ -52,7 +52,11 @@ public class AvtaltMedNavService {
 
         Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
 
-        AktivitetData aktivitet = aktivitetData.toBuilder().forhaandsorientering(fho).build();
+        AktivitetData aktivitet = aktivitetData
+                .toBuilder()
+                .forhaandsorientering(fho)
+                .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
+                .build();
 
         dao.insertAktivitet(aktivitet);
 
