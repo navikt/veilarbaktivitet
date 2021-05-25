@@ -79,7 +79,7 @@ public class AvtaltMedNavService {
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 
-        meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
+        meterRegistry.counter("aktivitet.avtalt.med.nav2", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
 
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
