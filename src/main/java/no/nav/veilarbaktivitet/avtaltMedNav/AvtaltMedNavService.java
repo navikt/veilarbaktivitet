@@ -1,25 +1,60 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class AvtaltMedNavService {
     private final MetricService metricService;
     private final MeterRegistry meterRegistry;
     private final AktivitetDAO dao;
+
+    public AvtaltMedNavService(MetricService metricService,
+             MeterRegistry meterRegistry,
+            AktivitetDAO dao) {
+        this.meterRegistry = meterRegistry;
+        this.metricService = metricService;
+        this.dao = dao;
+        List<Tag> tags = Arrays.stream(Forhaandsorientering.Type.values()).map(t -> new Tag() {
+                    @Override
+                    public String getKey() {
+                        return t.name();
+                    }
+
+                    @Override
+                    public String getValue() {
+                        return null;
+                    }
+                }).collect(Collectors.toList());
+        tags.addAll(Arrays.stream(AktivitetTypeData.values()).map(t -> new Tag() {
+            @Override
+            public String getKey() {
+                return t.name();
+            }
+
+            @Override
+            public String getValue() {
+                return null;
+            }
+        }).collect(Collectors.toList()));
+        meterRegistry.counter("aktivitet.avtalt.med.nav", tags);
+    }
 
     AktivitetData hentAktivitet(long aktivitetId) {
         return dao.hentAktivitet(aktivitetId);
@@ -43,7 +78,9 @@ public class AvtaltMedNavService {
         dao.insertAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+
         meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
+
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
     }
