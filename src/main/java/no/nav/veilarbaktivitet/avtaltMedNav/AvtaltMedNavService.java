@@ -53,7 +53,7 @@ public class AvtaltMedNavService {
                 return null;
             }
         }).collect(Collectors.toList()));
-        meterRegistry.counter("aktivitet.avtalt.med.nav", tags);
+        meterRegistry.counter("aktivitet.avtalt.med.nav2", tags);
     }
 
     AktivitetData hentAktivitet(long aktivitetId) {
