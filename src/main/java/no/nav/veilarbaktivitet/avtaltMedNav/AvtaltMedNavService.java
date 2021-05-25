@@ -39,7 +39,7 @@ public class AvtaltMedNavService {
 
                     @Override
                     public String getValue() {
-                        return null;
+                        return "ForhaandsorienteringType";
                     }
                 }).collect(Collectors.toList());
         tags.addAll(Arrays.stream(AktivitetTypeData.values()).map(t -> new Tag() {
@@ -50,10 +50,10 @@ public class AvtaltMedNavService {
 
             @Override
             public String getValue() {
-                return null;
+                return "AktivitetType";
             }
         }).collect(Collectors.toList()));
-        meterRegistry.counter("aktivitet.avtalt.med.nav2", tags);
+        meterRegistry.counter("aktivitet.avtalt.med.nav", tags);
     }
 
     AktivitetData hentAktivitet(long aktivitetId) {
@@ -79,7 +79,7 @@ public class AvtaltMedNavService {
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 
-        meterRegistry.counter("aktivitet.avtalt.med.nav2", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
+        meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
 
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
