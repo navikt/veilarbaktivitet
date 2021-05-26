@@ -25,6 +25,14 @@ public abstract class Person {
         return new NavIdent(navIdent);
     }
 
+    public boolean isExtern() {
+        return this instanceof AktorId || this instanceof Fnr;
+    }
+
+    public InnsenderData toInnsenderData() {
+        return isExtern() ? InnsenderData.BRUKER : InnsenderData.NAV;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

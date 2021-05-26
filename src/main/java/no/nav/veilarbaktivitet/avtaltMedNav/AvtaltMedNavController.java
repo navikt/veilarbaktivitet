@@ -48,7 +48,9 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten er allerede avtalt med NAV");
         }
 
-        return avtaltMedNavService.markerSomAvtaltMedNav(aktivitetId, avtaltMedNav);
+        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+
+        return avtaltMedNavService.markerSomAvtaltMedNav(aktivitetId, avtaltMedNav, innloggetBruker);
 
     }
 
@@ -75,7 +77,8 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Allerede lest");
         }
 
-        return avtaltMedNavService.markerSomLest(aktivitet);
+        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        return avtaltMedNavService.markerSomLest(aktivitet, innloggetBruker);
     }
 
 }

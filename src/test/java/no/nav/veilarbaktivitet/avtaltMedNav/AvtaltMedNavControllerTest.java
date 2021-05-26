@@ -25,16 +25,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class AvtaltMedNavControllerTest {
     private String aktorid = "12345678";
+    private static String NAV_IDENT = "Z999999";
 
     @Mock
     private MetricService metricService;
@@ -69,6 +70,10 @@ public class AvtaltMedNavControllerTest {
         doNothing()
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid, null);
+
+        doReturn(Optional.of(Person.navIdent(NAV_IDENT)))
+                .when(authService).getLoggedInnUser();
+
 
     }
 
@@ -126,6 +131,8 @@ public class AvtaltMedNavControllerTest {
                 //endres altid ved oppdatering
                 .versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
                 .endretDato(markertSomAvtalt.getEndretDato())
+                .lagtInnAv(InnsenderData.NAV)
+                .endretAv(NAV_IDENT)
                 .build();
 
         AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);
@@ -157,6 +164,8 @@ public class AvtaltMedNavControllerTest {
                     //endres altid ved oppdatering
                     .versjon(Long.parseLong(markertSomAvtalt.getVersjon()))
                     .endretDato(markertSomAvtalt.getEndretDato())
+                    .endretAv(NAV_IDENT)
+                    .lagtInnAv(InnsenderData.NAV)
                     .build();
 
             AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);

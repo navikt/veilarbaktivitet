@@ -6,6 +6,8 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
+import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class AvtaltMedNavService {
         return dao.hentAktivitet(aktivitetId);
     }
 
-    AktivitetDTO markerSomAvtaltMedNav(long aktivitetId, AvtaltMedNav avtaltMedNav) {
+    AktivitetDTO markerSomAvtaltMedNav(long aktivitetId, AvtaltMedNav avtaltMedNav, Person innloggetBruker) {
         AktivitetData aktivitet = dao.hentAktivitet(aktivitetId);
         Forhaandsorientering forhaandsorientering = avtaltMedNav.getForhaandsorientering();
 
@@ -38,6 +40,8 @@ public class AvtaltMedNavService {
                 .avtalt(true)
                 .forhaandsorientering(forhaandsorientering)
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                .endretAv(innloggetBruker != null ? innloggetBruker.get() : null)
+                .lagtInnAv(InnsenderData.NAV) // alltid NAV
                 .build();
 
         dao.insertAktivitet(nyAktivitet);
@@ -48,7 +52,7 @@ public class AvtaltMedNavService {
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
     }
 
-    AktivitetDTO markerSomLest(AktivitetData aktivitetData) {
+    AktivitetDTO markerSomLest(AktivitetData aktivitetData, Person innloggetBruker) {
 
         Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
 
@@ -56,6 +60,8 @@ public class AvtaltMedNavService {
                 .toBuilder()
                 .forhaandsorientering(fho)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
+                .endretAv(innloggetBruker != null ? innloggetBruker.get() : null)
+                .lagtInnAv(InnsenderData.BRUKER) // alltid Bruker
                 .build();
 
         dao.insertAktivitet(aktivitet);

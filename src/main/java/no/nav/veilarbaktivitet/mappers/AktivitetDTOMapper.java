@@ -1,11 +1,12 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
 public class AktivitetDTOMapper {
+
+    private AktivitetDTOMapper() {}
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
         val aktivitetDTO = new AktivitetDTO()
@@ -24,13 +25,9 @@ public class AktivitetDTOMapper {
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
+                .setEndretAv(aktivitet.getEndretAv())
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
-
-        // TODO: Ikke bruk statiske ting som dette inne i en mapper
-        if (AuthContextHolderThreadLocal.instance().erInternBruker()) {
-            aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
-        }
 
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingSokData).accept(aktivitetDTO, aktivitet.getStillingsSoekAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapEgenAktivitetData).accept(aktivitetDTO, aktivitet.getEgenAktivitetData());
