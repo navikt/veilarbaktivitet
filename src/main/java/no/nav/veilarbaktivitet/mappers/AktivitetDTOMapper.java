@@ -1,14 +1,13 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
-import static java.util.Optional.ofNullable;
-
 public class AktivitetDTOMapper {
+
+    private AktivitetDTOMapper() {}
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
 
@@ -30,14 +29,9 @@ public class AktivitetDTOMapper {
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
+                .setEndretAv(aktivitet.getEndretAv())
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
-
-        // TODO: Ikke bruk statiske ting som dette inne i en mapper
-        boolean erInternBruker = AuthContextHolderThreadLocal.instance().erInternBruker();
-        if (erInternBruker) {
-            aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
-        }
 
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingSokData).accept(aktivitetDTO, aktivitet.getStillingsSoekAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapEgenAktivitetData).accept(aktivitetDTO, aktivitet.getEgenAktivitetData());
@@ -45,20 +39,13 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
-        mapStillingFraNavData(aktivitetDTO, aktivitet.getStillingFraNavData(), erInternBruker);
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData());
         return aktivitetDTO;
     }
 
-    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erInternBruker) {
-        if(stillingFraNavData == null) {
-            return;
-        }
+    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData) {
+        aktivitetDTO.setStillingFraNavData(stillingFraNavData);
 
-        if(!erInternBruker) {
-            aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(null));
-        }else {
-            aktivitetDTO.setStillingFraNavData(stillingFraNavData);
-        }
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {

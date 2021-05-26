@@ -57,7 +57,7 @@ public class AktivitetService {
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId.get())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAvPerson != null ? endretAvPerson.toInnsenderData() : null)
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
                 .endretAv(endretAv)
@@ -75,7 +75,7 @@ public class AktivitetService {
         val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv != null ? endretAv.toInnsenderData(): null)
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .endretAv(endretAv != null ? endretAv.get() : null)
@@ -92,7 +92,7 @@ public class AktivitetService {
 
         val nyAktivitet = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv != null ? endretAv.toInnsenderData(): null)
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .endretAv(endretAv != null ? endretAv.get() : null)
@@ -104,7 +104,7 @@ public class AktivitetService {
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .lagtInnAv(endretAv != null ? endretAv.toInnsenderData(): null)
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv != null ? endretAv.get() : null)
@@ -115,7 +115,7 @@ public class AktivitetService {
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .lagtInnAv(endretAv != null ? endretAv.toInnsenderData(): null)
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -138,6 +138,7 @@ public class AktivitetService {
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.insertAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
+                .withLagtInnAv(endretAv.toInnsenderData())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -171,7 +172,7 @@ public class AktivitetService {
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .beskrivelse(aktivitet.getBeskrivelse())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv != null ? endretAv.toInnsenderData(): null)
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)

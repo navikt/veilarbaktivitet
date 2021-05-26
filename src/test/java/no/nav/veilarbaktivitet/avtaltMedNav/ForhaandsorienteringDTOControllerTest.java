@@ -69,6 +69,9 @@ public class ForhaandsorienteringDTOControllerTest {
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid, null);
 
+        doReturn(Optional.of(Person.navIdent(NAV_IDENT)))
+                .when(authService).getLoggedInnUser();
+
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
     }
 
@@ -152,6 +155,8 @@ public class ForhaandsorienteringDTOControllerTest {
                 //endres altid ved oppdatering
                 .versjon(parseLong(markertSomAvtalt.getVersjon()))
                 .endretDato(markertSomAvtalt.getEndretDato())
+                .lagtInnAv(InnsenderData.NAV)
+                .endretAv(ident)
                 .build();
 
         AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);

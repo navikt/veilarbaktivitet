@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
@@ -63,6 +64,8 @@ public class AvtaltMedNavService {
                 .withForhaandsorientering(fho)
                 .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                .endretAv(ident != null ? ident.get() : null)
+                .lagtInnAv(InnsenderData.NAV) // alltid NAV
                 .withAvtalt(true);
 
         aktivitetDAO.insertAktivitet(nyAktivitet, now);
@@ -72,7 +75,7 @@ public class AvtaltMedNavService {
         return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho));
     }
 
-    public AktivitetDTO markerSomLest(Forhaandsorientering fho) {
+    public AktivitetDTO markerSomLest(Forhaandsorientering fho, Person innloggetBruker) {
         var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
         var now = new Date();
 
@@ -84,6 +87,8 @@ public class AvtaltMedNavService {
                 .forhaandsorientering(fho)
                 .endretDato(now)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
+                .endretAv(innloggetBruker != null ? innloggetBruker.get() : null)
+                .lagtInnAv(InnsenderData.BRUKER) // alltid Bruker
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);

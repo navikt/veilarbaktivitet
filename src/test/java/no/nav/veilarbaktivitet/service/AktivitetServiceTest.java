@@ -37,6 +37,7 @@ public class AktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
     private static final String KONTORSPERRE_ENHET_ID = "1337";
+    private static final Person SAKSBEHANDLER = Person.navIdent("Z999999");
 
     @Mock
     private AktivitetDAO aktivitetDAO;
@@ -66,7 +67,7 @@ public class AktivitetServiceTest {
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
 
@@ -87,7 +88,7 @@ public class AktivitetServiceTest {
 
         when(aktivitetDAO.getNextUniqueAktivitetId()).thenReturn(AKTIVITET_ID);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
 
@@ -106,7 +107,7 @@ public class AktivitetServiceTest {
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
                 .build();
-        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, null);
+        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -126,7 +127,9 @@ public class AktivitetServiceTest {
                 .status(nyStatus)
                 .build();
 
-        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, null);
+        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+        captureInsertAktivitetArgument();
+        assertEquals(getCapturedAktivitet().getStatus(), AktivitetStatus.GJENNOMFORES);
     }
 
     @Test
@@ -140,7 +143,7 @@ public class AktivitetServiceTest {
                         .getStillingsSoekAktivitetData()
                         .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
                 .build();
-        aktivitetService.oppdaterEtikett(aktivitet, oppdatertAktivitet, null);
+        aktivitetService.oppdaterEtikett(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
@@ -153,7 +156,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
-        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build(), null);
+        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build(), SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
@@ -165,7 +168,7 @@ public class AktivitetServiceTest {
 
         Date nyFrist = new Date();
         String nyAdresse = "ny adresse";
-        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), null);
+        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)), SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -184,7 +187,7 @@ public class AktivitetServiceTest {
                 .lenke("www.alexander-er-best.no")
                 .build();
 
-        aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, null);
+        aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
@@ -208,12 +211,12 @@ public class AktivitetServiceTest {
     public void oppdaterAktivitet_skal_sette_rett_transaksjonstype() {
         val aktivitet = lagEnNyAktivitet();
 
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
+        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
 
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), null);
+        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), SAKSBEHANDLER);
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }

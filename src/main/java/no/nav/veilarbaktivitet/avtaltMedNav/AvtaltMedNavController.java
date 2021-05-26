@@ -70,7 +70,9 @@ public class AvtaltMedNavController {
 
         authService.sjekkTilgangTilPerson(fho.getAktorId());
 
-        return avtaltMedNavService.markerSomLest(fho);
+        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+
+        return avtaltMedNavService.markerSomLest(fho, innloggetBruker);
     }
 
 }
