@@ -74,7 +74,7 @@ public class AvtaltMedNavService {
     public AktivitetDTO markerSomLest(Forhaandsorientering fho) {
         var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
 
-        fhoDAO.markerSomLest(fho.getId(), new Date());
+        fhoDAO.markerSomLest(fho.getId(), new Date(), aktivitet.getVersjon());
         fho = fhoDAO.getById(fho.getId());
 
         AktivitetData nyAktivitet = aktivitet
