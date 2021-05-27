@@ -75,6 +75,8 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID.get()));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
     }
 
     @Test
@@ -109,6 +111,8 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
     }
 
     @SneakyThrows
@@ -143,6 +147,8 @@ public class AktivitetServiceTest {
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
         assertThat(getCapturedAktivitet().getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
     }
@@ -156,6 +162,8 @@ public class AktivitetServiceTest {
 
         captureInsertAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
     }
 
     @Test
@@ -172,6 +180,8 @@ public class AktivitetServiceTest {
         assertThat(capturedAktivitet.getFraDato(), equalTo(nyFrist));
         assertThat(capturedAktivitet.getTilDato(), equalTo(nyFrist));
         assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
     }
 
     @Test
@@ -197,7 +207,7 @@ public class AktivitetServiceTest {
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).insertAktivitet(any());
 
         try {
-            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, null);
+            aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.CONFLICT, e.getStatus());
         }
