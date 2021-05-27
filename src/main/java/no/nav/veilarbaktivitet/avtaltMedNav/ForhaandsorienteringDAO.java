@@ -69,9 +69,10 @@ public class ForhaandsorienteringDAO {
         return id;
     }
 
-    public void markerSomLest(String id, Date lestDato) {
+    public void markerSomLest(String id, Date lestDato, long lestVersjon) {
         // language=sql
-        var rows = database.update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ? WHERE ID = ?", lestDato, id);
+        var rows = database
+                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ? WHERE ID = ?", lestDato, lestVersjon, id);
         if (rows!=1){
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
