@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
@@ -7,10 +8,8 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
@@ -19,6 +18,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AvtaltMedNavService {
     private final MetricService metricService;
+    private final MeterRegistry meterRegistry;
     private final AktivitetDAO dao;
 
     AktivitetData hentAktivitet(long aktivitetId) {
@@ -43,6 +43,7 @@ public class AvtaltMedNavService {
         dao.insertAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
     }
@@ -51,7 +52,11 @@ public class AvtaltMedNavService {
 
         Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
 
-        AktivitetData aktivitet = aktivitetData.toBuilder().forhaandsorientering(fho).build();
+        AktivitetData aktivitet = aktivitetData
+                .toBuilder()
+                .forhaandsorientering(fho)
+                .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
+                .build();
 
         dao.insertAktivitet(aktivitet);
 
