@@ -27,8 +27,8 @@ import java.util.Optional;
 import static java.util.Arrays.asList;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
@@ -129,7 +129,7 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
         captureInsertAktivitetArgument();
-        assertEquals(getCapturedAktivitet().getStatus(), AktivitetStatus.GJENNOMFORES);
+        assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
 
     @Test
@@ -194,7 +194,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
 
-    @Ignore // TODO: Må fikses
+    @Ignore("Må fikses")
     @Test
     public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
