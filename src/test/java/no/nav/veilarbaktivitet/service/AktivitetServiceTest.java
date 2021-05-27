@@ -48,7 +48,7 @@ public class AktivitetServiceTest {
     private MetricService metricService;
 
     @Captor
-    private ArgumentCaptor argumentCaptor;
+    private ArgumentCaptor<AktivitetData> argumentCaptor;
 
     private AktivitetService aktivitetService;
 
@@ -151,6 +151,30 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
         assertThat(getCapturedAktivitet().getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
+    }
+
+    @Test
+    public void oppdaterReferat() {
+        val aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+
+        String REFERAT = "Referat";
+
+        val oppdatertAktivitet = aktivitet
+                .toBuilder()
+                .beskrivelse("Alexander er fremdeles best")
+                .moteData(MoteData.builder()
+                        .referat(REFERAT)
+                        .build())
+                .build();
+        aktivitetService.oppdaterReferat(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+
+        captureInsertAktivitetArgument();
+        assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
+        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getMoteData().getReferat(),
+                equalTo(REFERAT));
+        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.REFERAT_ENDRET));
     }
 
     @Test
@@ -273,11 +297,11 @@ public class AktivitetServiceTest {
     }
 
     public void captureInsertAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).insertAktivitet((AktivitetData) argumentCaptor.capture());
+        Mockito.verify(aktivitetDAO, atLeastOnce()).insertAktivitet(argumentCaptor.capture());
     }
 
     public AktivitetData getCapturedAktivitet() {
-        return ((AktivitetData) argumentCaptor.getValue());
+        return (argumentCaptor.getValue());
     }
 
 }
