@@ -28,7 +28,8 @@ public class AktivitetDTOMapper {
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
 
         // TODO: Ikke bruk statiske ting som dette inne i en mapper
-        if (AuthContextHolderThreadLocal.instance().erInternBruker()) {
+        boolean erInternBruker = AuthContextHolderThreadLocal.instance().erInternBruker();
+        if (erInternBruker) {
             aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
         }
 
@@ -38,8 +39,20 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
-
+        mapStillingFraNavData(aktivitetDTO, aktivitet.getStillingFraNavData(), erInternBruker);
         return aktivitetDTO;
+    }
+
+    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erInternBruker) {
+        if(stillingFraNavData == null) {
+            return;
+        }
+
+        if(!erInternBruker) {
+            aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(null));
+        }else {
+            aktivitetDTO.setStillingFraNavData(stillingFraNavData);
+        }
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {
