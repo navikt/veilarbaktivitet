@@ -15,6 +15,7 @@ public class AktivitetDataTestBuilder {
         return AktivitetData.builder()
                 .id(new Random().nextLong())
                 .aktorId("kake")
+                .versjon(1l)
                 .fraDato(nyDato())
                 .tilDato(nyDato())
                 .tittel("tittel")
