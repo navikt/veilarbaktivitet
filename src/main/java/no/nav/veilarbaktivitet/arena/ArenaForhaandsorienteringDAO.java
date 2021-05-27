@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.Type;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -49,9 +50,9 @@ public class ArenaForhaandsorienteringDAO {
                 .aktorId(rs.getString("aktor_id"))
                 .forhaandsorientering(Forhaandsorientering
                         .builder()
-                        .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
+                        .type(EnumUtils.valueOf(Type.class, rs.getString("fho_type")))
                         .tekst(rs.getString("fho_tekst"))
-                        .lest(Database.hentDato(rs, "lest"))
+                        .lestDato(Database.hentDateTime(rs, "lest"))
                         .build())
                 .opprettetDato(Database.hentDato(rs, "fho_opprettet_dato"))
                 .build();
