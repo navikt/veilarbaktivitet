@@ -2,12 +2,16 @@ package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
+
+import static java.util.Optional.ofNullable;
 
 public class AktivitetDTOMapper {
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
+
         val aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
@@ -20,7 +24,9 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
-                .setForhaandsorientering(aktivitet.getForhaandsorientering())
+                .setForhaandsorientering(ofNullable(aktivitet.getForhaandsorientering())
+                        .map(Forhaandsorientering::toDTO)
+                        .orElse(null))
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())

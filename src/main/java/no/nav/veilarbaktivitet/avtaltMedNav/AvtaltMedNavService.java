@@ -2,10 +2,12 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.springframework.stereotype.Service;
@@ -17,8 +19,9 @@ import java.util.Date;
 @Transactional
 public class AvtaltMedNavService {
     private final MetricService metricService;
+    private final AktivitetDAO aktivitetDAO;
+    private final ForhaandsorienteringDAO fhoDAO;
     private final MeterRegistry meterRegistry;
-    private final AktivitetDAO dao;
 
     public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
@@ -27,11 +30,15 @@ public class AvtaltMedNavService {
 
 
     public AvtaltMedNavService(MetricService metricService,
-             MeterRegistry meterRegistry,
-            AktivitetDAO dao) {
-        this.meterRegistry = meterRegistry;
+                               AktivitetDAO aktivitetDAO,
+                               ForhaandsorienteringDAO fhoDAO,
+                               MeterRegistry meterRegistry) {
+
         this.metricService = metricService;
-        this.dao = dao;
+        this.aktivitetDAO = aktivitetDAO;
+        this.fhoDAO = fhoDAO;
+        this.meterRegistry = meterRegistry;
+
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
@@ -39,47 +46,53 @@ public class AvtaltMedNavService {
     }
 
     AktivitetData hentAktivitet(long aktivitetId) {
-        return dao.hentAktivitet(aktivitetId);
+        return aktivitetDAO.hentAktivitet(aktivitetId);
     }
 
-    AktivitetDTO markerSomAvtaltMedNav(long aktivitetId, AvtaltMedNav avtaltMedNav) {
-        AktivitetData aktivitet = dao.hentAktivitet(aktivitetId);
-        Forhaandsorientering forhaandsorientering = avtaltMedNav.getForhaandsorientering();
+    public AktivitetDTO opprettFHO(AvtaltMedNavDTO avtaltDTO, long aktivitetId, Person.AktorId aktorId, NavIdent ident) {
+        var fhoDTO = avtaltDTO.getForhaandsorientering();
+        Date now = new Date();
 
-        if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
-            forhaandsorientering.setTekst(null);
+        if (fhoDTO.getTekst() != null && fhoDTO.getTekst().isEmpty()) {
+            fhoDTO.setTekst(null);
         }
 
-        AktivitetData nyAktivitet = aktivitet
-                .toBuilder()
-                .avtalt(true)
-                .forhaandsorientering(forhaandsorientering)
-                .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                .build();
+        var fho = fhoDAO.insert(avtaltDTO, aktivitetId, aktorId, ident.get(), now);
 
-        dao.insertAktivitet(nyAktivitet);
+        var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
+                .withForhaandsorientering(fho)
+                .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                .withAvtalt(true);
 
-        metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        aktivitetDAO.insertAktivitet(nyAktivitet, now);
 
+        metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
 
-        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, aktivitet.getAktivitetType().name()).increment();
-
-
-        return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
+        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho));
     }
 
-    AktivitetDTO markerSomLest(AktivitetData aktivitetData) {
+    public AktivitetDTO markerSomLest(Forhaandsorientering fho) {
+        var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
 
-        Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
+        fhoDAO.markerSomLest(fho.getId(), new Date());
+        fho = fhoDAO.getById(fho.getId());
 
-        AktivitetData aktivitet = aktivitetData
+        AktivitetData nyAktivitet = aktivitet
                 .toBuilder()
                 .forhaandsorientering(fho)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
                 .build();
 
-        dao.insertAktivitet(aktivitet);
+        aktivitetDAO.insertAktivitet(nyAktivitet);
 
-        return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetData.getId()));
+        metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, aktivitet.getAktivitetType().name()).increment();
+
+        return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet);
     }
+
+    public Forhaandsorientering hentForhaandsorientering(long aktivitetId) {
+        return fhoDAO.getFhoForAktivitet(aktivitetId);
+    }
+
 }
