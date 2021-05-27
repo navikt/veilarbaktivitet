@@ -5,6 +5,8 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
+import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.common.kafka.producer.util.KafkaProducerClientWithMetrics;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
@@ -26,6 +28,10 @@ import no.nav.veilarbaktivitet.mock.PepMock;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
 import no.nav.veilarbaktivitet.motesms.VarselQueService;
 import no.nav.veilarbaktivitet.service.*;
+import no.nav.veilarbaktivitet.varsel.VarselService;
+import no.nav.veilarbaktivitet.varsel.kafka.KafkaVarselMockProducer;
+import no.nav.veilarbaktivitet.varsel.kafka.KafkaVarselProducer;
+import no.nav.veilarbaktivitet.varsel.rest.VarselController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -63,6 +69,9 @@ import static org.mockito.Mockito.when;
         AktivitetsplanController.class,
         FilterTestConfig.class,
         CronService.class,
+        KafkaVarselMockProducer.class,
+        VarselService.class,
+        VarselController.class
 })
 public class ApplicationTestConfig {
 
