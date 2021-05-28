@@ -61,6 +61,7 @@ public class AvtaltMedNavService {
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
                 .withForhaandsorientering(fho)
+                .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                 .withAvtalt(true);
 
@@ -73,13 +74,15 @@ public class AvtaltMedNavService {
 
     public AktivitetDTO markerSomLest(Forhaandsorientering fho) {
         var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
+        var now = new Date();
 
-        fhoDAO.markerSomLest(fho.getId(), new Date(), aktivitet.getVersjon());
+        fhoDAO.markerSomLest(fho.getId(), now, aktivitet.getVersjon());
         fho = fhoDAO.getById(fho.getId());
 
         AktivitetData nyAktivitet = aktivitet
                 .toBuilder()
                 .forhaandsorientering(fho)
+                .endretDato(now)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
                 .build();
 
