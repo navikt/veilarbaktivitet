@@ -54,6 +54,11 @@ public class AktivitetDataMapper {
             case SAMTALEREFERAT:
                 aktivitetData.moteData(moteData(aktivitetDTO));
                 break;
+            case STILLING_FRA_NAV:
+                aktivitetData.stillingFraNavData(aktivitetDTO.getStillingFraNavData());
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + aktivitetType);
         }
 
         return aktivitetData.build();

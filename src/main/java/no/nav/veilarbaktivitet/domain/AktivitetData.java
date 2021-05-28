@@ -44,5 +44,6 @@ public class AktivitetData {
     IJobbAktivitetData iJobbAktivitetData;
     BehandlingAktivitetData behandlingAktivitetData;
     MoteData moteData;
+    StillingFraNavData stillingFraNavData;
 }
 
