@@ -25,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Optional;
+
 import static java.lang.Long.parseLong;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -68,6 +70,7 @@ public class ForhaandsorienteringDTOControllerTest {
                 .sjekkTilgangOgInternBruker(aktorid, null);
 
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId(aktorid)));
     }
 
     @Test

@@ -26,6 +26,7 @@ import static org.junit.Assert.*;
 public class AvtaltMedNavServiceTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
+    private static final Person.NavIdent saksbehandler = Person.navIdent("Z999999");
     private static final NavIdent veilederIdent = NavIdent.of("V123");
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
@@ -90,7 +91,7 @@ public class AvtaltMedNavServiceTest {
         opprettAktivitetMedFHO(aktivitetData);
 
         var aktivitetDTOFHO = avtaltMedNavService.hentForhaandsorientering(aktivitetData.getId());
-        var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO);
+        var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO, saksbehandler);
         var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(aktivitetData.getId());
 
         Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
