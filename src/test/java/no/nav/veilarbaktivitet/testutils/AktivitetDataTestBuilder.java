@@ -15,6 +15,7 @@ public class AktivitetDataTestBuilder {
         return AktivitetData.builder()
                 .id(new Random().nextLong())
                 .aktorId("kake")
+                .versjon(1l)
                 .fraDato(nyDato())
                 .tilDato(nyDato())
                 .tittel("tittel")
@@ -46,9 +47,16 @@ public class AktivitetDataTestBuilder {
                 return nyEgenaktivitet();
             case SAMTALEREFERAT:
                 return nytSamtaleReferat();
+            case STILLING_FRA_NAV:
+                return nyStillingFraNav();
             default: throw new IllegalArgumentException("ukjent type");
         }
 
+    }
+    public static AktivitetData nyStillingFraNav() {
+        return AktivitetDataTestBuilder.nyAktivitet()
+                .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
+                .build();
     }
 
     public static AktivitetData nyttStillingssøk() {

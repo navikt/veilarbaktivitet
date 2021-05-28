@@ -8,4 +8,5 @@ public enum AktivitetTypeData {
     BEHANDLING,
     MOTE,
     SAMTALEREFERAT,
+    STILLING_FRA_NAV,
 }

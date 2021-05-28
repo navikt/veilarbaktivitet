@@ -1,15 +1,13 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,52 +19,62 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class AvtaltMedNavService {
     private final MetricService metricService;
+    private final AktivitetDAO aktivitetDAO;
+    private final ForhaandsorienteringDAO fhoDAO;
     private final MeterRegistry meterRegistry;
-    private final AktivitetDAO dao;
 
     AktivitetData hentAktivitet(long aktivitetId) {
-        return dao.hentAktivitet(aktivitetId);
+        return aktivitetDAO.hentAktivitet(aktivitetId);
     }
 
-    AktivitetDTO markerSomAvtaltMedNav(long aktivitetId, AvtaltMedNav avtaltMedNav, @NonNull Person innloggetBruker) {
-        AktivitetData aktivitet = dao.hentAktivitet(aktivitetId);
-        var forhaandsorientering = avtaltMedNav.getForhaandsorientering();
+    public AktivitetDTO opprettFHO(AvtaltMedNavDTO avtaltDTO, long aktivitetId, Person.AktorId aktorId, NavIdent ident) {
+        var fhoDTO = avtaltDTO.getForhaandsorientering();
+        Date now = new Date();
 
-        if (forhaandsorientering.getTekst() != null && forhaandsorientering.getTekst().isEmpty()) {
-            forhaandsorientering.setTekst(null);
+        if (fhoDTO.getTekst() != null && fhoDTO.getTekst().isEmpty()) {
+            fhoDTO.setTekst(null);
         }
+
+        var fho = fhoDAO.insert(avtaltDTO, aktivitetId, aktorId, ident.get(), now);
+
+        var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
+                .withForhaandsorientering(fho)
+                .withEndretDato(now)
+                .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                .withEndretAv(ident.get())
+                .withLagtInnAv(InnsenderData.NAV) // alltid NAV
+                .withAvtalt(true);
+
+        aktivitetDAO.insertAktivitet(nyAktivitet, now);
+
+        metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
+        meterRegistry.counter("aktivitet.avtalt.med.nav", fhoDTO.getType().name(), nyAktivitet.getAktivitetType().name()).increment();
+
+        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho));
+    }
+
+    public AktivitetDTO markerSomLest(Forhaandsorientering fho, Person innloggetBruker) {
+        var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
+        var now = new Date();
+
+        fhoDAO.markerSomLest(fho.getId(), now, aktivitet.getVersjon());
+        fho = fhoDAO.getById(fho.getId());
 
         AktivitetData nyAktivitet = aktivitet
                 .toBuilder()
-                .avtalt(true)
-                .forhaandsorientering(forhaandsorientering)
-                .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                .endretAv(innloggetBruker.get())
-                .lagtInnAv(InnsenderData.NAV) // alltid NAV
-                .build();
-
-        dao.insertAktivitet(nyAktivitet);
-
-        metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
-        meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
-
-        return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
-    }
-
-    AktivitetDTO markerSomLest(AktivitetData aktivitetData, @NonNull Person innloggetBruker) {
-
-        Forhaandsorientering fho = aktivitetData.getForhaandsorientering().toBuilder().lest(new Date()).build();
-
-        AktivitetData aktivitet = aktivitetData
-                .toBuilder()
                 .forhaandsorientering(fho)
-                .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
                 .endretAv(innloggetBruker.get())
                 .lagtInnAv(InnsenderData.BRUKER) // alltid Bruker
+                .endretDato(now)
+                .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
                 .build();
 
-        dao.insertAktivitet(aktivitet);
-
-        return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetData.getId()));
+        aktivitetDAO.insertAktivitet(nyAktivitet);
+        return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet);
     }
+
+    public Forhaandsorientering hentForhaandsorientering(long aktivitetId) {
+        return fhoDAO.getFhoForAktivitet(aktivitetId);
+    }
+
 }

@@ -1,14 +1,18 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
+
+import static java.util.Optional.ofNullable;
 
 public class AktivitetDTOMapper {
 
     private AktivitetDTOMapper() {}
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
+
         val aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
@@ -21,7 +25,9 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
-                .setForhaandsorientering(aktivitet.getForhaandsorientering())
+                .setForhaandsorientering(ofNullable(aktivitet.getForhaandsorientering())
+                        .map(Forhaandsorientering::toDTO)
+                        .orElse(null))
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
@@ -35,8 +41,20 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
-
+        mapStillingFraNavData(aktivitetDTO, aktivitet.getStillingFraNavData(), erInternBruker);
         return aktivitetDTO;
+    }
+
+    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erInternBruker) {
+        if(stillingFraNavData == null) {
+            return;
+        }
+
+        if(!erInternBruker) {
+            aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(null));
+        }else {
+            aktivitetDTO.setStillingFraNavData(stillingFraNavData);
+        }
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {

@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-
 @Transactional
 @RestController
 @RequiredArgsConstructor
@@ -21,8 +20,8 @@ public class AvtaltMedNavController {
     private final AvtaltMedNavService avtaltMedNavService;
 
     @PutMapping
-    public AktivitetDTO markerSomAvtaltMedNav(@RequestBody AvtaltMedNav avtaltMedNav, @RequestParam long aktivitetId) {
-        Forhaandsorientering forhaandsorientering = avtaltMedNav.getForhaandsorientering();
+    public AktivitetDTO opprettFHO(@RequestBody AvtaltMedNavDTO avtaltMedNavDTO, @RequestParam long aktivitetId) {
+        var forhaandsorientering = avtaltMedNavDTO.getForhaandsorientering();
 
         if (forhaandsorientering == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering kan ikke være null");
@@ -40,7 +39,7 @@ public class AvtaltMedNavController {
 
         authService.sjekkTilgangOgInternBruker(aktivitet.getAktorId(), aktivitet.getKontorsperreEnhetId());
 
-        if (avtaltMedNav.getAktivitetVersjon() != aktivitet.getVersjon()) {
+        if (avtaltMedNavDTO.getAktivitetVersjon() != aktivitet.getVersjon()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
         }
 
@@ -48,9 +47,7 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten er allerede avtalt med NAV");
         }
 
-        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
-
-        return avtaltMedNavService.markerSomAvtaltMedNav(aktivitetId, avtaltMedNav, innloggetBruker);
+        return avtaltMedNavService.opprettFHO(avtaltMedNavDTO, aktivitetId, Person.aktorId(aktivitet.getAktorId()), authService.getInnloggetVeilederIdent());
 
     }
 
@@ -61,24 +58,21 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "aktivitetId og aktivitetVersion må vere satt");
         }
 
-        AktivitetData aktivitet = avtaltMedNavService.hentAktivitet(lestDTO.aktivitetId);
+        Forhaandsorientering fho = avtaltMedNavService.hentForhaandsorientering(lestDTO.aktivitetId);
 
-        if (aktivitet == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aktiviteten eksisterer ikke");
+        if (fho == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "FHO på aktivitet eksisterer ikke");
         }
 
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitet.getAktorId()));
-
-        if (aktivitet.getForhaandsorientering() == null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Fho eksister ikke");
-        }
-
-        if (aktivitet.getForhaandsorientering().getLest() != null) {
+        if (fho.getLestDato() != null) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Allerede lest");
         }
 
+        authService.sjekkTilgangTilPerson(fho.getAktorId());
+
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
-        return avtaltMedNavService.markerSomLest(aktivitet, innloggetBruker);
+
+        return avtaltMedNavService.markerSomLest(fho, innloggetBruker);
     }
 
 }

@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.Type;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -11,9 +12,9 @@ import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.UserInContext;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -42,7 +43,7 @@ public class ArenaControllerTest {
     private final Person.Fnr ikkeTilgangFnr = Person.fnr("10108000");
     private final Person.AktorId ikkeTilgangAktorid = Person.aktorId("00080101");
 
-    private final Forhaandsorientering forhaandsorientering = Forhaandsorientering.builder().type(Forhaandsorientering.Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
+    private final Forhaandsorientering forhaandsorientering = Forhaandsorientering.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
 
     @Before
     public void cleanup() {
@@ -58,7 +59,7 @@ public class ArenaControllerTest {
 
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangTilPerson(any());
+                .sjekkTilgangTilPerson((Person) any());
 
         doNothing()
                 .when(authService)
@@ -188,7 +189,7 @@ public class ArenaControllerTest {
 
     @Test
     public void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
-        Date start = new Date();
+        DateTime start = new DateTime();
         ArenaAktivitetDTO a1 = new ArenaAktivitetDTO();
         a1.setId("settTilLest");
         a1.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
@@ -198,17 +199,17 @@ public class ArenaControllerTest {
 
         ArenaAktivitetDTO sendtAktivitet = controller.sendForhaandsorientering(forhaandsorientering, a1.getId());
 
-        assertNull(sendtAktivitet.getForhaandsorientering().getLest());
+        assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
 
         ArenaAktivitetDTO lestAktivitet = controller.lest(sendtAktivitet.getId());
 
-        Date stopp = new Date();
-        Date lest = lestAktivitet.getForhaandsorientering().getLest();
+        DateTime stopp = new DateTime();
+        DateTime lest = lestAktivitet.getForhaandsorientering().getLestDato();
 
         assertNotNull(lest);
 
-        assertTrue(start.before(lest) || start.equals(lest));
-        assertTrue(stopp.after(lest) || stopp.equals(lest));
+        assertTrue(start.isBefore(lest) || start.equals(lest));
+        assertTrue(stopp.isAfter(lest) || stopp.equals(lest));
     }
 
     @Test
