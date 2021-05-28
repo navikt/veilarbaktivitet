@@ -25,6 +25,3 @@ CREATE TABLE FORHAANDSORIENTERING (
 
 );
 
-alter table AKTIVITET add column fho_id CHAR(36) references FORHAANDSORIENTERING(ID);
-
-
