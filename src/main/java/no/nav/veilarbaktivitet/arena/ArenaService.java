@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -23,12 +23,28 @@ import static no.nav.veilarbaktivitet.domain.AktivitetStatus.FULLFORT;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class ArenaService {
     private final ArenaAktivitetConsumer consumer;
     private final ArenaForhaandsorienteringDAO dao;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
+
+    public static final String AVTALT_MED_NAV_COUNTER = "arena.avtalt.med.nav";
+    public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
+    public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
+
+    @java.beans.ConstructorProperties({"consumer", "dao", "authService", "meterRegistry"})
+    public ArenaService(ArenaAktivitetConsumer consumer, ArenaForhaandsorienteringDAO dao, AuthService authService, MeterRegistry meterRegistry) {
+        this.consumer = consumer;
+        this.dao = dao;
+        this.authService = authService;
+        this.meterRegistry = meterRegistry;
+        Counter.builder(AVTALT_MED_NAV_COUNTER)
+                .description("Antall arena aktiviteter som er avtalt med NAV")
+                .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
+                .register(meterRegistry);
+    }
+
 
     public List<ArenaAktivitetDTO> hentAktiviteter(Person.Fnr fnr) {
         List<ArenaAktivitetDTO> aktiviteterFraArena = consumer.hentArenaAktiviteter(fnr);
@@ -78,7 +94,7 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
         }
 
-        meterRegistry.counter("arena.avtalt.med.nav", forhaandsorientering.getType().name(), arenaAktivitetDTO.getType().name()).increment();
+        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
         return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
     }
 

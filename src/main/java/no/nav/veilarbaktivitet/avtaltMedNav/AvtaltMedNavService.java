@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
+import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
@@ -15,11 +15,28 @@ import java.util.Date;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 public class AvtaltMedNavService {
     private final MetricService metricService;
     private final MeterRegistry meterRegistry;
     private final AktivitetDAO dao;
+
+    public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
+    public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
+    public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
+
+
+
+    public AvtaltMedNavService(MetricService metricService,
+             MeterRegistry meterRegistry,
+            AktivitetDAO dao) {
+        this.meterRegistry = meterRegistry;
+        this.metricService = metricService;
+        this.dao = dao;
+        Counter.builder(AVTALT_MED_NAV_COUNTER)
+                .description("Antall aktiviteter som er avtalt med NAV")
+                .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
+                .register(meterRegistry);
+    }
 
     AktivitetData hentAktivitet(long aktivitetId) {
         return dao.hentAktivitet(aktivitetId);
@@ -43,7 +60,10 @@ public class AvtaltMedNavService {
         dao.insertAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
-        meterRegistry.counter("aktivitet.avtalt.med.nav", forhaandsorientering.getType().name(), aktivitet.getAktivitetType().name()).increment();
+
+
+        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, aktivitet.getAktivitetType().name()).increment();
+
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(dao.hentAktivitet(aktivitetId));
     }
