@@ -94,8 +94,12 @@ public class AvtaltMedNavService {
         return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet);
     }
 
-    public Forhaandsorientering hentForhaandsorientering(long aktivitetId) {
+    public Forhaandsorientering hentFhoForAktivitet(long aktivitetId) {
         return fhoDAO.getFhoForAktivitet(aktivitetId);
+    }
+
+    public Forhaandsorientering hentFHO(String fhoId) {
+        return fhoDAO.getById(fhoId);
     }
 
 }

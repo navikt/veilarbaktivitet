@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
@@ -22,6 +24,7 @@ import static no.nav.common.utils.StringUtils.nullOrEmpty;
 public class AktivitetService {
 
     private final AktivitetDAO aktivitetDAO;
+    private final AvtaltMedNavService avtaltMedNavService;
     private final KvpService kvpService;
     private final MetricService metricService;
 
@@ -30,11 +33,18 @@ public class AktivitetService {
     }
 
     public AktivitetData hentAktivitet(long id) {
-        return aktivitetDAO.hentAktivitet(id);
+        var aktivitet = aktivitetDAO.hentAktivitet(id);
+        var fho = avtaltMedNavService.hentFHO(aktivitet.getFhoId());
+
+        return aktivitet
+                .withForhaandsorientering(fho);
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        return aktivitetDAO.hentAktivitetVersjoner(id);
+        return aktivitetDAO.hentAktivitetVersjoner(id)
+                .stream()
+                .map(a -> a.withForhaandsorientering(avtaltMedNavService.hentFHO(a.getFhoId())))
+                .collect(Collectors.toList());
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {

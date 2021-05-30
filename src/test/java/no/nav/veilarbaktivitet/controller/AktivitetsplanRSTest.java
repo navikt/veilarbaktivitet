@@ -1,16 +1,15 @@
 package no.nav.veilarbaktivitet.controller;
 
-import lombok.SneakyThrows;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
-import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.arena.ArenaService;
+import no.nav.veilarbaktivitet.avtaltMedNav.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -24,7 +23,6 @@ import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
-import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -32,14 +30,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettAktivTiltaksaktivitet;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettInaktivTiltaksaktivitet;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -56,9 +50,11 @@ public class AktivitetsplanRSTest {
     private KvpClient kvpClient = mock(KvpClient.class);
     private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
+    private ForhaandsorienteringDAO fhoDao = mock(ForhaandsorienteringDAO.class);
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
 
-
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpService, metricService);
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
     private AuthService authService = mock(AuthService.class);
     private ArenaService arenaService = mock(ArenaService.class);
     private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
@@ -78,6 +74,26 @@ public class AktivitetsplanRSTest {
     @After
     public void cleanup() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
+    }
+
+
+    @Test
+    public void hentAktivitetVersjoner_returnererForhaandsorienteringDataPaaKorrektInstans() {
+        var id = new Random().nextLong();
+        var aktivitet = nyttStillingssøk().withId(id).withAktorId(KJENT_AKTOR_ID.get());
+        aktivitetDAO.insertAktivitet(aktivitet);
+
+        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), KJENT_AKTOR_ID);
+        var sisteAktivitetVersjon = aktivitetService.hentAktivitet(id);
+        var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), id, KJENT_AKTOR_ID, NavIdent.of("V123"));
+        var resultat = aktivitetController.hentAktivitetVersjoner(String.valueOf(id));
+
+        Assert.assertEquals(3, resultat.size());
+        Assert.assertNull(resultat.get(0).getForhaandsorientering());
+        Assert.assertNull(resultat.get(1).getForhaandsorientering());
+        Assert.assertNull(resultat.get(2).getForhaandsorientering());
+
     }
 
     @Ignore("må fikses") // TODO: Må fikses

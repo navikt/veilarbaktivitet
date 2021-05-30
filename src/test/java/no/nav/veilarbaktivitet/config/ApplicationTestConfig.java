@@ -13,6 +13,8 @@ import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.arena.ArenaService;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -61,6 +63,8 @@ import static org.mockito.Mockito.when;
         ArenaController.class,
         AktivitetAppService.class,
         AktivitetsplanController.class,
+        AvtaltMedNavService.class,
+        ForhaandsorienteringDAO.class,
         FilterTestConfig.class,
         CronService.class,
 })

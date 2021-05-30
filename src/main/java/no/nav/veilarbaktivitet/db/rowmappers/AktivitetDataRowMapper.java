@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class AktivitetDataRowMapper {
+
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
         val aktivitet = AktivitetData
@@ -38,7 +39,8 @@ public class AktivitetDataRowMapper {
                 .kontorsperreEnhetId(rs.getString("kontorsperre_enhet_id"))
                 .lestAvBrukerForsteGang(Database.hentDato(rs, "lest_av_bruker_forste_gang"))
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
-                .malid(rs.getString("mal_id"));
+                .malid(rs.getString("mal_id"))
+                .fhoId(rs.getString("fho_id"));
 
         switch (type) {
             case EGENAKTIVITET:

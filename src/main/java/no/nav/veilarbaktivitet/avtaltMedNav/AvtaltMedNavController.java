@@ -58,7 +58,7 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "aktivitetId og aktivitetVersion må vere satt");
         }
 
-        Forhaandsorientering fho = avtaltMedNavService.hentForhaandsorientering(lestDTO.aktivitetId);
+        Forhaandsorientering fho = avtaltMedNavService.hentFhoForAktivitet(lestDTO.aktivitetId);
 
         if (fho == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "FHO på aktivitet eksisterer ikke");

@@ -44,7 +44,7 @@ public class AvtaltMedNavServiceTest {
         var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
 
         opprettAktivitetMedFHO(aktivitetData);
-        var fho = avtaltMedNavService.hentForhaandsorientering(aktivitetData.getId());
+        var fho = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
 
         Assert.assertEquals(aktivitetData.getId().toString(), fho.getAktivitetId());
         Assert.assertEquals(aktivitetData.getVersjon().toString(), fho.getAktivitetVersjon());
@@ -89,7 +89,7 @@ public class AvtaltMedNavServiceTest {
 
         opprettAktivitetMedFHO(aktivitetData);
 
-        var aktivitetDTOFHO = avtaltMedNavService.hentForhaandsorientering(aktivitetData.getId());
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
         var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO);
         var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(aktivitetData.getId());
 

@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
@@ -46,6 +47,9 @@ public class AktivitetServiceTest {
     @Mock
     private MetricService metricService;
 
+    @Mock
+    private AvtaltMedNavService avtaltMedNavService;
+
     @Captor
     private ArgumentCaptor argumentCaptor;
 
@@ -53,7 +57,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO, new KvpService(kvpClient), metricService);
+        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, new KvpService(kvpClient), metricService);
     }
 
     @Test
@@ -246,13 +250,15 @@ public class AktivitetServiceTest {
 
     @Test
     public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
-        gitt_aktivitet(lagEnNyAktivitet());
+        gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
         verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);
     }
 
     private void gitt_aktivitet(AktivitetData aktivitetData) {
         when(aktivitetDAO.hentAktiviteterForAktorId(any(Person.AktorId.class))).thenReturn(asList(aktivitetData));
+        when(aktivitetDAO.hentAktivitet(aktivitetData.getId())).thenReturn(aktivitetData);
+
     }
 
     public AktivitetData lagEnNyAktivitet() {

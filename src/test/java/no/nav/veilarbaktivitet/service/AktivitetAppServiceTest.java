@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import org.junit.Ignore;
@@ -30,6 +31,9 @@ public class AktivitetAppServiceTest {
 
     @Mock
     private MetricService metricService;
+
+    @Mock
+    private AvtaltMedNavService avtaltMedNavService;
 
     @InjectMocks
     private AktivitetAppService appService;
