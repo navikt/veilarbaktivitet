@@ -87,7 +87,7 @@ public class AktivitetAppServiceTest {
     }
 
     public void mockHentAktivitet(AktivitetData aktivitetData) {
-        when(aktivitetService.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitetData);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitetData);
     }
 
 }

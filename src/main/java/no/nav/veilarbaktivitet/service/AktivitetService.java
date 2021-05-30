@@ -29,10 +29,13 @@ public class AktivitetService {
     private final MetricService metricService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
-        return aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+        return aktivitetDAO.hentAktiviteterForAktorId(aktorId)
+                .stream()
+                .map(a -> a.withForhaandsorientering(avtaltMedNavService.hentFHO(a.getFhoId())))
+                .collect(Collectors.toList());
     }
 
-    public AktivitetData hentAktivitet(long id) {
+    public AktivitetData hentAktivitetMedForhaandsorientering(long id) {
         var aktivitet = aktivitetDAO.hentAktivitet(id);
         var fho = avtaltMedNavService.hentFHO(aktivitet.getFhoId());
 
@@ -245,7 +248,7 @@ public class AktivitetService {
     @Transactional
     public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
-        return hentAktivitet(aktivitetId);
+        return hentAktivitetMedForhaandsorientering(aktivitetId);
     }
 
 }

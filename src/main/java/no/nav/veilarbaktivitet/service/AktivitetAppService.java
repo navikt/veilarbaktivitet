@@ -45,7 +45,7 @@ public class AktivitetAppService {
     }
 
     public AktivitetData hentAktivitet(long id) {
-        AktivitetData aktivitetData = aktivitetService.hentAktivitet(id);
+        AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
         authService.sjekkTilgang(aktivitetData.getAktorId(), aktivitetData.getKontorsperreEnhetId());
         return aktivitetData;
@@ -119,7 +119,7 @@ public class AktivitetAppService {
                 aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
             }
 
-            return aktivitetService.hentAktivitet(aktivitet.getId());
+            return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
 
         } else if (authService.erEksternBruker()) {
             if (original.isAvtalt() || !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType())) {
@@ -127,7 +127,7 @@ public class AktivitetAppService {
             }
 
             aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
-            return aktivitetService.hentAktivitet(aktivitet.getId());
+            return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
         }
 
         // not a valid user
@@ -179,13 +179,13 @@ public class AktivitetAppService {
 
         if (authService.erInternBruker()) {
             aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
-            val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
+            val newAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
             metricService.oppdatertStatusAvNAV(newAktivitet);
             return newAktivitet;
         } else if (authService.erEksternBruker()) {
             if (TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
                 aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
-                val newAktivitet = aktivitetService.hentAktivitet(originalAktivitet.getId());
+                val newAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
                 metricService.oppdatertStatusAvBruker(newAktivitet);
                 return newAktivitet;
             } else {
@@ -204,7 +204,7 @@ public class AktivitetAppService {
         return authService.getLoggedInnUser()
                 .map(userIdent -> {
                     aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);
-                    return aktivitetService.hentAktivitet(aktivitet.getId());
+                    return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
                 })
                 .orElseThrow(RuntimeException::new);
     }

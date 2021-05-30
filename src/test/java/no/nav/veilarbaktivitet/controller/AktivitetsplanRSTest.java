@@ -84,7 +84,7 @@ public class AktivitetsplanRSTest {
         aktivitetDAO.insertAktivitet(aktivitet);
 
         aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), KJENT_AKTOR_ID);
-        var sisteAktivitetVersjon = aktivitetService.hentAktivitet(id);
+        var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), id, KJENT_AKTOR_ID, NavIdent.of("V123"));
         var resultat = aktivitetController.hentAktivitetVersjoner(String.valueOf(id));
@@ -264,7 +264,7 @@ public class AktivitetsplanRSTest {
     private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
-        val originalAktivitet = aktivitetService.hentAktivitet(lagredeAktivitetsIder.get(0));
+        val originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.get(0));
         oldOpprettetDato = originalAktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
@@ -305,7 +305,7 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
-        assertThat(aktivitetService.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
+        assertThat(aktivitetService.hentAktivitetMedForhaandsorientering(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_etikett() {
