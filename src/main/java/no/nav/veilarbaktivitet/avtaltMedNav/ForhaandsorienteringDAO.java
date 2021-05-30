@@ -107,9 +107,9 @@ public class ForhaandsorienteringDAO {
                 .aktivitetVersjon(rs.getString("AKTIVITET_VERSJON"))
                 .type(EnumUtils.valueOf(Type.class, rs.getString("TYPE")))
                 .tekst(rs.getString("TEKST"))
-                .opprettetDato(Database.hentDateTime(rs, "OPPRETTET_DATO"))
+                .opprettetDato(Database.hentDato(rs, "OPPRETTET_DATO"))
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
-                .lestDato(Database.hentDateTime(rs, "LEST_DATO"))
+                .lestDato(Database.hentDato(rs, "LEST_DATO"))
 
                 .build();
     }

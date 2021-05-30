@@ -25,6 +25,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Date;
+
 import static java.lang.Long.parseLong;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -185,7 +187,7 @@ public class ForhaandsorienteringDTOControllerTest {
 
     @Test
     public void markerForhaandsorienteringSomLest_skalVirke() {
-        DateTime start = DateTime.now();
+        Date start = new Date();
         AktivitetData aktivitet = opprettAktivitet(aktorid);
         AvtaltMedNavDTO fho = new AvtaltMedNavDTO();
         fho.setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build());
@@ -200,12 +202,12 @@ public class ForhaandsorienteringDTOControllerTest {
 
         Assertions.assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST);
 
-        DateTime stopp = DateTime.now();
-        DateTime lest = aktivitetDTO.getForhaandsorientering().getLestDato();
+        Date stopp = new Date();
+        Date lest = aktivitetDTO.getForhaandsorientering().getLestDato();
 
         assertNotNull(aktivitetDTO.getForhaandsorientering().getLestDato());
 
-        assertTrue(start.isBefore(lest) || start.equals(lest));
-        assertTrue(stopp.isAfter(lest) || stopp.equals(lest));
+        assertTrue(start.before(lest) || start.equals(lest));
+        assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
 }

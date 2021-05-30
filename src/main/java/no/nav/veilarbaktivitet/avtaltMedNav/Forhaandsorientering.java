@@ -3,7 +3,8 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 import lombok.Builder;
 import lombok.Data;
 import no.nav.common.types.identer.AktorId;
-import org.joda.time.DateTime;
+
+import java.util.Date;
 
 @Data
 @Builder(toBuilder = true)
@@ -12,12 +13,12 @@ public class Forhaandsorientering {
     private String id;
     private Type type;
     private String tekst;
-    private DateTime lestDato;
+    private Date lestDato;
     private AktorId aktorId;
     private String arenaaktivitetId;
     private String aktivitetId;
     private String aktivitetVersjon;
-    private DateTime opprettetDato;
+    private Date opprettetDato;
     private String opprettetAv;
 
 

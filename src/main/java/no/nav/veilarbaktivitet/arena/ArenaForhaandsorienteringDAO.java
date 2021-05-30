@@ -52,7 +52,7 @@ public class ArenaForhaandsorienteringDAO {
                         .builder()
                         .type(EnumUtils.valueOf(Type.class, rs.getString("fho_type")))
                         .tekst(rs.getString("fho_tekst"))
-                        .lestDato(Database.hentDateTime(rs, "lest"))
+                        .lestDato(Database.hentDato(rs, "lest"))
                         .build())
                 .opprettetDato(Database.hentDato(rs, "fho_opprettet_dato"))
                 .build();

@@ -189,7 +189,7 @@ public class ArenaControllerTest {
 
     @Test
     public void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
-        DateTime start = new DateTime();
+        Date start = new Date();
         ArenaAktivitetDTO a1 = new ArenaAktivitetDTO();
         a1.setId("settTilLest");
         a1.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
@@ -203,13 +203,13 @@ public class ArenaControllerTest {
 
         ArenaAktivitetDTO lestAktivitet = controller.lest(sendtAktivitet.getId());
 
-        DateTime stopp = new DateTime();
-        DateTime lest = lestAktivitet.getForhaandsorientering().getLestDato();
+        Date stopp = new Date();
+        Date lest = lestAktivitet.getForhaandsorientering().getLestDato();
 
         assertNotNull(lest);
 
-        assertTrue(start.isBefore(lest) || start.equals(lest));
-        assertTrue(stopp.isAfter(lest) || stopp.equals(lest));
+        assertTrue(start.before(lest) || start.equals(lest));
+        assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
 
     @Test
