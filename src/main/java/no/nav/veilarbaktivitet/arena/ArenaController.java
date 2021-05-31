@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.service.AuthService;
@@ -24,7 +24,7 @@ public class ArenaController {
     private final ArenaService arenaService;
 
     @PutMapping("/forhaandsorientering")
-    ArenaAktivitetDTO sendForhaandsorientering(@RequestBody Forhaandsorientering forhaandsorientering, @RequestParam String arenaaktivitetId) {
+    public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam String arenaaktivitetId) {
         if (!authService.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
         }
@@ -39,11 +39,11 @@ public class ArenaController {
         String ident = authService.getInnloggetBrukerIdent()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "finner ikke veileder ident"));
 
-        return arenaService.lagreForhaandsorientering(arenaaktivitetId, fnr, forhaandsorientering, ident);
+        return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident);
     }
 
     @GetMapping("/tiltak")
-    List<ArenaAktivitetDTO> hentArenaAktiviteter() {
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
 
@@ -66,7 +66,7 @@ public class ArenaController {
         return arenaService.markerSomLest(fnr, aktivitetId);
     }
 
-    private Optional<String> getInputFeilmelding(Forhaandsorientering forhaandsorientering, String arenaaktivitetId) {
+    private Optional<String> getInputFeilmelding(ForhaandsorienteringDTO forhaandsorientering, String arenaaktivitetId) {
         if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
             return Optional.of("arenaaktivitetId kan ikke være null eller tom");
         }

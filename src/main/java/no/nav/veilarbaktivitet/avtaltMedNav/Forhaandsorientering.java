@@ -15,7 +15,7 @@ public class Forhaandsorientering {
     private String tekst;
     private Date lestDato;
     private AktorId aktorId;
-    private String arenaaktivitetId;
+    private String arenaAktivitetId;
     private String aktivitetId;
     private String aktivitetVersjon;
     private Date opprettetDato;

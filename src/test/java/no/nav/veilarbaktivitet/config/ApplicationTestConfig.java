@@ -11,7 +11,6 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import no.nav.veilarbaktivitet.aktiviteter_til_kafka.AktiviteterTilKafkaService;
 import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import no.nav.veilarbaktivitet.arena.ArenaController;
-import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
@@ -56,7 +55,6 @@ import static org.mockito.Mockito.when;
         AuthService.class,
         AktivitetService.class,
         TimedConfiguration.class,
-        ArenaForhaandsorienteringDAO.class,
         UserInContext.class,
         ArenaAktivitetConsumer.class,
         ArenaService.class,

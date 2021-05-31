@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
@@ -24,9 +25,7 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
-                .setForhaandsorientering(ofNullable(aktivitet.getForhaandsorientering())
-                        .map(Forhaandsorientering::toDTO)
-                        .orElse(null))
+                .setForhaandsorientering(mapForhaandsorientering(aktivitet.getForhaandsorientering()))
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
@@ -91,6 +90,12 @@ public class AktivitetDTOMapper {
                 .setArbeidssted(stillingsoekAktivitetData.getArbeidssted())
                 .setArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
                 .setStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
+    }
+
+    public static ForhaandsorienteringDTO mapForhaandsorientering(Forhaandsorientering forhaandsorientering) {
+        return ofNullable(forhaandsorientering)
+                .map(Forhaandsorientering::toDTO)
+                .orElse(null);
     }
 
 }

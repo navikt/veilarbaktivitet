@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -49,27 +50,28 @@ public class ForhaandsorienteringDAO {
         return getById(id.toString());
     }
 
-    public UUID insertForArenaAktivitet(AvtaltMedNavDTO fhoData, long aktivitetId, Person.AktorId aktorId, String opprettetAv) {
+    public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, String arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
-        var fho = fhoData.getForhaandsorientering();
-        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV)" +
-                        "VALUES (?,?,?,?,?,?,?, CURRENT_TIMESTAMP,?)",
+        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO)" +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?)",
                 id.toString(),
                 aktorId.get(),
                 null,
                 null,
-                aktivitetId,
+                arenaAktivitetId,
                 fho.getType().name(),
                 fho.getTekst(),
-                opprettetAv
+                opprettetDato,
+                opprettetAv,
+                null
         );
 
-        LOG.info("opprettet forhåndsorientering: {} med id: {}", fhoData, id);
+        LOG.info("opprettet forhåndsorientering: {} med id: {}", fho, id);
 
-        return id;
+        return getById(id.toString());
     }
 
-    public void markerSomLest(String id, Date lestDato, long lestVersjon) {
+    public void markerSomLest(String id, Date lestDato, Long lestVersjon) {
         // language=sql
         var rows = database
                 .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ? WHERE ID = ?", lestDato, lestVersjon, id);
@@ -98,12 +100,26 @@ public class ForhaandsorienteringDAO {
         }
     }
 
+    public Forhaandsorientering getFhoForArenaAktivitet(String aktivitetId) {
+        try {
+            return database.queryForObject(selectAktivitet + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+                    aktivitetId);
+        }
+        catch(EmptyResultDataAccessException e) {
+            return null;
+        }
+    }
+
+    public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
+        return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
+    }
+
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
         return Forhaandsorientering.builder()
                 .id(rs.getString("ID"))
                 .aktorId(AktorId.of(rs.getString("AKTOR_ID")))
                 .aktivitetId(rs.getString("AKTIVITET_ID"))
-                .arenaaktivitetId(rs.getString("ARENAAKTIVITET_ID"))
+                .arenaAktivitetId(rs.getString("ARENAAKTIVITET_ID"))
                 .aktivitetVersjon(rs.getString("AKTIVITET_VERSJON"))
                 .type(EnumUtils.valueOf(Type.class, rs.getString("TYPE")))
                 .tekst(rs.getString("TEKST"))
