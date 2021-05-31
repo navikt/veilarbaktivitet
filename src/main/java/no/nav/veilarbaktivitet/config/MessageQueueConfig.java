@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.config;
 
 import com.ibm.msg.client.jms.JmsConnectionFactory;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
+import no.nav.common.utils.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.annotation.EnableJms;
@@ -38,7 +39,7 @@ public class MessageQueueConfig {
     }
 
     @Bean
-    public ConnectionFactory connectionFactory() throws JMSException {
+    public ConnectionFactory connectionFactory(Credentials credentials) throws JMSException {
         JmsFactoryFactory jmsFactoryFactory = JmsFactoryFactory.getInstance(WMQ_PROVIDER);
         JmsConnectionFactory connectionFactory = jmsFactoryFactory.createConnectionFactory();
 
@@ -49,7 +50,8 @@ public class MessageQueueConfig {
         connectionFactory.setStringProperty(WMQ_CHANNEL, String.format("%s_%s", env, requireApplicationName()).toUpperCase());
         connectionFactory.setIntProperty(WMQ_CONNECTION_MODE, WMQ_CM_CLIENT);
         connectionFactory.setStringProperty(WMQ_QUEUE_MANAGER, getRequiredProperty(MQGATEWAY03_NAME_PROPERTY));
-        connectionFactory.setStringProperty(USERID, "srvappserver");
+        connectionFactory.setStringProperty(USERID, credentials.username);
+        connectionFactory.setStringProperty(PASSWORD, credentials.password);
 
         return connectionFactory;
     }
