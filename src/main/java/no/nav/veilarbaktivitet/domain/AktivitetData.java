@@ -37,6 +37,7 @@ public class AktivitetData {
     Date lestAvBrukerForsteGang;
     boolean automatiskOpprettet;
     String malid;
+    String fhoId;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;

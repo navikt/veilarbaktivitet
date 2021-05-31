@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.db.rowmappers;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -11,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class AktivitetDataRowMapper {
+
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
         val aktivitet = AktivitetData
@@ -30,12 +30,6 @@ public class AktivitetDataRowMapper {
                 .endretAv(rs.getString("endret_av"))
                 .lagtInnAv(EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
                 .avtalt(rs.getBoolean("avtalt"))
-                .forhaandsorientering(Forhaandsorientering
-                        .builder()
-                        .type(EnumUtils.valueOf(Forhaandsorientering.Type.class, rs.getString("fho_type")))
-                        .tekst(rs.getString("fho_tekst"))
-                        .lest(Database.hentDato(rs, "fho_lest"))
-                        .build())
                 .lenke(rs.getString("lenke"))
                 .transaksjonsType(
                         EnumUtils.valueOf(AktivitetTransaksjonsType.class,
@@ -45,7 +39,8 @@ public class AktivitetDataRowMapper {
                 .kontorsperreEnhetId(rs.getString("kontorsperre_enhet_id"))
                 .lestAvBrukerForsteGang(Database.hentDato(rs, "lest_av_bruker_forste_gang"))
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
-                .malid(rs.getString("mal_id"));
+                .malid(rs.getString("mal_id"))
+                .fhoId(rs.getString("fho_id"));
 
         switch (type) {
             case EGENAKTIVITET:

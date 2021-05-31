@@ -73,29 +73,19 @@ public class AktivitetDAO {
     @Transactional
     public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
-
+        String fhoId = ofNullable(aktivitet.getForhaandsorientering())
+                .map(Forhaandsorientering::getId)
+                .orElse(null);
         // language=sql
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
-
-        String forhaandsorienteringType = null;
-        String forhaandsorienteringTekst = null;
-        Date fhoLest = null;
-
-        Forhaandsorientering fho = aktivitet.getForhaandsorientering();
-
-        if (fho != null) {
-            forhaandsorienteringType = fho.getType().name();
-            forhaandsorienteringTekst = fho.getTekst();
-            fhoLest = fho.getLest();
-        }
 
         long versjon = nesteVersjon();
         //language=SQL
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, fho_type, fho_tekst, fho_lest, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -112,15 +102,13 @@ public class AktivitetDAO {
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
-                forhaandsorienteringType,
-                forhaandsorienteringTekst,
-                fhoLest,
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),
                 aktivitet.getKontorsperreEnhetId(),
                 aktivitet.isAutomatiskOpprettet(),
-                aktivitet.getMalid()
+                aktivitet.getMalid(),
+                fhoId
         );
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
