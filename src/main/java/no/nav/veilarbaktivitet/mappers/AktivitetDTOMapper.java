@@ -1,9 +1,10 @@
 package no.nav.veilarbaktivitet.mappers;
 
-import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
+
+import static java.util.Optional.ofNullable;
 
 public class AktivitetDTOMapper {
 
@@ -11,7 +12,7 @@ public class AktivitetDTOMapper {
 
     public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
 
-        val aktivitetDTO = new AktivitetDTO()
+        AktivitetDTO aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())

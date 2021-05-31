@@ -14,7 +14,6 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
-import org.joda.time.DateTime;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +25,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static java.lang.Long.parseLong;
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +69,7 @@ public class ForhaandsorienteringDTOControllerTest {
                 .when(authService)
                 .sjekkTilgangOgInternBruker(aktorid, null);
 
-        doReturn(Optional.of(Person.navIdent(NAV_IDENT)))
+        doReturn(Optional.of(Person.navIdent(ident)))
                 .when(authService).getLoggedInnUser();
 
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));

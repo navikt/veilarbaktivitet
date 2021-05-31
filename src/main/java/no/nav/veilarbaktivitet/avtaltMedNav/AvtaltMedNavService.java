@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.NonNull;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
@@ -65,8 +64,8 @@ public class AvtaltMedNavService {
                 .withForhaandsorientering(fho)
                 .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                .endretAv(ident != null ? ident.get() : null)
-                .lagtInnAv(InnsenderData.NAV) // alltid NAV
+                .withEndretAv(ident.get())
+                .withLagtInnAv(InnsenderData.NAV) // alltid NAV
                 .withAvtalt(true);
 
         aktivitetDAO.insertAktivitet(nyAktivitet, now);
