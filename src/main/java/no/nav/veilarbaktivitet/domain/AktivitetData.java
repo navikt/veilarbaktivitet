@@ -24,7 +24,7 @@ public class AktivitetData {
      */
     Long versjon;
     /**
-     * AktørId for eksternbruker som 'eier' aktivitetsplanen
+     * AktørId for eksternbruker som 'eier' aktiviteten
      */
     String aktorId;
     /**
@@ -60,7 +60,7 @@ public class AktivitetData {
     boolean avtalt;
     Forhaandsorientering forhaandsorientering;
     /**
-     * Alle type endringer på aktiviteten angis med en transaksjonstype.
+     * Alle type endringer på aktiviteten angis med en endringstype av type AktivitetTransaksjonsType.
      */
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
