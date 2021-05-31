@@ -3,13 +3,14 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
-import java.util.UUID;
 
 import static org.junit.Assert.*;
 
@@ -49,29 +50,23 @@ public class ForhaandsorienteringDAOTest {
 
     @Test
     public void insertForArenaAktivitet_oppdatererAlleFelter() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet();
+        ArenaAktivitetDTO aktivitetData = new ArenaAktivitetDTO();
+        aktivitetData.setId("arenaId");
+        aktivitetData.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         String veileder = "V123";
-        aktivitetDAO.insertAktivitet(aktivitetData);
 
         var fho = ForhaandsorienteringDTO.builder()
                 .type(Type.SEND_FORHAANDSORIENTERING)
                 .tekst("tralala")
                 .build();
 
-        AvtaltMedNavDTO fhoDTO = new AvtaltMedNavDTO()
-                .setForhaandsorientering(fho)
-                .setAktivitetVersjon(aktivitetData.getVersjon());
-
-        UUID id = fhoDAO.insertForArenaAktivitet(fhoDTO,aktivitetData.getId(), AKTOR_ID, veileder);
-
-        var fhoResultat = fhoDAO.getById(id.toString());
+        Forhaandsorientering fhoResultat = fhoDAO.insertForArenaAktivitet(fho, aktivitetData.getId(), AKTOR_ID, veileder, new Date());
 
         assertEquals(fho.getType(), fhoResultat.getType());
-        assertEquals(fhoDTO.getForhaandsorientering().getTekst(), fhoResultat.getTekst());
-        assertEquals(id.toString(), fhoResultat.getId());
+        assertEquals(fho.getTekst(), fhoResultat.getTekst());
         assertNull(fhoResultat.getAktivitetId());
         assertNull(fhoResultat.getAktivitetVersjon());
-        assertEquals(aktivitetData.getId().toString(), fhoResultat.getArenaaktivitetId());
+        assertEquals(aktivitetData.getId(), fhoResultat.getArenaAktivitetId());
         assertEquals(veileder, fhoResultat.getOpprettetAv());
         assertNull(fhoResultat.getLestDato());
 
