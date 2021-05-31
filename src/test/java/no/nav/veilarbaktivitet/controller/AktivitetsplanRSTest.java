@@ -275,7 +275,7 @@ public class AktivitetsplanRSTest {
                 .avsluttetKommentar(nyAvsluttetKommentar)
                 .build();
 
-        this.aktivitet = aktivitetController.oppdaterAktivitet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
+        this.aktivitet = aktivitetController.oppdaterAktivitet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, false));
         this.lagredeAktivitetsIder.set(0, Long.parseLong(this.aktivitet.getId()));
     }
 
@@ -292,7 +292,7 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo(((AktivitetDTO)aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
+                equalTo((aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
     private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {

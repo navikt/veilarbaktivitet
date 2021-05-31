@@ -11,9 +11,9 @@ public class AktivitetDTOMapper {
 
     private AktivitetDTOMapper() {}
 
-    public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
+    public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet, boolean erEkstern) {
 
-        AktivitetDTO aktivitetDTO = new AktivitetDTO()
+        var aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())
@@ -29,7 +29,7 @@ public class AktivitetDTOMapper {
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
-                .setEndretAv(aktivitet.getEndretAv())
+                .setEndretAv(erEkstern ? null : aktivitet.getEndretAv()) // null ut endretAv når bruker er ekstern
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
 
@@ -39,13 +39,12 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
-        FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData());
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData(), erEkstern);
         return aktivitetDTO;
     }
 
-    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData) {
-        aktivitetDTO.setStillingFraNavData(stillingFraNavData);
-
+    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
+        aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(erEkstern ? null : stillingFraNavData.getCvKanDelesAv()));
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {

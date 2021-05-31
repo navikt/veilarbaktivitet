@@ -72,7 +72,7 @@ public class AvtaltMedNavService {
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
 
-        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho));
+        return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho), false);
     }
 
     public AktivitetDTO markerSomLest(Forhaandsorientering fho, Person innloggetBruker) {
@@ -96,7 +96,7 @@ public class AvtaltMedNavService {
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, aktivitet.getAktivitetType().name()).increment();
 
-        return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet);
+        return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, true);
     }
 
     public Forhaandsorientering hentFhoForAktivitet(long aktivitetId) {
