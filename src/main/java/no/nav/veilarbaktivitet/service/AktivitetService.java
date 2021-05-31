@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -13,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -51,16 +51,15 @@ public class AktivitetService {
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
-        String endretAv = Optional.ofNullable(endretAvPerson).map(Person::get).orElse(null);
         long aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .id(aktivitetId)
                 .aktorId(aktorId.get())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAvPerson.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(new Date())
-                .endretAv(endretAv)
+                .endretAv(endretAvPerson.get())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
@@ -75,10 +74,10 @@ public class AktivitetService {
         val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
-                .endretAv(endretAv != null ? endretAv.get() : null)
+                .endretAv(endretAv.get())
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
@@ -92,30 +91,30 @@ public class AktivitetService {
 
         val nyAktivitet = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-                .endretAv(endretAv != null ? endretAv.get() : null)
+                .endretAv(endretAv.get())
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
     }
 
-    public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
+    public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
-                .endretAv(endretAv != null ? endretAv.get() : null)
+                .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
-    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, Person endretAv) {
+    public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(aktivitetData.getLagtInnAv())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -123,7 +122,7 @@ public class AktivitetService {
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
                 ).orElse(null))
-                .endretAv(endretAv != null ? endretAv.get() : null)
+                .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
     }
@@ -131,13 +130,14 @@ public class AktivitetService {
     public void oppdaterReferat(
             AktivitetData originalAktivitet,
             AktivitetData aktivitetData,
-            Person endretAv
+            @NonNull Person endretAv
     ) {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.insertAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
+                .withLagtInnAv(endretAv.tilBrukerType())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -160,7 +160,7 @@ public class AktivitetService {
                 .withReferatPublisert(moteData.isReferatPublisert());
     }
 
-    public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
@@ -171,12 +171,12 @@ public class AktivitetService {
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .beskrivelse(aktivitet.getBeskrivelse())
-                .lagtInnAv(aktivitet.getLagtInnAv())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)
                 .versjon(aktivitet.getVersjon())
-                .endretAv(endretAv != null ? endretAv.get() : null)
+                .endretAv(endretAv.get())
                 .avtalt(aktivitet.isAvtalt())
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))

@@ -124,7 +124,7 @@ public class AuthService {
                 .getRole()
                 .flatMap((role) -> {
                     if (UserRole.EKSTERN.equals(role)) {
-                        return getAktorIdForEksternBruker().map((id) -> (Person) id);
+                        return getAktorIdForEksternBruker();
                     }
                     if (UserRole.INTERN.equals(role)) {
                         return authContextHolder.getNavIdent().map(ident -> Person.navIdent(ident.get()));

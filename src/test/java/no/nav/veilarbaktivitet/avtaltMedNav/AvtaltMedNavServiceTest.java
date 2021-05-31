@@ -90,7 +90,7 @@ public class AvtaltMedNavServiceTest {
         opprettAktivitetMedFHO(aktivitetData);
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
-        var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO);
+        var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
         var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(aktivitetData.getId());
 
         Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
