@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config;
 
 import com.ibm.msg.client.jms.JmsConnectionFactory;
+import com.ibm.msg.client.jms.JmsConstants;
 import com.ibm.msg.client.jms.JmsFactoryFactory;
 import no.nav.common.utils.Credentials;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +53,7 @@ public class MessageQueueConfig {
         connectionFactory.setStringProperty(WMQ_QUEUE_MANAGER, getRequiredProperty(MQGATEWAY03_NAME_PROPERTY));
         connectionFactory.setStringProperty(USERID, credentials.username);
         connectionFactory.setStringProperty(PASSWORD, credentials.password);
+        connectionFactory.setBooleanProperty(JmsConstants.USER_AUTHENTICATION_MQCSP, true);
 
         return connectionFactory;
     }
