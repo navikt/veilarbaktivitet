@@ -97,10 +97,10 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
         }
 
-        fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
+        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
 
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
-        return  arenaAktivitetDTO.setForhaandsorientering(forhaandsorientering);
+        return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO());
     }
 
     @Transactional
