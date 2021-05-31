@@ -70,6 +70,21 @@ public class AvtaltMedNavServiceTest {
 
     }
 
+    @Test
+    public void opprettFHO_medTomTekst_setterTekstenTilNull() {
+        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+
+        var fhoDTO = ForhaandsorienteringDTO.builder()
+                .type(defaultType)
+                .tekst("").build();
+
+        var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData, fhoDTO);
+        var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
+
+        Assert.assertEquals(null, aktivitetDTOFHO.getTekst());
+
+    }
+
     @Test(expected = EmptyResultDataAccessException.class)
     public void opprettFHO_maaHaMatchendeAktivitet() {
         var fhoDTO = ForhaandsorienteringDTO.builder()
@@ -107,8 +122,15 @@ public class AvtaltMedNavServiceTest {
                 .type(defaultType)
                 .tekst(defaultTekst).lestDato(null).build();
 
+        return opprettAktivitetMedFHO(aktivitetData, fhoDTO);
+
+    }
+
+    private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData, ForhaandsorienteringDTO forhaandsorienteringDTO) {
+        aktivitetDAO.insertAktivitet(aktivitetData);
+
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO()
-                .setForhaandsorientering(fhoDTO)
+                .setForhaandsorientering(forhaandsorienteringDTO)
                 .setAktivitetVersjon(aktivitetData.getVersjon());
 
         return avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetData.getId(), AKTOR_ID, veilederIdent);

@@ -49,13 +49,6 @@ public class Database {
                 .orElse(null);
     }
 
-    public static DateTime hentDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
-        return ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(DateTime::new)
-                .orElse(null);
-    }
-
     @FunctionalInterface
     public interface Mapper<T> extends RowMapper<T> {
         T map(ResultSet resultSet) throws SQLException;
