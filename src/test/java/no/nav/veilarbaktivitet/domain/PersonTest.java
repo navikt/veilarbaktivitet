@@ -23,16 +23,16 @@ public class PersonTest {
 
     @Test
     public void isExtern() {
-        assertTrue(fnr.isExtern());
-        assertTrue(aktorId.isExtern());
-        assertFalse(navIdent.isExtern());
+        assertTrue(fnr.erEkstern());
+        assertTrue(aktorId.erEkstern());
+        assertFalse(navIdent.erEkstern());
     }
 
     @Test
     public void toInnsenderData() {
-        assertEquals(InnsenderData.BRUKER, fnr.toInnsenderData());
-        assertEquals(InnsenderData.BRUKER, aktorId.toInnsenderData());
-        assertEquals(InnsenderData.NAV, navIdent.toInnsenderData());
+        assertEquals(InnsenderData.BRUKER, fnr.tilBrukerType());
+        assertEquals(InnsenderData.BRUKER, aktorId.tilBrukerType());
+        assertEquals(InnsenderData.NAV, navIdent.tilBrukerType());
 
     }
 
