@@ -24,7 +24,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Long.parseLong;
@@ -214,5 +216,44 @@ public class ForhaandsorienteringDTOControllerTest {
 
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));
+    }
+
+    @Test
+    public void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
+        Arrays.stream(AktivitetTypeData.values())
+                .map(AktivitetDataTestBuilder::nyAktivitet)
+                .map(a -> a.toBuilder().id(aktivitetDAO.getNextUniqueAktivitetId()).aktorId(aktorid).build())
+                .forEach(aktivitetDAO::insertAktivitet);
+
+        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorid));
+
+        for (AktivitetData orginal :
+                aktivitetData) {
+
+            var fhoSomSkalLages = lagForhaandsorentering(orginal);
+            AktivitetDTO resultatDTO = avtaltMedNavController.opprettFHO(fhoSomSkalLages, orginal.getId());
+
+            var forventetFHO = Forhaandsorientering.builder()
+                    .type(fhoSomSkalLages.getForhaandsorientering().getType())
+                    .tekst(fhoSomSkalLages.getForhaandsorientering().getTekst())
+                    .id(resultatDTO.getForhaandsorientering().getId())
+                    .build();
+
+            AktivitetData forventet = orginal
+                    .toBuilder()
+                    .avtalt(true)
+                    .forhaandsorientering(forventetFHO)
+                    .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                    //endres altid ved oppdatering
+                    .versjon(Long.parseLong(resultatDTO.getVersjon()))
+                    .lagtInnAv(InnsenderData.NAV)
+                    .endretAv(ident)
+                    .endretDato(resultatDTO.getEndretDato())
+                    .build();
+
+            AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet, false);
+
+            assertEquals(forventetDTO, resultatDTO);
+        }
     }
 }

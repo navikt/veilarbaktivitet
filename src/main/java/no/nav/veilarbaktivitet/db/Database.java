@@ -1,6 +1,4 @@
 package no.nav.veilarbaktivitet.db;
-
-import org.joda.time.DateTime;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -46,13 +44,6 @@ public class Database {
         return ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(Timestamp::getTime)
                 .map(Date::new)
-                .orElse(null);
-    }
-
-    public static DateTime hentDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
-        return ofNullable(rs.getTimestamp(kolonneNavn))
-                .map(Timestamp::getTime)
-                .map(DateTime::new)
                 .orElse(null);
     }
 
