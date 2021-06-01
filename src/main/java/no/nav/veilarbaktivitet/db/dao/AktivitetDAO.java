@@ -29,7 +29,8 @@ public class AktivitetDAO {
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
             "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
             "LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon " +
-            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon ";
+            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon " +
+            "LEFT JOIN STILLING_FRA_NAV sn on A.AKTIVITET_ID = sn.AKTIVITET_ID and A.VERSJON = sn.VERSJON ";
 
     private final Database database;
 
@@ -72,29 +73,19 @@ public class AktivitetDAO {
     @Transactional
     public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
-
+        String fhoId = ofNullable(aktivitet.getForhaandsorientering())
+                .map(Forhaandsorientering::getId)
+                .orElse(null);
         // language=sql
         database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
-
-        String forhaandsorienteringType = null;
-        String forhaandsorienteringTekst = null;
-        Date fhoLest = null;
-
-        Forhaandsorientering fho = aktivitet.getForhaandsorientering();
-
-        if (fho != null) {
-            forhaandsorienteringType = fho.getType().name();
-            forhaandsorienteringTekst = fho.getTekst();
-            fhoLest = fho.getLest();
-        }
 
         long versjon = nesteVersjon();
         //language=SQL
         database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
                         "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
                         "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, fho_type, fho_tekst, fho_lest, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 aktivitetId,
                 versjon,
                 aktivitet.getAktorId(),
@@ -111,15 +102,13 @@ public class AktivitetDAO {
                 EnumUtils.getName(aktivitet.getLagtInnAv()),
                 aktivitet.getLenke(),
                 aktivitet.isAvtalt(),
-                forhaandsorienteringType,
-                forhaandsorienteringTekst,
-                fhoLest,
                 true,
                 EnumUtils.getName(aktivitet.getTransaksjonsType()),
                 aktivitet.getHistoriskDato(),
                 aktivitet.getKontorsperreEnhetId(),
                 aktivitet.isAutomatiskOpprettet(),
-                aktivitet.getMalid()
+                aktivitet.getMalid(),
+                fhoId
         );
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
@@ -128,6 +117,7 @@ public class AktivitetDAO {
         insertIJobb(aktivitetId, versjon, aktivitet.getIJobbAktivitetData());
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
+        insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
 
         LOG.info("opprettet {}", aktivitet);
 
@@ -228,6 +218,24 @@ public class AktivitetDAO {
                             behandling.getBehandlingOppfolging()
                     );
                 });
+    }
+
+    private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
+        ofNullable(stillingFraNavData)
+                .ifPresent(stilling ->
+                        // language=sql
+                        database.update("" +
+                                " insert into " +
+                                " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE) " +
+                                " VALUES ( ?,?,?,?,?,? )",
+                                aktivitetId,
+                                versjon,
+                                stilling.getKanDeles(),
+                                stilling.getCvKanDelesTidspunkt(),
+                                stilling.getCvKanDelesAv(),
+                                EnumUtils.getName(stilling.getCvKanDelesAvType())
+                                )
+                );
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {

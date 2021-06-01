@@ -13,6 +13,7 @@ public class DbTestUtils {
 
     private static final List<String> ALL_TABLES = Arrays.asList(
             "MOTE_SMS_HISTORIKK",
+            "STILLING_FRA_NAV",
             "GJELDENDE_MOTE_SMS",
             "STILLINGSSOK",
             "EGENAKTIVITET",
@@ -21,7 +22,8 @@ public class DbTestUtils {
             "MOTE",
             "BEHANDLING",
             "AKTIVITET",
-            "ARENA_FORHAANDSORIENTERING"
+            "ARENA_FORHAANDSORIENTERING",
+            "FORHAANDSORIENTERING"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {

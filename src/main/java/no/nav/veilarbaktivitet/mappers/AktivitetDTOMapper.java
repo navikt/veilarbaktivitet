@@ -1,14 +1,19 @@
 package no.nav.veilarbaktivitet.mappers;
 
-import lombok.val;
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
+import static java.util.Optional.ofNullable;
+
 public class AktivitetDTOMapper {
 
-    public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet) {
-        val aktivitetDTO = new AktivitetDTO()
+    private AktivitetDTOMapper() {}
+
+    public static AktivitetDTO mapTilAktivitetDTO(AktivitetData aktivitet, boolean erEkstern) {
+
+        var aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())
@@ -20,17 +25,13 @@ public class AktivitetDTOMapper {
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
-                .setForhaandsorientering(aktivitet.getForhaandsorientering())
+                .setForhaandsorientering(mapForhaandsorientering(aktivitet.getForhaandsorientering()))
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
+                .setEndretAv(erEkstern ? null : aktivitet.getEndretAv()) // null ut endretAv når bruker er ekstern
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
                 .setTransaksjonsType(aktivitet.getTransaksjonsType());
-
-        // TODO: Ikke bruk statiske ting som dette inne i en mapper
-        if (AuthContextHolderThreadLocal.instance().erInternBruker()) {
-            aktivitetDTO.setEndretAv(aktivitet.getEndretAv());
-        }
 
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingSokData).accept(aktivitetDTO, aktivitet.getStillingsSoekAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapEgenAktivitetData).accept(aktivitetDTO, aktivitet.getEgenAktivitetData());
@@ -38,8 +39,12 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
-
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData(), erEkstern);
         return aktivitetDTO;
+    }
+
+    private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
+        aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(erEkstern ? null : stillingFraNavData.getCvKanDelesAv()));
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {
@@ -84,6 +89,12 @@ public class AktivitetDTOMapper {
                 .setArbeidssted(stillingsoekAktivitetData.getArbeidssted())
                 .setArbeidsgiver(stillingsoekAktivitetData.getArbeidsgiver())
                 .setStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
+    }
+
+    public static ForhaandsorienteringDTO mapForhaandsorientering(Forhaandsorientering forhaandsorientering) {
+        return ofNullable(forhaandsorientering)
+                .map(Forhaandsorientering::toDTO)
+                .orElse(null);
     }
 
 }

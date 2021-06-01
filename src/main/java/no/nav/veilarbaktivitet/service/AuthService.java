@@ -5,10 +5,7 @@ import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.*;
 import no.nav.veilarbaktivitet.domain.Person;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -41,6 +38,16 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
 
         if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public void sjekkTilgangTilPerson(AktorId aktorId) {
+        String innloggetBrukerToken = authContextHolder
+                .getIdTokenString()
+                .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
+
+        if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, aktorId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
@@ -117,7 +124,7 @@ public class AuthService {
                 .getRole()
                 .flatMap((role) -> {
                     if (UserRole.EKSTERN.equals(role)) {
-                        return getAktorIdForEksternBruker().map((id) -> (Person) id);
+                        return getAktorIdForEksternBruker();
                     }
                     if (UserRole.INTERN.equals(role)) {
                         return authContextHolder.getNavIdent().map(ident -> Person.navIdent(ident.get()));

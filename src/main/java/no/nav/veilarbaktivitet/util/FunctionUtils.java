@@ -27,4 +27,16 @@ public class FunctionUtils {
         };
     }
 
+    public static <A, B, C> TriConsumer<A, B, C> nullSafe(TriConsumer<A, B, C> triConsumer) {
+        return (a, b, c) -> {
+            if (a != null && b != null && c != null) {
+                triConsumer.accept(a, b, c);
+            }
+        };
+    }
+
+    public interface TriConsumer<A, B, C> {
+        void accept(A a, B b, C c);
+    }
+
 }

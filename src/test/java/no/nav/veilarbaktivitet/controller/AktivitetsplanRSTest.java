@@ -1,16 +1,15 @@
 package no.nav.veilarbaktivitet.controller;
 
-import lombok.SneakyThrows;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.Tiltaksaktivitet;
-import no.nav.veilarbaktivitet.arena.ArenaForhaandsorienteringDAO;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.arena.ArenaService;
+import no.nav.veilarbaktivitet.avtaltMedNav.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.mock.HentTiltakOgAktiviteterForBrukerResponseMock;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -24,7 +23,6 @@ import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
-import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 
@@ -32,18 +30,16 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettAktivTiltaksaktivitet;
-import static no.nav.veilarbaktivitet.service.TiltakOgAktivitetMock.opprettInaktivTiltaksaktivitet;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+/**
+ * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
+ */
 public class AktivitetsplanRSTest {
 
     private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
@@ -56,9 +52,11 @@ public class AktivitetsplanRSTest {
     private KvpClient kvpClient = mock(KvpClient.class);
     private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
+    private ForhaandsorienteringDAO fhoDao = mock(ForhaandsorienteringDAO.class);
+    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
 
-
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, kvpService, metricService);
+    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
     private AuthService authService = mock(AuthService.class);
     private ArenaService arenaService = mock(ArenaService.class);
     private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
@@ -66,12 +64,15 @@ public class AktivitetsplanRSTest {
     private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
 
     @Rule
-    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, "testident"));
+    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
 
     @Before
     public void setup() {
         when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_IDENT));
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
+        when(authService.erInternBruker()).thenReturn(Boolean.TRUE);
+        when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
+        when(authService.sjekKvpTilgang(null)).thenReturn(true);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
@@ -80,7 +81,26 @@ public class AktivitetsplanRSTest {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
+
+    @Test
+    public void hentAktivitetVersjoner_returnererForhaandsorienteringDataPaaKorrektInstans() {
+        var id = new Random().nextLong();
+        var aktivitet = nyttStillingssøk().withId(id).withAktorId(KJENT_AKTOR_ID.get());
+        aktivitetDAO.insertAktivitet(aktivitet);
+
+        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), KJENT_AKTOR_ID);
+        var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(id);
+        var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), id, KJENT_AKTOR_ID, NavIdent.of("V123"));
+        var resultat = aktivitetController.hentAktivitetVersjoner(String.valueOf(id));
+
+        Assert.assertEquals(3, resultat.size());
+        Assert.assertNull(resultat.get(0).getForhaandsorientering());
+        Assert.assertNull(resultat.get(1).getForhaandsorientering());
+        Assert.assertNull(resultat.get(2).getForhaandsorientering());
+
+    }
+
     @Test
     public void hent_aktivitsplan() {
         gitt_at_jeg_har_aktiviter();
@@ -93,7 +113,6 @@ public class AktivitetsplanRSTest {
         da_skal_jeg_kunne_hente_en_aktivitet();
     }
 
-    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void hent_aktivitetsplan_med_kontorsperre() {
         gitt_at_jeg_har_aktiviteter_med_kontorsperre();
@@ -110,10 +129,9 @@ public class AktivitetsplanRSTest {
     public void opprett_aktivitet() {
         gitt_at_jeg_har_laget_en_aktivtet();
         nar_jeg_lagrer_aktivteten();
-        da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan();
+        da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan();
     }
 
-    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void oppdater_status() {
         gitt_at_jeg_har_aktiviter();
@@ -121,7 +139,6 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_status();
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void oppdater_etikett() {
         gitt_at_jeg_har_aktiviter();
@@ -129,7 +146,6 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_etikett();
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void hent_aktivitet_versjoner() {
         gitt_at_jeg_har_aktiviter();
@@ -140,7 +156,6 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void oppdater_aktivtet() {
-        when(authService.erEksternBruker()).thenReturn(true);
         gitt_at_jeg_har_aktiviter();
         nar_jeg_oppdaterer_en_av_aktiviten();
         da_skal_jeg_aktiviten_vare_endret();
@@ -148,16 +163,11 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
-        when(authService.erInternBruker()).thenReturn(true);
-        when(authService.getInnloggetBrukerIdent()).thenReturn(Optional.of(KJENT_IDENT.get()));
-
-        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_IDENT.get()), () -> {
-            gitt_at_jeg_har_laget_en_aktivtet();
-            gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
-            nar_jeg_lagrer_aktivteten();
-            nar_jeg_oppdaterer_aktiviten();
-            da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
-        });
+        gitt_at_jeg_har_laget_en_aktivtet();
+        gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
+        nar_jeg_lagrer_aktivteten();
+        nar_jeg_oppdaterer_aktiviten();
+        da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
     }
 
 
@@ -191,7 +201,7 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
         lagredeAktivitetsIder = aktiviteter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, null))
+                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, KJENT_AKTOR_ID))
                 .collect(Collectors.toList());
     }
 
@@ -248,7 +258,7 @@ public class AktivitetsplanRSTest {
     private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
-        val originalAktivitet = aktivitetService.hentAktivitet(lagredeAktivitetsIder.get(0));
+        val originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.get(0));
         oldOpprettetDato = originalAktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
@@ -259,7 +269,7 @@ public class AktivitetsplanRSTest {
                 .avsluttetKommentar(nyAvsluttetKommentar)
                 .build();
 
-        this.aktivitet = aktivitetController.oppdaterAktivitet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet));
+        this.aktivitet = aktivitetController.oppdaterAktivitet(AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, false));
         this.lagredeAktivitetsIder.set(0, Long.parseLong(this.aktivitet.getId()));
     }
 
@@ -276,20 +286,16 @@ public class AktivitetsplanRSTest {
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo(((AktivitetDTO)aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
+                equalTo((aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
-    private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
-        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
-    }
-
-    private void da_skal_jeg_ha_mindre_aktiviter_i_min_aktivitetsplan() {
+    private void da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
         assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_status() {
         assertThat(aktivitet.getStatus(), equalTo(nyAktivitetStatus));
-        assertThat(aktivitetService.hentAktivitet(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
+        assertThat(aktivitetService.hentAktivitetMedForhaandsorientering(Long.parseLong(aktivitet.getId())).getStatus(), equalTo(nyAktivitetStatus));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_etikett() {

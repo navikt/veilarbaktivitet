@@ -19,6 +19,7 @@ public class AktivitetTypeDataTesBuilder {
     public static EgenAktivitetData nyEgenaktivitet() {
         return EgenAktivitetData.builder()
                 .hensikt("nada")
+                .oppfolging("oppfølging")
                 .build();
     }
 
@@ -64,6 +65,15 @@ public class AktivitetTypeDataTesBuilder {
                 .forberedelser("blee")
                 .referat("temp")
                 .referatPublisert(false)
+                .build();
+    }
+
+    public static StillingFraNavData nyStillingFraNav() {
+        return StillingFraNavData.builder()
+                .cvKanDelesAvType(InnsenderData.NAV)
+                .cvKanDelesAv("Z999999")
+                .cvKanDelesTidspunkt(AktivitetDataTestBuilder.nyDato())
+                .kanDeles(Boolean.TRUE)
                 .build();
     }
 }
