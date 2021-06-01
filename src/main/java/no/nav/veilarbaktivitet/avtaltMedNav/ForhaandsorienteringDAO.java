@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Repository
 public class ForhaandsorienteringDAO {
     private final Database database;
-    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO " +
+    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_STOPPET " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
