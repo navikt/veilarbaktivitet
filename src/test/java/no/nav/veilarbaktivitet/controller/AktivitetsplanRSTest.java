@@ -35,9 +35,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
+/**
+ * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
+ */
 public class AktivitetsplanRSTest {
 
     private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
@@ -62,12 +64,15 @@ public class AktivitetsplanRSTest {
     private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
 
     @Rule
-    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, "testident"));
+    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
 
     @Before
     public void setup() {
         when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_IDENT));
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
+        when(authService.erInternBruker()).thenReturn(Boolean.TRUE);
+        when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
+        when(authService.sjekKvpTilgang(null)).thenReturn(true);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
     }
 
@@ -96,7 +101,6 @@ public class AktivitetsplanRSTest {
 
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void hent_aktivitsplan() {
         gitt_at_jeg_har_aktiviter();
@@ -109,7 +113,6 @@ public class AktivitetsplanRSTest {
         da_skal_jeg_kunne_hente_en_aktivitet();
     }
 
-    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void hent_aktivitetsplan_med_kontorsperre() {
         gitt_at_jeg_har_aktiviteter_med_kontorsperre();
@@ -126,10 +129,9 @@ public class AktivitetsplanRSTest {
     public void opprett_aktivitet() {
         gitt_at_jeg_har_laget_en_aktivtet();
         nar_jeg_lagrer_aktivteten();
-        da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan();
+        da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan();
     }
 
-    @Ignore("må fikses")  // TODO: Må fikses
     @Test
     public void oppdater_status() {
         gitt_at_jeg_har_aktiviter();
@@ -137,7 +139,6 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_status();
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void oppdater_etikett() {
         gitt_at_jeg_har_aktiviter();
@@ -145,7 +146,6 @@ public class AktivitetsplanRSTest {
         da_skal_min_aktivitet_fatt_ny_etikett();
     }
 
-    @Ignore("må fikses") // TODO: Må fikses
     @Test
     public void hent_aktivitet_versjoner() {
         gitt_at_jeg_har_aktiviter();
@@ -156,7 +156,6 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void oppdater_aktivtet() {
-        when(authService.erEksternBruker()).thenReturn(true);
         gitt_at_jeg_har_aktiviter();
         nar_jeg_oppdaterer_en_av_aktiviten();
         da_skal_jeg_aktiviten_vare_endret();
@@ -164,16 +163,11 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void skal_ikke_kunne_endre_annet_enn_frist_pa_avtalte_aktiviter() {
-        when(authService.erInternBruker()).thenReturn(true);
-        when(authService.getInnloggetBrukerIdent()).thenReturn(Optional.of(KJENT_IDENT.get()));
-
-        AuthContextHolderThreadLocal.instance().withContext(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_IDENT.get()), () -> {
-            gitt_at_jeg_har_laget_en_aktivtet();
-            gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
-            nar_jeg_lagrer_aktivteten();
-            nar_jeg_oppdaterer_aktiviten();
-            da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
-        });
+        gitt_at_jeg_har_laget_en_aktivtet();
+        gitt_at_jeg_har_satt_aktiviteten_til_avtalt();
+        nar_jeg_lagrer_aktivteten();
+        nar_jeg_oppdaterer_aktiviten();
+        da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
     }
 
 
@@ -295,11 +289,7 @@ public class AktivitetsplanRSTest {
                 equalTo((aktivitetController.hentAktivitet(lagredeAktivitetsIder.get(0).toString())).getId()));
     }
 
-    private void da_skal_jeg_denne_aktivteten_ligge_i_min_aktivitetsplan() {
-        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
-    }
-
-    private void da_skal_jeg_ha_mindre_aktiviter_i_min_aktivitetsplan() {
+    private void da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
         assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
     }
 
