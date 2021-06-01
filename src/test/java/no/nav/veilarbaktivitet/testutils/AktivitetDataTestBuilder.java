@@ -29,6 +29,8 @@ public class AktivitetDataTestBuilder {
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
                 .lestAvBrukerForsteGang(null)
                 .historiskDato(null)
+                .endretDato(nyDato())
+                .endretAv("Z999999")
                 .malid("2");
     }
 
@@ -57,6 +59,7 @@ public class AktivitetDataTestBuilder {
     public static AktivitetData nyStillingFraNav() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
+                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav())
                 .build();
     }
 

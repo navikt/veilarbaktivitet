@@ -159,7 +159,7 @@ public class ForhaandsorienteringDTOControllerTest {
                 .endretAv(ident)
                 .build();
 
-        AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet);
+        AktivitetDTO forventetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(forventet, false);
 
         assertEquals(markertSomAvtalt.getForhaandsorientering().getTekst(), forventetDTO.getForhaandsorientering().getTekst());
 
