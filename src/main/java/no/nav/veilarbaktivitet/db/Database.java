@@ -1,6 +1,4 @@
 package no.nav.veilarbaktivitet.db;
-
-import org.joda.time.DateTime;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
