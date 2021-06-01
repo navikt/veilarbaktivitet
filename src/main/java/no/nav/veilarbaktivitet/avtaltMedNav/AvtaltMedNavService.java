@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
@@ -18,6 +19,7 @@ import java.util.Date;
 
 @Service
 @Transactional
+@Slf4j
 public class AvtaltMedNavService {
     private final MetricService metricService;
     private final AktivitetDAO aktivitetDAO;
@@ -105,6 +107,24 @@ public class AvtaltMedNavService {
 
     public Forhaandsorientering hentFHO(String fhoId) {
         return fhoDAO.getById(fhoId);
+    }
+
+    public Forhaandsorientering stoppVarselHvisAktiv(String forhaandsorienteringId) {
+        Forhaandsorientering forhaandsorientering = fhoDAO.getById(forhaandsorienteringId);
+
+        if(forhaandsorienteringId != null && forhaandsorientering == null) {
+            log.error("Kan ikke stoppe varsel på forhåndsorientering med id: " + forhaandsorienteringId + ". Forhåndsorienteringen finnes ikke");
+        }
+
+        boolean varselSendt = forhaandsorientering.getVarselId() != null;
+        boolean varselErStoppet = forhaandsorientering.getVarselStoppetDato() != null;
+
+        if (!varselSendt && !varselErStoppet) {
+            log.info("Stopper varsel på forhåndsorientering med id: " + forhaandsorienteringId);
+            return fhoDAO.stoppVarsel(forhaandsorienteringId);
+        }
+
+        return null;
     }
 
 }

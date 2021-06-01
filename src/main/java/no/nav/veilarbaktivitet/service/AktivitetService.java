@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -238,7 +239,10 @@ public class AktivitetService {
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(aktivitetDAO::insertAktivitet);
+                .forEach(a -> {
+                    var fho = avtaltMedNavService.stoppVarselHvisAktiv(a.getFhoId());
+                    aktivitetDAO.insertAktivitet(a.withForhaandsorientering(fho));
+                });
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {

@@ -114,6 +114,16 @@ public class ForhaandsorienteringDAO {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
+    public Forhaandsorientering stoppVarsel(String forhaandsorienteringId) {
+        // language=sql
+        var rows = database
+                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_STOPPET = CURRENT_TIMESTAMP WHERE ID = ?", forhaandsorienteringId);
+        if (rows!=1){
+            throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
+        }
+        return getById(forhaandsorienteringId);
+    }
+
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
         return Forhaandsorientering.builder()
                 .id(rs.getString("ID"))
@@ -126,7 +136,8 @@ public class ForhaandsorienteringDAO {
                 .opprettetDato(Database.hentDato(rs, "OPPRETTET_DATO"))
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
                 .lestDato(Database.hentDato(rs, "LEST_DATO"))
-
+                .varselId(rs.getString("VARSEL_ID"))
+                .varselStoppetDato(Database.hentDato(rs,"VARSEL_STOPPET"))
                 .build();
     }
 
