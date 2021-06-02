@@ -115,6 +115,25 @@ public class AvtaltMedNavServiceTest {
 
     }
 
+    @Test
+    public void stoppVarselHvisAktiv_stopperAktivtVarsel() {
+        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+        var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
+        boolean varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
+        var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
+
+        Assert.assertTrue(varselStoppet);
+        Assert.assertNotNull(nyFHO.getVarselStoppetDato());
+
+    }
+
+    @Test
+    public void stoppVarselHvisAktiv_ForhåndsorienteringsIdErNULL_returnererFalse() {
+        var varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(null);
+
+        Assert.assertFalse(varselStoppet);
+    }
+
     private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData) {
         aktivitetDAO.insertAktivitet(aktivitetData);
 

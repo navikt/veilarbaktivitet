@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Repository
 public class ForhaandsorienteringDAO {
     private final Database database;
-    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO " +
+    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_STOPPET " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
@@ -80,6 +80,13 @@ public class ForhaandsorienteringDAO {
         }
     }
 
+    public boolean stoppVarsel(String forhaandsorienteringId) {
+        //language=sql
+        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_STOPPET = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_STOPPET is null AND VARSEL_ID is null", forhaandsorienteringId);
+
+        return stoppet;
+    }
+
     public Forhaandsorientering getById(String id) {
         try {
             return database.queryForObject(selectAktivitet + "WHERE ID = ?", ForhaandsorienteringDAO::map,
@@ -114,6 +121,16 @@ public class ForhaandsorienteringDAO {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
+    public Forhaandsorientering markerVarselSomSendt(String forhaandsorienteringId, String varselId) {
+        // Kun for testing, settes egentlig fra veilarbvarsel
+        // language=sql
+        var rows = database
+                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_ID = ? WHERE ID = ?", varselId, forhaandsorienteringId);
+        if (rows!=1){
+            throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
+        }
+        return getById(forhaandsorienteringId);
+    }
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
         return Forhaandsorientering.builder()
                 .id(rs.getString("ID"))
@@ -126,7 +143,8 @@ public class ForhaandsorienteringDAO {
                 .opprettetDato(Database.hentDato(rs, "OPPRETTET_DATO"))
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
                 .lestDato(Database.hentDato(rs, "LEST_DATO"))
-
+                .varselId(rs.getString("VARSEL_ID"))
+                .varselStoppetDato(Database.hentDato(rs,"VARSEL_STOPPET"))
                 .build();
     }
 

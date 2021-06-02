@@ -7,10 +7,12 @@ import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
+import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -72,5 +74,44 @@ public class ForhaandsorienteringDAOTest {
 
     }
 
+
+    @Test
+    public void stoppVarselHvisAktiv_varselErAlleredeStoppet_endrerIkkeStoppDato() {
+        var avtaltDTO = new AvtaltMedNavDTO().setAktivitetVersjon(new Random().nextLong()).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());
+
+        var fho = fhoDAO.insert(avtaltDTO, new Random().nextLong(), AKTOR_ID, "V234", new Date());
+        var fhoId = fho.getId();
+        var stoppet = fhoDAO.stoppVarsel(fhoId);
+
+        fho = fhoDAO.getById(fhoId);
+        var stoppetDato = fho.getVarselStoppetDato();
+        Assert.assertTrue(stoppet);
+        Assert.assertNotNull(stoppetDato);
+
+        stoppet = fhoDAO.stoppVarsel(fhoId);
+
+        var fhoStoppetIgjen = fhoDAO.getById(fhoId);
+
+        Assert.assertFalse(stoppet);
+        Assert.assertEquals(stoppetDato, fhoStoppetIgjen.getVarselStoppetDato());
+    }
+
+    @Test
+    public void stoppVarselHvisAktiv_varselErAlleredeSendt_endrerIkkeStoppDato() {
+        var avtaltDTO = new AvtaltMedNavDTO().setAktivitetVersjon(new Random().nextLong()).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());
+        var varselId = "varselId";
+        var fho = fhoDAO.insert(avtaltDTO, new Random().nextLong(), AKTOR_ID, "V234", new Date());
+        var fhoId = fho.getId();
+
+        fho = fhoDAO.markerVarselSomSendt(fhoId, varselId);
+
+        var stoppet = fhoDAO.stoppVarsel(fhoId);
+
+        var resultatFho = fhoDAO.getById(fhoId);
+
+        Assert.assertFalse(stoppet);
+        Assert.assertEquals(fho.getVarselStoppetDato(), resultatFho.getVarselStoppetDato());
+        Assert.assertEquals(varselId, resultatFho.getVarselId());
+    }
 
 }
