@@ -113,8 +113,11 @@ public class AvtaltMedNavService {
         Forhaandsorientering forhaandsorientering = fhoDAO.getById(forhaandsorienteringId);
 
         if(forhaandsorienteringId != null && forhaandsorientering == null) {
-            log.error("Kan ikke stoppe varsel på forhåndsorientering med id: " + forhaandsorienteringId + ". Forhåndsorienteringen finnes ikke");
+            var feilmelding = "Kan ikke stoppe varsel på forhåndsorientering med id: " + forhaandsorienteringId + ". Forhåndsorienteringen finnes ikke";
+            log.error(feilmelding);
+            throw new IllegalStateException(feilmelding);
         }
+        else if (forhaandsorientering == null) return null;
 
         boolean varselSendt = forhaandsorientering.getVarselId() != null;
         boolean varselErStoppet = forhaandsorientering.getVarselStoppetDato() != null;
@@ -124,7 +127,7 @@ public class AvtaltMedNavService {
             return fhoDAO.stoppVarsel(forhaandsorienteringId);
         }
 
-        return null;
+        return forhaandsorientering;
     }
 
 }

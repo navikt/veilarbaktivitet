@@ -124,6 +124,16 @@ public class ForhaandsorienteringDAO {
         return getById(forhaandsorienteringId);
     }
 
+    public Forhaandsorientering markerVarselSomSendt(String forhaandsorienteringId, String varselId) {
+        // Kun for testing, settes egentlig fra veilarbvarsel
+        // language=sql
+        var rows = database
+                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_ID = CURRENT_TIMESTAMP WHERE ID = ?", forhaandsorienteringId);
+        if (rows!=1){
+            throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
+        }
+        return getById(forhaandsorienteringId);
+    }
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
         return Forhaandsorientering.builder()
                 .id(rs.getString("ID"))
