@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -71,8 +70,9 @@ public class AktivitetService {
         return aktivitetId;
     }
 
+    @Transactional
     public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        val nyAktivitet = originalAktivitet
+        var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .lagtInnAv(endretAv.tilBrukerType())
@@ -82,6 +82,10 @@ public class AktivitetService {
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
+
+        if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
+            avtaltMedNavService.stoppVarselHvisAktiv(originalAktivitet.getFhoId());
+        }
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
