@@ -72,7 +72,7 @@ public class MetricService {
 
     }
 
-    private void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
+    public void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
         String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         Event ev = new Event("aktivitet.oppdatert.status")
                 .addTagToReport("type", aktivitetData.getAktivitetType().toString())

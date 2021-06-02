@@ -177,24 +177,15 @@ public class AktivitetAppService {
                 .getLoggedInnUser()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
 
-        if (authService.erInternBruker()) {
-            aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
-            val newAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
-            metricService.oppdatertStatusAvNAV(newAktivitet);
-            return newAktivitet;
-        } else if (authService.erEksternBruker()) {
-            if (TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
-                aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
-                val newAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
-                metricService.oppdatertStatusAvBruker(newAktivitet);
-                return newAktivitet;
-            } else {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
-            }
+        if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        // not a valid user
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
+        var nyAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
+        metricService.oppdatertStatus(nyAktivitet, authService.erInternBruker());
+
+        return nyAktivitet;
     }
 
     @Transactional
