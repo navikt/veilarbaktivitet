@@ -234,14 +234,15 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
+    @Transactional
     public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(a -> {
-                    var fho = avtaltMedNavService.stoppVarselHvisAktiv(a.getFhoId());
-                    aktivitetDAO.insertAktivitet(a.withForhaandsorientering(fho));
+                    avtaltMedNavService.stoppVarselHvisAktiv(a.getFhoId());
+                    aktivitetDAO.insertAktivitet(a);
                 });
     }
 

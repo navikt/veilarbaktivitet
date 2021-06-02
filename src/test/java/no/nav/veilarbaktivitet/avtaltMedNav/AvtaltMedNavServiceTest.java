@@ -119,51 +119,19 @@ public class AvtaltMedNavServiceTest {
     public void stoppVarselHvisAktiv_stopperAktivtVarsel() {
         var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
         var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
-        var resultatFhoMedStoppetVarsel = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
+        boolean varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
+        var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
 
-        Assert.assertNotNull(resultatFhoMedStoppetVarsel.getVarselStoppetDato());
+        Assert.assertTrue(varselStoppet);
+        Assert.assertNotNull(nyFHO.getVarselStoppetDato());
 
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void stoppVarselHvisAktiv_kasterExceptionVedOppslagPåUkjentID() {
-        avtaltMedNavService.stoppVarselHvisAktiv("dette er bare tull");
     }
 
     @Test
-    public void stoppVarselHvisAktiv_ForhåndsorienteringsIdErNULL_returnererNull() {
-        var resultatFhoMedStoppetVarsel = avtaltMedNavService.stoppVarselHvisAktiv(null);
+    public void stoppVarselHvisAktiv_ForhåndsorienteringsIdErNULL_returnererFalse() {
+        var varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(null);
 
-        Assert.assertNull(resultatFhoMedStoppetVarsel);
-    }
-
-    @Test
-    public void stoppVarselHvisAktiv_varselErAlleredeStoppet_endrerIkkeStoppDato() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-        var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
-        var resultatFhoForsteStopp = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
-        var forsteStoppDato = resultatFhoForsteStopp.getVarselStoppetDato();
-
-        Assert.assertNotNull(forsteStoppDato);
-        var resultatFhoAndreStopp = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
-
-        Assert.assertEquals(forsteStoppDato, resultatFhoAndreStopp.getVarselStoppetDato());
-    }
-
-    @Test
-    public void stoppVarselHvisAktiv_varselErAlleredeSendt_endrerIkkeStoppDato() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-        var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
-        var fhoId = opprettetAktivitetMedFHO.getForhaandsorientering().getId();
-        var resultatFhoForsteStopp = avtaltMedNavService.stoppVarselHvisAktiv(fhoId);
-        var forsteStoppDato = resultatFhoForsteStopp.getVarselStoppetDato();
-        Assert.assertNotNull(forsteStoppDato);
-
-        fhoDAO.markerVarselSomSendt(fhoId, "varselId");
-
-        var resultatFhoAndreStopp = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
-
-        Assert.assertEquals(forsteStoppDato, resultatFhoAndreStopp.getVarselStoppetDato());
+        Assert.assertFalse(varselStoppet);
     }
 
     private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData) {

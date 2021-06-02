@@ -31,7 +31,6 @@ public class AvtaltMedNavService {
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
 
 
-
     public AvtaltMedNavService(MetricService metricService,
                                AktivitetDAO aktivitetDAO,
                                ForhaandsorienteringDAO fhoDAO,
@@ -109,25 +108,8 @@ public class AvtaltMedNavService {
         return fhoDAO.getById(fhoId);
     }
 
-    public Forhaandsorientering stoppVarselHvisAktiv(String forhaandsorienteringId) {
-        Forhaandsorientering forhaandsorientering = fhoDAO.getById(forhaandsorienteringId);
-
-        if(forhaandsorienteringId != null && forhaandsorientering == null) {
-            var feilmelding = "Kan ikke stoppe varsel på forhåndsorientering med id: " + forhaandsorienteringId + ". Forhåndsorienteringen finnes ikke";
-            log.error(feilmelding);
-            throw new IllegalStateException(feilmelding);
-        }
-        else if (forhaandsorientering == null) return null;
-
-        boolean varselSendt = forhaandsorientering.getVarselId() != null;
-        boolean varselErStoppet = forhaandsorientering.getVarselStoppetDato() != null;
-
-        if (!varselSendt && !varselErStoppet) {
-            log.info("Stopper varsel på forhåndsorientering med id: " + forhaandsorienteringId);
-            return fhoDAO.stoppVarsel(forhaandsorienteringId);
-        }
-
-        return forhaandsorientering;
+    public boolean stoppVarselHvisAktiv(String forhaandsorienteringId) {
+        if (forhaandsorienteringId == null) return false;
+        return fhoDAO.stoppVarsel(forhaandsorienteringId);
     }
-
 }

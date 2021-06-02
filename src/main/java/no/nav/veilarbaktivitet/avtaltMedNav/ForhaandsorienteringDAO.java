@@ -80,6 +80,13 @@ public class ForhaandsorienteringDAO {
         }
     }
 
+    public boolean stoppVarsel(String forhaandsorienteringId) {
+        //language=sql
+        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_STOPPET = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_STOPPET is null AND VARSEL_ID is null", forhaandsorienteringId);
+
+        return stoppet;
+    }
+
     public Forhaandsorientering getById(String id) {
         try {
             return database.queryForObject(selectAktivitet + "WHERE ID = ?", ForhaandsorienteringDAO::map,
@@ -114,21 +121,11 @@ public class ForhaandsorienteringDAO {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
-    public Forhaandsorientering stoppVarsel(String forhaandsorienteringId) {
-        // language=sql
-        var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_STOPPET = CURRENT_TIMESTAMP WHERE ID = ?", forhaandsorienteringId);
-        if (rows!=1){
-            throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
-        }
-        return getById(forhaandsorienteringId);
-    }
-
     public Forhaandsorientering markerVarselSomSendt(String forhaandsorienteringId, String varselId) {
         // Kun for testing, settes egentlig fra veilarbvarsel
         // language=sql
         var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_ID = CURRENT_TIMESTAMP WHERE ID = ?", forhaandsorienteringId);
+                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_ID = ? WHERE ID = ?", varselId, forhaandsorienteringId);
         if (rows!=1){
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
