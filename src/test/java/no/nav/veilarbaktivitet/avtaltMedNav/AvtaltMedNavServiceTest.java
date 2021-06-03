@@ -99,37 +99,63 @@ public class AvtaltMedNavServiceTest {
     }
 
     @Test
+    public void hentFhoForAktivitet_henterRiktigFho() {
+        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+
+        opprettAktivitetMedFHO(aktivitetData);
+
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
+
+        Assert.assertEquals(aktivitetData.getId().toString(), aktivitetDTOFHO.getAktivitetId());
+        Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
+        Assert.assertEquals(defaultType, aktivitetDTOFHO.getType());
+    }
+
+    @Test
     public void markerSomLest_oppdatererAktivitetDTO() {
         var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
 
         opprettAktivitetMedFHO(aktivitetData);
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
-        var aktivitetLest = avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
-        var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(aktivitetData.getId());
 
-        Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
-        Assert.assertEquals(defaultType, aktivitetDTOFHO.getType());
-        Assert.assertNotNull(aktivitetLest.getForhaandsorientering().getLestDato());
-        Assert.assertEquals(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, nyAktivitetMedFHO.getTransaksjonsType());
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
+
+        var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetData.getId());
+
+        Assert.assertEquals(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, nyAktivitet.getTransaksjonsType());
 
     }
 
     @Test
-    public void stoppVarselHvisAktiv_stopperAktivtVarsel() {
+    public void markerSomLest_setterVarselFerdig() {
+        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+        var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData);
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
+
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
+        var nyFHO = avtaltMedNavService.hentFHO(aktivitetDTO.getForhaandsorientering().getId());
+
+        Assert.assertNotNull(nyFHO.getLestDato());
+        Assert.assertEquals(nyFHO.getLestDato(), nyFHO.getVarselFerdigDato());
+
+    }
+
+    @Test
+    public void settVarselFerdig_stopperAktivtVarsel() {
         var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
         var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
-        boolean varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
+        boolean varselStoppet = avtaltMedNavService.settVarselFerdig(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
         var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
 
         Assert.assertTrue(varselStoppet);
-        Assert.assertNotNull(nyFHO.getVarselStoppetDato());
+        Assert.assertNotNull(nyFHO.getVarselFerdigDato());
 
     }
 
     @Test
-    public void stoppVarselHvisAktiv_ForhåndsorienteringsIdErNULL_returnererFalse() {
-        var varselStoppet = avtaltMedNavService.stoppVarselHvisAktiv(null);
+    public void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
+        var varselStoppet = avtaltMedNavService.settVarselFerdig(null);
 
         Assert.assertFalse(varselStoppet);
     }

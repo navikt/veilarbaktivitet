@@ -108,8 +108,8 @@ public class AvtaltMedNavService {
         return fhoDAO.getById(fhoId);
     }
 
-    public boolean stoppVarselHvisAktiv(String forhaandsorienteringId) {
+    public boolean settVarselFerdig(String forhaandsorienteringId) {
         if (forhaandsorienteringId == null) return false;
-        return fhoDAO.stoppVarsel(forhaandsorienteringId);
+        return fhoDAO.settVarselFerdig(forhaandsorienteringId);
     }
 }

@@ -19,7 +19,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Repository
 public class ForhaandsorienteringDAO {
     private final Database database;
-    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_STOPPET " +
+    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_FERDIG " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
@@ -74,15 +74,15 @@ public class ForhaandsorienteringDAO {
     public void markerSomLest(String id, Date lestDato, Long lestVersjon) {
         // language=sql
         var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ? WHERE ID = ?", lestDato, lestVersjon, id);
+                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_FERDIG = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
         if (rows!=1){
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
     }
 
-    public boolean stoppVarsel(String forhaandsorienteringId) {
+    public boolean settVarselFerdig(String forhaandsorienteringId) {
         //language=sql
-        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_STOPPET = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_STOPPET is null AND VARSEL_ID is null", forhaandsorienteringId);
+        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
 
         return stoppet;
     }
@@ -144,7 +144,7 @@ public class ForhaandsorienteringDAO {
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
                 .lestDato(Database.hentDato(rs, "LEST_DATO"))
                 .varselId(rs.getString("VARSEL_ID"))
-                .varselStoppetDato(Database.hentDato(rs,"VARSEL_STOPPET"))
+                .varselFerdigDato(Database.hentDato(rs,"VARSEL_FERDIG"))
                 .build();
     }
 
