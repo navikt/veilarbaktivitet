@@ -38,14 +38,6 @@ public class MetricService {
         metricsClient.report(ev);
     }
 
-    public void oppdatertStatusAvNAV(AktivitetData aktivitetData) {
-        oppdatertStatus(aktivitetData, true);
-    }
-
-    public void oppdatertStatusAvBruker(AktivitetData aktivitetData) {
-        oppdatertStatus(aktivitetData, false);
-    }
-
     public void reportIngenTilgangGrunnetKontorsperre() {
         Event ev = new Event("aktivitet.kontorsperre.ikketilgang");
         metricsClient.report(ev);
