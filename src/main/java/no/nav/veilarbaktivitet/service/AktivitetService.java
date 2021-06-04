@@ -84,7 +84,7 @@ public class AktivitetService {
         aktivitetDAO.insertAktivitet(nyAktivitet);
 
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
-            avtaltMedNavService.stoppVarselHvisAktiv(originalAktivitet.getFhoId());
+            avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
     }
 
@@ -245,7 +245,7 @@ public class AktivitetService {
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(a -> {
-                    avtaltMedNavService.stoppVarselHvisAktiv(a.getFhoId());
+                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
                     aktivitetDAO.insertAktivitet(a);
                 });
     }
