@@ -105,6 +105,7 @@ public class AvtaltMedNavService {
     }
 
     public Forhaandsorientering hentFHO(String fhoId) {
+        if(fhoId == null) return null;
         return fhoDAO.getById(fhoId);
     }
 
