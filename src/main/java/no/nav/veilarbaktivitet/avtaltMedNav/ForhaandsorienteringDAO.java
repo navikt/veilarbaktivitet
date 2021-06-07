@@ -121,16 +121,6 @@ public class ForhaandsorienteringDAO {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
-    public Forhaandsorientering markerVarselSomSendt(String forhaandsorienteringId, String varselId) {
-        // Kun for testing, settes egentlig fra veilarbvarsel
-        // language=sql
-        var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET VARSEL_ID = ? WHERE ID = ?", varselId, forhaandsorienteringId);
-        if (rows!=1){
-            throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
-        }
-        return getById(forhaandsorienteringId);
-    }
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
         return Forhaandsorientering.builder()
                 .id(rs.getString("ID"))
