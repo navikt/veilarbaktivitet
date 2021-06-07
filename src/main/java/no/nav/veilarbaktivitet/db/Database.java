@@ -1,5 +1,4 @@
 package no.nav.veilarbaktivitet.db;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
@@ -46,10 +45,6 @@ public class Database {
                 .map(Timestamp::getTime)
                 .map(Date::new)
                 .orElse(null);
-    }
-
-    private String timerNavn(String sql) {
-        return (sql + ".db").replaceAll("[^\\w]","-");
     }
 
     @FunctionalInterface

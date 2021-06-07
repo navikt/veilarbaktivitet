@@ -7,6 +7,6 @@ public enum AktivitetTypeDTO {
     IJOBB,
     BEHANDLING,
     MOTE,
-    SAMTALEREFERAT;
-
+    SAMTALEREFERAT,
+    STILLING_FRA_NAV,
 }

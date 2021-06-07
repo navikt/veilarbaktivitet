@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import no.nav.common.types.identer.AktorId;
 
 import java.util.Date;
 
@@ -10,21 +10,25 @@ import java.util.Date;
 @Builder(toBuilder = true)
 public class Forhaandsorientering {
 
-    @RequiredArgsConstructor
-    public enum Type {
-        SEND_FORHAANDSORIENTERING("send_forhandsorientering"),
-        SEND_PARAGRAF_11_9("send_paragraf_11_9"),
-        IKKE_SEND_FORHAANDSORIENTERING("ikke_send_forhandsorientering");
-
-        private final String value;
-    }
-
+    private String id;
     private Type type;
     private String tekst;
-    private Date lest;
+    private Date lestDato;
+    private AktorId aktorId;
+    private String arenaAktivitetId;
+    private String aktivitetId;
+    private String aktivitetVersjon;
+    private Date opprettetDato;
+    private String opprettetAv;
+    private String varselId;
+    private Date varselFerdigDato;
 
     public static ForhaandsorienteringBuilder builder() {
         return new CustomForhaandsorienteringBuilder();
+    }
+
+    public ForhaandsorienteringDTO toDTO() {
+        return new ForhaandsorienteringDTO(id, type, tekst, lestDato).toBuilder().build();
     }
 
     public static class CustomForhaandsorienteringBuilder extends ForhaandsorienteringBuilder {

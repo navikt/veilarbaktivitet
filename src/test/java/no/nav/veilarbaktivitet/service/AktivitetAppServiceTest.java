@@ -1,18 +1,23 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.domain.Person;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
+import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -31,8 +36,22 @@ public class AktivitetAppServiceTest {
     @Mock
     private MetricService metricService;
 
+    @Mock
+    private AvtaltMedNavService avtaltMedNavService;
+
     @InjectMocks
     private AktivitetAppService appService;
+
+    @Test(expected = ResponseStatusException.class)
+    public void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException(){
+        var aktivitet = nyMoteAktivitet();
+        when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId())).thenReturn(aktivitet);
+
+        appService.oppdaterAktivitet(aktivitet);
+    }
+
 
     @Ignore // TODO: Må fikses
     @Test
@@ -83,7 +102,7 @@ public class AktivitetAppServiceTest {
     }
 
     public void mockHentAktivitet(AktivitetData aktivitetData) {
-        when(aktivitetService.hentAktivitet(AKTIVITET_ID)).thenReturn(aktivitetData);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitetData);
     }
 
 }

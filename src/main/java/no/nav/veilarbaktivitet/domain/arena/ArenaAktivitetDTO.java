@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.domain.arena;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 
 import java.util.Date;
@@ -21,7 +21,7 @@ public class ArenaAktivitetDTO {
     Date tilDato;
     Date opprettetDato;
     boolean avtalt;
-    Forhaandsorientering forhaandsorientering;
+    ForhaandsorienteringDTO forhaandsorientering;
     public ArenaStatusDTO etikett;
 
     // Tiltaksaktivitet
