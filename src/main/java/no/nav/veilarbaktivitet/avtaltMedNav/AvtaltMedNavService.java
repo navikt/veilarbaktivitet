@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
@@ -18,6 +19,7 @@ import java.util.Date;
 
 @Service
 @Transactional
+@Slf4j
 public class AvtaltMedNavService {
     private final MetricService metricService;
     private final AktivitetDAO aktivitetDAO;
@@ -27,7 +29,6 @@ public class AvtaltMedNavService {
     public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
-
 
 
     public AvtaltMedNavService(MetricService metricService,
@@ -104,7 +105,12 @@ public class AvtaltMedNavService {
     }
 
     public Forhaandsorientering hentFHO(String fhoId) {
+        if(fhoId == null) return null;
         return fhoDAO.getById(fhoId);
     }
 
+    public boolean settVarselFerdig(String forhaandsorienteringId) {
+        if (forhaandsorienteringId == null) return false;
+        return fhoDAO.settVarselFerdig(forhaandsorienteringId);
+    }
 }

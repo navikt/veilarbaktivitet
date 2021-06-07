@@ -70,8 +70,9 @@ public class AktivitetService {
         return aktivitetId;
     }
 
+    @Transactional
     public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
-        val nyAktivitet = originalAktivitet
+        var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .lagtInnAv(endretAv.tilBrukerType())
@@ -81,6 +82,10 @@ public class AktivitetService {
                 .build();
 
         aktivitetDAO.insertAktivitet(nyAktivitet);
+
+        if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
+            avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
+        }
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -233,12 +238,16 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
+    @Transactional
     public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
         hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(a -> skalBliHistorisk(a, sluttDato))
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(aktivitetDAO::insertAktivitet);
+                .forEach(a -> {
+                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
+                    aktivitetDAO.insertAktivitet(a);
+                });
     }
 
     private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
