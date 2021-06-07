@@ -10,10 +10,12 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 
 import static junit.framework.TestCase.fail;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -37,6 +39,14 @@ public class AktivitetAppServiceTest {
 
     @InjectMocks
     private AktivitetAppService appService;
+
+    @Test(expected = ResponseStatusException.class)
+    public void oppdaterStatus_aktivitetsTypeSomBrukerIkkeKanLage_kasterException(){
+        var aktivitet = nyMoteAktivitet();
+        when(authService.erEksternBruker()).thenReturn(true);
+        appService.oppdaterAktivitet(aktivitet);
+    }
+
 
     @Ignore // TODO: Må fikses
     @Test

@@ -63,6 +63,13 @@ public class AktivitetsplanRSTest {
 
     private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
 
+    private AktivitetDTO orignalAktivitet;
+    private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
+    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
+    private List<Long> lagredeAktivitetsIder;
+
+    private AktivitetDTO aktivitet;
+
     @Rule
     public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
 
@@ -170,17 +177,10 @@ public class AktivitetsplanRSTest {
         da_skal_kun_fristen_og_versjonen_og_etikett_vare_oppdatert();
     }
 
-
-
-    private List<Long> lagredeAktivitetsIder;
-
-    private List<AktivitetData> aktiviter = Arrays.asList(
-            nyttStillingssøk(), nyttStillingssøk()
-    );
-
-    private AktivitetDTO aktivitet;
-
     private void gitt_at_jeg_har_aktiviter() {
+        List<AktivitetData> aktiviter = Arrays.asList(
+                nyttStillingssøk(), nyttStillingssøk()
+        );
         gitt_at_jeg_har_folgende_aktiviteter(aktiviter);
     }
 
@@ -217,9 +217,8 @@ public class AktivitetsplanRSTest {
         aktivitet = aktivitetController.opprettNyAktivitet(aktivitet, false);
     }
 
-    private AktivitetDTO orignalAktivitet;
-
     private void nar_jeg_oppdaterer_aktiviten() {
+
         orignalAktivitet = nyAktivitet()
                 .setAvtalt(true)
                 .setOpprettetDato(aktivitet.getOpprettetDato())
@@ -233,9 +232,6 @@ public class AktivitetsplanRSTest {
                         .setTilDato(new Date())
         );
     }
-
-    private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
-    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
         val aktivitet = aktivitetController.hentAktivitetsplan().aktiviteter.get(0);

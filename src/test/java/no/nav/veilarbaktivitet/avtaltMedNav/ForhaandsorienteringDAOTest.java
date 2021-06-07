@@ -96,5 +96,36 @@ public class ForhaandsorienteringDAOTest {
         Assert.assertEquals(stoppetDato, fhoStoppetIgjen.getVarselFerdigDato());
     }
 
+    @Test
+    public void markerSomLest_setterRiktigeVerdier() {
+        var avtaltDTO = new AvtaltMedNavDTO().setAktivitetVersjon(new Random().nextLong()).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());
+        var lestDato = new Date();
+        var fho = fhoDAO.insert(avtaltDTO, new Random().nextLong(), AKTOR_ID, "V234", new Date());
+        var fhoId = fho.getId();
 
+        fhoDAO.markerSomLest(fhoId, lestDato, avtaltDTO.getAktivitetVersjon());
+
+        var nyFho = fhoDAO.getById(fhoId);
+
+        Assert.assertEquals(lestDato, nyFho.getLestDato());
+        Assert.assertEquals(lestDato, nyFho.getVarselFerdigDato());
+        Assert.assertEquals(String.valueOf(avtaltDTO.getAktivitetVersjon()), nyFho.getAktivitetVersjon());
+        Assert.assertEquals(String.valueOf(avtaltDTO.getAktivitetVersjon()), nyFho.getAktivitetVersjon());
+
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void markerSomLest_forhaandsorienteringEksistererIkke_kasterException() {
+        fhoDAO.markerSomLest("Denne finnes ikke", new Date(), 1L);
+    }
+
+    @Test
+    public void getById_forhaandsorienteringEksistererIkke_returnererNull() {
+        Assert.assertNull(fhoDAO.getById("Denne finnes ikke"));
+    }
+
+    @Test
+    public void getFhoForAktivitet_forhaandsorienteringEksistererIkke_returnererNull() {
+        Assert.assertNull(fhoDAO.getFhoForAktivitet(5000L));
+    }
 }
