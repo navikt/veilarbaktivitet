@@ -1,26 +1,25 @@
 package no.nav.veilarbaktivitet.varsel.event;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
-@ToString
-@Builder(toBuilder = true)
-@AllArgsConstructor
-public class VarselDonePayload implements VarselPayload {
+@Value
+@SuperBuilder
+public class VarselDonePayload extends VarselEvent {
 
     @NonNull
     @Builder.Default
-    private String system = "VEILARB_AKTIVITET";
+    String system = "VEILARB_AKTIVITET";
 
     @NonNull
-    private String id;
+    String id;
 
     @NonNull
-    private String fodselsnummer;
+    String fodselsnummer;
 
     @NonNull
-    private String groupId;
+    String groupId;
 
 }

@@ -22,17 +22,14 @@ public class VarselService {
      */
     public VarselEvent sendVarsler() {
 
-
-        final VarselEvent testEvent = VarselEvent.builder()
+        final CreateVarselPayload testEvent = CreateVarselPayload.builder()
                 .event(VarselEventType.CREATE)
-                .payload(CreateVarselPayload.builder()
-                        .id(UUID.randomUUID().toString())
-                        .type(VarselType.MELDING)
-                        .fodselsnummer(FODSELSNUMMER_AREMARK)
-                        .groupId("TEST_GROUP")
-                        .message("Dette er en test fra NAV, venligst se bort fra denne beskjeden")
-                        .link("https://nav.no")
-                        .build())
+                .id(UUID.randomUUID().toString())
+                .type(VarselType.MELDING)
+                .fodselsnummer(FODSELSNUMMER_AREMARK)
+                .groupId("TEST_GROUP")
+                .message("Dette er en test fra NAV, venligst se bort fra denne beskjeden")
+                .link("https://nav.no")
                 .build();
 
         try {
@@ -45,13 +42,11 @@ public class VarselService {
     }
 
     public VarselEvent sendStopp(String id) {
-        final VarselEvent testDoneEvent = VarselEvent.builder()
+        final VarselEvent testDoneEvent = VarselDonePayload.builder()
                 .event(VarselEventType.DONE)
-                .payload(VarselDonePayload.builder()
-                        .id(id)
-                        .fodselsnummer(FODSELSNUMMER_AREMARK)
-                        .groupId("TEST_GROUP")
-                        .build())
+                .id(id)
+                .fodselsnummer(FODSELSNUMMER_AREMARK)
+                .groupId("TEST_GROUP")
                 .build();
 
         try {

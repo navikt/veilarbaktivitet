@@ -1,17 +1,17 @@
 package no.nav.veilarbaktivitet.varsel.event;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Value
-@Builder(toBuilder = true)
-@AllArgsConstructor
-public class VarselEvent {
+@Getter
+@SuperBuilder
+public abstract class VarselEvent {
 
     @NonNull
     @Builder.Default
@@ -22,13 +22,6 @@ public class VarselEvent {
     LocalDateTime timestamp = LocalDateTime.now();
 
     @NonNull
-    @Builder.Default
-    String type = "VARSEL";
-
-    @NonNull
     VarselEventType event;
-
-    @NonNull
-    VarselPayload payload;
 
 }

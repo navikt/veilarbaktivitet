@@ -1,16 +1,15 @@
 package no.nav.veilarbaktivitet.varsel.event;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 
 @Value
-@Builder(toBuilder = true)
-@AllArgsConstructor
-public class CreateVarselPayload implements VarselPayload {
+@SuperBuilder
+public class CreateVarselPayload extends VarselEvent {
 
     @NonNull
     @Builder.Default
