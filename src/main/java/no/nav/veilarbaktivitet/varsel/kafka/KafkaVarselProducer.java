@@ -13,6 +13,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
@@ -23,12 +24,12 @@ public class KafkaVarselProducer {
     @Value("${SEND_VARSEL_TOPIC:privat-fo-varsel-q1}")
     private String topic;
 
-    private final KafkaProducerClient<String, VarselEvent> producer;
+    private final KafkaProducerClient<String, String> producer;
 
     @Timed
     @SneakyThrows
     public long send(String key, VarselEvent value) {
-        ProducerRecord<String, VarselEvent> producerRecord = new ProducerRecord<>(topic, key, value);
+        ProducerRecord<String, String> producerRecord = toJsonProducerRecord(topic, key, value);
         producerRecord.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
         return producer.sendSync(producerRecord).offset();
