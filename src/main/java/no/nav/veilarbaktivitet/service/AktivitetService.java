@@ -44,10 +44,7 @@ public class AktivitetService {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        return aktivitetDAO.hentAktivitetVersjoner(id)
-                .stream()
-                .map(a -> a.withForhaandsorientering(avtaltMedNavService.hentFHO(a.getFhoId())))
-                .collect(Collectors.toList());
+        return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
