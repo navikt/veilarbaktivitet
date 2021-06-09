@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
@@ -29,9 +31,12 @@ public class AktivitetService {
     private final MetricService metricService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
-        return aktivitetDAO.hentAktiviteterForAktorId(aktorId)
-                .stream()
-                .map(a -> a.withForhaandsorientering(avtaltMedNavService.hentFHO(a.getFhoId())))
+        var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
+        var fhoIder = aktiviteter.stream().map(AktivitetData::getFhoId).collect(Collectors.toList());
+        var forhaandsorienteringer = avtaltMedNavService.hentFHO(fhoIder);
+
+        return aktiviteter.stream()
+                .map(mergeMedForhaandsorientering(forhaandsorienteringer))
                 .collect(Collectors.toList());
     }
 
@@ -44,10 +49,7 @@ public class AktivitetService {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        return aktivitetDAO.hentAktivitetVersjoner(id)
-                .stream()
-                .map(a -> a.withForhaandsorientering(avtaltMedNavService.hentFHO(a.getFhoId())))
-                .collect(Collectors.toList());
+        return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
@@ -258,6 +260,15 @@ public class AktivitetService {
     public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
         return hentAktivitetMedForhaandsorientering(aktivitetId);
+    }
+
+    private Function<AktivitetData, AktivitetData> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
+        return aktivitetData -> aktivitetData.withForhaandsorientering(forhaandsorienteringData
+                .stream()
+                .filter(fhoData -> fhoData.getId().equals(aktivitetData.getFhoId()))
+                .findAny()
+                .orElse(null)
+        );
     }
 
 }

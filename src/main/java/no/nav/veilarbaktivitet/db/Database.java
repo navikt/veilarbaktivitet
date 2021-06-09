@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.db;
+import lombok.Getter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.sql.ResultSet;
@@ -12,12 +14,15 @@ import java.util.List;
 import static java.util.Optional.ofNullable;
 
 @Component
+@Getter
 public class Database {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedJdbcTemplate;
 
     public Database(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+        namedJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     public <T> List<T> query(String sql, Mapper<T> mapper, Object... args) {
