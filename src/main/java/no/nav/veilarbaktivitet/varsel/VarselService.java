@@ -25,7 +25,7 @@ public class VarselService {
         final CreateVarselPayload testEvent = CreateVarselPayload.builder()
                 .event(VarselEventType.CREATE)
                 .id(UUID.randomUUID().toString())
-                .type(VarselType.MELDING)
+                .type(VarselType.OPPGAVE)
                 .fodselsnummer(FODSELSNUMMER_AREMARK)
                 .groupId("TEST_GROUP")
                 .message("Dette er en test fra NAV, venligst se bort fra denne beskjeden")
