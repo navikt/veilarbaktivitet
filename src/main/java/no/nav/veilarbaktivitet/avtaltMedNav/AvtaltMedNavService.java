@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -107,6 +109,11 @@ public class AvtaltMedNavService {
     public Forhaandsorientering hentFHO(String fhoId) {
         if(fhoId == null) return null;
         return fhoDAO.getById(fhoId);
+    }
+
+    public List<Forhaandsorientering> hentFHO(List<String> fhoIder){
+        var fhoIderUtenTomme = fhoIder.stream().filter(x-> x != null && !x.isEmpty()).collect(Collectors.toList());
+        return fhoDAO.getById(fhoIderUtenTomme);
     }
 
     public boolean settVarselFerdig(String forhaandsorienteringId) {

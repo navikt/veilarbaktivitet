@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -82,9 +83,7 @@ public class ForhaandsorienteringDAO {
 
     public boolean settVarselFerdig(String forhaandsorienteringId) {
         //language=sql
-        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
-
-        return stoppet;
+        return 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
     }
 
     public Forhaandsorientering getById(String id) {
@@ -95,6 +94,14 @@ public class ForhaandsorienteringDAO {
         catch(EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<Forhaandsorientering> getById(List<String> ider) {
+        String idString = ider.stream().collect(Collectors.joining("','", "'","'"));
+        //language=sql
+        String sql = String.format("SELECT * FROM FORHAANDSORIENTERING WHERE id IN(%s)",idString);
+
+        return database.query(sql, ForhaandsorienteringDAO::map);
     }
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {

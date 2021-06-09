@@ -52,7 +52,7 @@ public class AktivitetsplanRSTest {
     private KvpClient kvpClient = mock(KvpClient.class);
     private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
-    private ForhaandsorienteringDAO fhoDao = mock(ForhaandsorienteringDAO.class);
+    private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
 
@@ -90,7 +90,7 @@ public class AktivitetsplanRSTest {
 
 
     @Test
-    public void hentAktivitetVersjoner_returnererForhaandsorienteringDataPaaKorrektInstans() {
+    public void hentAktivitetVersjoner_returnererIkkeForhaandsorientering() {
         var id = new Random().nextLong();
         var aktivitet = nyttStillingssøk().withId(id).withAktorId(KJENT_AKTOR_ID.get());
         aktivitetDAO.insertAktivitet(aktivitet);
@@ -102,9 +102,30 @@ public class AktivitetsplanRSTest {
         var resultat = aktivitetController.hentAktivitetVersjoner(String.valueOf(id));
 
         Assert.assertEquals(3, resultat.size());
+        Assert.assertEquals(AktivitetTransaksjonsType.AVTALT, resultat.get(0).getTransaksjonsType());
         Assert.assertNull(resultat.get(0).getForhaandsorientering());
         Assert.assertNull(resultat.get(1).getForhaandsorientering());
         Assert.assertNull(resultat.get(2).getForhaandsorientering());
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
+        var id = new Random().nextLong();
+        var aktivitetData = nyttStillingssøk().withId(id).withAktorId(KJENT_AKTOR_ID.get());
+        var aktivitetDataUtenFho = nyttStillingssøk().withId(new Random().nextLong()).withAktorId(KJENT_AKTOR_ID.get());
+
+        aktivitetDAO.insertAktivitet(aktivitetData);
+        aktivitetDAO.insertAktivitet(aktivitetDataUtenFho);
+
+        var aktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(id);
+        var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitet.getVersjon()).setForhaandsorientering(fho), id, KJENT_AKTOR_ID, NavIdent.of("V123"));
+        var resultat = aktivitetController.hentAktivitetsplan();
+
+        Assert.assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
+        Assert.assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
+
 
     }
 
