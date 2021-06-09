@@ -6,14 +6,16 @@ import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -97,11 +99,14 @@ public class ForhaandsorienteringDAO {
     }
 
     public List<Forhaandsorientering> getById(List<String> ider) {
-        String idString = ider.stream().collect(Collectors.joining("','", "'","'"));
-        //language=sql
-        String sql = String.format("SELECT * FROM FORHAANDSORIENTERING WHERE id IN(%s)",idString);
+        SqlParameterSource parameters = new MapSqlParameterSource("ider", ider);
+        if(ider.isEmpty()) return Collections.emptyList();
 
-        return database.query(sql, ForhaandsorienteringDAO::map);
+        return database.getNamedJdbcTemplate().query(
+                "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
+                parameters,
+                ForhaandsorienteringDAO::mapRow);
+
     }
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
@@ -126,6 +131,10 @@ public class ForhaandsorienteringDAO {
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
+    }
+
+    private static Forhaandsorientering mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return map(rs);
     }
 
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {

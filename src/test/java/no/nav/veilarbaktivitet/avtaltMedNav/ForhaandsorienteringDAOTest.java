@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -146,5 +147,17 @@ public class ForhaandsorienteringDAOTest {
 
         var result = fhoDAO.getById(List.of(fho1.getId(), fho2.getId()));
         Assert.assertEquals(2, result.size());
+    }
+
+    @Test
+    public void getById_ingenIder_returnererTomListe() {
+        var avtalt1 = new AvtaltMedNavDTO().setAktivitetVersjon(new Random().nextLong()).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());
+        var avtalt2 = new AvtaltMedNavDTO().setAktivitetVersjon(new Random().nextLong()).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test2").build());
+
+         fhoDAO.insert(avtalt1, new Random().nextLong(), AKTOR_ID, "V123", new Date());
+         fhoDAO.insert(avtalt2, new Random().nextLong(), AKTOR_ID, "V123", new Date());
+
+        var result = fhoDAO.getById(Collections.emptyList());
+        Assert.assertEquals(0, result.size());
     }
 }
