@@ -6,10 +6,13 @@ import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -82,9 +85,7 @@ public class ForhaandsorienteringDAO {
 
     public boolean settVarselFerdig(String forhaandsorienteringId) {
         //language=sql
-        var stoppet = 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
-
-        return stoppet;
+        return 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
     }
 
     public Forhaandsorientering getById(String id) {
@@ -95,6 +96,17 @@ public class ForhaandsorienteringDAO {
         catch(EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public List<Forhaandsorientering> getById(List<String> ider) {
+        SqlParameterSource parameters = new MapSqlParameterSource("ider", ider);
+        if(ider.isEmpty()) return Collections.emptyList();
+
+        return database.getNamedJdbcTemplate().query(
+                "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
+                parameters,
+                ForhaandsorienteringDAO::mapRow);
+
     }
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
@@ -119,6 +131,10 @@ public class ForhaandsorienteringDAO {
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
+    }
+
+    private static Forhaandsorientering mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return map(rs);
     }
 
     private static Forhaandsorientering map(ResultSet rs) throws SQLException {
