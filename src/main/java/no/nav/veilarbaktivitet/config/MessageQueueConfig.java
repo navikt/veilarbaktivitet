@@ -14,6 +14,7 @@ import javax.jms.JMSException;
 import static com.ibm.msg.client.jms.JmsConstants.WMQ_PROVIDER;
 import static com.ibm.msg.client.wmq.common.CommonConstants.*;
 import static no.nav.common.utils.EnvironmentUtils.*;
+import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @EnableJms
@@ -26,10 +27,22 @@ public class MessageQueueConfig {
 
     @Bean
     public JmsTemplate varselQueue(ConnectionFactory factory, JMSContext context) {
-        JmsTemplate jmsTemplate = new JmsTemplate();
-        jmsTemplate.setConnectionFactory(factory);
-        jmsTemplate.setDefaultDestination(context.createQueue(getRequiredProperty(VARSELPRODUKSJON_VARSLINGER_QUEUENAME_PROPERTY)));
-        return jmsTemplate;
+        return queue(factory, context, getRequiredProperty(VARSELPRODUKSJON_VARSLINGER_QUEUENAME_PROPERTY));
+    }
+
+    @Bean
+    JmsTemplate stopVarselQueue(ConnectionFactory factory, JMSContext context) {
+        return queue(factory, context, getRequiredProperty("VARSELPRODUKSJON_STOPP_VARSEL_UTSENDING_QUEUENAME"));
+    }
+
+    @Bean
+    JmsTemplate varselMedHandlingQueue(ConnectionFactory factory, JMSContext context) {
+        return queue(factory, context, getRequiredProperty("VARSELPRODUKSJON_BEST_VARSEL_M_HANDLING_QUEUENAME"));
+    }
+
+    @Bean
+    JmsTemplate oppgaveHenvendelseQueue(ConnectionFactory factory, JMSContext context) {
+        return queue(factory, context, getRequiredProperty("HENVENDELSE_OPPGAVE_HENVENDELSE_QUEUENAME"));
     }
 
     @Bean
@@ -53,4 +66,12 @@ public class MessageQueueConfig {
 
         return connectionFactory;
     }
+
+    private JmsTemplate queue(ConnectionFactory factory, JMSContext context, String queueName) {
+        JmsTemplate jmsTemplate = new JmsTemplate();
+        jmsTemplate.setConnectionFactory(factory);
+        jmsTemplate.setDefaultDestination(context.createQueue(queueName));
+        return jmsTemplate;
+    }
+
 }

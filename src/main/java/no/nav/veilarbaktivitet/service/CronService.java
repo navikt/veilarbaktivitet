@@ -34,6 +34,7 @@ public class CronService {
         if (leaderElectionClient.isLeader()) {
             aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
         }
-
     }
+
+
 }
