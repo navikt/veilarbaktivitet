@@ -17,6 +17,9 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
+
 import static org.junit.Assert.*;
 
 public class ForhaandsorienteringDAOTest {
@@ -159,5 +162,17 @@ public class ForhaandsorienteringDAOTest {
 
         var result = fhoDAO.getById(Collections.emptyList());
         Assert.assertEquals(0, result.size());
+    }
+
+    @Test
+    public void getById_medStorListe_returnererAlleTreff() {
+        List<String> forhaandsorienteringIder = LongStream.range(0, 1100).mapToObj(generatedId -> {
+            var avtalt = new AvtaltMedNavDTO().setAktivitetVersjon(1).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());
+            Forhaandsorientering forhaandsorientering = fhoDAO.insert(avtalt, generatedId, AKTOR_ID, "V123", new Date());
+            return forhaandsorientering.getId();
+        }).collect(Collectors.toList());
+
+        var result = fhoDAO.getById(forhaandsorienteringIder);
+        Assert.assertEquals(1100, result.size());
     }
 }
