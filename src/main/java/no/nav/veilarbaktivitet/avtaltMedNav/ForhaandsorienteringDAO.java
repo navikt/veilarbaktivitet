@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.Varsel;
+import no.nav.veilarbaktivitet.avtaltMedNav.varsel.VarselIdHolder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -124,35 +124,6 @@ public class ForhaandsorienteringDAO {
         }
         catch(EmptyResultDataAccessException e) {
             return null;
-        }
-    }
-
-    public List<Varsel> hentVarslerSkalSendes(int limit) {
-        return database.getJdbcTemplate()
-                .queryForList("select ID, AKTIVITET_ID, ARENAAKTIVITET_ID, AKTOR_ID from FORHAANDSORIENTERING where VARSEL_ID is null and VARSEL_FERDIG is null and TYPE != ? limit ?", Varsel.class, Type.IKKE_SEND_FORHAANDSORIENTERING.toString(), limit);
-    }
-
-    public void markerVarselSomSendt(String id, String varselId) {
-        //language=sql
-        int update = database.update("update FORHAANDSORIENTERING set VARSEL_ID = ? where ID = ? and VARSEL_ID is null", varselId, id);
-
-        if(update != 1L) {
-            throw new IllegalStateException("Forhaandsorientering alerede sendt");
-        }
-    }
-
-    public List<String> hentVarslerSomSkalStoppes(int limit) {
-        return database
-                .getJdbcTemplate()
-                .queryForList("select VARSEL_ID from FORHAANDSORIENTERING where VARSEL_FERDIG is not null and FERDIG_SENDT is null limit ?", String.class, limit);
-    }
-
-    public void markerVareslStoppetSomSendt(String varselId) {
-        //language=sql
-        int update = database.update("update FORHAANDSORIENTERING set FERDIG_SENDT = CURRENT_TIMESTAMP where FERDIG_SENDT is null and VARSEL_ID = ? ", varselId);
-
-        if(update != 1L) {
-            throw new IllegalStateException("Forhaandsorentering varsel alerede stoppet");
         }
     }
 
