@@ -38,7 +38,7 @@ public class CronService {
         }
     }
 
-    @Scheduled(fixedRate = 60000, initialDelay = 10000)
+    @Scheduled(fixedRate = 10000, initialDelay = 60000)
     public void handleVarsler() {
         if(leaderElectionClient.isLeader()) {
             avtaltVarselService.stoppVarsel();
