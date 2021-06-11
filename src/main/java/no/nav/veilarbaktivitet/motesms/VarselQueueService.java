@@ -1,19 +1,27 @@
 package no.nav.veilarbaktivitet.motesms;
 
+import no.nav.melding.virksomhet.varsel.v1.varsel.XMLAktoerId;
+import no.nav.melding.virksomhet.varsel.v1.varsel.XMLParameter;
+import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarsel;
+import no.nav.melding.virksomhet.varsel.v1.varsel.XMLVarslingstyper;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Service;
 
+import javax.xml.bind.JAXBContext;
+
+import static no.nav.veilarbaktivitet.util.MessageQueueUtils.*;
+
 @Service
-public class VarselQueService {
+public class VarselQueueService {
 
     private final JmsTemplate varselQueue;
 
     private static final String VARSEL_ID = "AktivitetsplanMoteVarsel";
     private static final JAXBContext VARSEL_CONTEXT = jaxbContext(XMLVarsel.class, XMLVarslingstyper.class);
 
-    public VarselQueService(JmsTemplate varselQueue) {
+    public VarselQueueService(JmsTemplate varselQueue) {
         this.varselQueue = varselQueue;
     }
 

@@ -190,7 +190,7 @@
         <!-- Tjenester -->
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>varselIdHolder-inn</artifactId>
+            <artifactId>varsel-inn</artifactId>
             <version>1.2019.09.25-00.21-49b69f0625e0</version>
         </dependency>
 
