@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
+import com.google.common.collect.Lists;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
@@ -16,13 +17,14 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Repository
 public class ForhaandsorienteringDAO {
     private final Database database;
-    private final static String selectAktivitet = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_FERDIG " +
+    private static final String SELECT_AKTIVITET = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_FERDIG " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
@@ -90,7 +92,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getById(String id) {
         try {
-            return database.queryForObject(selectAktivitet + "WHERE ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_AKTIVITET + "WHERE ID = ?", ForhaandsorienteringDAO::map,
                     id);
         }
         catch(EmptyResultDataAccessException e) {
@@ -98,20 +100,28 @@ public class ForhaandsorienteringDAO {
         }
     }
 
+    /**
+     * Tar en liste med forhåndsorientering-ider og returnerer en liste med forhåndsorienteringer.
+     * Oracle har en begrensning på 1000 elementer i en IN-clause, så listen partisjoneres i sublister av maks 1000 ider,
+     * og resultatene joines sammen før retur.
+     * @param ider Liste av Foraandsorientering.id
+     * @return en liste av Forhaandsorienteringer
+     */
     public List<Forhaandsorientering> getById(List<String> ider) {
-        SqlParameterSource parameters = new MapSqlParameterSource("ider", ider);
         if(ider.isEmpty()) return Collections.emptyList();
 
-        return database.getNamedJdbcTemplate().query(
-                "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
-                parameters,
-                ForhaandsorienteringDAO::mapRow);
-
+        return Lists.partition(ider, 1000).stream().map(sublist -> {
+            SqlParameterSource parms = new MapSqlParameterSource("ider", sublist);
+            return database.getNamedJdbcTemplate().query(
+                    "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
+                    parms,
+                    ForhaandsorienteringDAO::mapRow);
+        }).flatMap(List::stream).collect(Collectors.toList());
     }
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
         try {
-            return database.queryForObject(selectAktivitet + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_AKTIVITET + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
         }
         catch(EmptyResultDataAccessException e) {
@@ -121,7 +131,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForArenaAktivitet(String aktivitetId) {
         try {
-            return database.queryForObject(selectAktivitet + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_AKTIVITET + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
         }
         catch(EmptyResultDataAccessException e) {
