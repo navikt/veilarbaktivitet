@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import com.google.common.collect.Lists;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarbaktivitet.avtaltMedNav.varsel.VarselIdHolder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -18,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -92,7 +94,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getById(String id) {
         try {
-            return database.queryForObject(SELECT_AKTIVITET + "WHERE ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(selectAktivitet + "WHERE ID = ?", ForhaandsorienteringDAO::map,
                     id);
         }
         catch(EmptyResultDataAccessException e) {
@@ -140,6 +142,7 @@ public class ForhaandsorienteringDAO {
     }
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
+        //language=sql
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
