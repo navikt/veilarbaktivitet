@@ -80,7 +80,7 @@ public class ForhaandsorienteringDAO {
         // language=sql
         var rows = database
                 .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_FERDIG = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
-        if (rows!=1){
+        if (rows != 1) {
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
     }
@@ -104,11 +104,12 @@ public class ForhaandsorienteringDAO {
      * Tar en liste med forhåndsorientering-ider og returnerer en liste med forhåndsorienteringer.
      * Oracle har en begrensning på 1000 elementer i en IN-clause, så listen partisjoneres i sublister av maks 1000 ider,
      * og resultatene joines sammen før retur.
+     *
      * @param ider Liste av Foraandsorientering.id
      * @return en liste av Forhaandsorienteringer
      */
     public List<Forhaandsorientering> getById(List<String> ider) {
-        if(ider.isEmpty()) return Collections.emptyList();
+        if (ider.isEmpty()) return Collections.emptyList();
 
         return Lists.partition(ider, 1000).stream().map(sublist -> {
             SqlParameterSource parms = new MapSqlParameterSource("ider", sublist);
@@ -123,8 +124,7 @@ public class ForhaandsorienteringDAO {
         try {
             return database.queryForObject(SELECT_AKTIVITET + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
-        }
-        catch(EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
@@ -133,13 +133,13 @@ public class ForhaandsorienteringDAO {
         try {
             return database.queryForObject(SELECT_AKTIVITET + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
-        }
-        catch(EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
+        //language=sql
         return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
     }
 
@@ -160,7 +160,7 @@ public class ForhaandsorienteringDAO {
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
                 .lestDato(Database.hentDato(rs, "LEST_DATO"))
                 .varselId(rs.getString("VARSEL_ID"))
-                .varselFerdigDato(Database.hentDato(rs,"VARSEL_FERDIG"))
+                .varselFerdigDato(Database.hentDato(rs, "VARSEL_FERDIG"))
                 .build();
     }
 
