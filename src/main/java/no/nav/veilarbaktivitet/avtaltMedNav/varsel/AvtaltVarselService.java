@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,17 +10,17 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AvtaltVarselService {
     private final AvtaltVarselHandler avtaltVarselHandler;
-    private final ForhaandsorienteringDAO dao;
+    private final AvtaltVarselRepository repository;
 
     @Timed(value = "sendAvtaltVarsel", longTask = true, histogram = true)
     public void sendVarsel() {
-        dao.hentVarslerSkalSendes(5000)
+        repository.hentVarslerSkalSendes(5000)
                 .forEach(this::trySend);
     }
 
     @Timed(value = "stoppAvtaleVarsel", longTask = true, histogram = true)
     public void stoppVarsel() {
-        dao.hentVarslerSomSkalStoppes(5000)
+        repository.hentVarslerSomSkalStoppes(5000)
                 .forEach(this::tryStop);
     }
 

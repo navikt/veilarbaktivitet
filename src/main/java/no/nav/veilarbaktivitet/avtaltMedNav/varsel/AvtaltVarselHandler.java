@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,7 +16,7 @@ public class AvtaltVarselHandler {
     private String aktivitetsplanBasepath;
 
     private final AvtaltVarselMQClient client;
-    private final ForhaandsorienteringDAO dao;
+    private final AvtaltVarselRepository repository;
 
     @Timed
     @Transactional
@@ -25,14 +24,14 @@ public class AvtaltVarselHandler {
         final var varselBestillingId = randomUUID().toString();
         final var aktorId = varselIdHolder.getAktorId();
 
-        dao.markerVarselSomSendt(varselIdHolder.getId(), varselBestillingId);
+        repository.markerVarselSomSendt(varselIdHolder.getId(), varselBestillingId);
         client.sendVarsel(aktorId, varselBestillingId, createUrl(varselIdHolder));
     }
 
     @Timed
     @Transactional
     public void handleStopVarsel(String varselId) {
-        dao.markerVareslStoppetSomSendt(varselId);
+        repository.markerVareslStoppetSomSendt(varselId);
         client.stopRevarsel(varselId);
     }
 
