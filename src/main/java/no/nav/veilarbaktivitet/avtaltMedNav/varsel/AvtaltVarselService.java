@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -15,14 +17,20 @@ public class AvtaltVarselService {
 
     @Timed(value = "sendAvtaltVarsel", longTask = true, histogram = true)
     public void sendVarsel() {
-        dao.hentVarslerSkalSendes(5000)
-                .forEach(this::trySend);
+        log.info("sendt avtalt varsler");
+
+        List<VarselIdHolder> ider = dao.hentVarslerSkalSendes(5000);
+        ider.forEach(this::trySend);
+
+        log.info("sendt {} varselr", ider.size());
     }
 
     @Timed(value = "stoppAvtaleVarsel", longTask = true, histogram = true)
     public void stoppVarsel() {
-        dao.hentVarslerSomSkalStoppes(5000)
-                .forEach(this::tryStop);
+        log.info("stoppAvtaleVarsel");
+        List<String> ider = dao.hentVarslerSomSkalStoppes(5000);
+        ider.forEach(this::tryStop);
+        log.info("stopet {} varsler", ider.size());
     }
 
     private void trySend(VarselIdHolder varselIdHolder) {
