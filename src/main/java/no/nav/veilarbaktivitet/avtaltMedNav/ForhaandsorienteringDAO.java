@@ -95,8 +95,7 @@ public class ForhaandsorienteringDAO {
         try {
             return database.queryForObject(SELECT_AKTIVITET + "WHERE ID = ?", ForhaandsorienteringDAO::map,
                     id);
-        }
-        catch(EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
@@ -188,12 +187,24 @@ public class ForhaandsorienteringDAO {
         }
     }
 
+    public long setVarselStoppetForIkkeSendt() {
+        return database.getJdbcTemplate().update(
+                "" +
+                        "update FORHAANDSORIENTERING " +
+                        "set VARSEL_STOPPET = CURRENT_TIMESTAMP " +
+                        "where VARSEL_ID is null " +
+                        "   and VARSEL_SKAL_STOPPES is not null " +
+                        "   and VARSEL_STOPPET is null "
+        );
+    }
+
     public List<String> hentVarslerSomSkalStoppes(int limit) {
         return database.getJdbcTemplate().queryForList("" +
                         "select VARSEL_ID " +
                         "from FORHAANDSORIENTERING " +
                         "where VARSEL_SKAL_STOPPES is not null " +
-                        "   and VARSEL_STOPPET is null" +
+                        "   and VARSEL_STOPPET is null " +
+                        "   and VARSEL_ID is not null" +
                         " fetch first ? rows only",
                 String.class, limit);
     }
