@@ -1,13 +1,15 @@
 package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
 
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
+@NoArgsConstructor
 public class VarselIdHolder {
-    String id;
-    String arenaaktivitetId;
-    String aktivitetId;
-    String aktorId;
+    private String id;
+    private String arenaaktivitetId;
+    private String aktivitetId;
+    private String aktorId;
 
     public void validate() {
         if (id == null) {
@@ -22,7 +24,7 @@ public class VarselIdHolder {
             throw new IllegalStateException("Varsel har både arena- og aktivitetsid, dette skal ikke være mulig");
         }
 
-        if(arenaaktivitetId == null && aktivitetId == null) {
+        if (arenaaktivitetId == null && aktivitetId == null) {
             throw new IllegalStateException("Varsel må enten ha en arenaaktivitetsid eller en aktivitetid");
         }
     }
