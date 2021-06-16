@@ -173,7 +173,7 @@ public class ForhaandsorienteringDAO {
                         "where VARSEL_ID is null " +
                         "   and VARSEL_SKAL_STOPPES is null " +
                         "   and TYPE != ? " +
-                        " fetch first ? rows only;",
+                        " fetch first ? rows only",
                 new BeanPropertyRowMapper<>(VarselIdHolder.class), Type.IKKE_SEND_FORHAANDSORIENTERING.toString(), limit);
     }
 
@@ -193,7 +193,8 @@ public class ForhaandsorienteringDAO {
                         "select VARSEL_ID " +
                         "from FORHAANDSORIENTERING " +
                         "where VARSEL_SKAL_STOPPES is not null " +
-                        "   and VARSEL_STOPPET is null limit ?",
+                        "   and VARSEL_STOPPET is null" +
+                        " fetch first ? rows only",
                 String.class, limit);
     }
 
