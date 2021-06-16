@@ -2,16 +2,16 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarbaktivitet
-  namespace: pto
+  namespace: {{namespace}}
   cluster: dev-fss
   labels:
     team: pto
 spec:
   image: docker.pkg.github.com/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
   ingresses:
-    - https://veilarbaktivitet-q1.nais.preprod.local
-    - https://app-q1.adeo.no/veilarbaktivitet
-    - https://app-q1.dev.adeo.no/veilarbaktivitet
+    - https://veilarbaktivitet-{{namespace}}.nais.preprod.local
+    - https://app-{{namespace}}.adeo.no/veilarbaktivitet
+    - https://app-{{namespace}}.dev.adeo.no/veilarbaktivitet
   port: 8080
   prometheus:
     enabled: true
@@ -43,13 +43,13 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: /oracle/data/dev/creds/veilarbaktivitet_q1-user
+      - kvPath: /oracle/data/dev/creds/veilarbaktivitet_{{namespace}}-user
         mountPath: /var/run/secrets/nais.io/oracle_creds
       - kvPath: /serviceuser/data/dev/srvveilarbaktivitet
         mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/preprod/fss/veilarbaktivitet/q1
+      - kvPath: /kv/preprod/fss/veilarbaktivitet/{{namespace}}
         mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/dev/config/veilarbaktivitet_q1
+      - kvPath: /oracle/data/dev/config/veilarbaktivitet_{{namespace}}
         mountPath: /var/run/secrets/nais.io/oracle_config
   webproxy: true
   leaderElection: true
@@ -57,10 +57,10 @@ spec:
     enabled: true
   env:
     - name: APP_ENVIRONMENT_NAME
-      value: q1
+      value: {{namespace}}
     - name: ENDRING_PA_AKTIVITET_TOPIC
-      value: aapen-fo-endringPaaAktivitet-v4-q1
+      value: aapen-fo-endringPaaAktivitet-v4-{{namespace}}
     - name: OPPFOLGING_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-q1
+      value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-{{namespace}}
     - name: KVP_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-q1
+      value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-{{namespace}}
