@@ -21,7 +21,8 @@ public class Forhaandsorientering {
     private Date opprettetDato;
     private String opprettetAv;
     private String varselId;
-    private Date varselFerdigDato;
+    private Date varselSkalStoppesDato;
+    private Date varselStoppetDato;
 
     public static ForhaandsorienteringBuilder builder() {
         return new CustomForhaandsorienteringBuilder();
