@@ -28,6 +28,7 @@ public class AvtaltVarselService {
     @Timed(value = "stoppAvtaleVarsel", longTask = true, histogram = true)
     public void stoppVarsel() {
         log.info("stoppAvtaleVarsel");
+        dao.setVarselStoppetForIkkeSendt();
         List<String> ider = dao.hentVarslerSomSkalStoppes(5000);
         ider.forEach(this::tryStop);
         log.info("stopet {} varsler", ider.size());
