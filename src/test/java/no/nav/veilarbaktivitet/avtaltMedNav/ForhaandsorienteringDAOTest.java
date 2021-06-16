@@ -95,7 +95,7 @@ public class ForhaandsorienteringDAOTest {
         var stoppet = fhoDAO.settVarselFerdig(fhoId);
 
         fho = fhoDAO.getById(fhoId);
-        var stoppetDato = fho.getVarselFerdigDato();
+        var stoppetDato = fho.getVarselSkalStoppesDato();
         Assert.assertTrue(stoppet);
         Assert.assertNotNull(stoppetDato);
 
@@ -104,7 +104,7 @@ public class ForhaandsorienteringDAOTest {
         var fhoStoppetIgjen = fhoDAO.getById(fhoId);
 
         Assert.assertFalse(stoppet);
-        Assert.assertEquals(stoppetDato, fhoStoppetIgjen.getVarselFerdigDato());
+        Assert.assertEquals(stoppetDato, fhoStoppetIgjen.getVarselSkalStoppesDato());
     }
 
     @Test
@@ -119,7 +119,7 @@ public class ForhaandsorienteringDAOTest {
         var nyFho = fhoDAO.getById(fhoId);
 
         Assert.assertEquals(lestDato, nyFho.getLestDato());
-        Assert.assertEquals(lestDato, nyFho.getVarselFerdigDato());
+        Assert.assertEquals(lestDato, nyFho.getVarselSkalStoppesDato());
         Assert.assertEquals(String.valueOf(avtaltDTO.getAktivitetVersjon()), nyFho.getAktivitetVersjon());
         Assert.assertEquals(String.valueOf(avtaltDTO.getAktivitetVersjon()), nyFho.getAktivitetVersjon());
 

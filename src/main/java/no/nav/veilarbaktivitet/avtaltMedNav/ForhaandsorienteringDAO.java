@@ -1,12 +1,15 @@
 package no.nav.veilarbaktivitet.avtaltMedNav;
 
 import com.google.common.collect.Lists;
+import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarbaktivitet.avtaltMedNav.varsel.VarselIdHolder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
@@ -22,16 +25,14 @@ import java.util.stream.Collectors;
 import static org.slf4j.LoggerFactory.getLogger;
 
 @Repository
+@RequiredArgsConstructor
 public class ForhaandsorienteringDAO {
     private final Database database;
-    private static final String SELECT_AKTIVITET = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_FERDIG " +
+
+    private static final String SELECT_AKTIVITET = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_SKAL_STOPPES, VARSEL_STOPPET " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
-
-    public ForhaandsorienteringDAO(Database database) {
-        this.database = database;
-    }
 
     public Forhaandsorientering insert(AvtaltMedNavDTO fhoData, long aktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
@@ -79,7 +80,7 @@ public class ForhaandsorienteringDAO {
     public void markerSomLest(String id, Date lestDato, Long lestVersjon) {
         // language=sql
         var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_FERDIG = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
+                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_SKAL_STOPPES = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
         if (rows != 1) {
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
@@ -87,7 +88,7 @@ public class ForhaandsorienteringDAO {
 
     public boolean settVarselFerdig(String forhaandsorienteringId) {
         //language=sql
-        return 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_FERDIG = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_FERDIG is null", forhaandsorienteringId);
+        return 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_SKAL_STOPPES = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_SKAL_STOPPES is null", forhaandsorienteringId);
     }
 
     public Forhaandsorientering getById(String id) {
@@ -160,8 +161,50 @@ public class ForhaandsorienteringDAO {
                 .opprettetAv(rs.getString("OPPRETTET_AV"))
                 .lestDato(Database.hentDato(rs, "LEST_DATO"))
                 .varselId(rs.getString("VARSEL_ID"))
-                .varselFerdigDato(Database.hentDato(rs, "VARSEL_FERDIG"))
+                .varselSkalStoppesDato(Database.hentDato(rs, "VARSEL_SKAL_STOPPES"))
+                .varselStoppetDato(Database.hentDato(rs, "VARSEL_STOPPET"))
                 .build();
+    }
+
+    public List<VarselIdHolder> hentVarslerSkalSendes(int limit) {
+        return database.getJdbcTemplate().query("" +
+                        "select ID, AKTIVITET_ID, ARENAAKTIVITET_ID, AKTOR_ID " +
+                        "from FORHAANDSORIENTERING " +
+                        "where VARSEL_ID is null " +
+                        "   and VARSEL_SKAL_STOPPES is null " +
+                        "   and TYPE != ? limit ?",
+                new BeanPropertyRowMapper<>(VarselIdHolder.class), Type.IKKE_SEND_FORHAANDSORIENTERING.toString(), limit);
+    }
+
+    public void markerVarselSomSendt(String id, String varselId) {
+        int update = database.getJdbcTemplate().update("" +
+                        "update FORHAANDSORIENTERING set VARSEL_ID = ?" +
+                        " where ID = ? and VARSEL_ID is null",
+                varselId, id);
+
+        if (update != 1L) {
+            throw new IllegalStateException("Forhaandsorientering allerede sendt");
+        }
+    }
+
+    public List<String> hentVarslerSomSkalStoppes(int limit) {
+        return database.getJdbcTemplate().queryForList("" +
+                        "select VARSEL_ID " +
+                        "from FORHAANDSORIENTERING " +
+                        "where VARSEL_SKAL_STOPPES is not null " +
+                        "   and VARSEL_STOPPET is null limit ?",
+                String.class, limit);
+    }
+
+    public void markerVareslStoppetSomSendt(String varselId) {
+        int update = database.getJdbcTemplate().update("" +
+                "update FORHAANDSORIENTERING set VARSEL_STOPPET = CURRENT_TIMESTAMP" +
+                " where VARSEL_STOPPET is null " +
+                "   and VARSEL_ID = ? ", varselId);
+
+        if (update != 1L) {
+            throw new IllegalStateException("Forhaandsorentering varsel allerede stoppet");
+        }
     }
 
 }

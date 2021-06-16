@@ -16,7 +16,6 @@ import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselHandler;
 import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselMQClient;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselRepository;
 import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselService;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
@@ -65,7 +64,6 @@ import static org.mockito.Mockito.when;
         ArenaController.class,
         AktivitetAppService.class,
         AktivitetsplanController.class,
-        AvtaltVarselRepository.class,
         AvtaltMedNavService.class,
         AvtaltVarselHandler.class,
         AvtaltVarselMQClient.class,
@@ -104,7 +102,9 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public JmsTemplate varselQueue() { return mock(JmsTemplate.class); }
+    public JmsTemplate varselQueue() {
+        return mock(JmsTemplate.class);
+    }
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {
