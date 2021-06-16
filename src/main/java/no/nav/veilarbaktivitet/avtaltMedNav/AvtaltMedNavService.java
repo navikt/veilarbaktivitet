@@ -74,7 +74,6 @@ public class AvtaltMedNavService {
         aktivitetDAO.insertAktivitet(nyAktivitet, now);
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
-        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho), false);
     }
@@ -98,6 +97,7 @@ public class AvtaltMedNavService {
         aktivitetDAO.insertAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
+        meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, aktivitet.getAktivitetType().name()).increment();
 
         return AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, true);
     }

@@ -19,9 +19,8 @@
         <java.version>11</java.version>
         <common.version>2.2021.04.07_08.09-7849c92a72d0</common.version>
         <quartz.version>2.3.2</quartz.version>
-
         <springfox.version>2.9.2</springfox.version>
-        <tjenestespesifikasjoner.version>1.2019.09.25-00.21-49b69f0625e0</tjenestespesifikasjoner.version>
+        <nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>1.2019.03.26-11.06-58bc24a56f8e</nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version>
 
         <!--   sonar cloud     -->
         <sonar.projectKey>navikt_veilarbaktivitet</sonar.projectKey>
@@ -86,21 +85,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon</artifactId>
-            <version>${tjenestespesifikasjoner.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>nav-virksomhet-stoppReVarsel-v1-meldingsdefinisjon</artifactId>
-            <version>${tjenestespesifikasjoner.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>no.nav.tjenestespesifikasjoner</groupId>
-            <artifactId>nav-virksomhet-opprettOppgavehenvendelse-v1-meldingsdefinisjon</artifactId>
-            <version>${tjenestespesifikasjoner.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
@@ -302,7 +286,7 @@
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-tiltakOgAktivitet-v1-tjenestespesifikasjon</artifactId>
-            <version>${tjenestespesifikasjoner.version}</version>
+            <version>${nav-tiltakOgAktivitet-v1-tjenestespesifikasjon.version}</version>
         </dependency>
 
 

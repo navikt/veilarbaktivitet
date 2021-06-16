@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.motesms;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.motesms.VarselQueService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
@@ -47,7 +49,7 @@ public class MoteSMSServiceTest {
 
     @Spy
     @InjectMocks
-    private VarselQueueService varselQueue;
+    private VarselQueService varselQueue;
 
     private final Date before = createDate(1);
     private final Date earlyCuttoff = createDate(2);

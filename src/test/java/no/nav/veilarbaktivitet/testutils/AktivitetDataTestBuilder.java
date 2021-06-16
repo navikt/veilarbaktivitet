@@ -56,7 +56,6 @@ public class AktivitetDataTestBuilder {
         }
 
     }
-
     public static AktivitetData nyStillingFraNav() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)

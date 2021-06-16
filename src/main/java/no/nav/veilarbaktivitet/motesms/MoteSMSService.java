@@ -25,7 +25,7 @@ import static no.nav.veilarbaktivitet.util.DateUtils.omTimer;
 @Service
 public class MoteSMSService implements HealthCheck {
     private final MoteSmsDAO moteSmsDAO;
-    private final VarselQueueService varselQueue;
+    private final VarselQueService varselQueue;
     private final TransactionTemplate transactionTemplate;
 
 
@@ -39,7 +39,7 @@ public class MoteSMSService implements HealthCheck {
 
     public MoteSMSService(
             MoteSmsDAO moteSmsDAO,
-            VarselQueueService varselQueue,
+            VarselQueService varselQueue,
             PlatformTransactionManager platformTransactionManager,
             MeterRegistry registry
     ) {

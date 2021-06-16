@@ -14,14 +14,14 @@ import javax.xml.bind.JAXBContext;
 import static no.nav.veilarbaktivitet.util.MessageQueueUtils.*;
 
 @Service
-public class VarselQueueService {
+public class VarselQueService {
 
     private final JmsTemplate varselQueue;
 
     private static final String VARSEL_ID = "AktivitetsplanMoteVarsel";
     private static final JAXBContext VARSEL_CONTEXT = jaxbContext(XMLVarsel.class, XMLVarslingstyper.class);
 
-    public VarselQueueService(JmsTemplate varselQueue) {
+    public VarselQueService(JmsTemplate varselQueue) {
         this.varselQueue = varselQueue;
     }
 

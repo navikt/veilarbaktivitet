@@ -137,7 +137,7 @@ public class AvtaltMedNavServiceTest {
         var nyFHO = avtaltMedNavService.hentFHO(aktivitetDTO.getForhaandsorientering().getId());
 
         Assert.assertNotNull(nyFHO.getLestDato());
-        Assert.assertEquals(nyFHO.getLestDato(), nyFHO.getVarselSkalStoppesDato());
+        Assert.assertEquals(nyFHO.getLestDato(), nyFHO.getVarselFerdigDato());
 
     }
 
@@ -149,7 +149,7 @@ public class AvtaltMedNavServiceTest {
         var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
 
         Assert.assertTrue(varselStoppet);
-        Assert.assertNotNull(nyFHO.getVarselSkalStoppesDato());
+        Assert.assertNotNull(nyFHO.getVarselFerdigDato());
 
     }
 

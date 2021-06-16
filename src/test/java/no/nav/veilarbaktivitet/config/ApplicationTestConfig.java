@@ -14,9 +14,6 @@ import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselHandler;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselMQClient;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselService;
 import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -28,7 +25,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
-import no.nav.veilarbaktivitet.motesms.VarselQueueService;
+import no.nav.veilarbaktivitet.motesms.VarselQueService;
 import no.nav.veilarbaktivitet.service.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +47,7 @@ import static org.mockito.Mockito.when;
         AktivitetDAO.class,
         KafkaAktivitetDAO.class,
         MoteSmsDAO.class,
-        VarselQueueService.class,
+        VarselQueService.class,
         KvpService.class,
         AktiviteterTilKafkaService.class,
         MetricService.class,
@@ -65,9 +62,6 @@ import static org.mockito.Mockito.when;
         AktivitetAppService.class,
         AktivitetsplanController.class,
         AvtaltMedNavService.class,
-        AvtaltVarselHandler.class,
-        AvtaltVarselMQClient.class,
-        AvtaltVarselService.class,
         ForhaandsorienteringDAO.class,
         FilterTestConfig.class,
         CronService.class,
@@ -102,9 +96,7 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public JmsTemplate varselQueue() {
-        return mock(JmsTemplate.class);
-    }
+    public JmsTemplate varselQueue() { return mock(JmsTemplate.class); }
 
     @Bean
     public LeaderElectionClient leaderElectionClient() {
