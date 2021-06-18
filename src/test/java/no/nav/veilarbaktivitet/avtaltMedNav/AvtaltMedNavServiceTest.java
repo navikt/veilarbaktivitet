@@ -41,14 +41,14 @@ public class AvtaltMedNavServiceTest {
 
     @Test
     public void opprettFHO_oppdatererInterneFHOVerdier() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
 
-        opprettAktivitetMedFHO(aktivitetData);
-        var fho = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
+        AktivitetDTO aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
+        var fho = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
-        Assert.assertEquals(aktivitetData.getId().toString(), fho.getAktivitetId());
-        Assert.assertEquals(aktivitetData.getVersjon().toString(), fho.getAktivitetVersjon());
-        Assert.assertEquals(aktivitetData.getAktorId(), fho.getAktorId().get());
+        Assert.assertEquals(aktivitetDTO.getId(), fho.getAktivitetId());
+        // FHO aktivitetsversjon vil faktisk peke på forrige aktivitetsversjon
+        Assert.assertEquals(Long.parseLong(aktivitetDTO.getVersjon()) - 1L, Long.parseLong(fho.getAktivitetVersjon()));
+        Assert.assertEquals(AKTOR_ID.get(), fho.getAktorId().get());
         Assert.assertEquals(veilederIdent.toString(), fho.getOpprettetAv());
         assertNull(fho.getLestDato());
 
@@ -56,11 +56,9 @@ public class AvtaltMedNavServiceTest {
 
     @Test
     public void opprettFHO_oppdatererAktivitetDTO() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-
-        var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData);
+        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
         var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
-        var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(aktivitetData.getId());
+        var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
         Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
         Assert.assertEquals(defaultType, aktivitetDTOFHO.getType());
@@ -94,34 +92,30 @@ public class AvtaltMedNavServiceTest {
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO()
                 .setForhaandsorientering(fhoDTO)
                 .setAktivitetVersjon(5L);
-        avtaltMedNavService.opprettFHO(avtaltDTO, 1, AKTOR_ID, veilederIdent);
+        avtaltMedNavService.opprettFHO(avtaltDTO, 999999, AKTOR_ID, veilederIdent);
 
     }
 
     @Test
     public void hentFhoForAktivitet_henterRiktigFho() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+        var aktivitetData = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
 
-        opprettAktivitetMedFHO(aktivitetData);
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetData.getId()));
 
-        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
-
-        Assert.assertEquals(aktivitetData.getId().toString(), aktivitetDTOFHO.getAktivitetId());
+        Assert.assertEquals(aktivitetData.getId(), aktivitetDTOFHO.getAktivitetId());
         Assert.assertEquals(defaultTekst, aktivitetDTOFHO.getTekst());
         Assert.assertEquals(defaultType, aktivitetDTOFHO.getType());
     }
 
     @Test
     public void markerSomLest_oppdatererAktivitetDTO() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+        var aktivitetDto = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
 
-        opprettAktivitetMedFHO(aktivitetData);
-
-        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDto.getId()));
 
         avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
 
-        var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetData.getId());
+        var nyAktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDto.getId()));
 
         Assert.assertEquals(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, nyAktivitet.getTransaksjonsType());
 
@@ -129,9 +123,8 @@ public class AvtaltMedNavServiceTest {
 
     @Test
     public void markerSomLest_setterVarselFerdig() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-        var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData);
-        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId());
+        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
+        var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
         avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
         var nyFHO = avtaltMedNavService.hentFHO(aktivitetDTO.getForhaandsorientering().getId());
@@ -144,7 +137,7 @@ public class AvtaltMedNavServiceTest {
     @Test
     public void settVarselFerdig_stopperAktivtVarsel() {
         var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-        var opprettetAktivitetMedFHO = opprettAktivitetMedFHO(aktivitetData);
+        var opprettetAktivitetMedFHO = opprettAktivitetMedDefaultFHO(aktivitetData);
         boolean varselStoppet = avtaltMedNavService.settVarselFerdig(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
         var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
 
@@ -160,25 +153,23 @@ public class AvtaltMedNavServiceTest {
         Assert.assertFalse(varselStoppet);
     }
 
-    private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData) {
-        aktivitetDAO.insertAktivitet(aktivitetData);
+    private AktivitetDTO opprettAktivitetMedDefaultFHO(AktivitetData aktivitetData) {
 
         var fhoDTO = ForhaandsorienteringDTO.builder()
                 .type(defaultType)
                 .tekst(defaultTekst).lestDato(null).build();
 
         return opprettAktivitetMedFHO(aktivitetData, fhoDTO);
-
     }
 
     private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData, ForhaandsorienteringDTO forhaandsorienteringDTO) {
-        aktivitetDAO.insertAktivitet(aktivitetData);
+        AktivitetData nyAktivitet = aktivitetDAO.opprettNyAktivitet(aktivitetData);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO()
                 .setForhaandsorientering(forhaandsorienteringDTO)
-                .setAktivitetVersjon(aktivitetData.getVersjon());
+                .setAktivitetVersjon(nyAktivitet.getVersjon());
 
-        return avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetData.getId(), AKTOR_ID, veilederIdent);
+        return avtaltMedNavService.opprettFHO(avtaltDTO, nyAktivitet.getId(), AKTOR_ID, veilederIdent);
     }
 
 }

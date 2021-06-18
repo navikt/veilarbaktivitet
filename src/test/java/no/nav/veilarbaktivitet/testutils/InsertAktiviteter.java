@@ -26,8 +26,7 @@ public class InsertAktiviteter {
     }
 
     private static void insertNyAktivitet(AktivitetData aktivitetData, String aktorId, AktivitetDAO aktivitetDAO) {
-        long id = aktivitetDAO.getNextUniqueAktivitetId();
-        AktivitetData build = aktivitetData.toBuilder().aktorId(aktorId).id(id).build();
-        aktivitetDAO.insertAktivitet(build);
+        AktivitetData build = aktivitetData.toBuilder().aktorId(aktorId).build();
+        aktivitetDAO.opprettNyAktivitet(build);
     }
 }

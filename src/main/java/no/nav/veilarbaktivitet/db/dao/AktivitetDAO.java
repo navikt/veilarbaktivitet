@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
@@ -57,7 +58,7 @@ public class AktivitetDAO {
         );
     }
 
-    public long getNextUniqueAktivitetId() {
+    public long nesteAktivitetId() {
         return database.nesteFraSekvens("AKTIVITET_ID_SEQ");
     }
 
@@ -66,24 +67,47 @@ public class AktivitetDAO {
     }
 
     @Transactional
-    public void insertAktivitet(AktivitetData aktivitet) {
-        insertAktivitet(aktivitet, new Date());
+    public void oppdaterAktivitet(AktivitetData aktivitet) {
+        oppdaterAktivitet(aktivitet, new Date());
     }
 
     @Transactional
-    public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
-        final String fhoId = ofNullable(aktivitet.getForhaandsorientering())
-                .map(Forhaandsorientering::getId)
-                .orElse(null);
 
         SqlParameterSource parms = new MapSqlParameterSource("aktivitet_id", aktivitetId);
         //language=SQL
-        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id", parms);
+        List<Long> versjoner = database.getNamedJdbcTemplate().queryForList("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id FOR UPDATE", parms, Long.class);
+        // Denne 'select for update' sørger for å låse alle versjonene for å hindre race-conditions
+        // slik at ikke flere kan oppdatere samme aktivitet samtidig.
+        if (versjoner == null || versjoner.isEmpty()) {
+            throw new RuntimeException(String.format("Kunne ikke finne tidligere versjoner av aktivitet med id %d", aktivitetId));
+        } else {
+            // Sjekker at versjonen vi forsøker å oppdatere faktisk er siste versjon.
+            Long maksVerajon = versjoner.stream().max(Comparator.naturalOrder()).get();
+            if (!maksVerajon.equals(aktivitet.getVersjon())) {
+                log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - nyeste versjon: {}", aktivitet.getVersjon(), maksVerajon);
+            }
+        }
 
         long versjon = nesteVersjon();
 
+        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
+
         SqlParameterSource parms2 = new MapSqlParameterSource()
+                .addValue("aktivitet_id", aktivitetId)
+                .addValue("versjon", versjon);
+        // language=sql
+        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon!=:versjon", parms2);
+
+        return nyAktivitetVersjon;
+    }
+
+    private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon, Date endretDato) {
+        final String fhoId = ofNullable(aktivitet.getForhaandsorientering())
+                .map(Forhaandsorientering::getId)
+                .orElse(null);
+        SqlParameterSource parms = new MapSqlParameterSource()
                 .addValue("aktivitet_id", aktivitetId)
                 .addValue("versjon", versjon)
                 .addValue("aktor_id", aktivitet.getAktorId())
@@ -116,7 +140,7 @@ public class AktivitetDAO {
                 ":til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar, " +
                 ":opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt, " +
                 ":gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id, " +
-                ":automatisk_opprettet, :mal_id, :fho_id)", parms2);
+                ":automatisk_opprettet, :mal_id, :fho_id)", parms);
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, versjon, aktivitet.getEgenAktivitetData());
@@ -126,8 +150,17 @@ public class AktivitetDAO {
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
 
-        log.info("opprettet {}", aktivitet.withVersjon(versjon).withEndretDato(endretDato));
+        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(endretDato);
 
+        log.info("opprettet {}", nyAktivitet);
+        return nyAktivitet;
+    }
+
+    public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
+        long aktivitetId = nesteAktivitetId();
+        long versjon = nesteVersjon();
+        Date endretDato = new Date();
+        return insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
