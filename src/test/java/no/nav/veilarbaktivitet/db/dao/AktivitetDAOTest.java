@@ -34,6 +34,7 @@ import java.util.concurrent.Executors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.fail;
@@ -188,12 +189,15 @@ public class AktivitetDAOTest {
         assertThat(aktivitetData, hasSize(3));
     }
 
-    @Test
-    public void testMaksVersjon() {
-        List<Long> versjoner = List.of(2L, 1L, 10L, 6L, 3L, 0L);
-        Optional<Long> maksVerajon = versjoner.stream().max(Comparator.naturalOrder());
-        assertThat(maksVerajon, is(Optional.of(10L)));
+    @Test(expected = IllegalStateException.class)
+    public void kan_ikke_oppdatere_gammel_versjon() {
+        AktivitetData originalAktivitetVersjon = gitt_at_det_finnes_en_egen_aktivitet();
+        AktivitetData nyAktivitetVersjon = naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
+        assertThat(nyAktivitetVersjon.getVersjon(), is(greaterThan(originalAktivitetVersjon.getVersjon())));
+        // Kan jeg ikke oppdatere den originale aktivitetVersjonen lenger
+        naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
     }
+
 
     @Test
     public void versjonering_skal_vaere_traadsikker() throws InterruptedException {
@@ -218,7 +222,9 @@ public class AktivitetDAOTest {
         }
         latch.await();
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
-        assertThat(aktivitetData, hasSize(antallOppdateringer + 1));
+        // Kun originalversjonen pluss første oppdatering. Resten feiler
+        assertThat(aktivitetData, hasSize(2));
+        // Denne vil feile hvis det er mer enn én gjeldende
         AktivitetData nyesteAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(nyesteAktivitet, notNullValue());
     }
@@ -255,6 +261,10 @@ public class AktivitetDAOTest {
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
         return addAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
+    }
+
+    private AktivitetData naar_jeg_oppdaterer_en_aktivitet(AktivitetData aktivitetData) {
+        return aktivitetDAO.oppdaterAktivitet(aktivitetData);
     }
 
     private AktivitetData gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(int antallVersjoner) {

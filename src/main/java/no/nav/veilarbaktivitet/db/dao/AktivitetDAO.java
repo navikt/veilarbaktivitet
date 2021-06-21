@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
@@ -67,38 +66,33 @@ public class AktivitetDAO {
     }
 
     @Transactional
-    public void oppdaterAktivitet(AktivitetData aktivitet) {
-        oppdaterAktivitet(aktivitet, new Date());
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
+        return oppdaterAktivitet(aktivitet, new Date());
     }
 
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
 
-        SqlParameterSource params = new MapSqlParameterSource("aktivitet_id", aktivitetId);
-        //language=SQL
-        List<Long> versjoner = database.getNamedJdbcTemplate().queryForList("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id FOR UPDATE", params, Long.class);
-        // Denne 'select for update' sørger for å låse alle versjonene for å hindre race-conditions
+        SqlParameterSource selectGjeldendeParams = new MapSqlParameterSource("aktivitet_id", aktivitetId);
+        // Denne 'select for update' sørger for å låse gjeldende versjon for å hindre race-conditions
         // slik at ikke flere kan oppdatere samme aktivitet samtidig.
-        if (versjoner == null || versjoner.isEmpty()) {
-            throw new RuntimeException(String.format("Kunne ikke finne tidligere versjoner av aktivitet med id %d", aktivitetId));
-        } else {
-            // Sjekker at versjonen vi forsøker å oppdatere faktisk er siste versjon.
-            Long maksVerajon = versjoner.stream().max(Comparator.naturalOrder()).get();
-            if (!maksVerajon.equals(aktivitet.getVersjon())) {
-                log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - nyeste versjon: {}", aktivitet.getVersjon(), maksVerajon);
-            }
+        //language=SQL
+        long gjeldendeVersjon = database.getNamedJdbcTemplate().queryForObject("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id AND gjeldende=1 FOR UPDATE NOWAIT", selectGjeldendeParams, Long.class);
+        if (aktivitet.getVersjon() != gjeldendeVersjon) {
+            log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - gjeldende versjon: {}", aktivitet.getVersjon(), gjeldendeVersjon);
+            throw new IllegalStateException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
         }
 
         long versjon = nesteVersjon();
 
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
 
-        SqlParameterSource params2 = new MapSqlParameterSource()
+        SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue("aktivitet_id", aktivitetId)
-                .addValue("versjon", versjon);
+                .addValue("versjon", gjeldendeVersjon);
         // language=sql
-        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon!=:versjon", params2);
+        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon=:versjon", updateGjeldendeParams);
 
         return nyAktivitetVersjon;
     }

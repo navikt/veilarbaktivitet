@@ -160,14 +160,12 @@ public class MoteSMSServiceTest {
     public void skalSendePaaNyttForOppdatertMoteform() {
         AktivitetData aktivitetData = nyttMote(betwheen);
 
-        AktivitetData oppdatert1 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE));
-        aktivitetDAO.oppdaterAktivitet(oppdatert1);
+        AktivitetData oppdatert1 = aktivitetDAO.oppdaterAktivitet(aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE)));
 
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
-        AktivitetData oppdatert2 = aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON));
-        aktivitetDAO.oppdaterAktivitet(oppdatert2);
+        aktivitetDAO.oppdaterAktivitet(oppdatert1.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON)));
 
         moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
