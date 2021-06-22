@@ -111,7 +111,7 @@ public class AktivitetDAO {
                 .addValue("tittel", aktivitet.getTittel())
                 .addValue("beskrivelse", aktivitet.getBeskrivelse())
                 .addValue("livslopstatus_kode", EnumUtils.getName(aktivitet.getStatus()))
-                .addValue("avsluttet_kommentar",aktivitet.getAvsluttetKommentar())
+                .addValue("avsluttet_kommentar", aktivitet.getAvsluttetKommentar())
                 .addValue("opprettet_dato", aktivitet.getOpprettetDato())
                 .addValue("endret_dato", endretDato)
                 .addValue("endret_av", aktivitet.getEndretAv())
@@ -287,21 +287,28 @@ public class AktivitetDAO {
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
-                    SqlParameterSource params = new MapSqlParameterSource()
-                            .addValue("aktivitet_id", aktivitetId)
-                            .addValue("versjon", versjon)
-                            .addValue("cv_kan_deles", stilling.getKanDeles())
-                            .addValue("cv_kan_deles_tidspunkt", stilling.getCvKanDelesTidspunkt())
-                            .addValue("cv_kan_deles_av", stilling.getCvKanDelesAv())
-                            .addValue("cv_kan_deles_av_type", EnumUtils.getName(stilling.getCvKanDelesAvType()));
-                        // language=sql
-                        database.getNamedJdbcTemplate().update(
-                                        " insert into " +
-                                        " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE) " +
-                                        " VALUES ( :aktivitet_id, :versjon, :cv_kan_deles, :cv_kan_deles_tidspunkt, :cv_kan_deles_av, :cv_kan_deles_av_type )",
-                                params
-                        );
-                    }
+                            SqlParameterSource parms = new MapSqlParameterSource()
+                                    .addValue("aktivitet_id", aktivitetId)
+                                    .addValue("versjon", versjon)
+                                    .addValue("cv_kan_deles", stilling.getKanDeles())
+                                    .addValue("cv_kan_deles_tidspunkt", stilling.getCvKanDelesTidspunkt())
+                                    .addValue("cv_kan_deles_av", stilling.getCvKanDelesAv())
+                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(stilling.getCvKanDelesAvType()))
+                                    .addValue("soknadsfrist", stilling.getSoknadsfrist())
+                                    .addValue("svarFrist", stilling.getSvarFrist())
+                                    .addValue("arbeidsgiver", stilling.getArbeidsgiver())
+                                    .addValue("bestillingsId", stilling.getBestillingsId())
+                                    .addValue("stillingsId", stilling.getStillingsId())
+                                    .addValue("arbeidsSted", stilling.getArbeidsSted())
+                                    .addValue("varselid", stilling.getVarselId());
+                            // language=sql
+                            database.getNamedJdbcTemplate().update(
+                                    " insert into " +
+                                            " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE, soknadsfrist, svarFrist, arbeidsgiver, bestillingsId‚ stillingsId, arbeidsSted, varselid) " +
+                                            " VALUES ( :aktivitet_id, :versjon, :cv_kan_deles, :cv_kan_deles_tidspunkt, :cv_kan_deles_av, :cv_kan_deles_av_type, :soknadsfrist , :svarFrist , :arbeidsgiver , :bestillingsId , :stillingsId , :arbeidsSted , :varselid)",
+                                    parms
+                            );
+                        }
                 );
     }
 

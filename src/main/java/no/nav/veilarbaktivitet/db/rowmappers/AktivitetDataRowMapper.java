@@ -127,6 +127,7 @@ public class AktivitetDataRowMapper {
     }
 
     private static StillingFraNavData mapStillingFraNav(ResultSet rs) throws SQLException {
+        //TODO fiks
         return StillingFraNavData.builder()
                 .kanDeles(rs.getBoolean("cv_kan_deles"))
                 .cvKanDelesAv(rs.getString("cv_kan_deles_av"))
