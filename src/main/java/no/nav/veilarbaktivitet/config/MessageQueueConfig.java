@@ -57,7 +57,7 @@ public class MessageQueueConfig {
         JmsFactoryFactory jmsFactoryFactory = JmsFactoryFactory.getInstance(WMQ_PROVIDER);
         JmsConnectionFactory connectionFactory = jmsFactoryFactory.createConnectionFactory();
 
-        String env = requireNamespace().equals("default") ? "p" : requireNamespace();
+        String env = getClusterName().orElse("dev-fss").equals("prod-fss") ? "p": "q1";
 
         connectionFactory.setStringProperty(WMQ_HOST_NAME, getRequiredProperty(MQGATEWAY03_HOSTNAME_PROPERTY));
         connectionFactory.setStringProperty(WMQ_PORT, getRequiredProperty(MQGATEWAY03_PORT_PROPERTY));
