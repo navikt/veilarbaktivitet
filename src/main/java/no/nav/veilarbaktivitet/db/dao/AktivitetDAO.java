@@ -295,17 +295,41 @@ public class AktivitetDAO {
                                     .addValue("cv_kan_deles_av", stilling.getCvKanDelesAv())
                                     .addValue("cv_kan_deles_av_type", EnumUtils.getName(stilling.getCvKanDelesAvType()))
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
-                                    .addValue("svarFrist", stilling.getSvarFrist())
+                                    .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())
                                     .addValue("bestillingsId", stilling.getBestillingsId())
                                     .addValue("stillingsId", stilling.getStillingsId())
-                                    .addValue("arbeidsSted", stilling.getArbeidsSted())
+                                    .addValue("arbeidssted", stilling.getArbeidssted())
                                     .addValue("varselid", stilling.getVarselId());
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     " insert into " +
-                                            " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE, soknadsfrist, svarFrist, arbeidsgiver, bestillingsId‚ stillingsId, arbeidsSted, varselid) " +
-                                            " VALUES ( :aktivitet_id, :versjon, :cv_kan_deles, :cv_kan_deles_tidspunkt, :cv_kan_deles_av, :cv_kan_deles_av_type, :soknadsfrist , :svarFrist , :arbeidsgiver , :bestillingsId , :stillingsId , :arbeidsSted , :varselid)",
+                                            " STILLING_FRA_NAV(AKTIVITET_ID, " +
+                                            "VERSJON, " +
+                                            "CV_KAN_DELES, " +
+                                            "CV_KAN_DELES_TIDSPUNKT, " +
+                                            "CV_KAN_DELES_AV, " +
+                                            "CV_KAN_DELES_AV_TYPE, " +
+                                            "soknadsfrist, " +
+                                            "svarfrist, " +
+                                            "arbeidsgiver, " +
+                                            "bestillingsId, " +
+                                            "stillingsId, " +
+                                            "arbeidssted, " +
+                                            "varselid) " +
+                                            " VALUES ( :aktivitet_id, " +
+                                            ":versjon, " +
+                                            ":cv_kan_deles, " +
+                                            ":cv_kan_deles_tidspunkt, " +
+                                            ":cv_kan_deles_av, " +
+                                            ":cv_kan_deles_av_type, " +
+                                            ":soknadsfrist , " +
+                                            ":svarfrist , " +
+                                            ":arbeidsgiver , " +
+                                            ":bestillingsId , " +
+                                            ":stillingsId , " +
+                                            ":arbeidssted , " +
+                                            ":varselid)",
                                     parms
                             );
                         }

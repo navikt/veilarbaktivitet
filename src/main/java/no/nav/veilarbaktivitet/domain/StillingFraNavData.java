@@ -15,10 +15,10 @@ public class StillingFraNavData {
     String cvKanDelesAv;
     InnsenderData cvKanDelesAvType;
     String soknadsfrist;
-    Date svarFrist;
+    Date svarfrist;
     String arbeidsgiver;
     String bestillingsId;
     String stillingsId;
-    String arbeidsSted;
+    String arbeidssted;
     String varselId;
 }

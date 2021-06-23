@@ -26,8 +26,8 @@ public class StillingFraKafka {
     private final OppfolgingStatusClient oppfolgingStatusClient;
     private final KafkaProducerClient<String, KvitteringDelingAvCv> producerClient;
 
+    // TODO sett opp kafka consumer
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
-        String callId = melding.getCallId(); //TODO sett på loggen
 
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
@@ -47,6 +47,7 @@ public class StillingFraKafka {
 
         AktivitetData aktivitetData = map(melding);
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
+
 
         aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent); //TODO fiks idenpotent
 
@@ -83,11 +84,11 @@ public class StillingFraKafka {
         StillingFraNavData stillingFraNavData = StillingFraNavData
                 .builder()
                 .soknadsfrist(soknadsfrist)
-                .svarFrist(svarfrist)
+                .svarfrist(svarfrist)
                 .arbeidsgiver(arbeidsgiver)
                 .bestillingsId(bestillingsId)
                 .stillingsId(stillingsId)
-                .arbeidsSted(arbeidsted)
+                .arbeidssted(arbeidsted)
                 .build();
 
         return AktivitetData
