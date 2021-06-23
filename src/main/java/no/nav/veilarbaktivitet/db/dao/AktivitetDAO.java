@@ -1,12 +1,14 @@
 package no.nav.veilarbaktivitet.db.dao;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
-import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,12 +17,10 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
-import static org.slf4j.LoggerFactory.getLogger;
 
 @Repository
+@Slf4j
 public class AktivitetDAO {
-
-    private static final Logger LOG = getLogger(AktivitetDAO.class);
 
     // language=sql
     private static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
@@ -73,43 +73,50 @@ public class AktivitetDAO {
     @Transactional
     public void insertAktivitet(AktivitetData aktivitet, Date endretDato) {
         long aktivitetId = aktivitet.getId();
-        String fhoId = ofNullable(aktivitet.getForhaandsorientering())
+        final String fhoId = ofNullable(aktivitet.getForhaandsorientering())
                 .map(Forhaandsorientering::getId)
                 .orElse(null);
-        // language=sql
-        database.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = ?", aktivitetId);
+
+        SqlParameterSource parms = new MapSqlParameterSource("aktivitet_id", aktivitetId);
+        //language=SQL
+        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id", parms);
 
         long versjon = nesteVersjon();
+
+        SqlParameterSource parms2 = new MapSqlParameterSource()
+                .addValue("aktivitet_id", aktivitetId)
+                .addValue("versjon", versjon)
+                .addValue("aktor_id", aktivitet.getAktorId())
+                .addValue("aktivitet_type_kode", aktivitet.getAktivitetType().name())
+                .addValue("fra_dato", aktivitet.getFraDato())
+                .addValue("til_dato", aktivitet.getTilDato())
+                .addValue("tittel", aktivitet.getTittel())
+                .addValue("beskrivelse", aktivitet.getBeskrivelse())
+                .addValue("livslopstatus_kode", EnumUtils.getName(aktivitet.getStatus()))
+                .addValue("avsluttet_kommentar",aktivitet.getAvsluttetKommentar())
+                .addValue("opprettet_dato", aktivitet.getOpprettetDato())
+                .addValue("endret_dato", endretDato)
+                .addValue("endret_av", aktivitet.getEndretAv())
+                .addValue("lagt_inn_av", EnumUtils.getName(aktivitet.getLagtInnAv()))
+                .addValue("lenke", aktivitet.getLenke())
+                .addValue("avtalt", aktivitet.isAvtalt())
+                .addValue("gjeldende", true)
+                .addValue("transaksjons_type", EnumUtils.getName(aktivitet.getTransaksjonsType()))
+                .addValue("historisk_dato", aktivitet.getHistoriskDato())
+                .addValue("kontorsperre_enhet_id", aktivitet.getKontorsperreEnhetId())
+                .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
+                .addValue("mal_id", aktivitet.getMalid())
+                .addValue("fho_id", fhoId);
         //language=SQL
-        database.update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
-                        "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
-                        "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                        "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id) " +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                aktivitetId,
-                versjon,
-                aktivitet.getAktorId(),
-                aktivitet.getAktivitetType().name(),
-                aktivitet.getFraDato(),
-                aktivitet.getTilDato(),
-                aktivitet.getTittel(),
-                aktivitet.getBeskrivelse(),
-                EnumUtils.getName(aktivitet.getStatus()),
-                aktivitet.getAvsluttetKommentar(),
-                aktivitet.getOpprettetDato(),
-                endretDato,
-                aktivitet.getEndretAv(),
-                EnumUtils.getName(aktivitet.getLagtInnAv()),
-                aktivitet.getLenke(),
-                aktivitet.isAvtalt(),
-                true,
-                EnumUtils.getName(aktivitet.getTransaksjonsType()),
-                aktivitet.getHistoriskDato(),
-                aktivitet.getKontorsperreEnhetId(),
-                aktivitet.isAutomatiskOpprettet(),
-                aktivitet.getMalid(),
-                fhoId
-        );
+        database.getNamedJdbcTemplate().update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
+                "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
+                "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
+                "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id) " +
+                "VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato, " +
+                ":til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar, " +
+                ":opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt, " +
+                ":gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id, " +
+                ":automatisk_opprettet, :mal_id, :fho_id)", parms2);
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, versjon, aktivitet.getEgenAktivitetData());
@@ -119,14 +126,22 @@ public class AktivitetDAO {
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
 
-        LOG.info("opprettet {}", aktivitet);
+        log.info("opprettet {}", aktivitet.withVersjon(versjon).withEndretDato(endretDato));
 
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
         ofNullable(moteData).ifPresent(m -> {
+            SqlParameterSource parms = new MapSqlParameterSource()
+                    .addValue("aktivitet_id", aktivitetId)
+                    .addValue("versjon", versjon)
+                    .addValue("adresse", moteData.getAdresse())
+                    .addValue("forberedelser", moteData.getForberedelser())
+                    .addValue("kanal", EnumUtils.getName(moteData.getKanal()))
+                    .addValue("referat", moteData.getReferat())
+                    .addValue("referat_publisert", moteData.isReferatPublisert());
             // language=sql
-            database.update("INSERT INTO MOTE(" +
+            database.getNamedJdbcTemplate().update("INSERT INTO MOTE(" +
                             "aktivitet_id, " +
                             "versjon, " +
                             "adresse," +
@@ -134,14 +149,15 @@ public class AktivitetDAO {
                             "kanal, " +
                             "referat, " +
                             "referat_publisert" +
-                            ") VALUES(?,?,?,?,?,?,?)",
-                    aktivitetId,
-                    versjon,
-                    moteData.getAdresse(),
-                    moteData.getForberedelser(),
-                    EnumUtils.getName(moteData.getKanal()),
-                    moteData.getReferat(),
-                    moteData.isReferatPublisert()
+                            ") VALUES( " +
+                            ":aktivitet_id, " +
+                            ":versjon, " +
+                            ":adresse, " +
+                            ":forberedelser, " +
+                            ":kanal, " +
+                            ":referat, " +
+                            ":referat_publisert)",
+                    parms
             );
         });
     }
@@ -149,16 +165,21 @@ public class AktivitetDAO {
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
         ofNullable(stillingsSoekAktivitet)
                 .ifPresent(stillingsoek -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("stillingstittel", stillingsoek.getStillingsTittel())
+                            .addValue("arbeidsgiver", stillingsoek.getArbeidsgiver())
+                            .addValue("arbeidssted", stillingsoek.getArbeidssted())
+                            .addValue("kontaktperson", stillingsoek.getKontaktPerson())
+                            .addValue("etikett", EnumUtils.getName(stillingsoek.getStillingsoekEtikett()));
                     // language=sql
-                    database.update("INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel," +
-                                    "arbeidsgiver, arbeidssted, kontaktperson, etikett) VALUES(?,?,?,?,?,?,?)",
-                            aktivitetId,
-                            versjon,
-                            stillingsoek.getStillingsTittel(),
-                            stillingsoek.getArbeidsgiver(),
-                            stillingsoek.getArbeidssted(),
-                            stillingsoek.getKontaktPerson(),
-                            EnumUtils.getName(stillingsoek.getStillingsoekEtikett())
+                    database.getNamedJdbcTemplate().update(
+                            "INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel," +
+                                    "arbeidsgiver, arbeidssted, kontaktperson, etikett) " +
+                                    "VALUES(:aktivitet_id, :versjon, :stillingstittel, " +
+                                    ":arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)",
+                            parms
                     );
                 });
     }
@@ -166,39 +187,52 @@ public class AktivitetDAO {
     private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
         // language=sql
         ofNullable(egenAktivitetData)
-                .ifPresent(egen -> database.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
-                                "VALUES(?,?,?,?)",
-                        aktivitetId,
-                        versjon,
-                        egen.getHensikt(),
-                        egen.getOppfolging()
-                ));
+                .ifPresent(egen -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("hensikt", egen.getHensikt())
+                            .addValue("oppfolging", egen.getOppfolging());
+                    database.getNamedJdbcTemplate().update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
+                                    "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
+                            parms
+                    );
+                });
     }
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
                 // language=sql
-                .ifPresent(sokeAvtale -> database.update("INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
-                                "VALUES(?,?,?,?,?)",
-                        aktivitetId,
-                        versjon,
-                        sokeAvtale.getAntallStillingerSokes(),
-                        sokeAvtale.getAntallStillingerIUken(),
-                        sokeAvtale.getAvtaleOppfolging()
-                ));
+                .ifPresent(sokeAvtale -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("antall_stillinger_sokes", sokeAvtale.getAntallStillingerSokes())
+                            .addValue("antall_stillinger_i_uken", sokeAvtale.getAntallStillingerIUken())
+                            .addValue("avtale_oppfolging", sokeAvtale.getAvtaleOppfolging());
+                    database.getNamedJdbcTemplate().update(
+                            "INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
+                                    "VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)",
+                            parms
+                    );
+                });
     }
 
     private void insertIJobb(long aktivitetId, long versjon, IJobbAktivitetData iJobbAktivitet) {
         ofNullable(iJobbAktivitet)
                 .ifPresent(iJobb -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("jobb_status", EnumUtils.getName(iJobb.getJobbStatusType()))
+                            .addValue("ansettelsesforhold", iJobb.getAnsettelsesforhold())
+                            .addValue("arbeidstid", iJobb.getArbeidstid());
                     // language=sql
-                    database.update("INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status," +
-                                    " ansettelsesforhold, arbeidstid) VALUES(?,?,?,?,?)",
-                            aktivitetId,
-                            versjon,
-                            EnumUtils.getName(iJobb.getJobbStatusType()),
-                            iJobb.getAnsettelsesforhold(),
-                            iJobb.getArbeidstid()
+                    database.getNamedJdbcTemplate().update(
+                            "INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status," +
+                                    " ansettelsesforhold, arbeidstid) VALUES(:aktivitet_id, :versjon, :jobb_status," +
+                                    " :ansettelsesforhold, :arbeidstid)",
+                            parms
                     );
                 });
     }
@@ -207,34 +241,40 @@ public class AktivitetDAO {
     private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("behandling_type", behandling.getBehandlingType())
+                            .addValue("behandling_sted", behandling.getBehandlingSted())
+                            .addValue("effekt", behandling.getEffekt())
+                            .addValue("behandling_oppfolging", behandling.getBehandlingOppfolging());
                     // language=sql
-                    database.update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type, " +
-                                    "behandling_sted, effekt, behandling_oppfolging) VALUES(?,?,?,?,?,?)",
-                            aktivitetId,
-                            versjon,
-                            behandling.getBehandlingType(),
-                            behandling.getBehandlingSted(),
-                            behandling.getEffekt(),
-                            behandling.getBehandlingOppfolging()
-                    );
+                    database.getNamedJdbcTemplate().update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type, " +
+                                    "behandling_sted, effekt, behandling_oppfolging) " +
+                                    "VALUES(:aktivitet_id, :versjon, :behandling_type, " +
+                                    ":behandling_sted, :effekt, :behandling_oppfolging)",
+                            parms);
                 });
     }
 
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
-                .ifPresent(stilling ->
+                .ifPresent(stilling -> {
+                    SqlParameterSource parms = new MapSqlParameterSource()
+                            .addValue("aktivitet_id", aktivitetId)
+                            .addValue("versjon", versjon)
+                            .addValue("cv_kan_deles", stilling.getKanDeles())
+                            .addValue("cv_kan_deles_tidspunkt", stilling.getCvKanDelesTidspunkt())
+                            .addValue("cv_kan_deles_av", stilling.getCvKanDelesAv())
+                            .addValue("cv_kan_deles_av_type", EnumUtils.getName(stilling.getCvKanDelesAvType()));
                         // language=sql
-                        database.update("" +
-                                " insert into " +
-                                " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE) " +
-                                " VALUES ( ?,?,?,?,?,? )",
-                                aktivitetId,
-                                versjon,
-                                stilling.getKanDeles(),
-                                stilling.getCvKanDelesTidspunkt(),
-                                stilling.getCvKanDelesAv(),
-                                EnumUtils.getName(stilling.getCvKanDelesAvType())
-                                )
+                        database.getNamedJdbcTemplate().update(
+                                        " insert into " +
+                                        " STILLING_FRA_NAV(AKTIVITET_ID, VERSJON, CV_KAN_DELES, CV_KAN_DELES_TIDSPUNKT, CV_KAN_DELES_AV, CV_KAN_DELES_AV_TYPE) " +
+                                        " VALUES ( :aktivitet_id, :versjon, :cv_kan_deles, :cv_kan_deles_tidspunkt, :cv_kan_deles_av, :cv_kan_deles_av_type )",
+                                parms
+                        );
+                    }
                 );
     }
 
