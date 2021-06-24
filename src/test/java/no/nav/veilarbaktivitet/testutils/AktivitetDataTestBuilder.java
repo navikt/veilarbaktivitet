@@ -13,9 +13,9 @@ public class AktivitetDataTestBuilder {
 
     public static AktivitetDataBuilder nyAktivitet() {
         return AktivitetData.builder()
-                .id(new Random().nextLong())
+                .id(new Random().nextLong()) // Hvis denne persisteres, vil den få en ny id fra sekvens
                 .aktorId("kake")
-                .versjon(1l)
+                .versjon(1l) // Hvis denne persisteres vil den få en ny versjon fra sekvens
                 .fraDato(nyDato())
                 .tilDato(nyDato())
                 .tittel("tittel")

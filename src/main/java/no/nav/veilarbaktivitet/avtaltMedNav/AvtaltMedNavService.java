@@ -71,7 +71,7 @@ public class AvtaltMedNavService {
                 .withLagtInnAv(InnsenderData.NAV) // alltid NAV
                 .withAvtalt(true);
 
-        aktivitetDAO.insertAktivitet(nyAktivitet, now);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet, now);
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();
@@ -95,7 +95,7 @@ public class AvtaltMedNavService {
                 .lagtInnAv(InnsenderData.BRUKER) // alltid Bruker
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 

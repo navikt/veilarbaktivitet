@@ -80,15 +80,11 @@ public class KafkaAktivitetDAOTest {
     }
 
     private AktivitetData insertAktivitet(AktivitetData aktivitet) {
-        val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
-        val aktivitetMedId = aktivitet.toBuilder()
-                .id(id)
+        val nyAktivitet = aktivitet.toBuilder()
                 .aktorId(AKTOR_ID.get())
                 .build();
 
-        val endret = new Date();
-        aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
-        return aktivitetDAO.hentAktivitet(id);
+        return aktivitetDAO.opprettNyAktivitet(nyAktivitet);
     }
 
 }

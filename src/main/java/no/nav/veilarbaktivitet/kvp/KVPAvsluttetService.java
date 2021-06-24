@@ -21,7 +21,7 @@ public class KVPAvsluttetService {
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
                 .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
-                .forEach(aktivitetDAO::insertAktivitet);
+                .forEach(aktivitetDAO::oppdaterAktivitet);
     }
 
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {

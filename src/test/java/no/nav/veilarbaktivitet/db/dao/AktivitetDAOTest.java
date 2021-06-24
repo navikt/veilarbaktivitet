@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,6 +34,7 @@ import java.util.concurrent.Executors;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.fail;
@@ -168,7 +165,7 @@ public class AktivitetDAOTest {
                             .withTransaksjonsType(t)
                             ;
                     try {
-                        insertAktivitet(aktivitetData);
+                        addAktivitet(aktivitetData);
                     } catch (Exception e) {
                         fail("TransaksjonsTypen " + t + " er ikke lagt inn i databasen");
                     }
@@ -192,27 +189,42 @@ public class AktivitetDAOTest {
         assertThat(aktivitetData, hasSize(3));
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void kan_ikke_oppdatere_gammel_versjon() {
+        AktivitetData originalAktivitetVersjon = gitt_at_det_finnes_en_egen_aktivitet();
+        AktivitetData nyAktivitetVersjon = naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
+        assertThat(nyAktivitetVersjon.getVersjon(), is(greaterThan(originalAktivitetVersjon.getVersjon())));
+        // Kan jeg ikke oppdatere den originale aktivitetVersjonen lenger
+        naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
+    }
+
+
     @Test
-    @Ignore("Versjonering er ikke trådsikker, og derfor sårbar for race-conditions!")
     public void versjonering_skal_vaere_traadsikker() throws InterruptedException {
         // Opprett initiell versjon
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        final AktivitetData aktivitet = transactionTemplate.execute(transactionStatus -> gitt_at_det_finnes_en_egen_aktivitet());
-
+        final AktivitetData aktivitet  = transactionTemplate.execute(transactionStatus -> gitt_at_det_finnes_en_egen_aktivitet());
         int antallOppdateringer= 10;
         ExecutorService bakgrunnService = Executors.newFixedThreadPool(3);
         CountDownLatch latch = new CountDownLatch(antallOppdateringer);
         for (int i = 0; i < antallOppdateringer; i++) {
             bakgrunnService.submit(() -> {
                 transactionTemplate.executeWithoutResult( action -> {
-                    aktivitetDAO.insertAktivitet(aktivitet.withBeskrivelse("nyBeskrivelse "));
+                    try {
+                        aktivitetDAO.oppdaterAktivitet(aktivitet.withBeskrivelse("nyBeskrivelse "));
+                    } catch (Exception e) {
+                        log.warn("Feil i tråd.", e);
+                    } finally {
+                        latch.countDown();
+                    }
                 });
-                latch.countDown();
             });
         }
         latch.await();
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
-        assertThat(aktivitetData, hasSize(antallOppdateringer + 1));
+        // Kun originalversjonen pluss første oppdatering. Resten feiler
+        assertThat(aktivitetData, hasSize(2));
+        // Denne vil feile hvis det er mer enn én gjeldende
         AktivitetData nyesteAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(nyesteAktivitet, notNullValue());
     }
@@ -220,7 +232,7 @@ public class AktivitetDAOTest {
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
         val aktivitet = AktivitetDataTestBuilder.nyttStillingssøk();
 
-        return insertAktivitet(AktivitetDataTestBuilder.nyttStillingssøk());
+        return addAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_egen_aktivitet() {
@@ -232,23 +244,27 @@ public class AktivitetDAOTest {
     private AktivitetData gitt_at_det_finnes_en_sokeavtale() {
         val aktivitet = AktivitetDataTestBuilder.nySokeAvtaleAktivitet();
 
-        return insertAktivitet(aktivitet);
+        return addAktivitet(aktivitet);
     }
 
     private AktivitetData gitt_at_det_finnes_en_ijobb() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyIJobbAktivitet());
+        return addAktivitet(AktivitetDataTestBuilder.nyIJobbAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_en_behandling() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyBehandlingAktivitet());
+        return addAktivitet(AktivitetDataTestBuilder.nyBehandlingAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_et_mote() {
-        return insertAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet());
+        return addAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet());
     }
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
-        return insertAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
+        return addAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
+    }
+
+    private AktivitetData naar_jeg_oppdaterer_en_aktivitet(AktivitetData aktivitetData) {
+        return aktivitetDAO.oppdaterAktivitet(aktivitetData);
     }
 
     private AktivitetData gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(int antallVersjoner) {
@@ -257,32 +273,16 @@ public class AktivitetDAOTest {
         AktivitetData versjonX = null;
         for (int i = 1; i < antallVersjoner; i++) {
             versjonX = aktivitetDAO.hentAktivitet(et_mote.getId()).withBeskrivelse("Beskrivelse " + i);
-            aktivitetDAO.insertAktivitet(versjonX);
+            aktivitetDAO.oppdaterAktivitet(versjonX);
         }
         return versjonX;
     }
 
-    private AktivitetData insertAktivitet(AktivitetData aktivitet) {
-        val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
-        val aktivitetMedId = aktivitet.toBuilder()
-                .id(id)
-                .aktorId(AKTOR_ID.get())
-                .build();
-
-        val endret = new Date();
-        aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
-        return aktivitetDAO.hentAktivitet(id);
-    }
-
     private AktivitetData addAktivitet(AktivitetData aktivitet) {
-        val id = Optional.ofNullable(aktivitet.getId()).orElseGet(aktivitetDAO::getNextUniqueAktivitetId);
-        val aktivitetMedId = aktivitet.toBuilder()
-                .id(id)
+        val aktivitetUtenId = aktivitet.toBuilder()
                 .aktorId(AKTOR_ID.get())
                 .build();
 
-        val endret = new Date();
-        aktivitetDAO.insertAktivitet(aktivitetMedId, endret);
-        return aktivitetDAO.hentAktivitet(id);
+        return aktivitetDAO.opprettNyAktivitet(aktivitetUtenId);
     }
 }

@@ -39,49 +39,9 @@ public class MoteSMSDAOTest {
     }
 
     @Test
-    public void skalInserteNy() {
-        AktivitetData aktivitetData = insertMote(10, new Date());
-
-       // moteSmsDAO.insertSmsSendt(aktivitetData.getId(), aktivitetData.getVersjon(), new Date(), "kake");
-
-        long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
-        long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
-
-        //assertThat(antall).isEqualTo(1);
-        //assertThat(antall_historisk).isEqualTo(1);
-    }
-
-    @Test
-    public void skalOppdatereGjeldende() {
-
-        Date date_0 = new Date(0);
-        Date date_2 = new Date(60*60*1000);
-        Date date = new Date();
-
-        AktivitetData mote1 = insertMote(10, date_0);
-        AktivitetData mote2 = insertMote(12, date_2);
-        AktivitetData mote1_2 = insertMote(10, date_0);
-
-//        moteSmsDAO.insertSmsSendt(mote1.getId(), mote1.getVersjon(), date_0, "kake");
-//        moteSmsDAO.insertSmsSendt(mote2.getId(), mote2.getVersjon(), date_2, "kake1");
-//        moteSmsDAO.insertSmsSendt(mote1_2.getId(), mote1_2.getVersjon(), date, "kake2");
-
-   //      long antall = selectCountFrom("GJELDENDE_MOTE_SMS", jdbcTemplate);
-   //      long antall_historisk = selectCountFrom("MOTE_SMS_HISTORIKK", jdbcTemplate);
- //
-   //      Date oppdatert = jdbcTemplate.queryForObject("select MOTETID from GJELDENDE_MOTE_SMS where AKTIVITET_ID = 10", Date.class);
-   //      Date ikke_oppdatert = jdbcTemplate.queryForObject("select MOTETID from GJELDENDE_MOTE_SMS where AKTIVITET_ID = 12", Date.class);
- //
-   //      assertThat(date).isEqualTo(oppdatert); //må vere denne veien da equals ikke virker andre veien.
-   //      assertThat(date_2).isEqualTo(ikke_oppdatert); //må vere denne veien da equals ikke virker andre veien.
-   //      assertThat(antall).isEqualTo(2);
-   //      assertThat(antall_historisk).isEqualTo(3);
-    }
-
-    @Test
     public void skalHenteMoterMellom() {
-        AktivitetData aktivitetData1 = insertMote(2, betwheen2);
-        AktivitetData aktivitetData2 = insertMote(4, betwheen);
+        AktivitetData aktivitetData1 = opprettMote(betwheen2);
+        AktivitetData aktivitetData2 = opprettMote(betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -89,7 +49,7 @@ public class MoteSMSDAOTest {
 
         SmsAktivitetData aktivitetData = smsAktivitetData.get(0);
 
-        assertThat(aktivitetData.getAktivitetId()).isEqualTo(4);
+        assertThat(aktivitetData.getAktivitetId()).isEqualTo(aktivitetData2.getId());
 
         assertThat(smsAktivitetData.get(1).getAktorId()).isEqualTo(aktivitetData2.getAktorId());
 
@@ -97,8 +57,8 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalHenteEnVersonAvMote() {
-        insertMote(2, betwheen2);
-        insertMote(2, betwheen);
+        AktivitetData mote = opprettMote(betwheen2);
+        oppdaterMote(mote, betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -108,7 +68,7 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalIkkeHenteAvbrutt() {
-        insertAbrutMote(1l, betwheen);
+        opprettAvbruttMote(betwheen);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -118,8 +78,8 @@ public class MoteSMSDAOTest {
 
     @Test
     public void skalIkkeHneteMoterUtenfor() {
-        insertMote(2,bofore);
-        insertMote(3, after);
+        opprettMote(bofore);
+        opprettMote(after);
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
@@ -131,30 +91,34 @@ public class MoteSMSDAOTest {
     }
 
 
-    private AktivitetData insertMote(long id, Date fraDato) {
+    private AktivitetData opprettMote(Date fraDato) {
         AktivitetData build = AktivitetDataTestBuilder
                 .nyMoteAktivitet()
                 .toBuilder()
                 .status(AktivitetStatus.GJENNOMFORES)
-                .id(id)
                 .fraDato(fraDato)
                 .build();
 
-        aktivitetDAO.insertAktivitet(build);
-        return aktivitetDAO.hentAktivitet(id);
+        return aktivitetDAO.opprettNyAktivitet(build);
     }
 
-    private AktivitetData insertAbrutMote(long id, Date fraDato) {
+    private void oppdaterMote(AktivitetData mote, Date fraDato) {
+        AktivitetData build = mote
+                .toBuilder()
+                .fraDato(fraDato)
+                .build();
+        aktivitetDAO.oppdaterAktivitet(build);
+    }
+
+    private AktivitetData opprettAvbruttMote(Date fraDato) {
         AktivitetData build = AktivitetDataTestBuilder
                 .nyMoteAktivitet()
                 .toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
-                .id(id)
                 .fraDato(fraDato)
                 .build();
 
-        aktivitetDAO.insertAktivitet(build);
-        return aktivitetDAO.hentAktivitet(id);
+        return aktivitetDAO.opprettNyAktivitet(build);
     }
 
     private long selectCountFrom(String tabelname, JdbcTemplate template) {

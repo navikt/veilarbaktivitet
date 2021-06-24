@@ -82,8 +82,8 @@ public class ForhaandsorienteringDTOControllerTest {
         String tekst = "fho tekst";
         Type type = Type.SEND_FORHAANDSORIENTERING;
         var aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorid);
-        aktivitetDAO.insertAktivitet(aktivitet);
-        aktivitetDAO.insertAktivitet(aktivitet.withBeskrivelse("Beskrivelse"));
+        aktivitet = aktivitetDAO.opprettNyAktivitet(aktivitet);
+        aktivitetDAO.oppdaterAktivitet(aktivitet.withBeskrivelse("Beskrivelse"));
         var sisteAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
 
         var avtaltDTO = new AvtaltMedNavDTO()
@@ -114,11 +114,11 @@ public class ForhaandsorienteringDTOControllerTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
                 .toBuilder()
                 .aktorId(aktorid)
-                .versjon(aktivitetDAO.getNextUniqueAktivitetId())
+                .versjon(aktivitetDAO.nesteVersjon())
                 .kontorsperreEnhetId("1234")
                 .build();
 
-        aktivitetDAO.insertAktivitet(aktivitetData);
+        aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitetData);
 
         avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId());
     }
@@ -185,11 +185,10 @@ public class ForhaandsorienteringDTOControllerTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
                 .toBuilder()
                 .aktorId(aktorid)
-                .versjon(aktivitetDAO.getNextUniqueAktivitetId())
+                .versjon(aktivitetDAO.nesteVersjon())
                 .build();
 
-        aktivitetDAO.insertAktivitet(aktivitetData);
-        return aktivitetDAO.hentAktivitet(aktivitetData.getId());
+        return aktivitetDAO.opprettNyAktivitet(aktivitetData);
     }
 
     @Test
@@ -222,8 +221,8 @@ public class ForhaandsorienteringDTOControllerTest {
     public void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
         Arrays.stream(AktivitetTypeData.values())
                 .map(AktivitetDataTestBuilder::nyAktivitet)
-                .map(a -> a.toBuilder().id(aktivitetDAO.getNextUniqueAktivitetId()).aktorId(aktorid).build())
-                .forEach(aktivitetDAO::insertAktivitet);
+                .map(a -> a.toBuilder().aktorId(aktorid).build())
+                .forEach(aktivitetDAO::opprettNyAktivitet);
 
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorid));
 

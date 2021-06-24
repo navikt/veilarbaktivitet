@@ -159,9 +159,8 @@ public class AvtaltVarselServiceTest {
     }
 
     private AktivitetDTO createAktivitetMedForhaandsorientering(Person.AktorId aktorId, NavIdent veilederIdent, String tekst) {
-        final AktivitetData aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet()
-                .withAktorId(aktorId.get());
-        aktivitetDAO.insertAktivitet(aktivitet);
+        final AktivitetData aktivitet = aktivitetDAO.opprettNyAktivitet(AktivitetDataTestBuilder.nyEgenaktivitet()
+                .withAktorId(aktorId.get()));
 
         var fhoDTO = ForhaandsorienteringDTO.builder()
                 .type(Type.SEND_FORHAANDSORIENTERING)
