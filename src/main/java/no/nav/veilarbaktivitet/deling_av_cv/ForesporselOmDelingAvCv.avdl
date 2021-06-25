@@ -3,7 +3,7 @@
 		"type": "record",
 		"name": "ForesporselOmDelingAvCv",
 		"fields": [
-		{ "name": "id", "type": "string" },
+		{ "name": "bestillingsId", "type": "string" },
 		{ "name": "aktorId", "type": "string" },
 		{ "name": "stillingsId", "type": "string" },
 		{ "name": "opprettetAv", "type": "string" },

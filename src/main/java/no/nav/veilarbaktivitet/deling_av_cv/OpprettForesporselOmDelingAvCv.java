@@ -1,11 +1,11 @@
-package no.nav.veilarbaktivitet.stiling_i_aktivitetsplan;
+package no.nav.veilarbaktivitet.deling_av_cv;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
+import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.avro.KvitteringDelingAvCv;
-import no.nav.veilarbaktivitet.avro.KvitteringsTypeEnum;
+import no.nav.veilarbaktivitet.avro.SvarEnum;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
@@ -20,11 +20,11 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
-public class StillingFraKafka {
+public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final AktivitetService aktivitetService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
-    private final KafkaProducerClient<String, KvitteringDelingAvCv> producerClient;
+    private final KafkaProducerClient<String, DelingAvCvRespons> producerClient;
 
     // TODO sett opp kafka consumer
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
@@ -35,28 +35,29 @@ public class StillingFraKafka {
         boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
         boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isErManuell).orElse(true);
 
+        AktivitetData aktivitetData = map(melding);
+
         if (!underoppfolging) {
-            sendIkkeOpprettet("ikke under oppfølging", melding);
+            sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
 
         if (kvpService.erUnderKvp(aktorId)) {
-            sendIkkeOpprettet("", melding);
+            sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
 
-        AktivitetData aktivitetData = map(melding);
-        Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
+        Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
         aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent); //TODO fiks idenpotent
 
         if (erManuell) {
-            sendKanIkkeSvare(melding, "er manuell bruker");
+            sendOpprettetIkkeVarslet(aktivitetData, melding );
         } else if (false) { //TODO ikke nivå 4
-            sendKanIkkeSvare(melding, "ikke nivaa 4");
+            sendOpprettetIkkeVarslet(aktivitetData, melding);
         } else {
-            sendSuksess(melding);
+            sendOpprettet(aktivitetData, melding);
         }
     }
 
@@ -71,7 +72,7 @@ public class StillingFraKafka {
         Date svarfrist = new Date(melding.getSvarfrist().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();
-        String bestillingsId = melding.getId();
+        String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
 
 
@@ -109,25 +110,29 @@ public class StillingFraKafka {
                 .build();
     }
 
-    private void sendIkkeOpprettet(String feilmelding, ForesporselOmDelingAvCv melding) {
-        sendKvittering(KvitteringsTypeEnum.ikke_opprettet, melding, feilmelding);
+    private void sendIkkeOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
+        sendRespons(false, false, melding, aktivitetData);
     }
 
-    private void sendKanIkkeSvare(ForesporselOmDelingAvCv melding, String feilmelding) {
-        sendKvittering(KvitteringsTypeEnum.opprettet_kan_ikke_svare, melding, feilmelding);
+    private void sendOpprettetIkkeVarslet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
+        sendRespons(true, false, melding, aktivitetData);
     }
 
-    private void sendSuksess(ForesporselOmDelingAvCv melding) {
-        sendKvittering(KvitteringsTypeEnum.opprettet, melding, null);
+    private void sendOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
+        sendRespons(true, true, melding, aktivitetData);
     }
 
-    private void sendKvittering(KvitteringsTypeEnum kvitteringsTypeEnum, ForesporselOmDelingAvCv melding, String feilmeldig) {
-        KvitteringDelingAvCv KvitteringDelingAvCv = new KvitteringDelingAvCv();
-        KvitteringDelingAvCv.setKvitteringsType(kvitteringsTypeEnum);
-        KvitteringDelingAvCv.setAktorId(melding.getAktorId());
-        KvitteringDelingAvCv.setFeilmelding(feilmeldig);
+    private void sendRespons(boolean aktivitetOpprettet, boolean brukerVarslet, ForesporselOmDelingAvCv melding, AktivitetData aktivitetData) {
+        DelingAvCvRespons delingAvCvRespons = new DelingAvCvRespons();
+        delingAvCvRespons.setBestillingsId(melding.getBestillingsId());
+        delingAvCvRespons.setAktivitetOpprettet(aktivitetOpprettet);
+        delingAvCvRespons.setBrukerVarslet(brukerVarslet);
+        delingAvCvRespons.setAktorId(melding.getAktorId());
+        delingAvCvRespons.setAktivitetId(aktivitetData.getId().toString());
+        delingAvCvRespons.setBrukerSvar(SvarEnum.ikke_svart);
 
-        ProducerRecord<String, KvitteringDelingAvCv> stringKvitteringDelingAvCvProducerRecord = new ProducerRecord<>("", KvitteringDelingAvCv.getId(), KvitteringDelingAvCv);
-        producerClient.send(stringKvitteringDelingAvCvProducerRecord);
+
+        ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>("", delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
+        producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
 }
