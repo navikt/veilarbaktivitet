@@ -24,7 +24,7 @@ public class AktivitetDTOMapper {
                 .setBeskrivelse(aktivitet.getBeskrivelse())
                 .setLenke(aktivitet.getLenke())
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
-                .setAvtalt(aktivitet.isAvtalt())
+                .setAvtalt(mapAvtalt(aktivitet))
                 .setForhaandsorientering(mapForhaandsorientering(aktivitet.getForhaandsorientering()))
                 .setLagtInnAv(aktivitet.getLagtInnAv().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
@@ -45,6 +45,10 @@ public class AktivitetDTOMapper {
 
     private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
         aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(erEkstern ? null : stillingFraNavData.getCvKanDelesAv()));
+    }
+
+    private static boolean mapAvtalt(AktivitetData aktivitet) {
+        return aktivitet.isAvtalt() && aktivitet.getAktivitetType() != AktivitetTypeData.SAMTALEREFERAT;
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {

@@ -8,8 +8,14 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 
+import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 
 public class AktivitetDTOMapperTest {
+
+    private static final Random random = new Random();
 
     @Test
     public void skalMappeAktivitetsFelter() {
@@ -75,15 +81,15 @@ public class AktivitetDTOMapperTest {
 
     @Test
     public void skalMappeStillingSokData() {
-        AktivitetData nyttStillingssøk = AktivitetDataTestBuilder.nyttStillingssøk();
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssøk, false);
+        AktivitetData nyttStillingsoek = AktivitetDataTestBuilder.nyttStillingssøk();
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingsoek, false);
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING);
-            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidsgiver());
-            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsTittel());
-            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidssted());
-            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getKontaktPerson());
-            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
+            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingsoek.getStillingsSoekAktivitetData().getArbeidsgiver());
+            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingsoek.getStillingsSoekAktivitetData().getStillingsTittel());
+            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingsoek.getStillingsSoekAktivitetData().getArbeidssted());
+            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingsoek.getStillingsSoekAktivitetData().getKontaktPerson());
+            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingsoek.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
 
             s.assertAll();
         });
@@ -170,6 +176,46 @@ public class AktivitetDTOMapperTest {
 
             s.assertAll();
         });
+    }
+
+    @Test
+    public void type_SAMTALEREFERAT_should_always_return_false() {
+        AktivitetData data = AktivitetData
+                .builder()
+                .id(random.nextLong())
+                .versjon(random.nextLong())
+                .lagtInnAv(InnsenderData.NAV)
+                .avtalt(true)
+                .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
+                .build();
+        AktivitetDTO dto = AktivitetDTOMapper.mapTilAktivitetDTO(data, false);
+        assertThat(dto.isAvtalt()).isFalse();
+    }
+
+    @Test
+    public void type_except_SAMTALEREFERAT_should_return_actual_value() {
+        AktivitetData data = AktivitetData
+                .builder()
+                .id(random.nextLong())
+                .versjon(random.nextLong())
+                .lagtInnAv(InnsenderData.NAV)
+                .avtalt(true)
+                .aktivitetType(getTypeExceptSAMTALEREFERAT())
+                .build();
+        AktivitetDTO dto = AktivitetDTOMapper.mapTilAktivitetDTO(data, false);
+        assertThat(dto.isAvtalt()).isTrue();
+    }
+
+    private static AktivitetTypeData getTypeExceptSAMTALEREFERAT() {
+        AktivitetTypeData type = null;
+        while (type == null) {
+            int i = random.nextInt(AktivitetTypeData.values().length);
+            type = AktivitetTypeData.values()[i];
+            if (type == AktivitetTypeData.SAMTALEREFERAT) {
+                type = null;
+            }
+        }
+        return type;
     }
 
 }
