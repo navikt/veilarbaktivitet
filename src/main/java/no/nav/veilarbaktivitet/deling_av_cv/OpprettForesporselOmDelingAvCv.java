@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.deling_av_cv;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -20,15 +21,20 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
+@Slf4j
 public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final AktivitetService aktivitetService;
+    private final DelingAvCvService delingAvCvService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
     private final KafkaProducerClient<String, DelingAvCvRespons> producerClient;
 
     // TODO sett opp kafka consumer
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
-
+        if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
+            log.info("ForesporselOmDelingAvCv med bestillingsId {} har allerede en aktivitet", melding.getBestillingsId());
+            return;
+        }
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
 
@@ -50,7 +56,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent); //TODO fiks idenpotent
+        aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (erManuell) {
             sendOpprettetIkkeVarslet(aktivitetData, melding );
