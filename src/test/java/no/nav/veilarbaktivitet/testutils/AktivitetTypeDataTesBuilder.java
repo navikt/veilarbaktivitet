@@ -70,6 +70,8 @@ public class AktivitetTypeDataTesBuilder {
 
     public static StillingFraNavData nyStillingFraNav() {
         return StillingFraNavData.builder()
+                .bestillingsId("123")
+                .stillingsId("1234")
                 .cvKanDelesAvType(InnsenderData.NAV)
                 .cvKanDelesAv("Z999999")
                 .cvKanDelesTidspunkt(AktivitetDataTestBuilder.nyDato())
