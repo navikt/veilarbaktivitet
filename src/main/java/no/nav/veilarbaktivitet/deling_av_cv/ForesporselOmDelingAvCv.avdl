@@ -21,7 +21,7 @@
 		},
 		{ "name": "callId", "type": "string" },
 		{ "name": "stillingstittel", "type": "string" },
-		{ "name": "soknadsfrist", "type": "string" },
+		{ "name": "soknadsfrist", "type": "string" }, // TODO Bør dette være en dato?
 		{ "name": "arbeidsgiver", "type": "string" },
 		{ "name": "arbeidssteder",
 				"type": {

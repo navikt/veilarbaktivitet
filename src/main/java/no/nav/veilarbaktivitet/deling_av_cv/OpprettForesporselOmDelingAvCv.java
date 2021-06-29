@@ -56,14 +56,16 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
+        long aktivitetId = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
+
+        AktivitetData aktivitetMedId = aktivitetData.withId(aktivitetId);
 
         if (erManuell) {
-            sendOpprettetIkkeVarslet(aktivitetData, melding );
+            sendOpprettetIkkeVarslet(aktivitetMedId, melding );
         } else if (false) { //TODO ikke nivå 4
-            sendOpprettetIkkeVarslet(aktivitetData, melding);
+            sendOpprettetIkkeVarslet(aktivitetMedId, melding);
         } else {
-            sendOpprettet(aktivitetData, melding);
+            sendOpprettet(aktivitetMedId, melding);
         }
     }
 
@@ -134,7 +136,7 @@ public class OpprettForesporselOmDelingAvCv {
         delingAvCvRespons.setAktivitetOpprettet(aktivitetOpprettet);
         delingAvCvRespons.setBrukerVarslet(brukerVarslet);
         delingAvCvRespons.setAktorId(melding.getAktorId());
-        delingAvCvRespons.setAktivitetId(aktivitetData.getId().toString());
+        delingAvCvRespons.setAktivitetId(aktivitetData.getId() != null ? aktivitetData.getId().toString() : null);
         delingAvCvRespons.setBrukerSvar(SvarEnum.IKKE_SVART);
 
 
