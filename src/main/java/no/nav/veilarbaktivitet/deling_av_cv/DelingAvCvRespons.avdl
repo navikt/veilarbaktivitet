@@ -4,6 +4,6 @@
 		{"name":"aktivitetId","type":["string","null"]},
 		{"name":"brukerVarslet","type":"boolean"},
 		{"name":"aktivitetOpprettet","type":"boolean"},
-		{"name":"brukerSvar","type":{"name":"SvarEnum","type":"enum","symbols":["ja","nei","ikke_svart"]}}
+		{"name":"brukerSvar","type":{"name":"SvarEnum","type":"enum","symbols":["JA","NEI","IKKE_SVART"]}}
 	]
 }
