@@ -135,7 +135,7 @@ public class OpprettForesporselOmDelingAvCv {
         delingAvCvRespons.setBrukerVarslet(brukerVarslet);
         delingAvCvRespons.setAktorId(melding.getAktorId());
         delingAvCvRespons.setAktivitetId(aktivitetData.getId().toString());
-        delingAvCvRespons.setBrukerSvar(SvarEnum.ikke_svart);
+        delingAvCvRespons.setBrukerSvar(SvarEnum.IKKE_SVART);
 
 
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>("", delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
