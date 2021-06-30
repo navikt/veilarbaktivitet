@@ -6,6 +6,7 @@ import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
+import org.apache.avro.generic.GenericRecord;
 import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
@@ -44,6 +45,14 @@ public class KafkaAivenConfig {
     @Bean
     public KafkaProducerClient<String, String> aivenProducerClient(MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, String>builder()
+                .withMetrics(meterRegistry)
+                .withProperties(aivenDefaultProducerProperties(PRODUCER_CLIENT_ID))
+                .build();
+    }
+
+    @Bean
+    public KafkaProducerClient<String, GenericRecord> aivenAvroProducerClient(MeterRegistry meterRegistry) {
+        return KafkaProducerClientBuilder.<String, GenericRecord>builder()
                 .withMetrics(meterRegistry)
                 .withProperties(aivenDefaultProducerProperties(PRODUCER_CLIENT_ID))
                 .build();
