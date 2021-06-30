@@ -102,6 +102,37 @@ public class AktivitetAppService {
     }
 
     @Transactional
+    public AktivitetData oppdaterSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean erEksternBruker) {
+        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        var orginalAktivitet = hentAktivitet(aktivitetData.getId());
+
+        var deleCvDetaljer = aktivitetData
+                .getStillingFraNavData()
+                .withCvKanDelesTidspunkt(new Date())
+                .withCvKanDelesAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
+                .withCvKanDelesAv(innloggetBruker.toString());
+
+        if(aktivitetData.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV || deleCvDetaljer == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre CV info på andre aktivitetstyper enn STILLING_FRA_NAV");
+        }
+
+        aktivitetService.oppdaterAktivitet(orginalAktivitet, aktivitetData.withStillingFraNavData(deleCvDetaljer), innloggetBruker);
+        var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
+
+        if(deleCvDetaljer.getKanDeles()) {
+            return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, aktivitetMedCvSvar.withStatus(AktivitetStatus.GJENNOMFORES), innloggetBruker);
+        }
+        else {
+            var nyAktivitet = aktivitetMedCvSvar
+                    .withStatus(AktivitetStatus.AVBRUTT)
+                    .withAvsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
+
+            return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, nyAktivitet, innloggetBruker);
+        }
+
+    }
+
+    @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         AktivitetData original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         kanEndreAktivitetGuard(original, aktivitet);
@@ -139,9 +170,13 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
             throw new IllegalArgumentException(
-                    String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
+                    String.format("Kan ikke endre aktivitet med id [%s] i en ferdig status",
                             orginalAktivitet.getId())
             );
+        } else if (orginalAktivitet.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
+            throw new IllegalArgumentException(
+                    String.format("Kan ikke endre aktivitet med id [%s] fordi typen er [%s]",
+                            orginalAktivitet.getId(), AktivitetTypeData.STILLING_FRA_NAV));
         }
     }
 
@@ -160,8 +195,7 @@ public class AktivitetAppService {
         AktivitetStatus status = aktivitetData.getStatus();
         return AktivitetStatus.AVBRUTT.equals(status)
                 || AktivitetStatus.FULLFORT.equals(status)
-                || aktivitetData.getHistoriskDato() != null
-                || aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV;
+                || aktivitetData.getHistoriskDato() != null;
     }
 
     private boolean skalIkkeKunneEndreAktivitetEtikett(AktivitetData aktivitetData) {

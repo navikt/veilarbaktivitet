@@ -71,7 +71,7 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -81,11 +81,11 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .build();
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
-
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
+
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -189,9 +189,18 @@ public class AktivitetService {
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNavData))
                 .build()
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
+    }
+
+    private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
+        return orginal
+                .withKanDeles(aktivitet.getKanDeles())
+                .withCvKanDelesAv(aktivitet.getCvKanDelesAv())
+                .withCvKanDelesAvType(aktivitet.getCvKanDelesAvType())
+                .withCvKanDelesTidspunkt(aktivitet.getCvKanDelesTidspunkt());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {

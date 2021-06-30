@@ -83,6 +83,16 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
+    @PutMapping("/{id}/kanDeleCV")
+    public AktivitetDTO oppdaterKanCvDeles(@RequestBody AktivitetDTO aktivitet) {
+        boolean erEksternBruker = authService.erEksternBruker();
+        return Optional.of(aktivitet)
+                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(a -> appService.oppdaterSvarPaaOmCvSkalDeles(a, erEksternBruker))
+                .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
+                .orElseThrow(RuntimeException::new);
+    }
+
     @PutMapping("/{id}/etikett")
     public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();

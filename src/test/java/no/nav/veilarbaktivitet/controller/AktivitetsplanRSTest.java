@@ -30,6 +30,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -119,6 +120,20 @@ public class AktivitetsplanRSTest {
         Assert.assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
         Assert.assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
 
+    }
+
+    @Test
+    public void oppdaterKanCvDeles_NavSvarerJA_setterAlleVerdier() {
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get()));
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+
+        var resultat = aktivitetController.oppdaterKanCvDeles(aktivitetDTO.setStillingFraNavData(StillingFraNavData.builder().kanDeles(true).build()));
+        var resultatJobbannonse = resultat.getStillingFraNavData();
+        Assert.assertTrue(resultatJobbannonse.getKanDeles());
+        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesTidspunkt());
+        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesAvType());
+        Assert.assertEquals(KJENT_SAKSBEHANDLER.toString(), resultatJobbannonse.getCvKanDelesAv());
+        Assert.assertEquals(AktivitetStatus.GJENNOMFORES, resultat.getStatus());
 
     }
 
