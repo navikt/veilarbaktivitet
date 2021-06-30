@@ -11,14 +11,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaHelsesjekk implements HealthCheck {
 
-    private final KafkaProducerClient<String, String> kafkaProducerClient;
+    private final KafkaProducerClient<String, String> producerClient;
 
     private final KafkaOnpremProperties kafkaOnpremProperties;
 
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            kafkaProducerClient.getProducer().partitionsFor(kafkaOnpremProperties.getEndringPaaAktivitetTopic());
+            producerClient.getProducer().partitionsFor(kafkaOnpremProperties.getEndringPaaAktivitetTopic());
         } catch (Throwable t) {
             return HealthCheckResult.unhealthy("Helsesjekk feilet mot kafka feilet", t);
         }
