@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.05.26_09.37-bb80e1d6774e</common.version>
+        <common.version>2.2021.04.07_08.09-7849c92a72d0</common.version>
         <quartz.version>2.3.2</quartz.version>
 
         <springfox.version>2.9.2</springfox.version>
@@ -70,45 +70,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                    <plugin>
-                        <groupId>org.apache.avro</groupId>
-                        <artifactId>avro-maven-plugin</artifactId>
-                        <version>1.10.2</version>
-                        <configuration>
-                            <stringType>String</stringType>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>schema</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
-                                    <includes>
-                                        <include>**/*.avdl</include>
-                                    </includes>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>build-helper-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <phase>generate-sources</phase>
-                                <goals>
-                                    <goal>add-source</goal>
-                                </goals>
-                                <configuration>
-                                    <sources>
-                                        <source>${project.build.directory}/generated-sources/avro</source>
-                                    </sources>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -125,11 +86,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.apache.avro</groupId>
-            <artifactId>avro</artifactId>
-            <version>1.10.2</version>
-        </dependency>
         <dependency>
             <groupId>no.nav.tjenestespesifikasjoner</groupId>
             <artifactId>nav-virksomhet-varselMedHandling-v1-meldingsdefinisjon</artifactId>

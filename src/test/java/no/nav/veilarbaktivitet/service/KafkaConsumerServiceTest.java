@@ -13,12 +13,12 @@ import java.util.Date;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class KafkaConsumerOnpremServiceTest {
+public class KafkaConsumerServiceTest {
 
     @Test
     public void skal_behandleOppfolgingAvsluttet() {
         AktivitetService aktivitetService = mock(AktivitetService.class);
-        KafkaConsumerOnpremService consumerService = new KafkaConsumerOnpremService(aktivitetService, null);
+        KafkaConsumerService consumerService = new KafkaConsumerService(aktivitetService, null);
 
         ZonedDateTime sluttdato = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
         Date expectedSluttdato = new Date(sluttdato.toInstant().toEpochMilli());
@@ -36,7 +36,7 @@ public class KafkaConsumerOnpremServiceTest {
     public void skal_behandleKvpAvsluttet() {
         AktivitetService aktivitetService = mock(AktivitetService.class);
         KVPAvsluttetService kvpAvsluttetService = mock(KVPAvsluttetService.class);
-        KafkaConsumerOnpremService consumerService = new KafkaConsumerOnpremService(aktivitetService, kvpAvsluttetService);
+        KafkaConsumerService consumerService = new KafkaConsumerService(aktivitetService, kvpAvsluttetService);
 
         ZonedDateTime sluttdato = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
         Date expectedSluttdato = new Date(sluttdato.toInstant().toEpochMilli());

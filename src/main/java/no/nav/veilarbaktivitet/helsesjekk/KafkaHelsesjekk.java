@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.kafka.producer.KafkaProducerClient;
-import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
+import no.nav.veilarbaktivitet.config.KafkaProperties;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
@@ -13,12 +13,12 @@ public class KafkaHelsesjekk implements HealthCheck {
 
     private final KafkaProducerClient<String, String> kafkaProducerClient;
 
-    private final KafkaOnpremProperties kafkaOnpremProperties;
+    private final KafkaProperties kafkaProperties;
 
     @Override
     public HealthCheckResult checkHealth() {
         try {
-            kafkaProducerClient.getProducer().partitionsFor(kafkaOnpremProperties.getEndringPaaAktivitetTopic());
+            kafkaProducerClient.getProducer().partitionsFor(kafkaProperties.getEndringPaaAktivitetTopic());
         } catch (Throwable t) {
             return HealthCheckResult.unhealthy("Helsesjekk feilet mot kafka feilet", t);
         }
