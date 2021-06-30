@@ -43,7 +43,7 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    public KafkaProducerClient<String, String> producerClient(MeterRegistry meterRegistry) {
+    public KafkaProducerClient<String, String> aivenProducerClient(MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, String>builder()
                 .withMetrics(meterRegistry)
                 .withProperties(aivenDefaultProducerProperties(PRODUCER_CLIENT_ID))
