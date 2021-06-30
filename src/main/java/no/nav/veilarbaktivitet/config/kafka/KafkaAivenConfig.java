@@ -6,7 +6,6 @@ import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
-import no.nav.common.utils.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -23,7 +22,7 @@ public class KafkaAivenConfig {
     public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
 
-    @Bean
+// TODO @Bean
     public KafkaConsumerClient consumerClient(
             MeterRegistry meterRegistry,
             JsonConsumerWrapper... consumers
