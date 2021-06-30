@@ -25,13 +25,13 @@ import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -136,6 +136,36 @@ public class AktivitetsplanRSTest {
         Assert.assertEquals(AktivitetStatus.GJENNOMFORES, resultat.getStatus());
 
     }
+
+    @Test
+    public void oppdaterKanCvDeles_NavSvarerNEI_setterAlleVerdier() {
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get()));
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+
+        var resultat = aktivitetController.oppdaterKanCvDeles(aktivitetDTO.setStillingFraNavData(StillingFraNavData.builder().kanDeles(false).build()));
+        var resultatJobbannonse = resultat.getStillingFraNavData();
+        Assert.assertFalse(resultatJobbannonse.getKanDeles());
+        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesTidspunkt());
+        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesAvType());
+        Assert.assertEquals(KJENT_SAKSBEHANDLER.toString(), resultatJobbannonse.getCvKanDelesAv());
+        Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
+
+    }
+
+    @Test(expected = ResponseStatusException.class)
+    public void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
+        var aktivitetData  = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet(), false);
+
+        aktivitetController.oppdaterKanCvDeles(aktivitetData);
+    }
+
+    @Test(expected = ResponseStatusException.class)
+    public void oppdaterKanCvDeles_manglerStillingsdata_feiler() {
+        var aktivitetData  = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav().withStillingFraNavData(null), false);
+
+        aktivitetController.oppdaterKanCvDeles(aktivitetData);
+    }
+
 
     @Test
     public void hent_aktivitsplan() {
