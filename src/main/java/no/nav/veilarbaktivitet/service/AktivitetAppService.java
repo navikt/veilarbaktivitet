@@ -112,14 +112,11 @@ public class AktivitetAppService {
                 .withCvKanDelesAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
                 .withCvKanDelesAv(innloggetBruker.toString());
 
-        if(aktivitetData.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV || deleCvDetaljer == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre CV info på andre aktivitetstyper enn STILLING_FRA_NAV");
-        }
 
         aktivitetService.oppdaterAktivitet(orginalAktivitet, aktivitetData.withStillingFraNavData(deleCvDetaljer), innloggetBruker);
         var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
 
-        if(deleCvDetaljer.getKanDeles()) {
+        if(Boolean.TRUE.equals(deleCvDetaljer.getKanDeles())) {
             return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, aktivitetMedCvSvar.withStatus(AktivitetStatus.GJENNOMFORES), innloggetBruker);
         }
         else {

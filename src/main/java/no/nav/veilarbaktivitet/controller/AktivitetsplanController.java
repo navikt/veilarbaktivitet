@@ -86,6 +86,15 @@ public class AktivitetsplanController {
     @PutMapping("/{id}/kanDeleCV")
     public AktivitetDTO oppdaterKanCvDeles(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
+
+        if (aktivitet.getType() != AktivitetTypeDTO.STILLING_FRA_NAV) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan ikke endre CV info på andre aktivitetstyper enn STILLING_FRA_NAV. id: %s", aktivitet.getId()));
+        }
+
+        if (aktivitet.getStillingFraNavData() == null || aktivitet.getStillingFraNavData().getKanDeles() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Informasjon om CV kan deles må oppgis på aktivitet med id %s", aktivitet.getId()));
+        }
+
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(a -> appService.oppdaterSvarPaaOmCvSkalDeles(a, erEksternBruker))
