@@ -11,7 +11,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
@@ -41,11 +40,6 @@ public class DbConfig {
     @Bean
     public JdbcTemplate jdbcTemplate(DataSource dataSource) {
         return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(JdbcTemplate jdbcTemplate) {
-        return new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
     public static void migrateDb(DataSource dataSource) {
