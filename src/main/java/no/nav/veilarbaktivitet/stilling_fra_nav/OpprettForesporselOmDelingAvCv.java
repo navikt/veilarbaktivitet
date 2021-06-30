@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
@@ -20,8 +21,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RequiredArgsConstructor
 @Slf4j
+@Service
+@RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final AktivitetService aktivitetService;
@@ -62,7 +64,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         if (erManuell) {
             sendOpprettetIkkeVarslet(aktivitetMedId, melding );
-        } else if (false) { //TODO ikke nivå 4
+        } else if (false) { //TODO ikke nivå 4 og krr
             sendOpprettetIkkeVarslet(aktivitetMedId, melding);
         } else {
             sendOpprettet(aktivitetMedId, melding);
@@ -84,10 +86,10 @@ public class OpprettForesporselOmDelingAvCv {
         String stillingsId = melding.getStillingsId();
 
 
-        List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();//TODO finn ut av denne
+        List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
         String arbeidsted = arbeidssteder
                 .stream()
-                .map(it -> "Norge".equals(it.getLand()) ? it.getKommune() : it.getLand())
+                .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
                 .collect(Collectors.joining(", "));
 
         StillingFraNavData stillingFraNavData = StillingFraNavData
@@ -110,8 +112,8 @@ public class OpprettForesporselOmDelingAvCv {
                 .fraDato(new Date(opprettet.toEpochMilli()))
                 .lagtInnAv(InnsenderData.NAV)
                 .endretAv(navIdent.get())
-                .lenke(null) //TODO finn ut hva som skal her? bør vi endre meldingen
-                .automatiskOpprettet(false) //TODO finn ut hva som skal vere her
+                .lenke("/rekrutteringsbistand/" + stillingsId)
+                .automatiskOpprettet(false)
                 .opprettetDato(new Date())
                 .endretDato(new Date())
                 .stillingFraNavData(stillingFraNavData)
