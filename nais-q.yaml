@@ -55,6 +55,8 @@ spec:
   leaderElection: true
   secureLogs:
     enabled: true
+  kafka:
+    pool: nav-dev
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1

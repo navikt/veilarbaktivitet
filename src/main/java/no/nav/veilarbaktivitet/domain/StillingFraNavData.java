@@ -14,4 +14,11 @@ public class StillingFraNavData {
     Date cvKanDelesTidspunkt;
     String cvKanDelesAv;
     InnsenderData cvKanDelesAvType;
+    String soknadsfrist;
+    Date svarfrist;
+    String arbeidsgiver;
+    String bestillingsId;
+    String stillingsId;
+    String arbeidssted;
+    String varselId;
 }

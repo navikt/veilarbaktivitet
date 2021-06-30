@@ -1,0 +1,44 @@
+{
+		"namespace": "no.nav.veilarbaktivitet.avro",
+		"type": "record",
+		"name": "ForesporselOmDelingAvCv",
+		"fields": [
+		{ "name": "bestillingsId", "type": "string" },
+		{ "name": "aktorId", "type": "string" },
+		{ "name": "stillingsId", "type": "string" },
+		{ "name": "opprettetAv", "type": "string" },
+		{ "name": "opprettet",
+				"type": {
+				"type": "long",
+						"logicalType": "timestamp-millis"
+				}
+		},
+		{ "name": "svarfrist", // Ny! Timestamp for når forespørselen utgår
+				"type": {
+				"type": "long",
+						"logicalType": "timestamp-millis"
+				}
+		},
+		{ "name": "callId", "type": "string" },
+		{ "name": "stillingstittel", "type": "string" },
+		{ "name": "soknadsfrist", "type": "string" }, // TODO Bør dette være en dato?
+		{ "name": "arbeidsgiver", "type": "string" },
+		{ "name": "arbeidssteder",
+				"type": {
+				"type": "array",
+						"items" : {
+				"type": "record",
+						"name": "Arbeidssted",
+						"fields": [
+				{ "name": "adresse", "type": ["string", "null"] },
+				{ "name": "postkode", "type": ["string", "null"] },
+				{ "name": "by", "type": ["string", "null"] },
+				{ "name": "kommune", "type": ["string", "null"] },
+				{ "name": "fylke", "type": ["string", "null"] },
+				{ "name": "land", "type": "string" }
+				]
+				}
+				}
+				}
+		]
+}

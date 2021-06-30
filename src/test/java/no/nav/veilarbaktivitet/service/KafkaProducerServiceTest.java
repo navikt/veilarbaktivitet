@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.aktiviteter_til_kafka.KafkaAktivitetMeldingV4;
-import no.nav.veilarbaktivitet.config.KafkaProperties;
+import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.TopicPartition;
@@ -19,7 +19,7 @@ public class KafkaProducerServiceTest {
 
     @Test
     public void skal_sende_aktivitet_melding_med_header() {
-        KafkaProperties properties = new KafkaProperties();
+        KafkaOnpremProperties properties = new KafkaOnpremProperties();
         properties.setEndringPaaAktivitetTopic("endring-pa-aktivitet");
 
         KafkaProducerClient<String, String> producerClient = mock(KafkaProducerClient.class);

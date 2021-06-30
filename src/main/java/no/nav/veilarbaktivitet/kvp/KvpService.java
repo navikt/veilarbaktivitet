@@ -18,6 +18,19 @@ public class KvpService {
 
     private final KvpClient kvpClient;
 
+    public boolean erUnderKvp(Person.AktorId aktorId) {
+        Optional<KvpDTO> kvpDTO = kvpClient.get(aktorId);
+
+        if(kvpDTO.isEmpty()) {
+            return false;
+        }
+
+        return kvpDTO
+                .map(it -> it.getKvpId() != 0L && it.getAvsluttetDato() != null )
+                .orElse(false);
+    }
+
+
     public AktivitetData tagUsingKVP(AktivitetData a) {
         try {
             Optional<KvpDTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
