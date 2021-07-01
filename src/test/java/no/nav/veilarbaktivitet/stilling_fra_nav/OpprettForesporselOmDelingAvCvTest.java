@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.deling_av_cv;
+package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;

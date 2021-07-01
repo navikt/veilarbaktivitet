@@ -6,6 +6,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.util.MappingUtils;
@@ -71,7 +72,7 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -81,11 +82,12 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .build();
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
 
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -189,10 +191,20 @@ public class AktivitetService {
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeDelingAvCvData))
                 .build()
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
+
+    private StillingFraNavData mergeDelingAvCvData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
+        return orginal
+                .withKanDeles(aktivitet.getKanDeles())
+                .withCvKanDelesTidspunkt(aktivitet.getCvKanDelesTidspunkt())
+                .withCvKanDelesAv(aktivitet.getCvKanDelesAv())
+                .withCvKanDelesAvType(aktivitet.getCvKanDelesAvType());
+    }
+
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
         return originalBehandlingAktivitetData

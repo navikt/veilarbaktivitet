@@ -1,8 +1,9 @@
-package no.nav.veilarbaktivitet.domain;
+package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.Builder;
 import lombok.Data;
 import lombok.With;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 import java.util.Date;
 

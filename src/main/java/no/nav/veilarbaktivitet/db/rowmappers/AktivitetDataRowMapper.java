@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.db.rowmappers;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 
