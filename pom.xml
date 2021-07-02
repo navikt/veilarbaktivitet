@@ -18,6 +18,7 @@
     <properties>
         <java.version>11</java.version>
         <common.version>2.2021.05.26_09.37-bb80e1d6774e</common.version>
+        <confluent.version>6.1.1</confluent.version>
         <quartz.version>2.3.2</quartz.version>
 
         <springfox.version>2.9.2</springfox.version>
@@ -123,6 +124,14 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <!-- For io.confluent Jars not in maven central -->
+        <repository>
+            <id>confluent</id>
+            <url>http://packages.confluent.io/maven/</url>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -251,7 +260,7 @@
         <dependency>
             <groupId>io.confluent</groupId>
             <artifactId>kafka-avro-serializer</artifactId>
-            <version>5.0.2</version>
+            <version>${confluent.version}</version>
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
@@ -372,6 +381,14 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>kafka</artifactId>
+            <version>1.15.2</version>
+            <scope>test</scope>
+        </dependency>
+
+
     </dependencies>
 
 </project>
