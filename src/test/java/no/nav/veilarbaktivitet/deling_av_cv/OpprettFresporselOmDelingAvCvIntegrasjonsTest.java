@@ -1,15 +1,19 @@
 package no.nav.veilarbaktivitet.deling_av_cv;
 
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import no.nav.common.kafka.consumer.KafkaConsumerClient;
+import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaEnvironmentVariables;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.common.utils.AssertUtils;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.config.kafka.AvroTopicConsumer;
 import no.nav.veilarbaktivitet.config.kafka.KafkaAivenConfig;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -22,6 +26,7 @@ import org.apache.kafka.clients.admin.KafkaAdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -71,6 +76,25 @@ public class OpprettFresporselOmDelingAvCvIntegrasjonsTest {
         }
 
         @Bean
+        public KafkaConsumerClient aivenAvroConsumerClient(MeterRegistry meterRegistry, AvroTopicConsumer avroTopicConsumer) {
+            return KafkaConsumerClientBuilder.<String, ForesporselOmDelingAvCv>builder()
+                    .withMetrics(meterRegistry)
+                    .withProperties(aivenAvroConsumerProperties("groupId"))
+                    .withConsumer(avroTopicConsumer.getTopic(), avroTopicConsumer)
+                    .build();
+        }
+
+        public static Properties aivenAvroConsumerProperties(String groupId) {
+            return KafkaPropertiesBuilder.consumerBuilder()
+                    .withBaseProperties()
+                    .withConsumerGroupId(groupId)
+                    .withDeserializers(StringDeserializer.class, KafkaAvroDeserializer.class)
+                    .withProp(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://test")
+                    .withAivenBrokerUrl()
+                    .build();
+        }
+
+        @Bean
         MeterRegistry meterRegistry() {
             return new SimpleMeterRegistry();
         }
@@ -79,6 +103,9 @@ public class OpprettFresporselOmDelingAvCvIntegrasjonsTest {
 
     @Autowired
     KafkaProducerClient<String, GenericRecord> aivenAvroProducerClient;
+    @Autowired
+    KafkaConsumerClient aivenAvroConsumerClient;
+
     @MockBean
     KvpService kvpService;
     @MockBean
