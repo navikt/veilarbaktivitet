@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
@@ -7,19 +8,23 @@ import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
+import no.nav.common.kafka.util.KafkaEnvironmentVariables;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.common.utils.EnvironmentUtils;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
-// @TODO Denne configen blir borte etter spring-kafka oppsett i neste PR
-//@Configuration
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultProducerProperties;
+
+@Configuration
 public class KafkaAivenConfig {
 
     public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
@@ -54,7 +59,7 @@ public class KafkaAivenConfig {
                 .build();
     }
 
-    @Bean
+    // TODO @Bean
     public KafkaProducerClient<String, GenericRecord> aivenAvroProducerClient(MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, GenericRecord>builder()
                 .withMetrics(meterRegistry)
@@ -62,6 +67,15 @@ public class KafkaAivenConfig {
                 .build();
     }
 
+    public static Properties avroProducerProperties() {
+        Properties properties = new Properties();
+        properties.setProperty(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY));
+        String username = EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY_USER);
+        String password = EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY_PASSWORD);
+        // TODO set opp USER_INFO og io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE , se no.nav.common.kafka.consumer.util.deserializer.AvroDeserializer
+
+        return properties;
+    }
 
     public static Properties aivenAvroProducerProperties(String producerId) {
         return KafkaPropertiesBuilder.producerBuilder()
@@ -70,6 +84,7 @@ public class KafkaAivenConfig {
                 .withAivenBrokerUrl()
                 .withAivenAuth()
                 .withSerializers(StringSerializer.class, KafkaAvroSerializer.class)
+                .withProps(avroProducerProperties())
                 .build();
     }
 
