@@ -5,6 +5,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroSerializer;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
@@ -45,6 +46,7 @@ import java.util.Map;
 import java.util.Properties;
 
 @RunWith(SpringRunner.class)
+@Slf4j
 public class OpprettFresporselOmDelingAvCvIntegrasjonsTest {
     public static final String INN_TOPIC = "deling-av-stilling-fra-nav-forespurt-v1";
     public static final String UT_TOPIC = "stilling-fra-nav-oppdatert-v1";
@@ -73,6 +75,14 @@ public class OpprettFresporselOmDelingAvCvIntegrasjonsTest {
                     .withSerializers(StringSerializer.class, KafkaAvroSerializer.class)
                     .withProp(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "mock://test")
                     .build();
+        }
+
+        @Bean
+        public AvroTopicConsumer<String, ForesporselOmDelingAvCv> avroTopicConsumer() {
+            return new AvroTopicConsumer<>((foresporselOmDelingAvCv) -> {
+                log.info("Consumer leser: {}", foresporselOmDelingAvCv);
+                return null;
+            });
         }
 
         @Bean
@@ -147,5 +157,15 @@ public class OpprettFresporselOmDelingAvCvIntegrasjonsTest {
         ForesporselOmDelingAvCv melding = OpprettForesporselOmDelingAvCvTest.createMelding();
         RecordMetadata recordMetadata = aivenAvroProducerClient.sendSync(new ProducerRecord<>(INN_TOPIC, melding));
         AssertUtils.assertTrue(recordMetadata.hasOffset());
+    }
+
+    @Test
+    public void testConsumer() {
+        ForesporselOmDelingAvCv melding = OpprettForesporselOmDelingAvCvTest.createMelding();
+        RecordMetadata recordMetadata = aivenAvroProducerClient.sendSync(new ProducerRecord<>(INN_TOPIC, melding));
+        AssertUtils.assertTrue(recordMetadata.hasOffset());
+        aivenAvroConsumerClient.start();
+        // TODO not working
+
     }
 }
