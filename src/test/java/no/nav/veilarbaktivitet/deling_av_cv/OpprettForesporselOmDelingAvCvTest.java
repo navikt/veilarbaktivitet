@@ -74,7 +74,7 @@ public class OpprettForesporselOmDelingAvCvTest {
         Assertions.assertThat(delingAvCvRespons.getAktivitetId()).isEqualTo(Long.toString(AKTIVITET_ID));
     }
 
-    private ForesporselOmDelingAvCv createMelding() {
+    static ForesporselOmDelingAvCv createMelding() {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(AKTORID)
                 .setArbeidsgiver("arbeidsgiver")
