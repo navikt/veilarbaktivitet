@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mappers;
 
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 

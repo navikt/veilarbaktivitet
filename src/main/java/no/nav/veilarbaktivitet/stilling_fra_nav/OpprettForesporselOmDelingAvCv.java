@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.deling_av_cv;
+package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

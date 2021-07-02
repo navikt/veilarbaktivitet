@@ -1,8 +1,7 @@
 package no.nav.veilarbaktivitet.testutils;
 
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
-
-import java.util.Random;
 
 public class AktivitetTypeDataTesBuilder {
 

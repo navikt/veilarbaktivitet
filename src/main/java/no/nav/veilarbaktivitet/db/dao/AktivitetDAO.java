@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
