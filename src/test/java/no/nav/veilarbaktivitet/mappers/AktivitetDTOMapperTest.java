@@ -161,12 +161,13 @@ public class AktivitetDTOMapperTest {
     public void skalMappeStillingFraNavData() {
         AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNav();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav, false);
+
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING_FRA_NAV);
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getKanDeles()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getKanDeles());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesAv()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesAv());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesAvType()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesAvType());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesTidspunkt()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesTidspunkt());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getKanDeles()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getKanDeles());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretAv()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretAv());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretAvType()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretAvType());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretTidspunkt()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretTidspunkt());
 
             s.assertAll();
         });

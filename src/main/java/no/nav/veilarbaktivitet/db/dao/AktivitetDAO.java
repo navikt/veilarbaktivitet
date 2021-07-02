@@ -288,13 +288,14 @@ public class AktivitetDAO {
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
+                    var cvKanDelesData = stilling.getCvKanDelesData();
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
-                                    .addValue("cv_kan_deles", stilling.getKanDeles())
-                                    .addValue("cv_kan_deles_tidspunkt", stilling.getCvKanDelesTidspunkt())
-                                    .addValue("cv_kan_deles_av", stilling.getCvKanDelesAv())
-                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(stilling.getCvKanDelesAvType()))
+                                    .addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
+                                    .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
+                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())

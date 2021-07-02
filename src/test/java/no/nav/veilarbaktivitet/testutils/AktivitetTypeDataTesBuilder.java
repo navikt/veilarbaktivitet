@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.testutils;
 
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 
@@ -68,13 +69,17 @@ public class AktivitetTypeDataTesBuilder {
     }
 
     public static StillingFraNavData nyStillingFraNav() {
+        var cvKanDelesData = CvKanDelesData.builder()
+                .endretAvType(InnsenderData.NAV)
+                .endretAv("Z999999")
+                .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
+                .kanDeles(Boolean.TRUE)
+                .build();
+
         return StillingFraNavData.builder()
                 .bestillingsId("123")
                 .stillingsId("1234")
-                .cvKanDelesAvType(InnsenderData.NAV)
-                .cvKanDelesAv("Z999999")
-                .cvKanDelesTidspunkt(AktivitetDataTestBuilder.nyDato())
-                .kanDeles(Boolean.TRUE)
+                .cvKanDelesData(cvKanDelesData)
                 .build();
     }
 }

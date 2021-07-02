@@ -238,11 +238,13 @@ public class ForhaandsorienteringDTOControllerTest {
                     .id(resultatDTO.getForhaandsorientering().getId())
                     .build();
 
+            resultatDTO.setStillingFraNavData(null);
             AktivitetData forventet = orginal
                     .toBuilder()
                     .avtalt(true)
                     .forhaandsorientering(forventetFHO)
                     .transaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                    .stillingFraNavData(null)
                     //endres altid ved oppdatering
                     .versjon(Long.parseLong(resultatDTO.getVersjon()))
                     .lagtInnAv(InnsenderData.NAV)
