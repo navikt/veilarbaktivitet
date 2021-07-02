@@ -45,7 +45,8 @@ public class AktivitetDTOMapper {
     }
 
     private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
-        aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesAv(erEkstern ? null : stillingFraNavData.getCvKanDelesAv()));
+        var cvKanDelesData = stillingFraNavData.getCvKanDelesData().withEndretAv(erEkstern ? null : stillingFraNavData.getCvKanDelesData().getEndretAv());
+        aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesData(cvKanDelesData));
     }
 
     private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {

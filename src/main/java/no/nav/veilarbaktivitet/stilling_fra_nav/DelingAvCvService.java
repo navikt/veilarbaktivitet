@@ -29,14 +29,16 @@ public class DelingAvCvService {
     public AktivitetData oppdaterSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
-        var deleCvDetaljer = aktivitetData
-                .getStillingFraNavData()
-                .withKanDeles(kanDeles)
-                .withCvKanDelesTidspunkt(new Date())
-                .withCvKanDelesAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
-                .withCvKanDelesAv(innloggetBruker.get());
+        var deleCvDetaljer = CvKanDelesData.builder()
+                .kanDeles(kanDeles)
+                .endretTidspunkt(new Date())
+                .endretAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
+                .endretAv(innloggetBruker.get())
+                .build();
 
-        aktivitetService.oppdaterAktivitet(aktivitetData, aktivitetData.withStillingFraNavData(deleCvDetaljer), innloggetBruker);
+        var stillingFraNavData = aktivitetData.getStillingFraNavData().withCvKanDelesData(deleCvDetaljer);
+
+        aktivitetService.oppdaterAktivitet(aktivitetData, aktivitetData.withStillingFraNavData(stillingFraNavData), innloggetBruker);
         var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
 
         if (kanDeles) {

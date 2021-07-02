@@ -87,10 +87,10 @@ public class StillingFraNavControllerTest {
 
         var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatJobbannonse = resultat.getStillingFraNavData();
-        Assert.assertTrue(resultatJobbannonse.getKanDeles());
-        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesTidspunkt());
-        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesAvType());
-        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesAv());
+        Assert.assertTrue(resultatJobbannonse.getCvKanDelesData().getKanDeles());
+        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesData().getEndretTidspunkt());
+        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesData().getEndretAvType());
+        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesData().getEndretAv());
         Assert.assertEquals(AktivitetStatus.GJENNOMFORES, resultat.getStatus());
 
     }
@@ -105,10 +105,10 @@ public class StillingFraNavControllerTest {
         var resultatJobbannonse = resultat.getStillingFraNavData();
         Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
 
-        Assert.assertFalse(resultatJobbannonse.getKanDeles());
-        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesTidspunkt());
-        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesAvType());
-        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesAv());
+        Assert.assertFalse(resultatJobbannonse.getCvKanDelesData().getKanDeles());
+        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesData().getEndretTidspunkt());
+        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesData().getEndretAvType());
+        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesData().getEndretAv());
 
     }
 

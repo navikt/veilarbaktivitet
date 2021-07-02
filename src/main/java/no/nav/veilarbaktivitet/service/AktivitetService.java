@@ -197,12 +197,16 @@ public class AktivitetService {
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
+    //TODO: Det er riktig at man kun kan endre cv data??
     private StillingFraNavData mergeDelingAvCvData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
-        return orginal
-                .withKanDeles(aktivitet.getKanDeles())
-                .withCvKanDelesTidspunkt(aktivitet.getCvKanDelesTidspunkt())
-                .withCvKanDelesAv(aktivitet.getCvKanDelesAv())
-                .withCvKanDelesAvType(aktivitet.getCvKanDelesAvType());
+        var nyeCvData = aktivitet.getCvKanDelesData();
+        var cvKanDelesData =  orginal.getCvKanDelesData()
+                .withKanDeles(nyeCvData.getKanDeles())
+                .withEndretTidspunkt(nyeCvData.getEndretTidspunkt())
+                .withEndretAv(nyeCvData.getEndretAv())
+                .withEndretAvType(nyeCvData.getEndretAvType());
+
+        return orginal.withCvKanDelesData(cvKanDelesData);
     }
 
 
