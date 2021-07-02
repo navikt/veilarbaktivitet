@@ -7,6 +7,5 @@ import lombok.Data;
 @Builder
 public class DelingAvCvDTO {
     long aktivitetVersjon;
-    long aktivitetId;
     boolean kanDeles;
 }

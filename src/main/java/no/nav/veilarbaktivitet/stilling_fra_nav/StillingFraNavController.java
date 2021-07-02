@@ -8,10 +8,7 @@ import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -24,11 +21,11 @@ public class StillingFraNavController {
     private final AktivitetAppService aktivitetAppService;
     private final DelingAvCvService service;
 
-    @PutMapping("/{id}/kanDeleCV")
-    public AktivitetDTO oppdaterKanCvDeles(@RequestBody DelingAvCvDTO delingAvCvDTO) {
+    @PutMapping("/kanDeleCV")
+    public AktivitetDTO oppdaterKanCvDeles(@PathVariable(value="aktivitetId") long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService
-                .hentAktivitet(delingAvCvDTO.getAktivitetId());
+                .hentAktivitet(aktivitetId);
 
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));

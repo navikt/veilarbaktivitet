@@ -43,7 +43,6 @@ public class StillingFraNavControllerTest {
     private final Database database = new Database(jdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-
     private KvpClient kvpClient = mock(KvpClient.class);
     private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
@@ -83,10 +82,10 @@ public class StillingFraNavControllerTest {
     @Test
     public void oppdaterKanCvDeles_NavSvarerJA_setterAlleVerdier() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav());
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), Long.parseLong(aktivitetDTO.getId()), true);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
+        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), true);
 
-        var resultat = stillingFraNavController.oppdaterKanCvDeles(delingAvCvDTO);
+        var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatJobbannonse = resultat.getStillingFraNavData();
         Assert.assertTrue(resultatJobbannonse.getKanDeles());
         Assert.assertNotNull(resultatJobbannonse.getCvKanDelesTidspunkt());
@@ -99,10 +98,10 @@ public class StillingFraNavControllerTest {
     @Test
     public void oppdaterKanCvDeles_NavSvarerNEI_setterAlleVerdier() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get()));
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), Long.parseLong(aktivitetDTO.getId()), false);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
+        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), false);
 
-        var resultat = stillingFraNavController.oppdaterKanCvDeles(delingAvCvDTO);
+        var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatJobbannonse = resultat.getStillingFraNavData();
         Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
 
@@ -116,14 +115,14 @@ public class StillingFraNavControllerTest {
     @Test(expected = ResponseStatusException.class)
     public void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
         var aktivitetData = aktivitetDAO.opprettNyAktivitet(nyMoteAktivitet().withAktorId(KJENT_AKTOR_ID.get()));
-        var delecvDTO = new DelingAvCvDTO(aktivitetData.getVersjon(), aktivitetData.getId(), true);
-        stillingFraNavController.oppdaterKanCvDeles(delecvDTO);
+        var delecvDTO = new DelingAvCvDTO(aktivitetData.getVersjon(),true);
+        stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delecvDTO);
     }
 
     @Test(expected = ResponseStatusException.class)
     public void oppdaterKanCvDeles_feilVersjon_feiler() {
         var aktivitetData = aktivitetDAO.opprettNyAktivitet(nyMoteAktivitet().withAktorId(KJENT_AKTOR_ID.get()));
-        var delecvDTO = new DelingAvCvDTO(new Random().nextLong(), aktivitetData.getId(), true);
-        stillingFraNavController.oppdaterKanCvDeles(delecvDTO);
+        var delecvDTO = new DelingAvCvDTO(new Random().nextLong(),true);
+        stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delecvDTO);
     }
 }
