@@ -39,7 +39,7 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapSokeAvtaleData).accept(aktivitetDTO, aktivitet.getSokeAvtaleAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapIJobbData).accept(aktivitetDTO, aktivitet.getIJobbAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
-        FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData());
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData(), erEkstern);
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData(), erEkstern);
         return aktivitetDTO;
     }
@@ -49,12 +49,13 @@ public class AktivitetDTOMapper {
         aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesData(cvKanDelesData));
     }
 
-    private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData) {
+    private static void mapMoteData(AktivitetDTO aktivitetDTO, MoteData moteData, boolean erEkstern) {
+        boolean skalViseReferat = moteData.isReferatPublisert() || !erEkstern;
         aktivitetDTO
                 .setAdresse(moteData.getAdresse())
                 .setForberedelser(moteData.getForberedelser())
                 .setKanal(moteData.getKanal())
-                .setReferat(moteData.getReferat())
+                .setReferat(skalViseReferat ? moteData.getReferat() : null)
                 .setErReferatPublisert(moteData.isReferatPublisert());
     }
 

@@ -158,6 +158,55 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
+    public void skalIkkeViseReferatNaarEksternOgIkkePublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, true);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isNull();
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(false);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void skalViseReferatNaarInternOgIkkePublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(false);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void skalViseReferatNaarReferatErPublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(true);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, true);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(true);
+            s.assertAll();
+        });
+
+        AktivitetDTO aktivitetDTO2 = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO2.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO2.isErReferatPublisert()).isEqualTo(true);
+            s.assertAll();
+        });
+    }
+
+    @Test
     public void skalMappeStillingFraNavData() {
         AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNav();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav, false);
