@@ -6,6 +6,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.util.MappingUtils;
@@ -53,10 +54,8 @@ public class AktivitetService {
     }
 
     public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
-        long aktivitetId = aktivitetDAO.getNextUniqueAktivitetId();
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
-                .id(aktivitetId)
                 .aktorId(aktorId.get())
                 .lagtInnAv(endretAvPerson.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
@@ -66,14 +65,14 @@ public class AktivitetService {
                 .build();
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
-        aktivitetDAO.insertAktivitet(kvpAktivivitet);
+        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);
-        return aktivitetId;
+        return nyAktivivitet.getId();
     }
 
     @Transactional
-    public void oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -83,11 +82,12 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
 
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
@@ -104,7 +104,7 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .build();
 
-        aktivitetDAO.insertAktivitet(nyAktivitet);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
@@ -115,7 +115,7 @@ public class AktivitetService {
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv.get())
                 .build();
-        aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
@@ -131,7 +131,7 @@ public class AktivitetService {
                 ).orElse(null))
                 .endretAv(endretAv.get())
                 .build();
-        aktivitetDAO.insertAktivitet(oppdatertAktivitetMedNyFrist);
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
 
     public void oppdaterReferat(
@@ -142,7 +142,7 @@ public class AktivitetService {
         val transaksjon = getReferatTransakjsonType(originalAktivitet, aktivitetData);
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
-        aktivitetDAO.insertAktivitet(originalAktivitet
+        aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
                 .withLagtInnAv(endretAv.tilBrukerType())
                 .withTransaksjonsType(transaksjon)
@@ -172,7 +172,7 @@ public class AktivitetService {
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        aktivitetDAO.insertAktivitet(originalAktivitet
+        aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .toBuilder()
                 .fraDato(aktivitet.getFraDato())
                 .tilDato(aktivitet.getTilDato())
@@ -191,10 +191,24 @@ public class AktivitetService {
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeDelingAvCvData))
                 .build()
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
+
+    //TODO: Det er riktig at man kun kan endre cv data??
+    private StillingFraNavData mergeDelingAvCvData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
+        var nyeCvData = aktivitet.getCvKanDelesData();
+        var cvKanDelesData =  orginal.getCvKanDelesData()
+                .withKanDeles(nyeCvData.getKanDeles())
+                .withEndretTidspunkt(nyeCvData.getEndretTidspunkt())
+                .withEndretAv(nyeCvData.getEndretAv())
+                .withEndretAvType(nyeCvData.getEndretAvType());
+
+        return orginal.withCvKanDelesData(cvKanDelesData);
+    }
+
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
         return originalBehandlingAktivitetData
@@ -248,7 +262,7 @@ public class AktivitetService {
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());
-                    aktivitetDAO.insertAktivitet(a);
+                    aktivitetDAO.oppdaterAktivitet(a);
                 });
     }
 

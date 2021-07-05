@@ -1,15 +1,11 @@
 package no.nav.veilarbaktivitet;
 
 import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
+
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.testutils.InsertAktiviteter;
-import org.h2.tools.DeleteDbFiles;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 
 @EnableAutoConfiguration

@@ -5,6 +5,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.With;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
 

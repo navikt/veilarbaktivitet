@@ -11,7 +11,7 @@ import java.util.Date;
 
 @RequiredArgsConstructor
 @Service
-public class KafkaConsumerService {
+public class KafkaConsumerOnpremService {
 
     private final AktivitetService aktivitetService;
     private final KVPAvsluttetService kvpAvsluttetService;

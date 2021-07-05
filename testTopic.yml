@@ -1,0 +1,15 @@
+
+
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: veialrbaktivitet-test-topic
+  namespace: pto
+  labels:
+    team: pto
+spec:
+  pool: nav-dev
+  acl:
+    - team: pto
+      application: veilarbaktivitet
+      access: readwrite   # read, write, readwrite

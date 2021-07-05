@@ -75,15 +75,15 @@ public class AktivitetDTOMapperTest {
 
     @Test
     public void skalMappeStillingSokData() {
-        AktivitetData nyttStillingssøk = AktivitetDataTestBuilder.nyttStillingssøk();
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssøk, false);
+        AktivitetData nyttStillingssok = AktivitetDataTestBuilder.nyttStillingssøk();
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssok, false);
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING);
-            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidsgiver());
-            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsTittel());
-            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidssted());
-            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getKontaktPerson());
-            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
+            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getArbeidsgiver());
+            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getStillingsTittel());
+            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getArbeidssted());
+            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getKontaktPerson());
+            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingssok.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
 
             s.assertAll();
         });
@@ -158,15 +158,65 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
+    public void skalIkkeViseReferatNaarEksternOgIkkePublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, true);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isNull();
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(false);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void skalViseReferatNaarInternOgIkkePublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(false);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void skalViseReferatNaarReferatErPublisert() {
+        AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
+        MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(true);
+        AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
+
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, true);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO.isErReferatPublisert()).isEqualTo(true);
+            s.assertAll();
+        });
+
+        AktivitetDTO aktivitetDTO2 = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
+        SoftAssertions.assertSoftly( s -> {
+            s.assertThat(aktivitetDTO2.getReferat()).isEqualTo("Referat");
+            s.assertThat(aktivitetDTO2.isErReferatPublisert()).isEqualTo(true);
+            s.assertAll();
+        });
+    }
+
+    @Test
     public void skalMappeStillingFraNavData() {
         AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNav();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav, false);
+
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING_FRA_NAV);
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getKanDeles()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getKanDeles());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesAv()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesAv());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesAvType()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesAvType());
-            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesTidspunkt()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesTidspunkt());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getKanDeles()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getKanDeles());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretAv()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretAv());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretAvType()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretAvType());
+            s.assertThat(aktivitetDTO.getStillingFraNavData().getCvKanDelesData().getEndretTidspunkt()).isEqualTo(nyStillingFraNav.getStillingFraNavData().getCvKanDelesData().getEndretTidspunkt());
 
             s.assertAll();
         });

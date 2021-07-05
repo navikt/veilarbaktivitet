@@ -38,9 +38,8 @@ public class ForhaandsorienteringDAOTest {
 
     @Test
     public void insertForAktivitet_oppdatererAlleFelter() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet();
+        var aktivitetData = aktivitetDAO.opprettNyAktivitet(AktivitetDataTestBuilder.nyEgenaktivitet());
         String veileder = "V123";
-        aktivitetDAO.insertAktivitet(aktivitetData);
 
         var fho = ForhaandsorienteringDTO.builder()
                 .type(Type.SEND_FORHAANDSORIENTERING)
