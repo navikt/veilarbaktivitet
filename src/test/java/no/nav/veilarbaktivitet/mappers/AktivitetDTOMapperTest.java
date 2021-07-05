@@ -75,15 +75,15 @@ public class AktivitetDTOMapperTest {
 
     @Test
     public void skalMappeStillingSokData() {
-        AktivitetData nyttStillingssøk = AktivitetDataTestBuilder.nyttStillingssøk();
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssøk, false);
+        AktivitetData nyttStillingssok = AktivitetDataTestBuilder.nyttStillingssøk();
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssok, false);
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING);
-            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidsgiver());
-            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsTittel());
-            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getArbeidssted());
-            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingssøk.getStillingsSoekAktivitetData().getKontaktPerson());
-            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingssøk.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
+            s.assertThat(aktivitetDTO.getArbeidsgiver()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getArbeidsgiver());
+            s.assertThat(aktivitetDTO.getStillingsTittel()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getStillingsTittel());
+            s.assertThat(aktivitetDTO.getArbeidssted()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getArbeidssted());
+            s.assertThat(aktivitetDTO.getKontaktperson()).isEqualTo(nyttStillingssok.getStillingsSoekAktivitetData().getKontaktPerson());
+            s.assertThat(aktivitetDTO.getEtikett()).isEqualTo(Helpers.Etikett.getDTO(nyttStillingssok.getStillingsSoekAktivitetData().getStillingsoekEtikett()));
 
             s.assertAll();
         });
