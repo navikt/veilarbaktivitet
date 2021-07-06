@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.avro.generic.GenericRecord;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -22,10 +23,10 @@ public class KafkaAivenConfig {
 
     @Bean("kafkaListenerContainerFactory")
     @Primary
-    ConcurrentKafkaListenerContainerFactory<Object, Object> kafkaListenerFactory(
-            ConsumerFactory<Object, Object> kafkaConsumerFactory
+    ConcurrentKafkaListenerContainerFactory<String, GenericRecord> kafkaListenerFactory(
+            ConsumerFactory<String, GenericRecord> kafkaConsumerFactory
     ) {
-        ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        ConcurrentKafkaListenerContainerFactory<String, GenericRecord> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.getContainerProperties()
                 .setAuthorizationExceptionRetryInterval(Duration.ofSeconds(10L));
