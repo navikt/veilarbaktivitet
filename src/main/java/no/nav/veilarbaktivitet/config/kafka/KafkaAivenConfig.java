@@ -32,7 +32,7 @@ public class KafkaAivenConfig {
 
         factory.setConcurrency(3);
         factory.setErrorHandler(new SeekToCurrentErrorHandler(
-                (rec, thr) -> log.error("Exception oppstått i deling-av-stilling-fra-nav-forespurt-v1={} kafka record til topic={}, partition={}, offset={}, bestillingsId={} feilmelding={}",
+                (rec, thr) -> log.error("Exception={} oppstått i kafka-consumer record til topic={}, partition={}, offset={}, bestillingsId={} feilmelding={}",
                         thr.getClass().getSimpleName(),
                         rec.topic(),
                         rec.partition(),
