@@ -1,92 +1,46 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
-import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
-import io.confluent.kafka.serializers.KafkaAvroSerializer;
-import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.common.kafka.consumer.KafkaConsumerClient;
-import no.nav.common.kafka.consumer.TopicConsumer;
-import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
-import no.nav.common.kafka.producer.KafkaProducerClient;
-import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
-import no.nav.common.kafka.util.KafkaEnvironmentVariables;
-import no.nav.common.kafka.util.KafkaPropertiesBuilder;
-import no.nav.common.utils.EnvironmentUtils;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.kafka.annotation.EnableKafka;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import java.time.Duration;
 
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultProducerProperties;
+import static org.springframework.util.backoff.FixedBackOff.DEFAULT_INTERVAL;
+import static org.springframework.util.backoff.FixedBackOff.UNLIMITED_ATTEMPTS;
 
+@Slf4j
+@EnableKafka
 @Configuration
 public class KafkaAivenConfig {
 
-    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
-    public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
-
-
-// TODO @Bean
-    public KafkaConsumerClient consumerClient(
-            MeterRegistry meterRegistry,
-            JsonConsumerWrapper... consumers
+    @Bean("kafkaListenerContainerFactory")
+    @Primary
+    ConcurrentKafkaListenerContainerFactory<Object, Object> kafkaListenerFactory(
+            ConsumerFactory<Object, Object> kafkaConsumerFactory
     ) {
+        ConcurrentKafkaListenerContainerFactory<Object, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(kafkaConsumerFactory);
+        factory.getContainerProperties()
+                .setAuthorizationExceptionRetryInterval(Duration.ofSeconds(10L));
 
-        Map<String, TopicConsumer<String, String>> consumerMap = Arrays.stream(consumers).collect(Collectors.toMap(JsonConsumerWrapper::getTopic, JsonConsumerWrapper::getConsumer));
-
-        var client = KafkaConsumerClientBuilder.<String, String>builder()
-                .withProperties(aivenDefaultConsumerProperties(CONSUMER_GROUP_ID))
-                .withConsumers(consumerMap)
-                .withMetrics(meterRegistry)
-                .withLogging()
-                .build();
-
-        client.start();
-
-        return client;
+        factory.setConcurrency(3);
+        factory.setErrorHandler(new SeekToCurrentErrorHandler(
+                (rec, thr) -> log.error("Exception oppstått i deling-av-stilling-fra-nav-forespurt-v1={} kafka record til topic={}, partition={}, offset={}, bestillingsId={} feilmelding={}",
+                        thr.getClass().getSimpleName(),
+                        rec.topic(),
+                        rec.partition(),
+                        rec.offset(),
+                        rec.key(),
+                        thr.getCause()
+                ),
+                new FixedBackOff(DEFAULT_INTERVAL, UNLIMITED_ATTEMPTS)));
+        return factory;
     }
-
-    @Bean
-    public KafkaProducerClient<String, String> aivenProducerClient(MeterRegistry meterRegistry) {
-        return KafkaProducerClientBuilder.<String, String>builder()
-                .withMetrics(meterRegistry)
-                .withProperties(aivenDefaultProducerProperties(PRODUCER_CLIENT_ID))
-                .build();
-    }
-
-    // TODO @Bean
-    public KafkaProducerClient<String, GenericRecord> aivenAvroProducerClient(MeterRegistry meterRegistry) {
-        return KafkaProducerClientBuilder.<String, GenericRecord>builder()
-                .withMetrics(meterRegistry)
-                .withProperties(aivenAvroProducerProperties(PRODUCER_CLIENT_ID))
-                .build();
-    }
-
-    public static Properties avroProducerProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY));
-        String username = EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY_USER);
-        String password = EnvironmentUtils.getRequiredProperty(KafkaEnvironmentVariables.KAFKA_SCHEMA_REGISTRY_PASSWORD);
-        // TODO set opp USER_INFO og io.confluent.kafka.schemaregistry.client.SchemaRegistryClientConfig.BASIC_AUTH_CREDENTIALS_SOURCE , se no.nav.common.kafka.consumer.util.deserializer.AvroDeserializer
-
-        return properties;
-    }
-
-    public static Properties aivenAvroProducerProperties(String producerId) {
-        return KafkaPropertiesBuilder.producerBuilder()
-                .withBaseProperties()
-                .withProducerId(producerId)
-                .withAivenBrokerUrl()
-                .withAivenAuth()
-                .withSerializers(StringSerializer.class, KafkaAvroSerializer.class)
-                .withProps(avroProducerProperties())
-                .build();
-    }
-
-
 }
