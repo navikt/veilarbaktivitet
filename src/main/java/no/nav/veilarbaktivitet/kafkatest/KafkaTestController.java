@@ -32,6 +32,7 @@ public class KafkaTestController {
 	public void kafkaProduceMessage() {
 	    ForesporselOmDelingAvCv data = createMelding();
 	    String key = data.getBestillingsId();
+	    log.info("Skriver til kafka: {}", data);
 		publisher.send(TOPIC, key, data);
 	}
 
