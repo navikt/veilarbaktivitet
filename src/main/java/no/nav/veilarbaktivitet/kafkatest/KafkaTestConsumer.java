@@ -6,7 +6,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 @Slf4j
 public class KafkaTestConsumer {
 
-    @KafkaListener(topics = "veilarbaktivitet-test-toppic")
+    @KafkaListener(topics = "pto.veilarbaktivitet-test-toppic")
     public void consumerKafkaTest(ForesporselOmDelingAvCv data) {
         log.info("KafkaTest - bestillingsId: {}, data: {}", data.getBestillingsId(), data);
     }

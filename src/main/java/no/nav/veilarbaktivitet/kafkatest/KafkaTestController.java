@@ -22,7 +22,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class KafkaTestController {
 
-	public static String TOPIC="veilarbaktivitet-test-toppic";
+	public static String TOPIC="pto.veilarbaktivitet-test-toppic";
 
 	private final KafkaTemplate<String, ForesporselOmDelingAvCv> publisher;
 
