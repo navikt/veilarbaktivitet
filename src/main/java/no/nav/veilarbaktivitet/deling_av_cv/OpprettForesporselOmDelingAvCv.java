@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
-@Service
+//@Service
 @RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
