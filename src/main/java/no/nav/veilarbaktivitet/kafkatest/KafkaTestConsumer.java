@@ -12,5 +12,7 @@ public class KafkaTestConsumer {
     @KafkaListener(topics = "pto.veilarbaktivitet-test-toppic")
     public void consumerKafkaTest(ForesporselOmDelingAvCv data) {
         log.info("KafkaTest - bestillingsId: {}, data: {}", data.getBestillingsId(), data);
+        log.warn("Oh no - failing....");
+        throw new IllegalStateException("Bad state");
     }
 }
