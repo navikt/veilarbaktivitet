@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
-@Configuration
+//@Configuration
 public class KafkaAivenConfig {
 
     public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";

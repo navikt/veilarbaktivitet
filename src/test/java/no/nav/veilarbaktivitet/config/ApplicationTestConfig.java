@@ -1,3 +1,4 @@
+
 package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.abac.Pep;
@@ -5,34 +6,18 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
+import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
-import no.nav.veilarbaktivitet.aktiviteter_til_kafka.AktiviteterTilKafkaService;
-import no.nav.veilarbaktivitet.arena.ArenaAktivitetConsumer;
-import no.nav.veilarbaktivitet.arena.ArenaController;
-import no.nav.veilarbaktivitet.arena.ArenaService;
-import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselHandler;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselMQClient;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselService;
-import no.nav.veilarbaktivitet.controller.AktivitetsplanController;
-import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.db.dao.KafkaAktivitetDAO;
-import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
-import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
-import no.nav.veilarbaktivitet.motesms.MoteSMSService;
-import no.nav.veilarbaktivitet.motesms.VarselQueueService;
-import no.nav.veilarbaktivitet.service.*;
+import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
+import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -44,35 +29,18 @@ import static org.mockito.Mockito.when;
 
 
 @Configuration
-@Import({
-        Database.class,
-        ClientTestConfig.class,
-        AktivitetDAO.class,
-        KafkaAktivitetDAO.class,
-        MoteSmsDAO.class,
-        VarselQueueService.class,
-        KvpService.class,
-        AktiviteterTilKafkaService.class,
-        MetricService.class,
-        MoteSMSService.class,
-        AuthService.class,
-        AktivitetService.class,
-        TimedConfiguration.class,
-        UserInContext.class,
-        ArenaAktivitetConsumer.class,
-        ArenaService.class,
-        ArenaController.class,
-        AktivitetAppService.class,
-        AktivitetsplanController.class,
-        AvtaltMedNavService.class,
-        AvtaltVarselHandler.class,
-        AvtaltVarselMQClient.class,
-        AvtaltVarselService.class,
-        ForhaandsorienteringDAO.class,
-        FilterTestConfig.class,
-        CronService.class,
-})
 public class ApplicationTestConfig {
+    private final long kafkaId = 0L;
+
+    @Bean
+    public KvpClient kvpClient() {
+        return mock(KvpClient.class);
+    }
+
+    @Bean
+    public OppfolgingStatusClient oppfolgingStatusClient() {
+        return mock(OppfolgingStatusClient.class);
+    }
 
     @Bean
     public AuthContextHolder authContextHolder() {
@@ -85,10 +53,12 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public KafkaProducerService kafkaProducerService() {
-        KafkaProducerService kafkaProducerService = mock(KafkaProducerService.class);
-        when(kafkaProducerService.sendAktivitetMelding(any())).thenReturn(0L);
-        return kafkaProducerService;
+    public KafkaProducerClient<String, String> kafkaProducerClient() {
+
+        //TODO fiks metode returner
+        KafkaProducerClient mock = mock(KafkaProducerClient.class);
+        when(mock.sendSync(any())).thenReturn(new RecordMetadata(null, 0, 0, 0, 0L, 1, 1));
+        return mock;
     }
 
     @Bean
@@ -122,13 +92,9 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public TiltakOgAktivitetV1 tiltakOgAktivitetV1Client() {
-        return new TiltakOgAktivitetMock();
-    }
-
-    @Bean
     public Pep veilarbPep() {
         return new PepMock(null);
     }
 
 }
+

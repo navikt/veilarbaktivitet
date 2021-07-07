@@ -81,7 +81,8 @@ public class AuthService {
         if (person instanceof Person.AktorId) {
             return Optional.of((Person.AktorId)person);
         }
-        var aktorId = aktorOppslagClient.hentAktorId(Fnr.of(person.get())).get();
+        Fnr fnr = Fnr.of(person.get());
+        var aktorId = aktorOppslagClient.hentAktorId(fnr).get();
         return Optional.ofNullable(aktorId).map(Person::aktorId);
     }
 

@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.service.KafkaConsumerOnpremService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Map;
 
@@ -20,8 +21,9 @@ import static no.nav.common.kafka.consumer.util.ConsumerUtils.jsonConsumer;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProducerProperties;
 
+
 @Configuration
-@EnableConfigurationProperties({KafkaOnpremProperties.class})
+@Profile("!dev") //TODO fiks denne
 public class KafkaOnpremConfig {
 
     public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
