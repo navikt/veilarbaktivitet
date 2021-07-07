@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.deling_av_cv;
+package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 public class StillingFraNavProducerClient {
     private final KafkaTemplate<String, DelingAvCvRespons> producerClient;
     private final String topicUt;
-
 
     public StillingFraNavProducerClient(
             KafkaTemplate<String, DelingAvCvRespons> producerClient,
