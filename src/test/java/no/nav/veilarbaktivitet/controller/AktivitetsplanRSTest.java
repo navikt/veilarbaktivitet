@@ -50,7 +50,6 @@ import static org.mockito.Mockito.*;
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@ActiveProfiles("dev")
 public class AktivitetsplanRSTest {
 
     @Autowired

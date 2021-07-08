@@ -48,7 +48,6 @@ import static org.junit.Assert.fail;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @Transactional
-@ActiveProfiles("dev")
 public class AktivitetDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
