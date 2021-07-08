@@ -76,7 +76,7 @@ public class OpprettForesporselOmDelingAvCvTest {
         Assertions.assertThat(delingAvCvRespons.getAktivitetId()).isEqualTo(Long.toString(AKTIVITET_ID));
     }
 
-    static ForesporselOmDelingAvCv createMelding() {
+    public static ForesporselOmDelingAvCv createMelding() {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(AKTORID)
                 .setArbeidsgiver("arbeidsgiver")
@@ -105,6 +105,4 @@ public class OpprettForesporselOmDelingAvCvTest {
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
                 .build();
     }
-
-
 }
