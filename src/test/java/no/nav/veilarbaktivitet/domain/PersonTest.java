@@ -33,7 +33,6 @@ public class PersonTest {
         assertEquals(InnsenderData.BRUKER, fnr.tilBrukerType());
         assertEquals(InnsenderData.BRUKER, aktorId.tilBrukerType());
         assertEquals(InnsenderData.NAV, navIdent.tilBrukerType());
-
     }
 
 }

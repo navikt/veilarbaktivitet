@@ -8,9 +8,11 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 
+@Profile("!dev")
 @Configuration
 public class ClientConfig {
 

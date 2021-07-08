@@ -1,32 +1,20 @@
 package no.nav.veilarbaktivitet;
 
-import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 
+import no.nav.common.utils.SslUtils;
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;
-
+import org.springframework.test.context.ActiveProfiles;
 
 @EnableAutoConfiguration
-@Import(ApplicationTestConfig.class)
+@ActiveProfiles("dev")
 public class VeilarbAktivitetTestApp {
 
     public static void main(String[] args) {
-        //LocalH2Database.setUseInnMemmory(); //uncoment to use inmemory database
-        //DeleteDbFiles.execute("~/database/", "veilarbaktivitet", false);
-
-        //We need to initialize the driver before spring starts or Flyway will not be able to use the driver
-        TestDriver.init();
-        System.setProperty("AKTIVITETSPLAN_URL", "kake");
-
         SpringApplication application = new SpringApplication(VeilarbAktivitetTestApp.class);
-        application.setAdditionalProfiles("local");
         application.run(args);
-
-        //uncoment for og lage aktiviteter /slette all data
-        //JdbcTemplate jdbcTemplate = LocalH2Database.getPresistentDb();
-        //InsertAktiviteter.insertAktiviteter(jdbcTemplate);
-        //DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 }

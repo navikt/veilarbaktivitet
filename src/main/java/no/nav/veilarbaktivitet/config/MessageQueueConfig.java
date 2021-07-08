@@ -6,6 +6,7 @@ import com.ibm.msg.client.jms.JmsFactoryFactory;
 import no.nav.common.utils.Credentials;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.core.JmsTemplate;
 
@@ -20,6 +21,7 @@ import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 
 @Configuration
 @EnableJms
+@Profile("!dev")
 public class MessageQueueConfig {
 
     private static final String MQGATEWAY03_HOSTNAME_PROPERTY = "MQGATEWAY03_HOSTNAME";
