@@ -10,7 +10,6 @@ import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.domain.kafka.OppfolgingAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.service.KafkaConsumerOnpremService;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;

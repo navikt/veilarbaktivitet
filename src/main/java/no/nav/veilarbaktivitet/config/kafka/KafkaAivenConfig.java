@@ -7,14 +7,13 @@ import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
-
+// @TODO Denne configen blir borte etter spring-kafka oppsett i neste PR
 //@Configuration
 public class KafkaAivenConfig {
 

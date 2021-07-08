@@ -9,10 +9,8 @@ import no.nav.common.utils.IdUtils;
 import no.nav.veilarbaktivitet.aktiviteter_til_kafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
