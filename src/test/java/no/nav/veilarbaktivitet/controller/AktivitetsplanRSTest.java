@@ -23,8 +23,16 @@ import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -40,28 +48,31 @@ import static org.mockito.Mockito.*;
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@ActiveProfiles("dev")
 public class AktivitetsplanRSTest {
 
-    private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
+    @Autowired
+    MockHttpServletRequest mockHttpServletRequest;
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
-    private final Database database = new Database(jdbcTemplate);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    @MockBean
+    private AuthService authService;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    private KvpClient kvpClient = mock(KvpClient.class);
-    private KvpService kvpService = new KvpService(kvpClient);
-    private MetricService metricService = mock(MetricService.class);
-    private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
-    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
+    @Autowired
+    private AktivitetDAO aktivitetDAO;
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
-    private AuthService authService = mock(AuthService.class);
-    private ArenaService arenaService = mock(ArenaService.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
+    @Autowired
+    private AktivitetService aktivitetService;
 
-    private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
+    @Autowired
+    private AktivitetsplanController aktivitetController;
+
+    @Autowired
+    private AvtaltMedNavService avtaltMedNavService;
 
     private AktivitetDTO orignalAktivitet;
     private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
@@ -104,7 +115,6 @@ public class AktivitetsplanRSTest {
         Assert.assertNull(resultat.get(0).getForhaandsorientering());
         Assert.assertNull(resultat.get(1).getForhaandsorientering());
         Assert.assertNull(resultat.get(2).getForhaandsorientering());
-
     }
 
     @Test

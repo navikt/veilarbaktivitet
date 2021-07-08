@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -20,6 +21,7 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 @EnableConfigurationProperties(DbConfig.DatasourceProperties.class)
 @RequiredArgsConstructor
+@Profile("!dev")
 public class DbConfig {
 
     private final DatasourceProperties datasourceProperties;

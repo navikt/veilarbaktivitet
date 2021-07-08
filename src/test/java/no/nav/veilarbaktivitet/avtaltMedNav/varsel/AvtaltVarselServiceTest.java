@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.avtaltMedNav.*;
-import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -20,8 +19,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
@@ -30,8 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@EnableAutoConfiguration
-@Import(ApplicationTestConfig.class)
 @RunWith(MockitoJUnitRunner.class)
 public class AvtaltVarselServiceTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
