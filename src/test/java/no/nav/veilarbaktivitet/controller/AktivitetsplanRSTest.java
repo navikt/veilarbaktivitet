@@ -52,16 +52,13 @@ import static org.mockito.Mockito.*;
 @RunWith(SpringRunner.class)
 @ActiveProfiles("dev")
 public class AktivitetsplanRSTest {
-    @TestConfiguration
-    static class Config {
-        MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
-    }
 
     @Autowired
     MockHttpServletRequest mockHttpServletRequest;
 
     @MockBean
     private AuthService authService;
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
