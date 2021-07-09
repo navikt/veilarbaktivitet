@@ -18,11 +18,8 @@ import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 
 import javax.sql.DataSource;
 

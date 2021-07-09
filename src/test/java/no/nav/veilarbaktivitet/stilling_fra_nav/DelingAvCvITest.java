@@ -8,36 +8,24 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
-import no.nav.veilarbaktivitet.service.AktivitetService;
-import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.specific.SpecificData;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
-import org.hamcrest.MatcherAssert;
-import org.junit.Assert;
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -50,11 +38,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -77,7 +63,8 @@ public class DelingAvCvITest {
     private String schemaRegistryUrl;
 
     private static final String AKTORID="aktorid";
-    private static final String BESTILLINGS_ID = "BESTILLINGS_ID";
+
+    /***** Ekte bønner *****/
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
@@ -85,23 +72,46 @@ public class DelingAvCvITest {
     @Autowired
     OpprettForesporselOmDelingAvCv service;
 
-    @Test
-    public void happyCase() {
-        ForesporselOmDelingAvCv melding = createMelding();
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+    /***** Mock bønner *****/
 
-        final Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
+    @Autowired
+    KvpClient kvpClient;
+
+    @Autowired
+    OppfolgingStatusClient oppfolgingStatusClient;
+
+    /***** Bønner slutt *****/
+
+    public Consumer<String, DelingAvCvRespons> createConsumer() {
+        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
                 StringDeserializer.class,
                 KafkaAvroDeserializer.class
         );
-
         embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
+        return consumer;
+    }
+
+
+    @After
+    public void reset_mocks() {
+        Mockito.reset(oppfolgingStatusClient, kvpClient);
+    }
+
+    @Test
+    public void ikke_under_oppfolging() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         GenericRecord genericRecord = record.value();
         DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
 
         SoftAssertions.assertSoftly( assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(BESTILLINGS_ID);
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
             assertions.assertThat(value.getAktivitetId()).isNull();
             assertions.assertThat(value.getBrukerVarslet()).isFalse();
@@ -109,9 +119,38 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
         });
-   
 
-        log.info("");
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+
+    }
+
+    @Test
+    public void under_oppfolging_ikke_manuell_ikke_under_kvp() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        GenericRecord genericRecord = record.value();
+        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getBrukerVarslet()).isTrue();
+            assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
 
     }
 
@@ -120,9 +159,9 @@ public class DelingAvCvITest {
         // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
 
         final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps("testMetricsEncodedAsSent", "true", embeddedKafka);
+                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
         // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         // We need to match the ser/deser used in expected application config
         consumerProps
                 .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
@@ -135,7 +174,7 @@ public class DelingAvCvITest {
         return consumerFactory.createConsumer();
     }
 
-    static ForesporselOmDelingAvCv createMelding() {
+    static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(AKTORID)
                 .setArbeidsgiver("arbeidsgiver")
@@ -154,7 +193,7 @@ public class DelingAvCvITest {
                                 .setBy(null)
                                 .setFylke(null)
                                 .setLand("spania").build()))
-                .setBestillingsId(BESTILLINGS_ID)
+                .setBestillingsId(bestillingsId)
                 .setOpprettet(Instant.now())
                 .setOpprettetAv("Z999999")
                 .setCallId("callId")
