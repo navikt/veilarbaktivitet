@@ -21,6 +21,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -47,8 +48,8 @@ import static org.junit.Assert.fail;
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
 @Transactional
-@ActiveProfiles("dev")
 public class AktivitetDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");

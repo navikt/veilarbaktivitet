@@ -15,5 +15,4 @@ public class CvKanDelesData {
     Date endretTidspunkt;
     String endretAv;
     InnsenderData endretAvType;
-
 }

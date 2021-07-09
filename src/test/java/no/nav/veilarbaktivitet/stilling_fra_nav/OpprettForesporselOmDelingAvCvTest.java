@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
@@ -19,6 +18,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.kafka.core.KafkaTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,7 +43,8 @@ public class OpprettForesporselOmDelingAvCvTest {
     @Mock
     private OppfolgingStatusClient oppfolgingStatusClient;
     @Mock
-    private KafkaProducerClient<String, DelingAvCvRespons> producerClient;
+    private KafkaTemplate<String, DelingAvCvRespons> producerClient;
+    private StillingFraNavProducerClient stillingFraNavProducerClient;
 
     @Captor
     private ArgumentCaptor<ProducerRecord<String, DelingAvCvRespons>> argumentCaptor;
@@ -53,7 +54,8 @@ public class OpprettForesporselOmDelingAvCvTest {
 
     @Before
     public void setup() {
-        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(kvpService, aktivitetService, delingAvCvService, oppfolgingStatusClient, producerClient);
+        stillingFraNavProducerClient = new StillingFraNavProducerClient(producerClient, "topic.ut");
+        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(kvpService, aktivitetService, delingAvCvService, oppfolgingStatusClient, stillingFraNavProducerClient);
         melding = createMelding();
     }
 
@@ -74,7 +76,7 @@ public class OpprettForesporselOmDelingAvCvTest {
         Assertions.assertThat(delingAvCvRespons.getAktivitetId()).isEqualTo(Long.toString(AKTIVITET_ID));
     }
 
-    private ForesporselOmDelingAvCv createMelding() {
+    public static ForesporselOmDelingAvCv createMelding() {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(AKTORID)
                 .setArbeidsgiver("arbeidsgiver")
@@ -103,6 +105,4 @@ public class OpprettForesporselOmDelingAvCvTest {
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
                 .build();
     }
-
-
 }

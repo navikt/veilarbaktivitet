@@ -288,14 +288,14 @@ public class AktivitetDAO {
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
-                    var cvKanDelesData = stilling.getCvKanDelesData();
+                            var cvKanDelesData = stilling.getCvKanDelesData();
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
-                                    .addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
-                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
-                                    .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
-                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
+                                    .addValue("cv_kan_deles", cvKanDelesData != null ? cvKanDelesData.getKanDeles() : null)
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
+                                    .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
+                                    .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())

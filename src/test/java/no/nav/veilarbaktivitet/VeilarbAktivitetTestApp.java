@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 @EnableAutoConfiguration
-@ActiveProfiles("dev")
 public class VeilarbAktivitetTestApp {
 
     public static void main(String[] args) {
