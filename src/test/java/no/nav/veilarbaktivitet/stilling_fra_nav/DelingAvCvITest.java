@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -91,6 +92,7 @@ public class DelingAvCvITest {
                 KafkaAvroDeserializer.class
         );
         embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
+        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
         return consumer;
     }
 
@@ -109,7 +111,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 1000);
         GenericRecord genericRecord = record.value();
         DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
 
