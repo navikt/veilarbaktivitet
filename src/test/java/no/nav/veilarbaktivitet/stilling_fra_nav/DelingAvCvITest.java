@@ -20,6 +20,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -40,6 +41,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -136,7 +139,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 1000);
         GenericRecord genericRecord = record.value();
         DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
 
@@ -152,6 +155,40 @@ public class DelingAvCvITest {
 
         verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
 
+    }
+
+    @Test
+    public void duplikat_bestillingsId_ignoreres() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 1000);
+        GenericRecord genericRecord = record.value();
+        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getBrukerVarslet()).isTrue();
+            assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+
+        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId);
+        producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 1000));
+        assertEquals("No records found for topic", exception.getMessage());
     }
 
     private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
