@@ -13,13 +13,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,36 +46,11 @@ import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.Assert.fail;
 
 @Slf4j
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {AktivitetDAOTest.Config.class })
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
 @Transactional
 public class AktivitetDAOTest {
-
-    @Configuration
-    @Import({Database.class, AktivitetDAO.class})
-    static class Config {
-        @Bean
-        public DataSource dataSource(JdbcTemplate jdbcTemplate) {
-            return jdbcTemplate.getDataSource();
-        }
-
-        @Bean
-        public JdbcTemplate jdbcTemplate() {
-            return LocalH2Database.getDb();
-        }
-
-        @Bean
-        public PlatformTransactionManager transactionManager(DataSource dataSource) {
-            return new DataSourceTransactionManager(dataSource);
-        }
-
-        @Bean
-        public TransactionTemplate transactionTemplate(PlatformTransactionManager transactionManager) {
-            return new TransactionTemplate(transactionManager);
-        }
-
-
-    }
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 

@@ -6,6 +6,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -191,22 +192,25 @@ public class AktivitetService {
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
-                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeDelingAvCvData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNavData))
                 .build()
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
     //TODO: Det er riktig at man kun kan endre cv data??
-    private StillingFraNavData mergeDelingAvCvData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
-        var nyeCvData = aktivitet.getCvKanDelesData();
-        var cvKanDelesData =  orginal.getCvKanDelesData()
-                .withKanDeles(nyeCvData.getKanDeles())
-                .withEndretTidspunkt(nyeCvData.getEndretTidspunkt())
-                .withEndretAv(nyeCvData.getEndretAv())
-                .withEndretAvType(nyeCvData.getEndretAvType());
+    private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
+        val merger = MappingUtils.merge(orginal, aktivitet);
+        return orginal
+                .withCvKanDelesData(merger.map(StillingFraNavData::getCvKanDelesData).merge(this::mergeCvKanDelesData));
+    }
 
-        return orginal.withCvKanDelesData(cvKanDelesData);
+    private CvKanDelesData mergeCvKanDelesData(CvKanDelesData original, CvKanDelesData cvKanDelesData) {
+        return original
+                .withKanDeles(cvKanDelesData.getKanDeles())
+                .withEndretAv(cvKanDelesData.getEndretAv())
+                .withEndretAvType(cvKanDelesData.getEndretAvType())
+                .withEndretTidspunkt(cvKanDelesData.getEndretTidspunkt());
     }
 
 

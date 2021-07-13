@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.motesms;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.config.ApplicationTestConfig;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -34,8 +33,6 @@ import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.verify;
 
 
-@EnableAutoConfiguration
-@Import(ApplicationTestConfig.class)
 @RunWith(MockitoJUnitRunner.class)
 public class MoteSMSServiceTest {
 
