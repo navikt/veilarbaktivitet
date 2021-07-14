@@ -44,6 +44,7 @@ public class OpprettForesporselOmDelingAvCvTest {
     private OppfolgingStatusClient oppfolgingStatusClient;
     @Mock
     private KafkaTemplate<String, DelingAvCvRespons> producerClient;
+
     private StillingFraNavProducerClient stillingFraNavProducerClient;
 
     @Captor
