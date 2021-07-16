@@ -23,6 +23,7 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +32,19 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.*;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -49,13 +54,10 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}", "${topic.ut.stillingFraNav}"}, partitions = 1)
 @AutoConfigureWireMock(port = 0)
 @Slf4j
 public class DelingAvCvITest {
 
-    @Autowired
-    TestService testService;
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
@@ -65,6 +67,9 @@ public class DelingAvCvITest {
 
     @LocalServerPort
     private int port;
+
+    @Autowired
+    ConsumerFactory consumerFactory;
 
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
@@ -80,14 +85,35 @@ public class DelingAvCvITest {
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
 
+    Consumer<String, DelingAvCvRespons> consumer;
+
+    public Consumer<String, DelingAvCvRespons> createConsumer() {
+        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
+                StringDeserializer.class,
+                KafkaAvroDeserializer.class
+        );
+        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
+        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
+        return consumer;
+    }
+
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
+
+        consumer.unsubscribe();
+        consumer.close();
     }
 
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        consumer.subscribe(List.of(utTopic));
 
     }
 
@@ -130,7 +156,6 @@ public class DelingAvCvITest {
 
     @Test
     public void ikke_under_oppfolging() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setUnderOppfolging(false);
@@ -156,7 +181,6 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_kvp() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setUnderOppfolging(true);
@@ -265,7 +289,7 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+        final Consumer<String, DelingAvCvRespons> consumer2 = createConsumer();
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         WireMockUtil.stubBruker(mockBruker);
@@ -275,10 +299,9 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer2, utTopic, 5000);
         DelingAvCvRespons value = record.value();
-
-        SoftAssertions.assertSoftly(assertions -> {
+        SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -289,11 +312,33 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer2, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
     }
 
     static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
+    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
+                                               Class<? extends Deserializer> valueDeserializer) {
+        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
+
+        final Map<String, Object> consumerProps = KafkaTestUtils
+                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
+        // Since we're pre-sending the messages to test for, we need to read from start of topic
+        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        // We need to match the ser/deser used in expected application config
+        consumerProps
+                .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
+        consumerProps
+                .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
+        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+
+        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
+                new DefaultKafkaConsumerFactory<>(consumerProps);
+        return consumerFactory.createConsumer();
+    }
+
+    static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(aktorId)
                 .setArbeidsgiver("arbeidsgiver")

@@ -40,7 +40,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
-
+    @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
     @Transactional
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
