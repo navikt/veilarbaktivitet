@@ -60,9 +60,6 @@ public class DelingAvCvITest {
     @Autowired
     ConsumerFactory consumerFactory;
 
- //   @Autowired
- //   ConsumerFactory<Object, Object> utTopicConsumerFactory;
-
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
 
@@ -94,17 +91,6 @@ public class DelingAvCvITest {
 
     Consumer<String, DelingAvCvRespons> consumer;
 
-    public Consumer<String, DelingAvCvRespons> createConsumer() {
-        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
-                StringDeserializer.class,
-                KafkaAvroDeserializer.class
-        );
-        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        return consumer;
-    }
-
-
     @Before
     public void setUp() {
         String randomGroup = UUID.randomUUID().toString();
@@ -130,8 +116,7 @@ public class DelingAvCvITest {
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+        DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -177,7 +162,6 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-        final Consumer<String, DelingAvCvRespons> consumer2 = createConsumer();
 
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
@@ -187,7 +171,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer2, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -203,29 +187,8 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId);
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer2, utTopic, 5000));
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
-    }
-
-    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                               Class<? extends Deserializer> valueDeserializer) {
-        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
-
-        final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
-        // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        // We need to match the ser/deser used in expected application config
-        consumerProps
-                .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps
-                .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
-        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-
-        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProps);
-        return consumerFactory.createConsumer();
     }
 
     static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
