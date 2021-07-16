@@ -48,7 +48,6 @@ import static org.junit.Assert.fail;
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
 @Transactional
 public class AktivitetDAOTest {
 

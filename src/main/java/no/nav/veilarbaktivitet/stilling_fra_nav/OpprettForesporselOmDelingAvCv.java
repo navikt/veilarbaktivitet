@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Date;
@@ -28,7 +29,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final OppfolgingStatusClient oppfolgingStatusClient;
     private final StillingFraNavProducerClient producerClient;
 
-
+    @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {

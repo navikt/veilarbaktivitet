@@ -22,25 +22,25 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -50,12 +50,18 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
+//@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
 @Slf4j
 public class DelingAvCvITest {
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
+
+    @Autowired
+    ConsumerFactory consumerFactory;
+
+ //   @Autowired
+ //   ConsumerFactory<Object, Object> utTopicConsumerFactory;
 
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
@@ -86,6 +92,8 @@ public class DelingAvCvITest {
 
     /***** Bønner slutt *****/
 
+    Consumer<String, DelingAvCvRespons> consumer;
+
     public Consumer<String, DelingAvCvRespons> createConsumer() {
         Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
                 StringDeserializer.class,
@@ -97,14 +105,24 @@ public class DelingAvCvITest {
     }
 
 
+    @Before
+    public void setUp() {
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        consumer.subscribe(List.of(utTopic));
+    }
+
     @After
-    public void reset_mocks() {
+    public void reset() {
         Mockito.reset(oppfolgingStatusClient, kvpClient);
+        consumer.unsubscribe();
+        consumer.close();
     }
 
     @Test
     public void ikke_under_oppfolging() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -131,7 +149,6 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_ikke_manuell_ikke_under_kvp() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
@@ -142,8 +159,7 @@ public class DelingAvCvITest {
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+        DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -161,7 +177,7 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+        final Consumer<String, DelingAvCvRespons> consumer2 = createConsumer();
 
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
@@ -171,10 +187,8 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
-
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer2, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
@@ -189,7 +203,7 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId);
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer2, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
     }
 
@@ -207,6 +221,7 @@ public class DelingAvCvITest {
         consumerProps
                 .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
         consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
 
         final DefaultKafkaConsumerFactory<K, V> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProps);
