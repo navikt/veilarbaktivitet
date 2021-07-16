@@ -289,7 +289,6 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-        final Consumer<String, DelingAvCvRespons> consumer2 = createConsumer();
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         WireMockUtil.stubBruker(mockBruker);
@@ -299,7 +298,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer2, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -312,11 +311,10 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer2, utTopic, 5000));
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
     }
 
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
     private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
                                                Class<? extends Deserializer> valueDeserializer) {
         // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
