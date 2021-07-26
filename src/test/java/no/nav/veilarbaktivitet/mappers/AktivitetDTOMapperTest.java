@@ -208,7 +208,7 @@ public class AktivitetDTOMapperTest {
 
     @Test
     public void skalMappeStillingFraNavData() {
-        AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNav();
+        AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav, false);
 
         SoftAssertions.assertSoftly( s -> {

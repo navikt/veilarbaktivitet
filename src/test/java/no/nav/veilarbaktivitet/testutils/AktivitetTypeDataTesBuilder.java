@@ -68,13 +68,19 @@ public class AktivitetTypeDataTesBuilder {
                 .build();
     }
 
-    public static StillingFraNavData nyStillingFraNav() {
-        var cvKanDelesData = CvKanDelesData.builder()
-                .endretAvType(InnsenderData.NAV)
-                .endretAv("Z999999")
-                .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
-                .kanDeles(Boolean.TRUE)
-                .build();
+    public static StillingFraNavData nyStillingFraNav(boolean setCVKanDelesData) {
+        CvKanDelesData cvKanDelesData;
+
+        if(setCVKanDelesData){
+            cvKanDelesData = CvKanDelesData.builder()
+                    .endretAvType(InnsenderData.NAV)
+                    .endretAv("Z999999")
+                    .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
+                    .kanDeles(Boolean.TRUE)
+                    .build();
+        }
+
+        else cvKanDelesData = CvKanDelesData.builder().build();
 
         return StillingFraNavData.builder()
                 .bestillingsId("123")

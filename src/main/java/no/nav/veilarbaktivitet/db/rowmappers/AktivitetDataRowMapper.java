@@ -130,16 +130,16 @@ public class AktivitetDataRowMapper {
 
     private static StillingFraNavData mapStillingFraNav(ResultSet rs) throws SQLException {
         //TODO fiks
-        // soknadsfrist, svarFrist, arbeidsgiver, bestillingsId‚ stillingsId, arbeidsSted, varselid
+        // soknadsfrist, svarFrist, arbeidsgiver, bestillingsId‚ stillingsId, arbeidsSted, varsel
         var cvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(rs.getBoolean("cv_kan_deles"))
+                .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
                 .endretAvType(EnumUtils.valueOf(InnsenderData.class, rs.getString("cv_kan_deles_av_type")))
                 .build();
 
         return StillingFraNavData.builder()
-                .cvKanDelesData(cvKanDelesData)
+                .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))
                 .svarfrist(rs.getDate("svarFrist"))
                 .arbeidsgiver(rs.getString("arbeidsgiver"))

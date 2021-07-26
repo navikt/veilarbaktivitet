@@ -31,7 +31,7 @@ import java.util.Random;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -81,7 +81,7 @@ public class StillingFraNavControllerTest {
 
     @Test
     public void oppdaterKanCvDeles_NavSvarerJA_setterAlleVerdier() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNavMedCVKanDeles());
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
         DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), true);
 
@@ -97,7 +97,7 @@ public class StillingFraNavControllerTest {
 
     @Test
     public void oppdaterKanCvDeles_NavSvarerNEI_setterAlleVerdier() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get()));
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get()));
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
         DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), false);
 
