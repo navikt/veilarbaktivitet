@@ -1,37 +1,29 @@
 package no.nav.veilarbaktivitet.controller;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.arena.ArenaService;
-import no.nav.veilarbaktivitet.avtaltMedNav.*;
-import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavDTO;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtaltMedNav.Type;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
@@ -43,13 +35,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
+@EmbeddedKafka
 public class AktivitetsplanRSTest {
 
     @Autowired
@@ -74,8 +67,8 @@ public class AktivitetsplanRSTest {
     private AvtaltMedNavService avtaltMedNavService;
 
     private AktivitetDTO orignalAktivitet;
-    private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
-    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
+    private final AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
+    private final EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
     private List<Long> lagredeAktivitetsIder;
 
     private AktivitetDTO aktivitet;
@@ -119,7 +112,7 @@ public class AktivitetsplanRSTest {
     @Test
     public void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
-        AktivitetData aktivitetDataUtenFho = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
+        aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), KJENT_AKTOR_ID, NavIdent.of("V123"));
