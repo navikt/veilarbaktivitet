@@ -22,7 +22,7 @@ public class StillingFraNavController {
     private final DelingAvCvService service;
 
     @PutMapping("/kanDeleCV")
-    public AktivitetDTO oppdaterKanCvDeles(@PathVariable(value="aktivitetId") long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
+    public AktivitetDTO oppdaterKanCvDeles(@RequestParam long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
