@@ -200,19 +200,11 @@ public class AktivitetService {
 
     //TODO: Det er riktig at man kun kan endre cv data??
     private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
-        val merger = MappingUtils.merge(orginal, aktivitet);
+        var nyCvKanDeles = aktivitet.getCvKanDelesData();
+
         return orginal
-                .withCvKanDelesData(merger.map(StillingFraNavData::getCvKanDelesData).merge(this::mergeCvKanDelesData));
+                .withCvKanDelesData(nyCvKanDeles);
     }
-
-    private CvKanDelesData mergeCvKanDelesData(CvKanDelesData original, CvKanDelesData cvKanDelesData) {
-        return original
-                .withKanDeles(cvKanDelesData.getKanDeles())
-                .withEndretAv(cvKanDelesData.getEndretAv())
-                .withEndretAvType(cvKanDelesData.getEndretAvType())
-                .withEndretTidspunkt(cvKanDelesData.getEndretTidspunkt());
-    }
-
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
         return originalBehandlingAktivitetData

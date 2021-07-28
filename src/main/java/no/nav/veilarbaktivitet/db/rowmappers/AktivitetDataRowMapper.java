@@ -142,10 +142,10 @@ public class AktivitetDataRowMapper {
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))
                 .svarfrist(rs.getDate("svarFrist"))
-                .arbeidsgiver(rs.getString("arbeidsgiver"))
+                .arbeidsgiver(rs.getString("STILLING_FRA_NAV.ARBEIDSGIVER"))
                 .bestillingsId(rs.getString("bestillingsId"))
                 .stillingsId(rs.getString("stillingsId"))
-                .arbeidssted(rs.getString("arbeidsSted"))
+                .arbeidssted(rs.getString("STILLING_FRA_NAV.ARBEIDSSTED"))
                 .varselId(rs.getString("varselid"))
                 .build();
     }

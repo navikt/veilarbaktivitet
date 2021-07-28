@@ -125,7 +125,7 @@ public class AktivitetsplanRSTest {
     }
 
     @Test
-    public void hentAktivitetsplan_henterStillingFraNavData() {
+    public void hentAktivitetsplan_henterStillingFraNavDataUtenCVData() {
         var aktivitet = nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
@@ -134,6 +134,32 @@ public class AktivitetsplanRSTest {
         Assert.assertEquals(1, resultat.getAktiviteter().size());
         Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         Assert.assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCVData() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertNotNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCvSvar() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
 
     }
 

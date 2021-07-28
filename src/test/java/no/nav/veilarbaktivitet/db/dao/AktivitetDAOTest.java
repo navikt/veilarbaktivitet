@@ -2,36 +2,23 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import javax.sql.DataSource;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -43,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 @Slf4j
@@ -128,6 +116,15 @@ public class AktivitetDAOTest {
 
         assertThat(aktiviteter, hasSize(1));
         assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+    }
+
+    @Test
+    public void opprette_og_hente_stillingFraNAV() {
+        var aktivitet = gitt_at_det_finnes_en_stillingFraNav();
+        var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
+
+        assertEquals(1, aktiviteter.size());
+        assertEquals(aktivitet, aktiviteter.get(0));
     }
 
     @Test
@@ -242,6 +239,10 @@ public class AktivitetDAOTest {
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
         return addAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
+    }
+
+    private AktivitetData gitt_at_det_finnes_en_stillingFraNav() {
+        return addAktivitet(AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles());
     }
 
     private AktivitetData naar_jeg_oppdaterer_en_aktivitet(AktivitetData aktivitetData) {
