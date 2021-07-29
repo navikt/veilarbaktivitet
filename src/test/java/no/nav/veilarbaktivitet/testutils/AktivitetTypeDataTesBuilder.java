@@ -4,6 +4,8 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 
+import java.util.Date;
+
 public class AktivitetTypeDataTesBuilder {
 
     public static StillingsoekAktivitetData nyttStillingssøk() {
@@ -68,18 +70,25 @@ public class AktivitetTypeDataTesBuilder {
                 .build();
     }
 
-    public static StillingFraNavData nyStillingFraNav() {
-        var cvKanDelesData = CvKanDelesData.builder()
-                .endretAvType(InnsenderData.NAV)
-                .endretAv("Z999999")
-                .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
-                .kanDeles(Boolean.TRUE)
-                .build();
+    public static StillingFraNavData nyStillingFraNav(boolean setCVKanDelesData) {
+        CvKanDelesData cvKanDelesData = null;
+
+        if(setCVKanDelesData){
+            cvKanDelesData = CvKanDelesData.builder()
+                    .endretAvType(InnsenderData.NAV)
+                    .endretAv("Z999999")
+                    .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
+                    .kanDeles(Boolean.TRUE)
+                    .build();
+        }
 
         return StillingFraNavData.builder()
                 .bestillingsId("123")
                 .stillingsId("1234")
                 .cvKanDelesData(cvKanDelesData)
+                .arbeidsgiver("NAV IT")
+                .arbeidssted("Oslo")
+                .soknadsfrist(new Date().toString())
                 .build();
     }
 }
