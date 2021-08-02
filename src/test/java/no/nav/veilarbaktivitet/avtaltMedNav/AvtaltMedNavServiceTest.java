@@ -12,10 +12,10 @@ import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
 import static org.mockito.Mockito.*;
 
@@ -42,8 +42,8 @@ public class AvtaltMedNavServiceTest {
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
-    @AfterEach
     @Before
+    @After
     public void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
