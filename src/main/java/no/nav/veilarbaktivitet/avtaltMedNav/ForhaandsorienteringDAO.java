@@ -29,7 +29,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class ForhaandsorienteringDAO {
     private final Database database;
 
-    private static final String SELECT_AKTIVITET = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_SKAL_STOPPES, VARSEL_STOPPET " +
+    private static final String SELECT_FORHAANDSORIENTERING = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_SKAL_STOPPES, VARSEL_STOPPET " +
             "FROM FORHAANDSORIENTERING ";
 
     private static final Logger LOG = getLogger(ForhaandsorienteringDAO.class);
@@ -51,7 +51,7 @@ public class ForhaandsorienteringDAO {
                 null
         );
 
-        LOG.info("opprettet forhåndsorientering: {} med id: {}", fhoData, id);
+        LOG.info("opprettet forhåndsorientering: {} med id: {} og aktivitetId: {}", fhoData, id, aktivitetId);
 
         return getById(id.toString());
     }
@@ -93,7 +93,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getById(String id) {
         try {
-            return database.queryForObject(SELECT_AKTIVITET + "WHERE ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ID = ?", ForhaandsorienteringDAO::map,
                     id);
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -122,7 +122,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
         try {
-            return database.queryForObject(SELECT_AKTIVITET + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
         } catch (EmptyResultDataAccessException e) {
             return null;
@@ -131,7 +131,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForArenaAktivitet(String aktivitetId) {
         try {
-            return database.queryForObject(SELECT_AKTIVITET + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
                     aktivitetId);
         } catch (EmptyResultDataAccessException e) {
             return null;
