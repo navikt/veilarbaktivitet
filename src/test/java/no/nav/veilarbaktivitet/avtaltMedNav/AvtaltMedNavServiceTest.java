@@ -3,7 +3,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
@@ -12,9 +11,7 @@ import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.mockito.Mockito.*;
@@ -41,12 +38,6 @@ public class AvtaltMedNavServiceTest {
     AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDAO, meterRegistry);
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
-
-    @Before
-    @After
-    public void cleanUp() {
-        DbTestUtils.cleanupTestDb(jdbcTemplate);
-    }
 
     @Test
     public void opprettFHO_oppdatererInterneFHOVerdier() {
