@@ -51,7 +51,7 @@ public class ForhaandsorienteringDAO {
                 null
         );
 
-        LOG.info("opprettet forhåndsorientering: {} med id: {}", fhoData, id);
+        LOG.info("opprettet forhåndsorientering: {} med id: {} og aktivitetId: {}", fhoData, id, aktivitetId);
 
         return getById(id.toString());
     }
