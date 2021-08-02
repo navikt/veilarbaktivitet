@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.service.MetricService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.runner.RunWith;
@@ -42,6 +43,7 @@ public class AvtaltMedNavServiceTest {
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
     @AfterEach
+    @Before
     public void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
