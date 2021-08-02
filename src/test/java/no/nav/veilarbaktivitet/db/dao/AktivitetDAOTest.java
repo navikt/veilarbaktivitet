@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,6 +51,7 @@ public class AktivitetDAOTest {
     private TransactionTemplate transactionTemplate;
 
 
+    @After
     @Before
     public void cleanUp(){
         DbTestUtils.cleanupTestDb(jdbcTemplate);
