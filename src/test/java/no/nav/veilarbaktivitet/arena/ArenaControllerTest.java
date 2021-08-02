@@ -75,7 +75,7 @@ public class ArenaControllerTest {
         when(context.getFnr()).thenReturn(Optional.of(fnr));
     }
 
-    @BeforeEach
+    @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
