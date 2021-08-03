@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
-    private final KvpService kvpService;
     private final AktivitetService aktivitetService;
     private final DelingAvCvService delingAvCvService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
@@ -38,6 +37,7 @@ public class OpprettForesporselOmDelingAvCv {
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
 
+        boolean underKvp = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderKvp).orElse(true);
         boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
         boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isManuell).orElse(true);
         boolean erReservertIKrr = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isReservasjonKRR).orElse(true);
@@ -46,16 +46,10 @@ public class OpprettForesporselOmDelingAvCv {
 
         AktivitetData aktivitetData = map(melding);
 
-        if (!underoppfolging) {
+        if (!underoppfolging || underKvp) {
             producerClient.sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
-
-        if (kvpService.erUnderKvp(aktorId)) {
-            producerClient.sendIkkeOpprettet(aktivitetData, melding);
-            return;
-        }
-
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 

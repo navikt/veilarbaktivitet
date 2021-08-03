@@ -7,9 +7,7 @@ import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
-import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -34,7 +32,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -73,9 +74,6 @@ public class DelingAvCvITest {
     /***** Mock bønner *****/
 
     @Autowired
-    KvpClient kvpClient;
-
-    @Autowired
     OppfolgingStatusClient oppfolgingStatusClient;
 
     /***** Bønner slutt *****/
@@ -93,7 +91,7 @@ public class DelingAvCvITest {
 
     @After
     public void reset_mocks() {
-        Mockito.reset(oppfolgingStatusClient, kvpClient);
+        Mockito.reset(oppfolgingStatusClient);
     }
 
     @Test
@@ -129,11 +127,8 @@ public class DelingAvCvITest {
     public void under_oppfolging_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).underKvp(true).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-
-        KvpDTO kvpDTO = new KvpDTO().setKvpId(999L).setAvsluttetDato(Date.from(Instant.now().minus(6, ChronoUnit.DAYS)));
-        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -161,10 +156,8 @@ public class DelingAvCvITest {
     public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).underKvp(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
-        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -192,10 +185,8 @@ public class DelingAvCvITest {
     public void under_oppfolging_manuell_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(true).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(true).underKvp(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
-        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -223,10 +214,8 @@ public class DelingAvCvITest {
     public void under_oppfolging_ikke_manuell_reservert_i_krr_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(true).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(true).underKvp(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
-        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
