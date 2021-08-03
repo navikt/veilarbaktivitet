@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
-    private final KvpService kvpService;
     private final AktivitetService aktivitetService;
     private final DelingAvCvService delingAvCvService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
@@ -38,21 +37,19 @@ public class OpprettForesporselOmDelingAvCv {
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
 
+        boolean underKvp = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderKvp).orElse(true);
         boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
-        boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isErManuell).orElse(true);
+        boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isManuell).orElse(true);
+        boolean erReservertIKrr = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isReservasjonKRR).orElse(true);
+        //TODO ikke nivå 4
+        boolean ikkeNiva4 = false;
 
         AktivitetData aktivitetData = map(melding);
 
-        if (!underoppfolging) {
+        if (!underoppfolging || underKvp) {
             producerClient.sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
-
-        if (kvpService.erUnderKvp(aktorId)) {
-            producerClient.sendIkkeOpprettet(aktivitetData, melding);
-            return;
-        }
-
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
@@ -60,23 +57,21 @@ public class OpprettForesporselOmDelingAvCv {
 
         AktivitetData aktivitetMedId = aktivitetData.withId(aktivitetId);
 
-        if (erManuell) {
+        if (erManuell || erReservertIKrr || ikkeNiva4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding );
-        } else if (false) { //TODO ikke nivå 4 og krr
-            producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding);
         } else {
             producerClient.sendOpprettet(aktivitetMedId, melding);
         }
     }
 
     private AktivitetData map(ForesporselOmDelingAvCv melding) {
-        //aktivitdata
+        //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
         Instant opprettet = melding.getOpprettet();
 
-        //nye kolloner
+        //nye kolonner
         Date svarfrist = new Date(melding.getSvarfrist().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();

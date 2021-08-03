@@ -28,7 +28,7 @@ public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
     public Optional<OppfolgingStatusDTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
 
-        String uri = String.format("%s/underoppfolging?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
