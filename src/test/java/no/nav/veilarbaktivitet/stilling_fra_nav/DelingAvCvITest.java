@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -21,7 +20,6 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -133,7 +131,7 @@ public class DelingAvCvITest {
     public void under_oppfolging_ikke_manuell_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
@@ -163,7 +161,7 @@ public class DelingAvCvITest {
     public void duplikat_bestillingsId_ignoreres() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
