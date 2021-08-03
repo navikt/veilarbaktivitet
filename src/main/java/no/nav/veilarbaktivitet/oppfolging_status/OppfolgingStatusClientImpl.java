@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
 
+@Profile("!dev")
 @Service
 @RequiredArgsConstructor
 public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {

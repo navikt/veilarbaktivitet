@@ -12,11 +12,13 @@ import no.nav.veilarbaktivitet.helsesjekk.KafkaHelsesjekk;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@Profile("!dev") //TODO fiks
 public class HelsesjekkConfig {
 
     @Bean

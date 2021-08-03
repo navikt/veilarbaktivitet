@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mappers;
 
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
@@ -45,7 +46,11 @@ public class AktivitetDTOMapper {
     }
 
     private static void mapStillingFraNavData(AktivitetDTO aktivitetDTO, StillingFraNavData stillingFraNavData, boolean erEkstern) {
-        var cvKanDelesData = stillingFraNavData.getCvKanDelesData().withEndretAv(erEkstern ? null : stillingFraNavData.getCvKanDelesData().getEndretAv());
+        CvKanDelesData cvKanDelesData = null;
+
+        if(stillingFraNavData.getCvKanDelesData() != null) {
+            cvKanDelesData = stillingFraNavData.getCvKanDelesData().withEndretAv(erEkstern ? null : stillingFraNavData.getCvKanDelesData().getEndretAv());
+        }
         aktivitetDTO.setStillingFraNavData(stillingFraNavData.withCvKanDelesData(cvKanDelesData));
     }
 

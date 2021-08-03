@@ -23,15 +23,16 @@ import static java.util.Optional.ofNullable;
 @Slf4j
 public class AktivitetDAO {
 
+    // TODO: Refaktorer spørring. Her joines mange tabeller som kan ha kolonner med samme navn. Hva som hentes ut av ResultSet kommer an på rekkefølgen det joines.
     // language=sql
-    private static final String SELECT_AKTIVITET = "SELECT * FROM AKTIVITET A " +
+    private static final String SELECT_AKTIVITET = "SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.* FROM AKTIVITET A " +
             "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
             "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
             "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
             "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
             "LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon " +
             "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon " +
-            "LEFT JOIN STILLING_FRA_NAV sn on A.AKTIVITET_ID = sn.AKTIVITET_ID and A.VERSJON = sn.VERSJON ";
+            "LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon ";
 
     private final Database database;
 
@@ -52,7 +53,7 @@ public class AktivitetDAO {
     public AktivitetData hentAktivitet(long aktivitetId) {
         // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
-                        "WHERE A.aktivitet_id = ? and gjeldende = 1",
+                        " WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
@@ -265,7 +266,6 @@ public class AktivitetDAO {
                 });
     }
 
-
     private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
@@ -288,14 +288,14 @@ public class AktivitetDAO {
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
-                    var cvKanDelesData = stilling.getCvKanDelesData();
+                            var cvKanDelesData = stilling.getCvKanDelesData();
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
-                                    .addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
-                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
-                                    .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
-                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
+                                    .addValue("cv_kan_deles", cvKanDelesData != null ? cvKanDelesData.getKanDeles() : null)
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
+                                    .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
+                                    .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())

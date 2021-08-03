@@ -5,6 +5,7 @@ import no.nav.common.health.HealthCheckResult;
 import no.nav.common.health.HealthCheckUtils;
 import no.nav.common.health.selftest.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 
+@Profile("!dev")
 @RestController
 @RequestMapping("/internal")
 public class InternalController {

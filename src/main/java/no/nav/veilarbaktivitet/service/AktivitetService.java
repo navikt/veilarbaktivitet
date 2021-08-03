@@ -6,6 +6,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -191,24 +192,19 @@ public class AktivitetService {
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
-                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeDelingAvCvData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNavData))
                 .build()
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
     //TODO: Det er riktig at man kun kan endre cv data??
-    private StillingFraNavData mergeDelingAvCvData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
-        var nyeCvData = aktivitet.getCvKanDelesData();
-        var cvKanDelesData =  orginal.getCvKanDelesData()
-                .withKanDeles(nyeCvData.getKanDeles())
-                .withEndretTidspunkt(nyeCvData.getEndretTidspunkt())
-                .withEndretAv(nyeCvData.getEndretAv())
-                .withEndretAvType(nyeCvData.getEndretAvType());
+    private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
+        var nyCvKanDeles = aktivitet.getCvKanDelesData();
 
-        return orginal.withCvKanDelesData(cvKanDelesData);
+        return orginal
+                .withCvKanDelesData(nyCvKanDeles);
     }
-
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
         return originalBehandlingAktivitetData

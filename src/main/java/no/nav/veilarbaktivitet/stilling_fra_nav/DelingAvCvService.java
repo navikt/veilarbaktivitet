@@ -19,7 +19,6 @@ public class DelingAvCvService {
     private final DelingAvCvDAO delingAvCvDAO;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
-    private final AktivitetAppService aktivitetAppService;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
         return delingAvCvDAO.eksistererDelingAvCv(bestillingsId);

@@ -9,12 +9,14 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitet
 import no.nav.veilarbaktivitet.config.ApplicationContext;
 import no.nav.veilarbaktivitet.config.EnvironmentProperties;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY;
 
 @Component
+@Profile("!dev")
 public class ArenaServiceHelsesjekk implements HealthCheck {
 
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;

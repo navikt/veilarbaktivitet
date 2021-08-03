@@ -1,71 +1,74 @@
 package no.nav.veilarbaktivitet.controller;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.arena.ArenaService;
-import no.nav.veilarbaktivitet.avtaltMedNav.*;
-import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavDTO;
+import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtaltMedNav.Type;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.MetricService;
 import org.junit.*;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
+@SpringBootTest
+@RunWith(SpringRunner.class)
+@EmbeddedKafka
 public class AktivitetsplanRSTest {
 
-    private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
+    @Autowired
+    MockHttpServletRequest mockHttpServletRequest;
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
-    private final Database database = new Database(jdbcTemplate);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    @MockBean
+    private AuthService authService;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
-    private KvpClient kvpClient = mock(KvpClient.class);
-    private KvpService kvpService = new KvpService(kvpClient);
-    private MetricService metricService = mock(MetricService.class);
-    private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
-    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
+    @Autowired
+    private AktivitetDAO aktivitetDAO;
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
-    private AuthService authService = mock(AuthService.class);
-    private ArenaService arenaService = mock(ArenaService.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
+    @Autowired
+    private AktivitetService aktivitetService;
 
-    private AktivitetsplanController aktivitetController = new AktivitetsplanController(authService, appService, mockHttpServletRequest);
+    @Autowired
+    private AktivitetsplanController aktivitetController;
+
+    @Autowired
+    private AvtaltMedNavService avtaltMedNavService;
 
     private AktivitetDTO orignalAktivitet;
-    private AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
-    private EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
+    private final AktivitetStatus nyAktivitetStatus = AktivitetStatus.AVBRUTT;
+    private final EtikettTypeDTO nyAktivitetEtikett = EtikettTypeDTO.AVSLAG;
     private List<Long> lagredeAktivitetsIder;
 
     private AktivitetDTO aktivitet;
@@ -104,13 +107,12 @@ public class AktivitetsplanRSTest {
         Assert.assertNull(resultat.get(0).getForhaandsorientering());
         Assert.assertNull(resultat.get(1).getForhaandsorientering());
         Assert.assertNull(resultat.get(2).getForhaandsorientering());
-
     }
 
     @Test
     public void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
-        AktivitetData aktivitetDataUtenFho = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
+        aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), KJENT_AKTOR_ID, NavIdent.of("V123"));
@@ -119,6 +121,45 @@ public class AktivitetsplanRSTest {
         Assert.assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
         Assert.assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
 
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataUtenCVData() {
+        var aktivitet = nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCVData() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertNotNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCvSvar() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
 
     }
 

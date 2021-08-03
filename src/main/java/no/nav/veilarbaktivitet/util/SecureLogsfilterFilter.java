@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import no.nav.veilarbaktivitet.service.UserInContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.*;
@@ -15,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
 
+@Profile("!dev")
 @Service
 @RequiredArgsConstructor
 public class SecureLogsfilterFilter implements Filter {
