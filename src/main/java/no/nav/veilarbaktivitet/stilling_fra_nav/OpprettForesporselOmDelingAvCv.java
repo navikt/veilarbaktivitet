@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
@@ -26,6 +27,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final DelingAvCvService delingAvCvService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
     private final StillingFraNavProducerClient producerClient;
+    private final Nivaa4Client nivaa4Client;
 
 
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
@@ -36,13 +38,13 @@ public class OpprettForesporselOmDelingAvCv {
         }
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
+        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
 
         boolean underKvp = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderKvp).orElse(true);
         boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
         boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isManuell).orElse(true);
         boolean erReservertIKrr = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isReservasjonKRR).orElse(true);
-        //TODO ikke nivå 4
-        boolean ikkeNiva4 = false;
+        boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
         AktivitetData aktivitetData = map(melding);
 
@@ -57,7 +59,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         AktivitetData aktivitetMedId = aktivitetData.withId(aktivitetId);
 
-        if (erManuell || erReservertIKrr || ikkeNiva4) {
+        if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding );
         } else {
             producerClient.sendOpprettet(aktivitetMedId, melding);
