@@ -63,7 +63,7 @@ public class OpprettForesporselOmDelingAvCvTest {
     @Test
     public void happyCase() {
         when(delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(BESTILLINGS_ID)).thenReturn(false);
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
         when(kvpService.erUnderKvp(Person.aktorId(AKTORID))).thenReturn(false);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(AKTIVITET_ID);

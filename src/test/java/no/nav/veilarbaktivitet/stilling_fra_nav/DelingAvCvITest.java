@@ -7,12 +7,11 @@ import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
+import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
-import org.apache.avro.generic.GenericRecord;
-import org.apache.avro.specific.SpecificData;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -35,10 +34,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -104,14 +100,16 @@ public class DelingAvCvITest {
     public void ikke_under_oppfolging() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(false).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+        DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -128,11 +126,14 @@ public class DelingAvCvITest {
     }
 
     @Test
-    public void under_oppfolging_ikke_manuell_ikke_under_kvp() {
+    public void under_oppfolging_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
+        KvpDTO kvpDTO = new KvpDTO().setKvpId(999L).setAvsluttetDato(Date.from(Instant.now().minus(6, ChronoUnit.DAYS)));
+        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -140,14 +141,106 @@ public class DelingAvCvITest {
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNull();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
+            assertions.assertThat(value.getAktivitetOpprettet()).isFalse();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+
+    }
+
+    @Test
+    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
+        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isTrue();
+            assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+
+    }
+
+    @Test
+    public void under_oppfolging_manuell_ikke_under_kvp() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(true).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
+        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
+            assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+
+    }
+
+    @Test
+    public void under_oppfolging_ikke_manuell_reservert_i_krr_ikke_under_kvp() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(true).build();
+        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        KvpDTO kvpDTO = new KvpDTO().setKvpId(0L).setAvsluttetDato(null);
+        when(kvpClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(kvpDTO));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
@@ -170,8 +263,7 @@ public class DelingAvCvITest {
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        GenericRecord genericRecord = record.value();
-        DelingAvCvRespons value = (DelingAvCvRespons)SpecificData.get().deepCopy(DelingAvCvRespons.SCHEMA$, genericRecord);
+        DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -191,6 +283,7 @@ public class DelingAvCvITest {
         assertEquals("No records found for topic", exception.getMessage());
     }
 
+    @SuppressWarnings("rawtypes")
     private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
                                                Class<? extends Deserializer> valueDeserializer) {
         // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
@@ -200,11 +293,10 @@ public class DelingAvCvITest {
         // Since we're pre-sending the messages to test for, we need to read from start of topic
         consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         // We need to match the ser/deser used in expected application config
-        consumerProps
-                .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps
-                .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
+        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
         consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
 
         final DefaultKafkaConsumerFactory<K, V> consumerFactory =
                 new DefaultKafkaConsumerFactory<>(consumerProps);
