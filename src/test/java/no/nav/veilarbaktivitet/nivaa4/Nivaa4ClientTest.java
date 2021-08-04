@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import org.junit.*;
 import org.mockito.Mockito;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
@@ -63,7 +64,8 @@ public class Nivaa4ClientTest {
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));
-        Exception exception = assertThrows(RuntimeException.class, () -> nivaa4Client.get(Person.aktorId(AKTORID)));
+        Person.AktorId aktorId = Person.aktorId(AKTORID);
+        Exception exception = assertThrows(ResponseStatusException.class, () -> nivaa4Client.get(aktorId));
         assertThat(exception.getMessage(), containsString("Uventet status 400"));
     }
 }
