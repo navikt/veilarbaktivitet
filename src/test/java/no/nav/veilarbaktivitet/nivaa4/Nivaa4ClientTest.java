@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.veilarbaktivitet.config.ApplicationContext;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
@@ -24,7 +25,7 @@ public class Nivaa4ClientTest {
 
     @BeforeClass
     public static void init() {
-        System.setProperty("VEILARBPERSONAPI_URL","http://localhost:8089/veilarbperson/api");
+        System.setProperty(ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY,"http://localhost:8089/veilarbperson/api");
     }
 
     @Before

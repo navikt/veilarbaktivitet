@@ -40,7 +40,7 @@ public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
 
             return RestUtils.parseJsonResponse(response, OppfolgingStatusDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot" + request.url(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
 
     }
