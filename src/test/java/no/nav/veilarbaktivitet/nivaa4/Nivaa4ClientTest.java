@@ -25,7 +25,7 @@ public class Nivaa4ClientTest {
 
     @BeforeClass
     public static void init() {
-        System.setProperty(ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY,"http://localhost:8089/veilarbperson/api");
+        System.setProperty(ApplicationContext.VEILARBPERSONAPI_URL_PROPERTY,"http://localhost:8089/veilarbperson/api");
     }
 
     @Before
