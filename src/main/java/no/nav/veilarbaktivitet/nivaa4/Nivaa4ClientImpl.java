@@ -7,23 +7,21 @@ import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARBPERSONAPI_URL_PROPERTY;
-
-@Profile("!dev")
 @Service
 @RequiredArgsConstructor
 public class Nivaa4ClientImpl implements Nivaa4Client {
-    private final String baseUrl = getRequiredProperty(VEILARBPERSONAPI_URL_PROPERTY);
     private final OkHttpClient client;
     private final AuthService authService;
+
+    @Value("${VEILARBPERSONAPI_URL}")
+    private String baseUrl;
 
     @Override
     public Optional<Nivaa4DTO> get(Person.AktorId aktorId) {
@@ -44,5 +42,10 @@ public class Nivaa4ClientImpl implements Nivaa4Client {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
+    }
+
+    @Override
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }

@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface Nivaa4Client {
     Optional<Nivaa4DTO> get(Person.AktorId aktorId);
+    void setBaseUrl(String baseUrl);
 }

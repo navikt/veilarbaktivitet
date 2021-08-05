@@ -45,9 +45,6 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public Nivaa4Client nivaa4Client() { return mock(Nivaa4Client.class); }
-
-    @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
     }
