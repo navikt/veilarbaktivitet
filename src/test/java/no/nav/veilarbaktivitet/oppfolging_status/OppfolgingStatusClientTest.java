@@ -31,10 +31,10 @@ public class OppfolgingStatusClientTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
-    @BeforeClass
-    public static void init() {
-        System.setProperty(ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY, "http://localhost:8089/veilarboppfolging/api");
-    }
+//    @BeforeClass
+//    public static void init() {
+//        System.setProperty(ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY, "http://localhost:8089/veilarboppfolging/api");
+//    }
 
     @Before
     public void setup() {
@@ -42,6 +42,7 @@ public class OppfolgingStatusClientTest {
         AuthService authService = Mockito.mock(AuthService.class);
         when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
         oppfolgingStatusClient = new OppfolgingStatusClientImpl(okHttpClient, authService);
+        oppfolgingStatusClient.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 
     @Test
