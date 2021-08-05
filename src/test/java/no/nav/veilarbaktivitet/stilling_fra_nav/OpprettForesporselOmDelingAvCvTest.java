@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
@@ -41,6 +42,8 @@ public class OpprettForesporselOmDelingAvCvTest {
     @Mock
     private OppfolgingStatusClient oppfolgingStatusClient;
     @Mock
+    private Nivaa4Client nivaa4Client;
+    @Mock
     private KafkaTemplate<String, DelingAvCvRespons> producerClient;
 
     private StillingFraNavProducerClient stillingFraNavProducerClient;
@@ -54,7 +57,7 @@ public class OpprettForesporselOmDelingAvCvTest {
     @Before
     public void setup() {
         stillingFraNavProducerClient = new StillingFraNavProducerClient(producerClient, "topic.ut");
-        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(aktivitetService, delingAvCvService, oppfolgingStatusClient, stillingFraNavProducerClient);
+        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(aktivitetService, delingAvCvService, oppfolgingStatusClient, stillingFraNavProducerClient, nivaa4Client);
         melding = createMelding();
     }
 

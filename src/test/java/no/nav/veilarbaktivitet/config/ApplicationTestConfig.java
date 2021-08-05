@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.context.annotation.Bean;
@@ -41,6 +42,9 @@ public class ApplicationTestConfig {
     public OppfolgingStatusClient oppfolgingStatusClient() {
         return mock(OppfolgingStatusClient.class);
     }
+
+    @Bean
+    public Nivaa4Client nivaa4Client() { return mock(Nivaa4Client.class); }
 
     @Bean
     public AuthContextHolder authContextHolder() {

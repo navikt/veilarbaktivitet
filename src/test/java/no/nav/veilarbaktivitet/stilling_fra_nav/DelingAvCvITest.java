@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
 import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -76,6 +78,9 @@ public class DelingAvCvITest {
     @Autowired
     OppfolgingStatusClient oppfolgingStatusClient;
 
+    @Autowired
+    Nivaa4Client nivaa4Client;
+
     /***** Bønner slutt *****/
 
     public Consumer<String, DelingAvCvRespons> createConsumer() {
@@ -91,7 +96,7 @@ public class DelingAvCvITest {
 
     @After
     public void reset_mocks() {
-        Mockito.reset(oppfolgingStatusClient);
+        Mockito.reset(oppfolgingStatusClient, nivaa4Client);
     }
 
     @Test
@@ -153,11 +158,14 @@ public class DelingAvCvITest {
     }
 
     @Test
-    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp() {
+    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp_har_nivaa4() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).underKvp(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
+        Nivaa4DTO nivaa4DTO = Nivaa4DTO.builder().harbruktnivaa4(true).build();
+        when(nivaa4Client.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(nivaa4DTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -245,6 +253,9 @@ public class DelingAvCvITest {
 
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+
+        Nivaa4DTO nivaa4DTO = Nivaa4DTO.builder().harbruktnivaa4(true).build();
+        when(nivaa4Client.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(nivaa4DTO));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
