@@ -31,11 +31,6 @@ public class OppfolgingStatusClientTest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
 
-//    @BeforeClass
-//    public static void init() {
-//        System.setProperty(ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY, "http://localhost:8089/veilarboppfolging/api");
-//    }
-
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
