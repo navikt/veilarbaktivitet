@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.veilarbaktivitet.config.ApplicationContext;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
@@ -22,17 +23,13 @@ public class Nivaa4ClientTest {
     private static final String HAR_NIVAA4_OK_RESPONS = "nivaa4/nivaa4OkRespons.json";
     Nivaa4Client nivaa4Client;
 
-    @BeforeClass
-    public static void init() {
-        System.setProperty("VEILARBPERSONAPI_URL","http://localhost:8089/veilarbperson/api");
-    }
-
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         AuthService authService = Mockito.mock(AuthService.class);
         Mockito.when(authService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Optional.of(Person.fnr(FNR)));
         nivaa4Client = new Nivaa4ClientImpl(okHttpClient, authService);
+        nivaa4Client.setBaseUrl("http://localhost:8089/veilarbperson/api");
     }
 
     @Rule

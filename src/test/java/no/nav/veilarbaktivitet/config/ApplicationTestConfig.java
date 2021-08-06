@@ -15,7 +15,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
+import okhttp3.OkHttpClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -31,20 +31,18 @@ import static org.mockito.Mockito.when;
 
 @Configuration
 public class ApplicationTestConfig {
-    private final long kafkaId = 0L;
+    @Bean
+    /**
+     * OkHttpClient uten SystemUserOidcTokenProviderInterceptor. Se  {@link no.nav.veilarbaktivitet.config.ClientConfig}
+     */
+    public OkHttpClient client() {
+        return new OkHttpClient();
+    }
 
     @Bean
     public KvpClient kvpClient() {
         return mock(KvpClient.class);
     }
-
-    @Bean
-    public OppfolgingStatusClient oppfolgingStatusClient() {
-        return mock(OppfolgingStatusClient.class);
-    }
-
-    @Bean
-    public Nivaa4Client nivaa4Client() { return mock(Nivaa4Client.class); }
 
     @Bean
     public AuthContextHolder authContextHolder() {

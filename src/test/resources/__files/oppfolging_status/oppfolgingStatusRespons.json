@@ -1,0 +1,20 @@
+{
+  "fnr": "10108000398",
+  "aktorId": "1234567988888",
+  "veilederId": null,
+  "reservasjonKRR": true,
+  "manuell": true,
+  "underOppfolging":true,
+  "underKvp": false,
+  "oppfolgingUtgang": null,
+  "gjeldendeEskaleringsvarsel": {
+    "tilhorendeDialogId": 2
+  },
+  "kanStarteOppfolging": true,
+  "avslutningStatus": null,
+  "oppfolgingsPerioder": [],
+  "harSkriveTilgang": true,
+  "kanReaktiveres": false,
+  "servicegruppe": "IVURD",
+  "inaktiveringsdato": "2018-08-31T10:46:10.971+01:00"
+}

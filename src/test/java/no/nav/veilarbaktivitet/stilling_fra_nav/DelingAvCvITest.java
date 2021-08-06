@@ -8,10 +8,10 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
 import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,10 +21,10 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -36,20 +36,20 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
+@AutoConfigureWireMock(port = 0)
 @Slf4j
 public class DelingAvCvITest {
+
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
@@ -73,8 +73,6 @@ public class DelingAvCvITest {
     @Autowired
     OpprettForesporselOmDelingAvCv service;
 
-    /***** Mock bønner *****/
-
     @Autowired
     OppfolgingStatusClient oppfolgingStatusClient;
 
@@ -83,28 +81,25 @@ public class DelingAvCvITest {
 
     /***** Bønner slutt *****/
 
-    public Consumer<String, DelingAvCvRespons> createConsumer() {
-        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
-                StringDeserializer.class,
-                KafkaAvroDeserializer.class
-        );
-        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        return consumer;
-    }
-
-
     @After
-    public void reset_mocks() {
-        Mockito.reset(oppfolgingStatusClient, nivaa4Client);
+    public void verifyWireMock() {
+        verify(getRequestedFor(urlEqualTo("/veilarboppfolging/api/oppfolging?fnr=" + TestData.KJENT_IDENT.get())));
+        verify(getRequestedFor(urlEqualTo("/veilarbperson/api/" + TestData.KJENT_IDENT.get() + "/harNivaa4")));
     }
 
     @Test
     public void ikke_under_oppfolging() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(false).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\":false}")));
+
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -123,8 +118,6 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
         });
-
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
 
     }
 
@@ -132,8 +125,14 @@ public class DelingAvCvITest {
     public void under_oppfolging_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).underKvp(true).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"underKvp\": true}")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -153,19 +152,20 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
-
     }
 
     @Test
     public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp_har_nivaa4() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(false).underKvp(false).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-
-        Nivaa4DTO nivaa4DTO = Nivaa4DTO.builder().harbruktnivaa4(true).build();
-        when(nivaa4Client.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(nivaa4DTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": false, \"underKvp\": false}")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -184,8 +184,6 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
         });
-
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
 
     }
 
@@ -193,8 +191,14 @@ public class DelingAvCvITest {
     public void under_oppfolging_manuell_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(true).underKvp(false).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"manuell\": true, \"underKvp\": false}")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -213,8 +217,6 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
         });
-
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
 
     }
 
@@ -222,8 +224,14 @@ public class DelingAvCvITest {
     public void under_oppfolging_ikke_manuell_reservert_i_krr_ikke_under_kvp() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).reservasjonKRR(true).underKvp(false).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": true, \"underKvp\": false}")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -243,7 +251,38 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
+    }
+
+    @Test
+    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp_mangler_nivaa4() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": false, \"underKvp\": false}")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": false}")));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
+            assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
 
     }
 
@@ -251,11 +290,14 @@ public class DelingAvCvITest {
     public void duplikat_bestillingsId_ignoreres() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).manuell(false).build();
-        when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-
-        Nivaa4DTO nivaa4DTO = Nivaa4DTO.builder().harbruktnivaa4(true).build();
-        when(nivaa4Client.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(nivaa4DTO));
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"underOppfolging\": true, \"manuell\": false }")));
+        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("{\"harbruktnivaa4\": true}")));
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
@@ -275,32 +317,10 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        verify(oppfolgingStatusClient).get(Person.aktorId(AKTORID));
-
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId);
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
         Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
-    }
-
-    @SuppressWarnings("rawtypes")
-    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                               Class<? extends Deserializer> valueDeserializer) {
-        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
-
-        final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
-        // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        // We need to match the ser/deser used in expected application config
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
-        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-
-        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProps);
-        return consumerFactory.createConsumer();
     }
 
     static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
@@ -333,5 +353,34 @@ public class DelingAvCvITest {
                 .build();
     }
 
+    private Consumer<String, DelingAvCvRespons> createConsumer() {
+        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
+                StringDeserializer.class,
+                KafkaAvroDeserializer.class
+        );
+        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
+        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
+        return consumer;
+    }
+
+    @SuppressWarnings("rawtypes")
+    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
+                                               Class<? extends Deserializer> valueDeserializer) {
+        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
+
+        final Map<String, Object> consumerProps = KafkaTestUtils
+                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
+        // Since we're pre-sending the messages to test for, we need to read from start of topic
+        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+        // We need to match the ser/deser used in expected application config
+        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
+        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
+        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
+        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+
+        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
+                new DefaultKafkaConsumerFactory<>(consumerProps);
+        return consumerFactory.createConsumer();
+    }
 
 }
