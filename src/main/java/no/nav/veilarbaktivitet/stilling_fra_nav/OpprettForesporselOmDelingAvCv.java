@@ -36,7 +36,14 @@ public class OpprettForesporselOmDelingAvCv {
             log.info("ForesporselOmDelingAvCv med bestillingsId {} har allerede en aktivitet", melding.getBestillingsId());
             return;
         }
+        log.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
+        log.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId {}", aktorId);
+
+        if (aktorId.get() == null) {
+            log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId er null");
+        }
+
         Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
         Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
 
