@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.oppfolging_status;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
@@ -14,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
@@ -25,6 +27,10 @@ public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
 
     public Optional<OppfolgingStatusDTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
+
+        if (fnr.get() == null) {
+            log.error("OppfolgingStatusClientImpl.get Fnr er null");
+        }
 
         String uri = String.format("%s/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
