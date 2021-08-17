@@ -9,12 +9,10 @@ import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import okhttp3.OkHttpClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.springframework.context.annotation.Bean;
@@ -37,11 +35,6 @@ public class ApplicationTestConfig {
      */
     public OkHttpClient client() {
         return new OkHttpClient();
-    }
-
-    @Bean
-    public KvpClient kvpClient() {
-        return mock(KvpClient.class);
     }
 
     @Bean

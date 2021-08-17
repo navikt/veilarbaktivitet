@@ -30,6 +30,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -78,6 +79,9 @@ public class AktivitetsplanRSTest {
     @Rule
     public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
 
+    private static String KVP_RESPONS = "kvp/get-oppfolging_current_status-response.json";
+    private static String KVP_MED_KONTORSPERRE_RESPONS = "kvp/get-oppfolging_current_status_med_kontorsperre-response.json";
+
     @Before
     public void setup() {
         when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
@@ -86,6 +90,11 @@ public class AktivitetsplanRSTest {
         when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
         when(authService.sjekKvpTilgang(null)).thenReturn(true);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
+
+        stubFor(get(urlMatching("/veilarboppfolging/api/kvp/([0-9]*)/currentStatus"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBodyFile(KVP_RESPONS)));
     }
 
     @After
@@ -242,15 +251,29 @@ public class AktivitetsplanRSTest {
     }
 
     private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
+        stubFor(get(urlMatching("/veilarboppfolging/api/kvp/([0-9]*)/currentStatus"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBodyFile(KVP_RESPONS)));
         gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
                 nyttStillingssøk(),
-                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
+                nyttStillingssøk()
+        ));
+        stubFor(get(urlMatching("/veilarboppfolging/api/kvp/([0-9]*)/currentStatus"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBodyFile(KVP_MED_KONTORSPERRE_RESPONS)));
+        gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
                 nyttStillingssøk(),
-                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssøk()
         ));
     }
 
     private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
+        stubFor(get(urlMatching("/veilarboppfolging/api/kvp/([0-9]*)/currentStatus"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBodyFile(KVP_MED_KONTORSPERRE_RESPONS)));
         gitt_at_jeg_har_folgende_aktiviteter(Collections.singletonList(
                 nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
         ));

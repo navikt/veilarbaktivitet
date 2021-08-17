@@ -7,22 +7,19 @@ import no.nav.veilarbaktivitet.domain.Person;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.springframework.context.annotation.Profile;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-import static no.nav.common.utils.EnvironmentUtils.getRequiredProperty;
-import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARBOPPFOLGINGAPI_URL_PROPERTY;
-
-@Profile("!dev")
 @Service
 @RequiredArgsConstructor
 class KvpClientImpl implements KvpClient {
 
-    private final String baseUrl = getRequiredProperty(VEILARBOPPFOLGINGAPI_URL_PROPERTY);
+    @Value("${VEILARBOPPFOLGINGAPI_URL}")
+    private String baseUrl;
     private final OkHttpClient client;
 
     public Optional<KvpDTO> get(Person.AktorId aktorId) {
@@ -38,8 +35,13 @@ class KvpClientImpl implements KvpClient {
 
             return RestUtils.parseJsonResponse(response, KvpDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot" + request.url().toString(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
 
+    }
+
+    @Override
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
     }
 }

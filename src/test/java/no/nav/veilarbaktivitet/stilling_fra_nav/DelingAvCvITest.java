@@ -7,10 +7,8 @@ import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
-import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,6 +17,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,6 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class DelingAvCvITest {
 
-
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
 
@@ -63,7 +61,7 @@ public class DelingAvCvITest {
     @Value("${spring.kafka.properties.schema.registry.url}")
     private String schemaRegistryUrl;
 
-    private static final String AKTORID="aktorid";
+    private static final String AKTORID= TestData.KJENT_AKTOR_ID.get();
 
     /***** Ekte bønner *****/
 
@@ -81,10 +79,21 @@ public class DelingAvCvITest {
 
     /***** Bønner slutt *****/
 
+    private static String KVP_RESPONS = "kvp/get-oppfolging_current_status-response.json";
+
+    @Before
+    public void kvpStub() {
+        stubFor(get(urlMatching("/veilarboppfolging/api/kvp/([0-9]*)/currentStatus"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBodyFile(KVP_RESPONS)));
+    }
+
     @After
     public void verifyWireMock() {
         verify(getRequestedFor(urlEqualTo("/veilarboppfolging/api/oppfolging?fnr=" + TestData.KJENT_IDENT.get())));
         verify(getRequestedFor(urlEqualTo("/veilarbperson/api/" + TestData.KJENT_IDENT.get() + "/harNivaa4")));
+        verify(getRequestedFor(urlEqualTo("/veilarboppfolging/api/kvp/" + TestData.KJENT_AKTOR_ID.get() + "/currentStatus")));
     }
 
     @Test
