@@ -30,8 +30,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -86,29 +85,31 @@ public class StillingFraNavControllerTest {
         DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), true);
 
         var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
-        var resultatJobbannonse = resultat.getStillingFraNavData();
-        Assert.assertTrue(resultatJobbannonse.getCvKanDelesData().getKanDeles());
-        Assert.assertNotNull(resultatJobbannonse.getCvKanDelesData().getEndretTidspunkt());
-        Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesData().getEndretAvType());
-        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesData().getEndretAv());
+        var resultatStilling = resultat.getStillingFraNavData();
+
+        Assert.assertTrue(resultatStilling.getCvKanDelesData().getKanDeles());
+        Assert.assertNotNull(resultatStilling.getCvKanDelesData().getEndretTidspunkt());
+        Assert.assertEquals(InnsenderData.NAV, resultatStilling.getCvKanDelesData().getEndretAvType());
+        Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatStilling.getCvKanDelesData().getEndretAv());
         Assert.assertEquals(AktivitetStatus.GJENNOMFORES, resultat.getStatus());
 
     }
 
     @Test
     public void oppdaterKanCvDeles_NavSvarerNEI_setterAlleVerdier() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get()));
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get()));
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
         DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), false);
 
         var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatJobbannonse = resultat.getStillingFraNavData();
-        Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
 
         Assert.assertFalse(resultatJobbannonse.getCvKanDelesData().getKanDeles());
         Assert.assertNotNull(resultatJobbannonse.getCvKanDelesData().getEndretTidspunkt());
         Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesData().getEndretAvType());
         Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesData().getEndretAv());
+        Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
+
 
     }
 

@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
@@ -35,13 +36,13 @@ public class OpprettForesporselOmDelingAvCvTest {
     public static final String AKTORID = "aktorid";
     public static final long AKTIVITET_ID = 1L;
     @Mock
-    private KvpService kvpService;
-    @Mock
     private AktivitetService aktivitetService;
     @Mock
     private DelingAvCvService delingAvCvService;
     @Mock
     private OppfolgingStatusClient oppfolgingStatusClient;
+    @Mock
+    private Nivaa4Client nivaa4Client;
     @Mock
     private KafkaTemplate<String, DelingAvCvRespons> producerClient;
 
@@ -56,16 +57,15 @@ public class OpprettForesporselOmDelingAvCvTest {
     @Before
     public void setup() {
         stillingFraNavProducerClient = new StillingFraNavProducerClient(producerClient, "topic.ut");
-        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(kvpService, aktivitetService, delingAvCvService, oppfolgingStatusClient, stillingFraNavProducerClient);
+        opprettForesporselOmDelingAvCv = new OpprettForesporselOmDelingAvCv(aktivitetService, delingAvCvService, oppfolgingStatusClient, stillingFraNavProducerClient, nivaa4Client);
         melding = createMelding();
     }
 
     @Test
     public void happyCase() {
         when(delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(BESTILLINGS_ID)).thenReturn(false);
-        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).erManuell(false).build();
+        OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).underKvp(false).manuell(false).reservasjonKRR(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-        when(kvpService.erUnderKvp(Person.aktorId(AKTORID))).thenReturn(false);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(AKTIVITET_ID);
 
         opprettForesporselOmDelingAvCv.createAktivitet(melding);

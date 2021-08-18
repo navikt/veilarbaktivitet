@@ -8,9 +8,9 @@ import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Collections;
@@ -31,7 +31,7 @@ public class ForhaandsorienteringDAOTest {
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-    @AfterEach
+    @After
     public void cleanup() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }

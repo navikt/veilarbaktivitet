@@ -51,16 +51,23 @@ public class AktivitetDataTestBuilder {
             case SAMTALEREFERAT:
                 return nytSamtaleReferat();
             case STILLING_FRA_NAV:
-                return nyStillingFraNav();
+                return nyStillingFraNavMedCVKanDeles();
             default: throw new IllegalArgumentException("ukjent type");
         }
 
     }
 
+    public static AktivitetData nyStillingFraNavMedCVKanDeles() {
+        return AktivitetDataTestBuilder.nyAktivitet()
+                .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
+                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav(true))
+                .build();
+    }
+
     public static AktivitetData nyStillingFraNav() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
-                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav())
+                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav(false))
                 .build();
     }
 

@@ -5,7 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
@@ -22,11 +23,11 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
-    private final KvpService kvpService;
     private final AktivitetService aktivitetService;
     private final DelingAvCvService delingAvCvService;
     private final OppfolgingStatusClient oppfolgingStatusClient;
     private final StillingFraNavProducerClient producerClient;
+    private final Nivaa4Client nivaa4Client;
 
 
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
@@ -35,24 +36,29 @@ public class OpprettForesporselOmDelingAvCv {
             log.info("ForesporselOmDelingAvCv med bestillingsId {} har allerede en aktivitet", melding.getBestillingsId());
             return;
         }
+        log.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
-        Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
+        log.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId {}", aktorId);
 
+        if (aktorId.get() == null) {
+            log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId er null");
+        }
+
+        Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
+        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
+
+        boolean underKvp = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderKvp).orElse(true);
         boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
-        boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isErManuell).orElse(true);
+        boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isManuell).orElse(true);
+        boolean erReservertIKrr = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isReservasjonKRR).orElse(true);
+        boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
         AktivitetData aktivitetData = map(melding);
 
-        if (!underoppfolging) {
+        if (!underoppfolging || underKvp) {
             producerClient.sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
-
-        if (kvpService.erUnderKvp(aktorId)) {
-            producerClient.sendIkkeOpprettet(aktivitetData, melding);
-            return;
-        }
-
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
@@ -60,23 +66,21 @@ public class OpprettForesporselOmDelingAvCv {
 
         AktivitetData aktivitetMedId = aktivitetData.withId(aktivitetId);
 
-        if (erManuell) {
+        if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding );
-        } else if (false) { //TODO ikke nivå 4 og krr
-            producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding);
         } else {
             producerClient.sendOpprettet(aktivitetMedId, melding);
         }
     }
 
     private AktivitetData map(ForesporselOmDelingAvCv melding) {
-        //aktivitdata
+        //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
         Instant opprettet = melding.getOpprettet();
 
-        //nye kolloner
+        //nye kolonner
         Date svarfrist = new Date(melding.getSvarfrist().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();

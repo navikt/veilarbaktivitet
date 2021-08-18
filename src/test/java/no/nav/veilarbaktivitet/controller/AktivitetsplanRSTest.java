@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -30,7 +31,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
@@ -43,6 +44,7 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @EmbeddedKafka
+@AutoConfigureWireMock(port = 0)
 public class AktivitetsplanRSTest {
 
     @Autowired
@@ -121,6 +123,45 @@ public class AktivitetsplanRSTest {
         Assert.assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
         Assert.assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
 
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataUtenCVData() {
+        var aktivitet = nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCVData() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertNotNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
+    }
+
+    @Test
+    public void hentAktivitetsplan_henterStillingFraNavDataMedCvSvar() {
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
+
+        var resultat = aktivitetController.hentAktivitetsplan();
+        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        Assert.assertEquals(1, resultat.getAktiviteter().size());
+        Assert.assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
+        Assert.assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
 
     }
 
