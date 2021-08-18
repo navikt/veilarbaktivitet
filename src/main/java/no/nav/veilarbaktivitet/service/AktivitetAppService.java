@@ -85,6 +85,7 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
+    @Transactional
     public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
         authService.sjekkTilgangTilPerson(ident);
 
