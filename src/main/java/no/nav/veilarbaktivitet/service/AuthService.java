@@ -86,7 +86,7 @@ public class AuthService {
     }
 
     public boolean sjekKvpTilgang(String enhet) {
-        if (authContextHolder.erEksternBruker() || enhet == null || authContextHolder.erSystemBruker()) {
+        if (authContextHolder.erEksternBruker() || enhet == null) {
             return true;
         }
 
