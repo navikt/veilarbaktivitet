@@ -149,10 +149,13 @@ public class AuthService {
         return authContextHolder.erInternBruker();
     }
 
+    public boolean erSystemBruker() {
+        return authContextHolder.erSystemBruker();
+    }
+
     public Optional<Person.AktorId> getAktorIdForEksternBruker() {
         return authContextHolder.erEksternBruker()
                 ? authContextHolder.getSubject().map(sub -> Person.aktorId(aktorOppslagClient.hentAktorId(Fnr.of(sub)).get()))
                 : Optional.empty();
     }
-
 }

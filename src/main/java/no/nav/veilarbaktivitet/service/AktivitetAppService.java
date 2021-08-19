@@ -98,8 +98,10 @@ public class AktivitetAppService {
                 aktorId :
                 authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
-        long id = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
-        return this.hentAktivitet(id); // this is done because of KVP
+        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
+
+        // dette er gjort på grunn av KVP
+        return authService.erSystemBruker() ? nyAktivitet.withKontorsperreEnhetId(null) : nyAktivitet;
     }
 
     @Transactional

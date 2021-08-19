@@ -54,7 +54,7 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
-    public long opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .aktorId(aktorId.get())
@@ -69,7 +69,7 @@ public class AktivitetService {
         nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);
-        return nyAktivivitet.getId();
+        return nyAktivivitet;
     }
 
     @Transactional

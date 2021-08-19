@@ -3,12 +3,15 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
@@ -34,7 +37,9 @@ public class OpprettForesporselOmDelingAvCvTest {
 
     public static final String BESTILLINGS_ID = "bestillingsId";
     public static final String AKTORID = "aktorid";
-    public static final long AKTIVITET_ID = 1L;
+    public static final AktivitetData AKTIVITET_DATA = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE);
+    public static final long AKTIVITET_ID = AKTIVITET_DATA.getId();
+
     @Mock
     private AktivitetService aktivitetService;
     @Mock
@@ -66,7 +71,7 @@ public class OpprettForesporselOmDelingAvCvTest {
         when(delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(BESTILLINGS_ID)).thenReturn(false);
         OppfolgingStatusDTO oppfolgingStatusDTO = OppfolgingStatusDTO.builder().underOppfolging(true).underKvp(false).manuell(false).reservasjonKRR(false).build();
         when(oppfolgingStatusClient.get(Person.aktorId(AKTORID))).thenReturn(Optional.of(oppfolgingStatusDTO));
-        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(AKTIVITET_ID);
+        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(AKTIVITET_DATA);
 
         opprettForesporselOmDelingAvCv.createAktivitet(melding);
 
