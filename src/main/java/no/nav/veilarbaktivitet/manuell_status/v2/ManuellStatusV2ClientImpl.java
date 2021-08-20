@@ -29,7 +29,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
 
         if (fnr.get() == null) {
-            log.error("OppfolgingStatusClientImpl.get Fnr er null");
+            log.error("ManuellStatusV2ClientImpl.get Fnr er null");
         }
 
         String uri = String.format("%s/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
