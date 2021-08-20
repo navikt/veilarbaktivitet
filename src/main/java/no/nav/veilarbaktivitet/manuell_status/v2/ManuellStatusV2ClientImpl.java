@@ -1,11 +1,9 @@
-package no.nav.veilarbaktivitet.manuell_status;
+package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
 import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

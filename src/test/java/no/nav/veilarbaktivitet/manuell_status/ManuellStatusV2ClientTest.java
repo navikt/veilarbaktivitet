@@ -2,9 +2,9 @@ package no.nav.veilarbaktivitet.manuell_status;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClientImpl;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2ClientImpl;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Response;
 import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;

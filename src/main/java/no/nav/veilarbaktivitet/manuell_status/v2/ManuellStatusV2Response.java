@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.manuell_status;
+package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import lombok.Value;
 
