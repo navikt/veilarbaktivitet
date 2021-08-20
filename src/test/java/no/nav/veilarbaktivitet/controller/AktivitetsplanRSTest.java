@@ -258,7 +258,7 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
         lagredeAktivitetsIder = aktiviteter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, KJENT_AKTOR_ID))
+                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, KJENT_AKTOR_ID).getId())
                 .collect(Collectors.toList());
     }
 

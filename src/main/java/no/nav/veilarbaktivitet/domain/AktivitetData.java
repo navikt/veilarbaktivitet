@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
-import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 

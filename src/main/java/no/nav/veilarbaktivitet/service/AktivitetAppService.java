@@ -85,6 +85,7 @@ public class AktivitetAppService {
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
+    @Transactional
     public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
         authService.sjekkTilgangTilPerson(ident);
 
@@ -97,8 +98,10 @@ public class AktivitetAppService {
                 aktorId :
                 authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
-        long id = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
-        return this.hentAktivitet(id); // this is done because of KVP
+        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
+
+        // dette er gjort på grunn av KVP
+        return authService.erSystemBruker() ? nyAktivitet.withKontorsperreEnhetId(null) : nyAktivitet;
     }
 
     @Transactional
@@ -145,27 +148,12 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        } else if (skalIkkeKunneEndreAktivitetEtikett(orginalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre etikett på historisk aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
-        }
-    }
-
     private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
         return AktivitetStatus.AVBRUTT.equals(status)
                 || AktivitetStatus.FULLFORT.equals(status)
                 || aktivitetData.getHistoriskDato() != null
                 || aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV;
-    }
-
-    private boolean skalIkkeKunneEndreAktivitetEtikett(AktivitetData aktivitetData) {
-        return aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
@@ -191,7 +179,7 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
         return authService.getLoggedInnUser()
                 .map(userIdent -> {
                     aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);

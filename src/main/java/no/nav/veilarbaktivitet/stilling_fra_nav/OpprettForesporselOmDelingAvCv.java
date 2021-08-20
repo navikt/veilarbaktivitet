@@ -62,14 +62,12 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        long aktivitetId = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
-
-        AktivitetData aktivitetMedId = aktivitetData.withId(aktivitetId);
+        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitetMedId, melding );
+            producerClient.sendOpprettetIkkeVarslet(aktivitet, melding );
         } else {
-            producerClient.sendOpprettet(aktivitetMedId, melding);
+            producerClient.sendOpprettet(aktivitet, melding);
         }
     }
 
