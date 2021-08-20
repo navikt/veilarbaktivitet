@@ -1,7 +1,6 @@
-package no.nav.veilarbaktivitet.oppfolging_status;
+package no.nav.veilarbaktivitet.nivaa4;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
@@ -15,39 +14,37 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
+public class Nivaa4ClientImpl implements Nivaa4Client {
     private final OkHttpClient client;
     private final AuthService authService;
 
-    @Value("${VEILARBOPPFOLGINGAPI_URL}")
+    @Value("${VEILARBPERSONAPI_URL}")
     private String baseUrl;
 
-    public Optional<OppfolgingStatusDTO> get(Person.AktorId aktorId) {
+    @Override
+    public Optional<Nivaa4DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
 
-        if (fnr.get() == null) {
-            log.error("OppfolgingStatusClientImpl.get Fnr er null");
-        }
-
-        String uri = String.format("%s/oppfolging?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/%s/harNivaa4", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
+
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == 204) {
                 return Optional.empty();
             }
 
-            return RestUtils.parseJsonResponse(response, OppfolgingStatusDTO.class);
+            return RestUtils.parseJsonResponse(response, Nivaa4DTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
     }
 
+    @Override
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }

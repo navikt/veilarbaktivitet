@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -38,6 +39,7 @@ import static org.junit.Assert.fail;
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
+@AutoConfigureWireMock(port = 0)
 @Transactional
 public class AktivitetDAOTest {
 

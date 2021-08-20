@@ -64,4 +64,11 @@ class AuthServiceTest {
         assertEquals(eksternBruker, loggedInnUser.get());
     }
 
+    @Test
+    void erSystemBruker() {
+        when(authContextHolder.erSystemBruker()).thenReturn(Boolean.TRUE);
+        boolean erSystemBruker = authService.erSystemBruker();
+        assertEquals( Boolean.TRUE, erSystemBruker);
+    }
+
 }

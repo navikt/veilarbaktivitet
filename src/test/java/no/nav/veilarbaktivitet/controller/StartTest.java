@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.annotation.EnableKafka;
@@ -26,6 +27,7 @@ import static org.junit.Assert.assertEquals;
 
 @EmbeddedKafka(topics = "test",  partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWireMock(port = 0)
 @RunWith(SpringRunner.class)
 public class StartTest {
     
