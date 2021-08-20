@@ -1,10 +1,7 @@
-package no.nav.veilarbaktivitet.manuell_status;
+package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2ClientImpl;
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Response;
 import no.nav.veilarbaktivitet.service.AuthService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
@@ -26,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class ManuellStatusV2ClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("10108000398");
-    private static final String MANUELL_STATUS_RESPONS ="manuell_status/manuellStatusRespons.json";
+    private static final String MANUELL_STATUS_RESPONS = "manuell_status/v2/manuellStatusRespons.json";
 
     private ManuellStatusV2Client manuellStatusV2Client;
 
@@ -43,7 +40,7 @@ public class ManuellStatusV2ClientTest {
     }
 
     @Test
-    public void test_oppfolging_status_ok_response() {
+    public void test_manuell_status_ok_response() {
 
         stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
                 .willReturn(ok()
@@ -58,7 +55,7 @@ public class ManuellStatusV2ClientTest {
     }
 
     @Test
-    public void test_oppfolging_status_kall_feiler() {
+    public void test_manuell_status_kall_feiler() {
         stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
                 .willReturn(aResponse()
                         .withStatus(400)

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.manuell_status.v2;
+package no.nav.veilarbaktivitet.oppfolging.v2;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,23 +19,23 @@ import java.util.Optional;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
+public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     private final OkHttpClient client;
     private final AuthService authService;
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    public Optional<ManuellStatusV2Response> get(Person.AktorId aktorId) {
+    public Optional<OppfolgingV2Response> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
 
-        String uri = String.format("%s/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, ManuellStatusV2Response.class);
+            return RestUtils.parseJsonResponse(response, OppfolgingV2Response.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
