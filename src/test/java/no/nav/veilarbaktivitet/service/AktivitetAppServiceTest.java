@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.Person;
+import org.assertj.core.api.Assertions;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.*;
 @RunWith(MockitoJUnitRunner.class)
 public class AktivitetAppServiceTest {
     private static final long AKTIVITET_ID = 666L;
+    public static final String KONTORSPERRE_ENHET_ID = "1224";
 
     @Mock
     private AuthService authService;
@@ -52,14 +54,40 @@ public class AktivitetAppServiceTest {
         appService.oppdaterAktivitet(aktivitet);
     }
 
-
-    @Ignore // TODO: Må fikses
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);
+    }
+
+    @Test
+    public void opprett_skal_ikke_returnere_kontorsperreEnhet_naar_systembruker() {
+        var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("systembruker")));
+        when(authService.getAktorIdForPersonBrukerService(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(authService.erSystemBruker()).thenReturn(Boolean.TRUE);
+        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
+
+        mockHentAktivitet(aktivitet);
+        AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
+        Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isNull();
+    }
+
+    @Test
+    public void opprett_skal_returnere_kontorsperreEnhet_naar_ikke_systembruker() {
+        var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
+
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("saksbehandler")));
+        when(authService.getAktorIdForPersonBrukerService(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(authService.erSystemBruker()).thenReturn(Boolean.FALSE);
+        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
+
+        mockHentAktivitet(aktivitet);
+        AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
+        Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isEqualTo(KONTORSPERRE_ENHET_ID);
     }
 
     @Test

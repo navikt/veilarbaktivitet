@@ -148,27 +148,12 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT);
-        } else if (skalIkkeKunneEndreAktivitetEtikett(orginalAktivitet)) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre etikett på historisk aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
-        }
-    }
-
     private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
         return AktivitetStatus.AVBRUTT.equals(status)
                 || AktivitetStatus.FULLFORT.equals(status)
                 || aktivitetData.getHistoriskDato() != null
                 || aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV;
-    }
-
-    private boolean skalIkkeKunneEndreAktivitetEtikett(AktivitetData aktivitetData) {
-        return aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
@@ -194,7 +179,7 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
         return authService.getLoggedInnUser()
                 .map(userIdent -> {
                     aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);
