@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -43,7 +45,7 @@ public class AktivitetServiceTest {
     private AktivitetDAO aktivitetDAO;
 
     @Mock
-    private KvpClient kvpClient;
+    private KvpV2Client kvpClient;
 
     @Mock
     private MetricService metricService;
@@ -85,7 +87,7 @@ public class AktivitetServiceTest {
     @Test
     public void opprettAktivitetMedKvp() {
         val aktivitet = lagEnNyAktivitet();
-        KvpDTO kvp = new KvpDTO().setEnhet(KONTORSPERRE_ENHET_ID);
+        KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
         when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));

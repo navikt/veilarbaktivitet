@@ -21,7 +21,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static no.nav.veilarbaktivitet.stilling_fra_nav.OpprettForesporselOmDelingAvCvTest.createMelding;
 import static org.junit.Assert.assertEquals;
 
 
@@ -39,7 +38,6 @@ public class StartTest {
 
     @Test
     public void kake() {
-        template.send("test", "test", createMelding());
         int statusCode = RestAssured.get("http://localhost:" + port +"/veilarbaktivitet/internal").statusCode();
         assertEquals(HttpStatus.OK.value(), statusCode);
     }

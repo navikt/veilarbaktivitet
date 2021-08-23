@@ -5,10 +5,14 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusDTO;
+import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
+import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2DTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -19,13 +23,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OpprettForesporselOmDelingAvCv {
     private final AktivitetService aktivitetService;
     private final DelingAvCvService delingAvCvService;
-    private final OppfolgingStatusClient oppfolgingStatusClient;
+    private final KvpService kvpService;
+    private final OppfolgingV2Client oppfolgingClient;
+    private final ManuellStatusV2Client manuellStatusClient;
+    private final KvpV2Client kvpClient;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
@@ -44,18 +53,19 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId er null");
         }
 
-        Optional<OppfolgingStatusDTO> oppfolgingStatusDTO = oppfolgingStatusClient.get(aktorId);
         Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
-
-        boolean underKvp = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderKvp).orElse(true);
-        boolean underoppfolging = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isUnderOppfolging).orElse(false);
-        boolean erManuell = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isManuell).orElse(true);
-        boolean erReservertIKrr = oppfolgingStatusDTO.map(OppfolgingStatusDTO::isReservasjonKRR).orElse(true);
+        Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);
+        Optional<OppfolgingV2DTO> oppfolgingResponse = oppfolgingClient.get(aktorId);
+        
+        boolean underKvp = kvpService.erUnderKvp(aktorId);
+        boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2DTO::isErUnderOppfolging).orElse(false);
+        boolean erManuell = manuellStatusResponse.map(ManuellStatusV2DTO::isErUnderManuellOppfolging).orElse(true);
+        boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
         AktivitetData aktivitetData = map(melding);
 
-        if (!underoppfolging || underKvp) {
+        if (!underOppfolging || underKvp) {
             producerClient.sendIkkeOpprettet(aktivitetData, melding);
             return;
         }
