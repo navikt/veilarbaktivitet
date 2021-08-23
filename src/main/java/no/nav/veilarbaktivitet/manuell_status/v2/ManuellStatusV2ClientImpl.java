@@ -26,7 +26,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    public Optional<ManuellStatusV2Response> get(Person.AktorId aktorId) {
+    public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
 
         String uri = String.format("%s/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
@@ -35,7 +35,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, ManuellStatusV2Response.class);
+            return RestUtils.parseJsonResponse(response, ManuellStatusV2DTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }

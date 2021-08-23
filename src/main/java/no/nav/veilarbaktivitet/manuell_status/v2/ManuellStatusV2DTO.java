@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.manuell_status.v2;
 import lombok.Value;
 
 @Value
-public class ManuellStatusV2Response {
+public class ManuellStatusV2DTO {
     boolean erUnderManuellOppfolging;
     KrrStatus krrStatus;
 

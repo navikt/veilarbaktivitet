@@ -46,7 +46,7 @@ public class ManuellStatusV2ClientTest {
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(MANUELL_STATUS_RESPONS)));
-        Optional<ManuellStatusV2Response> manuellStatusV2Response = manuellStatusV2Client.get(AKTORID);
+        Optional<ManuellStatusV2DTO> manuellStatusV2Response = manuellStatusV2Client.get(AKTORID);
 
         assertThat(manuellStatusV2Response).get()
                 .hasFieldOrPropertyWithValue("erUnderManuellOppfolging", false)

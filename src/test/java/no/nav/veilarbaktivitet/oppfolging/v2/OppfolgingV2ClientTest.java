@@ -45,7 +45,7 @@ public class OppfolgingV2ClientTest {
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(OPPFOLGING_RESPONS)));
-        Optional<OppfolgingV2Response> oppfolgingV2Response = oppfolgingV2Client.get(AKTORID);
+        Optional<OppfolgingV2DTO> oppfolgingV2Response = oppfolgingV2Client.get(AKTORID);
 
         assertThat(oppfolgingV2Response).get()
                 .hasFieldOrPropertyWithValue("erUnderOppfolging", true);

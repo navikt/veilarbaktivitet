@@ -26,7 +26,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    public Optional<OppfolgingV2Response> get(Person.AktorId aktorId) {
+    public Optional<OppfolgingV2DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
 
         String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
@@ -35,7 +35,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, OppfolgingV2Response.class);
+            return RestUtils.parseJsonResponse(response, OppfolgingV2DTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
