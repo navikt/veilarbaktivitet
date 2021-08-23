@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -61,8 +60,6 @@ public class DelingAvCvITest {
 
     @Value("${spring.kafka.properties.schema.registry.url}")
     private String schemaRegistryUrl;
-
-    private static final String AKTORID="4321";
 
     /***** Ekte bønner *****/
 
