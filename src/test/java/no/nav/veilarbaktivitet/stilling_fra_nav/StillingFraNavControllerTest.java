@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
@@ -42,7 +43,7 @@ public class StillingFraNavControllerTest {
     private final Database database = new Database(jdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-    private KvpClient kvpClient = mock(KvpClient.class);
+    private KvpV2Client kvpClient = mock(KvpV2Client.class);
     private KvpService kvpService = new KvpService(kvpClient);
     private MetricService metricService = mock(MetricService.class);
     private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);

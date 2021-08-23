@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.KvpDTO;
 import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
+import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -16,24 +18,24 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class KvpService {
 
-    private final KvpClient kvpClient;
+    private final KvpV2Client kvpClient;
 
     public boolean erUnderKvp(Person.AktorId aktorId) {
-        Optional<KvpDTO> kvpDTO = kvpClient.get(aktorId);
+        Optional<KvpV2DTO> kvpDTO = kvpClient.get(aktorId);
 
-        if(kvpDTO.isEmpty()) {
+        if (kvpDTO.isEmpty()) {
             return false;
         }
 
         return kvpDTO
-                .map(it -> it.getKvpId() != 0L && it.getAvsluttetDato() != null )
+                .map(it -> it.getEnhet() != null && !it.getEnhet().isEmpty() && it.getAvsluttetDato() == null)
                 .orElse(false);
     }
 
 
     public AktivitetData tagUsingKVP(AktivitetData a) {
         try {
-            Optional<KvpDTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
+            Optional<KvpV2DTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
             return kvp
                     .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
                     .orElse(a);

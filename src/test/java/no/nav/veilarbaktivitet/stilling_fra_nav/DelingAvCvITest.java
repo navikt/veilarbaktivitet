@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -7,11 +8,10 @@ import no.nav.veilarbaktivitet.avro.Arbeidssted;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.avro.SvarEnum;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
+import no.nav.veilarbaktivitet.util.MockBruker;
+import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -39,8 +39,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -63,7 +62,7 @@ public class DelingAvCvITest {
     @Value("${spring.kafka.properties.schema.registry.url}")
     private String schemaRegistryUrl;
 
-    private static final String AKTORID="aktorid";
+    private static final String AKTORID="4321";
 
     /***** Ekte bønner *****/
 
@@ -79,30 +78,20 @@ public class DelingAvCvITest {
     @Autowired
     Nivaa4Client nivaa4Client;
 
-    /***** Bønner slutt *****/
-
     @After
-    public void verifyWireMock() {
-        verify(getRequestedFor(urlEqualTo("/veilarboppfolging/api/oppfolging?fnr=" + TestData.KJENT_IDENT.get())));
-        verify(getRequestedFor(urlEqualTo("/veilarbperson/api/" + TestData.KJENT_IDENT.get() + "/harNivaa4")));
+    public void verify_no_unmatched() {
+        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
 
     @Test
-    public void ikke_under_oppfolging() {
+    public void happy_case() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\":false}")));
-
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -111,97 +100,25 @@ public class DelingAvCvITest {
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
-            assertions.assertThat(value.getAktivitetId()).isNull();
-            assertions.assertThat(value.getBrukerVarslet()).isFalse();
-            assertions.assertThat(value.getAktivitetOpprettet()).isFalse();
-            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
-            assertions.assertAll();
-        });
-
-    }
-
-    @Test
-    public void under_oppfolging_kvp() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
-
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"underKvp\": true}")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
-
-        String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        SoftAssertions.assertSoftly( assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
-            assertions.assertThat(value.getAktivitetId()).isNull();
-            assertions.assertThat(value.getBrukerVarslet()).isFalse();
-            assertions.assertThat(value.getAktivitetOpprettet()).isFalse();
-            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
-            assertions.assertAll();
-        });
-
-    }
-
-    @Test
-    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp_har_nivaa4() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
-
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": false, \"underKvp\": false}")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
-
-        String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        SoftAssertions.assertSoftly( assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isTrue();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
             assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
             assertions.assertAll();
         });
-
     }
 
     @Test
-    public void under_oppfolging_manuell_ikke_under_kvp() {
+    public void ikke_under_oppfolging() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"manuell\": true, \"underKvp\": false}")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        mockBruker.setUnderOppfolging(false);
+        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -210,7 +127,63 @@ public class DelingAvCvITest {
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktivitetId()).isNull();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
+            assertions.assertThat(value.getAktivitetOpprettet()).isFalse();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+    }
+
+    @Test
+    public void under_oppfolging_kvp() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        mockBruker.setUnderOppfolging(true);
+        mockBruker.setErUnderKvp(true);
+        WireMockUtil.stubBruker(mockBruker);
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktivitetId()).isNull();
+            assertions.assertThat(value.getBrukerVarslet()).isFalse();
+            assertions.assertThat(value.getAktivitetOpprettet()).isFalse();
+            assertions.assertThat(value.getBrukerSvar()).isEqualTo(SvarEnum.IKKE_SVART);
+            assertions.assertAll();
+        });
+
+    }
+
+    @Test
+    public void under_manuell_oppfolging() {
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        mockBruker.setErManuell(true);
+        WireMockUtil.stubBruker(mockBruker);
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        producer.send(innTopic, melding.getBestillingsId(), melding);
+
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly( assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isFalse();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
@@ -221,20 +194,15 @@ public class DelingAvCvITest {
     }
 
     @Test
-    public void under_oppfolging_ikke_manuell_reservert_i_krr_ikke_under_kvp() {
+    public void reservert_i_krr() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": true, \"underKvp\": false}")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        mockBruker.setErReservertKrr(true);
+        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -243,7 +211,7 @@ public class DelingAvCvITest {
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isFalse();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
@@ -254,29 +222,23 @@ public class DelingAvCvITest {
     }
 
     @Test
-    public void under_oppfolging_ikke_manuell_ikke_reservert_ikke_under_kvp_mangler_nivaa4() {
+    public void mangler_nivaa4() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"manuell\": false, \"reservasjonKRR\": false, \"underKvp\": false}")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": false}")));
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        mockBruker.setHarBruktNivaa4(false);
+        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
-
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isFalse();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
@@ -290,17 +252,11 @@ public class DelingAvCvITest {
     public void duplikat_bestillingsId_ignoreres() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging\\?fnr=([0-9]*)"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"underOppfolging\": true, \"manuell\": false }")));
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\": true}")));
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -309,7 +265,7 @@ public class DelingAvCvITest {
 
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(AKTORID);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getBrukerVarslet()).isTrue();
             assertions.assertThat(value.getAktivitetOpprettet()).isTrue();
@@ -317,15 +273,15 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId);
+        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
         Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
     }
 
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
+    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
         return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(AKTORID)
+                .setAktorId(aktorId)
                 .setArbeidsgiver("arbeidsgiver")
                 .setArbeidssteder(List.of(
                         Arbeidssted.newBuilder()
