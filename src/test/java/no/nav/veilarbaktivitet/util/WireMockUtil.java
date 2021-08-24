@@ -37,7 +37,7 @@ public class WireMockUtil {
                     .willReturn(aResponse().withStatus(204)));
         }
 
-        stubFor(get("/veilarbperson/api/" + fnr + "/harNivaa4")
+        stubFor(get("/veilarbperson/api/person/" + fnr + "/harNivaa4")
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBody("{\"harbruktnivaa4\":" + harBruktNivaa4 + "}")));

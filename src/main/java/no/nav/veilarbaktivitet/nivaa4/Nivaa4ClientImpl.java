@@ -28,16 +28,13 @@ public class Nivaa4ClientImpl implements Nivaa4Client {
     public Optional<Nivaa4DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
 
-        String uri = String.format("%s/%s/harNivaa4", baseUrl, fnr.get());
+        String uri = String.format("%s/person/%s/harNivaa4", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            if (response.code() == 204) {
-                return Optional.empty();
-            }
 
             return RestUtils.parseJsonResponse(response, Nivaa4DTO.class);
         } catch (Exception e) {
