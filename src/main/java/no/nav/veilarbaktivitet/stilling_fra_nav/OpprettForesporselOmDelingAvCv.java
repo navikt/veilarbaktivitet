@@ -53,8 +53,8 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId er null");
         }
 
-        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
         Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);
+        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
         Optional<OppfolgingV2DTO> oppfolgingResponse = oppfolgingClient.get(aktorId);
         
         boolean underKvp = kvpService.erUnderKvp(aktorId);
