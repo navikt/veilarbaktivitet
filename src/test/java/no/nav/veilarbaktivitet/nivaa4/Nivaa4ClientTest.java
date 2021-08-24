@@ -37,7 +37,7 @@ public class Nivaa4ClientTest {
 
     @Test
     public void test_nivaa4_ok_respons() {
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+        stubFor(get(urlMatching("/veilarbperson/api/person/([0-9]*)/harNivaa4"))
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(HAR_NIVAA4_OK_RESPONS)));
@@ -45,19 +45,10 @@ public class Nivaa4ClientTest {
         assertThat(nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false), is(true));
     }
 
-    @Test
-    public void test_nivaa4_httpcode_204() {
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
-                .willReturn(aResponse()
-                        .withStatus(204)
-                        .withHeader("Content-Type", "text/json")));
-        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(Person.aktorId(AKTORID));
-        assertThat(nivaa4DTO, is(Optional.empty()));
-    }
-
+    // TODO lag case for feilhåndtering i itest
     @Test
     public void test_nivaa4_kall_feiler() {
-        stubFor(get(urlMatching("/veilarbperson/api/([0-9]*)/harNivaa4"))
+        stubFor(get(urlMatching("/veilarbperson/api/person/([0-9]*)/harNivaa4"))
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));
