@@ -59,7 +59,16 @@ public class AktivitetAppServiceTest {
         val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         mockHentAktivitet(aktivitet);
 
-        testAlleOppdateringsmetoder(aktivitet);
+        testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
+    }
+
+    @Test
+    public void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
+        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
+        mockHentAktivitet(aktivitet);
+        AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
+        Assertions.assertThat(aktivitetData).isNotNull();
     }
 
     @Test
@@ -106,6 +115,32 @@ public class AktivitetAppServiceTest {
         }
         try {
             appService.oppdaterEtikett(aktivitet);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            appService.oppdaterReferat(aktivitet);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+        try {
+            appService.oppdaterAktivitet(aktivitet);
+            fail();
+        } catch (IllegalArgumentException ignored) {
+        }
+
+        verify(aktivitetService, never()).oppdaterStatus(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterEtikett(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterReferat(any(), any(), any());
+
+    }
+
+    private void testAlleOppdateringsmetoderUnntattEtikett(final AktivitetData aktivitet) {
+        try {
+            appService.oppdaterStatus(aktivitet);
             fail();
         } catch (IllegalArgumentException ignored) {
         }
