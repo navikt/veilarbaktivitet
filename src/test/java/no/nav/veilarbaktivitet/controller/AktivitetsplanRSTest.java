@@ -16,6 +16,8 @@ import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.util.MockBruker;
+import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +88,9 @@ public class AktivitetsplanRSTest {
         when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
         when(authService.sjekKvpTilgang(null)).thenReturn(true);
         mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
+        MockBruker mockBruker = MockBruker.happyBruker(KJENT_IDENT.get(), KJENT_AKTOR_ID.get());
+        WireMockUtil.stubBruker(mockBruker);
+
     }
 
     @After
