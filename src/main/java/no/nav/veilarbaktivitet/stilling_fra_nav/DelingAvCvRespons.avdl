@@ -72,7 +72,7 @@
                         "VARSLET",
                         "IKKE_VARSLET",
                         "SVART",
-                        "TIDSFRIST_UTLOPT"
+                        "SVARFRIST_UTLOPT"
                     ]
                 }
             },
