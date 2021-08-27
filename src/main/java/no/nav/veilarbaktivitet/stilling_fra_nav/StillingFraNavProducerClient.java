@@ -23,11 +23,11 @@ public class StillingFraNavProducerClient {
     }
 
     void sendIkkeOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(TilstandEnum.IKKE_OPPRETTET, melding, aktivitetData);
+        sendRespons(TilstandEnum.KAN_IKKE_OPPRETTE, melding, aktivitetData);
     }
 
     void sendOpprettetIkkeVarslet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(TilstandEnum.IKKE_VARSLET, melding, aktivitetData);
+        sendRespons(TilstandEnum.KAN_IKKE_VARSLE, melding, aktivitetData);
     }
 
     void sendOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {

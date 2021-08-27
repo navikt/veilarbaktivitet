@@ -70,11 +70,11 @@
                     "name": "TilstandEnum",
                     "type": "enum",
                     "symbols": [
-                        "IKKE_OPPRETTET",
+                        "KAN_IKKE_OPPRETTE",
                         "PROVER_VARSLING",
-                        "VARSLET",
-                        "IKKE_VARSLET",
-                        "SVART",
+                        "HAR_VARSLET",
+                        "KAN_IKKE_VARSLE",
+                        "HAR_SVART",
                         "SVARFRIST_UTLOPT"
                     ]
                 }

@@ -125,7 +125,7 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNull();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.IKKE_OPPRETTET);
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
@@ -152,7 +152,7 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNull();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.IKKE_OPPRETTET);
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
@@ -179,7 +179,7 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.IKKE_VARSLET);
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
@@ -206,7 +206,7 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.IKKE_VARSLET);
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
@@ -232,7 +232,7 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.IKKE_VARSLET);
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
