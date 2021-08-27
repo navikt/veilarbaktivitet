@@ -1,9 +1,91 @@
-{"namespace":"no.nav.veilarbaktivitet.avro","type":"record","name":"DelingAvCvRespons","fields":[
-		{"name":"bestillingsId","type":"string"},
-		{"name":"aktorId","type":"string"},
-		{"name":"aktivitetId","type":["string","null"]},
-		{"name":"brukerVarslet","type":"boolean"},
-		{"name":"aktivitetOpprettet","type":"boolean"},
-		{"name":"brukerSvar","type":{"name":"SvarEnum","type":"enum","symbols":["JA","NEI","IKKE_SVART"]}}
-	]
-}
+[
+    {
+        "namespace": "no.nav.veilarbaktivitet.avro",
+        "type": "record",
+        "name": "Ident",
+        "fields": [
+            {
+                "name": "ident",
+                "type": "string"
+            },
+            {
+                "name": "identType",
+                "type": {
+                    "name": "IdentTypeEnum",
+                    "type": "enum",
+                    "symbols": [
+                        "AKTOR_ID",
+                        "NAV_IDENT"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "namespace": "no.nav.veilarbaktivitet.avro",
+        "type": "record",
+        "name": "Svar",
+        "fields": [
+            {
+                "name": "svarTidspunkt",
+                "type": {
+                    "type": "long",
+                    "logicalType": "timestamp-millis"
+                }
+
+            },
+            {
+                "name": "svartAv",
+                "type": "Ident"
+            },
+            {
+                "name": "svar",
+                "type": "boolean"
+            }
+        ]
+    },
+    {
+        "namespace": "no.nav.veilarbaktivitet.avro",
+        "type": "record",
+        "name": "DelingAvCvRespons",
+        "fields": [
+            {
+                "name": "bestillingsId",
+                "type": "string"
+            },
+            {
+                "name": "aktorId",
+                "type": "string"
+            },
+            {
+                "name": "aktivitetId",
+                "type": [
+                    "string",
+                    "null"
+                ]
+            },
+            {
+                "name": "tilstand",
+                "type": {
+                    "name": "TilstandEnum",
+                    "type": "enum",
+                    "symbols": [
+                        "KAN_IKKE_OPPRETTE",
+                        "PROVER_VARSLING",
+                        "HAR_VARSLET",
+                        "KAN_IKKE_VARSLE",
+                        "HAR_SVART",
+                        "SVARFRIST_UTLOPT"
+                    ]
+                }
+            },
+            {
+                "name": "svar",
+                "type": [
+                    "Svar",
+                    "null"
+                ]
+            }
+        ]
+    }
+]

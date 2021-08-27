@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
-import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.avro.SvarEnum;
+import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -23,25 +23,24 @@ public class StillingFraNavProducerClient {
     }
 
     void sendIkkeOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(false, false, melding, aktivitetData);
+        sendRespons(TilstandEnum.KAN_IKKE_OPPRETTE, melding, aktivitetData);
     }
 
     void sendOpprettetIkkeVarslet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(true, false, melding, aktivitetData);
+        sendRespons(TilstandEnum.KAN_IKKE_VARSLE, melding, aktivitetData);
     }
 
     void sendOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(true, true, melding, aktivitetData);
+        sendRespons(TilstandEnum.PROVER_VARSLING, melding, aktivitetData);
     }
 
-    private void sendRespons(boolean aktivitetOpprettet, boolean brukerVarslet, ForesporselOmDelingAvCv melding, AktivitetData aktivitetData) {
+    private void sendRespons(TilstandEnum tilstand, ForesporselOmDelingAvCv melding, AktivitetData aktivitetData) {
         DelingAvCvRespons delingAvCvRespons = new DelingAvCvRespons();
         delingAvCvRespons.setBestillingsId(melding.getBestillingsId());
-        delingAvCvRespons.setAktivitetOpprettet(aktivitetOpprettet);
-        delingAvCvRespons.setBrukerVarslet(brukerVarslet);
         delingAvCvRespons.setAktorId(melding.getAktorId());
         delingAvCvRespons.setAktivitetId(aktivitetData.getId() != null ? aktivitetData.getId().toString() : null);
-        delingAvCvRespons.setBrukerSvar(SvarEnum.IKKE_SVART);
+        delingAvCvRespons.setTilstand(tilstand);
+        delingAvCvRespons.setSvar(null);
 
 
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);

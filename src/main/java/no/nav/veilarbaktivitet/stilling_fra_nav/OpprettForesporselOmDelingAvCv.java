@@ -2,8 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.avro.Arbeidssted;
-import no.nav.veilarbaktivitet.avro.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
@@ -14,6 +12,8 @@ import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2DTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
