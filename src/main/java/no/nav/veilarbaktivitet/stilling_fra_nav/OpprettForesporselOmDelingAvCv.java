@@ -42,15 +42,15 @@ public class OpprettForesporselOmDelingAvCv {
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
-            log.info("ForesporselOmDelingAvCv med bestillingsId {} har allerede en aktivitet", melding.getBestillingsId());
+            log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
             return;
         }
         log.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
-        log.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId {}", aktorId);
+        log.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId={}", aktorId.get());
 
         if (aktorId.get() == null) {
-            log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId er null");
+            log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
         Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);

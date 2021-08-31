@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
@@ -10,6 +11,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class StillingFraNavProducerClient {
     private final KafkaTemplate<String, DelingAvCvRespons> producerClient;
     private final String topicUt;
@@ -44,6 +46,7 @@ public class StillingFraNavProducerClient {
 
 
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
+        log.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
 }
