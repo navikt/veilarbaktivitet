@@ -12,5 +12,6 @@ public class JobbDTO {
     private JobbType jobbType;
     private long aktivitetId;
     private long versjon;
-    private String status;
+    private Status status;
 }
+

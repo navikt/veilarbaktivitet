@@ -1,6 +1,9 @@
 package no.nav.veilarbaktivitet.util;
 
+import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import no.nav.common.types.identer.EksternBrukerId;
+
+import java.util.Arrays;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
@@ -36,6 +39,21 @@ public class WireMockUtil {
             stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
                     .willReturn(aResponse().withStatus(204)));
         }
+
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
+            .withHeader("Nav-Personidenter", equalTo(fnr))
+                .willReturn(ok().withBody(
+                        "{" +
+                        "  \"" + fnr + "\": {" +
+                        "    \"identer\": [" +
+                        "      {" +
+                        "        \"ident\": \"" + aktorId + "\"," +
+                        "        \"identgruppe\": \"AktoerId\"," +
+                        "        \"gjeldende\": true" +
+                        "      }" +
+                        "    ]" +
+                        "  }" +
+                        "}")));
 
         stubFor(get("/veilarbperson/api/person/" + fnr + "/harNivaa4")
                 .willReturn(ok()

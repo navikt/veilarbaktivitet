@@ -8,6 +8,7 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.metrics.MetricsClient;
+import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
@@ -17,6 +18,8 @@ import no.nav.veilarbaktivitet.mock.PepMock;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import okhttp3.OkHttpClient;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.mockito.Mockito;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -30,6 +33,7 @@ import static org.mockito.Mockito.when;
 
 
 @Configuration
+@EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationTestConfig {
     @Bean
     /**
@@ -42,6 +46,13 @@ public class ApplicationTestConfig {
     @Bean
     public KvpClient kvpClient() {
         return mock(KvpClient.class);
+    }
+
+    @Bean
+    public SystemUserTokenProvider systemUserTokenProvider() {
+        SystemUserTokenProvider systemUserTokenProvider = mock(SystemUserTokenProvider.class);
+        Mockito.when(systemUserTokenProvider.getSystemUserToken()).thenReturn("mockSystemUserToken");
+        return systemUserTokenProvider;
     }
 
     @Bean
@@ -61,11 +72,6 @@ public class ApplicationTestConfig {
         KafkaProducerClient mock = mock(KafkaProducerClient.class);
         when(mock.sendSync(any())).thenReturn(new RecordMetadata(null, 0, 0, 0, 0L, 1, 1));
         return mock;
-    }
-
-    @Bean
-    public AktorOppslagClient aktorOppslagClient() {
-        return new AktorOppslackMock();
     }
 
     @Bean
