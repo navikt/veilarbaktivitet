@@ -16,17 +16,17 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class BrukernotifikasjoService {
+public class BrukernotifikasjonService {
     private final KafkaTemplate<Nokkel, Oppgave> producerClient;
     @Value("${app.env.brukernotifikasjon.bestillingstoppic}")
     private final String brukernotifikasjontoppic;
@@ -34,24 +34,29 @@ public class BrukernotifikasjoService {
     private final String aktivitetsplanBasepath;
     private final AuthService authService;
     private final OppfolgingV2Client oppfolgingClient;
+    private final VarselDAO varselDAO;
 
+    @Transactional
     public void sendOppgavePaaAktivitet(
             long aktivitetId,
             Person.AktorId aktorId,
             String tekst,
             Varseltype varseltype
     ) {
-        Nokkel nokkel = new Nokkel("srvveilarbaktivitet", UUID.randomUUID().toString());
+        String uuid = UUID.randomUUID().toString();
+        Nokkel nokkel = new Nokkel("srvveilarbaktivitet", uuid);
         Person.Fnr fnr = authService
                 .getFnrForAktorId(aktorId)
-                .orElseThrow(() -> new IllegalArgumentException("ugyldig aktirId"));
+                .orElseThrow(() -> new IllegalArgumentException("ugyldig aktorId"));
 
         OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.getGjeldendePeriode(aktorId)
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
 
+        varselDAO.opprettVarsel(uuid, aktivitetId, fnr, oppfolging.getUuid(), varseltype, VarselStatus.FORSOKT_SENDT);
+
         Oppgave oppgave = createOppgave(aktivitetId, fnr, tekst, oppfolging.getUuid().toString());
-        final ProducerRecord<Nokkel, Oppgave> record = new ProducerRecord<>(brukernotifikasjontoppic, nokkel, oppgave);
-        producerClient.send(record);
+        final ProducerRecord<Nokkel, Oppgave> kafkaMelding = new ProducerRecord<>(brukernotifikasjontoppic, nokkel, oppgave);
+        producerClient.send(kafkaMelding);
     }
 
     private Oppgave createOppgave(

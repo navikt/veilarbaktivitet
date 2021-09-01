@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjoService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.Varseltype;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -35,7 +35,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final OppfolgingV2Client oppfolgingClient;
     private final ManuellStatusV2Client manuellStatusClient;
-    private final BrukernotifikasjoService brukernotifikasjoService;
+    private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
@@ -79,7 +79,7 @@ public class OpprettForesporselOmDelingAvCv {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
             producerClient.sendOpprettet(aktivitet);
-            brukernotifikasjoService.sendOppgavePaaAktivitet(aktivitet.getId(), aktorId, "TODO tekst", Varseltype.stilling_fra_nav);
+            brukernotifikasjonService.sendOppgavePaaAktivitet(aktivitet.getId(), aktorId, "TODO tekst", Varseltype.stilling_fra_nav);
             producerClient.sendVarslet(aktivitet);
         }
     }
