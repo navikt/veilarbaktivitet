@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
-import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,28 +22,50 @@ public class StillingFraNavProducerClient {
         this.topicUt = topicUt;
     }
 
-    void sendIkkeOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(TilstandEnum.KAN_IKKE_OPPRETTE, melding, aktivitetData);
+    void sendIkkeOpprettet(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.KAN_IKKE_OPPRETTE, aktivitetData);
     }
 
-    void sendOpprettetIkkeVarslet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(TilstandEnum.KAN_IKKE_VARSLE, melding, aktivitetData);
+    void sendOpprettetIkkeVarslet(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.KAN_IKKE_VARSLE, aktivitetData);
     }
 
-    void sendOpprettet(AktivitetData aktivitetData, ForesporselOmDelingAvCv melding) {
-        sendRespons(TilstandEnum.PROVER_VARSLING, melding, aktivitetData);
+    void sendOpprettet(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.PROVER_VARSLING, aktivitetData);
+    }
+    void sendSvart(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.HAR_SVART, aktivitetData);
     }
 
-    private void sendRespons(TilstandEnum tilstand, ForesporselOmDelingAvCv melding, AktivitetData aktivitetData) {
+    private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
         DelingAvCvRespons delingAvCvRespons = new DelingAvCvRespons();
-        delingAvCvRespons.setBestillingsId(melding.getBestillingsId());
-        delingAvCvRespons.setAktorId(melding.getAktorId());
+        delingAvCvRespons.setBestillingsId(aktivitetData.getStillingFraNavData().getBestillingsId());
+        delingAvCvRespons.setAktorId(aktivitetData.getAktorId());
         delingAvCvRespons.setAktivitetId(aktivitetData.getId() != null ? aktivitetData.getId().toString() : null);
         delingAvCvRespons.setTilstand(tilstand);
-        delingAvCvRespons.setSvar(null);
 
+        delingAvCvRespons.setSvar(getSvar(aktivitetData.getStillingFraNavData().getCvKanDelesData()));
 
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
+
+    private Svar getSvar(CvKanDelesData cvKanDelesData) {
+        if(cvKanDelesData == null) {
+            return null;
+        } else {
+            Svar svar = new Svar();
+            svar.setSvar(cvKanDelesData.kanDeles);
+            Ident ident = new Ident();
+            ident.setIdent(cvKanDelesData.endretAv);
+            if(cvKanDelesData.getEndretAvType() == InnsenderData.NAV) {
+                ident.setIdentType(IdentTypeEnum.NAV_IDENT);
+            } else {
+                ident.setIdentType(IdentTypeEnum.AKTOR_ID);
+            }
+            return svar;
+        }
+    }
+
+
 }

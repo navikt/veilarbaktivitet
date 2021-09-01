@@ -58,7 +58,7 @@ public class StillingFraNavControllerTest {
     @Mock
     private DelingAvCvDAO delingAvCvDAO;
 
-    private DelingAvCvService delingAvCvService = new DelingAvCvService(delingAvCvDAO, authService, aktivitetService);
+    private DelingAvCvService delingAvCvService = new DelingAvCvService(delingAvCvDAO, authService, aktivitetService, mock(StillingFraNavProducerClient.class));
     private StillingFraNavController stillingFraNavController = new StillingFraNavController(authService, appService, delingAvCvService);
 
     @Rule

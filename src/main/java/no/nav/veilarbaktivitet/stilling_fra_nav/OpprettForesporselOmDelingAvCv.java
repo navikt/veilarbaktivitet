@@ -66,7 +66,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitetData = map(melding);
 
         if (!underOppfolging || underKvp) {
-            producerClient.sendIkkeOpprettet(aktivitetData, melding);
+            producerClient.sendIkkeOpprettet(aktivitetData);
             return;
         }
 
@@ -75,9 +75,9 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitet, melding );
+            producerClient.sendOpprettetIkkeVarslet(aktivitet );
         } else {
-            producerClient.sendOpprettet(aktivitet, melding);
+            producerClient.sendOpprettet(aktivitet);
         }
     }
 

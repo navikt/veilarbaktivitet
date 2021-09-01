@@ -19,6 +19,7 @@ public class DelingAvCvService {
     private final DelingAvCvDAO delingAvCvDAO;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
+    private final StillingFraNavProducerClient stillingFraNavProducerClient;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
         return delingAvCvDAO.eksistererDelingAvCv(bestillingsId);
@@ -40,17 +41,21 @@ public class DelingAvCvService {
         aktivitetService.oppdaterAktivitet(aktivitetData, aktivitetData.withStillingFraNavData(stillingFraNavData), innloggetBruker);
         var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
 
+        var statusOppdatering = aktivitetMedCvSvar.toBuilder();
+
         if (kanDeles) {
-            return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, aktivitetMedCvSvar.withStatus(AktivitetStatus.GJENNOMFORES), innloggetBruker);
+            statusOppdatering.status(AktivitetStatus.GJENNOMFORES);
         }
         else {
-            var nyAktivitet = aktivitetMedCvSvar
-                    .withStatus(AktivitetStatus.AVBRUTT)
-                    .withAvsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
-
-            return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, nyAktivitet, innloggetBruker);
+            statusOppdatering
+                    .status(AktivitetStatus.AVBRUTT)
+                    .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
         }
 
+        AktivitetData endligAktivitet = aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
+        stillingFraNavProducerClient.sendSvart(endligAktivitet);
+
+        return endligAktivitet;
     }
 
 
