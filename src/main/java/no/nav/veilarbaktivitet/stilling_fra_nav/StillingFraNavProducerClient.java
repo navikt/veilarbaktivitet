@@ -33,6 +33,11 @@ public class StillingFraNavProducerClient {
     void sendOpprettet(AktivitetData aktivitetData) {
         sendRespons(TilstandEnum.PROVER_VARSLING, aktivitetData);
     }
+
+    void sendVarslet(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.HAR_VARSLET, aktivitetData);
+    }
+
     void sendSvart(AktivitetData aktivitetData) {
         sendRespons(TilstandEnum.HAR_SVART, aktivitetData);
     }

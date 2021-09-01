@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjoService;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
@@ -34,7 +35,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final OppfolgingV2Client oppfolgingClient;
     private final ManuellStatusV2Client manuellStatusClient;
-    private final KvpV2Client kvpClient;
+    private final BrukernotifikasjoService brukernotifikasjoService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
@@ -75,9 +76,11 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitet );
+            producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
             producerClient.sendOpprettet(aktivitet);
+            brukernotifikasjoService.sendOppgavePaaAktivitet();
+            producerClient.sendVarslet(aktivitet);
         }
     }
 
