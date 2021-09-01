@@ -1,5 +1,11 @@
 package no.nav.veilarbaktivitet.util;
 
+import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
+
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
@@ -27,6 +33,22 @@ public class WireMockUtil {
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBody("{\"erUnderOppfolging\":" + underOppfolging + "}")));
+
+        if (underOppfolging) {
+            String body = JsonUtils.toJson(OppfolgingPeriodeMinimalDTO.builder()
+                    .startDato(ZonedDateTime.now().minusDays(5))
+                    .uuid(UUID.randomUUID())
+                    .build());
+
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
+                    .willReturn(ok()
+                            .withHeader("Content-Type", "text/json")
+                            .withBody(body)));
+
+        } else {
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
+                    .willReturn(aResponse().withStatus(204)));
+        }
     }
 
     private static void nivaa4(String fnr, boolean harBruktNivaa4) {
@@ -86,6 +108,4 @@ public class WireMockUtil {
                         "  }" +
                         "}")));
     }
-
-
 }

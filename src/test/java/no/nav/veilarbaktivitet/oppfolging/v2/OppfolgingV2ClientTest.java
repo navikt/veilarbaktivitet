@@ -45,7 +45,7 @@ public class OppfolgingV2ClientTest {
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(OPPFOLGING_RESPONS)));
-        Optional<OppfolgingV2DTO> oppfolgingV2Response = oppfolgingV2Client.get(AKTORID);
+        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingV2Response = oppfolgingV2Client.getUnderoppfolging(AKTORID);
 
         assertThat(oppfolgingV2Response).get()
                 .hasFieldOrPropertyWithValue("erUnderOppfolging", true);
@@ -57,7 +57,7 @@ public class OppfolgingV2ClientTest {
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));
-        Exception exception = assertThrows(ResponseStatusException.class, () -> oppfolgingV2Client.get(AKTORID));
+        Exception exception = assertThrows(ResponseStatusException.class, () -> oppfolgingV2Client.getUnderoppfolging(AKTORID));
         MatcherAssert.assertThat(exception.getMessage(), containsString("Uventet status 400"));
     }
 }
