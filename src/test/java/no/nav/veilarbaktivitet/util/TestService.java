@@ -62,4 +62,15 @@ public class TestService {
                 .build();
         assertEquals(aktivitetDTO, actual);
     }
+
+    public void assertOppdatertAktivitet(AktivitetDTO expected, AktivitetDTO actual) {
+        AktivitetDTO aktivitetDTO = expected.toBuilder()
+                .versjon(actual.getVersjon())
+                .endretDato(actual.getEndretDato())
+                .endretAv(actual.getEndretAv())
+                .lagtInnAv(actual.getLagtInnAv())
+                .transaksjonsType(actual.getTransaksjonsType())
+                .build();
+        assertEquals(aktivitetDTO, actual);
+    }
 }

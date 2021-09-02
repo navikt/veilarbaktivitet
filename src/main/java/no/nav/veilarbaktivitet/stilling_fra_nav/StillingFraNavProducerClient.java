@@ -63,11 +63,13 @@ public class StillingFraNavProducerClient {
             svar.setSvar(cvKanDelesData.kanDeles);
             Ident ident = new Ident();
             ident.setIdent(cvKanDelesData.endretAv);
+            svar.setSvarTidspunkt(cvKanDelesData.getEndretTidspunkt().toInstant());
             if(cvKanDelesData.getEndretAvType() == InnsenderData.NAV) {
                 ident.setIdentType(IdentTypeEnum.NAV_IDENT);
             } else {
                 ident.setIdentType(IdentTypeEnum.AKTOR_ID);
             }
+            svar.setSvartAv(ident);
             return svar;
         }
     }

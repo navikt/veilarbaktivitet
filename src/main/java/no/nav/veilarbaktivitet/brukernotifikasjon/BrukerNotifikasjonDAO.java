@@ -41,7 +41,7 @@ class BrukerNotifikasjonDAO {
                 params);
     }
 
-    private final List<VarselStatus> skalIkkeAvsluttes = List.of(VarselStatus.SKAL_AVSLUTTES, VarselStatus.AVSLUTTET);
+    private final List<String> skalIkkeAvsluttes = List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name());
 
     long setDone(long aktivitetId, Varseltype varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
