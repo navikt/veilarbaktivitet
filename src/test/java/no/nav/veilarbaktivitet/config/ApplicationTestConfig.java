@@ -1,6 +1,8 @@
 
 package no.nav.veilarbaktivitet.config;
 
+import no.nav.brukernotifikasjon.schemas.Nokkel;
+import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
@@ -22,8 +24,12 @@ import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
+import org.springframework.kafka.transaction.KafkaTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import javax.sql.DataSource;
 
@@ -71,6 +77,13 @@ public class ApplicationTestConfig {
         //TODO fiks metode returner
         KafkaProducerClient mock = mock(KafkaProducerClient.class);
         when(mock.sendSync(any())).thenReturn(new RecordMetadata(null, 0, 0, 0, 0L, 1, 1));
+        return mock;
+    }
+
+    @Bean
+    public KafkaProducerClient<Nokkel, Oppgave> brukernotifiaksjonOppgaveProducer() {
+        KafkaProducerClient mock = mock(KafkaProducerClient.class);
+
         return mock;
     }
 

@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Date;
@@ -41,6 +42,7 @@ public class OpprettForesporselOmDelingAvCv {
 
 
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
+    @Transactional
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
             log.info("ForesporselOmDelingAvCv med bestillingsId {} har allerede en aktivitet", melding.getBestillingsId());
@@ -78,9 +80,8 @@ public class OpprettForesporselOmDelingAvCv {
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
+            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, "TODO tekst", Varseltype.stilling_fra_nav); //TODO finn riktig tekst
             producerClient.sendOpprettet(aktivitet);
-            brukernotifikasjonService.sendOppgavePaaAktivitet(aktivitet.getId(), aktorId, "TODO tekst", Varseltype.stilling_fra_nav);
-            producerClient.sendVarslet(aktivitet);
         }
     }
 

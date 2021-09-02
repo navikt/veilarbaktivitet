@@ -8,15 +8,15 @@ import no.nav.brukernotifikasjon.schemas.builders.OppgaveBuilder;
 
 
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
+import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.service.AuthService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -27,24 +27,25 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class BrukernotifikasjonService {
-    private final KafkaTemplate<Nokkel, Oppgave> producerClient;
-    @Value("${app.env.brukernotifikasjon.bestillingstoppic}")
-    private final String brukernotifikasjontoppic;
+    @Value("${topic.ut.brukernotifikasjon.oppgave}")
+    private String brukernotifikasjontoppic;
     @Value("${app.env.aktivitetsplan.basepath}")
-    private final String aktivitetsplanBasepath;
+    private String aktivitetsplanBasepath;
     private final AuthService authService;
     private final OppfolgingV2Client oppfolgingClient;
-    private final VarselDAO varselDAO;
+    private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
+    private final Credentials serviceUserCredentials;
+    private final KafkaProducerClient<Nokkel, Oppgave> producer;
 
-    @Transactional
-    public void sendOppgavePaaAktivitet(
+    public void opprettOppgavePaaAktivitet(
             long aktivitetId,
+            long aktitetVersion,
             Person.AktorId aktorId,
             String tekst,
             Varseltype varseltype
     ) {
-        String uuid = UUID.randomUUID().toString();
-        Nokkel nokkel = new Nokkel("srvveilarbaktivitet", uuid);
+        UUID uuid = UUID.randomUUID();
+
         Person.Fnr fnr = authService
                 .getFnrForAktorId(aktorId)
                 .orElseThrow(() -> new IllegalArgumentException("ugyldig aktorId"));
@@ -52,11 +53,15 @@ public class BrukernotifikasjonService {
         OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.getGjeldendePeriode(aktorId)
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
 
-        varselDAO.opprettVarsel(uuid, aktivitetId, fnr, oppfolging.getUuid(), varseltype, VarselStatus.FORSOKT_SENDT);
+        brukerNotifikasjonDAO.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING);
+    }
 
+    //TODO trigger denne.
+    private void sendOppgave(long aktivitetId, String tekst, UUID uuid, Person.Fnr fnr, OppfolgingPeriodeMinimalDTO oppfolging) {
+        Nokkel nokkel = new Nokkel(serviceUserCredentials.username, uuid.toString());
         Oppgave oppgave = createOppgave(aktivitetId, fnr, tekst, oppfolging.getUuid().toString());
         final ProducerRecord<Nokkel, Oppgave> kafkaMelding = new ProducerRecord<>(brukernotifikasjontoppic, nokkel, oppgave);
-        producerClient.send(kafkaMelding);
+        producer.send(kafkaMelding);
     }
 
     private Oppgave createOppgave(
@@ -66,9 +71,9 @@ public class BrukernotifikasjonService {
             String oppfolgingsPeriode
     ) {
         URL link = crateAktivitetLink(aktivitetId);
-        int sikkerhetsnivaa = 4; //TODO kan vi bruke nivaa 3?
+        int sikkerhetsnivaa = 3;
         return new OppgaveBuilder()
-                .withTidspunkt(LocalDateTime.now()) //TODO fiks tidsone finn ut av denene
+                .withTidspunkt(LocalDateTime.now())//TODO fiks tidsone finn ut av denene
                 .withFodselsnummer(fnr.toString())
                 .withGrupperingsId(oppfolgingsPeriode)
                 .withTekst(tekst)

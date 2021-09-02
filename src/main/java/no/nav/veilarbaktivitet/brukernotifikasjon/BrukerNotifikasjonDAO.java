@@ -11,28 +11,32 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class VarselDAO {
+class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public void opprettVarsel(
-            String varselId,
+    void opprettBrukernotifikasjon(
+            UUID brukernotifikasjonId,
             long aktivitetId,
+            long aktitetVersion,
             Person.Fnr foedselsnummer,
+            String melding,
             UUID oppfolgingsperiode,
             Varseltype type,
             VarselStatus status
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("varsel_id", varselId)
+                .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
                 .addValue("aktivitet_id", aktivitetId)
+                .addValue("aktivitet_version", aktitetVersion)
                 .addValue("foedselsnummer", foedselsnummer.get())
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
-                .addValue("status", status.name());
+                .addValue("status", status.name())
+                .addValue("melding", melding);
         jdbcTemplate.update("" +
-                        " INSERT INTO varsel (varsel_id, aktivitet_id, foedselsnummer, oppfolgingsperiode, varsel_type, varsel_status, sendt) " +
-                        " VALUES (:varsel_id, :aktivitet_id, :foedselsnummer, :oppfolgingsperiode, :varsel_type, :varsel_status, CURRENT_TIMESTAMP) ",
+                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, sendt, melding) " +
+                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
                 params);
     }
 }

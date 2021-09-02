@@ -24,13 +24,16 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -43,7 +46,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
+@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}", "${topic.ut.stillingFraNav}"}, partitions = 1)
 @AutoConfigureWireMock(port = 0)
 @Slf4j
 public class DelingAvCvITest {
@@ -51,6 +54,9 @@ public class DelingAvCvITest {
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
+
+    @LocalServerPort
+    private int port;
 
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
@@ -103,6 +109,8 @@ public class DelingAvCvITest {
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
+
+
     }
 
     @Test
@@ -196,8 +204,9 @@ public class DelingAvCvITest {
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
 
+
+        producer.send(innTopic, melding.getBestillingsId(), melding);
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
