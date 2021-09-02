@@ -16,4 +16,4 @@ create table brukernotifikasjon
 );
 
 create index brukernotifikasjon_aktivitet_idx on brukernotifikasjon (aktivitet_id);
-create index brukernotifikasjon_status_idx on brukernotifikasjon (varsel_status);
+create index brukernotifikasjon_status_idx on brukernotifikasjon (status);

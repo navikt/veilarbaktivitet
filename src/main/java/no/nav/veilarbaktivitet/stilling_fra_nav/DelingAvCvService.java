@@ -1,11 +1,12 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.AllArgsConstructor;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.Varseltype;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AktivitetAppService;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class DelingAvCvService {
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
+    private final BrukernotifikasjonService brukernotifikasjonService;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
         return delingAvCvDAO.eksistererDelingAvCv(bestillingsId);
@@ -53,6 +55,7 @@ public class DelingAvCvService {
         }
 
         AktivitetData endligAktivitet = aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
+        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), Varseltype.stilling_fra_nav);
         stillingFraNavProducerClient.sendSvart(endligAktivitet);
 
         return endligAktivitet;

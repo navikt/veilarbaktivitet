@@ -37,7 +37,14 @@ public class BrukernotifikasjonService {
     private final Credentials serviceUserCredentials;
     private final KafkaProducerClient<Nokkel, Oppgave> producer;
 
-    public void opprettOppgavePaaAktivitet(
+    public void oppgaveDone(
+            long aktivitetId,
+            Varseltype varseltype
+    ) {
+        brukerNotifikasjonDAO.setDone(aktivitetId, varseltype);
+    }
+
+    public UUID opprettOppgavePaaAktivitet(
             long aktivitetId,
             long aktitetVersion,
             Person.AktorId aktorId,
@@ -54,6 +61,8 @@ public class BrukernotifikasjonService {
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
 
         brukerNotifikasjonDAO.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING);
+
+        return uuid;
     }
 
     //TODO trigger denne.

@@ -3,14 +3,20 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import io.restassured.RestAssured;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.MockBruker;
+import no.nav.veilarbaktivitet.util.TestService;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -19,6 +25,7 @@ import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
@@ -51,9 +59,14 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class DelingAvCvITest {
 
+    @Autowired
+    TestService testService;
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
+
+    @Autowired
+    JdbcTemplate jdbc;
 
     @LocalServerPort
     private int port;
@@ -86,6 +99,12 @@ public class DelingAvCvITest {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
 
+    @Before
+    public void cleanupBetweenTests() {
+        DbTestUtils.cleanupTestDb(jdbc);
+
+    }
+
     @Test
     public void happy_case() {
         final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
@@ -101,7 +120,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -110,6 +129,16 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
+        AktivitetsplanDTO aktivitetsplanDTO = testService.gettAktiviteter(port, mockBruker.getFnr());
+
+        assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
+        AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
+
+        //TODO skriv bedre test
+        assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
+        assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
+        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
+        assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
 
     }
 
@@ -129,7 +158,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNull();
@@ -156,7 +185,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNull();
@@ -183,7 +212,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -211,7 +240,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -237,7 +266,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -263,7 +292,7 @@ public class DelingAvCvITest {
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
@@ -319,8 +348,8 @@ public class DelingAvCvITest {
     }
 
     @SuppressWarnings("rawtypes")
-    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                               Class<? extends Deserializer> valueDeserializer) {
+    private <K, V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
+                                                Class<? extends Deserializer> valueDeserializer) {
         // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
 
         final Map<String, Object> consumerProps = KafkaTestUtils

@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -37,6 +38,20 @@ class BrukerNotifikasjonDAO {
         jdbcTemplate.update("" +
                         " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, sendt, melding) " +
                         " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
+                params);
+    }
+
+    private final List<VarselStatus> skalIkkeAvsluttes = List.of(VarselStatus.SKAL_AVSLUTTES, VarselStatus.AVSLUTTET);
+
+    long setDone(long aktivitetId, Varseltype varseltype) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("status", VarselStatus.SKAL_AVSLUTTES.name())
+                .addValue("type", varseltype.name())
+                .addValue("statuses", skalIkkeAvsluttes);
+
+        return jdbcTemplate.update("" +
+                        " Update brukernotifikasjon set status=:status where aktivitet_id=:aktivitetId and type = :type and status not in (:statuses)",
                 params);
     }
 }

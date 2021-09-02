@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.util;
 import io.restassured.response.Response;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +13,19 @@ import static org.junit.Assert.assertNotNull;
 
 @Service
 public class TestService {
+
+    public AktivitetsplanDTO gettAktiviteter(int port, String fnr) {
+        Response response = given()
+                .header("Content-type", "application/json")
+                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet?fnr=" + fnr)
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+
+        return response.as(AktivitetsplanDTO.class);
+    }
 
     public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         WireMockUtil.stubBruker(mockBruker);
