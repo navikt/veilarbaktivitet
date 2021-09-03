@@ -86,16 +86,6 @@ public class DelingAvCvITest {
 
     Consumer<String, DelingAvCvRespons> consumer;
 
-    public Consumer<String, DelingAvCvRespons> createConsumer() {
-        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
-                StringDeserializer.class,
-                KafkaAvroDeserializer.class
-        );
-        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(Duration.ofSeconds(1)); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        return consumer;
-    }
-
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
@@ -113,12 +103,13 @@ public class DelingAvCvITest {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         consumer.subscribe(List.of(utTopic));
-        consumer.poll(Duration.ofMillis(1));
+        consumer.commitSync(Duration.ofSeconds(1));
+        consumer.poll(Duration.ofMillis(10));
     }
 
     @Test
     public void happy_case() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         WireMockUtil.stubBruker(mockBruker);
@@ -207,7 +198,7 @@ public class DelingAvCvITest {
 
     @Test
     public void under_manuell_oppfolging() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setErManuell(true);
@@ -234,7 +225,7 @@ public class DelingAvCvITest {
 
     @Test
     public void reservert_i_krr() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setErReservertKrr(true);
@@ -262,7 +253,7 @@ public class DelingAvCvITest {
 
     @Test
     public void mangler_nivaa4() {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
 
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setHarBruktNivaa4(false);
