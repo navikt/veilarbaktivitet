@@ -8,6 +8,7 @@ import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -20,6 +21,9 @@ class BrukernotifikasjonProducer {
 
     public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
+    @Value("${spring.kafka.properties.schema.registry.url}")
+    private String schemaRegistryUrl;
+
     @Bean
     KafkaProducerClient<Nokkel, Oppgave> brukernotifiaksjonOppgaveProducer(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials, MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<Nokkel, Oppgave>builder()
@@ -29,6 +33,7 @@ class BrukernotifikasjonProducer {
                         io.confluent.kafka.serializers.KafkaAvroSerializer.class)
                 .withAdditionalProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                         io.confluent.kafka.serializers.KafkaAvroSerializer.class)
+                .withAdditionalProperty("schema.registry.url", schemaRegistryUrl)
                 .build();
     }
 }
