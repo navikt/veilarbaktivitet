@@ -42,7 +42,6 @@ public class OpprettForesporselOmDelingAvCv {
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
-    @Transactional
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
             log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());

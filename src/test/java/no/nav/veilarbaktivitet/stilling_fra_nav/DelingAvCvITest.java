@@ -42,6 +42,7 @@ import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -58,6 +59,8 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class DelingAvCvITest {
 
+    @Autowired
+    TestService testService;
 
     @Autowired
     EmbeddedKafkaBroker embeddedKafka;
@@ -114,7 +117,7 @@ public class DelingAvCvITest {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         consumer.subscribe(List.of(utTopic));
-
+        consumer.poll(Duration.ofMillis(1));
     }
 
     @Test
@@ -315,28 +318,7 @@ public class DelingAvCvITest {
         assertEquals("No records found for topic", exception.getMessage());
     }
 
-    private <K,V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                               Class<? extends Deserializer> valueDeserializer) {
-        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
-
-        final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
-        // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        // We need to match the ser/deser used in expected application config
-        consumerProps
-                .put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps
-                .put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
-        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-
-        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProps);
-        return consumerFactory.createConsumer();
-    }
-
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId) {
+    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
         return ForesporselOmDelingAvCv.newBuilder()
                 .setAktorId(aktorId)
                 .setArbeidsgiver("arbeidsgiver")
@@ -364,16 +346,6 @@ public class DelingAvCvITest {
                 .setStillingstittel("stillingstittel")
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
                 .build();
-    }
-
-    private Consumer<String, DelingAvCvRespons> createConsumer() {
-        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
-                StringDeserializer.class,
-                KafkaAvroDeserializer.class
-        );
-        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        return consumer;
     }
 
     @SuppressWarnings("rawtypes")
