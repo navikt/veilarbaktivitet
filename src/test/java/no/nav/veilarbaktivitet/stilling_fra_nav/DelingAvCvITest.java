@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -21,7 +20,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -120,8 +118,6 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case() {
-
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         WireMockUtil.stubBruker(mockBruker);
 
@@ -157,7 +153,6 @@ public class DelingAvCvITest {
 
     @Test
     public void ikke_under_oppfolging() {
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setUnderOppfolging(false);
         WireMockUtil.stubBruker(mockBruker);
@@ -182,7 +177,6 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_kvp() {
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setUnderOppfolging(true);
         mockBruker.setErUnderKvp(true);
@@ -209,7 +203,6 @@ public class DelingAvCvITest {
 
     @Test
     public void under_manuell_oppfolging() {
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setErManuell(true);
         WireMockUtil.stubBruker(mockBruker);
@@ -235,8 +228,6 @@ public class DelingAvCvITest {
 
     @Test
     public void reservert_i_krr() {
-
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setErReservertKrr(true);
         WireMockUtil.stubBruker(mockBruker);
@@ -263,8 +254,6 @@ public class DelingAvCvITest {
 
     @Test
     public void mangler_nivaa4() {
-
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setHarBruktNivaa4(false);
         WireMockUtil.stubBruker(mockBruker);
@@ -289,7 +278,6 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         WireMockUtil.stubBruker(mockBruker);
 
@@ -300,7 +288,7 @@ public class DelingAvCvITest {
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
-        SoftAssertions.assertSoftly( assertions -> {
+        SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
