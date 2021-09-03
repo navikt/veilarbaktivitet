@@ -103,8 +103,8 @@ public class DelingAvCvITest {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
         consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         consumer.subscribe(List.of(utTopic));
-        consumer.commitSync(Duration.ofSeconds(1));
         consumer.poll(Duration.ofMillis(10));
+        consumer.commitSync(Duration.ofSeconds(1));
     }
 
     @Test
@@ -119,7 +119,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -156,7 +156,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -182,7 +182,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -199,7 +199,6 @@ public class DelingAvCvITest {
     @Test
     public void under_manuell_oppfolging() {
 
-
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
         mockBruker.setErManuell(true);
         WireMockUtil.stubBruker(mockBruker);
@@ -209,7 +208,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -237,7 +236,7 @@ public class DelingAvCvITest {
 
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -263,7 +262,7 @@ public class DelingAvCvITest {
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -288,7 +287,7 @@ public class DelingAvCvITest {
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly( assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -301,7 +300,7 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 10000));
         assertEquals("No records found for topic", exception.getMessage());
     }
 
