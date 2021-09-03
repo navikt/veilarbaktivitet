@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 @Service
+@Slf4j
 public class AuthService {
 
     private final AuthContextHolder authContextHolder;
@@ -53,7 +55,7 @@ public class AuthService {
     }
 
     public void sjekkTilgangOgInternBruker(String aktorid, String enhet) {
-        if(!authContextHolder.erInternBruker()) {
+        if (!authContextHolder.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         sjekkTilgang(aktorid, enhet);
@@ -62,15 +64,15 @@ public class AuthService {
     public void sjekkTilgang(String aktorid, String enhet) {
         sjekkTilgangTilPerson(Person.aktorId(aktorid));
 
-        if(!sjekKvpTilgang(enhet)) {
+        if (!sjekKvpTilgang(enhet)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }
 
-    private String getAktorIdForPerson(Person person){
+    private String getAktorIdForPerson(Person person) {
         if (person instanceof Person.AktorId) {
             return person.get();
-        } else if (person instanceof  Person.Fnr){
+        } else if (person instanceof Person.Fnr) {
             return aktorOppslagClient.hentAktorId(Fnr.of(person.get())).get();
         }
 
@@ -79,7 +81,7 @@ public class AuthService {
 
     public Optional<Person.AktorId> getAktorIdForPersonBrukerService(Person person) {
         if (person instanceof Person.AktorId) {
-            return Optional.of((Person.AktorId)person);
+            return Optional.of((Person.AktorId) person);
         }
         var aktorId = aktorOppslagClient.hentAktorId(Fnr.of(person.get())).get();
         return Optional.ofNullable(aktorId).map(Person::aktorId);
@@ -93,9 +95,9 @@ public class AuthService {
         return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), EnhetId.of(enhet));
     }
 
-    public Optional<Person.Fnr> getFnrForAktorId(Person.AktorId aktorId) {
+    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) {
         var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId.get())).get();
-        return Optional.ofNullable(fnr).map(Person::fnr);
+        return Optional.ofNullable(fnr).map(Person::fnr).orElseThrow(() -> new RuntimeException("aktorOppslagClient skal aldri returnere null"));
     }
 
     public void sjekkVeilederHarSkriveTilgangTilPerson(String aktorId) {

@@ -34,7 +34,7 @@ public class ManuellStatusV2ClientTest {
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         AuthService authService = Mockito.mock(AuthService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
+        when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, authService);
         manuellStatusV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }

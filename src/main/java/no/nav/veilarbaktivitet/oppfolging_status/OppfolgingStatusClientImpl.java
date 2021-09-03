@@ -26,7 +26,7 @@ public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
     private String baseUrl;
 
     public Optional<OppfolgingStatusDTO> get(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         if (fnr.get() == null) {
             log.error("OppfolgingStatusClientImpl.get Fnr er null");

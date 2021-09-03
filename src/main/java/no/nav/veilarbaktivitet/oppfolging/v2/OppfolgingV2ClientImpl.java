@@ -27,7 +27,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     private String baseUrl;
 
     public Optional<OppfolgingV2UnderOppfolgingDTO> getUnderoppfolging(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
@@ -43,7 +43,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
 
     @Override
     public Optional<OppfolgingPeriodeMinimalDTO> getGjeldendePeriode(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()

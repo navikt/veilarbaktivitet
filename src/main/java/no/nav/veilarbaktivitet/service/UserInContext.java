@@ -36,7 +36,7 @@ public class UserInContext {
         }
 
         if (person instanceof Person.AktorId) {
-            return authService.getFnrForAktorId((Person.AktorId)person);
+            return Optional.of(authService.getFnrForAktorId((Person.AktorId) person));
         }
 
         return Optional.empty();

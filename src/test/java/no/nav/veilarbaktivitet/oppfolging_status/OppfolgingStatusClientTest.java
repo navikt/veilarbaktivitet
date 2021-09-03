@@ -35,7 +35,7 @@ public class OppfolgingStatusClientTest {
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         AuthService authService = Mockito.mock(AuthService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
+        when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingStatusClient = new OppfolgingStatusClientImpl(okHttpClient, authService);
         oppfolgingStatusClient.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
