@@ -18,6 +18,8 @@ import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.PartitionInfo;
+import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -101,8 +104,14 @@ public class DelingAvCvITest {
         String randomGroup = UUID.randomUUID().toString();
         Properties modifisertConfig = new Properties();
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
         consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
-        consumer.subscribe(List.of(utTopic));
+
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(utTopic);
+        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(utTopic, f.partition())).collect(Collectors.toList());
+
+        consumer.assign(collect);
+        consumer.seekToEnd(collect);
         consumer.poll(Duration.ofMillis(10));
         consumer.commitSync(Duration.ofSeconds(1));
     }
