@@ -92,8 +92,7 @@ public class DelingAvCvITest {
                 KafkaAvroDeserializer.class
         );
         embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        consumer.poll(Duration.ofMillis(1));
+        consumer.commitSync(Duration.ofSeconds(1)); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
         return consumer;
     }
 
