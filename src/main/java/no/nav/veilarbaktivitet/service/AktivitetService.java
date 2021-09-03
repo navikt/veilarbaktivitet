@@ -88,7 +88,6 @@ public class AktivitetService {
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
-
     }
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {

@@ -7,6 +7,7 @@ import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
@@ -43,23 +44,23 @@ public class StillingFraNavControllerTest {
     private final Database database = new Database(jdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-    private KvpV2Client kvpClient = mock(KvpV2Client.class);
-    private KvpService kvpService = new KvpService(kvpClient);
-    private MetricService metricService = mock(MetricService.class);
-    private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
+    private final KvpV2Client kvpClient = mock(KvpV2Client.class);
+    private final KvpService kvpService = new KvpService(kvpClient);
+    private final MetricService metricService = mock(MetricService.class);
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
+    private final AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
 
-    private AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
-    private AuthService authService = mock(AuthService.class);
-    private ArenaService arenaService = mock(ArenaService.class);
-    private AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
+    private final AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
+    private final AuthService authService = mock(AuthService.class);
+    private final ArenaService arenaService = mock(ArenaService.class);
+    private final AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
 
     @Mock
     private DelingAvCvDAO delingAvCvDAO;
 
-    private DelingAvCvService delingAvCvService = new DelingAvCvService(delingAvCvDAO, authService, aktivitetService);
-    private StillingFraNavController stillingFraNavController = new StillingFraNavController(authService, appService, delingAvCvService);
+    private final DelingAvCvService delingAvCvService = new DelingAvCvService(delingAvCvDAO, authService, aktivitetService, mock(StillingFraNavProducerClient.class), mock(BrukernotifikasjonService.class));
+    private final StillingFraNavController stillingFraNavController = new StillingFraNavController(authService, appService, delingAvCvService);
 
     @Rule
     public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));

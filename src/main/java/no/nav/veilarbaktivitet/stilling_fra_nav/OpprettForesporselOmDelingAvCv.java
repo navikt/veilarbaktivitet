@@ -2,20 +2,22 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.Varseltype;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
-import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2DTO;
+import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2UnderOppfolgingDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.Date;
@@ -34,12 +36,13 @@ public class OpprettForesporselOmDelingAvCv {
     private final KvpService kvpService;
     private final OppfolgingV2Client oppfolgingClient;
     private final ManuellStatusV2Client manuellStatusClient;
-    private final KvpV2Client kvpClient;
+    private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
 
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
+    @Transactional
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
             log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
@@ -55,10 +58,10 @@ public class OpprettForesporselOmDelingAvCv {
 
         Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);
         Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
-        Optional<OppfolgingV2DTO> oppfolgingResponse = oppfolgingClient.get(aktorId);
-        
+        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
+
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2DTO::isErUnderOppfolging).orElse(false);
+        boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2UnderOppfolgingDTO::isErUnderOppfolging).orElse(false);
         boolean erManuell = manuellStatusResponse.map(ManuellStatusV2DTO::isErUnderManuellOppfolging).orElse(true);
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
@@ -66,7 +69,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitetData = map(melding);
 
         if (!underOppfolging || underKvp) {
-            producerClient.sendIkkeOpprettet(aktivitetData, melding);
+            producerClient.sendIkkeOpprettet(aktivitetData);
             return;
         }
 
@@ -75,9 +78,10 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitet, melding );
+            producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
-            producerClient.sendOpprettet(aktivitet, melding);
+            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, "TODO tekst", Varseltype.stilling_fra_nav); //TODO finn riktig tekst
+            producerClient.sendOpprettet(aktivitet);
         }
     }
 

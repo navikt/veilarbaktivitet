@@ -26,7 +26,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    public Optional<OppfolgingV2DTO> get(Person.AktorId aktorId) {
+    public Optional<OppfolgingV2UnderOppfolgingDTO> getUnderoppfolging(Person.AktorId aktorId) {
         Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
 
         String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
@@ -35,7 +35,26 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
                 .build();
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonResponse(response, OppfolgingV2DTO.class);
+            return RestUtils.parseJsonResponse(response, OppfolgingV2UnderOppfolgingDTO.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+        }
+    }
+
+    @Override
+    public Optional<OppfolgingPeriodeMinimalDTO> getGjeldendePeriode(Person.AktorId aktorId) {
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+
+        String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
+        Request request = new Request.Builder()
+                .url(uri)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                return Optional.empty();
+            }
+            return RestUtils.parseJsonResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }

@@ -12,6 +12,7 @@ import java.util.List;
 public class DbTestUtils {
 
     private static final List<String> ALL_TABLES = Arrays.asList(
+            "BRUKERNOTIFIKASJON",
             "MOTE_SMS_HISTORIKK",
             "STILLING_FRA_NAV",
             "GJELDENDE_MOTE_SMS",

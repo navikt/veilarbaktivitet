@@ -38,7 +38,7 @@ public class StillingFraNavController {
         }
 
         return Optional.of(aktivitet)
-                .map(a -> service.oppdaterSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, erEksternBruker))
+                .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, erEksternBruker))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
     }

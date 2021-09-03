@@ -6,7 +6,7 @@ import lombok.With;
 import java.util.Date;
 
 @Data
-@Builder
+@Builder(toBuilder = true)
 @With
 public class StillingFraNavData {
     CvKanDelesData cvKanDelesData;
@@ -16,5 +16,5 @@ public class StillingFraNavData {
     String bestillingsId;
     String stillingsId;
     String arbeidssted;
-    String varselId;
+    String varselId; // TODO fjerne denne?
 }
