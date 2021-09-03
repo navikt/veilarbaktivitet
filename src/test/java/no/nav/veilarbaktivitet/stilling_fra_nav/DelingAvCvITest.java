@@ -93,6 +93,7 @@ public class DelingAvCvITest {
         );
         embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
         consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
+        consumer.poll(Duration.ofMillis(1));
         return consumer;
     }
 
