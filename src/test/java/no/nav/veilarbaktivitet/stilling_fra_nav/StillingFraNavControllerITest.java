@@ -4,17 +4,11 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.restassured.response.Response;
-import kafka.utils.Json;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
-import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.avro.*;
+import no.nav.veilarbaktivitet.config.FilterTestConfig;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.oppfolging_status.OppfolgingStatusClient;
+import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.MockBruker;
@@ -107,6 +101,9 @@ public class StillingFraNavControllerITest {
                 .kanDeles(true)
                 .build();
 
+        // Kafka consumer for svarmelding til rekrutteringsbistand.
+        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+
         Response response = given()
                 .header("Content-type", "application/json")
                 .and()
@@ -118,7 +115,46 @@ public class StillingFraNavControllerITest {
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
 
-        testService.assertOppdatertAktivitet(aktivitetDTO, response.as(AktivitetDTO.class));
+        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+
+        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
+                .kanDeles(true)
+                .endretAv(FilterTestConfig.NAV_IDENT_ITEST)
+                .endretAvType(InnsenderData.NAV)
+                // kopierer systemgenererte attributter
+                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
+                .build();
+
+
+        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
+
+        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
+
+        testService.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+
+
+        // Sjekk at svarmelding sendt til rekrutteringsbistand
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        Svar expectedSvar = Svar.newBuilder()
+                .setSvar(true)
+                .setSvartAvBuilder(Ident.newBuilder()
+                        .setIdent(FilterTestConfig.NAV_IDENT_ITEST)
+                        .setIdentType(IdentTypeEnum.NAV_IDENT))
+                // kopier systemgenererte felter
+                .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
+                .build();
+
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
+            assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
+            assertions.assertAll();
+        });
     }
 
     private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
@@ -142,7 +178,7 @@ public class StillingFraNavControllerITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testService.gettAktiviteter(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = testService.hentAktiviteterForFnr(port, mockBruker.getFnr());
 
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);

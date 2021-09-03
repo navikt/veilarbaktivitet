@@ -28,7 +28,17 @@ public class DelingAvCvService {
     }
 
     @Transactional
-    public AktivitetData oppdaterSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+    public AktivitetData behandleSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+
+        AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, erEksternBruker);
+
+        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), Varseltype.stilling_fra_nav);
+        stillingFraNavProducerClient.sendSvart(endeligAktivitet);
+
+        return endeligAktivitet;
+    }
+
+    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         var deleCvDetaljer = CvKanDelesData.builder()
@@ -54,12 +64,7 @@ public class DelingAvCvService {
                     .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
         }
 
-        AktivitetData endligAktivitet = aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
-        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), Varseltype.stilling_fra_nav);
-        stillingFraNavProducerClient.sendSvart(endligAktivitet);
-
-        return endligAktivitet;
+        return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
     }
-
 
 }

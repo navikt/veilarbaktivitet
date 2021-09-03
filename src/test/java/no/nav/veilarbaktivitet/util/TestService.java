@@ -14,7 +14,7 @@ import static org.junit.Assert.assertNotNull;
 @Service
 public class TestService {
 
-    public AktivitetsplanDTO gettAktiviteter(int port, String fnr) {
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, String fnr) {
         Response response = given()
                 .header("Content-type", "application/json")
                 .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet?fnr=" + fnr)
@@ -52,6 +52,7 @@ public class TestService {
 
     public void assertOpprettetAktivitet(AktivitetDTO expected, AktivitetDTO actual) {
         AktivitetDTO aktivitetDTO = expected.toBuilder()
+                // overskriv system-genererte attributter
                 .id(actual.getId())
                 .versjon(actual.getVersjon())
                 .opprettetDato(actual.getOpprettetDato())
@@ -60,17 +61,20 @@ public class TestService {
                 .lagtInnAv(actual.getLagtInnAv())
                 .transaksjonsType(actual.getTransaksjonsType())
                 .build();
+        // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);
     }
 
     public void assertOppdatertAktivitet(AktivitetDTO expected, AktivitetDTO actual) {
         AktivitetDTO aktivitetDTO = expected.toBuilder()
+                // overskriv system-genererte attributter
                 .versjon(actual.getVersjon())
                 .endretDato(actual.getEndretDato())
                 .endretAv(actual.getEndretAv())
                 .lagtInnAv(actual.getLagtInnAv())
                 .transaksjonsType(actual.getTransaksjonsType())
                 .build();
+        // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);
     }
 }
