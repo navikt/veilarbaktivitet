@@ -106,8 +106,15 @@ public class DelingAvCvITest {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
         consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
-        consumer.subscribe(List.of(utTopic));
-        consumer.poll(Duration.ofMillis(10));
+
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(utTopic);
+        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(utTopic, f.partition())).collect(Collectors.toList());
+
+        consumer.assign(collect);
+        consumer.seekToEnd(collect);
+
+        collect.forEach(a -> consumer.position(a, Duration.ofSeconds(1)));
+
         consumer.commitSync(Duration.ofSeconds(1));
     }
 
