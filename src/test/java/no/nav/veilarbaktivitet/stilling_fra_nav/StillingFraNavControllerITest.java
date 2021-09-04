@@ -50,7 +50,6 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}", "${topic.ut.stillingFraNav}"}, partitions = 1)
 @AutoConfigureWireMock(port = 0)
 @Slf4j
 public class StillingFraNavControllerITest {
@@ -76,7 +75,6 @@ public class StillingFraNavControllerITest {
     @Value("${spring.kafka.properties.schema.registry.url}")
     private String schemaRegistryUrl;
 
-    /***** Ekte bønner *****/
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
@@ -89,7 +87,6 @@ public class StillingFraNavControllerITest {
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
-
     }
 
     @Test

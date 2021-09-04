@@ -22,7 +22,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Slf4j
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}", "${topic.ut.stillingFraNav}"}, partitions = 1)
 @AutoConfigureWireMock(port = 0)
 @Transactional
 public class AktivitetsplanITest {
