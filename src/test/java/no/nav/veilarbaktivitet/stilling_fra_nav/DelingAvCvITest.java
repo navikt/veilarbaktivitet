@@ -333,24 +333,4 @@ public class DelingAvCvITest {
                 .build();
     }
 
-    @SuppressWarnings("rawtypes")
-    private <K, V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                                Class<? extends Deserializer> valueDeserializer) {
-        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
-
-        final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
-        // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        // We need to match the ser/deser used in expected application config
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
-        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-
-        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProps);
-        return consumerFactory.createConsumer();
-    }
-
 }
