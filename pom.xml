@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.09.02_08.27-2c03845b1b86</common.version>
+        <common.version>2.2021.09.03_14.08-6d71358df566</common.version>
         <confluent.version>6.1.1</confluent.version>
         <quartz.version>2.3.2</quartz.version>
 
@@ -321,6 +321,11 @@
         <dependency>
             <groupId>no.nav.common</groupId>
             <artifactId>types</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
+            <artifactId>kafka</artifactId>
             <version>${common.version}</version>
         </dependency>
         <dependency>
