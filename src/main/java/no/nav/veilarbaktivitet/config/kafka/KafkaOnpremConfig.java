@@ -57,13 +57,13 @@ public class KafkaOnpremConfig {
     @Bean
     @Profile("!dev")
     Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials) {
-        return onPremDefaultProducerProperties(PRODUCER_CLIENT_ID, kafkaOnpremProperties.brokersUrl, credentials);
+        return onPremDefaultProducerProperties(kafkaOnpremProperties.producerClientId, kafkaOnpremProperties.brokersUrl, credentials);
     }
 
     @Bean
     @Profile("!dev")
     Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials) {
-        return onPremDefaultConsumerProperties(CONSUMER_GROUP_ID, kafkaOnpremProperties.getBrokersUrl(), credentials);
+        return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId, kafkaOnpremProperties.getBrokersUrl(), credentials);
     }
 
 }
