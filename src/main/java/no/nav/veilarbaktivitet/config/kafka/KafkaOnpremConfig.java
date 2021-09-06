@@ -3,9 +3,12 @@ package no.nav.veilarbaktivitet.config.kafka;
 import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
+import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
+import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
+import no.nav.veilarbaktivitet.oppfolging.OppfolgingAvsluttetKafkaDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -26,19 +29,21 @@ public class KafkaOnpremConfig {
 
     @Bean
     public KafkaConsumerClient consumerClient(
-            List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> topicConfigs,
-            Properties onPremConsumerProperties,
-            MeterRegistry meterRegistry
+            List<TopicConsumerConfig<?, ?>> topicConfigs,
+            MeterRegistry meterRegistry,
+            Properties onPremConsumerProperties
     ) {
-        List<KafkaConsumerClientBuilder.TopicConfig<?, ?>> config = topicConfigs
+        List<TopicConfig<?,?>> collect = topicConfigs
                 .stream()
+                .map(
+                        it -> new TopicConfig().withConsumerConfig(it))
+                .map(TopicConfig::withLogging)
                 .map(it -> it.withMetrics(meterRegistry))
-                .map(KafkaConsumerClientBuilder.TopicConfig::withLogging)
                 .collect(Collectors.toList());
 
         var client = KafkaConsumerClientBuilder.builder()
                 .withProperties(onPremConsumerProperties)
-                .withTopicConfigs(config)
+                .withTopicConfigs(collect)
                 .build();
 
         client.start();

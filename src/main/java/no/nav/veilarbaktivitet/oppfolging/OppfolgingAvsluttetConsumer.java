@@ -18,7 +18,7 @@ public class OppfolgingAvsluttetConsumer extends TopicConsumerConfig<String, Opp
 
     public OppfolgingAvsluttetConsumer(
             AktivitetService service,
-            @Value("${app.env.oppfolgingAvsluttetTopic}")
+            @Value("${app.kafka.oppfolgingAvsluttetTopic}")
                     String toppic
     ) {
         super();

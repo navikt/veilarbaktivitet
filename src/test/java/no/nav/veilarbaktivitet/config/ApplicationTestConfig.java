@@ -135,22 +135,22 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties) {
-        return KafkaPropertiesBuilder.consumerBuilder()
+    Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties, EmbeddedKafkaBroker embeddedKafka) {
+        return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
-                .withConsumerGroupId(kafkaOnpremProperties.getProducerClientId())
-                .withBrokerUrl(kafkaOnpremProperties.getBrokersUrl())
-                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
+                .withProducerId(kafkaOnpremProperties.getProducerClientId())
+                .withBrokerUrl(embeddedKafka.getBrokersAsString())
+                .withSerializers(StringSerializer.class, StringSerializer.class)
                 .build();
     }
 
     @Bean
-    Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties) {
-        return KafkaPropertiesBuilder.producerBuilder()
+    Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties, EmbeddedKafkaBroker embeddedKafka) {
+        return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
-                .withProducerId(kafkaOnpremProperties.getConsumerGroupId())
-                .withBrokerUrl(kafkaOnpremProperties.getBrokersUrl())
-                .withSerializers(StringSerializer.class, StringSerializer.class)
+                .withConsumerGroupId(kafkaOnpremProperties.getConsumerGroupId())
+                .withBrokerUrl(embeddedKafka.getBrokersAsString())
+                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .build();
     }
 }
