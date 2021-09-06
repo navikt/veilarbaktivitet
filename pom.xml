@@ -340,6 +340,13 @@
             <version>3.3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.1.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>net.sourceforge.collections</groupId>
