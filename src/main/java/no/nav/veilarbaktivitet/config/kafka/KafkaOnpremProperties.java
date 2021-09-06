@@ -12,6 +12,4 @@ import org.springframework.stereotype.Component;
 public class KafkaOnpremProperties {
     String brokersUrl;
     String endringPaaAktivitetTopic;
-    String oppfolgingAvsluttetTopic;
-    String kvpAvsluttetTopic;
 }

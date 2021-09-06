@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging_status;
+package no.nav.veilarbaktivitet.oppfolging.v1;
 
 import no.nav.veilarbaktivitet.domain.Person;
 
