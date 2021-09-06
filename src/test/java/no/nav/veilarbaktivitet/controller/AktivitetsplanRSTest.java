@@ -45,7 +45,6 @@ import static org.mockito.Mockito.when;
  */
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@EmbeddedKafka
 @AutoConfigureWireMock(port = 0)
 public class AktivitetsplanRSTest {
 

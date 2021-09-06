@@ -6,32 +6,35 @@ import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.kvp.KvpClient;
-import no.nav.veilarbaktivitet.mock.AktorOppslackMock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import okhttp3.OkHttpClient;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
-import org.springframework.data.transaction.ChainedTransactionManager;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.transaction.KafkaTransactionManager;
-import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaProducerFactory;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import javax.sql.DataSource;
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -117,5 +120,24 @@ public class ApplicationTestConfig {
         return new PepMock(null);
     }
 
+    @Bean
+    public EmbeddedKafkaBroker embeddedKafka(@Value("${topic.inn.stillingFraNav}") String innTopic, @Value("${topic.ut.stillingFraNav}") String utTopic) {
+        return new EmbeddedKafkaBroker(1, true, 1, innTopic, utTopic);
+
+    }
+
+    @Bean
+    ProducerFactory<Object, Object> producerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
+        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        return new DefaultKafkaProducerFactory<>(producerProperties);
+    }
+
+    @Bean
+    public ConsumerFactory<?, ?> consumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        return new DefaultKafkaConsumerFactory<>(consumerProperties);
+    }
 }
 

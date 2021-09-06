@@ -16,7 +16,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import static org.junit.Assert.assertEquals;
 
 
-@EmbeddedKafka(topics = "test",  partitions = 1)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 @RunWith(SpringRunner.class)
