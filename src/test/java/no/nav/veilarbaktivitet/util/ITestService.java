@@ -50,9 +50,9 @@ public class ITestService {
         newConsumer.assign(collect);
         newConsumer.seekToEnd(collect);
 
-        collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(1)));
+        collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
-        newConsumer.commitSync(Duration.ofSeconds(1));
+        newConsumer.commitSync(Duration.ofSeconds(10));
         return newConsumer;
     }
 
