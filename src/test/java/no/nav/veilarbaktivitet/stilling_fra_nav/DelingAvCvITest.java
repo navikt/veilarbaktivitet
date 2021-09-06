@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
@@ -11,15 +10,11 @@ import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.util.ITestService;
 import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.TestService;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.PartitionInfo;
-import org.apache.kafka.common.TopicPartition;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -31,21 +26,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -57,10 +44,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class DelingAvCvITest {
 
     @Autowired
-    TestService testService;
-
-    @Autowired
-    EmbeddedKafkaBroker embeddedKafka;
+    ITestService testService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -68,17 +52,11 @@ public class DelingAvCvITest {
     @LocalServerPort
     private int port;
 
-    @Autowired
-    ConsumerFactory consumerFactory;
-
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-
-    @Value("${spring.kafka.properties.schema.registry.url}")
-    private String schemaRegistryUrl;
 
     /***** Ekte bønner *****/
 
@@ -99,21 +77,7 @@ public class DelingAvCvITest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
-        String randomGroup = UUID.randomUUID().toString();
-        Properties modifisertConfig = new Properties();
-        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-
-        consumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
-
-        List<PartitionInfo> partitionInfos = consumer.partitionsFor(utTopic);
-        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(utTopic, f.partition())).collect(Collectors.toList());
-
-        consumer.assign(collect);
-        consumer.seekToEnd(collect);
-
-        collect.forEach(a -> consumer.position(a, Duration.ofSeconds(1)));
-
-        consumer.commitSync(Duration.ofSeconds(1));
+        consumer = testService.createConsumer(utTopic);
     }
 
     @Test

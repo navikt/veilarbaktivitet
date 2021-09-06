@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.*;
@@ -11,14 +9,11 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.util.ITestService;
 import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.TestService;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.serialization.Deserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -31,21 +26,17 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.context.EmbeddedKafka;
-import org.springframework.kafka.test.utils.KafkaTestUtils;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -55,10 +46,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class StillingFraNavControllerITest {
 
     @Autowired
-    TestService testService;
-
-    @Autowired
-    EmbeddedKafkaBroker embeddedKafka;
+    ITestService testService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -71,9 +59,6 @@ public class StillingFraNavControllerITest {
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-
-    @Value("${spring.kafka.properties.schema.registry.url}")
-    private String schemaRegistryUrl;
 
 
     @Autowired
@@ -99,7 +84,7 @@ public class StillingFraNavControllerITest {
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
         Response response = given()
                 .header("Content-type", "application/json")
@@ -164,7 +149,7 @@ public class StillingFraNavControllerITest {
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
         Response response = given()
                 .header("Content-type", "application/json")
@@ -224,7 +209,7 @@ public class StillingFraNavControllerITest {
 
 
     private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
-        final Consumer<String, DelingAvCvRespons> consumer = createConsumer();
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
         WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
@@ -283,40 +268,10 @@ public class StillingFraNavControllerITest {
                 .setOpprettetAv("Z999999")
                 .setCallId("callId")
                 .setSoknadsfrist("10102021")
-                .setStillingsId("stillingsId")
+                .setStillingsId("stillingsId1234")
                 .setStillingstittel("stillingstittel")
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
                 .build();
-    }
-
-    private Consumer<String, DelingAvCvRespons> createConsumer() {
-        Consumer<String, DelingAvCvRespons> consumer = buildConsumer(
-                StringDeserializer.class,
-                KafkaAvroDeserializer.class
-        );
-        embeddedKafka.consumeFromEmbeddedTopics(consumer, utTopic);
-        consumer.commitSync(); // commitSync venter på async funksjonen av å lage consumeren, så man vet consumeren er satt opp
-        return consumer;
-    }
-
-    @SuppressWarnings("rawtypes")
-    private <K, V> Consumer<K, V> buildConsumer(Class<? extends Deserializer> keyDeserializer,
-                                                Class<? extends Deserializer> valueDeserializer) {
-        // Use the procedure documented at https://docs.spring.io/spring-kafka/docs/2.2.4.RELEASE/reference/#embedded-kafka-annotation
-
-        final Map<String, Object> consumerProps = KafkaTestUtils
-                .consumerProps(UUID.randomUUID().toString(), "true", embeddedKafka);
-        // Since we're pre-sending the messages to test for, we need to read from start of topic
-        consumerProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
-        // We need to match the ser/deser used in expected application config
-        consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer.getName());
-        consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, valueDeserializer.getName());
-        consumerProps.put(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        consumerProps.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
-
-        final DefaultKafkaConsumerFactory<K, V> consumerFactory =
-                new DefaultKafkaConsumerFactory<>(consumerProps);
-        return consumerFactory.createConsumer();
     }
 
 }
