@@ -24,27 +24,20 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProduc
 @Configuration
 public class KafkaOnpremConfig {
 
-    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
-    public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
-
     @Bean
     public KafkaConsumerClient consumerClient(
             List<TopicConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
             Properties onPremConsumerProperties
     ) {
-        List<TopicConfig<?,?>> collect = topicConfigs
-                .stream()
-                .map(
-                        it -> new TopicConfig().withConsumerConfig(it))
-                .map(TopicConfig::withLogging)
-                .map(it -> it.withMetrics(meterRegistry))
-                .collect(Collectors.toList());
+        var clientBuilder = KafkaConsumerClientBuilder.builder()
+                .withProperties(onPremConsumerProperties);
 
-        var client = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremConsumerProperties)
-                .withTopicConfigs(collect)
-                .build();
+        topicConfigs.forEach(it -> {
+            clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
+        });
+
+        var client = clientBuilder.build();
 
         client.start();
 
