@@ -39,7 +39,7 @@ public class BrukernotifikasjonService {
 
     public void oppgaveDone(
             long aktivitetId,
-            Varseltype varseltype
+            VarselType varseltype
     ) {
         brukerNotifikasjonDAO.setDone(aktivitetId, varseltype);
     }
@@ -49,7 +49,7 @@ public class BrukernotifikasjonService {
             long aktitetVersion,
             Person.AktorId aktorId,
             String tekst,
-            Varseltype varseltype
+            VarselType varseltype
     ) {
         UUID uuid = UUID.randomUUID();
 

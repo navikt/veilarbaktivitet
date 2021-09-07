@@ -8,14 +8,12 @@ import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.oppfolging.OppfolgingAvsluttetKafkaDTO;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
 import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProducerProperties;

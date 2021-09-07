@@ -2,14 +2,15 @@ package no.nav.veilarbaktivitet.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.With;
 import lombok.experimental.Wither;
 
+@With
 @Value
 @Builder
-@Wither
 public class StillingsoekAktivitetData {
 
-    public String arbeidsgiver;
+    String arbeidsgiver;
     String stillingsTittel;
     String arbeidssted;
     StillingsoekEtikettData stillingsoekEtikett;
