@@ -134,6 +134,11 @@ public class DelingAvCvITest {
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         producer.send(innTopic, melding.getBestillingsId(), melding);
+
+        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
+        assertEquals("No records found for topic", exception.getMessage());
+
+        // TODO kanskje sjekk for loggmelding (*** Kan ikke behandle melding...)
     }
 
     @Test

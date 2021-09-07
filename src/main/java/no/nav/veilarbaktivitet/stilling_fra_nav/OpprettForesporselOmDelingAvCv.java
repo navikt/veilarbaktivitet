@@ -56,16 +56,15 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        Optional<ManuellStatusV2DTO> manuellStatusResponse = null;
-        Optional<Nivaa4DTO> nivaa4DTO = null;
-        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse = null;
+        Optional<ManuellStatusV2DTO> manuellStatusResponse;
+        Optional<Nivaa4DTO> nivaa4DTO;
+        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse;
         try {
             manuellStatusResponse = manuellStatusClient.get(aktorId);
             nivaa4DTO = nivaa4Client.get(aktorId);
             oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
-            log.error("*** Kan ikke behandle melding={} ***", melding);
-            log.error("Ingen gjeldende ident for aktorId", exception);
+            log.error("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         }
 
