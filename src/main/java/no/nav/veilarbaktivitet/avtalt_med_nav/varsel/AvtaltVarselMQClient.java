@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
+package no.nav.veilarbaktivitet.avtalt_med_nav.varsel;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

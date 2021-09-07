@@ -1,8 +1,8 @@
-package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
+package no.nav.veilarbaktivitet.avtalt_med_nav.varsel;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

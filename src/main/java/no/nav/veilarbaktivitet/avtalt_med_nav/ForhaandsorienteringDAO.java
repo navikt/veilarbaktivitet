@@ -1,9 +1,9 @@
-package no.nav.veilarbaktivitet.avtaltMedNav;
+package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.VarselIdHolder;
+import no.nav.veilarbaktivitet.avtalt_med_nav.varsel.VarselIdHolder;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;

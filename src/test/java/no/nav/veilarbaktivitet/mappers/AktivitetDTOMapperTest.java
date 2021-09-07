@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.mappers;
 
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
-import no.nav.veilarbaktivitet.avtaltMedNav.Type;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.SoftAssertions;

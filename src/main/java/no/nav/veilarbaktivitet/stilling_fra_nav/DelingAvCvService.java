@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
-import no.nav.veilarbaktivitet.brukernotifikasjon.Varseltype;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
@@ -32,7 +32,7 @@ public class DelingAvCvService {
 
         AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, erEksternBruker);
 
-        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), Varseltype.stilling_fra_nav);
+        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
 
         return endeligAktivitet;

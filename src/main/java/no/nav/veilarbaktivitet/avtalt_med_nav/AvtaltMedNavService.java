@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.avtaltMedNav;
+package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;

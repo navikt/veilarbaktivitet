@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.avtaltMedNav;
+package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;

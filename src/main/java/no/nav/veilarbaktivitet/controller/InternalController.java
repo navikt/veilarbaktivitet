@@ -1,9 +1,10 @@
 package no.nav.veilarbaktivitet.controller;
 
-import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.common.health.HealthCheckUtils;
-import no.nav.common.health.selftest.*;
+import no.nav.common.health.selftest.SelfTestChecks;
+import no.nav.common.health.selftest.SelfTestUtils;
+import no.nav.common.health.selftest.SelftTestCheckResult;
+import no.nav.common.health.selftest.SelftestHtmlGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 

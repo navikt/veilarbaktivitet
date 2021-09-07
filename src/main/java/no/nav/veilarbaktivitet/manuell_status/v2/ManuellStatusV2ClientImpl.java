@@ -27,7 +27,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     private String baseUrl;
 
     public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()

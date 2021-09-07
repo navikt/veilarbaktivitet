@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
@@ -26,7 +25,7 @@ public class Nivaa4ClientImpl implements Nivaa4Client {
 
     @Override
     public Optional<Nivaa4DTO> get(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/person/%s/harNivaa4", baseUrl, fnr.get());
         Request request = new Request.Builder()
