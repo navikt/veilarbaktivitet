@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -84,7 +83,7 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
@@ -119,7 +118,7 @@ public class DelingAvCvITest {
 
     @Test
     public void ugyldig_aktorid() {
-        MockBruker mockBruker = MockBruker.happyBruker("2244", "4422");
+        MockBruker mockBruker = MockBruker.happyBruker();
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
                 .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
@@ -142,7 +141,8 @@ public class DelingAvCvITest {
 
     @Test
     public void ikke_under_oppfolging() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+
+        MockBruker mockBruker = MockBruker.happyBruker();
         mockBruker.setUnderOppfolging(false);
         WireMockUtil.stubBruker(mockBruker);
 
@@ -166,7 +166,7 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_kvp() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         mockBruker.setUnderOppfolging(true);
         mockBruker.setErUnderKvp(true);
         WireMockUtil.stubBruker(mockBruker);
@@ -192,7 +192,7 @@ public class DelingAvCvITest {
 
     @Test
     public void under_manuell_oppfolging() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         mockBruker.setErManuell(true);
         WireMockUtil.stubBruker(mockBruker);
 
@@ -217,7 +217,7 @@ public class DelingAvCvITest {
 
     @Test
     public void reservert_i_krr() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         mockBruker.setErReservertKrr(true);
         WireMockUtil.stubBruker(mockBruker);
 
@@ -243,7 +243,7 @@ public class DelingAvCvITest {
 
     @Test
     public void mangler_nivaa4() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         mockBruker.setHarBruktNivaa4(false);
         WireMockUtil.stubBruker(mockBruker);
 
@@ -267,7 +267,7 @@ public class DelingAvCvITest {
 
     @Test
     public void duplikat_bestillingsId_ignoreres() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();

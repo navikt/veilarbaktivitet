@@ -29,6 +29,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
