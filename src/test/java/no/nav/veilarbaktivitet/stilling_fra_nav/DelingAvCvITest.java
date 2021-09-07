@@ -119,8 +119,7 @@ public class DelingAvCvITest {
 
     @Test
     public void ugyldig_aktorid() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        WireMockUtil.stubBruker(mockBruker);
+        MockBruker mockBruker = MockBruker.happyBruker("2244", "4422");
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
                 .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
