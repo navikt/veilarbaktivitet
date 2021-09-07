@@ -34,6 +34,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -113,6 +115,25 @@ public class DelingAvCvITest {
         assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
 
+    }
+
+    @Test
+    public void ugyldig_aktorid() {
+        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        WireMockUtil.stubBruker(mockBruker);
+
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
+                .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + mockBruker.getAktorId() + "\": {" +
+                        "    \"identer\": []" +
+                        "  }" +
+                        "}")));
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        producer.send(innTopic, melding.getBestillingsId(), melding);
     }
 
     @Test

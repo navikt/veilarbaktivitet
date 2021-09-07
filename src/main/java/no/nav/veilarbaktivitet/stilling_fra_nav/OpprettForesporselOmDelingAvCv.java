@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.Varseltype;
 import no.nav.veilarbaktivitet.domain.*;
@@ -55,9 +56,18 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);
-        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
-        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
+        Optional<ManuellStatusV2DTO> manuellStatusResponse = null;
+        Optional<Nivaa4DTO> nivaa4DTO = null;
+        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse = null;
+        try {
+            manuellStatusResponse = manuellStatusClient.get(aktorId);
+            nivaa4DTO = nivaa4Client.get(aktorId);
+            oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
+        } catch (IngenGjeldendeIdentException exception) {
+            log.error("*** Kan ikke behandle melding={} ***", melding);
+            log.error("Ingen gjeldende ident for aktorId", exception);
+            return;
+        }
 
         boolean underKvp = kvpService.erUnderKvp(aktorId);
         boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2UnderOppfolgingDTO::isErUnderOppfolging).orElse(false);
