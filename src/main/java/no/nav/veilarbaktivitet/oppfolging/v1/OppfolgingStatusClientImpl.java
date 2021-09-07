@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging_status;
+package no.nav.veilarbaktivitet.oppfolging.v1;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +26,7 @@ public class OppfolgingStatusClientImpl implements OppfolgingStatusClient {
     private String baseUrl;
 
     public Optional<OppfolgingStatusDTO> get(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow();
+        Person.Fnr fnr = authService.getFnrForAktorId(aktorId);
 
         if (fnr.get() == null) {
             log.error("OppfolgingStatusClientImpl.get Fnr er null");

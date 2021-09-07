@@ -39,7 +39,7 @@ public class BrukernotifikasjonService {
 
     public void oppgaveDone(
             long aktivitetId,
-            Varseltype varseltype
+            VarselType varseltype
     ) {
         brukerNotifikasjonDAO.setDone(aktivitetId, varseltype);
     }
@@ -49,13 +49,12 @@ public class BrukernotifikasjonService {
             long aktitetVersion,
             Person.AktorId aktorId,
             String tekst,
-            Varseltype varseltype
+            VarselType varseltype
     ) {
         UUID uuid = UUID.randomUUID();
 
         Person.Fnr fnr = authService
-                .getFnrForAktorId(aktorId)
-                .orElseThrow(() -> new IllegalArgumentException("ugyldig aktorId"));
+                .getFnrForAktorId(aktorId);
 
         OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.getGjeldendePeriode(aktorId)
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));

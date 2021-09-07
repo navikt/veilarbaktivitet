@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.domain.arena;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 
 import java.util.Date;

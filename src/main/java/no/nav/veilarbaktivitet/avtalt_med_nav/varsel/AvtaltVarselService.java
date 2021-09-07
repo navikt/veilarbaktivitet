@@ -1,9 +1,9 @@
-package no.nav.veilarbaktivitet.avtaltMedNav.varsel;
+package no.nav.veilarbaktivitet.avtalt_med_nav.varsel;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

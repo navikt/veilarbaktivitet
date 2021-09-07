@@ -33,7 +33,7 @@ public class OppfolgingV2ClientTest {
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         AuthService authService = Mockito.mock(AuthService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
+        when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, authService);
         oppfolgingV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }

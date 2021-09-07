@@ -23,7 +23,7 @@ class BrukerNotifikasjonDAO {
             Person.Fnr foedselsnummer,
             String melding,
             UUID oppfolgingsperiode,
-            Varseltype type,
+            VarselType type,
             VarselStatus status
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -43,7 +43,7 @@ class BrukerNotifikasjonDAO {
 
     private final List<String> skalIkkeAvsluttes = List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name());
 
-    long setDone(long aktivitetId, Varseltype varseltype) {
+    long setDone(long aktivitetId, VarselType varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktivitetId", aktivitetId)
                 .addValue("status", VarselStatus.SKAL_AVSLUTTES.name())

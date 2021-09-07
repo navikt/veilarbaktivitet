@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.05.26_09.37-bb80e1d6774e</common.version>
+        <common.version>2.2021.09.03_14.08-6d71358df566</common.version>
         <confluent.version>6.1.1</confluent.version>
         <quartz.version>2.3.2</quartz.version>
 
@@ -325,6 +325,11 @@
         </dependency>
         <dependency>
             <groupId>no.nav.common</groupId>
+            <artifactId>kafka</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>no.nav.common</groupId>
             <artifactId>test</artifactId>
             <version>${common.version}</version>
             <scope>test</scope>
@@ -335,6 +340,13 @@
             <version>3.3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.1.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
         <dependency>
             <groupId>net.sourceforge.collections</groupId>

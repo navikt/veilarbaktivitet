@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.aktiviteter_til_kafka.AktiviteterTilKafkaService;
-import no.nav.veilarbaktivitet.avtaltMedNav.varsel.AvtaltVarselService;
+import no.nav.veilarbaktivitet.avtalt_med_nav.varsel.AvtaltVarselService;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.EnableScheduling;

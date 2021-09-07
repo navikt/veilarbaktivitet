@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.avtaltMedNav;
+package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
