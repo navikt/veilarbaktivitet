@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -12,6 +13,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.ITestService;
+import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
 import no.nav.veilarbaktivitet.util.MockBruker;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -124,6 +126,8 @@ public class DelingAvCvITest {
 
     @Test
     public void ugyldig_aktorid() {
+        MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
+
         MockBruker mockBruker = MockBruker.happyBruker();
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
@@ -141,8 +145,7 @@ public class DelingAvCvITest {
 
         Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
         assertEquals("No records found for topic", exception.getMessage());
-
-        // TODO kanskje sjekk for loggmelding (*** Kan ikke behandle melding...)
+        assertTrue(memoryLoggerAppender.contains("*** Kan ikke behandle melding", Level.ERROR));
     }
 
     @Test
