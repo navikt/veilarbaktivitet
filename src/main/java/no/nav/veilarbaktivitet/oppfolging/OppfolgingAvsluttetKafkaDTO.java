@@ -7,7 +7,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class OppfolgingAvsluttetKafkaDTO {
+public class OppfolgingAvsluttetKafkaDTO extends JsonMelding {
     private String aktorId;
     private ZonedDateTime sluttdato;
 }

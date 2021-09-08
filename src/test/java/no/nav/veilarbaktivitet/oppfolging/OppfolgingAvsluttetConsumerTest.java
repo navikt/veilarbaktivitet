@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
@@ -11,11 +12,10 @@ import no.nav.veilarbaktivitet.util.ITestService;
 import no.nav.veilarbaktivitet.util.MockBruker;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
@@ -47,10 +47,9 @@ public class OppfolgingAvsluttetConsumerTest {
     @LocalServerPort
     private int port;
 
-    /*
+    @Qualifier("json")
     @Autowired
-     */
-    KafkaTemplate<String, OppfolgingAvsluttetKafkaDTO> producer;
+    KafkaTemplate<String, String> producer;
 
     @After
     public void verify_no_unmatched() {
@@ -62,7 +61,6 @@ public class OppfolgingAvsluttetConsumerTest {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
-    @Ignore
     @Test
     public void consume() throws ExecutionException, InterruptedException {
         MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
@@ -73,11 +71,11 @@ public class OppfolgingAvsluttetConsumerTest {
         AktivitetDTO aktivitet = testService.opprettAktivitet(port, mockBruker, aktivitetDTO);
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(aktivitet.getEndretDato().toInstant(), ZoneId.systemDefault()).plusMinutes(1);
         OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO = new OppfolgingAvsluttetKafkaDTO()
-                .setAktorId(aktivitetData.getAktorId())
+                .setAktorId(mockBruker.getAktorId())
                 .setSluttdato(zonedDateTime);
 
-        producer.send(aktivitetData.getAktorId(), oppfolgingAvsluttetKafkaDTO).get();
+        producer.send("oppfolgingAvsluttetTopic", JsonUtils.toJson(oppfolgingAvsluttetKafkaDTO)).get();
 
-        await().atMost(5, SECONDS).until(() -> testService.hentAktiviteterForFnr(port, mockBruker.getFnr()).aktiviteter.stream().filter(AktivitetDTO::isHistorisk).findAny().isPresent());
+        await().atMost(10, SECONDS).until(() -> testService.hentAktiviteterForFnr(port, mockBruker.getFnr()).aktiviteter.stream().filter(AktivitetDTO::isHistorisk).findAny().isPresent());
     }
 }
