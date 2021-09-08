@@ -31,7 +31,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.mock.TestData.*;
+import static no.nav.veilarbaktivitet.mock.TestData.KJENT_KONTORSPERRE_ENHET_ID;
+import static no.nav.veilarbaktivitet.mock.TestData.KJENT_SAKSBEHANDLER;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -74,19 +75,20 @@ public class AktivitetsplanRSTest {
     private List<Long> lagredeAktivitetsIder;
 
     private AktivitetDTO aktivitet;
+    private MockBruker mockBruker;
 
     @Rule
     public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
 
     @Before
     public void setup() {
-        when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(KJENT_AKTOR_ID));
+        mockBruker = MockBruker.happyBruker();
+        when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(Person.aktorId(mockBruker.getAktorId())));
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
         when(authService.erInternBruker()).thenReturn(Boolean.TRUE);
         when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
         when(authService.sjekKvpTilgang(null)).thenReturn(true);
-        mockHttpServletRequest.setParameter("fnr", KJENT_IDENT.get());
-        MockBruker mockBruker = MockBruker.happyBruker(KJENT_IDENT.get(), KJENT_AKTOR_ID.get());
+        mockHttpServletRequest.setParameter("fnr", mockBruker.getFnr());
         WireMockUtil.stubBruker(mockBruker);
 
     }
@@ -99,12 +101,12 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetVersjoner_returnererIkkeForhaandsorientering() {
-        var aktivitet = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
+        var aktivitet = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
         Long aktivitetId = aktivitet.getId();
-        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), KJENT_AKTOR_ID);
+        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), Person.aktorId(mockBruker.getAktorId()));
         var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetId);
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
-        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), aktivitetId, KJENT_AKTOR_ID, NavIdent.of("V123"));
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), aktivitetId, Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
         var resultat = aktivitetController.hentAktivitetVersjoner(String.valueOf(aktivitetId));
 
         Assert.assertEquals(3, resultat.size());
@@ -116,11 +118,11 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
-        aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(KJENT_AKTOR_ID.get()));
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
+        aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
-        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), KJENT_AKTOR_ID, NavIdent.of("V123"));
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
         var resultat = aktivitetController.hentAktivitetsplan();
 
         Assert.assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
@@ -131,7 +133,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetsplan_henterStillingFraNavDataUtenCVData() {
-        var aktivitet = nyStillingFraNav().withAktorId(KJENT_AKTOR_ID.get());
+        var aktivitet = nyStillingFraNav().withAktorId(mockBruker.getAktorId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetController.hentAktivitetsplan();
@@ -144,7 +146,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetsplan_henterStillingFraNavDataMedCVData() {
-        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetController.hentAktivitetsplan();
@@ -157,7 +159,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetsplan_henterStillingFraNavDataMedCvSvar() {
-        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get());
+        var aktivitet = nyStillingFraNavMedCVKanDeles().withAktorId(mockBruker.getAktorId());
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetController.hentAktivitetsplan();
@@ -261,7 +263,7 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
         lagredeAktivitetsIder = aktiviteter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, KJENT_AKTOR_ID).getId())
+                .map(aktivitet -> aktivitetService.opprettAktivitet(Person.aktorId(mockBruker.getAktorId()), aktivitet, Person.aktorId(mockBruker.getAktorId())).getId())
                 .collect(Collectors.toList());
     }
 
@@ -346,7 +348,7 @@ public class AktivitetsplanRSTest {
     }
 
     private void da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
-        assertThat(aktivitetService.hentAktiviteterForAktorId(KJENT_AKTOR_ID), hasSize(1));
+        assertThat(aktivitetService.hentAktiviteterForAktorId(Person.aktorId(mockBruker.getAktorId())), hasSize(1));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_status() {

@@ -1,13 +1,10 @@
 
 package no.nav.veilarbaktivitet.config;
 
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -18,9 +15,10 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
 import okhttp3.OkHttpClient;
+import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.mockito.Mockito;
@@ -29,24 +27,16 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.core.*;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 
 import javax.sql.DataSource;
 import java.util.Map;
 import java.util.Properties;
 
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProducerProperties;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 @Configuration
@@ -63,6 +53,13 @@ public class ApplicationTestConfig {
     @Bean
     public KvpClient kvpClient() {
         return mock(KvpClient.class);
+    }
+
+    @Bean
+    public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
+        Map<String, Object> config = properties.buildAdminProperties();
+        config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
+        return Admin.create(config);
     }
 
     @Bean
@@ -115,16 +112,50 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public EmbeddedKafkaBroker embeddedKafka(@Value("${topic.inn.stillingFraNav}") String innTopic, @Value("${topic.ut.stillingFraNav}") String utTopic) {
-        return new EmbeddedKafkaBroker(1, true, 1, innTopic, utTopic);
-
+    public EmbeddedKafkaBroker embeddedKafka(
+            @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
+            @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
+            @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
+            @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
+            @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic) {
+        // TODO config
+        return new EmbeddedKafkaBroker(
+                1,
+                true,
+                1,
+                innStillingFraNav,
+                utStillingFraNav,
+                endringPaaAktivitetTopic,
+                oppfolgingAvsluttetTopic,
+                kvpAvsluttetTopic);
     }
 
     @Bean
-    ProducerFactory<Object, Object> producerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+    <V extends SpecificRecordBase> ProducerFactory<String, V> avroProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
+    }
+
+    @Bean
+    ProducerFactory<String, String> stringProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
+        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(producerProperties);
+    }
+
+    @Bean
+    <V extends SpecificRecordBase> KafkaTemplate<String, V> kafkaAvroTemplate(ProducerFactory<String, V> avroProducerFactory) {
+        return new KafkaTemplate<>(avroProducerFactory);
+    }
+
+    @Bean
+    KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> stringProducerFactory) {
+        return new KafkaTemplate<>(stringProducerFactory);
     }
 
     @Bean
@@ -151,6 +182,7 @@ public class ApplicationTestConfig {
                 .withConsumerGroupId(kafkaOnpremProperties.getConsumerGroupId())
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
+                .withPollProperties(1, 1000)
                 .build();
     }
 }
