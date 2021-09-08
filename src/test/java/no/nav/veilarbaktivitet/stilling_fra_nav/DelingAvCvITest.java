@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
@@ -17,6 +18,7 @@ import no.nav.veilarbaktivitet.util.MockBruker;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -29,14 +31,18 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -269,6 +275,7 @@ public class DelingAvCvITest {
     }
 
     @Test
+    @SneakyThrows
     public void duplikat_bestillingsId_ignoreres() {
         MockBruker mockBruker = MockBruker.happyBruker();
         WireMockUtil.stubBruker(mockBruker);
@@ -290,9 +297,11 @@ public class DelingAvCvITest {
         });
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
-        assertEquals("No records found for topic", exception.getMessage());
+        SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
+        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, "veilarbaktivitet", result.getRecordMetadata().offset()));
+
+        ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
+        assertTrue(poll.isEmpty());
     }
 
     static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {

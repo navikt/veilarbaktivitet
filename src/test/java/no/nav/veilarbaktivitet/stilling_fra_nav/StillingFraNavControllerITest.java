@@ -76,7 +76,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_ja() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
@@ -141,7 +141,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_nei() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
+        MockBruker mockBruker = MockBruker.happyBruker();
         AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))

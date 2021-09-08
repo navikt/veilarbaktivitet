@@ -19,7 +19,7 @@ public class MockBruker {
     private boolean erUnderKvp;
     private boolean harBruktNivaa4;
 
-    public static MockBruker happyBruker(String fnr, String aktorId) {
+    private static MockBruker happyBruker(String fnr, String aktorId) {
         return MockBruker.builder().fnr(fnr).aktorId(aktorId)
                 .underOppfolging(true)
                 .erManuell(false)
@@ -33,21 +33,14 @@ public class MockBruker {
     public static MockBruker happyBruker() {
         String fnr = generateFnr();
         String aktorId = aktorIdFromFnr(fnr);
-        return MockBruker.builder().fnr(fnr).aktorId(aktorId)
-                .underOppfolging(true)
-                .erManuell(false)
-                .erReservertKrr(false)
-                .kanVarsles(true)
-                .erUnderKvp(false)
-                .harBruktNivaa4(true)
-                .build();
+        return happyBruker(fnr, aktorId);
     }
 
     public static String generateFnr() {
         return IntStream.range(0, 11)
-                        .map(i -> new Random().nextInt(9))
-                        .mapToObj(Integer::toString)
-                        .collect(Collectors.joining());
+                .map(i -> new Random().nextInt(9))
+                .mapToObj(Integer::toString)
+                .collect(Collectors.joining());
     }
 
     private static String aktorIdFromFnr(String fnr) {
