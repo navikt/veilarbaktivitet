@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
 import okhttp3.OkHttpClient;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
@@ -26,7 +27,6 @@ import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.kafka.core.*;
@@ -53,6 +53,13 @@ public class ApplicationTestConfig {
     @Bean
     public KvpClient kvpClient() {
         return mock(KvpClient.class);
+    }
+
+    @Bean
+    public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
+        Map<String, Object> config = properties.buildAdminProperties();
+        config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
+        return Admin.create(config);
     }
 
     @Bean
@@ -105,14 +112,30 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public EmbeddedKafkaBroker embeddedKafka(@Value("${topic.inn.stillingFraNav}") String innTopic, @Value("${topic.ut.stillingFraNav}") String utTopic) {
-        return new EmbeddedKafkaBroker(1, true, 1, innTopic, utTopic, "oppfolgingAvsluttetTopic");
+    public EmbeddedKafkaBroker embeddedKafka(
+            @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
+            @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
+            @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
+            @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
+            @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic) {
+        // TODO config
+        return new EmbeddedKafkaBroker(
+                1,
+                true,
+                1,
+                innStillingFraNav,
+                utStillingFraNav,
+                endringPaaAktivitetTopic,
+                oppfolgingAvsluttetTopic,
+                kvpAvsluttetTopic);
     }
 
     @Bean
     <V extends SpecificRecordBase> ProducerFactory<String, V> avroProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
@@ -134,7 +157,6 @@ public class ApplicationTestConfig {
     KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> stringProducerFactory) {
         return new KafkaTemplate<>(stringProducerFactory);
     }
-
 
     @Bean
     public ConsumerFactory<?, ?> consumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
