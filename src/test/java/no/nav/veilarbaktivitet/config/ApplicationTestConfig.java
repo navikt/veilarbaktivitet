@@ -109,14 +109,15 @@ public class ApplicationTestConfig {
         return new EmbeddedKafkaBroker(1, true, 1, innTopic, utTopic, "oppfolgingAvsluttetTopic");
     }
 
-
+    @Bean
     <V extends SpecificRecordBase> ProducerFactory<String, V> avroProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
-    <V> ProducerFactory<String, V> jsonProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+    @Bean
+    ProducerFactory<String, String> stringProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
@@ -125,14 +126,13 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    @Primary
-    <V extends SpecificRecordBase> KafkaTemplate<String, V> kafkaAvroTemplate(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        return new KafkaTemplate<>(avroProducerFactory(kafkaProperties, embeddedKafka));
+    <V extends SpecificRecordBase> KafkaTemplate<String, V> kafkaAvroTemplate(ProducerFactory<String, V> avroProducerFactory) {
+        return new KafkaTemplate<>(avroProducerFactory);
     }
 
-    @Bean(name = "json")
-    KafkaTemplate<String, String> kafkaJsonTemplate(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        return new KafkaTemplate<>(jsonProducerFactory(kafkaProperties, embeddedKafka));
+    @Bean
+    KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> stringProducerFactory) {
+        return new KafkaTemplate<>(stringProducerFactory);
     }
 
 

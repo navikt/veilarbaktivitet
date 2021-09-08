@@ -47,7 +47,6 @@ public class OppfolgingAvsluttetConsumerTest {
     @LocalServerPort
     private int port;
 
-    @Qualifier("json")
     @Autowired
     KafkaTemplate<String, String> producer;
 
