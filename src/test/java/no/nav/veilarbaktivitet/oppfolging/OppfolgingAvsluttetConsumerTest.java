@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
@@ -53,6 +54,12 @@ public class OppfolgingAvsluttetConsumerTest {
     @Autowired
     KafkaTemplate<String, String> producer;
 
+    @Value("${app.kafka.oppfolgingAvsluttetTopic}")
+    String oppfolgingAvsluttetTopic;
+
+    @Value("${app.kafka.consumer-group-id}")
+    String onPremConsumerGroup;
+
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
@@ -82,8 +89,8 @@ public class OppfolgingAvsluttetConsumerTest {
                 .setAktorId(mockBruker.getAktorId())
                 .setSluttdato(zonedDateTime);
 
-        SendResult<String, String> oppfolgingAvsluttetTopic = producer.send("oppfolgingAvsluttetTopic", JsonUtils.toJson(oppfolgingAvsluttetKafkaDTO)).get();
-        await().atMost(5, SECONDS).until(() -> testService.erKonsumert("oppfolgingAvsluttetTopic", "veilarbaktivitet-consumer", oppfolgingAvsluttetTopic.getRecordMetadata().offset()));
+        SendResult<String, String> sendResult = producer.send(oppfolgingAvsluttetTopic, JsonUtils.toJson(oppfolgingAvsluttetKafkaDTO)).get();
+        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(oppfolgingAvsluttetTopic, onPremConsumerGroup, sendResult.getRecordMetadata().offset()));
 
         List<AktivitetDTO> aktiviteter = testService.hentAktiviteterForFnr(port, mockBruker.getFnr()).aktiviteter;
         AktivitetDTO skalVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalBliHistorisk.getId())).findAny().get();
