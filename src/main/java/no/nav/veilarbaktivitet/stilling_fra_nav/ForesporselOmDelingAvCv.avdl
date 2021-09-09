@@ -139,8 +139,7 @@
             {
                 "name": "kontaktInfo",
                 "type": [
-                    "KontaktInfo",
-                    "null"
+                    "KontaktInfo"
                     ]
             }
         ]
