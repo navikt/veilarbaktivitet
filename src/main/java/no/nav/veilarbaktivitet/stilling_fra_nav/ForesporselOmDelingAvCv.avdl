@@ -11,15 +11,10 @@
                 ]
             },
             {
-                "name": "type",
-                "type": {
-                    "name": "KontaktPersonTypeEnum",
-                    "type": "enum",
-                    "symbols": [
-                        "NAV_ANSATT",
-                        "ANNEN"
-                    ]
-                }
+                "name": "tittel",
+                "type": [
+                    "string"
+                ]
             },
             {
                 "name": "mobil",
