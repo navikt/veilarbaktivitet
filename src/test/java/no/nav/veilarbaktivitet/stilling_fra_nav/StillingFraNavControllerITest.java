@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -277,6 +278,11 @@ public class StillingFraNavControllerITest {
                 .setStillingsId("stillingsId1234")
                 .setStillingstittel("stillingstittel")
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
+                .setKontaktInfo(KontaktInfo.newBuilder()
+                        .setNavn("Jan Saksbehandler")
+                        .setTittel("Nav-ansatt")
+                        .setEpost("jan.saksbehandler@nav.no")
+                        .setMobil("99999999").build())
                 .build();
     }
 

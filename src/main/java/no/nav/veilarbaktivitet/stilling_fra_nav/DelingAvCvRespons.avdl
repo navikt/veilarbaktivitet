@@ -70,6 +70,7 @@
                     "name": "TilstandEnum",
                     "type": "enum",
                     "symbols": [
+                        "KAN_IKKE_BEHANDLE",
                         "KAN_IKKE_OPPRETTE",
                         "PROVER_VARSLING",
                         "HAR_VARSLET",
@@ -85,6 +86,10 @@
                     "Svar",
                     "null"
                 ]
+            },
+            {
+                "name": "feilmelding",
+                "type": ["string", "null"]
             }
         ]
     }

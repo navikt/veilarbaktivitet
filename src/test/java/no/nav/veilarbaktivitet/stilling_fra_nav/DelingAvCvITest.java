@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.util.*;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -30,6 +31,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -67,6 +69,8 @@ public class DelingAvCvITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
+    @Value("${spring.kafka.consumer.group-id}")
+    String groupId;
     /***** Ekte bønner *****/
 
     @Autowired
@@ -141,10 +145,8 @@ public class DelingAvCvITest {
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
-        assertEquals("No records found for topic", exception.getMessage());
+        ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
+        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, groupId, send.get().getRecordMetadata().offset()));
         assertTrue(memoryLoggerAppender.contains("*** Kan ikke behandle melding", Level.ERROR));
     }
 
@@ -298,7 +300,7 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
         SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
-        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, "veilarbaktivitet", result.getRecordMetadata().offset()));
+        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, groupId, result.getRecordMetadata().offset()));
 
         ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
@@ -331,6 +333,12 @@ public class DelingAvCvITest {
                 .setStillingsId("stillingsId")
                 .setStillingstittel("stillingstittel")
                 .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
+                .setKontaktInfo(KontaktInfo.newBuilder()
+                        .setNavn("Jan Saksbehandler")
+                        .setTittel("Nav-ansatt")
+                        .setEpost("jan.saksbehandler@nav.no")
+                        .setMobil("99999999").build()
+                )
                 .build();
     }
 
