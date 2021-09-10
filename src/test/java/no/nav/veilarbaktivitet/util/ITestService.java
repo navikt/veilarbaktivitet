@@ -14,7 +14,6 @@ import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.ConsumerFactory;
-import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -33,8 +32,6 @@ import static org.junit.Assert.assertNotNull;
 public class ITestService {
 
     private final ConsumerFactory consumerFactory;
-
-    private final EmbeddedKafkaBroker embeddedKafka;
 
     private final Admin kafkaAdminClient;
 
@@ -147,7 +144,13 @@ public class ITestService {
     @SneakyThrows
     public boolean erKonsumert(String topic, String groupId, Long producerOffset) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
-        long commitedOffset = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0)).offset();
+        OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
+
+        if (offsetAndMetadata == null) {
+            return false;
+        }
+
+        long commitedOffset = offsetAndMetadata.offset();
         return commitedOffset >= producerOffset;
     }
 }
