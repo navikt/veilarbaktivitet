@@ -9,12 +9,14 @@ import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 
 @Service
+@EnableScheduling
 @AllArgsConstructor
 public class DelingAvCvService {
     private final DelingAvCvDAO delingAvCvDAO;
@@ -67,4 +69,14 @@ public class DelingAvCvService {
         return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
     }
 
+    @Transactional
+    public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
+        AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .build();
+
+        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
+        stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
+    }
 }
