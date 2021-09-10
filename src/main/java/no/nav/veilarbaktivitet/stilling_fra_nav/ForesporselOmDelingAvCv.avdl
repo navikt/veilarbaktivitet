@@ -138,9 +138,7 @@
             },
             {
                 "name": "kontaktInfo",
-                "type": [
-                    "KontaktInfo"
-                    ]
+                "type": "KontaktInfo"
             }
         ]
     }
