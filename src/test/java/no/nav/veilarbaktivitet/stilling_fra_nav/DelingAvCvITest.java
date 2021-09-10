@@ -13,10 +13,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
-import no.nav.veilarbaktivitet.util.ITestService;
-import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
-import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.WireMockUtil;
+import no.nav.veilarbaktivitet.util.*;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -55,7 +52,10 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class DelingAvCvITest {
 
     @Autowired
-    ITestService testService;
+    KafkaTestService testService;
+
+    @Autowired
+    AktivitetTestService aktivitetTestService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -115,7 +115,7 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
 
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);

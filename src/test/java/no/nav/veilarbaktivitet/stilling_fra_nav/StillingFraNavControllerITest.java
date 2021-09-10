@@ -10,7 +10,9 @@ import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
-import no.nav.veilarbaktivitet.util.ITestService;
+import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
+import no.nav.veilarbaktivitet.util.AktivitetTestService;
+import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.util.MockBruker;
 import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -47,7 +49,11 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class StillingFraNavControllerITest {
 
     @Autowired
-    ITestService testService;
+    KafkaTestService testService;
+
+    @Autowired
+    AktivitetTestService testAktivitetService;
+
 
     @Autowired
     JdbcTemplate jdbc;
@@ -113,7 +119,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        testService.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        AktivietAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -181,7 +187,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        testService.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        AktivietAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -230,7 +236,7 @@ public class StillingFraNavControllerITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker.getFnr());
 
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
