@@ -8,11 +8,12 @@ import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import no.nav.veilarbaktivitet.util.MockBruker;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,10 +80,10 @@ public class OppfolgingAvsluttetConsumerTest {
     @Test
     @SuppressWarnings("java:S2925")
     public void skal_avslutte_aktiviteter_for() throws ExecutionException, InterruptedException {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        MockBruker mockBruker2 = MockBruker.happyBruker();
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker2 = MockNavService.crateHappyBruker();
 
-        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
         AktivitetDTO skalIkkeBliHistoriskMockBruker2 = testAktivitetservice.opprettAktivitet(port, mockBruker2, aktivitetDTO);
