@@ -17,8 +17,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import static io.restassured.RestAssured.given;
-import static no.nav.veilarbaktivitet.config.TestAuthContextFilterTingi.identHeder;
-import static no.nav.veilarbaktivitet.config.TestAuthContextFilterTingi.typeHeder;
+import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.identHeder;
+import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.typeHeder;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 

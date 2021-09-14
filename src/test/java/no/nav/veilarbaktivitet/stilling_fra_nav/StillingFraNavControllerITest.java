@@ -5,7 +5,7 @@ import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.auth.context.UserRole;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.config.TestAuthContextFilterTingi;
+import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -99,8 +99,8 @@ public class StillingFraNavControllerITest {
 
         Response response = given()
                 .header("Content-type", "application/json")
-                .header(TestAuthContextFilterTingi.identHeder, veileder.getNavIdent())
-                .header(TestAuthContextFilterTingi.typeHeder, UserRole.INTERN)
+                .header(TestAuthContextFilter.identHeder, veileder.getNavIdent())
+                .header(TestAuthContextFilter.typeHeder, UserRole.INTERN)
                 .and()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)
@@ -167,8 +167,8 @@ public class StillingFraNavControllerITest {
 
         Response response = given()
                 .header("Content-type", "application/json")
-                .header(TestAuthContextFilterTingi.identHeder, veileder.getNavIdent())
-                .header(TestAuthContextFilterTingi.typeHeder, UserRole.INTERN)
+                .header(TestAuthContextFilter.identHeder, veileder.getNavIdent())
+                .header(TestAuthContextFilter.typeHeder, UserRole.INTERN)
                 .and()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)

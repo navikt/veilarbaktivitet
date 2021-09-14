@@ -7,12 +7,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class FilterTestConfig {
 
-    public static final String NAV_IDENT_ITEST = "Z123456";
-
     @Bean
     public FilterRegistrationBean testSubjectFilterRegistrationBean() {
-        FilterRegistrationBean<TestAuthContextFilterTingi> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new TestAuthContextFilterTingi());
+        FilterRegistrationBean<TestAuthContextFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TestAuthContextFilter());
         registration.setOrder(1);
         registration.addUrlPatterns("/api/*");
         return registration;

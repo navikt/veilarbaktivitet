@@ -11,7 +11,7 @@ import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 
 @Service
-public class TestAuthContextFilterTingi implements Filter {
+public class TestAuthContextFilter implements Filter {
     public static final String identHeder = "test_ident";
     public static final String typeHeder = "test_ident_type";
 

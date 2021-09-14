@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.util;
 import io.restassured.response.Response;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.config.TestAuthContextFilterTingi;
+import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -28,8 +28,8 @@ public class AktivitetTestService {
     public AktivitetsplanDTO hentAktiviteterForFnr(int port, String fnr) {
         Response response = given()
                 .header("Content-type", "application/json")
-                .header(TestAuthContextFilterTingi.identHeder, fnr)
-                .header(TestAuthContextFilterTingi.typeHeder, UserRole.EKSTERN)
+                .header(TestAuthContextFilter.identHeder, fnr)
+                .header(TestAuthContextFilter.typeHeder, UserRole.EKSTERN)
                 .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet")
                 .then()
                 .assertThat()
@@ -56,8 +56,8 @@ public class AktivitetTestService {
 
         Response response = given()
                 .header("Content-type", "application/json")
-                .header(TestAuthContextFilterTingi.identHeder, mockBruker.getFnr())
-                .header(TestAuthContextFilterTingi.typeHeder, UserRole.EKSTERN)
+                .header(TestAuthContextFilter.identHeder, mockBruker.getFnr())
+                .header(TestAuthContextFilter.typeHeder, UserRole.EKSTERN)
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()

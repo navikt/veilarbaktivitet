@@ -1,20 +1,29 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import no.nav.common.auth.context.UserRole;
 
 @Getter
-@AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class MockBruker {
-    private final String fnr;
+public class MockBruker extends RestassureddUser {
     private final String aktorId;
     private final String enhet;
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
+    MockBruker(String fnr, String aktorId, String enhet, BrukerOptions brukerOptions) {
+        super(fnr, UserRole.EKSTERN);
+        this.aktorId = aktorId;
+        this.enhet = enhet;
+        this.brukerOptions = brukerOptions;
+    }
+
+    public String getFnr() {
+        return super.ident;
+    }
+
     public boolean harIdent(String ident) {
-        return fnr.equals(ident) || aktorId.equals(ident);
+        return super.ident.equals(ident) || aktorId.equals(ident);
     }
 }
