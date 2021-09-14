@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.KrrStatus;
-import static no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData.builder;
 
 @Slf4j
 @Service
@@ -117,7 +116,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .collect(Collectors.joining(", "));
 
         KontaktInfo kontaktInfo = melding.getKontaktInfo();
-        KontaktpersonData kontaktpersonData = builder()
+        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
                 .navn(kontaktInfo.getNavn())
                 .tittel(kontaktInfo.getTittel())
                 .mobil(kontaktInfo.getMobil())
