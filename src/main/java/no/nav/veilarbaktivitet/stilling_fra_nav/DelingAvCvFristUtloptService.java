@@ -20,7 +20,7 @@ public class DelingAvCvFristUtloptService {
     private final DelingAvCvService delingAvCvService;
     private final DelingAvCvDAO delingAvCvDAO;
 
-    @Scheduled(cron = "${app.env.scheduled.avsluttStillingsaktiviteter.cron}")
+    @Scheduled(fixedDelay = 1800000, initialDelay = 300000)
     void avsluttUtlopedeAktiviteter() {
         if (leaderElectionClient.isLeader()) {
             boolean ferdig = false;
