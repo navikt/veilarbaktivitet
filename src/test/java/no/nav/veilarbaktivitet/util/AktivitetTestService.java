@@ -1,17 +1,15 @@
 package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
-import no.nav.common.auth.context.UserRole;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.RestassureddUser;
 import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertNotNull;
 
 @Service
@@ -20,17 +18,20 @@ public class AktivitetTestService {
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
      *
-     * @param port Portnummeret til webserveren.
-     *             Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
-     * @param fnr
+     * @param port       Portnummeret til webserveren.
+     *                   Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
+     * @param mockBruker
      * @return En AktivitetplanDTO med en liste av AktivitetDto
      */
-    public AktivitetsplanDTO hentAktiviteterForFnr(int port, String fnr) {
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header(TestAuthContextFilter.identHeder, fnr)
-                .header(TestAuthContextFilter.typeHeder, UserRole.EKSTERN)
-                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet")
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker) {
+        return hentAktiviteterForFnr(port, mockBruker, mockBruker);
+    }
+
+
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker, RestassureddUser user) {
+        Response response = user
+                .createRequest()
+                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet", mockBruker))
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -52,16 +53,19 @@ public class AktivitetTestService {
      */
     public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
 
+        return opprettAktivitet(port, mockBruker, mockBruker, aktivitetDTO);
+    }
+
+    public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, RestassureddUser user, AktivitetDTO aktivitetDTO) {
+
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header(TestAuthContextFilter.identHeder, mockBruker.getFnr())
-                .header(TestAuthContextFilter.typeHeder, UserRole.EKSTERN)
+        Response response = user
+                .createRequest()
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .post("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny")
+                .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

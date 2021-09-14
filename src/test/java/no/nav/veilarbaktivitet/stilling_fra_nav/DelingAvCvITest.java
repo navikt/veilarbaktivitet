@@ -120,7 +120,7 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
 
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);

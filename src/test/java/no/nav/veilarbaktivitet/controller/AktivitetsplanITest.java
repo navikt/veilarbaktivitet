@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.controller;
 
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.UserRole;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -16,9 +15,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
-import static io.restassured.RestAssured.given;
-import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.identHeder;
-import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.typeHeder;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 
@@ -38,11 +34,8 @@ public class AktivitetsplanITest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         String aktivitetPayload = "{\"status\":\"PLANLAGT\",\"type\":\"MOTE\",\"tittel\":\"Blabla\",\"dato\":\"2021-09-22T11:18:21.000+02:00\",\"klokkeslett\":\"10:00\",\"varighet\":\"00:45\",\"kanal\":\"OPPMOTE\",\"adresse\":\"Video\",\"beskrivelse\":\"Vi ønsker å snakke med deg om aktiviteter du har gjennomført og videre oppfølging.\",\"forberedelser\":null,\"fraDato\":\"2021-09-22T08:00:00.000Z\",\"tilDato\":\"2021-09-22T08:45:00.000Z\"}";
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header(identHeder, veileder.getNavIdent())
-                .header(typeHeder, UserRole.INTERN.name())
-                .and()
+        Response response = veileder
+                .createRequest()
                 .body(aktivitetPayload)
                 .when()
                 .post("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny?fnr=" + mockBruker.getFnr())

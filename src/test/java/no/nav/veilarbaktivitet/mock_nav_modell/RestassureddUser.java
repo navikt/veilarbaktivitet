@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 
 import static io.restassured.RestAssured.given;
 
-class RestassureddUser {
+public class RestassureddUser {
     final String ident;
     final UserRole userRole;
 
@@ -20,5 +20,12 @@ class RestassureddUser {
                 .header("Content-type", "application/json")
                 .header(TestAuthContextFilter.identHeder, ident)
                 .header(TestAuthContextFilter.typeHeder, userRole);
+    }
+
+    public String getUrl(String baseUrl, MockBruker mockBruker) {
+        if (userRole.equals(UserRole.EKSTERN)) {
+            return baseUrl;
+        }
+        return baseUrl + "fnr?" + mockBruker.getFnr();
     }
 }

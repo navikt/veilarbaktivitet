@@ -3,9 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.auth.context.UserRole;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -38,7 +36,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static io.restassured.RestAssured.given;
 import static no.nav.veilarbaktivitet.testutils.AktivietAssertUtils.assertOppdatertAktivitet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -97,11 +94,8 @@ public class StillingFraNavControllerITest {
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header(TestAuthContextFilter.identHeder, veileder.getNavIdent())
-                .header(TestAuthContextFilter.typeHeder, UserRole.INTERN)
-                .and()
+        Response response = veileder
+                .createRequest()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)
                 .when()
@@ -165,10 +159,8 @@ public class StillingFraNavControllerITest {
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .header(TestAuthContextFilter.identHeder, veileder.getNavIdent())
-                .header(TestAuthContextFilter.typeHeder, UserRole.INTERN)
+        Response response = veileder
+                .createRequest()
                 .and()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)
@@ -244,8 +236,8 @@ public class StillingFraNavControllerITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker.getFnr());
 
+        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker);
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
 
