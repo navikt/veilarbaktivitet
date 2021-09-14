@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.*;
+import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.KrrStatus;
 
 @Slf4j
 @Service
@@ -40,6 +40,8 @@ public class OpprettForesporselOmDelingAvCv {
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
+
+    private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
@@ -88,7 +90,7 @@ public class OpprettForesporselOmDelingAvCv {
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
-            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, "TODO tekst", VarselType.STILLING_FRA_NAV); //TODO finn riktig tekst
+            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
         }
     }
