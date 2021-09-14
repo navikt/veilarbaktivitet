@@ -6,15 +6,12 @@
         "fields": [
             {
                 "name": "navn",
-                "type": [
-                    "string"
-                ]
+                "type": "string"
+
             },
             {
                 "name": "tittel",
-                "type": [
-                    "string"
-                ]
+                "type": "string"
             },
             {
                 "name": "mobil",

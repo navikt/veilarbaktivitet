@@ -127,6 +127,12 @@ public class DelingAvCvITest {
         assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
 
+        KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
+        KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
+        assertEquals(meldingKontaktInfo.getNavn(), kontaktpersonData.getNavn());
+        assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
+        assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
+        assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
     }
 
     @Test
