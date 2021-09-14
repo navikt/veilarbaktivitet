@@ -42,7 +42,8 @@ import java.util.UUID;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -126,6 +127,12 @@ public class DelingAvCvITest {
         assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
 
+        KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
+        KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
+        assertEquals(meldingKontaktInfo.getNavn(), kontaktpersonData.getNavn());
+        assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
+        assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
+        assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
     }
 
     @Test

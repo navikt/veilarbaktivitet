@@ -2,9 +2,10 @@ package no.nav.veilarbaktivitet.db.rowmappers;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 
 import java.sql.ResultSet;
@@ -129,13 +130,18 @@ public class AktivitetDataRowMapper {
     }
 
     private static StillingFraNavData mapStillingFraNav(ResultSet rs) throws SQLException {
-        //TODO fiks
-        // soknadsfrist, svarFrist, arbeidsgiver, bestillingsId‚ stillingsId, arbeidsSted, varsel
         var cvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
                 .endretAvType(EnumUtils.valueOf(InnsenderData.class, rs.getString("cv_kan_deles_av_type")))
+                .build();
+
+        var kontaktpersonData = KontaktpersonData.builder()
+                .navn(rs.getString("kontaktperson_navn"))
+                .tittel(rs.getString("kontaktperson_tittel"))
+                .mobil(rs.getString("kontaktperson_mobil"))
+                .epost(rs.getString("kontaktperson_epost"))
                 .build();
 
         return StillingFraNavData.builder()
@@ -147,6 +153,7 @@ public class AktivitetDataRowMapper {
                 .stillingsId(rs.getString("stillingsId"))
                 .arbeidssted(rs.getString("STILLING_FRA_NAV.ARBEIDSSTED"))
                 .varselId(rs.getString("varselid"))
+                .kontaktpersonData(kontaktpersonData)
                 .build();
     }
 
