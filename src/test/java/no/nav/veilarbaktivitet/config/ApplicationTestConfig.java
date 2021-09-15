@@ -1,7 +1,6 @@
 
 package no.nav.veilarbaktivitet.config;
 
-import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.job.leader_election.LeaderElectionClient;
@@ -10,10 +9,8 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
-import no.nav.veilarbaktivitet.mock.PepMock;
 import okhttp3.OkHttpClient;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
@@ -50,10 +47,6 @@ public class ApplicationTestConfig {
         return new OkHttpClient();
     }
 
-    @Bean
-    public KvpClient kvpClient() {
-        return mock(KvpClient.class);
-    }
 
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
@@ -78,8 +71,6 @@ public class ApplicationTestConfig {
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
     }
-
-
 
     @Bean
     public MetricsClient metricsClient() {
@@ -106,10 +97,6 @@ public class ApplicationTestConfig {
         return LocalH2Database.getPresistentDb();
     }
 
-    @Bean
-    public Pep veilarbPep() {
-        return new PepMock(null);
-    }
 
     @Bean
     public EmbeddedKafkaBroker embeddedKafka(

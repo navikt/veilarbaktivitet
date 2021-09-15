@@ -10,10 +10,15 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
-import no.nav.veilarbaktivitet.util.*;
+import no.nav.veilarbaktivitet.util.AktivitetTestService;
+import no.nav.veilarbaktivitet.util.KafkaTestService;
+import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -72,7 +77,6 @@ public class DelingAvCvITest {
 
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
-    /***** Ekte bønner *****/
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
@@ -96,8 +100,7 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        WireMockUtil.stubBruker(mockBruker);
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -116,7 +119,7 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
 
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
@@ -139,7 +142,8 @@ public class DelingAvCvITest {
     public void ugyldig_aktorid() {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
 
-        MockBruker mockBruker = MockBruker.happyBruker();
+        //TODO se på om vi burde unngå bruker her
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
                 .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
@@ -160,9 +164,8 @@ public class DelingAvCvITest {
     @Test
     public void ikke_under_oppfolging() {
 
-        MockBruker mockBruker = MockBruker.happyBruker();
-        mockBruker.setUnderOppfolging(false);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -184,10 +187,8 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_kvp() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        mockBruker.setUnderOppfolging(true);
-        mockBruker.setErUnderKvp(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -210,9 +211,8 @@ public class DelingAvCvITest {
 
     @Test
     public void under_manuell_oppfolging() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        mockBruker.setErManuell(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -235,9 +235,8 @@ public class DelingAvCvITest {
 
     @Test
     public void reservert_i_krr() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        mockBruker.setErReservertKrr(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -261,9 +260,8 @@ public class DelingAvCvITest {
 
     @Test
     public void mangler_nivaa4() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        mockBruker.setHarBruktNivaa4(false);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -286,8 +284,7 @@ public class DelingAvCvITest {
     @Test
     @SneakyThrows
     public void duplikat_bestillingsId_ignoreres() {
-        MockBruker mockBruker = MockBruker.happyBruker();
-        WireMockUtil.stubBruker(mockBruker);
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());

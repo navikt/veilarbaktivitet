@@ -4,17 +4,16 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.config.FilterTestConfig;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
-import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.SoftAssertions;
@@ -37,7 +36,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static io.restassured.RestAssured.given;
+import static no.nav.veilarbaktivitet.testutils.AktivietAssertUtils.assertOppdatertAktivitet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -83,7 +82,9 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_ja() {
-        MockBruker mockBruker = MockBruker.happyBruker();
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+
         AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
@@ -93,9 +94,8 @@ public class StillingFraNavControllerITest {
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
-        Response response = given()
-                .header("Content-type", "application/json")
-                .and()
+        Response response = veileder
+                .createRequest()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)
                 .when()
@@ -108,7 +108,7 @@ public class StillingFraNavControllerITest {
 
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(true)
-                .endretAv(FilterTestConfig.NAV_IDENT_ITEST)
+                .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
@@ -119,7 +119,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        AktivietAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -129,7 +129,7 @@ public class StillingFraNavControllerITest {
         Svar expectedSvar = Svar.newBuilder()
                 .setSvar(true)
                 .setSvartAvBuilder(Ident.newBuilder()
-                        .setIdent(FilterTestConfig.NAV_IDENT_ITEST)
+                        .setIdent(veileder.getNavIdent())
                         .setIdentType(IdentTypeEnum.NAV_IDENT))
                 // kopier systemgenererte felter
                 .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
@@ -148,7 +148,8 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_nei() {
-        MockBruker mockBruker = MockBruker.happyBruker();
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
@@ -158,8 +159,8 @@ public class StillingFraNavControllerITest {
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
 
-        Response response = given()
-                .header("Content-type", "application/json")
+        Response response = veileder
+                .createRequest()
                 .and()
                 .param("aktivitetId", aktivitetDTO.getId())
                 .body(delingAvCvDTO)
@@ -173,7 +174,7 @@ public class StillingFraNavControllerITest {
 
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(false)
-                .endretAv(FilterTestConfig.NAV_IDENT_ITEST)
+                .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
@@ -187,7 +188,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        AktivietAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -197,7 +198,7 @@ public class StillingFraNavControllerITest {
         Svar expectedSvar = Svar.newBuilder()
                 .setSvar(false)
                 .setSvartAvBuilder(Ident.newBuilder()
-                        .setIdent(FilterTestConfig.NAV_IDENT_ITEST)
+                        .setIdent(veileder.getNavIdent())
                         .setIdentType(IdentTypeEnum.NAV_IDENT))
                 // kopier systemgenererte felter
                 .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
@@ -217,7 +218,6 @@ public class StillingFraNavControllerITest {
 
     private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
-        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -236,8 +236,8 @@ public class StillingFraNavControllerITest {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker.getFnr());
 
+        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker);
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
 
