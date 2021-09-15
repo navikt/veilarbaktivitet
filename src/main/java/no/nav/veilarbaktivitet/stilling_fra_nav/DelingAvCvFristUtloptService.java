@@ -23,10 +23,7 @@ public class DelingAvCvFristUtloptService {
     @Scheduled(fixedDelay = 1800000, initialDelay = 300000)
     void avsluttUtlopedeAktiviteter() {
         if (leaderElectionClient.isLeader()) {
-            boolean ferdig = false;
-            while (!ferdig) {
-                ferdig = 500 < avsluttUtlopedeAktiviteter(500);
-            }
+            while (avsluttUtlopedeAktiviteter(500) == 500) ;
         }
     }
 

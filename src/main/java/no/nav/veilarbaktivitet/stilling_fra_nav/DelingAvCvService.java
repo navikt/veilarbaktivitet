@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
@@ -70,6 +71,7 @@ public class DelingAvCvService {
     }
 
     @Transactional
+    @Timed(value = "avsluttUtloptStillingFraNavEn")
     public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
         AktivitetData nyAktivitet = aktivitet.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)

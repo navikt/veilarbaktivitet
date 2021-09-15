@@ -11,10 +11,12 @@ import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.util.MockBruker;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,11 +67,15 @@ public class DelingAvCvFristUtloptServiceTest {
     Consumer<String, DelingAvCvRespons> consumer;
 
     @Autowired
+    KafkaTemplate<String, DelingAvCvRespons> responsKafkaTemplate;
+
+    @Autowired
     DelingAvCvFristUtloptService delingAvCvFristUtloptService;
 
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
+        Mockito.reset(responsKafkaTemplate);
 
         consumer.unsubscribe();
         consumer.close();
@@ -93,8 +99,7 @@ public class DelingAvCvFristUtloptServiceTest {
         AktivitetDTO skalIkkeBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
-        int avsluttet = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
-        assertEquals(1, avsluttet);
+        delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter();
 
         AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
         assertEquals(skalIkkeBliAvbrutt, finnAktivitet(aktivitetsplanDTO, skalIkkeBliAvbrutt.getId()));
@@ -106,5 +111,56 @@ public class DelingAvCvFristUtloptServiceTest {
                 .build();
 
         assertOppdatertAktivitet(expected, skalVaereAvbrutt);
+    }
+
+    @Test
+    public void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
+        MockBruker mockBruker = MockBruker.happyBruker();
+
+        ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
+        AktivitetDTO skalFeile = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+
+        ForesporselOmDelingAvCv melding2 = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        melding2.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
+        AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding2, port);
+
+        Mockito
+                .doThrow(IllegalStateException.class)
+                .doCallRealMethod()
+                .when(responsKafkaTemplate)
+                .send((ProducerRecord<String, DelingAvCvRespons>) Mockito.any(ProducerRecord.class));
+
+        //kjør første gangn 1 feiler 1 ok
+        int avsluttet = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
+        assertEquals(2, avsluttet);
+
+        AktivitetsplanDTO run1 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetDTO skalVaereAvbrutt = finnAktivitet(run1, skalBliAvbrutt.getId());
+        AktivitetDTO expected = skalBliAvbrutt.toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .build();
+        assertOppdatertAktivitet(expected, skalVaereAvbrutt);
+
+        AktivitetDTO harFeilet = finnAktivitet(run1, skalFeile.getId());
+        assertEquals(skalFeile, harFeilet);
+
+        //kjør 2. gang en aktivitet igjen går ok
+        int i = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
+        assertEquals(1, i);
+
+        AktivitetsplanDTO run2 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetDTO skaVereLikSomFeilet = finnAktivitet(run2, skalVaereAvbrutt.getId());
+        assertEquals(skalVaereAvbrutt, skaVereLikSomFeilet);
+
+        AktivitetDTO skalVaereAvbruttEtterFeil = finnAktivitet(run2, skalFeile.getId());
+        AktivitetDTO expectedSkalFeile = skalFeile.toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .build();
+        assertOppdatertAktivitet(expectedSkalFeile, skalVaereAvbruttEtterFeil);
+
+
     }
 }
