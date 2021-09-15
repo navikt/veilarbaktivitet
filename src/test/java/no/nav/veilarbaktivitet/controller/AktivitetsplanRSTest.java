@@ -14,10 +14,10 @@ import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.WireMockUtil;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,14 +82,13 @@ public class AktivitetsplanRSTest {
 
     @Before
     public void setup() {
-        mockBruker = MockBruker.happyBruker();
+        mockBruker = MockNavService.crateHappyBruker();
         when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(Person.aktorId(mockBruker.getAktorId())));
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
         when(authService.erInternBruker()).thenReturn(Boolean.TRUE);
         when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
         when(authService.sjekKvpTilgang(null)).thenReturn(true);
         mockHttpServletRequest.setParameter("fnr", mockBruker.getFnr());
-        WireMockUtil.stubBruker(mockBruker);
 
     }
 

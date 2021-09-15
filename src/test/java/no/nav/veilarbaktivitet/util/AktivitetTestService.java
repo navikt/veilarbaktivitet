@@ -124,15 +124,20 @@ public class AktivitetTestService {
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
      *
-     * @param port Portnummeret til webserveren.
-     *             Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
-     * @param fnr
+     * @param port       Portnummeret til webserveren.
+     *                   Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
+     * @param mockBruker
      * @return En AktivitetplanDTO med en liste av AktivitetDto
      */
-    public AktivitetsplanDTO hentAktiviteterForFnr(int port, String fnr) {
-        Response response = given()
-                .header("Content-type", "application/json")
-                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet?fnr=" + fnr)
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker) {
+        return hentAktiviteterForFnr(port, mockBruker, mockBruker);
+    }
+
+
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker, RestassuredUser user) {
+        Response response = user
+                .createRequest()
+                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet", mockBruker))
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -153,16 +158,20 @@ public class AktivitetTestService {
      * @return Aktiviteten
      */
     public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        WireMockUtil.stubBruker(mockBruker);
+
+        return opprettAktivitet(port, mockBruker, mockBruker, aktivitetDTO);
+    }
+
+    public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
 
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
-        Response response = given()
-                .header("Content-type", "application/json")
+        Response response = user
+                .createRequest()
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .post("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny?fnr=" + mockBruker.getFnr())
+                .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.util;
+package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
@@ -7,19 +7,18 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.ok;
 
 public class WireMockUtil {
 
-    public static void stubBruker(MockBruker mockBruker) {
+    static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
         String aktorId = mockBruker.getAktorId();
-        boolean erManuell = mockBruker.isErManuell();
-        boolean erReservertKrr = mockBruker.isErReservertKrr();
-        boolean erUnderKvp = mockBruker.isErUnderKvp();
-        boolean kanVarsles = mockBruker.isKanVarsles();
-        boolean underOppfolging = mockBruker.isUnderOppfolging();
-        boolean harBruktNivaa4 = mockBruker.isHarBruktNivaa4();
+        boolean erManuell = mockBruker.getBrukerOptions().isErManuell();
+        boolean erReservertKrr = mockBruker.getBrukerOptions().isErReservertKrr();
+        boolean erUnderKvp = mockBruker.getBrukerOptions().isErUnderKvp();
+        boolean kanVarsles = mockBruker.getBrukerOptions().isKanVarsles();
+        boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
+        boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
 
         oppfolging(fnr, underOppfolging);
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
