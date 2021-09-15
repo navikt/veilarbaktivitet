@@ -6,10 +6,11 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import no.nav.veilarbaktivitet.util.MockBruker;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.junit.After;
@@ -90,7 +91,7 @@ public class DelingAvCvFristUtloptServiceTest {
 
     @Test
     public void utlopte_aktiviteter_skal_avsluttes_automatisk() {
-        MockBruker mockBruker = MockBruker.happyBruker();
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(uuid, mockBruker);
@@ -101,7 +102,7 @@ public class DelingAvCvFristUtloptServiceTest {
 
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter();
 
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         assertEquals(skalIkkeBliAvbrutt, finnAktivitet(aktivitetsplanDTO, skalIkkeBliAvbrutt.getId()));
 
         AktivitetDTO skalVaereAvbrutt = finnAktivitet(aktivitetsplanDTO, skalBliAvbrutt.getId());
@@ -115,7 +116,7 @@ public class DelingAvCvFristUtloptServiceTest {
 
     @Test
     public void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
-        MockBruker mockBruker = MockBruker.happyBruker();
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
@@ -135,7 +136,7 @@ public class DelingAvCvFristUtloptServiceTest {
         int avsluttet = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
         assertEquals(2, avsluttet);
 
-        AktivitetsplanDTO run1 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO run1 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         AktivitetDTO skalVaereAvbrutt = finnAktivitet(run1, skalBliAvbrutt.getId());
         AktivitetDTO expected = skalBliAvbrutt.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
@@ -150,7 +151,7 @@ public class DelingAvCvFristUtloptServiceTest {
         int i = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
         assertEquals(1, i);
 
-        AktivitetsplanDTO run2 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker.getFnr());
+        AktivitetsplanDTO run2 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         AktivitetDTO skaVereLikSomFeilet = finnAktivitet(run2, skalVaereAvbrutt.getId());
         assertEquals(skalVaereAvbrutt, skaVereLikSomFeilet);
 

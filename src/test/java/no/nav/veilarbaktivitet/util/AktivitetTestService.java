@@ -7,6 +7,8 @@ import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
@@ -25,7 +27,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static io.restassured.RestAssured.given;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -56,7 +57,6 @@ public class AktivitetTestService {
         assertEquals(mockBruker.getAktorId(), melding.getAktorId());
 
         final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(stillingFraNavUtTopic);
-        WireMockUtil.stubBruker(mockBruker);
 
         String bestillingsId = melding.getBestillingsId();
         producer.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
@@ -74,7 +74,7 @@ public class AktivitetTestService {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(springPort, mockBruker.getFnr());
+        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(springPort, mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().stream().filter(a -> a.getId().equals(value.getAktivitetId())).findAny().get();
 
         //TODO skriv bedre test
