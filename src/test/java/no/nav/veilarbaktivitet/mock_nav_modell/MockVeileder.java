@@ -8,10 +8,10 @@ import no.nav.common.auth.context.UserRole;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MockVeileder extends RestassureddUser {
+public class MockVeileder extends RestassuredUser {
     @Setter
     @Getter
-    private boolean nationalTilgang = false;
+    private boolean nasjonalTilgang = false;
     private final List<MockBruker> brukerList = new LinkedList<>();
 
     MockVeileder(String ident) {
@@ -27,10 +27,10 @@ public class MockVeileder extends RestassureddUser {
     }
 
     public boolean harTilgangTilBruker(MockBruker bruker) {
-        return nationalTilgang || brukerList.stream().anyMatch(it -> it.equals(bruker));
+        return nasjonalTilgang || brukerList.stream().anyMatch(it -> it.equals(bruker));
     }
 
-    public boolean harTilgagnTilenhet(String enhet) {
+    public boolean harTilgangTilEnhet(String enhet) {
         return brukerList.stream().anyMatch(it -> it.getEnhet().equals(enhet));
     }
 }

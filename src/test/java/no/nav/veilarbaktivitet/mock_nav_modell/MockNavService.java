@@ -12,10 +12,10 @@ public class MockNavService {
     private static final Map<String, MockVeileder> veleder = new HashMap<>();
 
     public static MockBruker crateHappyBruker() {
-        return creteBruker(BrukerOptions.happyBruker());
+        return createBruker(BrukerOptions.happyBruker());
     }
 
-    public static MockBruker creteBruker(BrukerOptions brukerOptions) {
+    public static MockBruker createBruker(BrukerOptions brukerOptions) {
         String fnr = generateFnr();
         String aktorId = aktorIdFromFnr(aktorIdFromFnr(fnr));
         MockBruker mockBruker = new MockBruker(fnr, aktorId, generateEnhet(), brukerOptions);
@@ -25,7 +25,7 @@ public class MockNavService {
         return mockBruker;
     }
 
-    public static void uppdateBruker(MockBruker mockBruker, BrukerOptions brukerOptions) {
+    public static void updateBruker(MockBruker mockBruker, BrukerOptions brukerOptions) {
         mockBruker.setBrukerOptions(brukerOptions);
         WireMockUtil.stubBruker(mockBruker);
     }
@@ -59,7 +59,7 @@ public class MockNavService {
     }
 
     public static String generateFnr() {
-        //TODO fiks se forskjel på aktorid og fnr fra nummer
+        //TODO fiks se forskjell på aktorid og fnr fra nummer
         return IntStream.range(0, 11)
                 .map(i -> new Random().nextInt(9))
                 .mapToObj(Integer::toString)

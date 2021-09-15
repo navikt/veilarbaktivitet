@@ -6,11 +6,11 @@ import no.nav.veilarbaktivitet.config.TestAuthContextFilter;
 
 import static io.restassured.RestAssured.given;
 
-public class RestassureddUser {
+public class RestassuredUser {
     final String ident;
     final UserRole userRole;
 
-    RestassureddUser(String ident, UserRole userRole) {
+    RestassuredUser(String ident, UserRole userRole) {
         this.ident = ident;
         this.userRole = userRole;
     }

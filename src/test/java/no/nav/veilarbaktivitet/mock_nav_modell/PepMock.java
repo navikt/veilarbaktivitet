@@ -19,16 +19,16 @@ public class PepMock implements Pep {
 
     @Override
     public boolean harVeilederTilgangTilEnhet(NavIdent veilederIdent, EnhetId enhetId) {
-        return MockNavService.getVeileder(veilederIdent.get()).harTilgagnTilenhet(enhetId.get());
+        return MockNavService.getVeileder(veilederIdent.get()).harTilgangTilEnhet(enhetId.get());
     }
 
     @Override
     public boolean harTilgangTilEnhet(String innloggetBrukerIdToken, EnhetId enhetId) {
-        if (authContextHolder.getRole().get().equals(UserRole.EKSTERN.name())) {
+        if (authContextHolder.getRole().get().equals(UserRole.EKSTERN)) {
             return true;
         }
         String ident = authContextHolder.getSubject().get();
-        return MockNavService.getVeileder(ident).harTilgagnTilenhet(enhetId.get());
+        return MockNavService.getVeileder(ident).harTilgangTilEnhet(enhetId.get());
     }
 
     @Override

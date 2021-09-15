@@ -77,7 +77,6 @@ public class DelingAvCvITest {
 
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
-    /***** Ekte bønner *****/
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
@@ -137,7 +136,7 @@ public class DelingAvCvITest {
     public void ugyldig_aktorid() {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
 
-        //TODO se på om vi burde ungå bruker her
+        //TODO se på om vi burde unngå bruker her
         MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
@@ -160,7 +159,7 @@ public class DelingAvCvITest {
     public void ikke_under_oppfolging() {
 
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
-        MockBruker mockBruker = MockNavService.creteBruker(options);
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -183,7 +182,7 @@ public class DelingAvCvITest {
     @Test
     public void under_oppfolging_kvp() {
         BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
-        MockBruker mockBruker = MockNavService.creteBruker(brukerOptions);
+        MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -207,7 +206,7 @@ public class DelingAvCvITest {
     @Test
     public void under_manuell_oppfolging() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
-        MockBruker mockBruker = MockNavService.creteBruker(options);
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -231,7 +230,7 @@ public class DelingAvCvITest {
     @Test
     public void reservert_i_krr() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
-        MockBruker mockBruker = MockNavService.creteBruker(options);
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
@@ -256,7 +255,7 @@ public class DelingAvCvITest {
     @Test
     public void mangler_nivaa4() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
-        MockBruker mockBruker = MockNavService.creteBruker(options);
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());

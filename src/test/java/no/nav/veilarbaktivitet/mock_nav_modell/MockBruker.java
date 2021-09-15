@@ -6,7 +6,7 @@ import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
 
 @Getter
-public class MockBruker extends RestassureddUser {
+public class MockBruker extends RestassuredUser {
     private final String aktorId;
     private final String enhet;
     @Setter(AccessLevel.PACKAGE)

@@ -5,7 +5,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.RestassureddUser;
+import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
 import no.nav.veilarbaktivitet.testutils.AktivietAssertUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class AktivitetTestService {
     }
 
 
-    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker, RestassureddUser user) {
+    public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker, RestassuredUser user) {
         Response response = user
                 .createRequest()
                 .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet", mockBruker))
@@ -56,7 +56,7 @@ public class AktivitetTestService {
         return opprettAktivitet(port, mockBruker, mockBruker, aktivitetDTO);
     }
 
-    public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, RestassureddUser user, AktivitetDTO aktivitetDTO) {
+    public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
 
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
