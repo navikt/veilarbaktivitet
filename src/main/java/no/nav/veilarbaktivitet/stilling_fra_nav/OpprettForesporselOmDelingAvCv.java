@@ -42,6 +42,8 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
 
+    private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
+
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
     public void createAktivitet(ForesporselOmDelingAvCv melding) {
@@ -89,7 +91,7 @@ public class OpprettForesporselOmDelingAvCv {
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
-            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, "TODO tekst", VarselType.STILLING_FRA_NAV); //TODO finn riktig tekst
+            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
         }
     }
