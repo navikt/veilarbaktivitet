@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2UnderOppfolgingDTO;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.*;
+import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.KrrStatus;
 
 @Slf4j
 @Service
@@ -114,6 +115,14 @@ public class OpprettForesporselOmDelingAvCv {
                 .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
                 .collect(Collectors.joining(", "));
 
+        KontaktInfo kontaktInfo = melding.getKontaktInfo();
+        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
+                .navn(kontaktInfo.getNavn())
+                .tittel(kontaktInfo.getTittel())
+                .mobil(kontaktInfo.getMobil())
+                .epost(kontaktInfo.getEpost())
+                .build();
+
         StillingFraNavData stillingFraNavData = StillingFraNavData
                 .builder()
                 .soknadsfrist(soknadsfrist)
@@ -122,6 +131,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .bestillingsId(bestillingsId)
                 .stillingsId(stillingsId)
                 .arbeidssted(arbeidsted)
+                .kontaktpersonData(kontaktpersonData)
                 .build();
 
         return AktivitetData
