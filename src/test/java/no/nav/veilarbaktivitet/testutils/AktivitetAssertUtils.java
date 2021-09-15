@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import static org.junit.Assert.assertEquals;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class AktivietAssertUtils {
+public class AktivitetAssertUtils {
     public static void assertOpprettetAktivitet(AktivitetDTO expected, AktivitetDTO actual) {
         AktivitetDTO aktivitetDTO = expected.toBuilder()
                 // overskriv system-genererte attributter

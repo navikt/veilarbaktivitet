@@ -137,7 +137,7 @@ public class ApplicationTestConfig {
 
     @Bean
     <V extends SpecificRecordBase> KafkaTemplate<String, V> kafkaAvroTemplate(ProducerFactory<String, V> avroProducerFactory) {
-        return new KafkaTemplate<>(avroProducerFactory);
+        return Mockito.spy(new KafkaTemplate<>(avroProducerFactory));
     }
 
     @Bean

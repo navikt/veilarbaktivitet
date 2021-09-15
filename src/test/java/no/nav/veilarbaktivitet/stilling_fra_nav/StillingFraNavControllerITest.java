@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
+import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -36,7 +37,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static no.nav.veilarbaktivitet.testutils.AktivietAssertUtils.assertOppdatertAktivitet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -51,8 +51,7 @@ public class StillingFraNavControllerITest {
     KafkaTestService testService;
 
     @Autowired
-    AktivitetTestService testAktivitetService;
-
+    AktivitetTestService aktivitetTestService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -85,7 +84,7 @@ public class StillingFraNavControllerITest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-        AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(true)
@@ -119,7 +118,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -150,7 +149,7 @@ public class StillingFraNavControllerITest {
     public void happy_case_svar_nei() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-        AktivitetDTO aktivitetDTO = opprettStillingFraNav(mockBruker);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(false)
@@ -188,7 +187,7 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
@@ -237,7 +236,7 @@ public class StillingFraNavControllerITest {
         });
 
 
-        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(port, mockBruker);
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
 

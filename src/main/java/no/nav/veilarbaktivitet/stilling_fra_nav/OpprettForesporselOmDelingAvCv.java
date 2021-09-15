@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -104,7 +105,7 @@ public class OpprettForesporselOmDelingAvCv {
         Instant opprettet = melding.getOpprettet();
 
         //nye kolonner
-        Date svarfrist = new Date(melding.getSvarfrist().toEpochMilli());
+        Date svarfrist = new Date(melding.getSvarfrist().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();
         String bestillingsId = melding.getBestillingsId();
