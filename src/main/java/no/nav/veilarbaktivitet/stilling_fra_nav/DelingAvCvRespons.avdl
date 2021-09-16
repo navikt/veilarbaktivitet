@@ -24,6 +24,29 @@
     {
         "namespace": "no.nav.veilarbaktivitet.avro",
         "type": "record",
+        "name": "FeilState",
+        "fields": [
+
+            {
+                "name": "feilmelding",
+                "type": ["string", "null"]
+            },
+            {
+                "name": "FeilType",
+                "type": {
+                    "name": "FeilTypeEnum",
+                    "type": "enum",
+                    "symbols": [
+                        "UGYLDIG_OPPFOLGINGS_STATUS",
+                        "UGYLDIG_INPUT"
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "namespace": "no.nav.veilarbaktivitet.avro",
+        "type": "record",
         "name": "Svar",
         "fields": [
             {
@@ -70,7 +93,6 @@
                     "name": "TilstandEnum",
                     "type": "enum",
                     "symbols": [
-                        "KAN_IKKE_BEHANDLE",
                         "KAN_IKKE_OPPRETTE",
                         "PROVER_VARSLING",
                         "HAR_VARSLET",
@@ -88,8 +110,8 @@
                 ]
             },
             {
-                "name": "feilmelding",
-                "type": ["string", "null"]
+                "name": "kanIkkeOppretteBegrunnelse",
+                "type": ["FeilState", "null"]
             }
         ]
     }
