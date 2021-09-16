@@ -10,7 +10,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.mock.PepMock;
@@ -51,11 +50,6 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public KvpClient kvpClient() {
-        return mock(KvpClient.class);
-    }
-
-    @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
         Map<String, Object> config = properties.buildAdminProperties();
         config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
@@ -78,8 +72,6 @@ public class ApplicationTestConfig {
     public Credentials serviceUserCredentials() {
         return new Credentials("username", "password");
     }
-
-
 
     @Bean
     public MetricsClient metricsClient() {
