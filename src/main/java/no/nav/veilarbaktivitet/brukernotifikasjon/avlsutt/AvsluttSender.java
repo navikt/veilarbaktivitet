@@ -17,7 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AvsluttSender {
+class AvsluttSender {
     private final KafkaProducerClient<Nokkel, Done> producer;
     private final AvsluttDao avsluttDao;
     private final AuthService authService;
@@ -28,7 +28,7 @@ public class AvsluttSender {
 
 
     @Transactional
-    void avsluttOppgave(SkalAvluttes skalAvluttes) {
+    public void avsluttOppgave(SkalAvluttes skalAvluttes) {
         String aktorId = skalAvluttes.getAktorId();
         String brukernotifikasjonId = skalAvluttes.getBrukernotifikasjonId();
 
