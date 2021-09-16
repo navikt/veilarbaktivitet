@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -41,6 +42,8 @@ public class OpprettForesporselOmDelingAvCv {
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
+
+    private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}")
@@ -89,7 +92,7 @@ public class OpprettForesporselOmDelingAvCv {
         if (erManuell || erReservertIKrr || !harBruktNivaa4) {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
-            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, "TODO tekst", VarselType.STILLING_FRA_NAV); //TODO finn riktig tekst
+            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
         }
     }
@@ -102,7 +105,7 @@ public class OpprettForesporselOmDelingAvCv {
         Instant opprettet = melding.getOpprettet();
 
         //nye kolonner
-        Date svarfrist = new Date(melding.getSvarfrist().toEpochMilli());
+        Date svarfrist = new Date(melding.getSvarfrist().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();
         String bestillingsId = melding.getBestillingsId();

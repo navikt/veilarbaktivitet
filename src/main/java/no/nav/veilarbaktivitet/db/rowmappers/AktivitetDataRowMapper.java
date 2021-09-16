@@ -7,12 +7,18 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
 
-public class AktivitetDataRowMapper {
+public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
+
+    @Override
+    public AktivitetData mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return mapAktivitet(rs);
+    }
 
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
@@ -147,7 +153,7 @@ public class AktivitetDataRowMapper {
         return StillingFraNavData.builder()
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))
-                .svarfrist(rs.getDate("svarFrist"))
+                .svarfrist(Database.hentDato(rs, "svarFrist"))
                 .arbeidsgiver(rs.getString("STILLING_FRA_NAV.ARBEIDSGIVER"))
                 .bestillingsId(rs.getString("bestillingsId"))
                 .stillingsId(rs.getString("stillingsId"))

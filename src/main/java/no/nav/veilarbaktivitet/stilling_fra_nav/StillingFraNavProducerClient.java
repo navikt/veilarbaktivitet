@@ -1,10 +1,9 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import no.nav.veilarbaktivitet.avro.*;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.InnsenderData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -42,6 +41,10 @@ public class StillingFraNavProducerClient {
 
     void sendSvart(AktivitetData aktivitetData) {
         sendRespons(TilstandEnum.HAR_SVART, aktivitetData);
+    }
+
+    void sendSvarfristUtlopt(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.SVARFRIST_UTLOPT, aktivitetData);
     }
 
     private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
