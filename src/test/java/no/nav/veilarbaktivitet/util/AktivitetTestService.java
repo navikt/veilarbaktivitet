@@ -56,7 +56,7 @@ public class AktivitetTestService {
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding, int springPort) {
         assertEquals(mockBruker.getAktorId(), melding.getAktorId());
 
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(stillingFraNavUtTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(stillingFraNavUtTopic);
 
         String bestillingsId = melding.getBestillingsId();
         producer.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);

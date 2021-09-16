@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +47,10 @@ public class OpprettForesporselOmDelingAvCv {
     private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
     @Transactional
-    @KafkaListener(topics = "${topic.inn.stillingFraNav}")
-    public void createAktivitet(ForesporselOmDelingAvCv melding) {
+    @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory")
+    public void createAktivitet(ConsumerRecord<String, ForesporselOmDelingAvCv> consumerRecord) {
+        ForesporselOmDelingAvCv melding = consumerRecord.value();
+
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
             log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
             return;

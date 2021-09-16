@@ -65,7 +65,6 @@ public class StillingFraNavControllerITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
-
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
 
@@ -91,7 +90,7 @@ public class StillingFraNavControllerITest {
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
         Response response = veileder
                 .createRequest()
@@ -156,7 +155,7 @@ public class StillingFraNavControllerITest {
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
         Response response = veileder
                 .createRequest()
@@ -216,7 +215,7 @@ public class StillingFraNavControllerITest {
 
 
     private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
