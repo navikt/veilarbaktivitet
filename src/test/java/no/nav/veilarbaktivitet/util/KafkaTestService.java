@@ -25,6 +25,8 @@ public class KafkaTestService {
 
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
 
+    private final ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
+
     private final Admin kafkaAdminClient;
 
     /**
@@ -40,7 +42,23 @@ public class KafkaTestService {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
         Consumer newConsumer = stringAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
 
+        return newConsumer;
+    }
+
+    public Consumer createAvroAvroConsumer(String topic) {
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        Consumer newConsumer = avroAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
+
+        return newConsumer;
+    }
+
+    public void seekToEnd(String topic, Consumer newConsumer) {
         List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
         List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
 
@@ -50,7 +68,6 @@ public class KafkaTestService {
         collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
         newConsumer.commitSync(Duration.ofSeconds(10));
-        return newConsumer;
     }
 
     @SneakyThrows
@@ -65,4 +82,5 @@ public class KafkaTestService {
         long commitedOffset = offsetAndMetadata.offset();
         return commitedOffset >= producerOffset;
     }
+
 }

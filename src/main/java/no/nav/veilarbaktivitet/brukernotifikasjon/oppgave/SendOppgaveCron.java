@@ -15,15 +15,18 @@ public class SendOppgaveCron {
     private final LeaderElectionClient leaderElectionClient;
     private final BrukerNotifkasjonOppgaveService internalService;
 
-    @Scheduled(initialDelay = 1000, fixedDelay = 1000)
-    void sendBrukernotifikasjoner() {
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    public void sendBrukernotifikasjoner() {
         if (leaderElectionClient.isLeader()) {
             sendAlle(500);
         }
     }
 
     void sendAlle(int maxBatchSize) {
-        while (sendOpptil(maxBatchSize) == maxBatchSize) ;
+        while (sendOpptil(maxBatchSize) == maxBatchSize);
     }
 
     private int sendOpptil(int maxAntall) {

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktiviteter_til_kafka;
+package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 

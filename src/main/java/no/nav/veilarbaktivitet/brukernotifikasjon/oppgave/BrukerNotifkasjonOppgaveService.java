@@ -69,7 +69,7 @@ class BrukerNotifkasjonOppgaveService {
         int sikkerhetsnivaa = 3;
         return new OppgaveBuilder()
                 .withTidspunkt(LocalDateTime.now())
-                .withFodselsnummer(fnr.toString())
+                .withFodselsnummer(fnr.get())
                 .withGrupperingsId(oppfolgingsPeriode)
                 .withTekst(tekst)
                 .withLink(link)
