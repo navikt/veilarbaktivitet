@@ -24,7 +24,7 @@
     {
         "namespace": "no.nav.veilarbaktivitet.avro",
         "type": "record",
-        "name": "FeilState",
+        "name": "KanIkkeOppretteBegrunnelse",
         "fields": [
 
             {
@@ -32,12 +32,12 @@
                 "type": ["string", "null"]
             },
             {
-                "name": "FeilType",
+                "name": "begrunnelse",
                 "type": {
-                    "name": "FeilTypeEnum",
+                    "name": "begrunnelseEnum",
                     "type": "enum",
                     "symbols": [
-                        "UGYLDIG_OPPFOLGINGS_STATUS",
+                        "UGYLDIG_OPPFOLGINGSSTATUS",
                         "UGYLDIG_INPUT"
                     ]
                 }
@@ -111,7 +111,7 @@
             },
             {
                 "name": "kanIkkeOppretteBegrunnelse",
-                "type": ["FeilState", "null"]
+                "type": ["KanIkkeOppretteBegrunnelse", "null"]
             }
         ]
     }
