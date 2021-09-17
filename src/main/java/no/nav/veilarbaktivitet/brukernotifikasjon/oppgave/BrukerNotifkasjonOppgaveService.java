@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,14 +49,14 @@ class BrukerNotifkasjonOppgaveService {
         }
     }
 
-
+    @SneakyThrows
     private void sendOppgave(SkalSendes skalSendes) {
         Person.Fnr fnr = authService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
 
         Nokkel nokkel = new Nokkel(serviceUserCredentials.username, skalSendes.getBrukernotifikasjonId());
         Oppgave oppgave = createOppgave(skalSendes.getAktivitetId(), fnr, skalSendes.getMelding(), skalSendes.getOppfolgingsperiode());
         final ProducerRecord<Nokkel, Oppgave> kafkaMelding = new ProducerRecord<>(oppgaveToppic, nokkel, oppgave);
-        producer.send(kafkaMelding);
+        producer.send(kafkaMelding).get();
     }
 
     private Oppgave createOppgave(
@@ -65,7 +65,7 @@ class BrukerNotifkasjonOppgaveService {
             String tekst,
             String oppfolgingsPeriode
     ) {
-        URL link = crateAktivitetLink(aktivitetId);
+        URL link = createAktivitetLink(aktivitetId);
         int sikkerhetsnivaa = 3;
         return new OppgaveBuilder()
                 .withTidspunkt(LocalDateTime.now())
@@ -79,14 +79,9 @@ class BrukerNotifkasjonOppgaveService {
                 .build();
     }
 
-    private URL crateAktivitetLink(long aktivitetId) {
-        URL link = null;
-        try {
-            link = new URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId);
-        } catch (MalformedURLException e) {
-            log.error("URL hadde ugyldig format", e);
-        }
-        return link;
+    @SneakyThrows
+    private URL createAktivitetLink(long aktivitetId) {
+        return new URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId);
     }
 
     List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {

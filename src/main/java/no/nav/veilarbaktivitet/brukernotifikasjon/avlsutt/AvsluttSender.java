@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.common.kafka.producer.KafkaProducerClient;
@@ -27,6 +28,7 @@ class AvsluttSender {
     private String doneToppic;
 
 
+    @SneakyThrows
     @Transactional
     public void avsluttOppgave(SkalAvluttes skalAvluttes) {
         String aktorId = skalAvluttes.getAktorId();
@@ -45,7 +47,7 @@ class AvsluttSender {
             Nokkel nokkel = new Nokkel(serviceUserCredentials.username, brukernotifikasjonId);
             final ProducerRecord<Nokkel, Done> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);
 
-            producer.send(kafkaMelding);
+            producer.send(kafkaMelding).get();
         }
     }
 

@@ -83,4 +83,24 @@ public class KafkaTestService {
         return commitedOffset >= producerOffset;
     }
 
+    @SneakyThrows
+    public boolean harKonsumertAlleMeldinger(String topic, Consumer consumer) {
+        String groupId = consumer.groupMetadata().groupId();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
+        OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
+
+        if (offsetAndMetadata == null) {
+            // Hvis ingen commitede meldinger, så er alt konsumert
+            return true;
+        }
+
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(topic);
+        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
+
+        Map<TopicPartition, Long> map = consumer.endOffsets(collect);
+        Long endOffset = map.get(collect.get(0));
+
+        return offsetAndMetadata.offset() == endOffset;
+    }
+
 }
