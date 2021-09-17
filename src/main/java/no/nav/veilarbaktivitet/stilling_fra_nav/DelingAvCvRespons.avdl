@@ -34,12 +34,12 @@
             {
                 "name": "begrunnelse",
                 "type": {
-                    "name": "begrunnelseEnum",
-                    "type": "enum",
-                    "symbols": [
-                        "UGYLDIG_OPPFOLGINGSSTATUS",
-                        "UGYLDIG_INPUT"
-                    ]
+                        "name": "BegrunnelseEnum",
+                        "type": "enum",
+                        "symbols": [
+                                   "UGYLDIG_OPPFOLGINGSSTATUS",
+                                   "UGYLDIG_INPUT"
+                                   ]
                 }
             }
         ]
