@@ -3,15 +3,19 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.brukernotifikasjon.schemas.Done;
+import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.veilarbaktivitet.avro.*;
+import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -31,11 +35,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,8 +64,18 @@ public class StillingFraNavControllerITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
+    @Value("${topic.ut.brukernotifikasjon.done}")
+    private String brukernotifkasjonFerdigToppik;
+
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+
+    @Autowired
+    SendOppgaveCron sendOppgaveCron;
+
+    @Autowired
+    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
+
 
     @After
     public void verify_no_unmatched() {
@@ -84,6 +93,9 @@ public class StillingFraNavControllerITest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        //Trigger scheduld jobb manuelt da schedule er disabled i test.
+        sendOppgaveCron.sendBrukernotifikasjoner();
+
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(true)
@@ -102,30 +114,24 @@ public class StillingFraNavControllerITest {
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
 
-        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+        aktivitetSkalVereOppdatert(veileder, aktivitetDTO, response);
+        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, true);
 
-        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(true)
-                .endretAv(veileder.getNavIdent())
-                .endretAvType(InnsenderData.NAV)
-                // kopierer systemgenererte attributter
-                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
-                .build();
+        Consumer<Nokkel, Done> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigToppik);
+        //Trigger scheduld jobb manuelt da schedule er disabled i test.
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
+        assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), singleRecord.value().getGrupperingsId());
+    }
 
-
-        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
-
-        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
-
-        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
-
-
+    private void svarSkalVereSendtTilrekruteringsBistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
         // Sjekk at svarmelding sendt til rekrutteringsbistand
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
         Svar expectedSvar = Svar.newBuilder()
-                .setSvar(true)
+                .setSvar(svar)
                 .setSvartAvBuilder(Ident.newBuilder()
                         .setIdent(veileder.getNavIdent())
                         .setIdentType(IdentTypeEnum.NAV_IDENT))
@@ -142,6 +148,25 @@ public class StillingFraNavControllerITest {
             assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
             assertions.assertAll();
         });
+    }
+
+    private void aktivitetSkalVereOppdatert(MockVeileder veileder, AktivitetDTO aktivitetDTO, Response response) {
+        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+
+        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
+                .kanDeles(true)
+                .endretAv(veileder.getNavIdent())
+                .endretAvType(InnsenderData.NAV)
+                // kopierer systemgenererte attributter
+                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
+                .build();
+
+
+        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
+
+        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
+
+        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
     }
 
     @Test
@@ -190,98 +215,6 @@ public class StillingFraNavControllerITest {
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        Svar expectedSvar = Svar.newBuilder()
-                .setSvar(false)
-                .setSvartAvBuilder(Ident.newBuilder()
-                        .setIdent(veileder.getNavIdent())
-                        .setIdentType(IdentTypeEnum.NAV_IDENT))
-                // kopier systemgenererte felter
-                .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
-                .build();
-
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
-            assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
-            assertions.assertAll();
-        });
+        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, false);
     }
-
-
-    private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
-
-        String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
-            assertions.assertThat(value.getSvar()).isNull();
-            assertions.assertAll();
-        });
-
-
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
-        assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
-        AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
-
-        //TODO skriv bedre test
-        assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
-        assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
-        assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
-
-        return aktivitetDTO;
-    }
-
-
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
-        return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(aktorId)
-                .setArbeidsgiver("arbeidsgiver")
-                .setArbeidssteder(List.of(
-                        Arbeidssted.newBuilder()
-                                .setAdresse("adresse")
-                                .setPostkode("1234")
-                                .setKommune("kommune")
-                                .setBy("by")
-                                .setFylke("fylke")
-                                .setLand("land").build(),
-                        Arbeidssted.newBuilder()
-                                .setAdresse("VillaRosa")
-                                .setPostkode(null)
-                                .setKommune(null)
-                                .setBy(null)
-                                .setFylke(null)
-                                .setLand("spania").build()))
-                .setBestillingsId(bestillingsId)
-                .setOpprettet(Instant.now())
-                .setOpprettetAv("Z999999")
-                .setCallId("callId")
-                .setSoknadsfrist("10102021")
-                .setStillingsId("stillingsId1234")
-                .setStillingstittel("stillingstittel")
-                .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
-                .setKontaktInfo(KontaktInfo.newBuilder()
-                        .setNavn("Jan Saksbehandler")
-                        .setTittel("Nav-ansatt")
-                        .setEpost("jan.saksbehandler@nav.no")
-                        .setMobil("99999999").build())
-                .build();
-    }
-
 }

@@ -38,7 +38,7 @@ class AvsluttSender {
             Done done = Done
                     .newBuilder()
                     .setFodselsnummer(fnrForAktorId.get())
-                    .setGrupperingsId(brukernotifikasjonId)
+                    .setGrupperingsId(skalAvluttes.getOppfolgingsPeriode().toString())
                     .setTidspunkt(Instant.now().toEpochMilli())
                     .build();
 

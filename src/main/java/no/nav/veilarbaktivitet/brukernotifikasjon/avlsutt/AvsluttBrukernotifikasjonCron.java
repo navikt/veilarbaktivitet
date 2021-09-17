@@ -21,7 +21,7 @@ public class AvsluttBrukernotifikasjonCron {
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
-    void avsluttBrukernotifikasjoner() {
+    public void avsluttBrukernotifikasjoner() {
         if (leaderElectionClient.isLeader()) {
             sendAvsluttAlle(500);
         }
