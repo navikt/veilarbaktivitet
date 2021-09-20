@@ -43,13 +43,25 @@ public class DelingAvCvService {
         return endeligAktivitet;
     }
 
+    @Transactional
+    @Timed(value = "avsluttUtloptStillingFraNavEn")
+    public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
+        AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .build();
+
+        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
+        stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
+    }
+
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         var deleCvDetaljer = CvKanDelesData.builder()
                 .kanDeles(kanDeles)
                 .endretTidspunkt(new Date())
-                .endretAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
+                .endretAvType(erEksternBruker ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .endretAv(innloggetBruker.get())
                 .build();
 
@@ -70,17 +82,5 @@ public class DelingAvCvService {
         }
 
         return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
-    }
-
-    @Transactional
-    @Timed(value = "avsluttUtloptStillingFraNavEn")
-    public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
-        AktivitetData nyAktivitet = aktivitet.toBuilder()
-                .status(AktivitetStatus.AVBRUTT)
-                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
-                .build();
-
-        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
-        stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
     }
 }
