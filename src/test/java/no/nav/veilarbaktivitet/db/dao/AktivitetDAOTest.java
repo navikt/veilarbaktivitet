@@ -211,7 +211,7 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyttStillingssøk();
+        val aktivitet = AktivitetDataTestBuilder.nyttStillingssok();
 
         return addAktivitet(aktivitet);
     }
