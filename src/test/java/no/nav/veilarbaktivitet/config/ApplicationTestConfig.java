@@ -164,6 +164,16 @@ public class ApplicationTestConfig {
     }
 
     @Bean
+    ConsumerFactory<String, String> stringStringConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
+
+        return new DefaultKafkaConsumerFactory<>(consumerProperties);
+    }
+
+    @Bean
     Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties, EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()

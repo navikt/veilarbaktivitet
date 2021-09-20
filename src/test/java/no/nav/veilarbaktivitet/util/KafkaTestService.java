@@ -27,6 +27,8 @@ public class KafkaTestService {
 
     private final ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
 
+    private final ConsumerFactory<String, String> stringStringConsumerFactory;
+
     private final Admin kafkaAdminClient;
 
     /**
@@ -53,6 +55,17 @@ public class KafkaTestService {
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
         Consumer newConsumer = avroAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
+
+        return newConsumer;
+    }
+
+    public Consumer createStringStringConsumer(String topic) {
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        Consumer newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         seekToEnd(topic, newConsumer);
 
         return newConsumer;
