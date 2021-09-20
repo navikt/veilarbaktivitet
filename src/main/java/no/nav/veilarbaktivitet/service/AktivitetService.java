@@ -6,11 +6,10 @@ import lombok.val;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.MappingUtils;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -166,6 +165,17 @@ public class AktivitetService {
                 .withReferatPublisert(moteData.isReferatPublisert());
     }
 
+    public void svarPaaKanCvDeles(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+        val merger = MappingUtils.merge(originalAktivitet, aktivitet);
+        aktivitetDAO.oppdaterAktivitet(originalAktivitet
+                .withEndretAv(endretAv.get())
+                .withLagtInnAv(endretAv.tilBrukerType())
+                .withTransaksjonsType(AktivitetTransaksjonsType.DEL_CV_SVART)
+                .withStillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNavData))
+        );
+
+    }
+
     public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
@@ -195,8 +205,7 @@ public class AktivitetService {
         );
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
-
-    //TODO: Det er riktig at man kun kan endre cv data??
+    
     private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
         var nyCvKanDeles = aktivitet.getCvKanDelesData();
 

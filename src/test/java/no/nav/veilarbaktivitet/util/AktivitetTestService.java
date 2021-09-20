@@ -125,8 +125,8 @@ public class AktivitetTestService {
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
      *
      * @param port       Portnummeret til webserveren.
-     *                   Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
-     * @param mockBruker
+     *                   Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{\@LocalServerPort private int port;}
+     * @param mockBruker mock bruker
      * @return En AktivitetplanDTO med en liste av AktivitetDto
      */
     public AktivitetsplanDTO hentAktiviteterForFnr(int port, MockBruker mockBruker) {
@@ -147,12 +147,24 @@ public class AktivitetTestService {
         return response.as(AktivitetsplanDTO.class);
     }
 
+    public List<AktivitetDTO> hentVersjoner(String aktivitetId, int port, MockBruker mockBruker, RestassuredUser user) {
+        Response response = user
+                .createRequest()
+                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetId + "/versjoner", mockBruker))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+        return response.jsonPath().getList(".", AktivitetDTO.class);
+    }
+
 
     /**
      * Oppretter en ny aktivitet via aktivitet-apiet. Kallet blir utført av nav-bruker no.nav.veilarbaktivitet.config.FilterTestConfig#NAV_IDENT_ITEST Z123456
      *
      * @param port         Portnummeret til webserveren.
-     *                     Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{@LocalServerPort private int port;}
+     *                     Når man bruker SpringBootTest.WebEnvironment.RANDOM_PORT, kan portnummeret injektes i testklassen ved å bruke @code{\@LocalServerPort private int port;}
      * @param mockBruker   Brukeren man skal opprette aktiviteten for
      * @param aktivitetDTO payload
      * @return Aktiviteten

@@ -75,7 +75,7 @@ public class AktivitetDTOMapperTest {
 
     @Test
     public void skalMappeStillingSokData() {
-        AktivitetData nyttStillingssok = AktivitetDataTestBuilder.nyttStillingssøk();
+        AktivitetData nyttStillingssok = AktivitetDataTestBuilder.nyttStillingssok();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssok, false);
         SoftAssertions.assertSoftly( s -> {
             s.assertThat(aktivitetDTO.getType()).isEqualTo(AktivitetTypeDTO.STILLING);

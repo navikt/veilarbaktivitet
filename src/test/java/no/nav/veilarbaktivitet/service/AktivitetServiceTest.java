@@ -299,7 +299,7 @@ public class AktivitetServiceTest {
     }
 
     public AktivitetData lagEnNyAktivitet() {
-        return AktivitetDataTestBuilder.nyttStillingssøk();
+        return AktivitetDataTestBuilder.nyttStillingssok();
     }
 
     public void captureOppdaterAktivitetArgument() {

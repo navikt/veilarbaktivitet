@@ -100,7 +100,7 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetVersjoner_returnererIkkeForhaandsorientering() {
-        var aktivitet = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
+        var aktivitet = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
         Long aktivitetId = aktivitet.getId();
         aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), Person.aktorId(mockBruker.getAktorId()));
         var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetId);
@@ -117,8 +117,8 @@ public class AktivitetsplanRSTest {
 
     @Test
     public void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
-        aktivitetDAO.opprettNyAktivitet(nyttStillingssøk().withAktorId(mockBruker.getAktorId()));
+        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
+        aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
@@ -240,23 +240,23 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_aktiviter() {
         List<AktivitetData> aktiviter = Arrays.asList(
-                nyttStillingssøk(), nyttStillingssøk()
+                nyttStillingssok(), nyttStillingssok()
         );
         gitt_at_jeg_har_folgende_aktiviteter(aktiviter);
     }
 
     private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
         gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
-                nyttStillingssøk(),
-                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
-                nyttStillingssøk(),
-                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssok(),
+                nyttStillingssok().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
+                nyttStillingssok(),
+                nyttStillingssok().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
         ));
     }
 
     private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
         gitt_at_jeg_har_folgende_aktiviteter(Collections.singletonList(
-                nyttStillingssøk().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssok().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
         ));
     }
 
