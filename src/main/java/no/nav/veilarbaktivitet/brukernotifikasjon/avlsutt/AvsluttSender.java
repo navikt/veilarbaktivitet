@@ -52,7 +52,10 @@ class AvsluttSender {
     }
 
     public List<SkalAvluttes> getOppgaverSomSkalAvbrytes(int maxAntall) {
-        return avsluttDao.getOppgaverSomSkalAvbrytes(maxAntall);
+        return avsluttDao.getOppgaverSomSkalAvsluttes(maxAntall);
     }
 
+    public int avsluttIkkeSendteOppgaver() {
+        return avsluttDao.avsluttIkkeSendteOppgaver();
+    }
 }

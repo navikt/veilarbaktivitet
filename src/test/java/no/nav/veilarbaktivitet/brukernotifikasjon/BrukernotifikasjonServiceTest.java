@@ -1,11 +1,13 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -14,6 +16,7 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -58,13 +62,26 @@ public class BrukernotifikasjonServiceTest {
 
     Consumer<Nokkel, Oppgave> oppgaveConsumer;
 
+    @Autowired
+    JdbcTemplate jdbc;
+
     @LocalServerPort
     private int port;
 
     @Before
     public void setUp() {
+        DbTestUtils.cleanupTestDb(jdbc);
+
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
+    }
+
+    @After
+    public void assertNoUnkowns() {
+        oppgaveConsumer.unsubscribe();
+        doneConsumer.unsubscribe();
+
+        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
 
     @Test
@@ -72,16 +89,16 @@ public class BrukernotifikasjonServiceTest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+
         brukernotifikasjonService.opprettOppgavePaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
         brukernotifikasjonService.oppgaveDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue("Skal ikke ha produsert meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
-        assertTrue("Skal ikke ha produsert meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
+        assertTrue("Skal ikke produsert oppgave meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
+        assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
     }
 
     @Test
@@ -114,8 +131,8 @@ public class BrukernotifikasjonServiceTest {
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue("Skal ikke ha produsert meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
-        assertTrue("Skal ikke ha produsert meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
+        assertTrue("Skal ikke produsert oppgave meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
+        assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
 
         AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         AktivitetDTO skalIkkeVaereOppdatert = AktivitetTestService.finnAktivitet(aktivitetsplanDTO, avbruttAktivitet.getId());

@@ -17,7 +17,7 @@ class AvsluttDao {
     private final NamedParameterJdbcTemplate jdbc;
     private final RowMapper<SkalAvluttes> skalAvsluttesMapper = (rs, rowNum) -> new SkalAvluttes(rs.getString("BRUKERNOTIFIKASJON_ID"), rs.getString("AKTOR_ID"), UUID.fromString(rs.getString("OPPFOLGINGSPERIODE")));
 
-    List<SkalAvluttes> getOppgaverSomSkalAvbrytes(int maksAntall) {
+    List<SkalAvluttes> getOppgaverSomSkalAvsluttes(int maksAntall) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("status", VarselStatus.SKAL_AVSLUTTES.name())
                 .addValue("limit", maksAntall);
@@ -26,10 +26,21 @@ class AvsluttDao {
                         " from BRUKERNOTIFIKASJON B" +
                         " inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID " +
                         " where STATUS = :status" +
-                        " and GJELDENDE = 1" +
+                        " and GJELDENDE = 1 " +
+                        " and SENDT is not null " +
                         " limit :limit",
                 param,
                 skalAvsluttesMapper);
+    }
+
+
+    public int avsluttIkkeSendteOppgaver() {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("skal_avsluttes", VarselStatus.SKAL_AVSLUTTES.name())
+                .addValue("avbrutStatus", VarselStatus.AVSLUTTET.name());
+        return jdbc.update("" +
+                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and SENDT is null",
+                param);
     }
 
     boolean markerOppgaveSomAvbrutt(String brukernotifikasjonsId) {

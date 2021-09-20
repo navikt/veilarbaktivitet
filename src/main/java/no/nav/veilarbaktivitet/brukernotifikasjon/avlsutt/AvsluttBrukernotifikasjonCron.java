@@ -32,6 +32,7 @@ public class AvsluttBrukernotifikasjonCron {
     }
 
     private int sendAvsluttOpptil(int maxAntall) {
+        internalService.avsluttIkkeSendteOppgaver();
         List<SkalAvluttes> skalSendes = internalService.getOppgaverSomSkalAvbrytes(maxAntall);
         skalSendes.forEach(this::tryAvsluttOppgave);
         return skalSendes.size();

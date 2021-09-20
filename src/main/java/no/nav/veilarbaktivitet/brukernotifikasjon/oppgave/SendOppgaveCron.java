@@ -26,7 +26,9 @@ public class SendOppgaveCron {
     }
 
     void sendAlle(int maxBatchSize) {
-        while (sendOpptil(maxBatchSize) == maxBatchSize);
+        //TODO fiks denne
+        internalService.todo();
+        while (sendOpptil(maxBatchSize) == maxBatchSize) ;
     }
 
     private int sendOpptil(int maxAntall) {

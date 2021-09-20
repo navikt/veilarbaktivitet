@@ -9,7 +9,6 @@ import no.nav.brukernotifikasjon.schemas.builders.OppgaveBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.service.AuthService;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -37,12 +36,7 @@ class BrukerNotifkasjonOppgaveService {
 
     @Transactional
     public void send(SkalSendes skalSendes) {
-        if (skalSendes.skalAbrytes()) {
-            dao.oppdaterStatus(skalSendes.getId(), VarselStatus.PENDING, VarselStatus.AVBRUTT);
-            return;
-        }
-
-        boolean oppdatertOk = dao.oppdaterStatus(skalSendes.getId(), VarselStatus.PENDING, VarselStatus.FORSOKT_SENDT);
+        boolean oppdatertOk = dao.setSendt(skalSendes.getId());
 
         if (oppdatertOk) {
             sendOppgave(skalSendes);
@@ -86,5 +80,9 @@ class BrukerNotifkasjonOppgaveService {
 
     List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
         return dao.hentVarselSomSkalSendes(maxAntall);
+    }
+
+    int todo() {
+        return dao.avbrytAktiviterSomIkkeKanEndres();
     }
 }
