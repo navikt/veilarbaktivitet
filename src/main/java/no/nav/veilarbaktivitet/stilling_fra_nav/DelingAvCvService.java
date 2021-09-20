@@ -25,6 +25,7 @@ public class DelingAvCvService {
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
     private final BrukernotifikasjonService brukernotifikasjonService;
+    private final StillingFraNavMetriker metriker;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
         return delingAvCvDAO.eksistererDelingAvCv(bestillingsId);
@@ -37,6 +38,7 @@ public class DelingAvCvService {
 
         brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
+        metriker.countSvar(erEksternBruker, kanDeles);
 
         return endeligAktivitet;
     }
