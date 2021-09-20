@@ -5,18 +5,20 @@ import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.domain.InnsenderData;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -32,12 +34,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -214,75 +213,31 @@ public class StillingFraNavControllerITest {
         });
     }
 
+    @Test
+    public void historikk_del_cv_transaksjoner() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-    private AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
-
-        String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
-            assertions.assertThat(value.getSvar()).isNull();
-            assertions.assertAll();
-        });
-
-
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
-        assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
-        AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
-
-        //TODO skriv bedre test
-        assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
-        assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
-        assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
-
-        return aktivitetDTO;
-    }
-
-
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
-        return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(aktorId)
-                .setArbeidsgiver("arbeidsgiver")
-                .setArbeidssteder(List.of(
-                        Arbeidssted.newBuilder()
-                                .setAdresse("adresse")
-                                .setPostkode("1234")
-                                .setKommune("kommune")
-                                .setBy("by")
-                                .setFylke("fylke")
-                                .setLand("land").build(),
-                        Arbeidssted.newBuilder()
-                                .setAdresse("VillaRosa")
-                                .setPostkode(null)
-                                .setKommune(null)
-                                .setBy(null)
-                                .setFylke(null)
-                                .setLand("spania").build()))
-                .setBestillingsId(bestillingsId)
-                .setOpprettet(Instant.now())
-                .setOpprettetAv("Z999999")
-                .setCallId("callId")
-                .setSoknadsfrist("10102021")
-                .setStillingsId("stillingsId1234")
-                .setStillingstittel("stillingstittel")
-                .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
-                .setKontaktInfo(KontaktInfo.newBuilder()
-                        .setNavn("Jan Saksbehandler")
-                        .setTittel("Nav-ansatt")
-                        .setEpost("jan.saksbehandler@nav.no")
-                        .setMobil("99999999").build())
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .kanDeles(true)
                 .build();
+
+        veileder
+                .createRequest()
+                .param("aktivitetId", aktivitetDTO.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value());
+
+        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), port, mockBruker, veileder);
+
+        List<AktivitetTransaksjonsType> transaksjoner = aktivitetDTOS.stream().map(AktivitetDTO::getTransaksjonsType).collect(Collectors.toList());
+
+        Assertions.assertThat(transaksjoner).contains(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
     }
 
 }
