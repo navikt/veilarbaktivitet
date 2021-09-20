@@ -9,8 +9,6 @@ import no.nav.common.cxf.CXFClient;
 import no.nav.common.cxf.StsConfig;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.featuretoggle.UnleashClientImpl;
-import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.common.job.leader_election.LeaderElectionHttpClient;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
@@ -56,11 +54,6 @@ public class ApplicationContext {
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider(EnvironmentProperties properties, Credentials serviceUserCredentials) {
         return new NaisSystemUserTokenProvider(properties.getNaisStsDiscoveryUrl(), serviceUserCredentials.username, serviceUserCredentials.password);
-    }
-
-    @Bean
-    public LeaderElectionClient leaderElectionClient() {
-        return new LeaderElectionHttpClient();
     }
 
     @Bean

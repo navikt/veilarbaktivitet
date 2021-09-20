@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
@@ -82,11 +81,6 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public LeaderElectionClient leaderElectionClient() {
-        return () -> true;
-    }
-
-    @Bean
     public DataSource dataSource() {
         return LocalH2Database.getPresistentDb().getDataSource();
     }
@@ -95,7 +89,6 @@ public class ApplicationTestConfig {
     public JdbcTemplate jdbcTemplate() {
         return LocalH2Database.getPresistentDb();
     }
-
 
     @Bean
     public EmbeddedKafkaBroker embeddedKafka(
