@@ -5,8 +5,8 @@ on:
       - dev
     paths:
       - 'alerts-dev.yaml'
+      - 'alerts-dev-arena.yaml'
       - '.github/workflows/alerts-dev.yaml'
-      - '.github/workflows/alerts-dev-arena.yaml'
 jobs:
   apply-alerts:
     name: Apply alerts to dev
