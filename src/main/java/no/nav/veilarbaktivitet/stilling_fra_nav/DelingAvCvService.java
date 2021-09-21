@@ -25,6 +25,7 @@ public class DelingAvCvService {
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
     private final BrukernotifikasjonService brukernotifikasjonService;
+    private final StillingFraNavMetrikker metrikker;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
         return delingAvCvDAO.eksistererDelingAvCv(bestillingsId);
@@ -37,8 +38,21 @@ public class DelingAvCvService {
 
         brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
+        metrikker.countSvar(erEksternBruker, kanDeles);
 
         return endeligAktivitet;
+    }
+
+    @Transactional
+    @Timed(value = "avsluttUtloptStillingFraNavEn")
+    public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
+        AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .build();
+
+        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
+        stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
     }
 
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
@@ -47,7 +61,7 @@ public class DelingAvCvService {
         var deleCvDetaljer = CvKanDelesData.builder()
                 .kanDeles(kanDeles)
                 .endretTidspunkt(new Date())
-                .endretAvType(erEksternBruker? InnsenderData.BRUKER : InnsenderData.NAV)
+                .endretAvType(erEksternBruker ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .endretAv(innloggetBruker.get())
                 .build();
 
@@ -68,17 +82,5 @@ public class DelingAvCvService {
         }
 
         return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
-    }
-
-    @Transactional
-    @Timed(value = "avsluttUtloptStillingFraNavEn")
-    public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
-        AktivitetData nyAktivitet = aktivitet.toBuilder()
-                .status(AktivitetStatus.AVBRUTT)
-                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
-                .build();
-
-        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
-        stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
     }
 }
