@@ -28,7 +28,7 @@ class AvsluttDao {
                         " where STATUS = :status" +
                         " and GJELDENDE = 1 " +
                         " and SENDT is not null " +
-                        " limit :limit",
+                        " fetch first :limit rows only",
                 param,
                 skalAvsluttesMapper);
     }
