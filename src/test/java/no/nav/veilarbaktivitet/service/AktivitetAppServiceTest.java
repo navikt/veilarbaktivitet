@@ -1,12 +1,11 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.domain.Person;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -19,7 +18,7 @@ import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssøk;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -56,7 +55,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
@@ -64,7 +63,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
         mockHentAktivitet(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
@@ -101,7 +100,7 @@ public class AktivitetAppServiceTest {
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = nyttStillingssøk().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
         mockHentAktivitet(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);

@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.avtaltMedNav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.service.AuthService;

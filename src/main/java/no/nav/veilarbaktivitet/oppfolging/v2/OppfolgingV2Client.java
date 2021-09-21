@@ -5,7 +5,9 @@ import no.nav.veilarbaktivitet.domain.Person;
 import java.util.Optional;
 
 public interface OppfolgingV2Client {
-    Optional<OppfolgingV2DTO> get(Person.AktorId aktorId);
+    Optional<OppfolgingV2UnderOppfolgingDTO> getUnderoppfolging(Person.AktorId aktorId);
+
+    Optional<OppfolgingPeriodeMinimalDTO> getGjeldendePeriode(Person.AktorId aktorId);
 
     void setBaseUrl(String baseUrl);
 }

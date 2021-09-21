@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.rowmappers.AktivitetDataRowMapper;
 import no.nav.veilarbaktivitet.domain.*;
@@ -289,6 +289,7 @@ public class AktivitetDAO {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
                             var cvKanDelesData = stilling.getCvKanDelesData();
+                            var kontaktpersonData = stilling.getKontaktpersonData();
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
@@ -302,7 +303,11 @@ public class AktivitetDAO {
                                     .addValue("bestillingsId", stilling.getBestillingsId())
                                     .addValue("stillingsId", stilling.getStillingsId())
                                     .addValue("arbeidssted", stilling.getArbeidssted())
-                                    .addValue("varselid", stilling.getVarselId());
+                                    .addValue("varselid", stilling.getVarselId())
+                                    .addValue("kontaktperson_navn", kontaktpersonData.getNavn())
+                                    .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
+                                    .addValue("kontaktperson_mobil", kontaktpersonData.getMobil())
+                                    .addValue("kontaktperson_epost", kontaktpersonData.getEpost());
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     " insert into " +
@@ -318,7 +323,11 @@ public class AktivitetDAO {
                                             "bestillingsId, " +
                                             "stillingsId, " +
                                             "arbeidssted, " +
-                                            "varselid) " +
+                                            "varselid, " +
+                                            "kontaktperson_navn, " +
+                                            "kontaktperson_tittel, " +
+                                            "kontaktperson_mobil, " +
+                                            "kontaktperson_epost) " +
                                             " VALUES ( :aktivitet_id, " +
                                             ":versjon, " +
                                             ":cv_kan_deles, " +
@@ -331,7 +340,11 @@ public class AktivitetDAO {
                                             ":bestillingsId , " +
                                             ":stillingsId , " +
                                             ":arbeidssted , " +
-                                            ":varselid)",
+                                            ":varselid , " +
+                                            ":kontaktperson_navn , " +
+                                            ":kontaktperson_tittel , " +
+                                            ":kontaktperson_mobil , " +
+                                            ":kontaktperson_epost)",
                                     parms
                             );
                         }

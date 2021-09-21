@@ -2,11 +2,12 @@ package no.nav.veilarbaktivitet.domain;
 
 import lombok.Builder;
 import lombok.Value;
+import lombok.With;
 import lombok.experimental.Wither;
 
+@With
 @Value
 @Builder
-@Wither
 public class BehandlingAktivitetData {
     String behandlingType;
     String behandlingSted;

@@ -15,13 +15,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,7 +38,6 @@ import static org.junit.Assert.fail;
 @Slf4j
 @SpringBootTest
 @RunWith(SpringRunner.class)
-@EmbeddedKafka(topics = {"${topic.inn.stillingFraNav}","${topic.ut.stillingFraNav}"}, partitions = 1)
 @AutoConfigureWireMock(port = 0)
 @Transactional
 public class AktivitetDAOTest {
@@ -212,7 +211,7 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
-        val aktivitet = AktivitetDataTestBuilder.nyttStillingssøk();
+        val aktivitet = AktivitetDataTestBuilder.nyttStillingssok();
 
         return addAktivitet(aktivitet);
     }

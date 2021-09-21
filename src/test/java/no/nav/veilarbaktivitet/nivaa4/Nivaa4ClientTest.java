@@ -27,7 +27,7 @@ public class Nivaa4ClientTest {
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         AuthService authService = Mockito.mock(AuthService.class);
-        Mockito.when(authService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Optional.of(Person.fnr(FNR)));
+        Mockito.when(authService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Person.fnr(FNR));
         nivaa4Client = new Nivaa4ClientImpl(okHttpClient, authService);
         nivaa4Client.setBaseUrl("http://localhost:8089/veilarbperson/api");
     }

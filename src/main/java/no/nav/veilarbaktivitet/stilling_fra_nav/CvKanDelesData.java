@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.domain.InnsenderData;
 
 import java.util.Date;
 
-@Builder
+@Builder(toBuilder = true)
 @With
 @Getter
 @Data

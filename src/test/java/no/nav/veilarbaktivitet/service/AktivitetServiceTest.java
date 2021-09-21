@@ -2,8 +2,7 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.veilarbaktivitet.avtaltMedNav.AvtaltMedNavService;
-import no.nav.veilarbaktivitet.kvp.KvpClient;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
@@ -300,7 +299,7 @@ public class AktivitetServiceTest {
     }
 
     public AktivitetData lagEnNyAktivitet() {
-        return AktivitetDataTestBuilder.nyttStillingssøk();
+        return AktivitetDataTestBuilder.nyttStillingssok();
     }
 
     public void captureOppdaterAktivitetArgument() {

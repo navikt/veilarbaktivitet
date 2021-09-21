@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.domain;
 
 import lombok.*;
-import no.nav.veilarbaktivitet.avtaltMedNav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
