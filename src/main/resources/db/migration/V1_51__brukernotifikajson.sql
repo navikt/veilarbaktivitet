@@ -1,4 +1,4 @@
 alter table BRUKERNOTIFIKASJON
-    alter column SENDT rename to OPPRETTET;
+    rename column SENDT to OPPRETTET;
 alter table BRUKERNOTIFIKASJON
     add column SENDT timestamp;
