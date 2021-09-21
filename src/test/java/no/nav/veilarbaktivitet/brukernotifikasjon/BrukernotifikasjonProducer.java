@@ -13,11 +13,10 @@ import org.springframework.context.annotation.Profile;
 
 import java.util.Properties;
 
-import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS;
 import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
 
 @Configuration
-@Profile("!dev")
+@Profile("dev")
 class BrukernotifikasjonProducer {
 
     @Value("${spring.kafka.properties.schema.registry.url}")
@@ -33,7 +32,6 @@ class BrukernotifikasjonProducer {
                 .withAdditionalProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                         io.confluent.kafka.serializers.KafkaAvroSerializer.class)
                 .withAdditionalProperty(SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl)
-                .withAdditionalProperty(AUTO_REGISTER_SCHEMAS, false)
                 .build();
     }
 }
