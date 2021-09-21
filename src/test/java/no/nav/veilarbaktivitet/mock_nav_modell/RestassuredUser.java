@@ -26,6 +26,6 @@ public class RestassuredUser {
         if (userRole.equals(UserRole.EKSTERN)) {
             return baseUrl;
         }
-        return baseUrl + "fnr?" + mockBruker.getFnr();
+        return baseUrl + "?fnr=" + mockBruker.getFnr();
     }
 }

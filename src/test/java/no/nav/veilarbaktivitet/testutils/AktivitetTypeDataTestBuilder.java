@@ -7,9 +7,9 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
 
-public class AktivitetTypeDataTesBuilder {
+public class AktivitetTypeDataTestBuilder {
 
-    public static StillingsoekAktivitetData nyttStillingssøk() {
+    public static StillingsoekAktivitetData nyttStillingssok() {
         return StillingsoekAktivitetData.builder()
                 .arbeidsgiver("arbeidsgiver")
                 .kontaktPerson("kontaktperson")

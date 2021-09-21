@@ -47,7 +47,6 @@ public class ApplicationTestConfig {
         return new OkHttpClient();
     }
 
-
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
         Map<String, Object> config = properties.buildAdminProperties();
