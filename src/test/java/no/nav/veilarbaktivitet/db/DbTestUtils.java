@@ -41,6 +41,7 @@ public class DbTestUtils {
     public static void initDb(DataSource dataSource) {
         Flyway flyway = new Flyway();
         flyway.setDataSource(dataSource);
+        flyway.clean();
         flyway.setCleanOnValidationError(true);
         flyway.migrate();
     }

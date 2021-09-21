@@ -20,7 +20,10 @@ public class DelingAvCvFristUtloptService {
     private final DelingAvCvService delingAvCvService;
     private final DelingAvCvDAO delingAvCvDAO;
 
-    @Scheduled(fixedDelay = 1800000, initialDelay = 300000)
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
     void avsluttUtlopedeAktiviteter() {
         if (leaderElectionClient.isLeader()) {
             while (avsluttUtlopedeAktiviteter(500) == 500) ;

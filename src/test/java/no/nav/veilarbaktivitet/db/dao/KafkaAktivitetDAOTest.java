@@ -1,21 +1,19 @@
 package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.val;
-import no.nav.veilarbaktivitet.aktiviteter_til_kafka.KafkaAktivitetMeldingV4;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.veilarbportefolje.KafkaAktivitetMeldingV4;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 public class KafkaAktivitetDAOTest {
 
