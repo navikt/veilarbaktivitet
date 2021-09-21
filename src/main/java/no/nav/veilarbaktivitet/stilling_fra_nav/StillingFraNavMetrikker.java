@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class StillingFraNavMetriker {
+class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
 
     void countSvar(boolean erEksternBruker, boolean svar) {
