@@ -148,8 +148,19 @@ public class DelingAvCvITest {
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
         ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
-        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, groupId, send.get().getRecordMetadata().offset()));
-        assertTrue(memoryLoggerAppender.contains("*** Kan ikke behandle melding", Level.ERROR));
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktivitetId()).isNull();
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
+            assertions.assertThat(value.getKanIkkeOppretteBegrunnelse().getFeilmelding()).isEqualTo("Finner ingen gydlig ident for aktorId");
+            assertions.assertThat(value.getSvar()).isNull();
+            assertions.assertAll();
+        });
+        assertTrue(memoryLoggerAppender.contains("*** Kan ikke behandle melding", Level.WARN));
     }
 
     @Test

@@ -71,7 +71,8 @@ public class OpprettForesporselOmDelingAvCv {
             nivaa4DTO = nivaa4Client.get(aktorId);
             oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
-            log.error("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
+            producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
+            log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         }
 
@@ -84,7 +85,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitetData = map(melding);
 
         if (!underOppfolging || underKvp) {
-            producerClient.sendIkkeOpprettet(aktivitetData);
+            producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
 
