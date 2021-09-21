@@ -40,7 +40,7 @@ public class OppgaveDao {
                                 " and A.HISTORISK_DATO is null" +
                                 " and A.LIVSLOPSTATUS_KODE not in(:finalAktivitetStatus)" +
                                 " and A.GJELDENDE = 1 " +
-                                " limit :limit",
+                                " fetch first :limit rows only",
                         parameterSource, rowMapper);
     }
 
