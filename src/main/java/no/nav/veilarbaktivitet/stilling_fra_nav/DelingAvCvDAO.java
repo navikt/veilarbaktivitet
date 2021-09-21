@@ -30,9 +30,9 @@ public class DelingAvCvDAO {
                         " WHERE GJELDENDE = 1 " +
                         " AND LIVSLOPSTATUS_KODE != 'AVBRUTT' " +
                         " AND AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
-                        " AND SVARFRIST < TODAY() " +
+                        " AND SVARFRIST < current_timestamp " +
                         " order by AKTIVITET.AKTIVITET_ID" +
-                        " LIMIT :maxAntall ",
+                        " fetch first :maxAntall rows only ",
                 parameter,
                 new AktivitetDataRowMapper());
     }
