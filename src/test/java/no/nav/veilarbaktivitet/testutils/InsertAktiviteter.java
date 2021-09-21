@@ -22,7 +22,7 @@ public class InsertAktiviteter {
         insertNyAktivitet(AktivitetDataTestBuilder.nySokeAvtaleAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyEgenaktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat(), akotrid, aktivitetDAO);
-        insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssøk(), akotrid, aktivitetDAO);
+        insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssok(), akotrid, aktivitetDAO);
     }
 
     private static void insertNyAktivitet(AktivitetData aktivitetData, String aktorId, AktivitetDAO aktivitetDAO) {
