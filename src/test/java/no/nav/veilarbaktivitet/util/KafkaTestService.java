@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -22,7 +23,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class KafkaTestService {
 
-    private final ConsumerFactory consumerFactory;
+    private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
+
+    private final ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
+
+    private final ConsumerFactory<String, String> stringStringConsumerFactory;
 
     private final Admin kafkaAdminClient;
 
@@ -33,13 +38,40 @@ public class KafkaTestService {
      * @param topic Topic du skal lese fra
      * @return En kafka consumer
      */
-    public Consumer createConsumer(String topic) {
+    public Consumer createStringAvroConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
         Properties modifisertConfig = new Properties();
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        Consumer newConsumer = consumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer newConsumer = stringAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
 
+        return newConsumer;
+    }
+
+    public Consumer createAvroAvroConsumer(String topic) {
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        Consumer newConsumer = avroAvroConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
+
+        return newConsumer;
+    }
+
+    public Consumer createStringStringConsumer(String topic) {
+        String randomGroup = UUID.randomUUID().toString();
+        Properties modifisertConfig = new Properties();
+        modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
+        Consumer newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        seekToEnd(topic, newConsumer);
+
+        return newConsumer;
+    }
+
+    public void seekToEnd(String topic, Consumer newConsumer) {
         List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
         List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
 
@@ -49,7 +81,6 @@ public class KafkaTestService {
         collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
         newConsumer.commitSync(Duration.ofSeconds(10));
-        return newConsumer;
     }
 
     @SneakyThrows
@@ -64,4 +95,26 @@ public class KafkaTestService {
         long commitedOffset = offsetAndMetadata.offset();
         return commitedOffset >= producerOffset;
     }
+
+    @SneakyThrows
+    public boolean harKonsumertAlleMeldinger(String topic, Consumer consumer) {
+        consumer.commitSync();
+        String groupId = consumer.groupMetadata().groupId();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
+        OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
+
+        if (offsetAndMetadata == null) {
+            // Hvis ingen commitede meldinger, så er alt konsumert
+            return true;
+        }
+
+        List<PartitionInfo> partitionInfos = consumer.partitionsFor(topic);
+        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
+
+        Map<TopicPartition, Long> map = consumer.endOffsets(collect);
+        Long endOffset = map.get(collect.get(0));
+
+        return offsetAndMetadata.offset() == endOffset;
+    }
+
 }

@@ -86,7 +86,7 @@ public class DelingAvCvFristUtloptServiceTest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(Integer.MAX_VALUE);
-        consumer = testService.createConsumer(utTopic);
+        consumer = testService.createStringAvroConsumer(utTopic);
     }
 
     @Test

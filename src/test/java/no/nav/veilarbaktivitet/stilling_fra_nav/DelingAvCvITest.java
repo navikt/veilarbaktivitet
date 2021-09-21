@@ -4,12 +4,13 @@ import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.brukernotifikasjon.schemas.Nokkel;
+import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -47,7 +48,6 @@ import java.util.UUID;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -75,13 +75,24 @@ public class DelingAvCvITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
+    @Value("${topic.ut.brukernotifikasjon.oppgave}")
+    private String oppgaveTopic;
+
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
+
+    @Value("${app.env.aktivitetsplan.basepath}")
+    private String aktivitetsplanBasepath;
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
+
+    Consumer<Nokkel, Oppgave> oppgaveConsumer;
+
+    @Autowired
+    SendOppgaveCron sendOppgaveCron;
 
     @After
     public void verify_no_unmatched() {
@@ -95,47 +106,27 @@ public class DelingAvCvITest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
-        consumer = testService.createConsumer(utTopic);
+        consumer = testService.createStringAvroConsumer(utTopic);
+        oppgaveConsumer = testService.createAvroAvroConsumer(oppgaveTopic);
     }
 
     @Test
     public void happy_case() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
-        String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
-            assertions.assertThat(value.getSvar()).isNull();
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
-
-        assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
-        AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
-
-        //TODO skriv bedre test
-        assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
-        assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
-        assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
-
-        KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
-        KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
-        assertEquals(meldingKontaktInfo.getNavn(), kontaktpersonData.getNavn());
-        assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
-        assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
-        assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
     }
 
     @Test

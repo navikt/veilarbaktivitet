@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktiviteter_til_kafka;
+package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
 
@@ -25,6 +25,7 @@ public enum EndringsType {
             case REFERAT_ENDRET:
             case REFERAT_PUBLISERT:
             case FORHAANDSORIENTERING_LEST:
+            case DEL_CV_SVART:
                 return REDIGERT;
             default:
                 throw new IllegalArgumentException(transaksjonsType.toString());
