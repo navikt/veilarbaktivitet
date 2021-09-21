@@ -44,7 +44,7 @@ public class OppgaveDao {
                         parameterSource, rowMapper);
     }
 
-    int avbrytAktiviterSomIkkeKanEndres() {
+    int avbrytOppgaverForAktiviteterSomIkkeKanEndres() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))

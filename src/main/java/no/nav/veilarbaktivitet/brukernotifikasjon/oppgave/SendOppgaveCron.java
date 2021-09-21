@@ -26,8 +26,7 @@ public class SendOppgaveCron {
     }
 
     void sendAlle(int maxBatchSize) {
-        //TODO fiks denne
-        internalService.todo();
+        internalService.avbrytOppgaverForAktiviteterSomIkkeKanEndres();
         while (sendOpptil(maxBatchSize) == maxBatchSize) ;
     }
 
