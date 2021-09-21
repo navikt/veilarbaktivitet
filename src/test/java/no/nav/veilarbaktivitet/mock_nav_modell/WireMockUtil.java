@@ -20,14 +20,14 @@ public class WireMockUtil {
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
 
-        oppfolging(fnr, underOppfolging);
+        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsPeriode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
     }
 
-    private static void oppfolging(String fnr, boolean underOppfolging) {
+    private static void oppfolging(String fnr, boolean underOppfolging, UUID periode) {
         stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
@@ -36,7 +36,7 @@ public class WireMockUtil {
         if (underOppfolging) {
             String body = JsonUtils.toJson(OppfolgingPeriodeMinimalDTO.builder()
                     .startDato(ZonedDateTime.now().minusDays(5))
-                    .uuid(UUID.randomUUID())
+                    .uuid(periode)
                     .build());
 
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)

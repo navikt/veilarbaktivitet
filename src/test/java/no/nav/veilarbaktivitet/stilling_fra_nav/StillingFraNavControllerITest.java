@@ -3,7 +3,11 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.brukernotifikasjon.schemas.Done;
+import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.veilarbaktivitet.avro.*;
+import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetStatus;
@@ -37,6 +41,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -64,9 +69,18 @@ public class StillingFraNavControllerITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
+    @Value("${topic.ut.brukernotifikasjon.done}")
+    private String brukernotifkasjonFerdigToppik;
 
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+
+    @Autowired
+    SendOppgaveCron sendOppgaveCron;
+
+    @Autowired
+    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
+
 
     @After
     public void verify_no_unmatched() {
@@ -84,13 +98,16 @@ public class StillingFraNavControllerITest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        //Trigger scheduld jobb manuelt da schedule er disabled i test.
+        sendOppgaveCron.sendBrukernotifikasjoner();
+
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(true)
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
         Response response = veileder
                 .createRequest()
@@ -102,30 +119,24 @@ public class StillingFraNavControllerITest {
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
 
-        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+        aktivitetSkalVereOppdatert(veileder, aktivitetDTO, response);
+        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, true);
 
-        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(true)
-                .endretAv(veileder.getNavIdent())
-                .endretAvType(InnsenderData.NAV)
-                // kopierer systemgenererte attributter
-                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
-                .build();
+        Consumer<Nokkel, Done> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigToppik);
+        //Trigger scheduld jobb manuelt da schedule er disabled i test.
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
+        assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), singleRecord.value().getGrupperingsId());
+    }
 
-
-        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
-
-        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
-
-        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
-
-
+    private void svarSkalVereSendtTilrekruteringsBistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
         // Sjekk at svarmelding sendt til rekrutteringsbistand
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
         Svar expectedSvar = Svar.newBuilder()
-                .setSvar(true)
+                .setSvar(svar)
                 .setSvartAvBuilder(Ident.newBuilder()
                         .setIdent(veileder.getNavIdent())
                         .setIdentType(IdentTypeEnum.NAV_IDENT))
@@ -144,6 +155,25 @@ public class StillingFraNavControllerITest {
         });
     }
 
+    private void aktivitetSkalVereOppdatert(MockVeileder veileder, AktivitetDTO aktivitetDTO, Response response) {
+        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+
+        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
+                .kanDeles(true)
+                .endretAv(veileder.getNavIdent())
+                .endretAvType(InnsenderData.NAV)
+                // kopierer systemgenererte attributter
+                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
+                .build();
+
+
+        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
+
+        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
+
+        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+    }
+
     @Test
     public void happy_case_svar_nei() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
@@ -155,7 +185,7 @@ public class StillingFraNavControllerITest {
                 .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
         Response response = veileder
                 .createRequest()
@@ -190,27 +220,7 @@ public class StillingFraNavControllerITest {
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        Svar expectedSvar = Svar.newBuilder()
-                .setSvar(false)
-                .setSvartAvBuilder(Ident.newBuilder()
-                        .setIdent(veileder.getNavIdent())
-                        .setIdentType(IdentTypeEnum.NAV_IDENT))
-                // kopier systemgenererte felter
-                .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
-                .build();
-
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
-            assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
-            assertions.assertAll();
-        });
+        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, false);
     }
 
     @Test

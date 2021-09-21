@@ -3,9 +3,9 @@ package no.nav.veilarbaktivitet.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.veilarbaktivitet.aktiviteter_til_kafka.AktiviteterTilKafkaService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.varsel.AvtaltVarselService;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilPortefoljeService;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,10 +19,13 @@ public class CronService {
 
     private final MoteSMSService moteSMSService;
     private final LeaderElectionClient leaderElectionClient;
-    private final AktiviteterTilKafkaService aktiviteterTilKafkaService;
+    private final AktiviteterTilPortefoljeService aktiviteterTilPortefoljeService;
     private final AvtaltVarselService avtaltVarselService;
 
-    @Scheduled(fixedRate = 60000, initialDelay = 60000)
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
     public void sendMoteServicemelding() {
         if (leaderElectionClient.isLeader()) {
             MDC.put("running.job", "moteSmsService");
@@ -31,14 +34,20 @@ public class CronService {
         }
     }
 
-    @Scheduled(fixedRate = 500, initialDelay = 5000)
-    public void sendMeldingerPaaKafka() {
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
+    )
+    public void sendMeldingerTilPortefolje() {
         if (leaderElectionClient.isLeader()) {
-            aktiviteterTilKafkaService.sendOppTil5000AktiviterPaaKafka();
+            aktiviteterTilPortefoljeService.sendOppTil5000AktiviterTilPortefolje();
         }
     }
 
-    @Scheduled(fixedRate = 10000, initialDelay = 60000)
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
     public void handleVarsler() {
         if(leaderElectionClient.isLeader()) {
             avtaltVarselService.stoppVarsel();

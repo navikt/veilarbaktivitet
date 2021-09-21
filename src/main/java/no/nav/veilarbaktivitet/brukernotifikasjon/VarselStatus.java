@@ -6,5 +6,6 @@ public enum VarselStatus {
     SENDT_OK,
     FEILET,
     SKAL_AVSLUTTES,
-    AVSLUTTET
+    AVSLUTTET,
+    AVBRUTT
 }

@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
@@ -56,7 +57,7 @@ public class AktivitetTestService {
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding, int springPort) {
         assertEquals(mockBruker.getAktorId(), melding.getAktorId());
 
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createConsumer(stillingFraNavUtTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(stillingFraNavUtTopic);
 
         String bestillingsId = melding.getBestillingsId();
         producer.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
@@ -82,6 +83,13 @@ public class AktivitetTestService {
         assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
         assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().getBestillingsId());
+
+        KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
+        KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
+        assertEquals(meldingKontaktInfo.getNavn(), kontaktpersonData.getNavn());
+        assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
+        assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
+        assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
 
         return aktivitetDTO;
     }

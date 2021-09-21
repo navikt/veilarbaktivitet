@@ -5,10 +5,13 @@ import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
 
+import java.util.UUID;
+
 @Getter
 public class MockBruker extends RestassuredUser {
     private final String aktorId;
     private final String enhet;
+    private final UUID oppfolgingsPeriode = UUID.randomUUID();
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
