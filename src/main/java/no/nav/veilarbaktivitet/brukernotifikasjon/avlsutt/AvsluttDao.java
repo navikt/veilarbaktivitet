@@ -27,7 +27,7 @@ class AvsluttDao {
                         " inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID " +
                         " where STATUS = :status" +
                         " and GJELDENDE = 1 " +
-                        " and SENDT is not null " +
+                        " and BEKREFTET_SENDT is not null " +
                         " fetch first :limit rows only",
                 param,
                 skalAvsluttesMapper);
@@ -39,7 +39,7 @@ class AvsluttDao {
                 .addValue("skal_avsluttes", VarselStatus.SKAL_AVSLUTTES.name())
                 .addValue("avbrutStatus", VarselStatus.AVSLUTTET.name());
         return jdbc.update("" +
-                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and SENDT is null",
+                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and BEKREFTET_SENDT is null",
                 param);
     }
 
