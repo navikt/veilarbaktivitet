@@ -9,7 +9,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Properties;
 
@@ -17,15 +16,8 @@ import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.SCHE
 
 @Configuration
 class BrukernotifikasjonProducer {
-
     @Bean
-    @Profile("!dev")
-    String onPremSchemaRegistryUrl(@Value("app.kafka.schema-regestry-url") String schemaRegistryUrl) {
-        return schemaRegistryUrl;
-    }
-
-    @Bean
-    <T extends SpecificRecordBase> KafkaProducerClient<Nokkel, T> brukernotifiaksjonProducer(Properties onPremProducerProperties, MeterRegistry meterRegistry, String onPremSchemaRegistryUrl) {
+    <T extends SpecificRecordBase> KafkaProducerClient<Nokkel, T> brukernotifiaksjonProducer(Properties onPremProducerProperties, MeterRegistry meterRegistry, @Value("${app.kafka.schema-regestry-url}") String onPremSchemaRegistryUrl) {
         return KafkaProducerClientBuilder.<Nokkel, T>builder()
                 .withMetrics(meterRegistry)
                 .withProperties(onPremProducerProperties)
