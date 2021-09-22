@@ -164,25 +164,14 @@ public class StillingFraNavControllerITest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
-                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
-                .kanDeles(true)
-                .build();
 
-        veileder
-                .createRequest()
-                .param("aktivitetId", aktivitetDTO.getId())
-                .body(delingAvCvDTO)
-                .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value());
+        svarJaPaaDelingAvCv(mockBruker, veileder, aktivitetDTO);
 
         List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), port, mockBruker, veileder);
 
         List<AktivitetTransaksjonsType> transaksjoner = aktivitetDTOS.stream().map(AktivitetDTO::getTransaksjonsType).collect(Collectors.toList());
 
-        Assertions.assertThat(transaksjoner).contains(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
+        Assertions.assertThat(transaksjoner).containsOnly(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
     }
 
     private AktivitetDTO skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
