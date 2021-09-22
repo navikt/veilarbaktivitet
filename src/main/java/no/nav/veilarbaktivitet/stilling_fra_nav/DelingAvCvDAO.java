@@ -26,7 +26,7 @@ public class DelingAvCvDAO {
         return jdbcTemplate.query("" +
                         " SELECT * " +
                         " FROM AKTIVITET " +
-                        " JOIN STILLING_FRA_NAV SFN ON AKTIVITET.AKTIVITET_ID = SFN.AKTIVITET_ID AND AKTIVITET.VERSJON = SFN.VERSJON " +
+                        " JOIN STILLING_FRA_NAV ON AKTIVITET.AKTIVITET_ID = STILLING_FRA_NAV.AKTIVITET_ID AND AKTIVITET.VERSJON = STILLING_FRA_NAV.VERSJON " +
                         " WHERE GJELDENDE = 1 " +
                         " AND LIVSLOPSTATUS_KODE != 'AVBRUTT' " +
                         " AND AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
