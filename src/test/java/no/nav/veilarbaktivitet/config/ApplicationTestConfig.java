@@ -192,4 +192,9 @@ public class ApplicationTestConfig {
                 .withPollProperties(1, 1000)
                 .build();
     }
+
+    @Bean
+    String onPremSchemaRegistryUrl(@Value("${spring.kafka.properties.schema.registry.url}") String schemaRegestryUrl) {
+        return schemaRegestryUrl;
+    }
 }
