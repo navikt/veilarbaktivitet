@@ -21,9 +21,9 @@ import static org.springframework.util.backoff.FixedBackOff.UNLIMITED_ATTEMPTS;
 public class KafkaAivenConfig {
 
     @Bean
-    String kafkaListenerContainerFactory() {
+    void kafkaListenerContainerFactory() {
         // org.springframework.boot.autoconfigure.kafka.KafkaAnnotationDrivenConfiguration.kafkaListenerContainerFactory
-        return "For aa override spring default config";
+        // For aa override spring default config
     }
 
     @Bean

@@ -24,7 +24,7 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentAktiviteterSomSkalAvbrytes(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("" +
-                        " SELECT * " +
+                        " SELECT ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", * " +
                         " FROM AKTIVITET " +
                         " JOIN STILLING_FRA_NAV ON AKTIVITET.AKTIVITET_ID = STILLING_FRA_NAV.AKTIVITET_ID AND AKTIVITET.VERSJON = STILLING_FRA_NAV.VERSJON " +
                         " WHERE GJELDENDE = 1 " +

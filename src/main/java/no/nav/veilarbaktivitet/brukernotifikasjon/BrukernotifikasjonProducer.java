@@ -9,22 +9,15 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Properties;
 
-import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.AUTO_REGISTER_SCHEMAS;
 import static io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG;
 
 @Configuration
-@Profile("!dev")
 class BrukernotifikasjonProducer {
-
-    @Value("${spring.kafka.properties.schema.registry.url}")
-    private String schemaRegistryUrl;
-
     @Bean
-    <T extends SpecificRecordBase> KafkaProducerClient<Nokkel, T> brukernotifiaksjonProducer(Properties onPremProducerProperties, MeterRegistry meterRegistry) {
+    <T extends SpecificRecordBase> KafkaProducerClient<Nokkel, T> brukernotifiaksjonProducer(Properties onPremProducerProperties, MeterRegistry meterRegistry, @Value("${app.kafka.schema-regestry-url}") String onPremSchemaRegistryUrl) {
         return KafkaProducerClientBuilder.<Nokkel, T>builder()
                 .withMetrics(meterRegistry)
                 .withProperties(onPremProducerProperties)
@@ -32,8 +25,7 @@ class BrukernotifikasjonProducer {
                         io.confluent.kafka.serializers.KafkaAvroSerializer.class)
                 .withAdditionalProperty(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,
                         io.confluent.kafka.serializers.KafkaAvroSerializer.class)
-                .withAdditionalProperty(SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl)
-                .withAdditionalProperty(AUTO_REGISTER_SCHEMAS, false)
+                .withAdditionalProperty(SCHEMA_REGISTRY_URL_CONFIG, onPremSchemaRegistryUrl)
                 .build();
     }
 }
