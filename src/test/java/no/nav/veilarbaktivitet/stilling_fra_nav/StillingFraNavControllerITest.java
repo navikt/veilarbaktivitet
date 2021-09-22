@@ -17,7 +17,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -41,6 +40,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -59,28 +59,20 @@ public class StillingFraNavControllerITest {
 
     @Autowired
     JdbcTemplate jdbc;
-
-    @LocalServerPort
-    private int port;
-
-    @Value("${topic.inn.stillingFraNav}")
-    private String innTopic;
-
-    @Value("${topic.ut.stillingFraNav}")
-    private String utTopic;
-
-    @Value("${topic.ut.brukernotifikasjon.done}")
-    private String brukernotifkasjonFerdigToppik;
-
     @Autowired
     KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
-
     @Autowired
     SendOppgaveCron sendOppgaveCron;
-
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
-
+    @LocalServerPort
+    private int port;
+    @Value("${topic.inn.stillingFraNav}")
+    private String innTopic;
+    @Value("${topic.ut.stillingFraNav}")
+    private String utTopic;
+    @Value("${topic.ut.brukernotifikasjon.done}")
+    private String brukernotifkasjonFerdigToppik;
 
     @After
     public void verify_no_unmatched() {
@@ -92,6 +84,10 @@ public class StillingFraNavControllerITest {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
+    public void kake() {
+
+    }
+
     @Test
     public void happy_case_svar_ja() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
@@ -101,77 +97,16 @@ public class StillingFraNavControllerITest {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         sendOppgaveCron.sendBrukernotifikasjoner();
 
-        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
-                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
-                .kanDeles(true)
-                .build();
-
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
-        Response response = veileder
-                .createRequest()
-                .param("aktivitetId", aktivitetDTO.getId())
-                .body(delingAvCvDTO)
-                .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
+        AktivitetDTO svartJaPaaDelingAvCv = svarJaPaaDelingAvCv(mockBruker, veileder, aktivitetDTO);
 
-        aktivitetSkalVereOppdatert(veileder, aktivitetDTO, response);
-        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, true);
+        assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
+        assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
+        assertBrukernotifikasjonStoppet(mockBruker);
 
-        Consumer<Nokkel, Done> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigToppik);
-        //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
-        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
-        assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), singleRecord.value().getGrupperingsId());
-    }
-
-    private void svarSkalVereSendtTilrekruteringsBistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
-        // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
-        DelingAvCvRespons value = record.value();
-
-        Svar expectedSvar = Svar.newBuilder()
-                .setSvar(svar)
-                .setSvartAvBuilder(Ident.newBuilder()
-                        .setIdent(veileder.getNavIdent())
-                        .setIdentType(IdentTypeEnum.NAV_IDENT))
-                // kopier systemgenererte felter
-                .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
-                .build();
-
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
-            assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
-            assertions.assertAll();
-        });
-    }
-
-    private void aktivitetSkalVereOppdatert(MockVeileder veileder, AktivitetDTO aktivitetDTO, Response response) {
-        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
-
-        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(true)
-                .endretAv(veileder.getNavIdent())
-                .endretAvType(InnsenderData.NAV)
-                // kopierer systemgenererte attributter
-                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
-                .build();
-
-
-        AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
-
-        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
-
-        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }
 
     @Test
@@ -216,11 +151,11 @@ public class StillingFraNavControllerITest {
 
         expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
 
-        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
 
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        svarSkalVereSendtTilrekruteringsBistand(mockBruker, veileder, aktivitetDTO, consumer, false);
+        assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, false);
     }
 
     @Test
@@ -250,4 +185,105 @@ public class StillingFraNavControllerITest {
         Assertions.assertThat(transaksjoner).contains(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
     }
 
+    private AktivitetDTO skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
+        SoknadsstatusDTO body = SoknadsstatusDTO
+                .builder()
+                .soknadsstatus(Soknadsstatus.VENTER)
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .build();
+
+        AktivitetDTO statusOppdatertRespons = veileder
+                .createRequest()
+                .param("aktivitetId", aktivitetDTO.getId())
+                .body(body)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/soknadStatus?fnr=" + mockBruker.getFnr())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .as(AktivitetDTO.class);
+
+        aktivitetDTO.setStillingFraNavData(aktivitetDTO.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.VENTER));
+
+        assertOppdatertAktivitet(aktivitetDTO, statusOppdatertRespons);
+
+        return statusOppdatertRespons;
+    }
+
+    private AktivitetDTO svarJaPaaDelingAvCv(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .kanDeles(true)
+                .build();
+        return veileder
+                .createRequest()
+                .param("aktivitetId", aktivitetDTO.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .as(AktivitetDTO.class);
+
+    }
+
+    private void assertBrukernotifikasjonStoppet(MockBruker mockBruker) {
+        Consumer<Nokkel, Done> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigToppik);
+        //Trigger scheduld jobb manuelt da schedule er disabled i test.
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
+        assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), singleRecord.value().getGrupperingsId());
+    }
+
+    private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
+        // Sjekk at svarmelding sendt til rekrutteringsbistand
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        DelingAvCvRespons value = record.value();
+
+        Svar expectedSvar = Svar.newBuilder()
+                .setSvar(svar)
+                .setSvartAvBuilder(Ident.newBuilder()
+                        .setIdent(veileder.getNavIdent())
+                        .setIdentType(IdentTypeEnum.NAV_IDENT))
+                // kopier systemgenererte felter
+                .setSvarTidspunkt(value.getSvar().getSvarTidspunkt())
+                .build();
+
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
+            assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);
+            assertions.assertAll();
+        });
+    }
+
+    private void assertAktivitetSvartJa(MockVeileder veileder, AktivitetDTO orginalAktivitet, AktivitetDTO actualAktivitet) {
+        CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
+                .kanDeles(true)
+                .endretAv(veileder.getNavIdent())
+                .endretAvType(InnsenderData.NAV)
+                // kopierer systemgenererte attributter
+                .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
+                .build();
+
+        AktivitetDTO expectedAktivitet = orginalAktivitet.toBuilder().status(AktivitetStatus.GJENNOMFORES).build();
+
+        StillingFraNavData stillingFraNavData = expectedAktivitet
+                .getStillingFraNavData()
+                .toBuilder()
+                .cvKanDelesData(expectedCvKanDelesData)
+                .soknadsstatus(Soknadsstatus.VENTER)
+                .build();
+
+        expectedAktivitet.setStillingFraNavData(stillingFraNavData);
+
+        assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
+    }
 }

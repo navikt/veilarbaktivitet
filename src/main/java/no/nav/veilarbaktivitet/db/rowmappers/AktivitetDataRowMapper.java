@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -160,6 +161,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .arbeidssted(rs.getString("STILLING_FRA_NAV.ARBEIDSSTED"))
                 .varselId(rs.getString("varselid"))
                 .kontaktpersonData(kontaktpersonData)
+                .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .build();
     }
 
