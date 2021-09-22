@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-
 import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.service.AktivitetAppService;
@@ -41,5 +40,10 @@ public class StillingFraNavController {
                 .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, erEksternBruker))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
+    }
+
+    @PutMapping("/soknadStatus")
+    public AktivitetDTO oppdaterSoknadstatus(@RequestParam long aktivitetId, @RequestBody StatusDTO statusDTO) {
+
     }
 }
