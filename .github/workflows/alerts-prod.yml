@@ -7,6 +7,11 @@ on:
       - 'alerts-prod.yaml'
       - 'alerts-prod-arena.yaml'
       - '.github/workflows/alerts-prod.yaml'
+
+concurrency:
+  group: deploy_alerts_prod
+  cancel-in-progress: true
+
 jobs:
   apply-alerts:
     name: Apply alerts to prod
