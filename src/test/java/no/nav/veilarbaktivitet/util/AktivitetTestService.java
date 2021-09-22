@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -86,11 +87,7 @@ public class AktivitetTestService {
 
         KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
         KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
-        assertEquals(meldingKontaktInfo.getNavn(), kontaktpersonData.getNavn());
-        assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
-        assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
-        assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
-
+        Assertions.assertThat(meldingKontaktInfo).isEqualToIgnoringNullFields(kontaktpersonData);
         return aktivitetDTO;
     }
 
