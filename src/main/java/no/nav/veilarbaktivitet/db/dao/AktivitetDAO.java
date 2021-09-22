@@ -307,7 +307,8 @@ public class AktivitetDAO {
                                     .addValue("kontaktperson_navn", kontaktpersonData.getNavn())
                                     .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
                                     .addValue("kontaktperson_mobil", kontaktpersonData.getMobil())
-                                    .addValue("kontaktperson_epost", kontaktpersonData.getEpost());
+                                    .addValue("kontaktperson_epost", kontaktpersonData.getEpost())
+                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()));
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     " insert into " +
@@ -327,7 +328,8 @@ public class AktivitetDAO {
                                             "kontaktperson_navn, " +
                                             "kontaktperson_tittel, " +
                                             "kontaktperson_mobil, " +
-                                            "kontaktperson_epost) " +
+                                            "kontaktperson_epost," +
+                                            "soknadsstatus) " +
                                             " VALUES ( :aktivitet_id, " +
                                             ":versjon, " +
                                             ":cv_kan_deles, " +
@@ -344,7 +346,8 @@ public class AktivitetDAO {
                                             ":kontaktperson_navn , " +
                                             ":kontaktperson_tittel , " +
                                             ":kontaktperson_mobil , " +
-                                            ":kontaktperson_epost)",
+                                            ":kontaktperson_epost , " +
+                                            ":soknadsstatus)",
                                     parms
                             );
                         }

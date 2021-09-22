@@ -106,7 +106,7 @@ public class StillingFraNavControllerITest {
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
         assertBrukernotifikasjonStoppet(mockBruker);
 
-        skalKunneOppdatereSoknadStatus(mockBruker, veileder, aktivitetDTO, svartJaPaaDelingAvCv);
+        skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }
 
     @Test
@@ -185,8 +185,13 @@ public class StillingFraNavControllerITest {
         Assertions.assertThat(transaksjoner).contains(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
     }
 
-    private void skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, AktivitetDTO svartJaPaaDelingAvCv) {
-        String body = "{aktivitetVersion:" + svartJaPaaDelingAvCv.getVersjon() + ", soknadsProssesStatus: VENTER}";
+    private AktivitetDTO skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
+        SoknadsstatusDTO body = SoknadsstatusDTO
+                .builder()
+                .soknadsstatus(Soknadsstatus.VENTER)
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .build();
+
         AktivitetDTO statusOppdatertRespons = veileder
                 .createRequest()
                 .param("aktivitetId", aktivitetDTO.getId())
@@ -199,9 +204,11 @@ public class StillingFraNavControllerITest {
                 .response()
                 .as(AktivitetDTO.class);
 
-        svartJaPaaDelingAvCv.setStillingFraNavData(svartJaPaaDelingAvCv.getStillingFraNavData().withSoknadsProssesStatus(SoknadsProssesStatus.VENTER));
+        aktivitetDTO.setStillingFraNavData(aktivitetDTO.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.VENTER));
 
-        assertOppdatertAktivitet(svartJaPaaDelingAvCv, statusOppdatertRespons);
+        assertOppdatertAktivitet(aktivitetDTO, statusOppdatertRespons);
+
+        return statusOppdatertRespons;
     }
 
     private AktivitetDTO svarJaPaaDelingAvCv(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
@@ -272,7 +279,7 @@ public class StillingFraNavControllerITest {
                 .getStillingFraNavData()
                 .toBuilder()
                 .cvKanDelesData(expectedCvKanDelesData)
-                .soknadsProssesStatus(SoknadsProssesStatus.VENTER)
+                .soknadsstatus(Soknadsstatus.VENTER)
                 .build();
 
         expectedAktivitet.setStillingFraNavData(stillingFraNavData);
