@@ -126,7 +126,28 @@ public class DelingAvCvITest {
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });
+    }
 
+
+    @Test
+    public void happy_case_tomme_strenger() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setEpost("").setMobil("").setNavn("").setTittel("").build();
+        melding.setKontaktInfo(kontaktinfo);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
+            assertions.assertAll();
+        });
     }
 
     @Test

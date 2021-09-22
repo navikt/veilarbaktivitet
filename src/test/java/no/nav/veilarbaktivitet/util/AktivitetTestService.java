@@ -90,7 +90,6 @@ public class AktivitetTestService {
         assertEquals(meldingKontaktInfo.getTittel(), kontaktpersonData.getTittel());
         assertEquals(meldingKontaktInfo.getEpost(), kontaktpersonData.getEpost());
         assertEquals(meldingKontaktInfo.getMobil(), kontaktpersonData.getMobil());
-
         return aktivitetDTO;
     }
 
