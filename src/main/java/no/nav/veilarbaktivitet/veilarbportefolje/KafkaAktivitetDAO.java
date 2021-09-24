@@ -2,9 +2,13 @@ package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
-import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeData;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.mappers.Helpers;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.stereotype.Repository;
 

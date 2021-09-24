@@ -4,7 +4,6 @@ import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.service.KafkaProducerService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

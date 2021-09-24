@@ -2,11 +2,11 @@ package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;

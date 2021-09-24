@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;

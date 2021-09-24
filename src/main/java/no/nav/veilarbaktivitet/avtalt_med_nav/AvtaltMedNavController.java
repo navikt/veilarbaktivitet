@@ -1,10 +1,10 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;

@@ -1,10 +1,12 @@
 package no.nav.veilarbaktivitet.mappers;
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
-import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
 import static java.util.Optional.ofNullable;

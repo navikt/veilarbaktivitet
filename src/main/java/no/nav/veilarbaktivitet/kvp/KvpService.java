@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.kvp;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import org.springframework.http.HttpStatus;

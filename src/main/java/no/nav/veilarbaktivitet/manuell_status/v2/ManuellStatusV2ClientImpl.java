@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.manuell_status.v2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j

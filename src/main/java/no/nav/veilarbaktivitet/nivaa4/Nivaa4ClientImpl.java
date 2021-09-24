@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.nivaa4;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;

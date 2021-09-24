@@ -1,10 +1,14 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;

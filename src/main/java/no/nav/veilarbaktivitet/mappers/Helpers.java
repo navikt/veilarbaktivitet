@@ -1,7 +1,12 @@
 package no.nav.veilarbaktivitet.mappers;
 
 import lombok.NoArgsConstructor;
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.EtikettTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.JobbStatusTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.JobbStatusTypeData;
+import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.StillingsoekEtikettData;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeData;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 

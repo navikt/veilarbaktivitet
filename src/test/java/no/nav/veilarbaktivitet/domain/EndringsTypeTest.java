@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
+import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.veilarbportefolje.EndringsType;
 import org.junit.Test;
 
