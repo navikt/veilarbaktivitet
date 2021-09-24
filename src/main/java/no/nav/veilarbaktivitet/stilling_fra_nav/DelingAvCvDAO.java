@@ -24,14 +24,14 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentAktiviteterSomSkalAvbrytes(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("" +
-                        " SELECT ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", * " +
-                        " FROM AKTIVITET " +
-                        " JOIN STILLING_FRA_NAV ON AKTIVITET.AKTIVITET_ID = STILLING_FRA_NAV.AKTIVITET_ID AND AKTIVITET.VERSJON = STILLING_FRA_NAV.VERSJON " +
+                        " SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.* " +
+                        " FROM AKTIVITET A" +
+                        " JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON " +
                         " WHERE GJELDENDE = 1 " +
                         " AND LIVSLOPSTATUS_KODE != 'AVBRUTT' " +
                         " AND AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
                         " AND SVARFRIST < current_timestamp " +
-                        " order by AKTIVITET.AKTIVITET_ID" +
+                        " order by A.AKTIVITET_ID" +
                         " fetch first :maxAntall rows only ",
                 parameter,
                 new AktivitetDataRowMapper());

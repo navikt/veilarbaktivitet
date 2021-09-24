@@ -4,10 +4,8 @@ import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
+import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.service.AktivitetService;
 import no.nav.veilarbaktivitet.service.AuthService;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -20,6 +18,7 @@ import java.util.Date;
 @EnableScheduling
 @AllArgsConstructor
 public class DelingAvCvService {
+    private final AktivitetDAO aktivitetDAO;
     private final DelingAvCvDAO delingAvCvDAO;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
@@ -55,6 +54,20 @@ public class DelingAvCvService {
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
     }
 
+    public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus) {
+        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+
+        var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(soknadsstatus);
+        var nyAktivitet = aktivitet.toBuilder()
+                .lagtInnAv(innloggetBruker.tilBrukerType())
+                .stillingFraNavData(nyStillingFraNavData)
+                .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
+                .endretAv(innloggetBruker.get())
+                .build();
+
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+    }
+
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
@@ -65,7 +78,11 @@ public class DelingAvCvService {
                 .endretAv(innloggetBruker.get())
                 .build();
 
+
         var stillingFraNavData = aktivitetData.getStillingFraNavData().withCvKanDelesData(deleCvDetaljer);
+        if (kanDeles) {
+            stillingFraNavData = stillingFraNavData.withSoknadsstatus(Soknadsstatus.VENTER);
+        }
 
         aktivitetService.svarPaaKanCvDeles(aktivitetData, aktivitetData.withStillingFraNavData(stillingFraNavData), innloggetBruker);
         var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
@@ -74,8 +91,7 @@ public class DelingAvCvService {
 
         if (kanDeles) {
             statusOppdatering.status(AktivitetStatus.GJENNOMFORES);
-        }
-        else {
+        } else {
             statusOppdatering
                     .status(AktivitetStatus.AVBRUTT)
                     .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");

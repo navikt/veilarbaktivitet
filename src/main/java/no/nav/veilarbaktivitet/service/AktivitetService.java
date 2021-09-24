@@ -208,9 +208,11 @@ public class AktivitetService {
     
     private StillingFraNavData mergeStillingFraNavData(StillingFraNavData orginal, StillingFraNavData aktivitet) {
         var nyCvKanDeles = aktivitet.getCvKanDelesData();
+        var soknadsstatus = aktivitet.getSoknadsstatus();
 
         return orginal
-                .withCvKanDelesData(nyCvKanDeles);
+                .withCvKanDelesData(nyCvKanDeles)
+                .withSoknadsstatus(soknadsstatus);
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {

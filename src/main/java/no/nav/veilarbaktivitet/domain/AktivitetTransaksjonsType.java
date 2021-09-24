@@ -13,5 +13,6 @@ public enum AktivitetTransaksjonsType {
     REFERAT_PUBLISERT,
     BLE_HISTORISK,
     FORHAANDSORIENTERING_LEST,
-    DEL_CV_SVART
+    DEL_CV_SVART,
+    SOKNADSSTATUS_ENDRET
 }
