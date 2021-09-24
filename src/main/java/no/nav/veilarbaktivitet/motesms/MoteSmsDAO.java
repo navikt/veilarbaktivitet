@@ -1,8 +1,7 @@
-package no.nav.veilarbaktivitet.db.dao;
+package no.nav.veilarbaktivitet.motesms;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.domain.KanalDTO;
 import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Component;
 

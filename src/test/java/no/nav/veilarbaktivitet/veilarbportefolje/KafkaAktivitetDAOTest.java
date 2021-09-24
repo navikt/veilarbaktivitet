@@ -1,13 +1,13 @@
-package no.nav.veilarbaktivitet.db.dao;
+package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.db.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
 import no.nav.veilarbaktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.veilarbportefolje.KafkaAktivitetMeldingV4;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
