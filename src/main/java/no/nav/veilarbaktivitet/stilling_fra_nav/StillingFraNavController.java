@@ -1,12 +1,12 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.service.AktivitetAppService;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.person.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;

@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;

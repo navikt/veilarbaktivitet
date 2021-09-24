@@ -4,14 +4,19 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.*;
-import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.MetricService;
+import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -37,16 +42,16 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ForhaandsorienteringDTOControllerTest {
-    private String aktorid = "12345678";
-    private String ident = "V12345678";
+    private final String aktorid = "12345678";
+    private final String ident = "V12345678";
     @Mock
     private MetricService metricService;
 
 
-    private JdbcTemplate jdbc = LocalH2Database.getDb();
+    private final JdbcTemplate jdbc = LocalH2Database.getDb();
 
-    private AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc));
-    private ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc));
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc));
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc));
 
     @Mock
     private AuthService authService;

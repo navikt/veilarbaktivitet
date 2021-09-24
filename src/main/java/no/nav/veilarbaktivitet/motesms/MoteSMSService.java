@@ -7,8 +7,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.veilarbaktivitet.db.dao.MoteSmsDAO;
-import no.nav.veilarbaktivitet.domain.SmsAktivitetData;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;

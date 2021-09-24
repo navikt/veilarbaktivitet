@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.After;

@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;

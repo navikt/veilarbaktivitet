@@ -2,9 +2,9 @@ package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 

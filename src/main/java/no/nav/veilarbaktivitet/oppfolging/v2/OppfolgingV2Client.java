@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.v2;
 
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.Optional;
 

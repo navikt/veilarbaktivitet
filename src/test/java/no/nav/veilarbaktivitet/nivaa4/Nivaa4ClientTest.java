@@ -1,9 +1,8 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarbaktivitet.config.ApplicationContext;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
 import okhttp3.OkHttpClient;
 import org.junit.*;
 import org.mockito.Mockito;

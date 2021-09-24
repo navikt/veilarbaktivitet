@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
