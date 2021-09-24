@@ -82,7 +82,6 @@ public class AktivitetTestService {
         //TODO skriv bedre test
         assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
         assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().getBestillingsId());
 
         KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();

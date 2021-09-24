@@ -156,7 +156,6 @@ public class OpprettForesporselOmDelingAvCv {
                 .fraDato(new Date(opprettet.toEpochMilli()))
                 .lagtInnAv(InnsenderData.NAV)
                 .endretAv(navIdent.get())
-                .lenke("/rekrutteringsbistand/" + stillingsId)
                 .automatiskOpprettet(false)
                 .opprettetDato(new Date())
                 .endretDato(new Date())
