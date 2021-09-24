@@ -11,6 +11,7 @@ import java.util.Optional;
 public class UserInContext {
     private final HttpServletRequest requestProvider;
     private final AuthService authService;
+    private final PersonService personService;
 
     public Optional<Person.Fnr> getFnr() {
         if (authService.erEksternBruker()) {
@@ -35,7 +36,7 @@ public class UserInContext {
         }
 
         if (person instanceof Person.AktorId) {
-            return Optional.of(authService.getFnrForAktorId((Person.AktorId) person));
+            return Optional.of(personService.getFnrForAktorId((Person.AktorId) person));
         }
 
         return Optional.empty();

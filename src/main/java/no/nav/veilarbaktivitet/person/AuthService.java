@@ -1,16 +1,14 @@
 package no.nav.veilarbaktivitet.person;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.abac.Pep;
 import no.nav.common.abac.domain.request.ActionId;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -19,24 +17,20 @@ import java.util.Optional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuthService {
 
     private final AuthContextHolder authContextHolder;
 
-    private final AktorOppslagClient aktorOppslagClient;
-
     private final Pep veilarbPep;
 
-    @Autowired
-    public AuthService(AuthContextHolder authContextHolder, AktorOppslagClient aktorOppslagClient, Pep veilarbPep) {
-        this.authContextHolder = authContextHolder;
-        this.aktorOppslagClient = aktorOppslagClient;
-        this.veilarbPep = veilarbPep;
-    }
-
+    private final PersonService personService;
 
     public void sjekkTilgangTilPerson(Person ident) {
-        String aktorId = getAktorIdForPerson(ident);
+        String aktorId = personService
+                .getAktorIdForPersonBruker(ident)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).get();
+
         String innloggetBrukerToken = authContextHolder
                 .getIdTokenString()
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
@@ -71,22 +65,8 @@ public class AuthService {
         }
     }
 
-    private String getAktorIdForPerson(Person person) {
-        if (person instanceof Person.AktorId) {
-            return person.get();
-        } else if (person instanceof Person.Fnr) {
-            return aktorOppslagClient.hentAktorId(Fnr.of(person.get())).get();
-        }
-
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-    }
-
     public Optional<Person.AktorId> getAktorIdForPersonBrukerService(Person person) {
-        if (person instanceof Person.AktorId) {
-            return Optional.of((Person.AktorId) person);
-        }
-        var aktorId = aktorOppslagClient.hentAktorId(Fnr.of(person.get())).get();
-        return Optional.ofNullable(aktorId).map(Person::aktorId);
+        return personService.getAktorIdForPersonBruker(person);
     }
 
     public boolean sjekKvpTilgang(String enhet) {
@@ -95,11 +75,6 @@ public class AuthService {
         }
 
         return veilarbPep.harVeilederTilgangTilEnhet(getInnloggetVeilederIdent(), EnhetId.of(enhet));
-    }
-
-    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) {
-        var fnr = aktorOppslagClient.hentFnr(AktorId.of(aktorId.get())).get();
-        return Optional.ofNullable(fnr).map(Person::fnr).orElseThrow(() -> new RuntimeException("aktorOppslagClient skal aldri returnere null"));
     }
 
     public void sjekkVeilederHarSkriveTilgangTilPerson(String aktorId) {
@@ -117,10 +92,6 @@ public class AuthService {
         return authContextHolder
                 .getNavIdent()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke ident for innlogget veileder"));
-    }
-
-    public Fnr hentFnr(AktorId aktorId) {
-        return aktorOppslagClient.hentFnr(aktorId);
     }
 
     public Optional<Person> getLoggedInnUser() {
@@ -159,7 +130,7 @@ public class AuthService {
 
     public Optional<Person.AktorId> getAktorIdForEksternBruker() {
         return authContextHolder.erEksternBruker()
-                ? authContextHolder.getSubject().map(sub -> Person.aktorId(aktorOppslagClient.hentAktorId(Fnr.of(sub)).get()))
+                ? authContextHolder.getSubject().flatMap(sub -> personService.getAktorIdForPersonBruker(Person.fnr(sub)))
                 : Optional.empty();
     }
 }
