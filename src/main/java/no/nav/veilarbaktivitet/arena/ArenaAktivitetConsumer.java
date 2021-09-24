@@ -9,7 +9,7 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiv
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO;
@@ -37,7 +37,7 @@ import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
-import static no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus.*;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 
 @Slf4j

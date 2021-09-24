@@ -2,9 +2,9 @@ package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;

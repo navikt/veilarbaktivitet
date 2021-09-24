@@ -1,10 +1,9 @@
-package no.nav.veilarbaktivitet.aktivitet.base;
+package no.nav.veilarbaktivitet.aktivitet.domain;
 
 import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 import lombok.With;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;

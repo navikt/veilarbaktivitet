@@ -1,10 +1,10 @@
-package no.nav.veilarbaktivitet.mappers;
+package no.nav.veilarbaktivitet.aktivitet.mappers;
 
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.MoteData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;

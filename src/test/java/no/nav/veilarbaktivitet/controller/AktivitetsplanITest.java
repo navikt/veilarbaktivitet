@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.controller;
 
 import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;

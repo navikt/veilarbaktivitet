@@ -1,16 +1,12 @@
-package no.nav.veilarbaktivitet.aktivitet;
+package no.nav.veilarbaktivitet.aktivitet.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.EtikettTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.JobbStatusTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.KanalDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 

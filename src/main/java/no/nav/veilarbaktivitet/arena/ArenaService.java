@@ -3,11 +3,11 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
-import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -21,8 +21,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus.AVBRUTT;
-import static no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus.FULLFORT;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
 @Slf4j
 @Component

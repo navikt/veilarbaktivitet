@@ -1,8 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;

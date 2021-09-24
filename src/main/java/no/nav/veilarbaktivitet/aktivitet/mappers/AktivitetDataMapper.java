@@ -1,10 +1,9 @@
-package no.nav.veilarbaktivitet.mappers;
+package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Optional;

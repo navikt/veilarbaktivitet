@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitet.base;
+package no.nav.veilarbaktivitet.aktivitet.domain;
 
 public enum AktivitetTransaksjonsType {
     OPPRETTET,

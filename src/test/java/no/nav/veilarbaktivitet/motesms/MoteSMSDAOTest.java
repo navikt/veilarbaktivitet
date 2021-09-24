@@ -1,12 +1,12 @@
 package no.nav.veilarbaktivitet.motesms;
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Test;

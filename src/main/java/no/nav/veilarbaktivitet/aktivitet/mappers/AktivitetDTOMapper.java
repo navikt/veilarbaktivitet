@@ -1,8 +1,7 @@
-package no.nav.veilarbaktivitet.mappers;
+package no.nav.veilarbaktivitet.aktivitet.mappers;
 
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;

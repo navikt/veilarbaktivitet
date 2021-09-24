@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitet;
+package no.nav.veilarbaktivitet.aktivitet.dto;
 
 import lombok.Data;
 import lombok.experimental.Accessors;

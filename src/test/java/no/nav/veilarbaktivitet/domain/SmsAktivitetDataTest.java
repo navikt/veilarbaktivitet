@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.motesms.SmsAktivitetData;
 import org.junit.BeforeClass;
 import org.junit.Test;

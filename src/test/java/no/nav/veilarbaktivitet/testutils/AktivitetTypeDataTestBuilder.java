@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;

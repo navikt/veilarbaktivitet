@@ -1,12 +1,12 @@
-package no.nav.veilarbaktivitet.mappers;
+package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import lombok.NoArgsConstructor;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.EtikettTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.JobbStatusTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.JobbStatusTypeData;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.StillingsoekEtikettData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.JobbStatusTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.JobbStatusTypeDTO;
 import org.apache.commons.collections15.BidiMap;
 import org.apache.commons.collections15.bidimap.DualHashBidiMap;
 

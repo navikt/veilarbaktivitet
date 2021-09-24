@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.AuthService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;

@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.springframework.stereotype.Service;
 

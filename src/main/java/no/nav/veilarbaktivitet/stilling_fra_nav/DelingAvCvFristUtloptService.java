@@ -4,7 +4,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.job.leader_election.LeaderElectionClient;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

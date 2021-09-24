@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.config.database.Database;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class InsertAktiviteter {

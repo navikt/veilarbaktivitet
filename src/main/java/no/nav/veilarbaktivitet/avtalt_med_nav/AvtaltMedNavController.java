@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;

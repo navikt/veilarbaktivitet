@@ -2,10 +2,10 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;

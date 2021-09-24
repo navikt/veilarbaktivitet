@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.AllArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDataRowMapper;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;

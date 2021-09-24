@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.motesms;
 
 import lombok.Builder;
 import lombok.Value;
-import no.nav.veilarbaktivitet.aktivitet.aktivitet_typer.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

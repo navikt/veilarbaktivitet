@@ -2,9 +2,9 @@ package no.nav.veilarbaktivitet.kvp;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.base.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitet.aktivitet_typer;
+package no.nav.veilarbaktivitet.aktivitet.domain;
 
 public enum JobbStatusTypeData {
     HELTID,
