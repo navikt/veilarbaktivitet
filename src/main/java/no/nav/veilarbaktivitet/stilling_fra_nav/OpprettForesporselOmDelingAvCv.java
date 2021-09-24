@@ -153,7 +153,6 @@ public class OpprettForesporselOmDelingAvCv {
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
                 .status(AktivitetStatus.BRUKER_ER_INTERESSERT)
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .fraDato(new Date(opprettet.toEpochMilli()))
                 .lagtInnAv(InnsenderData.NAV)
                 .endretAv(navIdent.get())
                 .automatiskOpprettet(false)
