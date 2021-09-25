@@ -3,11 +3,10 @@ package no.nav.veilarbaktivitet.service;
 import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -25,10 +24,12 @@ class AuthServiceTest {
 
     @Mock
     private AuthContextHolder authContextHolder;
-    @Mock
-    private AktorOppslagClient aktorOppslagClient;
+
     @Mock
     private Pep veilarbPep;
+
+    @Mock
+    private PersonService personService;
 
     @InjectMocks
     private AuthService authService;
@@ -55,7 +56,7 @@ class AuthServiceTest {
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
         when(authContextHolder.erEksternBruker()).thenReturn(true);
         when(authContextHolder.getSubject()).thenReturn(Optional.of(FNR));
-        when(aktorOppslagClient.hentAktorId(any())).thenReturn(AktorId.of(AKTORID));
+        when(personService.getAktorIdForPersonBruker(any())).thenReturn(Optional.of(Person.aktorId(AKTORID)));
         Optional<Person> loggedInnUser = authService.getLoggedInnUser();
         assertEquals(eksternBruker, loggedInnUser.get());
     }
