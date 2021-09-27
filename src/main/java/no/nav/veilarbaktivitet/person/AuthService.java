@@ -128,7 +128,7 @@ public class AuthService {
         return authContextHolder.erSystemBruker();
     }
 
-    public Optional<Person.AktorId> getAktorIdForEksternBruker() {
+    private Optional<Person.AktorId> getAktorIdForEksternBruker() {
         return authContextHolder.erEksternBruker()
                 ? authContextHolder.getSubject().flatMap(sub -> personService.getAktorIdForPersonBruker(Person.fnr(sub)))
                 : Optional.empty();
