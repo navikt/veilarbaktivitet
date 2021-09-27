@@ -11,6 +11,7 @@ import java.util.Optional;
 public class UserInContext {
     private final HttpServletRequest requestProvider;
     private final AuthService authService;
+    private final PersonService personService;
 
     public Optional<Person.Fnr> getFnr() {
         if (authService.erEksternBruker()) {
@@ -26,18 +27,6 @@ public class UserInContext {
                 .map(Person::aktorId);
 
         return fnr.or(() -> aktorId)
-                .flatMap(this::getFnr);
-    }
-
-    private Optional<Person.Fnr> getFnr(Person person) {
-        if (person instanceof Person.Fnr) {
-            return Optional.of((Person.Fnr)person);
-        }
-
-        if (person instanceof Person.AktorId) {
-            return Optional.of(authService.getFnrForAktorId((Person.AktorId) person));
-        }
-
-        return Optional.empty();
+                .flatMap(personService::getFnrForPersonbruker);
     }
 }
