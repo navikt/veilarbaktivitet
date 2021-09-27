@@ -9,12 +9,12 @@ import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.HentTiltakOgAktiv
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.informasjon.*;
 import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.meldinger.HentTiltakOgAktiviteterForBrukerRequest;
-import no.nav.veilarbaktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.domain.arena.ArenaAktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.arena.ArenaStatusDTO;
-import no.nav.veilarbaktivitet.domain.arena.MoteplanDTO;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO;
+import no.nav.veilarbaktivitet.arena.model.MoteplanDTO;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -37,8 +37,8 @@ import static java.time.ZonedDateTime.ofInstant;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static no.nav.veilarbaktivitet.domain.AktivitetStatus.*;
 
 @Slf4j
 @Component
@@ -50,7 +50,7 @@ public class ArenaAktivitetConsumer {
 
     private final TiltakOgAktivitetV1 tiltakOgAktivitetV1;
 
-    Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));;
+    Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
 
     static Date parseDato(String konfigurertDato) {
         try {
@@ -246,7 +246,7 @@ public class ArenaAktivitetConsumer {
             this.status = status;
         }
 
-        private AktivitetStatus status;
+        private final AktivitetStatus status;
 
         AktivitetStatus getStatus() {
             return status;

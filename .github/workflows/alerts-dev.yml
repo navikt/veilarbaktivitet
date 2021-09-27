@@ -7,6 +7,11 @@ on:
       - 'alerts-dev.yaml'
       - 'alerts-dev-arena.yaml'
       - '.github/workflows/alerts-dev.yaml'
+
+concurrency:
+  group: deploy_alerts_dev
+  cancel-in-progress: true
+
 jobs:
   apply-alerts:
     name: Apply alerts to dev

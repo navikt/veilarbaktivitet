@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.domain;
 
+import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Person;
 import org.junit.Before;
 import org.junit.Test;
 

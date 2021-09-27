@@ -3,9 +3,13 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
@@ -13,10 +17,12 @@ import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2UnderOppfolgingDTO;
-import no.nav.veilarbaktivitet.service.AktivitetService;
+import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,8 +52,10 @@ public class OpprettForesporselOmDelingAvCv {
     private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
     @Transactional
-    @KafkaListener(topics = "${topic.inn.stillingFraNav}")
-    public void createAktivitet(ForesporselOmDelingAvCv melding) {
+    @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory")
+    public void createAktivitet(ConsumerRecord<String, ForesporselOmDelingAvCv> consumerRecord) {
+        ForesporselOmDelingAvCv melding = consumerRecord.value();
+
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
             log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
             return;
@@ -68,7 +76,8 @@ public class OpprettForesporselOmDelingAvCv {
             nivaa4DTO = nivaa4Client.get(aktorId);
             oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
-            log.error("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
+            producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
+            log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         }
 
@@ -81,7 +90,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitetData = map(melding);
 
         if (!underOppfolging || underKvp) {
-            producerClient.sendIkkeOpprettet(aktivitetData);
+            producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
 

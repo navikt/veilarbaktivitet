@@ -5,6 +5,10 @@ on:
     branches:
       - dev
 
+concurrency:
+  group: deploy_dev
+  cancel-in-progress: true
+
 env:
   IMAGE_TAG: ${{ github.sha }}
   IMAGE: docker.pkg.github.com/${{ github.repository }}/veilarbaktivitet

@@ -4,7 +4,7 @@ import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;

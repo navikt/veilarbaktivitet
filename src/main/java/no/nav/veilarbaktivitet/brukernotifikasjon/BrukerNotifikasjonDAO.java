@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -36,7 +36,7 @@ class BrukerNotifikasjonDAO {
                 .addValue("status", status.name())
                 .addValue("melding", melding);
         jdbcTemplate.update("" +
-                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, sendt, melding) " +
+                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, opprettet, melding) " +
                         " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
                 params);
     }

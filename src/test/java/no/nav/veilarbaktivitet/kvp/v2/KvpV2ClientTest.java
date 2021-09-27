@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.kvp.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;

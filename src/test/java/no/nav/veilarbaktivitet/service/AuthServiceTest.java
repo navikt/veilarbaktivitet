@@ -6,22 +6,18 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.domain.Person;
-import org.junit.Before;
+import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -37,9 +33,9 @@ class AuthServiceTest {
     @InjectMocks
     private AuthService authService;
 
-    private static String NAVIDENT = "Z999999";
-    private static String FNR = "10101055555";
-    private static String AKTORID = "111111666666";
+    private static final String NAVIDENT = "Z999999";
+    private static final String FNR = "10101055555";
+    private static final String AKTORID = "111111666666";
 
     @Test
     void getLoggedInnNavUser() {

@@ -2,12 +2,16 @@ package no.nav.veilarbaktivitet.service;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
+import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Before;
 import org.junit.Ignore;

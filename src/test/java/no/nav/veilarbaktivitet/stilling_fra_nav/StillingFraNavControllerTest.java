@@ -4,23 +4,26 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.*;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
-import no.nav.veilarbaktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.service.AktivitetAppService;
-import no.nav.veilarbaktivitet.service.AktivitetService;
-import no.nav.veilarbaktivitet.service.AuthService;
-import no.nav.veilarbaktivitet.service.MetricService;
+import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.junit.*;
 import org.mockito.Mock;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -29,8 +32,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 import java.util.Random;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static no.nav.veilarbaktivitet.mock.TestData.*;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
@@ -60,7 +61,7 @@ public class StillingFraNavControllerTest {
     @Mock
     private DelingAvCvDAO delingAvCvDAO;
 
-    private final DelingAvCvService delingAvCvService = new DelingAvCvService(delingAvCvDAO, authService, aktivitetService, mock(StillingFraNavProducerClient.class), mock(BrukernotifikasjonService.class));
+    private final DelingAvCvService delingAvCvService = new DelingAvCvService(aktivitetDAO, delingAvCvDAO, authService, aktivitetService, mock(StillingFraNavProducerClient.class), mock(BrukernotifikasjonService.class), mock(StillingFraNavMetrikker.class));
     private final StillingFraNavController stillingFraNavController = new StillingFraNavController(authService, appService, delingAvCvService);
 
     @Rule
