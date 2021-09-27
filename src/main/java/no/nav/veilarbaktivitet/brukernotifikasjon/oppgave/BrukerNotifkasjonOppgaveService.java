@@ -10,7 +10,7 @@ import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ class BrukerNotifkasjonOppgaveService {
     private final Credentials serviceUserCredentials;
     private final OppgaveDao dao;
     private final KafkaProducerClient<Nokkel, Oppgave> producer;
-    private final AuthService authService;
+    private final PersonService personService;
 
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     private String oppgaveToppic;
@@ -45,7 +45,7 @@ class BrukerNotifkasjonOppgaveService {
 
     @SneakyThrows
     private void sendOppgave(SkalSendes skalSendes) {
-        Person.Fnr fnr = authService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
+        Person.Fnr fnr = personService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
 
         Nokkel nokkel = new Nokkel(serviceUserCredentials.username, skalSendes.getBrukernotifikasjonId());
         Oppgave oppgave = createOppgave(skalSendes.getAktivitetId(), fnr, skalSendes.getMelding(), skalSendes.getOppfolgingsperiode());
