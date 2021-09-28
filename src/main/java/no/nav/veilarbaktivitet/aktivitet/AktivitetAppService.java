@@ -31,7 +31,8 @@ public class AktivitetAppService {
             AktivitetTypeData.JOBBSOEKING,
             AktivitetTypeData.SOKEAVTALE,
             AktivitetTypeData.IJOBB,
-            AktivitetTypeData.BEHANDLING
+            AktivitetTypeData.BEHANDLING,
+            AktivitetTypeData.STILLING_FRA_NAV
     ));
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_OPPRETTES_EKSTERNT = new HashSet<>(Arrays.asList(
