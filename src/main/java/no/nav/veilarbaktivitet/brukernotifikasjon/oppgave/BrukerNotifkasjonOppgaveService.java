@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -59,10 +60,11 @@ class BrukerNotifkasjonOppgaveService {
             String tekst,
             String oppfolgingsPeriode
     ) {
+
         URL link = createAktivitetLink(aktivitetId);
         int sikkerhetsnivaa = 3;
         return new OppgaveBuilder()
-                .withTidspunkt(LocalDateTime.now())
+                .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withFodselsnummer(fnr.get())
                 .withGrupperingsId(oppfolgingsPeriode)
                 .withTekst(tekst)
