@@ -19,13 +19,6 @@
                     "string",
                     "null"
                 ]
-            },
-            {
-                "name": "epost",
-                "type": [
-                    "string",
-                    "null"
-                ]
             }
         ]
     },
