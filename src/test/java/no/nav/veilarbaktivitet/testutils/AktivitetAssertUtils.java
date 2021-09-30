@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.testutils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 
 import static org.junit.Assert.assertEquals;
 

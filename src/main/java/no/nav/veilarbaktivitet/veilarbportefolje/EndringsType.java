@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
-import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 
 public enum EndringsType {
     OPPRETTET,

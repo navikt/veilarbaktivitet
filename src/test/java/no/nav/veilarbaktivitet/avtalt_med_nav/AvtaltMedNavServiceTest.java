@@ -1,29 +1,29 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.db.Database;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.domain.Person;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.service.MetricService;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.*;
-
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AvtaltMedNavServiceTest {
@@ -35,7 +35,7 @@ public class AvtaltMedNavServiceTest {
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
-    private MetricService metricService = mock(MetricService.class);
+    private final MetricService metricService = mock(MetricService.class);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDAO, meterRegistry);

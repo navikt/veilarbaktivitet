@@ -1,12 +1,16 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 import java.util.Random;
 
 import static java.util.Calendar.SECOND;
-import static no.nav.veilarbaktivitet.domain.AktivitetData.AktivitetDataBuilder;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData.AktivitetDataBuilder;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 
 public class AktivitetDataTestBuilder {

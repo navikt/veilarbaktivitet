@@ -1,17 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.oppfolging.OppfolgingAvsluttetKafkaDTO;
-import no.nav.veilarbaktivitet.kvp.KVPAvsluttetService;
-import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
-import org.junit.Test;
-
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
-
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
 
 
 //TOODO fiks denne
