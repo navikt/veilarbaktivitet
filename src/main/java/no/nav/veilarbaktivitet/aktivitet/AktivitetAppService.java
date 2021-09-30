@@ -170,8 +170,7 @@ public class AktivitetAppService {
         AktivitetStatus status = aktivitetData.getStatus();
         return AktivitetStatus.AVBRUTT.equals(status)
                 || AktivitetStatus.FULLFORT.equals(status)
-                || aktivitetData.getHistoriskDato() != null
-                || aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV;
+                || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
