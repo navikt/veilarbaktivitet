@@ -153,6 +153,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .epost(rs.getString("kontaktperson_epost"))
                 .build();
 
+
         return StillingFraNavData.builder()
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))

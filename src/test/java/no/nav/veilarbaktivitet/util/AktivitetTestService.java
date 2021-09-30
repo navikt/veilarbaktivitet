@@ -29,8 +29,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @Service
@@ -87,7 +86,15 @@ public class AktivitetTestService {
 
         KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
         KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
-        Assertions.assertThat(meldingKontaktInfo).isEqualToIgnoringNullFields(kontaktpersonData);
+        if (meldingKontaktInfo == null) {
+            assertEquals(null, kontaktpersonData);
+        } else if (kontaktpersonData == null) {
+            assertTrue(meldingKontaktInfo.getMobil() == null || meldingKontaktInfo.getMobil().equals(""));
+            assertTrue(meldingKontaktInfo.getTittel() == null || meldingKontaktInfo.getTittel().equals(""));
+            assertTrue(meldingKontaktInfo.getNavn() == null || meldingKontaktInfo.getNavn().equals(""));
+        } else {
+            Assertions.assertThat(meldingKontaktInfo).isEqualToComparingFieldByField(kontaktpersonData);
+        }
         return aktivitetDTO;
     }
 
@@ -121,7 +128,6 @@ public class AktivitetTestService {
                 .setKontaktInfo(KontaktInfo.newBuilder()
                         .setNavn("Jan Saksbehandler")
                         .setTittel("Nav-ansatt")
-                        .setEpost("jan.saksbehandler@nav.no")
                         .setMobil("99999999").build())
                 .build();
     }

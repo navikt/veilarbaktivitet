@@ -62,7 +62,7 @@ public class StillingFraNavProducerClient {
     }
 
     void sendSvarfristUtlopt(AktivitetData aktivitetData) {
-        sendRespons(TilstandEnum.SVARFRIST_UTLOPT, aktivitetData);
+        sendRespons(TilstandEnum.AVBRUTT, aktivitetData);
     }
 
     private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
