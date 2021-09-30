@@ -87,7 +87,11 @@ public class AktivitetTestService {
 
         KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
         KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
-        Assertions.assertThat(meldingKontaktInfo).isEqualToIgnoringNullFields(kontaktpersonData);
+        if (meldingKontaktInfo == null) {
+            assertEquals(null, kontaktpersonData);
+        } else {
+            Assertions.assertThat(meldingKontaktInfo).isEqualToIgnoringNullFields(kontaktpersonData);
+        }
         return aktivitetDTO;
     }
 
@@ -121,7 +125,6 @@ public class AktivitetTestService {
                 .setKontaktInfo(KontaktInfo.newBuilder()
                         .setNavn("Jan Saksbehandler")
                         .setTittel("Nav-ansatt")
-                        .setEpost("jan.saksbehandler@nav.no")
                         .setMobil("99999999").build())
                 .build();
     }
