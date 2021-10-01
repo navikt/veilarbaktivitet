@@ -307,7 +307,6 @@ public class AktivitetDAO {
                                     .addValue("kontaktperson_navn", kontaktpersonData != null ? kontaktpersonData.getNavn() : null)
                                     .addValue("kontaktperson_tittel", kontaktpersonData != null ? kontaktpersonData.getTittel() : null)
                                     .addValue("kontaktperson_mobil", kontaktpersonData != null ? kontaktpersonData.getMobil() : null)
-                                    .addValue("kontaktperson_epost", kontaktpersonData != null ? kontaktpersonData.getEpost() : null)
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()));
                             // language=sql
                             database.getNamedJdbcTemplate().update(
@@ -328,7 +327,6 @@ public class AktivitetDAO {
                                             "kontaktperson_navn, " +
                                             "kontaktperson_tittel, " +
                                             "kontaktperson_mobil, " +
-                                            "kontaktperson_epost," +
                                             "soknadsstatus) " +
                                             " VALUES ( :aktivitet_id, " +
                                             ":versjon, " +
@@ -346,7 +344,6 @@ public class AktivitetDAO {
                                             ":kontaktperson_navn , " +
                                             ":kontaktperson_tittel , " +
                                             ":kontaktperson_mobil , " +
-                                            ":kontaktperson_epost , " +
                                             ":soknadsstatus)",
                                     parms
                             );

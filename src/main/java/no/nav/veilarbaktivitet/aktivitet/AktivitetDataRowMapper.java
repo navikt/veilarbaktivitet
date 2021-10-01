@@ -150,9 +150,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .navn(rs.getString("kontaktperson_navn"))
                 .tittel(rs.getString("kontaktperson_tittel"))
                 .mobil(rs.getString("kontaktperson_mobil"))
-                .epost(rs.getString("kontaktperson_epost"))
                 .build();
-
 
         return StillingFraNavData.builder()
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
