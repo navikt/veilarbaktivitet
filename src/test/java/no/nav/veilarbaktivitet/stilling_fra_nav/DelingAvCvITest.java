@@ -14,7 +14,6 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -40,13 +39,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static no.nav.veilarbaktivitet.util.AktivitetTestService.createMelding;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -132,9 +129,29 @@ public class DelingAvCvITest {
     @Test
     public void happy_case_tomme_strenger() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
-        ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
-        KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setEpost("").setMobil("").setNavn("").setTittel("").build();
+        ForesporselOmDelingAvCv melding = createMelding(UUID.randomUUID().toString(), mockBruker);
+        KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
+            assertions.assertAll();
+        });
+    }
+
+    @Test
+    public void happy_case_ingen_kontaktInfo() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        ForesporselOmDelingAvCv melding = createMelding(UUID.randomUUID().toString(), mockBruker);
+        melding.setKontaktInfo(null);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
@@ -167,7 +184,7 @@ public class DelingAvCvITest {
                         "}")));
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
@@ -191,7 +208,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -214,7 +231,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -238,7 +255,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -262,7 +279,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
 
 
         producer.send(innTopic, melding.getBestillingsId(), melding);
@@ -287,7 +304,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
@@ -310,7 +327,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -325,48 +342,11 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker);
         SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
         await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, groupId, result.getRecordMetadata().offset()));
 
         ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
     }
-
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
-        return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(aktorId)
-                .setArbeidsgiver("arbeidsgiver")
-                .setArbeidssteder(List.of(
-                        Arbeidssted.newBuilder()
-                                .setAdresse("adresse")
-                                .setPostkode("1234")
-                                .setKommune("kommune")
-                                .setBy("by")
-                                .setFylke("fylke")
-                                .setLand("land").build(),
-                        Arbeidssted.newBuilder()
-                                .setAdresse("VillaRosa")
-                                .setPostkode(null)
-                                .setKommune(null)
-                                .setBy(null)
-                                .setFylke(null)
-                                .setLand("spania").build()))
-                .setBestillingsId(bestillingsId)
-                .setOpprettet(Instant.now())
-                .setOpprettetAv("Z999999")
-                .setCallId("callId")
-                .setSoknadsfrist("10102021")
-                .setStillingsId("stillingsId")
-                .setStillingstittel("stillingstittel")
-                .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
-                .setKontaktInfo(KontaktInfo.newBuilder()
-                        .setNavn("Jan Saksbehandler")
-                        .setTittel("Nav-ansatt")
-                        .setEpost("jan.saksbehandler@nav.no")
-                        .setMobil("99999999").build()
-                )
-                .build();
-    }
-
 }

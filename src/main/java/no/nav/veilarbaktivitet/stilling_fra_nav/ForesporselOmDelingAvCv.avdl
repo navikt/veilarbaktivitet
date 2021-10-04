@@ -19,13 +19,6 @@
                     "string",
                     "null"
                 ]
-            },
-            {
-                "name": "epost",
-                "type": [
-                    "string",
-                    "null"
-                ]
             }
         ]
     },
@@ -135,7 +128,7 @@
             },
             {
                 "name": "kontaktInfo",
-                "type": "KontaktInfo"
+                "type": ["KontaktInfo", "null"]
             }
         ]
     }
