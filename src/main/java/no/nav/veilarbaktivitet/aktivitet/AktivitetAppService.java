@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final ArenaService arenaService;
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
@@ -95,6 +93,10 @@ public class AktivitetAppService {
     public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
         authService.sjekkTilgangTilPerson(ident);
 
+        if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
         }
@@ -114,6 +116,9 @@ public class AktivitetAppService {
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         AktivitetData original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         kanEndreAktivitetGuard(original, aktivitet);
+        if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
 
         Person loggedInnUser = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
