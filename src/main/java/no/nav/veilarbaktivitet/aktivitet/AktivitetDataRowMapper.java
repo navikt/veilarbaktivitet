@@ -143,6 +143,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
+                .avtaltDato(Database.hentDatoDato(rs, "cv_kan_deles_avtalt_dato"))
                 .endretAvType(EnumUtils.valueOf(InnsenderData.class, rs.getString("cv_kan_deles_av_type")))
                 .build();
 
