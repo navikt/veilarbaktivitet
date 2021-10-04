@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
@@ -55,8 +54,7 @@ public class StillingFraNavControllerTest {
 
     private final AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
     private final AuthService authService = mock(AuthService.class);
-    private final ArenaService arenaService = mock(ArenaService.class);
-    private final AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
+    private final AktivitetAppService appService = new AktivitetAppService(authService, aktivitetService, metricService);
 
     @Mock
     private DelingAvCvDAO delingAvCvDAO;
