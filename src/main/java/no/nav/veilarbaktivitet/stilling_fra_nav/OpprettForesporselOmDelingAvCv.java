@@ -127,13 +127,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
                 .collect(Collectors.joining(", "));
 
-        KontaktInfo kontaktInfo = melding.getKontaktInfo();
-        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
-                .navn(kontaktInfo.getNavn())
-                .tittel(kontaktInfo.getTittel())
-                .mobil(kontaktInfo.getMobil())
-                .epost(kontaktInfo.getEpost())
-                .build();
+        KontaktpersonData kontaktpersonData = getKontaktInfo(melding.getKontaktInfo());
 
         StillingFraNavData stillingFraNavData = StillingFraNavData
                 .builder()
@@ -162,5 +156,17 @@ public class OpprettForesporselOmDelingAvCv {
                 .endretDato(new Date())
                 .stillingFraNavData(stillingFraNavData)
                 .build();
+    }
+
+    private KontaktpersonData getKontaktInfo(KontaktInfo kontaktInfo) {
+        if (kontaktInfo == null) {
+            return null;
+        }
+        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
+                .navn(kontaktInfo.getNavn())
+                .tittel(kontaktInfo.getTittel())
+                .mobil(kontaktInfo.getMobil())
+                .build();
+        return kontaktpersonData;
     }
 }
