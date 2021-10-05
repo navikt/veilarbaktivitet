@@ -37,8 +37,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,7 +53,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class StillingFraNavControllerITest {
 
-    public static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
+    public static final LocalDate AVTALT_DATO = LocalDate.of(2021, Calendar.MAY, 4);
     @Autowired
     KafkaTestService testService;
 
@@ -218,7 +218,6 @@ public class StillingFraNavControllerITest {
                 .extract()
                 .response()
                 .as(AktivitetDTO.class);
-
     }
 
     private void assertBrukernotifikasjonStoppet(MockBruker mockBruker) {

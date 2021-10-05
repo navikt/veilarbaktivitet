@@ -29,8 +29,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDate;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
 
@@ -41,7 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class StillingFraNavControllerTest {
-    public static final Date AVTALT_DATO = new Date(2021, Calendar.APRIL, 30);
+    public static final LocalDate AVTALT_DATO = LocalDate.of(2021, Calendar.APRIL, 30);
     private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
 
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();

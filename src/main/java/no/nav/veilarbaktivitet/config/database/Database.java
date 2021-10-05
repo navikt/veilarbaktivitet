@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
@@ -52,10 +53,9 @@ public class Database {
                 .orElse(null);
     }
 
-    public static Date hentDatoDato(ResultSet rs, String kolonneNavn) throws SQLException {
+    public static LocalDate hentLocalDate(ResultSet rs, String kolonneNavn) throws SQLException {
         return ofNullable(rs.getDate(kolonneNavn))
-                .map(java.sql.Date::getTime)
-                .map(Date::new)
+                .map(java.sql.Date::toLocalDate)
                 .orElse(null);
     }
 
