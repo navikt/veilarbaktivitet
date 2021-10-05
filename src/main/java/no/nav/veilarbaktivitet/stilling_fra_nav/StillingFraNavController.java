@@ -38,8 +38,12 @@ public class StillingFraNavController {
 
         }
 
+        if (!erEksternBruker && delingAvCvDTO.getAvtaltDato() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "avtaltDato er påkrevd når veileder svarer");
+        }
+
         return Optional.of(aktivitet)
-                .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, erEksternBruker))
+                .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, delingAvCvDTO.avtaltDato, erEksternBruker))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
     }

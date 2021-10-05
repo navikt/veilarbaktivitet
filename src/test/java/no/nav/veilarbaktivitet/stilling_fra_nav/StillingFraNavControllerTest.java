@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.arena.ArenaService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
@@ -30,6 +29,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Optional;
 import java.util.Random;
 
@@ -40,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class StillingFraNavControllerTest {
+    public static final Date AVTALT_DATO = new Date(2021, Calendar.APRIL, 30);
     private final MockHttpServletRequest mockHttpServletRequest = new MockHttpServletRequest();
 
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
@@ -55,8 +57,7 @@ public class StillingFraNavControllerTest {
 
     private final AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
     private final AuthService authService = mock(AuthService.class);
-    private final ArenaService arenaService = mock(ArenaService.class);
-    private final AktivitetAppService appService = new AktivitetAppService(arenaService, authService, aktivitetService, metricService);
+    private final AktivitetAppService appService = new AktivitetAppService(authService, aktivitetService, metricService);
 
     @Mock
     private DelingAvCvDAO delingAvCvDAO;
@@ -85,8 +86,8 @@ public class StillingFraNavControllerTest {
     @Test
     public void oppdaterKanCvDeles_NavSvarerJA_setterAlleVerdier() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNav());
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
-        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), true);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), true, AVTALT_DATO);
 
         var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatStilling = resultat.getStillingFraNavData();
@@ -96,14 +97,15 @@ public class StillingFraNavControllerTest {
         Assert.assertEquals(InnsenderData.NAV, resultatStilling.getCvKanDelesData().getEndretAvType());
         Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatStilling.getCvKanDelesData().getEndretAv());
         Assert.assertEquals(AktivitetStatus.GJENNOMFORES, resultat.getStatus());
+        Assert.assertEquals(AVTALT_DATO, resultatStilling.getCvKanDelesData().avtaltDato);
 
     }
 
     @Test
     public void oppdaterKanCvDeles_NavSvarerNEI_setterAlleVerdier() {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyStillingFraNavMedCVKanDeles().withAktorId(KJENT_AKTOR_ID.get()));
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData,false);
-        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), false);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        DelingAvCvDTO delingAvCvDTO = new DelingAvCvDTO(Long.parseLong(aktivitetDTO.getVersjon()), false, AVTALT_DATO);
 
         var resultat = stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delingAvCvDTO);
         var resultatJobbannonse = resultat.getStillingFraNavData();
@@ -113,6 +115,7 @@ public class StillingFraNavControllerTest {
         Assert.assertEquals(InnsenderData.NAV, resultatJobbannonse.getCvKanDelesData().getEndretAvType());
         Assert.assertEquals(KJENT_SAKSBEHANDLER.get(), resultatJobbannonse.getCvKanDelesData().getEndretAv());
         Assert.assertEquals(AktivitetStatus.AVBRUTT, resultat.getStatus());
+        Assert.assertEquals(AVTALT_DATO, resultatJobbannonse.getCvKanDelesData().avtaltDato);
 
 
     }
@@ -120,14 +123,14 @@ public class StillingFraNavControllerTest {
     @Test(expected = ResponseStatusException.class)
     public void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
         var aktivitetData = aktivitetDAO.opprettNyAktivitet(nyMoteAktivitet().withAktorId(KJENT_AKTOR_ID.get()));
-        var delecvDTO = new DelingAvCvDTO(aktivitetData.getVersjon(),true);
+        var delecvDTO = new DelingAvCvDTO(aktivitetData.getVersjon(), true, AVTALT_DATO);
         stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delecvDTO);
     }
 
     @Test(expected = ResponseStatusException.class)
     public void oppdaterKanCvDeles_feilVersjon_feiler() {
         var aktivitetData = aktivitetDAO.opprettNyAktivitet(nyMoteAktivitet().withAktorId(KJENT_AKTOR_ID.get()));
-        var delecvDTO = new DelingAvCvDTO(new Random().nextLong(),true);
+        var delecvDTO = new DelingAvCvDTO(new Random().nextLong(), true, AVTALT_DATO);
         stillingFraNavController.oppdaterKanCvDeles(aktivitetData.getId(), delecvDTO);
     }
 }

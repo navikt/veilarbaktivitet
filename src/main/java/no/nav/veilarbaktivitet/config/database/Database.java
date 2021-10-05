@@ -52,6 +52,13 @@ public class Database {
                 .orElse(null);
     }
 
+    public static Date hentDatoDato(ResultSet rs, String kolonneNavn) throws SQLException {
+        return ofNullable(rs.getDate(kolonneNavn))
+                .map(java.sql.Date::getTime)
+                .map(Date::new)
+                .orElse(null);
+    }
+
     @FunctionalInterface
     public interface Mapper<T> extends RowMapper<T> {
         T map(ResultSet resultSet) throws SQLException;
