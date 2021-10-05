@@ -88,7 +88,6 @@ public class AktivitetTypeDataTestBuilder {
         KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
                 .navn("Ola Nordmann")
                 .tittel("NAV-ansatt")
-                .epost("epost@nav.example")
                 .mobil("10203040")
                 .build();
 
