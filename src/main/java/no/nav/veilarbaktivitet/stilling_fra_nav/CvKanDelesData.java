@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.With;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Builder(toBuilder = true)
@@ -17,5 +18,5 @@ public class CvKanDelesData {
     Date endretTidspunkt;
     String endretAv;
     InnsenderData endretAvType;
-    Date avtaltDato;
+    LocalDate avtaltDato;
 }
