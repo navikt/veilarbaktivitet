@@ -24,14 +24,14 @@ public class DelingAvCvFristUtloptService {
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
-    void avsluttUtlopedeAktiviteter() {
+    public void avsluttUtlopedeAktiviteter() {
         if (leaderElectionClient.isLeader()) {
             while (avsluttUtlopedeAktiviteter(500) == 500) ;
         }
     }
 
     @Timed(value = "avsluttUtloptStillingFraNavAktiviteter", longTask = true, histogram = true)
-    int avsluttUtlopedeAktiviteter(int maxAntall) {
+    public int avsluttUtlopedeAktiviteter(int maxAntall) {
         List<AktivitetData> aktivitetDataer = delingAvCvDAO.hentAktiviteterSomSkalAvbrytes(maxAntall);
 
         aktivitetDataer.forEach(aktivitet -> {
