@@ -214,7 +214,6 @@ public class AktivitetDAO {
     }
 
     private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
-        // language=sql
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> {
                     SqlParameterSource params = new MapSqlParameterSource()
@@ -222,6 +221,7 @@ public class AktivitetDAO {
                             .addValue("versjon", versjon)
                             .addValue("hensikt", egen.getHensikt())
                             .addValue("oppfolging", egen.getOppfolging());
+                    // language=sql
                     database.getNamedJdbcTemplate().update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
                                     "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
                             params
@@ -231,7 +231,6 @@ public class AktivitetDAO {
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
-                // language=sql
                 .ifPresent(sokeAvtale -> {
                     SqlParameterSource params = new MapSqlParameterSource()
                             .addValue("aktivitet_id", aktivitetId)
@@ -239,6 +238,7 @@ public class AktivitetDAO {
                             .addValue("antall_stillinger_sokes", sokeAvtale.getAntallStillingerSokes())
                             .addValue("antall_stillinger_i_uken", sokeAvtale.getAntallStillingerIUken())
                             .addValue("avtale_oppfolging", sokeAvtale.getAvtaleOppfolging());
+                    // language=sql
                     database.getNamedJdbcTemplate().update(
                             "INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
                                     "VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)",
@@ -297,6 +297,7 @@ public class AktivitetDAO {
                                     .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
                                     .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
                                     .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
+                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData != null ? cvKanDelesData.getAvtaltDato() : null)
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())
@@ -317,6 +318,7 @@ public class AktivitetDAO {
                                             "CV_KAN_DELES_TIDSPUNKT, " +
                                             "CV_KAN_DELES_AV, " +
                                             "CV_KAN_DELES_AV_TYPE, " +
+                                            "CV_KAN_DELES_AVTALT_DATO," +
                                             "soknadsfrist, " +
                                             "svarfrist, " +
                                             "arbeidsgiver, " +
@@ -334,6 +336,7 @@ public class AktivitetDAO {
                                             ":cv_kan_deles_tidspunkt, " +
                                             ":cv_kan_deles_av, " +
                                             ":cv_kan_deles_av_type, " +
+                                            ":cv_kan_deles_avtalt_dato, " +
                                             ":soknadsfrist , " +
                                             ":svarfrist , " +
                                             ":arbeidsgiver , " +

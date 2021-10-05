@@ -35,9 +35,9 @@ public class DelingAvCvService {
     }
 
     @Transactional
-    public AktivitetData behandleSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+    public AktivitetData behandleSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
 
-        AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, erEksternBruker);
+        AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, avtaltDato, erEksternBruker);
 
         brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
@@ -72,13 +72,14 @@ public class DelingAvCvService {
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
-    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         var deleCvDetaljer = CvKanDelesData.builder()
                 .kanDeles(kanDeles)
                 .endretTidspunkt(new Date())
                 .endretAvType(erEksternBruker ? InnsenderData.BRUKER : InnsenderData.NAV)
+                .avtaltDato(avtaltDato)
                 .endretAv(innloggetBruker.get())
                 .build();
 

@@ -1,0 +1,2 @@
+alter table STILLING_FRA_NAV
+    add CV_KAN_DELES_AVTALT_DATO date;

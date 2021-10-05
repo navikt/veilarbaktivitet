@@ -37,6 +37,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +53,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class StillingFraNavControllerITest {
 
+    public static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
     @Autowired
     KafkaTestService testService;
 
@@ -84,10 +87,6 @@ public class StillingFraNavControllerITest {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
-    public void kake() {
-
-    }
-
     @Test
     public void happy_case_svar_ja() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
@@ -116,6 +115,7 @@ public class StillingFraNavControllerITest {
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
                 .kanDeles(false)
                 .build();
 
@@ -139,6 +139,7 @@ public class StillingFraNavControllerITest {
                 .kanDeles(false)
                 .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
+                .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
                 .build();
@@ -204,6 +205,7 @@ public class StillingFraNavControllerITest {
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(true)
+                .avtaltDato(AVTALT_DATO)
                 .build();
         return veileder
                 .createRequest()
@@ -258,6 +260,7 @@ public class StillingFraNavControllerITest {
                 .kanDeles(true)
                 .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
+                .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
                 .build();
