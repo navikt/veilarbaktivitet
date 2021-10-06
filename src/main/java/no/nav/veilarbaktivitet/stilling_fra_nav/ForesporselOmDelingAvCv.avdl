@@ -113,7 +113,7 @@
             },
             {
                 "name": "soknadsfrist",
-                "type": "string"
+                "type": ["string", "null"]
             },
             {
                 "name": "arbeidsgiver",
