@@ -22,7 +22,7 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
     private static final String INFO = "INFO";
     private static final String OVERSENDT = "OVERSENDT";
     private static final String FERDISTSTILT = "FERDISTSTILT";
-    private final String srv;
+    private final String srvUsername;
 
     public EksternVarslingKviteringConsumer(
             KviteringDto kviteringDto,
@@ -34,7 +34,7 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
         super();
         this.kviteringDto = kviteringDto;
 
-        srv = credentials.username;
+        srvUsername = credentials.username;
         this.setTopic(toppic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(deserializer);
@@ -44,11 +44,11 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, DoknotifikasjonStatus> kafkaRecord) {
         DoknotifikasjonStatus melding = kafkaRecord.value();
-        if (!srv.equals(melding.getBestillerId())) {
+        if (!srvUsername.equals(melding.getBestillerId())) {
             return ConsumeStatus.OK;
         }
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
-        String bestillingsId = brukernotifikasjonBestillingsId.substring(3 + srv.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+        String bestillingsId = brukernotifikasjonBestillingsId.substring(3 + srvUsername.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
         String status = melding.getStatus();
 
         switch (status) {
