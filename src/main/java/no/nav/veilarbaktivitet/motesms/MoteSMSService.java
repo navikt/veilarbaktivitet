@@ -50,7 +50,7 @@ public class MoteSMSService implements HealthCheck {
         antellGangerGjenomfort = registry.counter("antellGangerGjenomfort");
     }
 
-    @Timed(value = "moteservicemlding", longTask = true, histogram = true)
+    @Timed(value = "moteservicemelding", histogram = true)
     public void sendServicemeldingerForNesteDogn() {
         sendServicemeldinger(omTimer(1), omTimer(24));
     }
@@ -58,7 +58,9 @@ public class MoteSMSService implements HealthCheck {
     protected void sendServicemeldinger(Date fra, Date til) {
         List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(fra, til);
 
-        log.info("moteSMS antall hentet: " + smsAktivitetData.size());
+        if (!smsAktivitetData.isEmpty()) {
+            log.info("moteSMS antall hentet: " + smsAktivitetData.size());
+        }
 
         smsAktivitetData.stream()
                 .filter(SmsAktivitetData::skalSendeServicevarsel)
@@ -66,7 +68,6 @@ public class MoteSMSService implements HealthCheck {
 
         oppdaterMoteSmsMetrikker();
         antellGangerGjenomfort.increment();
-        log.info("mote sms ferdig");
 
         healty.set(healtyThisRound.get());
         healtyThisRound.set(true);
@@ -102,7 +103,7 @@ public class MoteSMSService implements HealthCheck {
         }
 
         if (aktivterSendtSmsPaa == null) {
-            aktivterSendtSmsPaa = registry.gauge("antallAkteterSendtSmsPaa", new AtomicLong(oppdatertAktivterSendtSmsPaa));
+            aktivterSendtSmsPaa = registry.gauge("antallAktiviteterSendtSmsPaa", new AtomicLong(oppdatertAktivterSendtSmsPaa));
         } else {
             aktivterSendtSmsPaa.set(oppdatertSmsSendt);
         }
