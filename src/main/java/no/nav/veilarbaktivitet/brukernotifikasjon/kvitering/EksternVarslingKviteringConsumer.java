@@ -5,6 +5,7 @@ import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.Deserializer;
@@ -15,24 +16,25 @@ import org.springframework.stereotype.Service;
 //TODO se på om schema bør vere dependency
 @Service
 @Slf4j
-public class Consumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
+public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
     private final KviteringDto kviteringDto;
     private static final String FEILET = "FEILET";
     private static final String INFO = "INFO";
     private static final String OVERSENDT = "OVERSENDT";
     private static final String FERDISTSTILT = "FERDISTSTILT";
-    String srv = "srvveilarbaktivitet"; //TODO hent inn srv som bønne
+    private final String srv;
 
-    public Consumer(
+    public EksternVarslingKviteringConsumer(
             KviteringDto kviteringDto,
+            Credentials credentials,
             Deserializer<DoknotifikasjonStatus> deserializer,
-            @Value("${app.kafka.kvpAvsluttetTopic}")
+            @Value("${topic.inn.ekstertVarselKvitering}")
                     String toppic
-
     ) {
         super();
         this.kviteringDto = kviteringDto;
 
+        srv = credentials.username;
         this.setTopic(toppic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(deserializer);
@@ -56,7 +58,7 @@ public class Consumer extends TopicConsumerConfig<String, DoknotifikasjonStatus>
                 break;
             case FEILET:
                 log.error("varsel feilet for melding {}", melding);
-                kviteringDto.setFeilet(bestillingsId); //TODO finn ut hva vi bør gjøre med feilete varsler.
+                kviteringDto.setFeilet(bestillingsId);
                 break;
             case FERDISTSTILT:
                 kviteringDto.setFulfortForGyldige(bestillingsId);
