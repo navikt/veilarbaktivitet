@@ -73,6 +73,9 @@ public class DelingAvCvFristUtloptServiceTest {
     @Autowired
     DelingAvCvFristUtloptService delingAvCvFristUtloptService;
 
+    @Autowired
+    DelingAvCvCronService delingAvCvCronService;
+
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
@@ -100,7 +103,7 @@ public class DelingAvCvFristUtloptServiceTest {
         AktivitetDTO skalIkkeBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
-        delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter();
+        delingAvCvCronService.avsluttUtlopedeAktiviteter();
 
         AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
         assertEquals(skalIkkeBliAvbrutt, finnAktivitet(aktivitetsplanDTO, skalIkkeBliAvbrutt.getId()));
