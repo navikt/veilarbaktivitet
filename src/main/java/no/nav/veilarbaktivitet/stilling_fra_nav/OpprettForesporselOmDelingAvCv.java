@@ -150,7 +150,6 @@ public class OpprettForesporselOmDelingAvCv {
                 .fraDato(new Date(opprettet.toEpochMilli()))
                 .lagtInnAv(InnsenderData.NAV)
                 .endretAv(navIdent.get())
-                .lenke("/rekrutteringsbistand/" + stillingsId)
                 .automatiskOpprettet(false)
                 .opprettetDato(new Date())
                 .endretDato(new Date())
@@ -162,11 +161,10 @@ public class OpprettForesporselOmDelingAvCv {
         if (kontaktInfo == null) {
             return null;
         }
-        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
+        return KontaktpersonData.builder()
                 .navn(kontaktInfo.getNavn())
                 .tittel(kontaktInfo.getTittel())
                 .mobil(kontaktInfo.getMobil())
                 .build();
-        return kontaktpersonData;
     }
 }
