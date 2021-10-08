@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class KviteringDto {
+public class KviteringDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
     public void setFeilet(String bestillingsId) {

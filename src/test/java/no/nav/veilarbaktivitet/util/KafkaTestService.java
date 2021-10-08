@@ -9,6 +9,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 
 @Service
 @RequiredArgsConstructor
@@ -31,12 +35,19 @@ public class KafkaTestService {
 
     private final Admin kafkaAdminClient;
 
+    @Value("${app.kafka.consumer-group-id}")
+    String onPremConsumerGroup;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    String aivenGroupId;
+
     /**
      * Lager en ny kafka consumer med random groupid på topic som leser fra slutten av topic.
      * Meldinger kan leses ved å bruke utility metoder i  KafkaTestUtils
-     * @see org.springframework.kafka.test.utils.KafkaTestUtils#getSingleRecord(org.apache.kafka.clients.consumer.Consumer, java.lang.String, long)
+     *
      * @param topic Topic du skal lese fra
      * @return En kafka consumer
+     * @see org.springframework.kafka.test.utils.KafkaTestUtils#getSingleRecord(org.apache.kafka.clients.consumer.Consumer, java.lang.String, long)
      */
     public Consumer createStringAvroConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
@@ -81,6 +92,14 @@ public class KafkaTestService {
         collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
         newConsumer.commitSync(Duration.ofSeconds(10));
+    }
+
+    public void assertErKonsumertOnprem(String topic, long producerOffset, int timeOutSeconds) {
+        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, onPremConsumerGroup, producerOffset));
+    }
+
+    public void assertErKonsumertAiven(String topic, long producerOffset, int timeOutSeconds) {
+        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
     }
 
     @SneakyThrows

@@ -33,8 +33,6 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -63,9 +61,6 @@ public class OppfolgingAvsluttetConsumerTest {
 
     @Value("${app.kafka.oppfolgingAvsluttetTopic}")
     String oppfolgingAvsluttetTopic;
-
-    @Value("${app.kafka.consumer-group-id}")
-    String onPremConsumerGroup;
 
     @After
     public void verify_no_unmatched() {
@@ -96,8 +91,9 @@ public class OppfolgingAvsluttetConsumerTest {
                 .setAktorId(mockBruker.getAktorId())
                 .setSluttdato(zonedDateTime);
 
+
         SendResult<String, String> sendResult = producer.send(oppfolgingAvsluttetTopic, JsonUtils.toJson(oppfolgingAvsluttetKafkaDTO)).get();
-        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(oppfolgingAvsluttetTopic, onPremConsumerGroup, sendResult.getRecordMetadata().offset()));
+        testService.assertErKonsumertOnprem(oppfolgingAvsluttetTopic, sendResult.getRecordMetadata().offset(), 5);
 
         List<AktivitetDTO> aktiviteter = testAktivitetservice.hentAktiviteterForFnr(port, mockBruker).aktiviteter;
         AktivitetDTO skalVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalBliHistorisk.getId())).findAny().get();

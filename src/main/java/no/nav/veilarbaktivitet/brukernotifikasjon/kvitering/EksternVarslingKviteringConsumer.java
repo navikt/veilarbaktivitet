@@ -17,24 +17,28 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
-    private final KviteringDto kviteringDto;
+    private final KviteringDAO kviteringDAO;
     private static final String FEILET = "FEILET";
     private static final String INFO = "INFO";
     private static final String OVERSENDT = "OVERSENDT";
     private static final String FERDISTSTILT = "FERDISTSTILT";
     private final String srvUsername;
+    private final String oppgavePrefix;
+    private final String beskjedPrefix;
 
     public EksternVarslingKviteringConsumer(
-            KviteringDto kviteringDto,
+            KviteringDAO kviteringDAO,
             Credentials credentials,
             Deserializer<DoknotifikasjonStatus> deserializer,
             @Value("${topic.inn.ekstertVarselKvitering}")
                     String toppic
     ) {
         super();
-        this.kviteringDto = kviteringDto;
+        this.kviteringDAO = kviteringDAO;
 
         srvUsername = credentials.username;
+        oppgavePrefix = "O-" + srvUsername + "-";
+        beskjedPrefix = "B-" + srvUsername + "-";
         this.setTopic(toppic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(deserializer);
@@ -47,21 +51,28 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
         if (!srvUsername.equals(melding.getBestillerId())) {
             return ConsumeStatus.OK;
         }
+
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
-        String bestillingsId = brukernotifikasjonBestillingsId.substring(3 + srvUsername.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+
+        if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
+            log.warn("motok melding med feil prefiks, {}", melding); //TODO fin ut om vi porduserer på samme topic?
+            return ConsumeStatus.FAILED;
+        }
+        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+
         String status = melding.getStatus();
+        log.info("motokk melding {}", melding);
 
         switch (status) {
             case INFO:
             case OVERSENDT:
-                log.info("motokk melding {}", melding);
                 break;
             case FEILET:
                 log.error("varsel feilet for melding {}", melding);
-                kviteringDto.setFeilet(bestillingsId);
+                kviteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDISTSTILT:
-                kviteringDto.setFulfortForGyldige(bestillingsId);
+                kviteringDAO.setFulfortForGyldige(bestillingsId);
                 break;
             default:
                 log.error("uskjent status for melding {}", melding);
