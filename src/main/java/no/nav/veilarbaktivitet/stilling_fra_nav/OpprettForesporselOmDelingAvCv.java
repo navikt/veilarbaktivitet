@@ -87,7 +87,6 @@ public class OpprettForesporselOmDelingAvCv {
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
-        AktivitetData aktivitetData = map(melding);
 
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
@@ -96,9 +95,13 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
+        boolean kanIkkeVarsle = erManuell || erReservertIKrr || !harBruktNivaa4;
+
+        AktivitetData aktivitetData = map(melding, kanIkkeVarsle);
+
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
-        if (erManuell || erReservertIKrr || !harBruktNivaa4) {
+        if (kanIkkeVarsle) {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);
         } else {
             brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
@@ -106,7 +109,7 @@ public class OpprettForesporselOmDelingAvCv {
         }
     }
 
-    private AktivitetData map(ForesporselOmDelingAvCv melding) {
+    private AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanIkkeVarsle) {
         //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
@@ -138,6 +141,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .stillingsId(stillingsId)
                 .arbeidssted(arbeidsted)
                 .kontaktpersonData(kontaktpersonData)
+                .livslopsStatus(kanIkkeVarsle ? LivslopsStatus.KAN_IKKE_VARSLE : LivslopsStatus.PROVER_VARSLING)
                 .build();
 
         return AktivitetData
