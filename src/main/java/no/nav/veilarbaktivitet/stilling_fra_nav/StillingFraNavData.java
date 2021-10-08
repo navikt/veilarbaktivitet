@@ -19,5 +19,6 @@ public class StillingFraNavData {
     String arbeidssted;
     KontaktpersonData kontaktpersonData;
     Soknadsstatus soknadsstatus;
+    LivslopsStatus livslopsStatus;
     String varselId; // TODO fjerne denne?
 }
