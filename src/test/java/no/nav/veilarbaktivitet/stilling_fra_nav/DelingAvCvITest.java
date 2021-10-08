@@ -148,10 +148,11 @@ public class DelingAvCvITest {
     }
 
     @Test
-    public void happy_case_ingen_kontaktInfo() {
+    public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         ForesporselOmDelingAvCv melding = createMelding(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
+        melding.setSoknadsfrist(null);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
         sendOppgaveCron.sendBrukernotifikasjoner();

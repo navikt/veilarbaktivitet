@@ -15,23 +15,24 @@ public class AvtaltVarselService {
     private final AvtaltVarselHandler avtaltVarselHandler;
     private final ForhaandsorienteringDAO dao;
 
-    @Timed(value = "sendAvtaltVarsel", longTask = true, histogram = true)
+    @Timed(value = "sendAvtaltVarsel", histogram = true)
     public void sendVarsel() {
-        log.info("sendt avtalt varsler");
-
         List<VarselIdHolder> ider = dao.hentVarslerSkalSendes(5000);
         ider.forEach(this::trySend);
 
-        log.info("sendt {} varselr", ider.size());
+        if (!ider.isEmpty()) {
+            log.info("sendt {} varselr", ider.size());
+        }
     }
 
-    @Timed(value = "stoppAvtaleVarsel", longTask = true, histogram = true)
+    @Timed(value = "stoppAvtaleVarsel", histogram = true)
     public void stoppVarsel() {
-        log.info("stoppAvtaleVarsel");
         dao.setVarselStoppetForIkkeSendt();
         List<String> ider = dao.hentVarslerSomSkalStoppes(5000);
         ider.forEach(this::tryStop);
-        log.info("stopet {} varsler", ider.size());
+        if (!ider.isEmpty()) {
+            log.info("stoppet {} varsler", ider.size());
+        }
     }
 
     private void trySend(VarselIdHolder varselIdHolder) {
