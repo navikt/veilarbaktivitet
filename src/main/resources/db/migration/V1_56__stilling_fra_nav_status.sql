@@ -6,4 +6,4 @@ set LIVSLOPSSTATUS='PROVER_VARSLING'
 where CV_KAN_DELES is null;
 
 alter table STILLING_FRA_NAV
-    ALTER COLUMN LIVSLOPSSTATUS varchar(255) not null;
+    ALTER COLUMN LIVSLOPSSTATUS varchar(255) default (null) not null;
