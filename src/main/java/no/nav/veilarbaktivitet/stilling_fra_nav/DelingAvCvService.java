@@ -52,6 +52,7 @@ public class DelingAvCvService {
         AktivitetData nyAktivitet = aktivitet.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
                 .build();
 
         aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
@@ -84,7 +85,9 @@ public class DelingAvCvService {
                 .build();
 
 
-        var stillingFraNavData = aktivitetData.getStillingFraNavData().withCvKanDelesData(deleCvDetaljer);
+        var stillingFraNavData = aktivitetData.getStillingFraNavData()
+                .withCvKanDelesData(deleCvDetaljer)
+                .withLivslopsStatus(LivslopsStatus.HAR_SVART);
         if (kanDeles) {
             stillingFraNavData = stillingFraNavData.withSoknadsstatus(Soknadsstatus.VENTER);
         }

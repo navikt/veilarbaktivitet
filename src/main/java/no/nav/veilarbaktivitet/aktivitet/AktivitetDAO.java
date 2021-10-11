@@ -308,7 +308,8 @@ public class AktivitetDAO {
                                     .addValue("kontaktperson_navn", kontaktpersonData != null ? kontaktpersonData.getNavn() : null)
                                     .addValue("kontaktperson_tittel", kontaktpersonData != null ? kontaktpersonData.getTittel() : null)
                                     .addValue("kontaktperson_mobil", kontaktpersonData != null ? kontaktpersonData.getMobil() : null)
-                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()));
+                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
+                                    .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     " insert into " +
@@ -329,7 +330,8 @@ public class AktivitetDAO {
                                             "kontaktperson_navn, " +
                                             "kontaktperson_tittel, " +
                                             "kontaktperson_mobil, " +
-                                            "soknadsstatus) " +
+                                            "soknadsstatus, " +
+                                            "livslopsstatus) " +
                                             " VALUES ( :aktivitet_id, " +
                                             ":versjon, " +
                                             ":cv_kan_deles, " +
@@ -347,7 +349,8 @@ public class AktivitetDAO {
                                             ":kontaktperson_navn , " +
                                             ":kontaktperson_tittel , " +
                                             ":kontaktperson_mobil , " +
-                                            ":soknadsstatus)",
+                                            ":soknadsstatus, " +
+                                            ":livslopsstatus)",
                                     parms
                             );
                         }
