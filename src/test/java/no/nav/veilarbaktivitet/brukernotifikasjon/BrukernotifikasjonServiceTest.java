@@ -15,7 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKviteringConsumer;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -88,7 +88,7 @@ public class BrukernotifikasjonServiceTest {
     KafkaTemplate<String, DoknotifikasjonStatus> kviteringsTopic;
 
     @Autowired
-    EksternVarslingKviteringConsumer eksternVarslingKviteringConsumer;
+    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
 
     @LocalServerPort
     private int port;
@@ -191,7 +191,7 @@ public class BrukernotifikasjonServiceTest {
         String forsoktSendt = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
         assertEquals(VarselStatus.FORSOKT_SENDT.name(), forsoktSendt);
 
-        ConsumeStatus consumeStatus = eksternVarslingKviteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, okStatus(brukernotifikasjonId)));
+        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, okStatus(brukernotifikasjonId)));
         assertEquals(ConsumeStatus.OK, consumeStatus);
 
         String varselStatus = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet

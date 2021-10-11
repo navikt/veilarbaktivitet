@@ -12,7 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKviteringConsumer;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -84,7 +84,7 @@ public class BrukernotifikasjonKvitteringTest {
     KafkaTemplate<String, DoknotifikasjonStatus> kviteringsTopic;
 
     @Autowired
-    EksternVarslingKviteringConsumer eksternVarslingKviteringConsumer;
+    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
 
     @LocalServerPort
     private int port;
@@ -116,7 +116,7 @@ public class BrukernotifikasjonKvitteringTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = oppretOppgave(mockBruker, aktivitetDTO);
+        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
 
         String eventId = oppgaveRecord.key().getEventId();
         String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
@@ -139,7 +139,7 @@ public class BrukernotifikasjonKvitteringTest {
     }
 
     private void assertStatus(String eventId, String brukernotifikasjonId, DoknotifikasjonStatus message, ConsumeStatus expectedConsumeStatus, VarselStatus expectedVarselStatus) {
-        ConsumeStatus consumeStatus = eksternVarslingKviteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, message));
+        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, message));
         assertEquals(expectedConsumeStatus, consumeStatus);
 
         assertVarselStatus(eventId, expectedVarselStatus);
@@ -179,7 +179,7 @@ public class BrukernotifikasjonKvitteringTest {
         return status(bestillingsId, "OVERSENDT");
     }
 
-    private ConsumerRecord<Nokkel, Oppgave> oppretOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+    private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         brukernotifikasjonService.opprettOppgavePaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),

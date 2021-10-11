@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
-public class KviteringDAO {
+public class KvitteringDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
     public void setFeilet(String bestillingsId) {
@@ -18,7 +18,7 @@ public class KviteringDAO {
         jdbc.update("update BRUKERNOTIFIKASJON set VARSEL_FEILET = current_timestamp, STATUS = :status where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
-    public void setFulfortForGyldige(String bestillingsId) {
+    public void setFullfortForGyldige(String bestillingsId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonId", bestillingsId)
                 .addValue("status", VarselStatus.SENDT_OK.toString());

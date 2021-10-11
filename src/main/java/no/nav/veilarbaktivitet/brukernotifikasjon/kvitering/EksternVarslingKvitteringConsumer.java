@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 //TODO se på om schema bør vere dependency
 @Service
 @Slf4j
-public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
-    private final KviteringDAO kviteringDAO;
+public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
+    private final KvitteringDAO kvitteringDAO;
     private static final String FEILET = "FEILET";
     private static final String INFO = "INFO";
     private static final String OVERSENDT = "OVERSENDT";
@@ -26,15 +26,15 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
     private final String oppgavePrefix;
     private final String beskjedPrefix;
 
-    public EksternVarslingKviteringConsumer(
-            KviteringDAO kviteringDAO,
+    public EksternVarslingKvitteringConsumer(
+            KvitteringDAO kvitteringDAO,
             Credentials credentials,
             Deserializer<DoknotifikasjonStatus> deserializer,
             @Value("${topic.inn.ekstertVarselKvitering}")
                     String toppic
     ) {
         super();
-        this.kviteringDAO = kviteringDAO;
+        this.kvitteringDAO = kvitteringDAO;
 
         srvUsername = credentials.username;
         oppgavePrefix = "O-" + srvUsername + "-";
@@ -55,13 +55,13 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
 
         if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
-            log.warn("motok melding med feil prefiks, {}", melding); //TODO fin ut om vi porduserer på samme topic?
+            log.warn("mottok melding med feil prefiks, {}", melding); //TODO finn ut om vi produserer på samme topic?
             return ConsumeStatus.FAILED;
         }
         String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
-        log.info("motokk melding {}", melding);
+        log.info("mottokk melding {}", melding);
 
         switch (status) {
             case INFO:
@@ -69,13 +69,13 @@ public class EksternVarslingKviteringConsumer extends TopicConsumerConfig<String
                 break;
             case FEILET:
                 log.error("varsel feilet for melding {}", melding);
-                kviteringDAO.setFeilet(bestillingsId);
+                kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDISTSTILT:
-                kviteringDAO.setFulfortForGyldige(bestillingsId);
+                kvitteringDAO.setFullfortForGyldige(bestillingsId);
                 break;
             default:
-                log.error("uskjent status for melding {}", melding);
+                log.error("ukjent status for melding {}", melding);
                 return ConsumeStatus.FAILED;
         }
 
