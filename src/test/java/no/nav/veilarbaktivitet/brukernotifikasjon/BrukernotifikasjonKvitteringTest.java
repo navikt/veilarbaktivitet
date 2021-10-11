@@ -44,7 +44,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class BrukernotifikasjonKvittering {
+public class BrukernotifikasjonKvitteringTest {
 
     @Autowired
     BrukernotifikasjonService brukernotifikasjonService;
@@ -110,7 +110,7 @@ public class BrukernotifikasjonKvittering {
 
     @SneakyThrows
     @Test
-    public void happy_case() {
+    public void status_tester() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
