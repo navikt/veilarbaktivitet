@@ -42,9 +42,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createMelding;
-import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -345,7 +343,7 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker);
         SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
-        await().atMost(5, SECONDS).until(() -> testService.erKonsumert(innTopic, groupId, result.getRecordMetadata().offset()));
+        testService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
 
         ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
