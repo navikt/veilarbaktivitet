@@ -1,5 +1,5 @@
 alter table STILLING_FRA_NAV
-    add LIVSLOPSSTATUS varchar(255) not null default 'HAR_SVART';
+    add LIVSLOPSSTATUS varchar(255) default 'HAR_SVART' not null;
 
 update STILLING_FRA_NAV
 set LIVSLOPSSTATUS='PROVER_VARSLING'
