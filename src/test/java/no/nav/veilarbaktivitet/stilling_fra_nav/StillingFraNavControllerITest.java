@@ -37,9 +37,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
@@ -157,6 +160,31 @@ public class StillingFraNavControllerITest {
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, false);
+    }
+
+    @Test
+    public void svar_naar_frist_utlopt_feiler() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt, port);
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
+                .kanDeles(false)
+                .build();
+
+        veileder
+                .createRequest()
+                .and()
+                .param("aktivitetId", aktivitetDTO.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .assertThat().statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract().response();
     }
 
     @Test
