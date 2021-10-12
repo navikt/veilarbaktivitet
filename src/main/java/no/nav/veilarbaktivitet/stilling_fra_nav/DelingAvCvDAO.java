@@ -21,16 +21,17 @@ public class DelingAvCvDAO {
         return !jdbcTemplate.queryForList("SELECT BESTILLINGSID FROM STILLING_FRA_NAV WHERE BESTILLINGSID=:bestillingsId ", bestillingsIdParameter, String.class).isEmpty();
     }
 
-    public List<AktivitetData> hentAktiviteterSomSkalAvbrytes(long maxAntall) {
+    public List<AktivitetData> hentStillingFraNavDerFristErUtlopt(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("" +
                         " SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.* " +
                         " FROM AKTIVITET A" +
                         " JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON " +
-                        " WHERE GJELDENDE = 1 " +
+                        " WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
                         " AND LIVSLOPSTATUS_KODE != 'AVBRUTT' " +
-                        " AND AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
+                        " AND GJELDENDE = 1 " +
                         " AND SVARFRIST < current_timestamp " +
+                        " AND SFN.CV_KAN_DELES IS NULL" +
                         " order by A.AKTIVITET_ID" +
                         " fetch first :maxAntall rows only ",
                 parameter,
