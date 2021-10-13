@@ -32,18 +32,4 @@ public class DelingAvCvFristUtloptService {
 
         return aktivitetDataer.size();
     }
-
-    @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar", histogram = true)
-    public int notifiserFullfortEllerAvbruttUtenSvar(int maxantall) {
-        List<AktivitetData> aktivitetData = delingAvCvDAO.hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(maxantall);
-        aktivitetData.forEach(aktivitet -> {
-            try {
-                delingAvCvService.notifiserAvbruttEllerFullfortUtenSvar(aktivitet, Person.navIdent("SYSTEM"));
-            } catch (Exception e) {
-                log.warn("Behandling av fullført/avbrutt aktivitet aktivitetId={} feilet", aktivitet.getId());
-                log.error("Kunne ikke behandle avbrutt/fullført aktivitet", e);
-            }
-        });
-        return aktivitetData.size();
-    }
 }

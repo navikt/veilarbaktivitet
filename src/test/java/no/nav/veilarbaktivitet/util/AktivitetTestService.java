@@ -210,4 +210,21 @@ public class AktivitetTestService {
     public static AktivitetDTO finnAktivitet(AktivitetsplanDTO aktivitetsplanDTO, String id) {
         return aktivitetsplanDTO.aktiviteter.stream().filter(a -> a.getId().equals(id)).findAny().get();
     }
+
+    public AktivitetDTO hentAktivitet(int port, MockBruker mockBruker, String id) {
+        return hentAktivitet(port, mockBruker, mockBruker, id);
+    }
+
+    public AktivitetDTO hentAktivitet(int port, MockBruker mockBruker, RestassuredUser user, String id) {
+        Response response = user
+                .createRequest()
+                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + id, mockBruker))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+
+        return response.as(AktivitetDTO.class);
+    }
 }
