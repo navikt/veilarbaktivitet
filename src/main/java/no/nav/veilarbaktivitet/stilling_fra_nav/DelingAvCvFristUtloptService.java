@@ -19,7 +19,7 @@ public class DelingAvCvFristUtloptService {
 
     @Timed(value = "avsluttUtloptStillingFraNavAktiviteter", histogram = true)
     public int avsluttUtlopedeAktiviteter(int maxAntall) {
-        List<AktivitetData> aktivitetDataer = delingAvCvDAO.hentStillingFraNavDerFristErUtlopt(maxAntall);
+        List<AktivitetData> aktivitetDataer = delingAvCvDAO.hentStillingFraNavUtenSvarDerFristErUtlopt(maxAntall);
 
         aktivitetDataer.forEach(aktivitet -> {
             try {

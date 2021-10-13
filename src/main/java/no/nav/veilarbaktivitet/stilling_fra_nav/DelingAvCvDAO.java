@@ -21,7 +21,7 @@ public class DelingAvCvDAO {
         return !jdbcTemplate.queryForList("SELECT BESTILLINGSID FROM STILLING_FRA_NAV WHERE BESTILLINGSID=:bestillingsId ", bestillingsIdParameter, String.class).isEmpty();
     }
 
-    public List<AktivitetData> hentStillingFraNavDerFristErUtlopt(long maxAntall) {
+    public List<AktivitetData> hentStillingFraNavUtenSvarDerFristErUtlopt(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("" +
                         " SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.* " +
