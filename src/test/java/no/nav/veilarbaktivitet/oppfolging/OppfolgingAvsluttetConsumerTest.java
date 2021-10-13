@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,6 +73,7 @@ public class OppfolgingAvsluttetConsumerTest {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
+    @Ignore
     @Test
     @SuppressWarnings("java:S2925")
     public void skal_avslutte_aktiviteter_for() throws ExecutionException, InterruptedException {
