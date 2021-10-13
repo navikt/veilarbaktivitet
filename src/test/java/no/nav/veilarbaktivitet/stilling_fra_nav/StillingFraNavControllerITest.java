@@ -147,16 +147,18 @@ public class StillingFraNavControllerITest {
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
                 .build();
 
+        StillingFraNavData stillingFraNavData = aktivitetDTO.getStillingFraNavData().toBuilder()
+                .cvKanDelesData(expectedCvKanDelesData)
+                .livslopsStatus(LivslopsStatus.HAR_SVART)
+                .build();
 
         AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
+                .stillingFraNavData(stillingFraNavData)
                 .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles")
                 .build();
 
-        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
-
         assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
-
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, false);
@@ -300,6 +302,7 @@ public class StillingFraNavControllerITest {
                 .toBuilder()
                 .cvKanDelesData(expectedCvKanDelesData)
                 .soknadsstatus(Soknadsstatus.VENTER)
+                .livslopsStatus(LivslopsStatus.HAR_SVART)
                 .build();
 
         expectedAktivitet.setStillingFraNavData(stillingFraNavData);

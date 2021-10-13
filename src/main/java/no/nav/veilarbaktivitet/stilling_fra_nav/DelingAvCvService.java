@@ -59,6 +59,16 @@ public class DelingAvCvService {
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
     }
 
+    @Transactional
+    @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar")
+    public void notifiserAvbruttEllerFullfortUtenSvar(AktivitetData aktivitet, Person person) {
+        AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER))
+                .build();
+        aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, person);
+        stillingFraNavProducerClient.sendAvbruttEllerFullfortUtenSvar(aktivitet);
+    }
+
     public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 

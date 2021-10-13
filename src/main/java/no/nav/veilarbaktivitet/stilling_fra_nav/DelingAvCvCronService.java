@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class DelingAvCvCronService {
     private final LeaderElectionClient leaderElectionClient;
     private final DelingAvCvFristUtloptService delingAvCvFristUtloptService;
+    private final DelingAvCvManueltAvbruttService delingAvCvManueltAvbruttService;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -20,6 +21,16 @@ public class DelingAvCvCronService {
     void avsluttUtlopedeAktiviteter() {
         if (leaderElectionClient.isLeader()) {
             while (delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500) == 500) ;
+        }
+    }
+
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    void notifiserAvbruttEllerFullfortUtenSvar() {
+        if (leaderElectionClient.isLeader()) {
+            while (delingAvCvManueltAvbruttService.notifiserFullfortEllerAvbruttUtenSvar(500) == 500) ;
         }
     }
 }
