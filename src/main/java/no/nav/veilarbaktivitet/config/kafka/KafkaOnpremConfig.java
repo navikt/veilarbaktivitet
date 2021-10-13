@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
@@ -27,6 +28,7 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProduc
 
 
 @Configuration
+@Slf4j
 public class KafkaOnpremConfig {
 
     //@Bean
@@ -59,6 +61,7 @@ public class KafkaOnpremConfig {
                 .withProperties(onPremConsumerProperties);
 
 
+        log.info("stuff", onPremConsumerProperties);
         clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(topicConfigs).withMetrics(meterRegistry).withLogging());
 
 
