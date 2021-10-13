@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 public class AktivitetTypeDataTestBuilder {
@@ -96,6 +98,7 @@ public class AktivitetTypeDataTestBuilder {
                 .arbeidsgiver("NAV IT")
                 .arbeidssted("Oslo")
                 .soknadsfrist(new Date().toString())
+                .svarfrist(new Date(Instant.now().plus(2, ChronoUnit.DAYS).toEpochMilli()))
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(Soknadsstatus.VENTER)
                 .livslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)
