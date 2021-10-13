@@ -61,7 +61,7 @@ public class KafkaOnpremConfig {
                 .withProperties(onPremConsumerProperties);
 
 
-        log.info("stuff", onPremConsumerProperties);
+        log.info("stuff {}", onPremConsumerProperties);
         clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(topicConfigs).withMetrics(meterRegistry).withLogging());
 
 
