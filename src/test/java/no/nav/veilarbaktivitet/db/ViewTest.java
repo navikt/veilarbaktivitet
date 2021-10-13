@@ -34,7 +34,8 @@ public class ViewTest extends DatabaseTest {
                 "DVH_KANAL_TYPE",
                 "DVH_SLETTEDE_AKTIVITETER",
                 "DVH_JOBB_STATUS_TYPE",
-                "DVH_IJOBB"
+                "DVH_IJOBB",
+                "DVH_STILLING_FRA_NAV_AKTIVITET"
         };
     }
 
