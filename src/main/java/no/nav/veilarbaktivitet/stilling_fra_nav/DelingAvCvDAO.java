@@ -30,6 +30,7 @@ public class DelingAvCvDAO {
                         " WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
                         " AND LIVSLOPSTATUS_KODE != 'AVBRUTT' " +
                         " AND GJELDENDE = 1 " +
+                        " AND HISTORISK_DATO is null" +
                         " AND SVARFRIST < current_timestamp " +
                         " AND SFN.CV_KAN_DELES IS NULL" +
                         " order by A.AKTIVITET_ID" +
@@ -47,6 +48,7 @@ public class DelingAvCvDAO {
                         " WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' " +
                         " AND LIVSLOPSTATUS_KODE IN('AVBRUTT','FULLFORT')" +
                         " AND GJELDENDE = 1 " +
+                        " AND HISTORISK_DATO is null" +
                         " AND SFN.LIVSLOPSSTATUS NOT IN('AVBRUTT_AV_BRUKER', 'AVBRUTT_AV_SYSTEM', 'HAR_SVART')" +
                         " AND SFN.CV_KAN_DELES IS NULL" +
                         " order by A.AKTIVITET_ID" +
