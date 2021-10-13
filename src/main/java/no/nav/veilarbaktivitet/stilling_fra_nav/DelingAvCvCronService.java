@@ -22,4 +22,14 @@ public class DelingAvCvCronService {
             while (delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500) == 500) ;
         }
     }
+
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    void notifiserAvbruttEllerFullfortUtenSvar() {
+        if (leaderElectionClient.isLeader()) {
+            while (delingAvCvFristUtloptService.notifiserFullfortEllerAvbruttUtenSvar(500) == 500) ;
+        }
+    }
 }

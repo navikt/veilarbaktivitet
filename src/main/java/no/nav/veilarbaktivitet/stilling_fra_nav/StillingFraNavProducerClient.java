@@ -65,6 +65,10 @@ public class StillingFraNavProducerClient {
         sendRespons(TilstandEnum.AVBRUTT, aktivitetData);
     }
 
+    void sendAvbruttEllerFullfortUtenSvar(AktivitetData aktivitetData) {
+        sendSvarfristUtlopt(aktivitetData);
+    }
+
     private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
         sendRespons(tilstand,
                 aktivitetData.getStillingFraNavData().getBestillingsId(),
