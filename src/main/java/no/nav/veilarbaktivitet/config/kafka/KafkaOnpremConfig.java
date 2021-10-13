@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
@@ -10,7 +9,6 @@ import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.utils.Credentials;
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,10 +26,9 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProduc
 
 
 @Configuration
-@Slf4j
 public class KafkaOnpremConfig {
 
-    //@Bean
+    @Bean
     public KafkaConsumerClient consumerClient(
             List<TopicConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
@@ -43,27 +40,6 @@ public class KafkaOnpremConfig {
         topicConfigs.forEach(it -> {
             clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
         });
-
-        var client = clientBuilder.build();
-
-        client.start();
-
-        return client;
-    }
-
-    @Bean
-    public KafkaConsumerClient consumerClient2(
-            TopicConsumerConfig<String, DoknotifikasjonStatus> topicConfigs,
-            MeterRegistry meterRegistry,
-            Properties onPremConsumerProperties
-    ) {
-        var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremConsumerProperties);
-
-
-        log.info("stuff {}", onPremConsumerProperties);
-        clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(topicConfigs).withMetrics(meterRegistry).withLogging());
-
 
         var client = clientBuilder.build();
 
@@ -94,13 +70,13 @@ public class KafkaOnpremConfig {
     @Bean
     @Profile("!dev")
     Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials) {
-        return onPremDefaultProducerProperties(kafkaOnpremProperties.producerClientId + "3kake", kafkaOnpremProperties.brokersUrl, credentials);
+        return onPremDefaultProducerProperties(kafkaOnpremProperties.producerClientId, kafkaOnpremProperties.brokersUrl, credentials);
     }
 
     @Bean
     @Profile("!dev")
     Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials) {
-        return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId + "2kake", kafkaOnpremProperties.getBrokersUrl(), credentials);
+        return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId, kafkaOnpremProperties.getBrokersUrl(), credentials);
     }
 
 }
