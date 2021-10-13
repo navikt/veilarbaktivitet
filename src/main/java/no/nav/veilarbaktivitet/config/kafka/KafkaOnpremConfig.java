@@ -97,7 +97,7 @@ public class KafkaOnpremConfig {
     @Bean
     @Profile("!dev")
     Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties, Credentials credentials) {
-        return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId + 2, kafkaOnpremProperties.getBrokersUrl(), credentials);
+        return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId + "2kake", kafkaOnpremProperties.getBrokersUrl(), credentials);
     }
 
 }
