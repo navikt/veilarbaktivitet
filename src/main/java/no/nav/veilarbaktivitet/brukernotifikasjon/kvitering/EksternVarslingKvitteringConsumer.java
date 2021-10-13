@@ -49,7 +49,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
     public ConsumeStatus consume(ConsumerRecord<String, DoknotifikasjonStatus> kafkaRecord) {
         DoknotifikasjonStatus melding = kafkaRecord.value();
         if (!srvUsername.equals(melding.getBestillerId())) {
-            log.info("avsemder {}, bestillingsid {}", melding.getBestillingsId(), melding.getBestillingsId());
+            log.info("avsemder {}, bestillingsid {}", melding.getBestillerId(), melding.getBestillingsId());
             return ConsumeStatus.OK;
         }
 
