@@ -2,14 +2,20 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.springframework.stereotype.Component;
 
 @Component
-@RequiredArgsConstructor
 class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
+
+    StillingFraNavMetrikker(MeterRegistry meterRegistry) {
+        this.meterRegistry = meterRegistry;
+        meterRegistry.counter("StillingFraNavKanDeles", "erEksternBruker", "", "kanDele", "");
+        meterRegistry.counter("StillingFraNavManueltAvbrutt", "erEksternBruker", "");
+        meterRegistry.counter("StillingFraNavTidsfristUtlopt");
+    }
+
 
     void countSvar(boolean erEksternBruker, boolean svar) {
         Counter.builder("StillingFraNavKanDeles")
