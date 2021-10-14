@@ -11,8 +11,8 @@ class StillingFraNavMetrikker {
 
     StillingFraNavMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        meterRegistry.counter("StillingFraNavKanDeles", "erEksternBruker", "", "kanDele", "");
-        meterRegistry.counter("StillingFraNavManueltAvbrutt", "erEksternBruker", "");
+        meterRegistry.counter("StillingFraNavKanDeles");
+        meterRegistry.counter("StillingFraNavManueltAvbrutt");
         meterRegistry.counter("StillingFraNavTidsfristUtlopt");
     }
 
