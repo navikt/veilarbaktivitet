@@ -57,6 +57,7 @@ public class DelingAvCvService {
 
         aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
+        metrikker.countTidsfristUtlopt();
     }
 
     @Transactional
@@ -67,6 +68,7 @@ public class DelingAvCvService {
                 .build();
         aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, person);
         stillingFraNavProducerClient.sendAvbruttEllerFullfortUtenSvar(aktivitet);
+        metrikker.countManuletAvbrutt(aktivitet.getLagtInnAv());
     }
 
     public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus) {
