@@ -11,13 +11,9 @@ class StillingFraNavMetrikker {
 
     StillingFraNavMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        meterRegistry.counter("stilling_fra_nav_kan_deles", "er_ekstern_bruker", "" + true, "kan_dele", "" + true);
-        meterRegistry.counter("stilling_fra_nav_kan_deles", "er_ekstern_bruker", "" + true, "kan_dele", "" + false);
-        meterRegistry.counter("stilling_fra_nav_kan_deles", "er_ekstern_bruker", "" + false, "kan_dele", "" + true);
-        meterRegistry.counter("stilling_fra_nav_kan_deles", "er_ekstern_bruker", "" + false, "kan_dele", "" + false);
-        meterRegistry.counter("stilling_fra_nav_manuelt_avbrutt", "er_ekstern_bruker", "" + true);
-        meterRegistry.counter("stilling_fra_nav_manuelt_avbrutt", "er_ekstern_bruker", "" + false);
-        meterRegistry.counter("stilling_fra_nav_tidsfrist_utlopt");
+        meterRegistry.counter("StillingFraNavKanDeles");
+        meterRegistry.counter("StillingFraNavManueltAvbrutt");
+        meterRegistry.counter("StillingFraNavTidsfristUtlopt");
     }
 
 
