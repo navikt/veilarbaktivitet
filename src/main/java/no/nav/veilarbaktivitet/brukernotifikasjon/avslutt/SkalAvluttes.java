@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt;
+package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

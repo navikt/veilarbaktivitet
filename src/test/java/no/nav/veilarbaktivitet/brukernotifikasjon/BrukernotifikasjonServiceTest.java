@@ -14,7 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;

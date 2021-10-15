@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +37,7 @@ class BrukerNotifkasjonOppgaveService {
     private String aktivitetsplanBasepath;
 
     @Transactional
+    @Timed(value="brukernotifikasjon_opprett_oppgave_sendt")
     public void send(SkalSendes skalSendes) {
         boolean oppdatertOk = dao.setSendt(skalSendes.getId());
 

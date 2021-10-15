@@ -8,16 +8,19 @@ import org.springframework.stereotype.Component;
 @Component
 class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
+    private static final String stillingFraNavOpprettet = "stilling_fra_nav_opprettet";
     private static final String stillingFraNavKanDeles = "stilling_fra_nav_kan_deles";
     private static final String stillingFraNavTidsfristUtlopt = "stilling_fra_nav_tidsfrist_utlopt";
     private static final String stillingFraNavManueltAvbrutt = "stilling_fra_nav_manuelt_avbrutt";
     private static final String erEksternBruker = "er_ekstern_bruker";
     private static final String kanDele = "kan_dele";
+    private static final String kanVarsles = "kan_varsles";
 
     StillingFraNavMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
 
-
+        meterRegistry.counter(stillingFraNavOpprettet, kanVarsles, "" + true);
+        meterRegistry.counter(stillingFraNavOpprettet, kanVarsles, "" + false);
         meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + true, kanDele, "" + true);
         meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + true, kanDele, "" + false);
         meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + false, kanDele, "" + true);
@@ -28,6 +31,12 @@ class StillingFraNavMetrikker {
         meterRegistry.counter(stillingFraNavTidsfristUtlopt);
     }
 
+    void countStillingFraNavOpprettet(boolean kanVarsles) {
+        Counter.builder(stillingFraNavOpprettet)
+                .tag(StillingFraNavMetrikker.kanVarsles, "" + kanVarsles)
+                .register(meterRegistry)
+                .increment();
+    }
 
     void countSvar(boolean erEksternBruker, boolean svar) {
         Counter.builder(stillingFraNavKanDeles)

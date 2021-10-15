@@ -48,6 +48,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
+    private final StillingFraNavMetrikker metrikker;
 
     private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
@@ -87,7 +88,6 @@ public class OpprettForesporselOmDelingAvCv {
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
-
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
@@ -95,21 +95,23 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        boolean kanIkkeVarsle = erManuell || erReservertIKrr || !harBruktNivaa4;
+        boolean kanVarsle = !erManuell && !erReservertIKrr && harBruktNivaa4;
 
-        AktivitetData aktivitetData = map(melding, kanIkkeVarsle);
+        AktivitetData aktivitetData = map(melding, kanVarsle);
 
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
-        if (kanIkkeVarsle) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitet);
-        } else {
+        if (kanVarsle) {
             brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
+        } else {
+            producerClient.sendOpprettetIkkeVarslet(aktivitet);
         }
+
+        metrikker.countStillingFraNavOpprettet(kanVarsle);
     }
 
-    private AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanIkkeVarsle) {
+    private AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanVarsle) {
         //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
@@ -122,7 +124,6 @@ public class OpprettForesporselOmDelingAvCv {
         String soknadsfrist = melding.getSoknadsfrist();
         String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
-
 
         List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
         String arbeidsted = arbeidssteder
@@ -141,7 +142,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .stillingsId(stillingsId)
                 .arbeidssted(arbeidsted)
                 .kontaktpersonData(kontaktpersonData)
-                .livslopsStatus(kanIkkeVarsle ? LivslopsStatus.KAN_IKKE_VARSLE : LivslopsStatus.PROVER_VARSLING)
+                .livslopsStatus(kanVarsle ? LivslopsStatus.PROVER_VARSLING : LivslopsStatus.KAN_IKKE_VARSLE)
                 .build();
 
         return AktivitetData
