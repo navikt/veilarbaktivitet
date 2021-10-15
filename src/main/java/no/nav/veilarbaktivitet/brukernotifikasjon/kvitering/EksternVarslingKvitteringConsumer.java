@@ -18,20 +18,22 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
     private final KvitteringDAO kvitteringDAO;
-    private static final String FEILET = "FEILET";
-    private static final String INFO = "INFO";
-    private static final String OVERSENDT = "OVERSENDT";
-    private static final String FERDISTSTILT = "FERDISTSTILT";
+    static final String FEILET = "FEILET";
+    static final String INFO = "INFO";
+    static final String OVERSENDT = "OVERSENDT";
+    static final String FERDISTSTILT = "FERDISTSTILT";
     private final String srvUsername;
     private final String oppgavePrefix;
     private final String beskjedPrefix;
+    private final KvitteringMetrikk kvitteringMetrikk;
 
     public EksternVarslingKvitteringConsumer(
             KvitteringDAO kvitteringDAO,
             Credentials credentials,
             Deserializer<DoknotifikasjonStatus> deserializer,
             @Value("${topic.inn.ekstertVarselKvitering}")
-                    String toppic
+                    String toppic,
+            KvitteringMetrikk kvitteringMetrikk
     ) {
         super();
         this.kvitteringDAO = kvitteringDAO;
@@ -43,6 +45,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(deserializer);
         this.setConsumer(this);
+        this.kvitteringMetrikk = kvitteringMetrikk;
     }
 
     @Override
@@ -77,6 +80,10 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
             default:
                 log.error("ukjent status for melding {}", melding);
                 return ConsumeStatus.FAILED;
+        }
+
+        if (melding.getDistribusjonId() == null) {
+            kvitteringMetrikk.incrementBrukernotifikasjonKvitteringMottatt(status);
         }
 
         return ConsumeStatus.OK;

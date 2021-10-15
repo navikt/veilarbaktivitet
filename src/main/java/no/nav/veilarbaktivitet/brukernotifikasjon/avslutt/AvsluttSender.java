@@ -1,5 +1,6 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt;
+package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
@@ -30,6 +31,7 @@ class AvsluttSender {
 
     @SneakyThrows
     @Transactional
+    @Timed(value="brukernotifikasjon_avslutt_oppgave_sendt")
     public void avsluttOppgave(SkalAvluttes skalAvluttes) {
         String aktorId = skalAvluttes.getAktorId();
         String brukernotifikasjonId = skalAvluttes.getBrukernotifikasjonId();
