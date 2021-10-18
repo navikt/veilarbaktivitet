@@ -57,7 +57,7 @@ class AvsluttDao {
                 .addValue("skal_avsluttes", VarselStatus.SKAL_AVSLUTTES.name())
                 .addValue("avbrutStatus", VarselStatus.AVSLUTTET.name());
         return jdbc.update("" +
-                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and BEKREFTET_SENDT is null",
+                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and FORSOKT_SENDT is null",
                 param);
     }
 
