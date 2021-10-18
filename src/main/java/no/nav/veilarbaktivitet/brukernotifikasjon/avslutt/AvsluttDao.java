@@ -36,7 +36,7 @@ class AvsluttDao {
     int markerAvslutteterAktiviteterSomSkalAvsluttes() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skalAvsluttes", VarselStatus.SKAL_AVSLUTTES.name())
-                .addValue("avslutteteStatuser", List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name(), VarselStatus.PENDING.name()))
+                .addValue("avslutteteStatuser", List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name(), VarselStatus.AVBRUTT.name(), VarselStatus.PENDING.name()))
                 .addValue("avslutteteAktiviteter", List.of(AktivitetStatus.AVBRUTT.name(), AktivitetStatus.FULLFORT.name()));
         return jdbc.update("" +
                         " update BRUKERNOTIFIKASJON B set STATUS = :skalAvsluttes" +
