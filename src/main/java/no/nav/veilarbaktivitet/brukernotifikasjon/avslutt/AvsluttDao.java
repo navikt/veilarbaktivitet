@@ -51,16 +51,6 @@ class AvsluttDao {
         );
     }
 
-
-    public int avsluttIkkeSendteOppgaver() {
-        MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("skal_avsluttes", VarselStatus.SKAL_AVSLUTTES.name())
-                .addValue("avbrutStatus", VarselStatus.AVSLUTTET.name());
-        return jdbc.update("" +
-                        "update BRUKERNOTIFIKASJON set STATUS = :avbrutStatus where STATUS =:skal_avsluttes and BEKREFTET_SENDT is null",
-                param);
-    }
-
     boolean markerOppgaveSomAvsluttet(String brukernotifikasjonsId) {
         MapSqlParameterSource param = new MapSqlParameterSource("notifikasjonsId", brukernotifikasjonsId)
                 .addValue("status", VarselStatus.AVSLUTTET.name());

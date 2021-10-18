@@ -57,10 +57,6 @@ class AvsluttSender {
         return avsluttDao.getOppgaverSomSkalAvsluttes(maxAntall);
     }
 
-    public int avsluttIkkeSendteOppgaver() {
-        return avsluttDao.avsluttIkkeSendteOppgaver();
-    }
-
     public int markerAvslutteterAktiviteterSomSkalAvsluttes() {
         return avsluttDao.markerAvslutteterAktiviteterSomSkalAvsluttes();
     }

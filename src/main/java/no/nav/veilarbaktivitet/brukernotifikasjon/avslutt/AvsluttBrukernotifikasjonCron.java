@@ -28,7 +28,6 @@ public class AvsluttBrukernotifikasjonCron {
     }
 
     void sendAvsluttAlle(int maxBatchSize) {
-        internalService.avsluttIkkeSendteOppgaver();
         internalService.markerAvslutteterAktiviteterSomSkalAvsluttes();
         while (sendAvsluttOpptil(maxBatchSize) == maxBatchSize) ;
     }
