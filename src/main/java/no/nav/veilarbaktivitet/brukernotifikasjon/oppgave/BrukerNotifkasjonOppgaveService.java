@@ -86,7 +86,7 @@ class BrukerNotifkasjonOppgaveService {
         return dao.hentVarselSomSkalSendes(maxAntall);
     }
 
-    int avbrytOppgaverForAktiviteterSomIkkeKanEndres() {
-        return dao.avbrytOppgaverForAktiviteterSomIkkeKanEndres();
+    int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
+        return dao.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
     }
 }

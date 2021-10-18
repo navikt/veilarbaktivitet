@@ -37,7 +37,7 @@ class AvsluttSender {
         String brukernotifikasjonId = skalAvluttes.getBrukernotifikasjonId();
 
         Person.Fnr fnrForAktorId = personService.getFnrForAktorId(Person.aktorId(aktorId));
-        boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvbrutt(brukernotifikasjonId);
+        boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvsluttet(brukernotifikasjonId);
         if (markertAvsluttet) {
             Done done = Done
                     .newBuilder()
@@ -59,5 +59,9 @@ class AvsluttSender {
 
     public int avsluttIkkeSendteOppgaver() {
         return avsluttDao.avsluttIkkeSendteOppgaver();
+    }
+
+    public int markerAvslutteterAktiviteterSomSkalAvsluttes() {
+        return avsluttDao.markerAvslutteterAktiviteterSomSkalAvsluttes();
     }
 }
