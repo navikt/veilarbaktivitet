@@ -33,7 +33,7 @@ public class AktiviteterTilPortefoljeService {
     }
 
     private void sendMeldingV4(KafkaAktivitetMeldingV4 melding) {
-        registry.timer("send.aktivitet.paaa.kafka").record(() -> {
+        registry.timer("send_aktivitet_paaa_kafka").record(() -> {
             long offset = producerService.sendAktivitetMelding(melding);
             dao.updateSendtPaKafka(melding.getVersion(), offset);
         });

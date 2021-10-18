@@ -35,9 +35,9 @@ public class DelingAvCvService {
     }
 
     @Transactional
-    public AktivitetData behandleSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+    public AktivitetData behandleSvarPaaOmCvSkalDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
 
-        AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, erEksternBruker);
+        AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, avtaltDato, erEksternBruker);
 
         brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
@@ -52,10 +52,23 @@ public class DelingAvCvService {
         AktivitetData nyAktivitet = aktivitet.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
                 .build();
 
         aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
+        metrikker.countTidsfristUtlopt();
+    }
+
+    @Transactional
+    @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar")
+    public void notifiserAvbruttEllerFullfortUtenSvar(AktivitetData aktivitet, Person person) {
+        AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER))
+                .build();
+        aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, person);
+        stillingFraNavProducerClient.sendAvbruttEllerFullfortUtenSvar(aktivitet);
+        metrikker.countManuletAvbrutt(aktivitet.getLagtInnAv());
     }
 
     public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus) {
@@ -72,18 +85,21 @@ public class DelingAvCvService {
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
-    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, boolean erEksternBruker) {
+    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         var deleCvDetaljer = CvKanDelesData.builder()
                 .kanDeles(kanDeles)
                 .endretTidspunkt(new Date())
                 .endretAvType(erEksternBruker ? InnsenderData.BRUKER : InnsenderData.NAV)
+                .avtaltDato(avtaltDato)
                 .endretAv(innloggetBruker.get())
                 .build();
 
 
-        var stillingFraNavData = aktivitetData.getStillingFraNavData().withCvKanDelesData(deleCvDetaljer);
+        var stillingFraNavData = aktivitetData.getStillingFraNavData()
+                .withCvKanDelesData(deleCvDetaljer)
+                .withLivslopsStatus(LivslopsStatus.HAR_SVART);
         if (kanDeles) {
             stillingFraNavData = stillingFraNavData.withSoknadsstatus(Soknadsstatus.VENTER);
         }

@@ -13,5 +13,20 @@ public class KontaktpersonData {
     String navn;
     String tittel;
     String mobil;
-    String epost;
+
+    public static KontaktpersonDataBuilder builder() {
+        return new CustomKontaktpersonDataBuilder();
+    }
+
+    public static class CustomKontaktpersonDataBuilder extends KontaktpersonDataBuilder {
+        @Override
+        public KontaktpersonData build() {
+            //returnerer null hvis alle atributer er null
+            if (super.navn == null && super.tittel == null && super.mobil == null) {
+                return null;
+            }
+
+            return super.build();
+        }
+    }
 }

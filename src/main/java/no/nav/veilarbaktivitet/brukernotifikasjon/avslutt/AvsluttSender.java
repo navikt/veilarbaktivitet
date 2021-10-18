@@ -1,13 +1,14 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt;
+package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,7 +22,7 @@ import java.util.List;
 class AvsluttSender {
     private final KafkaProducerClient<Nokkel, Done> producer;
     private final AvsluttDao avsluttDao;
-    private final AuthService authService;
+    private final PersonService personService;
     private final Credentials serviceUserCredentials;
 
     @Value("${topic.ut.brukernotifikasjon.done}")
@@ -30,12 +31,13 @@ class AvsluttSender {
 
     @SneakyThrows
     @Transactional
+    @Timed(value="brukernotifikasjon_avslutt_oppgave_sendt")
     public void avsluttOppgave(SkalAvluttes skalAvluttes) {
         String aktorId = skalAvluttes.getAktorId();
         String brukernotifikasjonId = skalAvluttes.getBrukernotifikasjonId();
 
-        Person.Fnr fnrForAktorId = authService.getFnrForAktorId(Person.aktorId(aktorId));
-        boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvbrutt(brukernotifikasjonId);
+        Person.Fnr fnrForAktorId = personService.getFnrForAktorId(Person.aktorId(aktorId));
+        boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvsluttet(brukernotifikasjonId);
         if (markertAvsluttet) {
             Done done = Done
                     .newBuilder()
@@ -57,5 +59,9 @@ class AvsluttSender {
 
     public int avsluttIkkeSendteOppgaver() {
         return avsluttDao.avsluttIkkeSendteOppgaver();
+    }
+
+    public int markerAvslutteterAktiviteterSomSkalAvsluttes() {
+        return avsluttDao.markerAvslutteterAktiviteterSomSkalAvsluttes();
     }
 }

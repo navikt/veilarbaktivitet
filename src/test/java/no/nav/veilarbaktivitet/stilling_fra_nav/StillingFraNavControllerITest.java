@@ -9,7 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt.AvsluttBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -37,7 +37,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
@@ -51,6 +56,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @Slf4j
 public class StillingFraNavControllerITest {
 
+    public static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
     @Autowired
     KafkaTestService testService;
 
@@ -84,10 +90,6 @@ public class StillingFraNavControllerITest {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
-    public void kake() {
-
-    }
-
     @Test
     public void happy_case_svar_ja() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
@@ -116,6 +118,7 @@ public class StillingFraNavControllerITest {
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
                 .kanDeles(false)
                 .build();
 
@@ -139,23 +142,51 @@ public class StillingFraNavControllerITest {
                 .kanDeles(false)
                 .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
+                .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
                 .build();
 
+        StillingFraNavData stillingFraNavData = aktivitetDTO.getStillingFraNavData().toBuilder()
+                .cvKanDelesData(expectedCvKanDelesData)
+                .livslopsStatus(LivslopsStatus.HAR_SVART)
+                .build();
 
         AktivitetDTO expectedAktivitet = aktivitetDTO.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
+                .stillingFraNavData(stillingFraNavData)
                 .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles")
                 .build();
 
-        expectedAktivitet.getStillingFraNavData().setCvKanDelesData(expectedCvKanDelesData);
-
         assertOppdatertAktivitet(expectedAktivitet, actualAktivitet);
-
 
         // Sjekk at svarmelding sendt til rekrutteringsbistand
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, false);
+    }
+
+    @Test
+    public void svar_naar_frist_utlopt_feiler() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt, port);
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
+                .kanDeles(false)
+                .build();
+
+        veileder
+                .createRequest()
+                .and()
+                .param("aktivitetId", aktivitetDTO.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .assertThat().statusCode(HttpStatus.BAD_REQUEST.value())
+                .extract().response();
     }
 
     @Test
@@ -204,6 +235,7 @@ public class StillingFraNavControllerITest {
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .kanDeles(true)
+                .avtaltDato(AVTALT_DATO)
                 .build();
         return veileder
                 .createRequest()
@@ -258,6 +290,7 @@ public class StillingFraNavControllerITest {
                 .kanDeles(true)
                 .endretAv(veileder.getNavIdent())
                 .endretAvType(InnsenderData.NAV)
+                .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
                 .build();
@@ -269,6 +302,7 @@ public class StillingFraNavControllerITest {
                 .toBuilder()
                 .cvKanDelesData(expectedCvKanDelesData)
                 .soknadsstatus(Soknadsstatus.VENTER)
+                .livslopsStatus(LivslopsStatus.HAR_SVART)
                 .build();
 
         expectedAktivitet.setStillingFraNavData(stillingFraNavData);

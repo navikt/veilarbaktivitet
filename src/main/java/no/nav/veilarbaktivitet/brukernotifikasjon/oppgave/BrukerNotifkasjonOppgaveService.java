@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -10,7 +11,7 @@ import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -27,7 +29,7 @@ class BrukerNotifkasjonOppgaveService {
     private final Credentials serviceUserCredentials;
     private final OppgaveDao dao;
     private final KafkaProducerClient<Nokkel, Oppgave> producer;
-    private final AuthService authService;
+    private final PersonService personService;
 
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     private String oppgaveToppic;
@@ -35,6 +37,7 @@ class BrukerNotifkasjonOppgaveService {
     private String aktivitetsplanBasepath;
 
     @Transactional
+    @Timed(value="brukernotifikasjon_opprett_oppgave_sendt")
     public void send(SkalSendes skalSendes) {
         boolean oppdatertOk = dao.setSendt(skalSendes.getId());
 
@@ -45,7 +48,7 @@ class BrukerNotifkasjonOppgaveService {
 
     @SneakyThrows
     private void sendOppgave(SkalSendes skalSendes) {
-        Person.Fnr fnr = authService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
+        Person.Fnr fnr = personService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
 
         Nokkel nokkel = new Nokkel(serviceUserCredentials.username, skalSendes.getBrukernotifikasjonId());
         Oppgave oppgave = createOppgave(skalSendes.getAktivitetId(), fnr, skalSendes.getMelding(), skalSendes.getOppfolgingsperiode());
@@ -59,10 +62,11 @@ class BrukerNotifkasjonOppgaveService {
             String tekst,
             String oppfolgingsPeriode
     ) {
+
         URL link = createAktivitetLink(aktivitetId);
         int sikkerhetsnivaa = 3;
         return new OppgaveBuilder()
-                .withTidspunkt(LocalDateTime.now())
+                .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withFodselsnummer(fnr.get())
                 .withGrupperingsId(oppfolgingsPeriode)
                 .withTekst(tekst)
@@ -82,7 +86,7 @@ class BrukerNotifkasjonOppgaveService {
         return dao.hentVarselSomSkalSendes(maxAntall);
     }
 
-    int avbrytOppgaverForAktiviteterSomIkkeKanEndres() {
-        return dao.avbrytOppgaverForAktiviteterSomIkkeKanEndres();
+    int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
+        return dao.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
     }
 }

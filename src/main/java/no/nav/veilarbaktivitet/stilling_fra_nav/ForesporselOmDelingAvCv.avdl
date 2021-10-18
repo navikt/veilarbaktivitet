@@ -19,13 +19,6 @@
                     "string",
                     "null"
                 ]
-            },
-            {
-                "name": "epost",
-                "type": [
-                    "string",
-                    "null"
-                ]
             }
         ]
     },
@@ -120,7 +113,7 @@
             },
             {
                 "name": "soknadsfrist",
-                "type": "string"
+                "type": ["string", "null"]
             },
             {
                 "name": "arbeidsgiver",
@@ -135,7 +128,7 @@
             },
             {
                 "name": "kontaktInfo",
-                "type": "KontaktInfo"
+                "type": ["KontaktInfo", "null"]
             }
         ]
     }

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.avlsutt;
+package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,11 +28,12 @@ public class AvsluttBrukernotifikasjonCron {
     }
 
     void sendAvsluttAlle(int maxBatchSize) {
+        internalService.avsluttIkkeSendteOppgaver();
+        internalService.markerAvslutteterAktiviteterSomSkalAvsluttes();
         while (sendAvsluttOpptil(maxBatchSize) == maxBatchSize) ;
     }
 
     private int sendAvsluttOpptil(int maxAntall) {
-        internalService.avsluttIkkeSendteOppgaver();
         List<SkalAvluttes> skalSendes = internalService.getOppgaverSomSkalAvbrytes(maxAntall);
         skalSendes.forEach(this::tryAvsluttOppgave);
         return skalSendes.size();

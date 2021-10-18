@@ -214,7 +214,6 @@ public class AktivitetDAO {
     }
 
     private void insertEgenAktivitet(long aktivitetId, long versjon, EgenAktivitetData egenAktivitetData) {
-        // language=sql
         ofNullable(egenAktivitetData)
                 .ifPresent(egen -> {
                     SqlParameterSource params = new MapSqlParameterSource()
@@ -222,6 +221,7 @@ public class AktivitetDAO {
                             .addValue("versjon", versjon)
                             .addValue("hensikt", egen.getHensikt())
                             .addValue("oppfolging", egen.getOppfolging());
+                    // language=sql
                     database.getNamedJdbcTemplate().update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
                                     "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
                             params
@@ -231,7 +231,6 @@ public class AktivitetDAO {
 
     private void insertSokeAvtale(long aktivitetId, long versjon, SokeAvtaleAktivitetData sokeAvtaleAktivitetData) {
         ofNullable(sokeAvtaleAktivitetData)
-                // language=sql
                 .ifPresent(sokeAvtale -> {
                     SqlParameterSource params = new MapSqlParameterSource()
                             .addValue("aktivitet_id", aktivitetId)
@@ -239,6 +238,7 @@ public class AktivitetDAO {
                             .addValue("antall_stillinger_sokes", sokeAvtale.getAntallStillingerSokes())
                             .addValue("antall_stillinger_i_uken", sokeAvtale.getAntallStillingerIUken())
                             .addValue("avtale_oppfolging", sokeAvtale.getAvtaleOppfolging());
+                    // language=sql
                     database.getNamedJdbcTemplate().update(
                             "INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
                                     "VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)",
@@ -297,6 +297,7 @@ public class AktivitetDAO {
                                     .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
                                     .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
                                     .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
+                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData != null ? cvKanDelesData.getAvtaltDato() : null)
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())
@@ -304,11 +305,11 @@ public class AktivitetDAO {
                                     .addValue("stillingsId", stilling.getStillingsId())
                                     .addValue("arbeidssted", stilling.getArbeidssted())
                                     .addValue("varselid", stilling.getVarselId())
-                                    .addValue("kontaktperson_navn", kontaktpersonData.getNavn())
-                                    .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
-                                    .addValue("kontaktperson_mobil", kontaktpersonData.getMobil())
-                                    .addValue("kontaktperson_epost", kontaktpersonData.getEpost())
-                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()));
+                                    .addValue("kontaktperson_navn", kontaktpersonData != null ? kontaktpersonData.getNavn() : null)
+                                    .addValue("kontaktperson_tittel", kontaktpersonData != null ? kontaktpersonData.getTittel() : null)
+                                    .addValue("kontaktperson_mobil", kontaktpersonData != null ? kontaktpersonData.getMobil() : null)
+                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
+                                    .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     " insert into " +
@@ -318,6 +319,7 @@ public class AktivitetDAO {
                                             "CV_KAN_DELES_TIDSPUNKT, " +
                                             "CV_KAN_DELES_AV, " +
                                             "CV_KAN_DELES_AV_TYPE, " +
+                                            "CV_KAN_DELES_AVTALT_DATO," +
                                             "soknadsfrist, " +
                                             "svarfrist, " +
                                             "arbeidsgiver, " +
@@ -328,14 +330,15 @@ public class AktivitetDAO {
                                             "kontaktperson_navn, " +
                                             "kontaktperson_tittel, " +
                                             "kontaktperson_mobil, " +
-                                            "kontaktperson_epost," +
-                                            "soknadsstatus) " +
+                                            "soknadsstatus, " +
+                                            "livslopsstatus) " +
                                             " VALUES ( :aktivitet_id, " +
                                             ":versjon, " +
                                             ":cv_kan_deles, " +
                                             ":cv_kan_deles_tidspunkt, " +
                                             ":cv_kan_deles_av, " +
                                             ":cv_kan_deles_av_type, " +
+                                            ":cv_kan_deles_avtalt_dato, " +
                                             ":soknadsfrist , " +
                                             ":svarfrist , " +
                                             ":arbeidsgiver , " +
@@ -346,8 +349,8 @@ public class AktivitetDAO {
                                             ":kontaktperson_navn , " +
                                             ":kontaktperson_tittel , " +
                                             ":kontaktperson_mobil , " +
-                                            ":kontaktperson_epost , " +
-                                            ":soknadsstatus)",
+                                            ":soknadsstatus, " +
+                                            ":livslopsstatus)",
                                     parms
                             );
                         }
@@ -370,14 +373,14 @@ public class AktivitetDAO {
         String whereClause = "WHERE aktivitet_id = ?";
         // language=sql
         int oppdaterteRader = Stream.of(
-                "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV'",
-                "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV'",
-                "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV'",
-                "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV'",
-                "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV'",
-                "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",
-                "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV'"
-        )
+                        "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV'",
+                        "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV'",
+                        "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV'",
+                        "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV'",
+                        "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV'",
+                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",
+                        "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV'"
+                )
                 .map(sql -> sql + " " + whereClause)
                 .mapToInt(sql -> database.update(sql, aktivitetId))
                 .sum();

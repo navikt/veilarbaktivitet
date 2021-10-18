@@ -3,10 +3,10 @@ package no.nav.veilarbaktivitet.testutils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 public class AktivitetTypeDataTestBuilder {
@@ -88,7 +88,6 @@ public class AktivitetTypeDataTestBuilder {
         KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
                 .navn("Ola Nordmann")
                 .tittel("NAV-ansatt")
-                .epost("epost@nav.example")
                 .mobil("10203040")
                 .build();
 
@@ -99,7 +98,10 @@ public class AktivitetTypeDataTestBuilder {
                 .arbeidsgiver("NAV IT")
                 .arbeidssted("Oslo")
                 .soknadsfrist(new Date().toString())
+                .svarfrist(new Date(Instant.now().plus(2, ChronoUnit.DAYS).toEpochMilli()))
                 .kontaktpersonData(kontaktpersonData)
+                .soknadsstatus(Soknadsstatus.VENTER)
+                .livslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)
                 .build();
     }
 }

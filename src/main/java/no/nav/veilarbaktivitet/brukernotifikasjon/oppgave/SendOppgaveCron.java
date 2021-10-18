@@ -26,7 +26,7 @@ public class SendOppgaveCron {
     }
 
     void sendAlle(int maxBatchSize) {
-        internalService.avbrytOppgaverForAktiviteterSomIkkeKanEndres();
+        internalService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
         while (sendOpptil(maxBatchSize) == maxBatchSize) ;
     }
 

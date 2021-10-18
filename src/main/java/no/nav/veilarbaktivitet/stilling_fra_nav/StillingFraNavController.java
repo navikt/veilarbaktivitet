@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -32,14 +33,23 @@ public class StillingFraNavController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));
         }
 
+        if (aktivitet.getStillingFraNavData().getSvarfrist().toInstant().isBefore(Instant.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Svarfrist %s er utløpt.", aktivitet.getStillingFraNavData().getSvarfrist()));
+        }
+
         if (aktivitet.getVersjon() != delingAvCvDTO.aktivitetVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     String.format("Kan ikke dele cv på aktivitetversjon: %s når siste versjon er: %s", delingAvCvDTO.aktivitetVersjon, aktivitet.getVersjon()));
 
         }
 
+        if (!erEksternBruker && delingAvCvDTO.getAvtaltDato() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "avtaltDato er påkrevd når veileder svarer");
+        }
+
+
         return Optional.of(aktivitet)
-                .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, erEksternBruker))
+                .map(a -> service.behandleSvarPaaOmCvSkalDeles(a, delingAvCvDTO.kanDeles, delingAvCvDTO.avtaltDato, erEksternBruker))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST));
     }

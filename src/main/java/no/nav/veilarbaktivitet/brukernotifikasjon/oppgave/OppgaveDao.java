@@ -44,7 +44,7 @@ public class OppgaveDao {
                         parameterSource, rowMapper);
     }
 
-    int avbrytOppgaverForAktiviteterSomIkkeKanEndres() {
+    int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
@@ -54,7 +54,7 @@ public class OppgaveDao {
                         " update BRUKERNOTIFIKASJON B" +
                         " set STATUS = :avbrutStatus " +
                         " where STATUS =:skal_avsluttes " +
-                        " and BEKREFTET_SENDT is null" +
+                        " and FORSOKT_SENDT is null" +
                         " and exists( " +
                         "   Select * from AKTIVITET A " +
                         "   where a.AKTIVITET_ID = b.AKTIVITET_ID " +
@@ -71,7 +71,7 @@ public class OppgaveDao {
                 .addValue("newStatus", VarselStatus.FORSOKT_SENDT.name());
 
         int update = jdbcTemplate
-                .update("update BRUKERNOTIFIKASJON set BEKREFTET_SENDT = CURRENT_TIMESTAMP, STATUS = :newStatus where ID = :id and STATUS = :oldStatus", parameterSource);
+                .update("update BRUKERNOTIFIKASJON set forsokt_sendt = CURRENT_TIMESTAMP, STATUS = :newStatus where ID = :id and STATUS = :oldStatus", parameterSource);
 
         return update == 1;
     }

@@ -5,10 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -143,6 +140,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
+                .avtaltDato(Database.hentDatoDato(rs, "cv_kan_deles_avtalt_dato"))
                 .endretAvType(EnumUtils.valueOf(InnsenderData.class, rs.getString("cv_kan_deles_av_type")))
                 .build();
 
@@ -150,11 +148,10 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .navn(rs.getString("kontaktperson_navn"))
                 .tittel(rs.getString("kontaktperson_tittel"))
                 .mobil(rs.getString("kontaktperson_mobil"))
-                .epost(rs.getString("kontaktperson_epost"))
                 .build();
 
         return StillingFraNavData.builder()
-                .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null: cvKanDelesData)
+                .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null : cvKanDelesData)
                 .soknadsfrist(rs.getString("soknadsfrist"))
                 .svarfrist(Database.hentDato(rs, "svarFrist"))
                 .arbeidsgiver(rs.getString("STILLING_FRA_NAV.ARBEIDSGIVER"))
@@ -164,6 +161,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .varselId(rs.getString("varselid"))
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
+                .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
                 .build();
     }
 

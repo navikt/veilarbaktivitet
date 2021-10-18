@@ -48,6 +48,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final Nivaa4Client nivaa4Client;
+    private final StillingFraNavMetrikker metrikker;
 
     private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
 
@@ -87,8 +88,6 @@ public class OpprettForesporselOmDelingAvCv {
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
-        AktivitetData aktivitetData = map(melding);
-
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
@@ -96,17 +95,23 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
+        boolean kanVarsle = !erManuell && !erReservertIKrr && harBruktNivaa4;
+
+        AktivitetData aktivitetData = map(melding, kanVarsle);
+
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
-        if (erManuell || erReservertIKrr || !harBruktNivaa4) {
-            producerClient.sendOpprettetIkkeVarslet(aktivitet);
-        } else {
+        if (kanVarsle) {
             brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
+        } else {
+            producerClient.sendOpprettetIkkeVarslet(aktivitet);
         }
+
+        metrikker.countStillingFraNavOpprettet(kanVarsle);
     }
 
-    private AktivitetData map(ForesporselOmDelingAvCv melding) {
+    private AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanVarsle) {
         //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
@@ -120,20 +125,13 @@ public class OpprettForesporselOmDelingAvCv {
         String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
 
-
         List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
         String arbeidsted = arbeidssteder
                 .stream()
                 .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
                 .collect(Collectors.joining(", "));
 
-        KontaktInfo kontaktInfo = melding.getKontaktInfo();
-        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
-                .navn(kontaktInfo.getNavn())
-                .tittel(kontaktInfo.getTittel())
-                .mobil(kontaktInfo.getMobil())
-                .epost(kontaktInfo.getEpost())
-                .build();
+        KontaktpersonData kontaktpersonData = getKontaktInfo(melding.getKontaktInfo());
 
         StillingFraNavData stillingFraNavData = StillingFraNavData
                 .builder()
@@ -144,6 +142,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .stillingsId(stillingsId)
                 .arbeidssted(arbeidsted)
                 .kontaktpersonData(kontaktpersonData)
+                .livslopsStatus(kanVarsle ? LivslopsStatus.PROVER_VARSLING : LivslopsStatus.KAN_IKKE_VARSLE)
                 .build();
 
         return AktivitetData
@@ -156,11 +155,21 @@ public class OpprettForesporselOmDelingAvCv {
                 .fraDato(new Date(opprettet.toEpochMilli()))
                 .lagtInnAv(InnsenderData.NAV)
                 .endretAv(navIdent.get())
-                .lenke("/rekrutteringsbistand/" + stillingsId)
                 .automatiskOpprettet(false)
                 .opprettetDato(new Date())
                 .endretDato(new Date())
                 .stillingFraNavData(stillingFraNavData)
+                .build();
+    }
+
+    private KontaktpersonData getKontaktInfo(KontaktInfo kontaktInfo) {
+        if (kontaktInfo == null) {
+            return null;
+        }
+        return KontaktpersonData.builder()
+                .navn(kontaktInfo.getNavn())
+                .tittel(kontaktInfo.getTittel())
+                .mobil(kontaktInfo.getMobil())
                 .build();
     }
 }
