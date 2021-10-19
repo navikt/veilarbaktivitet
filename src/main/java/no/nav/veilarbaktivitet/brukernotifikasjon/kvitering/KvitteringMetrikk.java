@@ -13,7 +13,7 @@ public class KvitteringMetrikk {
     private static final String status = "status";
     private static final List<String> statuser = List.of(
             EksternVarslingKvitteringConsumer.FEILET,
-            EksternVarslingKvitteringConsumer.FERDISTSTILT,
+            EksternVarslingKvitteringConsumer.FERDIGSTILT,
             EksternVarslingKvitteringConsumer.INFO,
             EksternVarslingKvitteringConsumer.OVERSENDT
     );
