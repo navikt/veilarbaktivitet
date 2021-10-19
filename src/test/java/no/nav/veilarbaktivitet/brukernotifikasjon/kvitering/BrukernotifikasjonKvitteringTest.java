@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon;
+package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
@@ -11,8 +11,10 @@ import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -37,6 +39,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -77,7 +80,7 @@ public class BrukernotifikasjonKvitteringTest {
     @Autowired
     Credentials credentials;
 
-    @Value("${topic.inn.ekstertVarselKvitering}")
+    @Value("${topic.inn.eksternVarselKvittering}")
     String kviteringsToppic;
 
     @Autowired
@@ -164,19 +167,19 @@ public class BrukernotifikasjonKvitteringTest {
     }
 
     private DoknotifikasjonStatus okStatus(String bestillingsId) {
-        return status(bestillingsId, "FERDISTSTILT");
+        return status(bestillingsId, FERDIGSTILT);
     }
 
     private DoknotifikasjonStatus feiletStatus(String bestillingsId) {
-        return status(bestillingsId, "FEILET");
+        return status(bestillingsId, FEILET);
     }
 
     private DoknotifikasjonStatus infoStatus(String bestillingsId) {
-        return status(bestillingsId, "INFO");
+        return status(bestillingsId, INFO);
     }
 
     private DoknotifikasjonStatus oversendtStatus(String bestillingsId) {
-        return status(bestillingsId, "OVERSENDT");
+        return status(bestillingsId, OVERSENDT);
     }
 
     private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {

@@ -81,7 +81,7 @@ public class BrukernotifikasjonServiceTest {
     @Autowired
     Credentials credentials;
 
-    @Value("${topic.inn.ekstertVarselKvitering}")
+    @Value("${topic.inn.eksternVarselKvittering}")
     String kviteringsToppic;
 
     @Autowired
@@ -120,7 +120,7 @@ public class BrukernotifikasjonServiceTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = oppretOppgave(mockBruker, aktivitetDTO);
+        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         oppgaveSendtOk(oppgaveRecord);
         avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
     }
@@ -201,7 +201,7 @@ public class BrukernotifikasjonServiceTest {
     private DoknotifikasjonStatus okStatus(String bestillingsId) {
         return DoknotifikasjonStatus
                 .newBuilder()
-                .setStatus("FERDISTSTILT")
+                .setStatus("FERDIGSTILT")
                 .setBestillingsId(bestillingsId)
                 .setBestillerId(credentials.username)
                 .setMelding("her er en melling")
@@ -209,7 +209,7 @@ public class BrukernotifikasjonServiceTest {
                 .build();
     }
 
-    private ConsumerRecord<Nokkel, Oppgave> oppretOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+    private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         brukernotifikasjonService.opprettOppgavePaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
