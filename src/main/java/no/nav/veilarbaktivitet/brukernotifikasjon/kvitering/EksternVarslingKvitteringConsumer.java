@@ -21,7 +21,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
     static final String FEILET = "FEILET";
     static final String INFO = "INFO";
     static final String OVERSENDT = "OVERSENDT";
-    static final String FERDISTSTILT = "FERDISTSTILT";
+    static final String FERDIGSTILT = "FERDIGSTILT";
     private final String srvUsername;
     private final String oppgavePrefix;
     private final String beskjedPrefix;
@@ -31,8 +31,8 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
             KvitteringDAO kvitteringDAO,
             Credentials credentials,
             Deserializer<DoknotifikasjonStatus> deserializer,
-            @Value("${topic.inn.ekstertVarselKvitering}")
-                    String toppic,
+            @Value("${topic.inn.eksternVarselKvittering}")
+                    String topic,
             KvitteringMetrikk kvitteringMetrikk
     ) {
         super();
@@ -41,7 +41,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         srvUsername = credentials.username;
         oppgavePrefix = "O-" + srvUsername + "-";
         beskjedPrefix = "B-" + srvUsername + "-";
-        this.setTopic(toppic);
+        this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(deserializer);
         this.setConsumer(this);
@@ -64,7 +64,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
-        log.info("mottokk melding {}", melding);
+        log.info("mottok melding {}", melding);
 
         switch (status) {
             case INFO:
@@ -74,7 +74,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
                 log.error("varsel feilet for melding {}", melding);
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
-            case FERDISTSTILT:
+            case FERDIGSTILT:
                 kvitteringDAO.setFullfortForGyldige(bestillingsId);
                 break;
             default:

@@ -104,7 +104,7 @@ public class ApplicationTestConfig {
             @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
             @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
             @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
-            @Value("${topic.inn.ekstertVarselKvitering}") String ekstertVarselKvitering) {
+            @Value("${topic.inn.eksternVarselKvittering}") String ekstertVarselKvitering) {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
