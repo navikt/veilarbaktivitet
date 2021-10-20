@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
@@ -28,14 +29,18 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProduc
 @Configuration
 public class KafkaOnpremConfig {
 
+    private static final String ONPREM_KAFKA_DISABLED = "veilarbaktivitet.kafka.onprem.consumer.disabled";
+
     @Bean
     public KafkaConsumerClient consumerClient(
             List<TopicConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
-            Properties onPremConsumerProperties
+            Properties onPremConsumerProperties,
+            UnleashClient unleashClient
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(onPremConsumerProperties);
+                .withProperties(onPremConsumerProperties)
+                .withToggle(() -> unleashClient.isEnabled(ONPREM_KAFKA_DISABLED));
 
         topicConfigs.forEach(it -> {
             clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());

@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.common.metrics.MetricsClient;
@@ -182,6 +183,11 @@ public class ApplicationTestConfig {
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withSerializers(StringSerializer.class, StringSerializer.class)
                 .build();
+    }
+
+    @Bean
+    UnleashClient unleashClient() {
+        return mock(UnleashClient.class);
     }
 
     @Bean
