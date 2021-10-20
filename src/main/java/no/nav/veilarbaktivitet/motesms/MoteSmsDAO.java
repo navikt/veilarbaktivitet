@@ -20,9 +20,6 @@ public class MoteSmsDAO {
     }
 
     public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
-
-        log.info("henter moter mellom " + fra + " og " + til);
-
         //language=sql
         return database.query(
                 "select " +
