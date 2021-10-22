@@ -49,13 +49,7 @@ public class DelingAvCvService {
     @Transactional
     @Timed(value = "avsluttUtloptStillingFraNavEn")
     public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
-        AktivitetData nyAktivitet = aktivitet.toBuilder()
-                .status(AktivitetStatus.AVBRUTT)
-                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
-                .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
-                .build();
-
-        aktivitetService.oppdaterStatus(aktivitet, nyAktivitet, person);
+        AktivitetData nyAktivitet = aktivitetService.avsluttStillingFraNav(aktivitet, person);
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
         metrikker.countTidsfristUtlopt();
     }
