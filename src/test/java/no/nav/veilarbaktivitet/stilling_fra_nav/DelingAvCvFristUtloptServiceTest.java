@@ -112,6 +112,7 @@ public class DelingAvCvFristUtloptServiceTest {
         AktivitetDTO expected = skalBliAvbrutt.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .stillingFraNavData(skalBliAvbrutt.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
                 .build();
 
         assertOppdatertAktivitet(expected, skalVaereAvbrutt);
@@ -144,6 +145,7 @@ public class DelingAvCvFristUtloptServiceTest {
         AktivitetDTO expected = skalBliAvbrutt.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .stillingFraNavData(skalBliAvbrutt.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
                 .build();
         assertOppdatertAktivitet(expected, skalVaereAvbrutt);
 
@@ -162,6 +164,7 @@ public class DelingAvCvFristUtloptServiceTest {
         AktivitetDTO expectedSkalFeile = skalFeile.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .stillingFraNavData(skalFeile.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM))
                 .build();
         assertOppdatertAktivitet(expectedSkalFeile, skalVaereAvbruttEtterFeil);
 

@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -84,6 +85,23 @@ public class AktivitetService {
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+    }
+
+    public AktivitetData avsluttStillingFraNav(AktivitetData originalAktivitet, Person endretAv) {
+        val originalStillingFraNav = originalAktivitet.getStillingFraNavData();
+        val nyStillingFraNav = originalStillingFraNav.withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_SYSTEM);
+
+        val nyAktivitet = originalAktivitet
+                .toBuilder()
+                .endretAv(endretAv.get())
+                .lagtInnAv(endretAv.tilBrukerType())
+                .status(AktivitetStatus.AVBRUTT)
+                .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
+                .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
+                .stillingFraNavData(nyStillingFraNav)
+                .build();
+
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
