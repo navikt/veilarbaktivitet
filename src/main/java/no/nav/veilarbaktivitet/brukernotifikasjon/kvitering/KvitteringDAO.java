@@ -1,15 +1,44 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.veilarbaktivitet.brukernotifikasjon.Brukernotifikasjon;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselFunksjon;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.config.database.Database;
+import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+
+import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
 public class KvitteringDAO {
     private final NamedParameterJdbcTemplate jdbc;
+
+    RowMapper<Brukernotifikasjon> rowmapper = (rs, rowNum) ->
+            Brukernotifikasjon.builder()
+                    .id(rs.getLong("ID"))
+                    .brukernotifikasjonId(rs.getString("BRUKERNOTIFIKASJON_ID"))
+                    .aktivitetId(rs.getLong("AKTIVITET_ID"))
+                    .opprettetPaaAktivitetVersjon(rs.getLong("OPPRETTET_PAA_AKTIVITET_VERSION"))
+                    .foedselsnummer(rs.getString("FOEDSELSNUMMER"))
+                    .oppfolgingsperiode(rs.getString("OPPFOLGINGSPERIODE"))
+                    .type(EnumUtils.valueOf(VarselType.class, rs.getString("TYPE")))
+                    .status(EnumUtils.valueOf(VarselStatus.class, rs.getString("STATUS")))
+                    .opprettet(Database.hentDato(rs, "OPPRETTET"))
+                    .melding(rs.getString("MELDING"))
+                    .varselFeilet(Database.hentDato(rs, "VARSEL_FEILET"))
+                    .avsluttet(Database.hentDato(rs, "AVSLUTTET"))
+                    .bekreftetSendt(Database.hentDato(rs, "BEKREFTET_SENDT"))
+                    .forsoktSendt(Database.hentDato(rs, "FORSOKT_SENDT"))
+                    .ferdigBehandlet(Database.hentDato(rs, "FERDIG_BEHANDLET"))
+                    .funksjon(EnumUtils.valueOf(VarselFunksjon.class, rs.getString("FUNKSJON")))
+                    .build();
 
     public void setFeilet(String bestillingsId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
@@ -33,5 +62,20 @@ public class KvitteringDAO {
                         " and BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
                 , param
         );
+    }
+
+    public List<Brukernotifikasjon> hentFullfortIkkeBehandlet(int maksAntall, VarselFunksjon funksjon) {
+        // language=SQL
+        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
+                " WHERE FERDIG_BEHANDLET IS NULL" +
+                " AND BEKREFTET_SENDT IS NOT NULL" +
+                " AND FUNKSJON = :funksjon" +
+                " FETCH FIRST :limit ROWS ONLY";
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("funksjon", funksjon.name())
+                .addValue("limit", maksAntall);
+
+        return jdbc.query(sql, parameterSource, rowmapper);
     }
 }

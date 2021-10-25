@@ -132,7 +132,7 @@ public class BrukernotifikasjonServiceTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        brukernotifikasjonService.opprettOppgavePaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.opprettOppgavePaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV, VarselFunksjon.DELING_AV_CV);
         brukernotifikasjonService.oppgaveDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
@@ -154,7 +154,8 @@ public class BrukernotifikasjonServiceTest {
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV
+                VarselType.STILLING_FRA_NAV,
+                VarselFunksjon.DELING_AV_CV
         );
 
         Response response = mockBruker
@@ -215,7 +216,8 @@ public class BrukernotifikasjonServiceTest {
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV
+                VarselType.STILLING_FRA_NAV,
+                VarselFunksjon.DELING_AV_CV
         );
 
         sendOppgaveCron.sendBrukernotifikasjoner();

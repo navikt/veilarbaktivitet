@@ -37,7 +37,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class BehandleNotifikasjonForDelingAvCvTest {
 
     @Autowired
-    BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
+    BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
 
     @Autowired
     Credentials credentials;
@@ -101,7 +101,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, doknotifikasjonStatus));
 
 
-        int behandlede = behandleNotifikasjonForDelingAvCvService.behandleFerdigstilteNotifikasjoner();
+        int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
         Assertions.assertThat(behandlede).isEqualTo(1);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
@@ -114,7 +114,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, behandletAktivitet);
 
         // sjekk at vi ikke behandler ting vi ikke skal behandle
-        Assertions.assertThat(behandleNotifikasjonForDelingAvCvService.behandleFerdigstilteNotifikasjoner()).isEqualTo(0);
+        Assertions.assertThat(behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500)).isZero();
     }
 
     private DoknotifikasjonStatus doknotifikasjonStatus(String bestillingsId, String status) {

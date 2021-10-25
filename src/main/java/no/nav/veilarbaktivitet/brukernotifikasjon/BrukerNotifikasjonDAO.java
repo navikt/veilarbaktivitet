@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-class BrukerNotifikasjonDAO {
+public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -24,7 +24,8 @@ class BrukerNotifikasjonDAO {
             String melding,
             UUID oppfolgingsperiode,
             VarselType type,
-            VarselStatus status
+            VarselStatus status,
+            VarselFunksjon funksjon
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
@@ -34,7 +35,8 @@ class BrukerNotifikasjonDAO {
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
                 .addValue("status", status.name())
-                .addValue("melding", melding);
+                .addValue("melding", melding)
+                .addValue("funksjon", funksjon);
         jdbcTemplate.update("" +
                         " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, opprettet, melding) " +
                         " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
@@ -54,4 +56,5 @@ class BrukerNotifikasjonDAO {
                         " Update brukernotifikasjon set status=:status where aktivitet_id=:aktivitetId and type = :type and status not in (:statuses)",
                 params);
     }
+
 }
