@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 import java.util.List;
 
@@ -62,6 +63,19 @@ public class KvitteringDAO {
                         " and BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
                 , param
         );
+    }
+
+    public void setFerdigBehandlet(long id) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("id", id);
+
+        int update = jdbc.update("" +
+                        " update BRUKERNOTIFIKASJON " +
+                        " set FERDIG_BEHANDLET = CURRENT_TIMESTAMP " +
+                        " where id = :id "
+                , param);
+
+        Assert.isTrue(update == 1, "Forventet en rad oppdatert, id=" + id);
     }
 
     public List<Brukernotifikasjon> hentFullfortIkkeBehandlet(int maksAntall, VarselFunksjon funksjon) {

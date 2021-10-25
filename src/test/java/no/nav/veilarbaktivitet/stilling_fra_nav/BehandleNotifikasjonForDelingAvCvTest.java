@@ -97,8 +97,9 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         String eventId = consumerRecord.key().getEventId();
         String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
 
-        DoknotifikasjonStatus doknotifikasjonStatus = doknotifikasjonStatus(eventId, EksternVarslingKvitteringConsumer.FERDIGSTILT);
+        DoknotifikasjonStatus doknotifikasjonStatus = doknotifikasjonStatus(brukernotifikasjonId, EksternVarslingKvitteringConsumer.FERDIGSTILT);
         ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, doknotifikasjonStatus));
+        Assertions.assertThat(consumeStatus).isEqualTo(ConsumeStatus.OK);
 
 
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);

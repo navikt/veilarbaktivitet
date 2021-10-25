@@ -19,12 +19,6 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
     private final KvitteringDAO kvitteringsDao;
     private final BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
 
-    public int behandleFerdigstilteNotifikasjoner(int maksAntall) {
-        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFullfortIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
-        brukernotifikasjonList.stream().forEach(brukernotifikasjon -> behandleNotifikasjonForDelingAvCvService.behandleFerdigstiltKvittering(brukernotifikasjon));
-        return brukernotifikasjonList.size();
-    }
-
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
@@ -34,6 +28,13 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
             while (behandleFerdigstilteNotifikasjoner(500) == 500) ;
         }
     }
+
+    public int behandleFerdigstilteNotifikasjoner(int maksAntall) {
+        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFullfortIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
+        brukernotifikasjonList.stream().forEach(behandleNotifikasjonForDelingAvCvService::behandleFerdigstiltKvittering);
+        return brukernotifikasjonList.size();
+    }
+
 
 
 }
