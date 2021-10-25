@@ -7,6 +7,7 @@ import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
+import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -73,7 +74,6 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
-        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
     }
 
@@ -86,11 +86,13 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         // Opprett stilling fra nav
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
+        // Oppretter consumer etter første melding
+        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
+
         // trigger utsendelse av oppgave-notifikasjoner
         sendOppgaveCron.sendBrukernotifikasjoner();
 
         // simuler kvittering fra brukernotifikasjoner
-
 
         // les oppgave-notifikasjon
         final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
@@ -101,12 +103,13 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, doknotifikasjonStatus));
         Assertions.assertThat(consumeStatus).isEqualTo(ConsumeStatus.OK);
 
-
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
         Assertions.assertThat(behandlede).isEqualTo(1);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
         ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 5000);
+        Assertions.assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
+        Assertions.assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.HAR_VARSLET);
 
         AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, aktivitetDTO.getId());
         AktivitetDTO expectedAktivitet = behandletAktivitet.toBuilder().stillingFraNavData(behandletAktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
