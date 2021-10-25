@@ -6,11 +6,13 @@ import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -34,8 +36,8 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @AutoConfigureWireMock(port = 0)
 public class BehandleNotifikasjonForDelingAvCvTest {
 
+    @Autowired
     BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
-
 
     @Autowired
     Credentials credentials;
@@ -58,6 +60,10 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     private String oppgaveTopic;
 
+    @Value("${topic.ut.stillingFraNav}")
+    private String utTopic;
+
+    Consumer<String, DelingAvCvRespons> rekrutteringsbistandConsumer;
     Consumer<Nokkel, Oppgave> oppgaveConsumer;
 
     @LocalServerPort
@@ -66,6 +72,8 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+
+        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
     }
 
@@ -94,15 +102,19 @@ public class BehandleNotifikasjonForDelingAvCvTest {
 
 
         int behandlede = behandleNotifikasjonForDelingAvCvService.behandleFerdigstilteNotifikasjoner();
+        Assertions.assertThat(behandlede).isEqualTo(1);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
+        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 5000);
+
+        AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, aktivitetDTO.getId());
+        AktivitetDTO expectedAktivitet = behandletAktivitet.toBuilder().stillingFraNavData(behandletAktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
 
         // sjekk at StillingFraNav.LivslopStatus = HAR_VARSLET
+        AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, behandletAktivitet);
 
         // sjekk at vi ikke behandler ting vi ikke skal behandle
-
         Assertions.assertThat(behandleNotifikasjonForDelingAvCvService.behandleFerdigstilteNotifikasjoner()).isEqualTo(0);
-
     }
 
     private DoknotifikasjonStatus doknotifikasjonStatus(String bestillingsId, String status) {
