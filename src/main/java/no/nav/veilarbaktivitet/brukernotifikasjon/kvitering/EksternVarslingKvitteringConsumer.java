@@ -18,10 +18,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
     private final KvitteringDAO kvitteringDAO;
-    static final String FEILET = "FEILET";
-    static final String INFO = "INFO";
-    static final String OVERSENDT = "OVERSENDT";
-    static final String FERDIGSTILT = "FERDIGSTILT";
+    public static final String FEILET = "FEILET";
+    public static final String INFO = "INFO";
+    public static final String OVERSENDT = "OVERSENDT";
+    public static final String FERDIGSTILT = "FERDIGSTILT";
     private final String srvUsername;
     private final String oppgavePrefix;
     private final String beskjedPrefix;
