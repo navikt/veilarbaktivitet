@@ -29,12 +29,26 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
         }
     }
 
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    public void behandleFeiledeNotifikasjoner() {
+        if (leaderElectionClient.isLeader()) {
+            while (behandleFeiledeNotifikasjoner(500) == 500) ;
+        }
+    }
+
     public int behandleFerdigstilteNotifikasjoner(int maksAntall) {
         List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFullfortIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
         brukernotifikasjonList.stream().forEach(behandleNotifikasjonForDelingAvCvService::behandleFerdigstiltKvittering);
         return brukernotifikasjonList.size();
     }
 
-
+    public int behandleFeiledeNotifikasjoner(int maksAntall) {
+        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFeiletIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
+        brukernotifikasjonList.stream().forEach(behandleNotifikasjonForDelingAvCvService::behandleFeiletKvittering);
+        return brukernotifikasjonList.size();
+    }
 
 }

@@ -92,4 +92,23 @@ public class KvitteringDAO {
 
         return jdbc.query(sql, parameterSource, rowmapper);
     }
+
+    public List<Brukernotifikasjon> hentFeiletIkkeBehandlet(int maksAntall, VarselFunksjon funksjon) {
+        // TODO - hva betyr feilet? SMS feilet, mail feilet, begge feilet? https://confluence.adeo.no/display/BOA/For+Konsumenter#
+        // language=SQL
+        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
+                " WHERE FERDIG_BEHANDLET IS NULL" +
+                " AND BEKREFTET_SENDT IS NULL" +
+                " AND STATUS = 'FEILET'" +
+                " AND FUNKSJON = :funksjon" +
+                " FETCH FIRST :limit ROWS ONLY";
+
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("funksjon", funksjon.name())
+                .addValue("limit", maksAntall);
+
+        return jdbc.query(sql, parameterSource, rowmapper);
+    }
+
+}
 }

@@ -64,14 +64,13 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
-        log.info("mottok melding {}", melding);
 
         switch (status) {
             case INFO:
             case OVERSENDT:
                 break;
             case FEILET:
-                log.error("varsel feilet for melding {}", melding);
+                log.error("varsel feilet for notifikasjon bestillingsId: {} med melding {}", bestillingsId, melding.getMelding());
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDIGSTILT:

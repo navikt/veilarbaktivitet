@@ -122,4 +122,7 @@ public class StillingFraNavProducerClient {
     }
 
 
+    public void sendKanIkkeVarsle(AktivitetData aktivitetData) {
+        sendRespons(TilstandEnum.KAN_IKKE_VARSLE, aktivitetData);
+    }
 }
