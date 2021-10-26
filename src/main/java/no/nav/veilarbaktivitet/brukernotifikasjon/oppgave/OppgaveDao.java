@@ -48,11 +48,11 @@ public class OppgaveDao {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
-                .addValue("avbrutStatus", VarselStatus.AVBRUTT.name());
+                .addValue("avbruttStatus", VarselStatus.AVBRUTT.name());
 
         return jdbcTemplate.update("" +
                         " update BRUKERNOTIFIKASJON B" +
-                        " set STATUS = :avbrutStatus " +
+                        " set STATUS = :avbruttStatus " +
                         " where STATUS =:skal_avsluttes " +
                         " and FORSOKT_SENDT is null" +
                         " and exists( " +

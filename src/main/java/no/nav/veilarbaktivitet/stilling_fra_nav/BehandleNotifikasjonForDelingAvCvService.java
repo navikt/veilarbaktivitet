@@ -23,6 +23,12 @@ public class BehandleNotifikasjonForDelingAvCvService {
     public void behandleFerdigstiltKvittering(Brukernotifikasjon brukernotifikasjon) {
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(brukernotifikasjon.getAktivitetId());
 
+        // Hvis aktiviteten er svart trenger vi ikke å varsle
+        if (aktivitetData.getStillingFraNavData().cvKanDelesData != null) {
+            kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
+            return;
+        }
+
         AktivitetData nyAktivitet = aktivitetData.toBuilder().stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
         aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.navIdent("SYSTEM"));
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
