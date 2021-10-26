@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.restassured.response.Response;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
@@ -102,7 +101,7 @@ public class StillingFraNavControllerITest {
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
-        AktivitetDTO svartJaPaaDelingAvCv = svarJaPaaDelingAvCv(mockBruker, veileder, aktivitetDTO);
+        AktivitetDTO svartJaPaaDelingAvCv = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
@@ -116,27 +115,11 @@ public class StillingFraNavControllerITest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
-                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
-                .avtaltDato(AVTALT_DATO)
-                .kanDeles(false)
-                .build();
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
-        Response response = veileder
-                .createRequest()
-                .and()
-                .param("aktivitetId", aktivitetDTO.getId())
-                .body(delingAvCvDTO)
-                .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
-
-        AktivitetDTO actualAktivitet = response.as(AktivitetDTO.class);
+        AktivitetDTO actualAktivitet = AktivitetTestService.svarPaaDelingAvCv(false, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
 
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(false)
@@ -168,7 +151,7 @@ public class StillingFraNavControllerITest {
     public void svar_naar_frist_utlopt_feiler() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-        ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt, port);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
@@ -196,7 +179,7 @@ public class StillingFraNavControllerITest {
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
-        svarJaPaaDelingAvCv(mockBruker, veileder, aktivitetDTO);
+        AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
 
         List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), port, mockBruker, veileder);
 
@@ -229,26 +212,6 @@ public class StillingFraNavControllerITest {
         assertOppdatertAktivitet(aktivitetDTO, statusOppdatertRespons);
 
         return statusOppdatertRespons;
-    }
-
-    private AktivitetDTO svarJaPaaDelingAvCv(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {
-        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
-                .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
-                .kanDeles(true)
-                .avtaltDato(AVTALT_DATO)
-                .build();
-        return veileder
-                .createRequest()
-                .param("aktivitetId", aktivitetDTO.getId())
-                .body(delingAvCvDTO)
-                .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
-                .extract()
-                .response()
-                .as(AktivitetDTO.class);
-
     }
 
     private void assertBrukernotifikasjonStoppet(MockBruker mockBruker) {
