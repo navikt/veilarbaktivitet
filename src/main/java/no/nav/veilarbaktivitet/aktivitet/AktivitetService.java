@@ -48,6 +48,13 @@ public class AktivitetService {
                 .withForhaandsorientering(fho);
     }
 
+    public AktivitetData hentAktivitetMedFHOForVersion(long version) {
+        AktivitetData aktivitetData = aktivitetDAO.hentAktivitetVersion(version);
+        Forhaandsorientering forhaandsorientering = avtaltMedNavService.hentFHO(aktivitetData.getFhoId());
+
+        return aktivitetData.withForhaandsorientering(forhaandsorientering);
+    }
+
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }

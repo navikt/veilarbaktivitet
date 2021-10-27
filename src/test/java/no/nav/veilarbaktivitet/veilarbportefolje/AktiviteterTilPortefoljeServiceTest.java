@@ -53,13 +53,19 @@ public class AktiviteterTilPortefoljeServiceTest {
     @Value("${app.kafka.endringPaaAktivitetTopic}")
     String endringPaaAktivitetTopic;
 
-    Consumer<String, String> consumer;
+    @Value("${topic.ut.aktivitetdata.rawjson}")
+    String aktivitetRawJson;
+
+
+    Consumer<String, String> protefoljeConsumer;
+
+    Consumer<String, AktivitetData> aktivterKafkaConsumer;
 
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
-
-        consumer = kafkaTestService.createStringStringConsumer(endringPaaAktivitetTopic);
+        protefoljeConsumer = kafkaTestService.createStringStringConsumer(endringPaaAktivitetTopic);
+        aktivterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
     }
 
     @Test
@@ -68,13 +74,18 @@ public class AktiviteterTilPortefoljeServiceTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(port, mockBruker, skalSendes);
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(port, mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
         cronService.sendMeldingerTilPortefolje();
 
-        ConsumerRecord<String, String> singleRecord = getSingleRecord(consumer, endringPaaAktivitetTopic, 5000);
-        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(singleRecord.value(), KafkaAktivitetMeldingV4.class);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, endringPaaAktivitetTopic, 5000);
+        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         assertEquals(opprettetAktivitet.getId(), melding.getAktivitetId());
         assertEquals(opprettetAktivitet.getVersjon(), melding.getVersion().toString());
+
+        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktivterKafkaConsumer, aktivitetRawJson, 5000);
+        AktivitetData aktivitetMelding = singleRecord.value();
+
+        assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
     }
 }
