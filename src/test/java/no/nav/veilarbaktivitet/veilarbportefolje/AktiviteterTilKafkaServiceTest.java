@@ -33,7 +33,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class AktiviteterTilPortefoljeServiceTest {
+public class AktiviteterTilKafkaServiceTest {
 
     @LocalServerPort
     private int port;
@@ -56,19 +56,25 @@ public class AktiviteterTilPortefoljeServiceTest {
     @Autowired
     UnleashClient unleashClient;
 
-    @Value("${app.kafka.endringPaaAktivitetTopic}")
-    String endringPaaAktivitetTopic;
+    @Value("${topic.ut.portefolje}")
+    String portefoljeTopic;
 
-    Consumer<String, String> consumer;
+    @Value("${topic.ut.aktivitetdata.rawjson}")
+    String aktivitetRawJson;
+
+    Consumer<String, String> protefoljeConsumer;
+
+    Consumer<String, AktivitetData> aktivterKafkaConsumer;
 
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
         Mockito.when(unleashClient.isEnabled(CronService.STOPP_AKTIVITETER_TIL_KAFKA)).thenReturn(false);
-        Mockito.when(unleashClient.isEnabled(CronService.SEND_ON_PREM)).thenReturn(true);
+        Mockito.when(unleashClient.isEnabled(CronService.SEND_ON_PREM)).thenReturn(false);
 
-        consumer = kafkaTestService.createStringStringConsumer(endringPaaAktivitetTopic);
+        protefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
+        aktivterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
     }
 
     @Test
@@ -77,14 +83,18 @@ public class AktiviteterTilPortefoljeServiceTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(port, mockBruker, skalSendes);
-
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(port, mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
         cronService.sendMeldingerTilPortefolje();
 
-        ConsumerRecord<String, String> singleRecord = getSingleRecord(consumer, endringPaaAktivitetTopic, 5000);
-        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(singleRecord.value(), KafkaAktivitetMeldingV4.class);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, portefoljeTopic, 5000);
+        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         assertEquals(opprettetAktivitet.getId(), melding.getAktivitetId());
         assertEquals(opprettetAktivitet.getVersjon(), melding.getVersion().toString());
+
+        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktivterKafkaConsumer, aktivitetRawJson, 5000);
+        AktivitetData aktivitetMelding = singleRecord.value();
+
+        assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
     }
 }
