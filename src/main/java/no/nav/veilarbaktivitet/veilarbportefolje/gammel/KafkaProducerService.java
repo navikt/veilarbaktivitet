@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.veilarbportefolje;
+package no.nav.veilarbaktivitet.veilarbportefolje.gammel;
 
 import io.micrometer.core.annotation.Counted;
 import lombok.RequiredArgsConstructor;

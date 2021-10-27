@@ -34,7 +34,8 @@ public class KafkaTestConfig {
             @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
             @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
             @Value("${topic.inn.eksternVarselKvittering}") String ekstertVarselKvitering,
-            @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson) {
+            @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
+            @Value("${topic.ut.portefolje}") String portefoljeTopic) {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
@@ -46,7 +47,8 @@ public class KafkaTestConfig {
                 oppfolgingAvsluttetTopic,
                 kvpAvsluttetTopic,
                 ekstertVarselKvitering,
-                aktivitetRawJson);
+                aktivitetRawJson,
+                portefoljeTopic);
     }
 
     @Bean
