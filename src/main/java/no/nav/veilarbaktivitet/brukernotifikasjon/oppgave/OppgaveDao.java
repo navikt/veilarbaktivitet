@@ -35,7 +35,7 @@ public class OppgaveDao {
                 .query("" +
                                 " select ID, BRUKERNOTIFIKASJON_ID, B.AKTIVITET_ID, MELDING, OPPFOLGINGSPERIODE, A.AKTOR_ID" +
                                 " from BRUKERNOTIFIKASJON B " +
-                                " inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID and A.VERSJON = B.OPPRETTET_PAA_AKTIVITET_VERSION " +
+                                " inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID" +
                                 " where STATUS = :status " +
                                 " and A.HISTORISK_DATO is null" +
                                 " and A.LIVSLOPSTATUS_KODE not in(:finalAktivitetStatus)" +

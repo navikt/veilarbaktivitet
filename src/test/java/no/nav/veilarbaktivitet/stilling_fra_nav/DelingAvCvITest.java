@@ -115,7 +115,7 @@ public class DelingAvCvITest {
         Oppgave oppgave = consumerRecord.value();
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -137,7 +137,7 @@ public class DelingAvCvITest {
         Oppgave oppgave = consumerRecord.value();
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -158,7 +158,7 @@ public class DelingAvCvITest {
         Oppgave oppgave = consumerRecord.value();
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.");
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
