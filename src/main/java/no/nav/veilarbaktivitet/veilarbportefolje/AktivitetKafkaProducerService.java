@@ -1,10 +1,11 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
-import io.micrometer.core.annotation.Counted;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.config.kafka.KafkaJsonTemplate;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -24,6 +25,8 @@ public class AktivitetKafkaProducerService {
 
     private final KafkaTemplate<String, String> portefoljeProducer;
     private final KafkaJsonTemplate<String, AktivitetData> aktivitetProducer;
+    private final AktivitetService aktivitetService;
+    private final KafkaAktivitetDAO dao;
 
     @Value("${topic.ut.portefolje}")
     private String portefoljeTopic;
@@ -31,15 +34,17 @@ public class AktivitetKafkaProducerService {
     @Value("${topic.ut.aktivitetdata.rawjson}")
     private String aktivitetTopic;
 
-    @Counted
+    @Timed("aktivitet_til_kafka")
     @SneakyThrows
-    public long sendAktivitetMelding(KafkaAktivitetMeldingV4 melding, AktivitetData aktivitetData) {
+    public void sendAktivitetMelding(KafkaAktivitetMeldingV4 melding) {
+        AktivitetData aktivitetData = aktivitetService.hentAktivitetMedFHOForVersion(melding.getVersion());
         ProducerRecord<String, String> portefoljeMelding = toJsonProducerRecord(portefoljeTopic, melding.getAktorId(), melding);
         portefoljeMelding.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
         aktivitetProducer.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData).get();
 
-        return portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
+        long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
+        dao.updateSendtPaKafka(melding.getVersion(), offset);
     }
 
     static String getCorrelationId() {
