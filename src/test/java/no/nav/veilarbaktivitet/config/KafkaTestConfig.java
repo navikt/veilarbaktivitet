@@ -2,19 +2,23 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
-import org.springframework.kafka.core.*;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.core.BrokerAddress;
@@ -25,6 +29,11 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 @Configuration
+@SpyBeans({
+        @SpyBean(KafkaStringTemplate.class),
+        @SpyBean(KafkaAvroTemplate.class),
+        @SpyBean(KafkaJsonTemplate.class)
+})
 public class KafkaTestConfig {
     @Bean
     public EmbeddedKafkaBroker embeddedKafka(
@@ -33,7 +42,7 @@ public class KafkaTestConfig {
             @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
             @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
             @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
-            @Value("${topic.inn.eksternVarselKvittering}") String ekstertVarselKvitering,
+            @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic) {
         // TODO config
@@ -46,37 +55,16 @@ public class KafkaTestConfig {
                 endringPaaAktivitetTopic,
                 oppfolgingAvsluttetTopic,
                 kvpAvsluttetTopic,
-                ekstertVarselKvitering,
+                eksternVarselKvittering,
                 aktivitetRawJson,
                 portefoljeTopic);
     }
-
-    @Bean
-    KafkaTemplate<String, String> kafkaStringTemplate(ProducerFactory<String, String> stringProducerFactory) {
-        return new KafkaTemplate<>(stringProducerFactory);
-    }
-
-    @Bean
-    ProducerFactory<String, String> stringProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
-        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
-        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
-        return new DefaultKafkaProducerFactory<>(producerProperties);
-    }
-
 
     @Bean
     @Primary
     KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafkaBroker) {
         kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokerAddresses()).map(BrokerAddress::toString).collect(Collectors.toList()));
         return kafkaProperties;
-    }
-
-    @Bean
-    @Primary
-    <V extends SpecificRecordBase> KafkaTemplate<String, V> kafkaAvroTestTemplate(KafkaTemplate<String, V> kafkaAvroTemplate) {
-        return Mockito.spy(kafkaAvroTemplate);
     }
 
     @Bean

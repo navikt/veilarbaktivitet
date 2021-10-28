@@ -48,7 +48,7 @@ public class AktivitetTestService {
     private String stillingFraNavUtTopic;
 
     @Autowired
-    KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+    KafkaTemplate<String, ForesporselOmDelingAvCv> kafkaAvroTemplate;
 
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, int springPort) {
         return opprettStillingFraNav(mockBruker, createMelding(UUID.randomUUID().toString(), mockBruker), springPort);
@@ -60,7 +60,7 @@ public class AktivitetTestService {
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(stillingFraNavUtTopic);
 
         String bestillingsId = melding.getBestillingsId();
-        producer.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
+        kafkaAvroTemplate.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
 
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, stillingFraNavUtTopic, 5000);
