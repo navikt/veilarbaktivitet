@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.config.CronService;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -15,6 +16,8 @@ import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.veilarbportefolje.gammel.AktiviteterTilPortefoljeService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,6 +69,9 @@ public class AktiviteterTilKafkaServiceTest {
 
     Consumer<String, AktivitetData> aktivterKafkaConsumer;
 
+    @Autowired
+    KafkaStringTemplate portefoljeProducer;
+
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
@@ -75,6 +81,8 @@ public class AktiviteterTilKafkaServiceTest {
 
         protefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktivterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
+
+        Mockito.reset(portefoljeProducer);
     }
 
     @Test
@@ -96,5 +104,34 @@ public class AktiviteterTilKafkaServiceTest {
         AktivitetData aktivitetMelding = singleRecord.value();
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
+    }
+
+    @Test
+    public void skal_committe_hver_melding() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        AktivitetData aktivitetData1 = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);
+        AktivitetDTO skalSendes2 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
+
+        aktivitetTestService.opprettAktivitet(port, mockBruker, MockNavService.createVeileder(mockBruker), skalSendes1);
+        aktivitetTestService.opprettAktivitet(port, mockBruker, MockNavService.createVeileder(mockBruker), skalSendes2);
+
+
+        Mockito
+                .doCallRealMethod()
+                .doThrow(IllegalStateException.class)
+                .when(portefoljeProducer)
+                .send((ProducerRecord<String, String>) Mockito.any(ProducerRecord.class));
+
+        try {
+            cronService.sendMeldingerTilPortefolje();
+        } catch (Exception e) {
+            // ignore
+        }
+
+        Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE PORTEFOLJE_KAFKA_OFFSET IS NOT NULL", Long.class)).isEqualTo(1);
+        Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE PORTEFOLJE_KAFKA_OFFSET IS NULL", Long.class)).isEqualTo(1);
+
     }
 }
