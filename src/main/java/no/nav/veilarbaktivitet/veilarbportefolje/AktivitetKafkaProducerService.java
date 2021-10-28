@@ -13,7 +13,9 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
 import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
@@ -41,9 +43,10 @@ public class AktivitetKafkaProducerService {
         ProducerRecord<String, String> portefoljeMelding = toJsonProducerRecord(portefoljeTopic, melding.getAktorId(), melding);
         portefoljeMelding.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
-        aktivitetProducer.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData).get();
-
+        ListenableFuture<SendResult<String, AktivitetData>> send = aktivitetProducer.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData);
         long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
+        send.get();
+
         dao.updateSendtPaKafka(melding.getVersion(), offset);
     }
 
