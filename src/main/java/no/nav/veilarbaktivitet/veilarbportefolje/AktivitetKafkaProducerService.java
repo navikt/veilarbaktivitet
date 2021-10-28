@@ -7,12 +7,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.utils.IdUtils;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.config.kafka.KafkaJsonTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
@@ -23,8 +23,8 @@ import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
 @Service
 public class AktivitetKafkaProducerService {
 
-    private final KafkaTemplate<String, String> portefoljeProducer;
-    private final KafkaJsonTemplate<String, AktivitetData> aktivitetProducer;
+    private final KafkaStringTemplate portefoljeProducer;
+    private final KafkaJsonTemplate<AktivitetData> aktivitetProducer;
     private final AktivitetService aktivitetService;
     private final KafkaAktivitetDAO dao;
 

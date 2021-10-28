@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -34,7 +35,6 @@ import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
@@ -66,7 +66,7 @@ public class StillingFraNavControllerITest {
     @Autowired
     JdbcTemplate jdbc;
     @Autowired
-    KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
     @Autowired
     SendOppgaveCron sendOppgaveCron;
     @Autowired

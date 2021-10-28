@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -33,7 +34,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -80,7 +80,7 @@ public class DelingAvCvITest {
     private String aktivitetsplanBasepath;
 
     @Autowired
-    KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 
