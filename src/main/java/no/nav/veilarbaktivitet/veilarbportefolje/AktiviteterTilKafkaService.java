@@ -16,7 +16,7 @@ public class AktiviteterTilKafkaService {
 
     @Timed
     public void sendOppTil5000AktiviterTilPortefolje() {
-        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendt();
+        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtPaAiven();
         for (KafkaAktivitetMeldingV4 melding : meldinger) {
             producerService.sendAktivitetMelding(melding);
         }

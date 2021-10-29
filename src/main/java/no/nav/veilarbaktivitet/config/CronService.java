@@ -27,7 +27,6 @@ public class CronService {
     private final UnleashClient unleashClient;
 
     public static final String STOPP_AKTIVITETER_TIL_KAFKA = "veilarbaktivitet.stoppAktiviteterTilKafka";
-    public static final String SEND_ON_PREM = "veilarbaktivitet.sendOnPrem";
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -45,13 +44,19 @@ public class CronService {
             initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
             fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
     )
-    public void sendMeldingerTilPortefolje() {
+    public void sendMeldingerTilPortefoljeOnprem() {
         if (leaderElectionClient.isLeader() && !unleashClient.isEnabled(STOPP_AKTIVITETER_TIL_KAFKA)) {
-            if (unleashClient.isEnabled(SEND_ON_PREM)) {
-                aktiviteterTilPortefoljeService.sendOppTil5000AktiviterTilPortefolje();
-            } else {
-                aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
-            }
+            aktiviteterTilPortefoljeService.sendOppTil5000AktiviterTilPortefolje();
+        }
+    }
+
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
+    )
+    public void sendMeldingerTilPortefoljeAiven() {
+        if (leaderElectionClient.isLeader() && !unleashClient.isEnabled(STOPP_AKTIVITETER_TIL_KAFKA)) {
+            aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
         }
     }
 
@@ -60,7 +65,7 @@ public class CronService {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     public void handleVarsler() {
-        if(leaderElectionClient.isLeader()) {
+        if (leaderElectionClient.isLeader()) {
             avtaltVarselService.stoppVarsel();
             avtaltVarselService.sendVarsel();
         }

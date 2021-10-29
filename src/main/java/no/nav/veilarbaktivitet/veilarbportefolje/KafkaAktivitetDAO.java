@@ -22,12 +22,12 @@ public class KafkaAktivitetDAO {
     private final Database database;
 
     @Timed
-    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendt() {
+    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
         // language=sql
         return database.query("" +
                         " SELECT *" +
                         " FROM AKTIVITET" +
-                        " where PORTEFOLJE_KAFKA_OFFSET IS NULL" +
+                        " where AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL" +
                         " order by VERSJON " +
                         " FETCH NEXT 5000 ROWS ONLY",
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
@@ -35,11 +35,11 @@ public class KafkaAktivitetDAO {
     }
 
     @Timed
-    public void updateSendtPaKafka(Long versjon, Long kafkaOffset) {
+    public void updateSendtPaKafkaAven(Long versjon, Long kafkaOffset) {
         // language=sql
         database.update("" +
                         " update AKTIVITET " +
-                        " set PORTEFOLJE_KAFKA_OFFSET = ?" +
+                        " set PORTEFOLJE_KAFKA_OFFSET_AIVEN = ?" +
                         " where VERSJON = ?",
                 kafkaOffset, versjon);
     }

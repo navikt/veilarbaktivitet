@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.veilarbportefolje;
+package no.nav.veilarbaktivitet.veilarbportefolje.gammel;
 
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.veilarbportefolje.KafkaAktivitetMeldingV4;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +23,7 @@ public class KafkaAktivitetDAOTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
-    private final KafkaAktivitetDAO kafkaAktivitetDAO = new KafkaAktivitetDAO(database);
+    private final GamelKakfaAktivietDao kafkaAktivitetDAO = new GamelKakfaAktivietDao(database);
 
 
     @Before
@@ -36,12 +37,12 @@ public class KafkaAktivitetDAOTest {
         val usendt = opprettEgenaktivitet();
         val sendt = opprettEgenaktivitet();
 
-        val usendteAktiviteter_pre = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
+        val usendteAktiviteter_pre = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         Assert.assertTrue(containsVersion(usendteAktiviteter_pre, usendt.getVersjon()));
         Assert.assertTrue(containsVersion(usendteAktiviteter_pre, sendt.getVersjon()));
 
-        kafkaAktivitetDAO.updateSendtPaKafka(sendt.getVersjon(), 1L);
-        val usendteAktiviteter_post = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
+        kafkaAktivitetDAO.updateSendtPaKafkaOnprem(sendt.getVersjon(), 1L);
+        val usendteAktiviteter_post = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         Assert.assertTrue(containsVersion(usendteAktiviteter_post, usendt.getVersjon()));
         Assert.assertFalse(containsVersion(usendteAktiviteter_post, sendt.getVersjon()));
     }
@@ -49,18 +50,18 @@ public class KafkaAktivitetDAOTest {
     @Test
     public void hentOppTil5000MeldingerSomIkkeErSendt_AktivitetErIkkeSendt_returnererEnAktivitet() {
         val aktivitet = opprettEgenaktivitet();
-        val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
+        val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet.getVersjon()));
     }
 
     @Test
     public void hentOppTil5000MeldingerSomIkkeErSendt_kunSendteAktiviteter_returnererIngen() {
         val aktivitet = opprettEgenaktivitet();
-        val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
+        val usendteAktiviteter = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         Assert.assertTrue(containsVersion(usendteAktiviteter, aktivitet.getVersjon()));
 
-        kafkaAktivitetDAO.updateSendtPaKafka(aktivitet.getVersjon(), 1L);
-        val usendteAktiviteter_tom = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendt();
+        kafkaAktivitetDAO.updateSendtPaKafkaOnprem(aktivitet.getVersjon(), 1L);
+        val usendteAktiviteter_tom = kafkaAktivitetDAO.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         Assert.assertFalse(containsVersion(usendteAktiviteter_tom, aktivitet.getVersjon()));
 
     }
