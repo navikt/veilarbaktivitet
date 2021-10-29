@@ -47,7 +47,7 @@ public class AktivitetKafkaProducerService {
         long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
         send.get();
 
-        dao.updateSendtPaKafka(melding.getVersion(), offset);
+        dao.updateSendtPaKafkaAven(melding.getVersion(), offset);
     }
 
     static String getCorrelationId() {
