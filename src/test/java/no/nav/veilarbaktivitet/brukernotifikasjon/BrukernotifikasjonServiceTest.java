@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -38,7 +39,6 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.assertEquals;
@@ -85,7 +85,7 @@ public class BrukernotifikasjonServiceTest {
     String kviteringsToppic;
 
     @Autowired
-    KafkaTemplate<String, DoknotifikasjonStatus> kviteringsTopic;
+    KafkaAvroTemplate<DoknotifikasjonStatus> kviteringsTopic;
 
     @Autowired
     EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;

@@ -59,6 +59,15 @@ public class AktivitetDAO {
         );
     }
 
+    public AktivitetData hentAktivitetVersion(long version) {
+        // language=sql
+        return database.queryForObject(SELECT_AKTIVITET +
+                        " WHERE A.VERSJON = ? ",
+                AktivitetDataRowMapper::mapAktivitet,
+                version
+        );
+    }
+
     public long nesteAktivitetId() {
         return database.nesteFraSekvens("AKTIVITET_ID_SEQ");
     }
