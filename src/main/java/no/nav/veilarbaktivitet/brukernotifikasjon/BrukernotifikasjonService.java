@@ -33,8 +33,7 @@ public class BrukernotifikasjonService {
             long aktitetVersion,
             Person.AktorId aktorId,
             String tekst,
-            VarselType varseltype,
-            VarselFunksjon funksjon
+            VarselType varseltype
     ) {
         UUID uuid = UUID.randomUUID();
 
@@ -44,7 +43,7 @@ public class BrukernotifikasjonService {
         OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.getGjeldendePeriode(aktorId)
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
 
-        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING, funksjon);
+        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING);
 
         return uuid;
     }

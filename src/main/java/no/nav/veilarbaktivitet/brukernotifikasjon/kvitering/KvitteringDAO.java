@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.brukernotifikasjon.Brukernotifikasjon;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselFunksjon;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.config.database.Database;
@@ -38,7 +37,6 @@ public class KvitteringDAO {
                     .bekreftetSendt(Database.hentDato(rs, "BEKREFTET_SENDT"))
                     .forsoktSendt(Database.hentDato(rs, "FORSOKT_SENDT"))
                     .ferdigBehandlet(Database.hentDato(rs, "FERDIG_BEHANDLET"))
-                    .funksjon(EnumUtils.valueOf(VarselFunksjon.class, rs.getString("FUNKSJON")))
                     .build();
 
     public void setFeilet(String bestillingsId) {
@@ -78,33 +76,32 @@ public class KvitteringDAO {
         Assert.isTrue(update == 1, "Forventet en rad oppdatert, id=" + id);
     }
 
-    public List<Brukernotifikasjon> hentFullfortIkkeBehandlet(int maksAntall, VarselFunksjon funksjon) {
+    public List<Brukernotifikasjon> hentFullfortIkkeBehandlet(int maksAntall, VarselType type) {
         // language=SQL
         String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
                 " WHERE FERDIG_BEHANDLET IS NULL" +
                 " AND BEKREFTET_SENDT IS NOT NULL" +
-                " AND FUNKSJON = :funksjon" +
+                " AND TYPE = :type" +
                 " FETCH FIRST :limit ROWS ONLY";
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("funksjon", funksjon.name())
+                .addValue("type", type.name())
                 .addValue("limit", maksAntall);
 
         return jdbc.query(sql, parameterSource, rowmapper);
     }
 
-    public List<Brukernotifikasjon> hentFeiletIkkeBehandlet(int maksAntall, VarselFunksjon funksjon) {
-        // TODO - hva betyr feilet? SMS feilet, mail feilet, begge feilet? https://confluence.adeo.no/display/BOA/For+Konsumenter#
+    public List<Brukernotifikasjon> hentFeiletIkkeBehandlet(int maksAntall, VarselType type) {
         // language=SQL
         String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
                 " WHERE FERDIG_BEHANDLET IS NULL" +
                 " AND BEKREFTET_SENDT IS NULL" +
                 " AND STATUS = 'FEILET'" +
-                " AND FUNKSJON = :funksjon" +
+                " AND TYPE = :type" +
                 " FETCH FIRST :limit ROWS ONLY";
 
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("funksjon", funksjon.name())
+                .addValue("type", type.name())
                 .addValue("limit", maksAntall);
 
         return jdbc.query(sql, parameterSource, rowmapper);

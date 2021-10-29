@@ -24,8 +24,7 @@ public class BrukerNotifikasjonDAO {
             String melding,
             UUID oppfolgingsperiode,
             VarselType type,
-            VarselStatus status,
-            VarselFunksjon funksjon
+            VarselStatus status
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
@@ -35,11 +34,10 @@ public class BrukerNotifikasjonDAO {
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
                 .addValue("status", status.name())
-                .addValue("melding", melding)
-                .addValue("funksjon", funksjon.name());
+                .addValue("melding", melding);
         jdbcTemplate.update("" +
-                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, opprettet, melding, funksjon) " +
-                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding, :funksjon) ",
+                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, opprettet, melding) " +
+                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
                 params);
     }
 

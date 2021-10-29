@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselFunksjon;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
@@ -189,8 +188,7 @@ public class BrukernotifikasjonKvitteringTest {
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
                 "Testvarsel",
-                VarselType.STILLING_FRA_NAV,
-                VarselFunksjon.DELING_AV_CV
+                VarselType.STILLING_FRA_NAV
         );
 
         sendOppgaveCron.sendBrukernotifikasjoner();

@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.brukernotifikasjon.Brukernotifikasjon;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselFunksjon;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.KvitteringDAO;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -40,13 +40,13 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
     }
 
     public int behandleFerdigstilteNotifikasjoner(int maksAntall) {
-        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFullfortIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
+        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFullfortIkkeBehandlet(maksAntall, VarselType.STILLING_FRA_NAV);
         brukernotifikasjonList.stream().forEach(behandleNotifikasjonForDelingAvCvService::behandleFerdigstiltKvittering);
         return brukernotifikasjonList.size();
     }
 
     public int behandleFeiledeNotifikasjoner(int maksAntall) {
-        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFeiletIkkeBehandlet(maksAntall, VarselFunksjon.DELING_AV_CV);
+        List<Brukernotifikasjon> brukernotifikasjonList = kvitteringsDao.hentFeiletIkkeBehandlet(maksAntall, VarselType.STILLING_FRA_NAV);
         brukernotifikasjonList.stream().forEach(behandleNotifikasjonForDelingAvCvService::behandleFeiletKvittering);
         return brukernotifikasjonList.size();
     }
