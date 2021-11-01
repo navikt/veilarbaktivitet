@@ -11,10 +11,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
-import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2UnderOppfolgingDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
@@ -34,8 +30,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO.KrrStatus;
-
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,13 +38,11 @@ public class OpprettForesporselOmDelingAvCv {
     private final DelingAvCvService delingAvCvService;
     private final KvpService kvpService;
     private final OppfolgingV2Client oppfolgingClient;
-    private final ManuellStatusV2Client manuellStatusClient;
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
-    private final Nivaa4Client nivaa4Client;
     private final StillingFraNavMetrikker metrikker;
 
-    private static final String BRUKERNOTIFIKASJON_TEKST = "Her en stilling som NAV tror kan passe for deg. Gi oss en tilbakemelding.";
+    private static final String BRUKERNOTIFIKASJON_TEKST = "Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.";
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory")
@@ -69,12 +61,8 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        Optional<ManuellStatusV2DTO> manuellStatusResponse;
-        Optional<Nivaa4DTO> nivaa4DTO;
         Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse;
         try {
-            manuellStatusResponse = manuellStatusClient.get(aktorId);
-            nivaa4DTO = nivaa4Client.get(aktorId);
             oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
@@ -84,9 +72,6 @@ public class OpprettForesporselOmDelingAvCv {
 
         boolean underKvp = kvpService.erUnderKvp(aktorId);
         boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2UnderOppfolgingDTO::isErUnderOppfolging).orElse(false);
-        boolean erManuell = manuellStatusResponse.map(ManuellStatusV2DTO::isErUnderManuellOppfolging).orElse(true);
-        boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(KrrStatus::isErReservert).orElse(true);
-        boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
@@ -95,7 +80,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        boolean kanVarsle = !erManuell && !erReservertIKrr && harBruktNivaa4;
+        boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
 
         AktivitetData aktivitetData = map(melding, kanVarsle);
 
@@ -111,7 +96,7 @@ public class OpprettForesporselOmDelingAvCv {
         metrikker.countStillingFraNavOpprettet(kanVarsle);
     }
 
-    private AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanVarsle) {
+    private static AktivitetData map(ForesporselOmDelingAvCv melding, boolean kanVarsle) {
         //aktivitetdata
         String stillingstittel = melding.getStillingstittel();
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
@@ -162,7 +147,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .build();
     }
 
-    private KontaktpersonData getKontaktInfo(KontaktInfo kontaktInfo) {
+    private static KontaktpersonData getKontaktInfo(KontaktInfo kontaktInfo) {
         if (kontaktInfo == null) {
             return null;
         }

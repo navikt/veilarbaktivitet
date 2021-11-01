@@ -1,9 +1,10 @@
-package no.nav.veilarbaktivitet.veilarbportefolje;
+package no.nav.veilarbaktivitet.veilarbportefolje.gammel;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.veilarbportefolje.KafkaAktivitetMeldingV4;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,13 +13,13 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class AktiviteterTilPortefoljeService {
-    private final KafkaAktivitetDAO dao;
+    private final GamelKakfaAktivietDao dao;
     private final KafkaProducerService producerService;
     private final MeterRegistry registry;
 
     @Timed
     public void sendOppTil5000AktiviterTilPortefolje() {
-        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendt();
+        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtOnprem();
         for (KafkaAktivitetMeldingV4 melding : meldinger) {
             trySendMelding(melding);
         }
@@ -35,7 +36,7 @@ public class AktiviteterTilPortefoljeService {
     private void sendMeldingV4(KafkaAktivitetMeldingV4 melding) {
         registry.timer("send_aktivitet_paaa_kafka").record(() -> {
             long offset = producerService.sendAktivitetMelding(melding);
-            dao.updateSendtPaKafka(melding.getVersion(), offset);
+            dao.updateSendtPaKafkaOnprem(melding.getVersion(), offset);
         });
     }
 }
