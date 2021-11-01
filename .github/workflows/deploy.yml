@@ -55,20 +55,6 @@ jobs:
           RESOURCE: nais-q.yaml
           VAR: version=${{ env.IMAGE_TAG }},namespace=q1
 
-  release-dev:
-    name: Create dev release
-    needs: deploy-dev
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: release/dev@${{ env.IMAGE_TAG }}
-          release_name: Release to dev
-          prerelease: true
-
   deploy-prod:
     name: Deploy application to prod
     needs: deploy-dev
@@ -84,18 +70,3 @@ jobs:
           CLUSTER: prod-fss
           RESOURCE: nais.yaml
           VAR: version=${{ env.IMAGE_TAG }}
-
-  release-prod:
-    name: Create prod release
-    needs: deploy-prod
-    if: github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: release/prod@${{ env.IMAGE_TAG }}
-          release_name: Release to prod
-          prerelease: false
