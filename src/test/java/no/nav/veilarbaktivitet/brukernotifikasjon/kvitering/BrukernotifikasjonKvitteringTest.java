@@ -113,7 +113,7 @@ public class BrukernotifikasjonKvitteringTest {
 
     @SneakyThrows
     @Test
-    public void status_tester() {
+    public void notifikasjonsstatus_tester() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -177,7 +177,7 @@ public class BrukernotifikasjonKvitteringTest {
     private void assertEksternVarselStatus(String eventId, VarselKvitteringStatus expectedVarselStatus) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
-        String status = jdbc.queryForObject("SELECT EKSTERNT_VARSEL_STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
+        String status = jdbc.queryForObject("SELECT VARSEL_KVITTERING_STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
         assertEquals(expectedVarselStatus.name(), status);
     }
 

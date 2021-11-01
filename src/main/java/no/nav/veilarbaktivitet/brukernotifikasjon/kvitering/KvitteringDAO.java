@@ -44,7 +44,10 @@ public class KvitteringDAO {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonId", bestillingsId)
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.FEILET.toString());
-        jdbc.update("update BRUKERNOTIFIKASJON set VARSEL_FEILET = current_timestamp, VARSEL_KVITTERING_STATUS = :varselKvitteringStatus where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
+        jdbc.update("" +
+                " update BRUKERNOTIFIKASJON " +
+                " set VARSEL_FEILET = current_timestamp, VARSEL_KVITTERING_STATUS = :varselKvitteringStatus " +
+                " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
     public void setFullfortForGyldige(String bestillingsId) {
@@ -64,7 +67,6 @@ public class KvitteringDAO {
         );
     }
 
-    /* TODO fjerne denne? */
     public void setFerdigBehandlet(long id) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("id", id);
@@ -79,32 +81,31 @@ public class KvitteringDAO {
     }
 
     public List<Brukernotifikasjon> hentFullfortIkkeBehandlet(int maksAntall, VarselType type) {
-        // language=SQL
-        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
-                " WHERE FERDIG_BEHANDLET IS NULL" +
-                " AND BEKREFTET_SENDT IS NOT NULL" +
-                " AND TYPE = :type" +
-                " FETCH FIRST :limit ROWS ONLY";
-
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("type", type.name())
                 .addValue("limit", maksAntall);
+
+        // language=SQL
+        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
+                " WHERE FERDIG_BEHANDLET IS NULL" +
+                " AND VARSEL_KVITTERING_STATUS = 'OK'" +
+                " AND TYPE = :type" +
+                " FETCH FIRST :limit ROWS ONLY";
 
         return jdbc.query(sql, parameterSource, rowmapper);
     }
 
     public List<Brukernotifikasjon> hentFeiletIkkeBehandlet(int maksAntall, VarselType type) {
-        // language=SQL
-        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
-                " WHERE FERDIG_BEHANDLET IS NULL" +
-                " AND BEKREFTET_SENDT IS NULL" +
-                " AND STATUS = 'FEILET'" +
-                " AND TYPE = :type" +
-                " FETCH FIRST :limit ROWS ONLY";
-
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("type", type.name())
                 .addValue("limit", maksAntall);
+
+        // language=SQL
+        String sql = "SELECT * FROM BRUKERNOTIFIKASJON" +
+                " WHERE FERDIG_BEHANDLET IS NULL" +
+                " AND VARSEL_KVITTERING_STATUS = 'FEILET'"+
+                " AND TYPE = :type" +
+                " FETCH FIRST :limit ROWS ONLY";
 
         return jdbc.query(sql, parameterSource, rowmapper);
     }
