@@ -122,51 +122,56 @@ public class BrukernotifikasjonKvitteringTest {
         final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         String eventId = oppgaveRecord.key().getEventId();
 
-        assertVarselStatus(eventId, VarselStatus.SENDT);
+        assertVarselStatusErSendt(eventId);
         assertEksternVarselStatus(eventId, VarselKviteringStatus.IKKE_SATT);
 
         skalIkkeBehandleMedAnnenBestillingsId(eventId);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKviteringStatus.IKKE_SATT);
 
-        consumAndAssertStatus(eventId, okStatus(eventId), ConsumeStatus.OK, VarselStatus.SENDT, VarselKviteringStatus.OK);
+        consumAndAssertStatus(eventId, okStatus(eventId), VarselKviteringStatus.OK);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKviteringStatus.OK);
 
-        consumAndAssertStatus(eventId, feiletStatus(eventId), ConsumeStatus.OK, VarselStatus.SENDT, VarselKviteringStatus.FEILET);
-        consumAndAssertStatus(eventId, okStatus(eventId), ConsumeStatus.OK, VarselStatus.SENDT, VarselKviteringStatus.FEILET);
+        consumAndAssertStatus(eventId, feiletStatus(eventId), VarselKviteringStatus.FEILET);
+        consumAndAssertStatus(eventId, okStatus(eventId), VarselKviteringStatus.FEILET);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKviteringStatus.FEILET);
 
-        consumAndAssertStatus(eventId, status(eventId, "ugyldig_status"), ConsumeStatus.FAILED, VarselStatus.SENDT, VarselKviteringStatus.FEILET);
+        consumAndAssertStatus(eventId, status(eventId, "ugyldig_status"), ConsumeStatus.FAILED, VarselKviteringStatus.FEILET);
     }
 
     private void infoOgOVersendtSkalIkkeEndreStatus(String eventId, VarselKviteringStatus expectedVarselKviteringStatus) {
-        consumAndAssertStatus(eventId, infoStatus(eventId), ConsumeStatus.OK, VarselStatus.SENDT, expectedVarselKviteringStatus);
-        consumAndAssertStatus(eventId, oversendtStatus(eventId), ConsumeStatus.OK, VarselStatus.SENDT, expectedVarselKviteringStatus);
+        consumAndAssertStatus(eventId, infoStatus(eventId), expectedVarselKviteringStatus);
+        consumAndAssertStatus(eventId, oversendtStatus(eventId), expectedVarselKviteringStatus);
     }
 
     private void skalIkkeBehandleMedAnnenBestillingsId(String eventId) {
         DoknotifikasjonStatus statusMedAnnenBestillerId = okStatus(eventId);
         statusMedAnnenBestillerId.setBestillerId("annen_bestillerid");
 
-        consumAndAssertStatus(eventId, statusMedAnnenBestillerId, ConsumeStatus.OK, VarselStatus.SENDT, VarselKviteringStatus.IKKE_SATT);
+        consumAndAssertStatus(eventId, statusMedAnnenBestillerId, VarselKviteringStatus.IKKE_SATT);
     }
 
-    private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, ConsumeStatus expectedConsumeStatus, VarselStatus expectedVarselStatus, VarselKviteringStatus expectedEksternVarselStatus) {
+
+    private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, VarselKviteringStatus expectedEksternVarselStatus) {
+        consumAndAssertStatus(eventId, message, ConsumeStatus.OK, expectedEksternVarselStatus);
+    }
+
+    private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, ConsumeStatus expectedConsumeStatus, VarselKviteringStatus expectedEksternVarselStatus) {
         String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
         ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, message));
         assertEquals(expectedConsumeStatus, consumeStatus);
 
-        assertVarselStatus(eventId, expectedVarselStatus);
+        assertVarselStatusErSendt(eventId);
         assertEksternVarselStatus(eventId, expectedEksternVarselStatus);
     }
 
-    private void assertVarselStatus(String eventId, VarselStatus expectedVarselStatus) {
+    private void assertVarselStatusErSendt(String eventId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
         String status = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
-        assertEquals(expectedVarselStatus.name(), status);
+        assertEquals(VarselStatus.SENDT.name(), status);
     }
 
     private void assertEksternVarselStatus(String eventId, VarselKviteringStatus expectedVarselStatus) {
