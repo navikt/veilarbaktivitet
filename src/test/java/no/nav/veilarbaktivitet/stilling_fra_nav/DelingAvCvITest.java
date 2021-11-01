@@ -42,7 +42,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.util.AktivitetTestService.createMelding;
+import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -127,7 +127,7 @@ public class DelingAvCvITest {
     @Test
     public void happy_case_tomme_strenger() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
-        ForesporselOmDelingAvCv melding = createMelding(UUID.randomUUID().toString(), mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
@@ -148,7 +148,7 @@ public class DelingAvCvITest {
     @Test
     public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
-        ForesporselOmDelingAvCv melding = createMelding(UUID.randomUUID().toString(), mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
         melding.setSoknadsfrist(null);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
@@ -183,7 +183,7 @@ public class DelingAvCvITest {
                         "}")));
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
@@ -207,7 +207,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -230,7 +230,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -254,7 +254,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -278,7 +278,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
 
 
         producer.send(innTopic, melding.getBestillingsId(), melding);
@@ -303,7 +303,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
@@ -326,7 +326,7 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -341,7 +341,7 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker);
+        ForesporselOmDelingAvCv duplikatMelding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
         testService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
 

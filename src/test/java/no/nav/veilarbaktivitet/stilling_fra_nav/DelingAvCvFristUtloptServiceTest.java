@@ -97,7 +97,7 @@ public class DelingAvCvFristUtloptServiceTest {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
-        ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(uuid, mockBruker);
+        ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
 
         AktivitetDTO skalIkkeBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
@@ -122,11 +122,11 @@ public class DelingAvCvFristUtloptServiceTest {
     public void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
 
-        ForesporselOmDelingAvCv melding = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
         AktivitetDTO skalFeile = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
-        ForesporselOmDelingAvCv melding2 = AktivitetTestService.createMelding(UUID.randomUUID().toString(), mockBruker);
+        ForesporselOmDelingAvCv melding2 = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding2.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
         AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding2, port);
 

@@ -18,10 +18,10 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<String, DoknotifikasjonStatus> implements TopicConsumer<String, DoknotifikasjonStatus> {
     private final KvitteringDAO kvitteringDAO;
-    static final String FEILET = "FEILET";
-    static final String INFO = "INFO";
-    static final String OVERSENDT = "OVERSENDT";
-    static final String FERDIGSTILT = "FERDIGSTILT";
+    public static final String FEILET = "FEILET";
+    public static final String INFO = "INFO";
+    public static final String OVERSENDT = "OVERSENDT";
+    public static final String FERDIGSTILT = "FERDIGSTILT";
     private final String srvUsername;
     private final String oppgavePrefix;
     private final String beskjedPrefix;
@@ -64,14 +64,13 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
-        log.info("mottok melding {}", melding);
 
         switch (status) {
             case INFO:
             case OVERSENDT:
                 break;
             case FEILET:
-                log.error("varsel feilet for melding {}", melding);
+                log.error("varsel feilet for notifikasjon bestillingsId: {} med melding {}", bestillingsId, melding.getMelding());
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDIGSTILT:

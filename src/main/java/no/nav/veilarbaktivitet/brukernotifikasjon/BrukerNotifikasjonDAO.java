@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-class BrukerNotifikasjonDAO {
+public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -54,4 +54,5 @@ class BrukerNotifikasjonDAO {
                         " Update brukernotifikasjon set status=:status where aktivitet_id=:aktivitetId and type = :type and status not in (:statuses)",
                 params);
     }
+
 }
