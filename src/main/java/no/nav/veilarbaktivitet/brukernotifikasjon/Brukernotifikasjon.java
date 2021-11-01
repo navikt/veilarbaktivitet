@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.Builder;
 import lombok.Value;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.VarselKvitteringStatus;
 
 import java.util.Date;
 
@@ -16,6 +17,7 @@ public class Brukernotifikasjon {
     String oppfolgingsperiode;
     VarselType type;
     VarselStatus status;
+    VarselKvitteringStatus varselKvitteringStatus;
     Date opprettet;
     String melding;
     Date varselFeilet;

@@ -1,5 +1,5 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
-public enum VarselKviteringStatus {
+public enum VarselKvitteringStatus {
     OK, FEILET, IKKE_SATT
 }

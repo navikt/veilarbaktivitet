@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
-import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -227,12 +226,6 @@ public class BrukernotifikasjonTest {
                 .addValue("eventId", eventId);
         String forsoktSendt = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
         assertEquals(VarselStatus.SENDT.name(), forsoktSendt);
-
-        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, okStatus(brukernotifikasjonId)));
-        assertEquals(ConsumeStatus.OK, consumeStatus);
-
-        String varselStatus = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
-        assertEquals(VarselStatus.SENDT_OK.name(), varselStatus);
     }
 
     private DoknotifikasjonStatus okStatus(String bestillingsId) {
