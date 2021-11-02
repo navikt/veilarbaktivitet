@@ -1,9 +1,28 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="611px"
-     height="571px" viewBox="-0.5 -0.5 611 571"
-     content="&lt;mxfile host=&quot;drawio-plugin&quot; modified=&quot;2021-11-02T14:10:43.080Z&quot; agent=&quot;5.0 (Macintosh; Intel Mac OS X 12_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36&quot; etag=&quot;G0PmlrV7j67JwwUhi57s&quot; version=&quot;14.7.4&quot; type=&quot;embed&quot;&gt;&lt;diagram id=&quot;23iRSUPoRavnBvh4doch&quot; name=&quot;Page-1&quot;&gt;7VlNc5swEP01PiYjgQH7GNtpe0hnOpND06NsBKjGiJHl2OTXV8DKIMCJYxM37jSXoNXq6+17y8oM7Olq91WQNPrOfRoPLOTvBvZsYFnYsmz1L7dkpWWEynYomA8+leGRvVAwarcN8+nacJScx5KlpnHBk4QupGEjQvCt6Rbw2Fw1JSGsiCrD44LEtOX2k/kygkNYXmX/RlkY6ZWxOy575mSxDAXfJLBewhNa9qyIngaWXEfE59uayb4f2FPBuSyfVrspjXNUNWLluC8HevdbFjSRxwywhuWIZxJv4NiwMZlpHIqT0HwAGtiTbcQkfUzJIu/dqsArWyRXsWph9QjTUSHp7uCe8P6kijuUr6gUmXKBATc2gAO0cTxob6souJokUS0Ce0cCkQ/3c1cQqAdA4QCE+G1EqK+IAk0uZMRDnpD4vrJOKusD5ylg85tKmQHPyUZyE7mAJxI6sbtHsgWb2gjfiAXsBBgniQip9gIQ8k2+CregMZHs2WT7WdCNW9CtqaKOKGxinaeHDiQfyFz1GFiQmIWJel6os6vh9iQnFFPSvIOOFfP9AmhB1+yFzIv5cnqmnCWyOIMzGTizDlwrOuNulDUB2hyGTAPLGZLtJDK6tR2DypAQj0Yepv6RH6rmwoNgrcLdDM1+B8dFy70Mr+mOySeITv78K3++daA129W6ZpluJOoYT/VGbVTerIYVLT2uNw1ZfWuoGHonBMlqDkDWdqCBQJ6ZCF2nkcxfdx/bqEGRcv2TCTPqlHdBIZ6mV6Ftt0dto6FjqvsGnyfvzAxjr2q/1FtMqx2fonb8l9Q+/BRqH47eJ/emP0Zev4LXr6ua4MlSnV/S4mX0PJcbKa9B9pr8vcgeO45t4D48T/V65qExqeN9QBLoqM+WJHcoyjSo0mLaCukbNX/A4njKYy4KbxshB9FA2ddS8CU1evBsMoUA1uxB8XdKPj8Q14Pxw05DY1b7boGtjruF28fVoq2nyyTlkxKlvkd8bF10LHY6JtdcfOjw95GFVIYwk/95Sajfm4X3v9a4oIROKjbsRiL0xq8XG03/vi8XVvtnl6LWYPtiQ1xJsaHZ39Mdw/UM3M+9Y/Qr9O6kLA//3vPeSmJEEOquJBwPaV1+ikrCcy9ZSThXVUlYHWmw9zvX0dhZLeyghOiLtNdT/o7RJUnb/tagAS+LONrO7/9uvsBo+HHYq2b1DalM7NUnOvv+Dw==&lt;/diagram&gt;&lt;/mxfile&gt;">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="871px"
+     height="571px" viewBox="-0.5 -0.5 871 571"
+     content="&lt;mxfile host=&quot;drawio-plugin&quot; modified=&quot;2021-11-02T15:22:47.897Z&quot; agent=&quot;5.0 (Macintosh; Intel Mac OS X 12_0_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.114 Safari/537.36&quot; etag=&quot;J0M7yzi0SWmA3hd-mwtR&quot; version=&quot;14.7.4&quot; type=&quot;embed&quot;&gt;&lt;diagram id=&quot;23iRSUPoRavnBvh4doch&quot; name=&quot;Page-1&quot;&gt;7VpLc+I4EP41PmZKfsMxgUz2MFu1VTns7FHBAhSM5ZLFa379SnYLW8gQBjRM2NpcYrVar6/7a3XbeOFouX3huJz/yTKSewHKtl449oLAj8JU/lOSHUh8vxHMOM1A1Ape6Q8CQgTSFc1IZSgKxnJBS1M4YUVBJsKQYc7ZxlSbstxctcQzWBG1gtcJzoml9jfNxLyRDoK0lf9B6GyuV/aTYdPzhieLGWerAtYrWEGaniXW08CS1RxnbNMRhc9eOOKMieZpuR2RXMGqEWvGfT3Su98yJ4U4Z0AQNSPWOF/BsWFjYqdxqE9C1ADkhU+bORXktcQT1buRlpeyuVjmsuXLR3sDsKc14YJsOyLY0AthSyL4TqpA70MI4IDfxCm0Nx0raNm8Y4G9IgbLz/ZztxDIB0DhCCKphQgpMk6EmnfthY/X4aNgoNLHHnM6K6RMsHKPmgVRD5BHUYsjE7UksFELBj2oBbED1DS1T/kRySS9oMm4mLMZK3D+3EqfWuk3pnCpEXsnQuwgOuCVYCaeU1YI6PSTU/5XsRWfwE6ApwLzGdFaAILa5Em4OcmxoGszRlwF3dCCrpIeR3gt45WKqj1IfsNvssfAAoNPTeTZ5XDb2ZY0y2qgOanoD/xWz6ectmS0EPUZ4icvHvfg2jr5EZYfo/k+PsNyRqDrpT/6EsaGK4dN62zkYeq/1KE6Kmw6rRSND0yz38F51kpu49dkS8V3sI56/kc9f4mhNd52usY73SjkMb53G51RqtkOq1t6nDMOBa45VA995BzvOgrgrLahwYHSg0AYH1yBp9WHITpwkWb9ix1m0Evv2oVYWd4FtxOH3EZRbLL7wb+O3jvTjE7ZfqtbTLPdv4Tt/m9ie/Qp2B4Nfo7uh/o+St0SXl9XHcLjhTy/gBTyTayEuAfaa+d3Qns/jkMD9+g61uuZI2PSOP0FQaAnP1tgpVCnaZCl5cQy6QeVwJTm+YjljNfaIUIxIlMprwRnC2L0+OOnERiwI5/Wf5fE8yN2PWo/P/64tvCDntoicVFa2Hy6TVC+KFDqOuLX5kVnF7Po/pMPbX4XUUhGCDP4XxeE3FYW6f+5xg0pdFGyER4EwnR4Otk41HddXAT2a5c616D7ZIPfSbKhvd9RjZGkBu7X1hhuid4flMXx9z0/m0kMMEL9mUScIs3LT5FJpMktM4n4rjKJoCcMOq+5zsYusLCDFMKV095P+jtEt3Ra+wuNBrxJ4ogd3/+78cJH0Q2xD+yAISs/pVF6o9B7lN1I3rALwgsm6JQucPXOilfC13TyyevB6741Hb5iHdhG2V9zzo2SWEahKl+pL2pqWeS9YoUULlm2yknxuani1Chpz2fTwBFTZLP9Rt2kQO1vAMLnfwE=&lt;/diagram&gt;&lt;/mxfile&gt;">
     <defs/>
     <g>
-        <rect x="0" y="0" width="610" height="570" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+        <rect x="0" y="0" width="870" height="570" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+        <rect x="570" y="50" width="280" height="250" fill="#ffffff" stroke="#000000" pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%"
+                               height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: flex; align-items: unsafe flex-start; justify-content: unsafe center; width: 278px; height: 1px; padding-top: 57px; margin-left: 571px;">
+                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+                            <div style="display: inline-block; font-size: 12px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                                endret av:
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="710" y="69" fill="#000000" font-family="Helvetica" font-size="12px" text-anchor="middle">endret
+                    av:
+                </text>
+            </switch>
+        </g>
         <path d="M 240 110 L 240 183.63" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="stroke"/>
         <path d="M 240 188.88 L 236.5 181.88 L 240 183.63 L 243.5 181.88 Z" fill="#000000" stroke="#000000"
               stroke-miterlimit="10" pointer-events="all"/>
@@ -192,6 +211,46 @@
                 </foreignObject>
                 <text x="240" y="505" fill="#ffffff" font-family="Helvetica" font-size="16px" text-anchor="middle">
                     varsel stoppet
+                </text>
+            </switch>
+        </g>
+        <rect x="600" y="110" width="210" height="60" rx="9" ry="9" fill="#0050ef" stroke="#001dbc"
+              pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%"
+                               height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 208px; height: 1px; padding-top: 140px; margin-left: 601px;">
+                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+                            <div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: #ffffff; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                                kall på brukernotifikasjonService
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="705" y="145" fill="#ffffff" font-family="Helvetica" font-size="16px" text-anchor="middle">kall
+                    på brukernotifikasjon...
+                </text>
+            </switch>
+        </g>
+        <rect x="600" y="200" width="220" height="60" rx="9" ry="9" fill="#008a00" stroke="#005700"
+              pointer-events="all"/>
+        <g transform="translate(-0.5 -0.5)">
+            <switch>
+                <foreignObject style="overflow: visible; text-align: left;" pointer-events="none" width="100%"
+                               height="100%" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                    <div xmlns="http://www.w3.org/1999/xhtml"
+                         style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 218px; height: 1px; padding-top: 230px; margin-left: 601px;">
+                        <div style="box-sizing: border-box; font-size: 0; text-align: center; ">
+                            <div style="display: inline-block; font-size: 16px; font-family: Helvetica; color: #ffffff; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
+                                internt i brukernotifikajson modulen
+                            </div>
+                        </div>
+                    </div>
+                </foreignObject>
+                <text x="710" y="235" fill="#ffffff" font-family="Helvetica" font-size="16px" text-anchor="middle">
+                    internt i brukernotifikajso...
                 </text>
             </switch>
         </g>
