@@ -113,49 +113,76 @@ public class BrukernotifikasjonKvitteringTest {
 
     @SneakyThrows
     @Test
-    public void status_tester() {
+    public void notifikasjonsstatus_tester() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
         final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
-
         String eventId = oppgaveRecord.key().getEventId();
-        String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
 
-        assertVarselStatus(eventId, VarselStatus.FORSOKT_SENDT);
+        assertVarselStatusErSendt(eventId);
+        assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
-        DoknotifikasjonStatus status = okStatus(eventId);
-        status.setBestillerId("annen_bestillerid");
-        assertStatus(eventId, brukernotifikasjonId, status, ConsumeStatus.OK, VarselStatus.FORSOKT_SENDT);
+        skalIkkeBehandleMedAnnenBestillingsId(eventId);
 
-        assertStatus(eventId, brukernotifikasjonId, okStatus(brukernotifikasjonId), ConsumeStatus.OK, VarselStatus.SENDT_OK);
+        infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
-        assertStatus(eventId, brukernotifikasjonId, infoStatus(brukernotifikasjonId), ConsumeStatus.OK, VarselStatus.SENDT_OK);
+        consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.OK);
 
-        assertStatus(eventId, brukernotifikasjonId, oversendtStatus(brukernotifikasjonId), ConsumeStatus.OK, VarselStatus.SENDT_OK);
+        infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.OK);
 
-        assertStatus(eventId, brukernotifikasjonId, feiletStatus(brukernotifikasjonId), ConsumeStatus.OK, VarselStatus.FEILET);
+        consumAndAssertStatus(eventId, feiletStatus(eventId), VarselKvitteringStatus.FEILET);
+        consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.FEILET);
 
-        assertStatus(eventId, brukernotifikasjonId, status(brukernotifikasjonId, "ugyldig_status"), ConsumeStatus.FAILED, VarselStatus.FEILET);
+        infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.FEILET);
+
+        consumAndAssertStatus(eventId, status(eventId, "ugyldig_status"), ConsumeStatus.FAILED, VarselKvitteringStatus.FEILET);
     }
 
-    private void assertStatus(String eventId, String brukernotifikasjonId, DoknotifikasjonStatus message, ConsumeStatus expectedConsumeStatus, VarselStatus expectedVarselStatus) {
-        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, message));
+    private void infoOgOVersendtSkalIkkeEndreStatus(String eventId, VarselKvitteringStatus expectedVarselKvitteringStatus) {
+        consumAndAssertStatus(eventId, infoStatus(eventId), expectedVarselKvitteringStatus);
+        consumAndAssertStatus(eventId, oversendtStatus(eventId), expectedVarselKvitteringStatus);
+    }
+
+    private void skalIkkeBehandleMedAnnenBestillingsId(String eventId) {
+        DoknotifikasjonStatus statusMedAnnenBestillerId = okStatus(eventId);
+        statusMedAnnenBestillerId.setBestillerId("annen_bestillerid");
+
+        consumAndAssertStatus(eventId, statusMedAnnenBestillerId, VarselKvitteringStatus.IKKE_SATT);
+    }
+
+
+    private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, VarselKvitteringStatus expectedEksternVarselStatus) {
+        consumAndAssertStatus(eventId, message, ConsumeStatus.OK, expectedEksternVarselStatus);
+    }
+
+    private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, ConsumeStatus expectedConsumeStatus, VarselKvitteringStatus expectedEksternVarselStatus) {
+        String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
+        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, message));
         assertEquals(expectedConsumeStatus, consumeStatus);
 
-        assertVarselStatus(eventId, expectedVarselStatus);
+        assertVarselStatusErSendt(eventId);
+        assertEksternVarselStatus(eventId, expectedEksternVarselStatus);
     }
 
-    private void assertVarselStatus(String eventId, VarselStatus expectedVarselStatus) {
+    private void assertVarselStatusErSendt(String eventId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
         String status = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
+        assertEquals(VarselStatus.SENDT.name(), status);
+    }
+
+    private void assertEksternVarselStatus(String eventId, VarselKvitteringStatus expectedVarselStatus) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("eventId", eventId);
+        String status = jdbc.queryForObject("SELECT VARSEL_KVITTERING_STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
         assertEquals(expectedVarselStatus.name(), status);
     }
 
-    private DoknotifikasjonStatus status(String bestillingsId, String status) {
+    private DoknotifikasjonStatus status(String eventId, String status) {
+        String bestillingsId = "O-" + credentials.username + "-" + eventId;
         return DoknotifikasjonStatus
                 .newBuilder()
                 .setStatus(status)
@@ -178,8 +205,8 @@ public class BrukernotifikasjonKvitteringTest {
         return status(bestillingsId, INFO);
     }
 
-    private DoknotifikasjonStatus oversendtStatus(String bestillingsId) {
-        return status(bestillingsId, OVERSENDT);
+    private DoknotifikasjonStatus oversendtStatus(String eventId) {
+        return status(eventId, OVERSENDT);
     }
 
     private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
