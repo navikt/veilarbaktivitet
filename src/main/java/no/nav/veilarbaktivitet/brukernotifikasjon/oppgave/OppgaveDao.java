@@ -68,7 +68,7 @@ public class OppgaveDao {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("oldStatus", VarselStatus.PENDING.name())
-                .addValue("newStatus", VarselStatus.FORSOKT_SENDT.name());
+                .addValue("newStatus", VarselStatus.SENDT.name());
 
         int update = jdbcTemplate
                 .update("update BRUKERNOTIFIKASJON set forsokt_sendt = CURRENT_TIMESTAMP, STATUS = :newStatus where ID = :id and STATUS = :oldStatus", parameterSource);

@@ -6,7 +6,6 @@ import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
-import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -48,7 +47,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class BrukernotifikasjonServiceTest {
+public class BrukernotifikasjonTest {
 
     @Autowired
     BrukernotifikasjonService brukernotifikasjonService;
@@ -182,6 +181,43 @@ public class BrukernotifikasjonServiceTest {
     }
 
 
+    @Test
+    public void skal_avslutte_avbrutteAktiviteter() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+
+        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        oppgaveSendtOk(oppgaveRecord);
+
+        mockBruker
+                .createRequest()
+                .and()
+                .body(aktivitetDTO.toBuilder().status(AktivitetStatus.AVBRUTT).avsluttetKommentar("Kake").build())
+                .when()
+                .put(mockBruker.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+
+        assertTrue("Skal ikke produsert oppgave meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
+
+        final ConsumerRecord<Nokkel, Done> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+        Done done = doneRecord.value();
+
+        assertEquals(oppgaveRecord.key().getSystembruker(), doneRecord.key().getSystembruker());
+        assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
+
+        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), done.getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), done.getFodselsnummer());
+    }
+
+
     private void oppgaveSendtOk(ConsumerRecord<Nokkel, Oppgave> oppgaveRecord) {
         String eventId = oppgaveRecord.key().getEventId();
         String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
@@ -189,13 +225,7 @@ public class BrukernotifikasjonServiceTest {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
         String forsoktSendt = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
-        assertEquals(VarselStatus.FORSOKT_SENDT.name(), forsoktSendt);
-
-        ConsumeStatus consumeStatus = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("kake", 1, 1, brukernotifikasjonId, okStatus(brukernotifikasjonId)));
-        assertEquals(ConsumeStatus.OK, consumeStatus);
-
-        String varselStatus = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
-        assertEquals(VarselStatus.SENDT_OK.name(), varselStatus);
+        assertEquals(VarselStatus.SENDT.name(), forsoktSendt);
     }
 
     private DoknotifikasjonStatus okStatus(String bestillingsId) {
