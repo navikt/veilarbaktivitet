@@ -39,7 +39,7 @@ public class AvtaltVarselService {
         try {
             avtaltVarselHandler.handleSendVarsel(varselIdHolder);
         } catch (Exception e) {
-            log.error("feilet sending av varsel: {}", varselIdHolder.getAktivitetId(), e);
+            log.error("feilet sending av varsel for aktivitet : {}", varselIdHolder.getAktivitetId(), e);
         }
     }
 
