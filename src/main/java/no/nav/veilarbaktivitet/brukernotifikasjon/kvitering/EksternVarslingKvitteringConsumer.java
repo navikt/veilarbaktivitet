@@ -75,6 +75,11 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
                 break;
             case FERDIGSTILT:
                 kvitteringDAO.setFullfortForGyldige(bestillingsId);
+                try {
+                    kvitteringMetrikk.registrerTidBrukt(KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF, kvitteringDAO.hentTidBrukt(bestillingsId));
+                } catch (Exception e) {
+                    log.error("metrikk feilet", e);
+                }
                 break;
             default:
                 log.error("ukjent status for melding {}", melding);

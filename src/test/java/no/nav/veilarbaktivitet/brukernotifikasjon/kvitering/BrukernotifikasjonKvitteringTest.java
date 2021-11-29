@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
@@ -29,6 +31,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -95,6 +98,9 @@ public class BrukernotifikasjonKvitteringTest {
     @Value("${app.env.aktivitetsplan.basepath}")
     String basepath;
 
+    @Autowired
+    MeterRegistry meterRegistry;
+
     @Before
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
@@ -129,7 +135,10 @@ public class BrukernotifikasjonKvitteringTest {
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
+        Timer timer = meterRegistry.timer("brukernotifikasjon_kvittering_tid_brukt", "interval_navn", KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF.navn);
+        long count = timer.count();
         consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.OK);
+        Assertions.assertEquals(count + 1, timer.count());
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.OK);
 
