@@ -49,3 +49,10 @@ spec:
       description: Vedvarende feilrate i veilarbaktivitet
       action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       sla: se på denne i løpet av de neste dagene.
+    - alert: Feil mot brukernotifikasjon
+      for: 1s
+      description: fått feilmelding fra dokument om burekrnotifikasjon
+      sla: se på denne i løpet av de neste dagene.
+      severity: warning
+      expr: |
+        sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
