@@ -131,6 +131,8 @@ public class BrukernotifikasjonKvitteringTest {
         assertVarselStatusErSendt(eventId);
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
+        sendOppgaveCron.countForsinkedeVarslerSisteDognet();
+
         skalIkkeBehandleMedAnnenBestillingsId(eventId);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.IKKE_SATT);

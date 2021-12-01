@@ -15,6 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class OppgaveDao {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     RowMapper<SkalSendes> rowMapper = (rs, rowNum) ->
             SkalSendes.builder()
                     .aktivitetId(rs.getLong("aktivitet_id"))
@@ -25,7 +26,7 @@ public class OppgaveDao {
                     .oppfolgingsperiode(rs.getString("oppfolgingsperiode"))
                     .build();
 
-    List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
+    public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("status", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
@@ -44,7 +45,7 @@ public class OppgaveDao {
                         parameterSource, rowMapper);
     }
 
-    int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
+    public int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
@@ -64,7 +65,7 @@ public class OppgaveDao {
                 param);
     }
 
-    boolean setSendt(long id) {
+    public boolean setSendt(long id) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("oldStatus", VarselStatus.PENDING.name())
@@ -74,5 +75,22 @@ public class OppgaveDao {
                 .update("update BRUKERNOTIFIKASJON set forsokt_sendt = CURRENT_TIMESTAMP, STATUS = :newStatus where ID = :id and STATUS = :oldStatus", parameterSource);
 
         return update == 1;
+    }
+
+    public Long hentAntallForsinkedeVarslerSisteDognet(int timer) {
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("timer", timer);
+
+        // language=SQL
+        String sql = "" +
+                " SELECT count(*) " +
+                " FROM BRUKERNOTIFIKASJON " +
+                " WHERE FORSOKT_SENDT IS NOT NULL " +
+                " AND BEKREFTET_SENDT IS NULL " +
+                " and VARSEL_KVITTERING_STATUS != 'FEILET' " +
+                " and (cast(current_timestamp as date) - cast(forsokt_sendt as date)) * 24 > :timer " +
+                " and opprettet > current_timestamp - interval '1' day";
+
+        return jdbcTemplate.queryForObject(sql, parameterSource, Long.class);
     }
 }
