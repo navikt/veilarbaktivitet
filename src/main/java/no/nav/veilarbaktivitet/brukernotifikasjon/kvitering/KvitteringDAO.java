@@ -52,6 +52,17 @@ public class KvitteringDAO {
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
+    public void setRevarslet(String bestillingsId) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonId", bestillingsId);
+        jdbc.update("" +
+                        " update BRUKERNOTIFIKASJON " +
+                        " set REVARSLET = CURRENT_TIMESTAMP " +
+                        " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
+                , param
+        );
+    }
+
     public void setFullfortForGyldige(String bestillingsId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonId", bestillingsId)

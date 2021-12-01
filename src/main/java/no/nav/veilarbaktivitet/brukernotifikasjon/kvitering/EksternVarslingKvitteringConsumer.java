@@ -56,6 +56,7 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         }
 
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
+        log.info("Konsumerer DoknotifikasjonStatus bestillingsId={}, status={}", brukernotifikasjonBestillingsId, melding.getStatus());
 
         if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
             log.warn("mottok melding med feil prefiks, {}", melding); //TODO finn ut om vi produserer på samme topic?
@@ -70,15 +71,22 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
             case OVERSENDT:
                 break;
             case FEILET:
-                log.error("varsel feilet for notifikasjon bestillingsId: {} med melding {}", bestillingsId, melding.getMelding());
+                log.error("varsel feilet for notifikasjon bestillingsId={} med melding {}", bestillingsId, melding.getMelding());
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDIGSTILT:
-                kvitteringDAO.setFullfortForGyldige(bestillingsId);
-                try {
-                    kvitteringMetrikk.registrerTidBrukt(KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF, kvitteringDAO.hentTidBrukt(bestillingsId));
-                } catch (Exception e) {
-                    log.error("metrikk feilet", e);
+                if (melding.getDistribusjonId() != null) {
+                    // Første-gangs distribusjon ok
+                    kvitteringDAO.setFullfortForGyldige(bestillingsId);
+                    try {
+                        kvitteringMetrikk.registrerTidBrukt(KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF, kvitteringDAO.hentTidBrukt(bestillingsId));
+                    } catch (Exception e) {
+                        log.error("metrikk feilet", e);
+                    }
+                } else {
+                    // revarling ok
+                    kvitteringDAO.setRevarslet(bestillingsId);
+                    log.info("Revarsling ok for bestillingsId={}", brukernotifikasjonBestillingsId);
                 }
                 break;
             default:
