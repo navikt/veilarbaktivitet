@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import lombok.SneakyThrows;
@@ -131,7 +132,9 @@ public class BrukernotifikasjonKvitteringTest {
         assertVarselStatusErSendt(eventId);
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
+        Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
         sendOppgaveCron.countForsinkedeVarslerSisteDognet();
+        Assertions.assertEquals(0, gauge.value());
 
         skalIkkeBehandleMedAnnenBestillingsId(eventId);
 

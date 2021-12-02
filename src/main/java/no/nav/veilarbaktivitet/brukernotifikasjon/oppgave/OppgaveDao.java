@@ -77,7 +77,7 @@ public class OppgaveDao {
         return update == 1;
     }
 
-    public Long hentAntallUkvitterteVarslerForsoktSendtSisteDognet(int timerForsinkelse) {
+    public Integer hentAntallUkvitterteVarslerForsoktSendtSisteDognet(int timerForsinkelse) {
         if (timerForsinkelse >= 24) {
             throw new IllegalArgumentException("Vi sjekker kun bestillinger sendt siste 24 timer, så antall timer forsinkelse kan ikke være større enn 24");
         }
@@ -103,6 +103,6 @@ public class OppgaveDao {
                 "        +        extract(second from time_diff) as seconds" +
                 " from delay_interval" +
                 " ) select count(seconds) from delay_seconds where seconds > :sekunder";
-        return jdbcTemplate.queryForObject(sql, parameterSource, Long.class);
+        return jdbcTemplate.queryForObject(sql, parameterSource, Integer.class);
     }
 }
