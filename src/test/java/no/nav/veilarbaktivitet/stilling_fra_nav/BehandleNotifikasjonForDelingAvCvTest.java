@@ -103,7 +103,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         String eventId1 = utenSvarOppgave.key().getEventId();
         String brukernotifikasjonId1 = "O-" + credentials.username + "-" + eventId1;
 
-        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FERDIGSTILT);
+        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FERDIGSTILT, false);
         ConsumeStatus consumeStatus1 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
         assertThat(consumeStatus1).isEqualTo(ConsumeStatus.OK);
 
@@ -111,7 +111,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         String eventId2 = medSvarOppgave.key().getEventId();
         String brukernotifikasjonId2 = "O-" + credentials.username + "-" + eventId2;
 
-        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FERDIGSTILT);
+        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FERDIGSTILT, false);
         ConsumeStatus consumeStatus2 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
         assertThat(consumeStatus2).isEqualTo(ConsumeStatus.OK);
 
@@ -160,7 +160,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         String eventId1 = utenSvarOppgave.key().getEventId();
         String brukernotifikasjonId1 = "O-" + credentials.username + "-" + eventId1;
 
-        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FEILET);
+        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FEILET, false);
         ConsumeStatus consumeStatus1 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
         assertThat(consumeStatus1).isEqualTo(ConsumeStatus.OK);
 
@@ -168,7 +168,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         String eventId2 = medSvarOppgave.key().getEventId();
         String brukernotifikasjonId2 = "O-" + credentials.username + "-" + eventId2;
 
-        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FEILET);
+        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FEILET, false);
         ConsumeStatus consumeStatus2 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
         assertThat(consumeStatus2).isEqualTo(ConsumeStatus.OK);
 
@@ -196,14 +196,14 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     }
 
 
-    private DoknotifikasjonStatus doknotifikasjonStatus(String bestillingsId, String status) {
+    private DoknotifikasjonStatus doknotifikasjonStatus(String bestillingsId, String status, boolean revarsling) {
         return DoknotifikasjonStatus
                 .newBuilder()
                 .setStatus(status)
                 .setBestillingsId(bestillingsId)
                 .setBestillerId(credentials.username)
                 .setMelding("her er en melding")
-                .setDistribusjonId(null)
+                .setDistribusjonId(revarsling ? null : 1L)
                 .build();
     }
 }

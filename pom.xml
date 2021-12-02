@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>11</java.version>
-        <common.version>2.2021.09.17_07.09-67428a6422cc</common.version>
+        <common.version>2.2021.11.15_15.36-d7a174cfb6a8</common.version>
         <confluent.version>6.1.1</confluent.version>
         <quartz.version>2.3.2</quartz.version>
 
@@ -186,6 +186,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>net.javacrumbs.shedlock</groupId>
+            <artifactId>shedlock-provider-jdbc-template</artifactId>
+            <version>4.21.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>

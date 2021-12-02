@@ -24,7 +24,8 @@ public class DbTestUtils {
             "BEHANDLING",
             "AKTIVITET",
             "ARENA_FORHAANDSORIENTERING",
-            "FORHAANDSORIENTERING"
+            "FORHAANDSORIENTERING",
+            "shedlock"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {

@@ -13,6 +13,8 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.Assert;
 
+import java.time.Duration;
+import java.util.Date;
 import java.util.List;
 
 @Repository
@@ -48,6 +50,17 @@ public class KvitteringDAO {
                 " update BRUKERNOTIFIKASJON " +
                 " set VARSEL_FEILET = current_timestamp, VARSEL_KVITTERING_STATUS = :varselKvitteringStatus " +
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
+    }
+
+    public void setRevarslet(String bestillingsId) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonId", bestillingsId);
+        jdbc.update("" +
+                        " update BRUKERNOTIFIKASJON " +
+                        " set REVARSLET = CURRENT_TIMESTAMP " +
+                        " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId"
+                , param
+        );
     }
 
     public void setFullfortForGyldige(String bestillingsId) {
@@ -109,5 +122,24 @@ public class KvitteringDAO {
 
         return jdbc.query(sql, parameterSource, rowmapper);
     }
+
+    public Duration hentTidBrukt(String bestillingsId) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonId", bestillingsId);
+
+        // language=SQL
+        String sql = "SELECT BEKREFTET_SENDT, FORSOKT_SENDT FROM BRUKERNOTIFIKASJON" +
+                " WHERE BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId";
+
+        return jdbc.queryForObject(sql, param, durationmapper);
+    }
+
+    RowMapper<Duration> durationmapper = (rs, rowNum) -> {
+        Date bekreftetSendt = Database.hentDato(rs, "BEKREFTET_SENDT");
+        Date forsoktSendt = Database.hentDato(rs, "FORSOKT_SENDT");
+
+        if (bekreftetSendt == null || forsoktSendt == null) return null;
+        return Duration.between(forsoktSendt.toInstant(), bekreftetSendt.toInstant());
+    };
 
 }
