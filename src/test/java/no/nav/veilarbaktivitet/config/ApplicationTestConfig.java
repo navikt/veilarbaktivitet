@@ -4,7 +4,6 @@ package no.nav.veilarbaktivitet.config;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
@@ -59,11 +58,6 @@ public class ApplicationTestConfig {
     @Bean
     public JmsTemplate varselQueue() {
         return mock(JmsTemplate.class);
-    }
-
-    @Bean
-    public LeaderElectionClient leaderElectionClient() {
-        return () -> true;
     }
 
     @Bean
