@@ -77,20 +77,29 @@ public class OppgaveDao {
         return update == 1;
     }
 
-    public Long hentAntallForsinkedeVarslerSisteDognet(int timer) {
+    public Long hentAntallForsinkedeVarslerSisteDognet(int timerForsinkelse) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("timer", timer);
+                .addValue("sekunder", timerForsinkelse * 60 * 60);
 
         // language=SQL
         String sql = "" +
-                " SELECT count(*) " +
-                " FROM BRUKERNOTIFIKASJON " +
-                " WHERE FORSOKT_SENDT IS NOT NULL " +
-                " AND BEKREFTET_SENDT IS NULL " +
-                " and VARSEL_KVITTERING_STATUS != 'FEILET' " +
-                " and (cast(current_timestamp as date) - cast(forsokt_sendt as date)) * 24 > :timer " +
-                " and opprettet > current_timestamp - interval '1' day";
-
+                " with delay_interval as (" +
+                "    select (BEKREFTET_SENDT - FORSOKT_SENDT) as time_diff," +
+                "           BRUKERNOTIFIKASJON.*   from BRUKERNOTIFIKASJON" +
+                "    where FORSOKT_SENDT is not null" +
+                "      and BEKREFTET_SENDT is not null" +
+                "      and VARSEL_FEILET is null" +
+                "      and BEKREFTET_SENDT > current_timestamp - interval '1' day" +
+                "    order by time_diff desc" +
+                " )," +
+                " delay_seconds as (" +
+                " select" +
+                "      extract(day from time_diff) * 24 * 60 * 60" +
+                "  +   extract(hour from time_diff) * 60 * 60" +
+                "  +   extract(minute from time_diff) * 60" +
+                "  +   extract(second from time_diff) as seconds" +
+                " from delay_interval" +
+                " ) select count(seconds) from delay_seconds where seconds > :sekunder";
         return jdbcTemplate.queryForObject(sql, parameterSource, Long.class);
     }
 }
