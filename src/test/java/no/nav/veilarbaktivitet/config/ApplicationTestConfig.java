@@ -9,7 +9,6 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
-import okhttp3.OkHttpClient;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -25,13 +24,6 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationTestConfig {
-    @Bean
-    /**
-     * OkHttpClient uten SystemUserOidcTokenProviderInterceptor. Se  {@link no.nav.veilarbaktivitet.config.ClientConfig}
-     */
-    public OkHttpClient client() {
-        return new OkHttpClient();
-    }
 
     @Bean
     public SystemUserTokenProvider systemUserTokenProvider() {
