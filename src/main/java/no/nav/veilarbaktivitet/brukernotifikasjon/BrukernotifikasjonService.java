@@ -34,7 +34,6 @@ public class BrukernotifikasjonService {
             long aktivitetId,
             VarselType varseltype
     ) {
-        dao.setAvbrutt(aktivitetId, varseltype);
         dao.setDone(aktivitetId, varseltype);
     }
 
