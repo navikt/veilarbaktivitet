@@ -88,7 +88,7 @@ public class OppgaveDao {
                 " select count(*) " +
                 " from BRUKERNOTIFIKASJON " +
                 " where VARSEL_KVITTERING_STATUS = 'IKKE_SATT' " +
-                " and STATUS = 'FORSOKT_SENDT' " +
+                " and STATUS = 'PENDING' " +
                 " and FORSOKT_SENDT < :date ";
 
         return jdbcTemplate.queryForObject(sql, parameterSource, Integer.class);
