@@ -79,18 +79,18 @@ public class OppgaveDao {
         return update == 1;
     }
 
-    public Integer hentAntallUkvitterteVarslerForsoktSendt(long timerForsinkelse) {
+    public int hentAntallUkvitterteVarslerForsoktSendt(long timerForsinkelse) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("date", new Date(Instant.now().minusSeconds(60 * 60 * timerForsinkelse).getEpochSecond()));
+                .addValue("date", new Date(Instant.now().minusSeconds(60 * 60 * timerForsinkelse).toEpochMilli()));
 
         // language=SQL
         String sql = "" +
                 " select count(*) " +
                 " from BRUKERNOTIFIKASJON " +
                 " where VARSEL_KVITTERING_STATUS = 'IKKE_SATT' " +
-                " and STATUS = 'PENDING' " +
+                " and STATUS = 'SENDT' " +
                 " and FORSOKT_SENDT < :date ";
 
-        return jdbcTemplate.queryForObject(sql, parameterSource, Integer.class);
+        return jdbcTemplate.queryForObject(sql, parameterSource, int.class);
     }
 }
