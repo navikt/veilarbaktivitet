@@ -42,6 +42,20 @@ public class BrukerNotifikasjonDAO {
                 params);
     }
 
+    long setAvbrutt(long aktivitetId, VarselType varseltype) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("type", varseltype.name());
+
+        return jdbcTemplate.update("" +
+                " update BRUKERNOTIFIKASJON " +
+                " set STATUS='AVBRUTT' " +
+                " where STATUS='PENDING' " +
+                " and AKTIVITET_ID=:aktivitetId" +
+                " and type=:type", params);
+
+    }
+
     long setDone(long aktivitetId, VarselType varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktivitetId", aktivitetId)
@@ -52,7 +66,7 @@ public class BrukerNotifikasjonDAO {
                         " Update brukernotifikasjon set status=:status where " +
                         " aktivitet_id=:aktivitetId " +
                         " and type = :type " +
-                        " and status not in ('SKAL_AVSLUTTES','AVSLUTTET')",
+                        " and status not in ('SKAL_AVSLUTTES','AVSLUTTET', 'AVBRUTT')",
                 params);
     }
 
