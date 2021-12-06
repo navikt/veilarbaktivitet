@@ -1,8 +1,9 @@
 name: Deploy alerts to prod
 on:
+  workflow_dispatch:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'alerts-prod.yaml'
       - 'alerts-prod-arena.yaml'
