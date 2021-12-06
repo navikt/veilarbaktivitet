@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
@@ -29,6 +31,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -84,10 +87,13 @@ public class BrukernotifikasjonKvitteringTest {
     String kviteringsToppic;
 
     @Autowired
-    KafkaAvroTemplate<DoknotifikasjonStatus> kviteringsTopic;
+    KafkaAvroTemplate<DoknotifikasjonStatus> kvitteringsTopic;
 
     @Autowired
     EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
+
+    @Autowired
+    MeterRegistry meterRegistry;
 
     @LocalServerPort
     private int port;
@@ -137,6 +143,10 @@ public class BrukernotifikasjonKvitteringTest {
         consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.FEILET);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.FEILET);
+
+        Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
+        sendOppgaveCron.countForsinkedeVarslerSisteDognet();
+        Assertions.assertEquals(0, gauge.value());
 
         consumAndAssertStatus(eventId, status(eventId, "ugyldig_status"), ConsumeStatus.FAILED, VarselKvitteringStatus.FEILET);
     }
