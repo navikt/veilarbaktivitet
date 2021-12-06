@@ -180,7 +180,6 @@ public class BrukernotifikasjonTest {
         assertEquals(avbruttAktivitet, skalIkkeVaereOppdatert);
     }
 
-
     @Test
     public void skal_avslutte_avbrutteAktiviteter() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();

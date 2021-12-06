@@ -9,12 +9,15 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class OppgaveDao {
     private final NamedParameterJdbcTemplate jdbcTemplate;
+
     RowMapper<SkalSendes> rowMapper = (rs, rowNum) ->
             SkalSendes.builder()
                     .aktivitetId(rs.getLong("aktivitet_id"))
@@ -25,7 +28,7 @@ public class OppgaveDao {
                     .oppfolgingsperiode(rs.getString("oppfolgingsperiode"))
                     .build();
 
-    List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
+    public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("status", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
@@ -44,7 +47,7 @@ public class OppgaveDao {
                         parameterSource, rowMapper);
     }
 
-    int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
+    public int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
@@ -64,7 +67,7 @@ public class OppgaveDao {
                 param);
     }
 
-    boolean setSendt(long id) {
+    public boolean setSendt(long id) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("id", id)
                 .addValue("oldStatus", VarselStatus.PENDING.name())
@@ -74,5 +77,20 @@ public class OppgaveDao {
                 .update("update BRUKERNOTIFIKASJON set forsokt_sendt = CURRENT_TIMESTAMP, STATUS = :newStatus where ID = :id and STATUS = :oldStatus", parameterSource);
 
         return update == 1;
+    }
+
+    public Integer hentAntallUkvitterteVarslerForsoktSendt(long timerForsinkelse) {
+        SqlParameterSource parameterSource = new MapSqlParameterSource()
+                .addValue("date", new Date(Instant.now().minusSeconds(60 * 60 * timerForsinkelse).getEpochSecond()));
+
+        // language=SQL
+        String sql = "" +
+                " select count(*) " +
+                " from BRUKERNOTIFIKASJON " +
+                " where VARSEL_KVITTERING_STATUS = 'IKKE_SATT' " +
+                " and STATUS = 'PENDING' " +
+                " and FORSOKT_SENDT < :date ";
+
+        return jdbcTemplate.queryForObject(sql, parameterSource, Integer.class);
     }
 }
