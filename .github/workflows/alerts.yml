@@ -2,7 +2,7 @@ name: Deploy alerts to prod
 on:
   push:
     branches:
-      - master
+      - main
     paths:
       - 'alerts-prod.yaml'
       - 'alerts-prod-arena.yaml'
