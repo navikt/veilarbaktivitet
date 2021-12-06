@@ -9,6 +9,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -77,32 +79,18 @@ public class OppgaveDao {
         return update == 1;
     }
 
-    public Integer hentAntallUkvitterteVarslerForsoktSendtSisteDognet(int timerForsinkelse) {
-        if (timerForsinkelse >= 24) {
-            throw new IllegalArgumentException("Vi sjekker kun bestillinger sendt siste 24 timer, så antall timer forsinkelse kan ikke være større enn 24");
-        }
+    public Integer hentAntallUkvitterteVarslerForsoktSendt(long timerForsinkelse) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
-                .addValue("sekunder", timerForsinkelse * 60 * 60);
+                .addValue("date", new Date(Instant.now().minusSeconds(60 * 60 * timerForsinkelse).getEpochSecond()));
 
         // language=SQL
         String sql = "" +
-                " with delay_interval as (" +
-                "    select (current_timestamp - FORSOKT_SENDT) as time_diff" +
-                "       from BRUKERNOTIFIKASJON" +
-                "    where FORSOKT_SENDT is not null" +
-                "      and BEKREFTET_SENDT is null" +
-                "      and VARSEL_FEILET is null" +
-                "      and FORSOKT_SENDT > trunc(sysdate) - 1" +
-                "    order by time_diff desc" +
-                " )," +
-                " delay_seconds as (" +
-                " select" +
-                "            extract(day from time_diff) * 24 * 60 * 60" +
-                "        +        extract(hour from time_diff) * 60 * 60" +
-                "        +        extract(minute from time_diff) * 60" +
-                "        +        extract(second from time_diff) as seconds" +
-                " from delay_interval" +
-                " ) select count(seconds) from delay_seconds where seconds > :sekunder";
+                " select count(*) " +
+                " from BRUKERNOTIFIKASJON " +
+                " where VARSEL_KVITTERING_STATUS = 'IKKE_SATT' " +
+                " and STATUS = 'FORSOKT_SENDT' " +
+                " and FORSOKT_SENDT < :date ";
+
         return jdbcTemplate.queryForObject(sql, parameterSource, Integer.class);
     }
 }

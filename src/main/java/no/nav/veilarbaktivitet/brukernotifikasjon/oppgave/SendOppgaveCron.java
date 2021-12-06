@@ -29,7 +29,7 @@ public class SendOppgaveCron {
 
     void sendAlle(int maxBatchSize) {
         internalService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
-        while (sendOpptil(maxBatchSize) == maxBatchSize) ;
+        while (sendOpptil(maxBatchSize) == maxBatchSize);
     }
 
     private int sendOpptil(int maxAntall) {
@@ -43,9 +43,7 @@ public class SendOppgaveCron {
             fixedDelayString = "${app.env.scheduled.brukernotifikasjon.oppgave.fixedDelay}"
     )
     public void countForsinkedeVarslerSisteDognet() {
-        if (leaderElectionClient.isLeader()) {
-            Integer antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendtSisteDognet(12);
-            oppgaveMetrikk.countForsinkedeVarslerSisteDognet(antall);
-        }
+        Integer antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
+        oppgaveMetrikk.countForsinkedeVarslerSisteDognet(antall);
     }
 }

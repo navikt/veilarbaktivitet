@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
@@ -32,7 +29,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -99,9 +95,6 @@ public class BrukernotifikasjonKvitteringTest {
     @Value("${app.env.aktivitetsplan.basepath}")
     String basepath;
 
-    @Autowired
-    MeterRegistry meterRegistry;
-
     @Before
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
@@ -132,23 +125,11 @@ public class BrukernotifikasjonKvitteringTest {
         assertVarselStatusErSendt(eventId);
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
-        Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
-        sendOppgaveCron.countForsinkedeVarslerSisteDognet();
-        Assertions.assertEquals(0, gauge.value());
-
         skalIkkeBehandleMedAnnenBestillingsId(eventId);
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
-        Timer timer = meterRegistry.timer("brukernotifikasjon_kvittering_tid_brukt", "interval_navn", KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF.navn);
-        long count = timer.count();
         consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.OK);
-        Assertions.assertEquals(count + 1, timer.count());
-
-        // revasling på samme eventId
-        consumAndAssertStatus(eventId, revarsling(eventId), VarselKvitteringStatus.OK);
-        // Metrikk ikke oppdatert for revarsling
-        Assertions.assertEquals(count + 1, timer.count());
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.OK);
 
@@ -157,7 +138,7 @@ public class BrukernotifikasjonKvitteringTest {
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.FEILET);
 
-        consumAndAssertStatus(eventId, status(eventId, "ugyldig_status", false), ConsumeStatus.FAILED, VarselKvitteringStatus.FEILET);
+        consumAndAssertStatus(eventId, status(eventId, "ugyldig_status"), ConsumeStatus.FAILED, VarselKvitteringStatus.FEILET);
     }
 
     private void infoOgOVersendtSkalIkkeEndreStatus(String eventId, VarselKvitteringStatus expectedVarselKvitteringStatus) {
@@ -200,7 +181,7 @@ public class BrukernotifikasjonKvitteringTest {
         assertEquals(expectedVarselStatus.name(), status);
     }
 
-    private DoknotifikasjonStatus status(String eventId, String status, boolean revarling) {
+    private DoknotifikasjonStatus status(String eventId, String status) {
         String bestillingsId = "O-" + credentials.username + "-" + eventId;
         return DoknotifikasjonStatus
                 .newBuilder()
@@ -208,28 +189,24 @@ public class BrukernotifikasjonKvitteringTest {
                 .setBestillingsId(bestillingsId)
                 .setBestillerId(credentials.username)
                 .setMelding("her er en melding")
-                .setDistribusjonId(revarling ? null : 1L)
+                .setDistribusjonId(1L)
                 .build();
     }
 
     private DoknotifikasjonStatus okStatus(String bestillingsId) {
-        return status(bestillingsId, FERDIGSTILT, false);
-    }
-
-    private DoknotifikasjonStatus revarsling(String bestillingsId) {
-        return status(bestillingsId, FERDIGSTILT, true);
+        return status(bestillingsId, FERDIGSTILT);
     }
 
     private DoknotifikasjonStatus feiletStatus(String bestillingsId) {
-        return status(bestillingsId, FEILET, false);
+        return status(bestillingsId, FEILET);
     }
 
     private DoknotifikasjonStatus infoStatus(String bestillingsId) {
-        return status(bestillingsId, INFO, false);
+        return status(bestillingsId, INFO);
     }
 
     private DoknotifikasjonStatus oversendtStatus(String eventId) {
-        return status(eventId, OVERSENDT, false);
+        return status(eventId, OVERSENDT);
     }
 
     private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {

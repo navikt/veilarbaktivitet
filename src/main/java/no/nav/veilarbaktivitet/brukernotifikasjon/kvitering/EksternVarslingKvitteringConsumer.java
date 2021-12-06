@@ -59,10 +59,10 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
         log.info("Konsumerer DoknotifikasjonStatus bestillingsId={}, status={}", brukernotifikasjonBestillingsId, melding.getStatus());
 
         if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
-            log.warn("mottok melding med feil prefiks, {}", melding); //TODO finn ut om vi produserer på samme topic?
+            log.warn("mottok melding med feil prefiks, {}", melding);
             return ConsumeStatus.FAILED;
         }
-        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length());//fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
 
@@ -71,22 +71,16 @@ public class EksternVarslingKvitteringConsumer extends TopicConsumerConfig<Strin
             case OVERSENDT:
                 break;
             case FEILET:
-                log.error("varsel feilet for notifikasjon bestillingsId={} med melding {}", bestillingsId, melding.getMelding());
+                log.error("varsel feilet for notifikasjon bestillingsId={} med melding {}", brukernotifikasjonBestillingsId, melding.getMelding());
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDIGSTILT:
                 if (melding.getDistribusjonId() != null) {
-                    // Første-gangs distribusjon ok
+                    // Kan komme første gang og på resendinger
                     kvitteringDAO.setFullfortForGyldige(bestillingsId);
-                    try {
-                        kvitteringMetrikk.registrerTidBrukt(KvitteringMetrikk.IntervalNavn.FORSOKT_SENDT_BEKREFTET_SENDT_DIFF, kvitteringDAO.hentTidBrukt(bestillingsId));
-                    } catch (Exception e) {
-                        log.error("metrikk feilet", e);
-                    }
+                    log.info("Brukernotifikasjon fullført for bestillingsId={}", brukernotifikasjonBestillingsId);
                 } else {
-                    // revarling ok
-                    kvitteringDAO.setRevarslet(bestillingsId);
-                    log.info("Revarsling ok for bestillingsId={}", brukernotifikasjonBestillingsId);
+                    log.info("Hele bestillingen inkludert revarsling er ferdig, bestillingsId={}", brukernotifikasjonBestillingsId);
                 }
                 break;
             default:
