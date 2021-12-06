@@ -14,6 +14,8 @@ import java.util.List;
 public class SendOppgaveCron {
     private final LeaderElectionClient leaderElectionClient;
     private final BrukerNotifkasjonOppgaveService internalService;
+    private final OppgaveDao oppgaveDao;
+    private final OppgaveMetrikk oppgaveMetrikk;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -27,12 +29,21 @@ public class SendOppgaveCron {
 
     void sendAlle(int maxBatchSize) {
         internalService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
-        while (sendOpptil(maxBatchSize) == maxBatchSize) ;
+        while (sendOpptil(maxBatchSize) == maxBatchSize);
     }
 
     private int sendOpptil(int maxAntall) {
         List<SkalSendes> skalSendes = internalService.hentVarselSomSkalSendes(maxAntall);
         skalSendes.forEach(internalService::send);
         return skalSendes.size();
+    }
+
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.brukernotifikasjon.oppgave.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.brukernotifikasjon.oppgave.fixedDelay}"
+    )
+    public void countForsinkedeVarslerSisteDognet() {
+        Integer antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
+        oppgaveMetrikk.countForsinkedeVarslerSisteDognet(antall);
     }
 }
