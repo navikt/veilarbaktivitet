@@ -52,6 +52,7 @@ class AvsluttDao {
     }
 
 
+    //TODO skal slettes
     public int avsluttIkkeSendteOppgaver() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.SKAL_AVSLUTTES.name())
