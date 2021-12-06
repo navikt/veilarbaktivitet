@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.OppgaveDao;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -66,6 +67,9 @@ public class BrukernotifikasjonKvitteringTest {
 
     @Autowired
     KafkaTestService kafkaTestService;
+
+    @Autowired
+    OppgaveDao oppgaveDao;
 
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     String oppgaveTopic;
@@ -124,11 +128,15 @@ public class BrukernotifikasjonKvitteringTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+        assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+
 
         final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         String eventId = oppgaveRecord.key().getEventId();
 
         assertVarselStatusErSendt(eventId);
+        assertEquals(1, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
         skalIkkeBehandleMedAnnenBestillingsId(eventId);
@@ -136,6 +144,8 @@ public class BrukernotifikasjonKvitteringTest {
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
         consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.OK);
+
+        assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.OK);
 
