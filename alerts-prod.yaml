@@ -59,17 +59,17 @@ spec:
         sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
     - alert: Flere feil mot brukernotifikasjon
       for: 1s
-      description: fått feilmelding fra dokument om burekrnotifikasjon
+      description: fått feilmelding fra dokument om brukernotifikasjon
       sla: se på denne så fort som mulig (innefor arbeidstid)
       action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
       severity: danger
       expr: |
         sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 10
-    - alert: Feil mot brukernotifikasjon
-      for: 1s
-      description: Ikke fåt kvitering fra brukernotifikasjon
-      sla: se på denne i løpet av de neste dagene.
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+    - alert: Flere feil med sending av smser
+      for: 1h
+      description: fåt feil med sending av smser
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/fb05eeccec47431fc4dc2b236bec346d
       severity: warning
       expr: |
-        avg(brukernotifikasjon_mangler_kvittering{application="veilarbaktivitet"}) > 0.5
+        sum(increase(antalSMSFeilet_total{application="veilarbaktivitet"}[5m])) > 0.8
