@@ -1,4 +1,4 @@
-name: Deploy alerts to prod
+name: Deploy alerts
 on:
   workflow_dispatch:
   push:
