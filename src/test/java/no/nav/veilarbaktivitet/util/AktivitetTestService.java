@@ -41,8 +41,6 @@ public class AktivitetTestService {
     @Autowired
     KafkaTestService testService;
 
-    @Autowired
-    AktivitetTestService testAktivitetService;
 
     @Value("${topic.inn.stillingFraNav}")
     private String stillingFraNavInnTopic;
@@ -175,7 +173,7 @@ public class AktivitetTestService {
             assertions.assertAll();
         });
 
-        AktivitetsplanDTO aktivitetsplanDTO = testAktivitetService.hentAktiviteterForFnr(springPort, mockBruker);
+        AktivitetsplanDTO aktivitetsplanDTO = this.hentAktiviteterForFnr(springPort, mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().stream().filter(a -> a.getId().equals(value.getAktivitetId())).findAny().get();
 
         //TODO skriv bedre test
