@@ -3,25 +3,28 @@ package no.nav.veilarbaktivitet.config.kafka;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.health.HealthCheck;
 import no.nav.common.health.HealthCheckResult;
-import no.nav.common.kafka.producer.KafkaProducerClient;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiredArgsConstructor
 @Component
 public class KafkaHelsesjekk implements HealthCheck {
 
-    private final KafkaProducerClient<String, String> producerClient;
+    private final AtomicBoolean isHealty = new AtomicBoolean(true);
+    private String feilmelding = "";
 
-    private final KafkaOnpremProperties kafkaOnpremProperties;
+
+    public void setIsHealty(boolean isHealty, String feilmelding) {
+        this.isHealty.set(isHealty);
+        this.feilmelding = feilmelding;
+    }
 
     @Override
     public HealthCheckResult checkHealth() {
-        try {
-            producerClient.getProducer().partitionsFor(kafkaOnpremProperties.getEndringPaaAktivitetTopic());
-        } catch (Throwable t) {
-            return HealthCheckResult.unhealthy("Helsesjekk feilet mot kafka feilet", t);
+        if (isHealty.get()) {
+            return HealthCheckResult.healthy();
         }
-
-        return HealthCheckResult.healthy();
+        return HealthCheckResult.unhealthy(feilmelding);
     }
 }

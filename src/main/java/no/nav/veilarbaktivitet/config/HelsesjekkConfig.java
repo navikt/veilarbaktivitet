@@ -11,13 +11,11 @@ import no.nav.veilarbaktivitet.config.database.DatabaseHelsesjekk;
 import no.nav.veilarbaktivitet.config.kafka.KafkaHelsesjekk;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@Profile("!dev") //TODO fiks
 public class HelsesjekkConfig {
 
     @Bean
