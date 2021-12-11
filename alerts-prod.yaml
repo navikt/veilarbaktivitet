@@ -15,11 +15,14 @@ spec:
       expr: |
         (((
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[5m] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[5m]) ) )  > (14.4*0.001) ) and ( (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[5m]) ) )  > (14.4*0.001))
+        and ( (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[1h] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[1h] ) ) )  > (14.4*0.001) )) or ( ( (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[1h] ) ) )  > (14.4*0.001) ))
+        or ( ( (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[30m] ) ) /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[30m] ) ) )  > (6*0.001) ) and ( (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[30m] ) ) )  > (6*0.001) )
+        and ( (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[6h] ) ) /
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[6h] ) ) )  > (6*0.001)))
       for: 1s
@@ -31,11 +34,14 @@ spec:
       expr: |
         (((
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[24h]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[24h]    )    ) )  > (3*0.001) )  and  (  (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[24h]    )    ) )  > (3*0.001) )
+        and  (  (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[2h]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[2h]    )    ) )  > (3*0.001) ) ) or ( (   (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[2h]    )    ) )  > (3*0.001) ) )
+        or ( (   (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[3d]    )  )  /
-        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[3d]    )    ) )  > 0.001 )  and  (  (
+        sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[3d]    )    ) )  > 0.001 )
+        and  (  (
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http",code!~'(^[23].*)|(^502)'}[6h]    )  )  /
         sum(rate(traefik_backend_requests_total{backend=~"^app.adeo.no/veilarbaktivitet|^veilarbaktivitet.nais.adeo.no/",protocol="http"}[6h]    )    ) )  > 0.001 ) )
       for: 8h
@@ -43,3 +49,27 @@ spec:
       description: Vedvarende feilrate i veilarbaktivitet
       action: https://logs.adeo.no/goto/9106e407dee95bb4692f316564dd5330  https://grafana.adeo.no/d/000000283/nais-app-dashbord?orgId=1&var-interval=$__auto_interval_interval&var-datasource=prod-fss&var-team=pto&var-app=veilarbaktivitet&var-namespace=All&var-docker_image=5e399fce17a0617acda62a3b4c969210d05abc17&var-ingress_url=All&from=now-4d&to=now
       sla: se på denne i løpet av de neste dagene.
+    - alert: Feil mot brukernotifikasjon
+      for: 1s
+      description: fått feilmelding fra dokument om burekrnotifikasjon
+      sla: se på denne i løpet av de neste dagene.
+      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      severity: warning
+      expr: |
+        sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
+    - alert: Flere feil mot brukernotifikasjon
+      for: 1s
+      description: fått feilmelding fra dokument om brukernotifikasjon
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      severity: danger
+      expr: |
+        sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 10
+    - alert: Flere feil med sending av smser
+      for: 1h
+      description: fåt feil med sending av smser
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/fb05eeccec47431fc4dc2b236bec346d
+      severity: warning
+      expr: |
+        sum(increase(antalSMSFeilet_total{application="veilarbaktivitet"}[5m])) > 0.8

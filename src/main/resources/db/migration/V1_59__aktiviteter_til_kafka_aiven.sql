@@ -1,0 +1,2 @@
+alter table AKTIVITET
+    add PORTEFOLJE_KAFKA_OFFSET_AIVEN number(19);

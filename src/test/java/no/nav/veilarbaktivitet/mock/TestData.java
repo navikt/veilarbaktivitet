@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.mock;
 
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.person.Person;
 
 public class TestData {
 

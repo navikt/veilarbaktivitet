@@ -1,12 +1,16 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 import java.util.Random;
 
 import static java.util.Calendar.SECOND;
-import static no.nav.veilarbaktivitet.domain.AktivitetData.AktivitetDataBuilder;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData.AktivitetDataBuilder;
 import static org.apache.commons.lang3.time.DateUtils.truncate;
 
 public class AktivitetDataTestBuilder {
@@ -15,7 +19,7 @@ public class AktivitetDataTestBuilder {
         return AktivitetData.builder()
                 .id(new Random().nextLong()) // Hvis denne persisteres, vil den få en ny id fra sekvens
                 .aktorId("kake")
-                .versjon(1l) // Hvis denne persisteres vil den få en ny versjon fra sekvens
+                .versjon(1L) // Hvis denne persisteres vil den få en ny versjon fra sekvens
                 .fraDato(nyDato())
                 .tilDato(nyDato())
                 .tittel("tittel")
@@ -45,7 +49,7 @@ public class AktivitetDataTestBuilder {
             case SOKEAVTALE:
                 return nySokeAvtaleAktivitet();
             case JOBBSOEKING:
-                return nyttStillingssøk();
+                return nyttStillingssok();
             case EGENAKTIVITET:
                 return nyEgenaktivitet();
             case SAMTALEREFERAT:
@@ -60,22 +64,22 @@ public class AktivitetDataTestBuilder {
     public static AktivitetData nyStillingFraNavMedCVKanDeles() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
-                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav(true))
+                .stillingFraNavData(AktivitetTypeDataTestBuilder.nyStillingFraNav(true))
                 .build();
     }
 
     public static AktivitetData nyStillingFraNav() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
-                .stillingFraNavData(AktivitetTypeDataTesBuilder.nyStillingFraNav(false))
+                .stillingFraNavData(AktivitetTypeDataTestBuilder.nyStillingFraNav(false))
                 .build();
     }
 
-    public static AktivitetData nyttStillingssøk() {
+    public static AktivitetData nyttStillingssok() {
 
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.JOBBSOEKING)
-                .stillingsSoekAktivitetData(AktivitetTypeDataTesBuilder.nyttStillingssøk())
+                .stillingsSoekAktivitetData(AktivitetTypeDataTestBuilder.nyttStillingssok())
                 .build();
     }
 
@@ -83,7 +87,7 @@ public class AktivitetDataTestBuilder {
 
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.EGENAKTIVITET)
-                .egenAktivitetData(AktivitetTypeDataTesBuilder.nyEgenaktivitet())
+                .egenAktivitetData(AktivitetTypeDataTestBuilder.nyEgenaktivitet())
                 .build();
     }
 
@@ -91,35 +95,35 @@ public class AktivitetDataTestBuilder {
 
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.SOKEAVTALE)
-                .sokeAvtaleAktivitetData(AktivitetTypeDataTesBuilder.nySokeAvtaleAktivitet())
+                .sokeAvtaleAktivitetData(AktivitetTypeDataTestBuilder.nySokeAvtaleAktivitet())
                 .build();
     }
 
     public static AktivitetData nyIJobbAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.IJOBB)
-                .iJobbAktivitetData(AktivitetTypeDataTesBuilder.nyIJobbAktivitet())
+                .iJobbAktivitetData(AktivitetTypeDataTestBuilder.nyIJobbAktivitet())
                 .build();
     }
 
     public static AktivitetData nyBehandlingAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.BEHANDLING)
-                .behandlingAktivitetData(AktivitetTypeDataTesBuilder.nyBehandlingAktivitet())
+                .behandlingAktivitetData(AktivitetTypeDataTestBuilder.nyBehandlingAktivitet())
                 .build();
     }
 
     public static AktivitetData nyMoteAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.MOTE)
-                .moteData(AktivitetTypeDataTesBuilder.moteData())
+                .moteData(AktivitetTypeDataTestBuilder.moteData())
                 .build();
     }
 
     public static AktivitetData nytSamtaleReferat() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
-                .moteData(AktivitetTypeDataTesBuilder.moteData())
+                .moteData(AktivitetTypeDataTestBuilder.moteData())
                 .build();
     }
 

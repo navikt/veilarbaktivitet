@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.oppfolging.v2;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Slf4j
@@ -21,13 +20,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     private final OkHttpClient client;
-    private final AuthService authService;
+    private final PersonService personService;
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
     public Optional<OppfolgingV2UnderOppfolgingDTO> getUnderoppfolging(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
@@ -43,7 +42,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
 
     @Override
     public Optional<OppfolgingPeriodeMinimalDTO> getGjeldendePeriode(Person.AktorId aktorId) {
-        Person.Fnr fnr = authService.getFnrForAktorId(aktorId).orElseThrow(() -> new NoSuchElementException("Fnr er null"));
+        Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()

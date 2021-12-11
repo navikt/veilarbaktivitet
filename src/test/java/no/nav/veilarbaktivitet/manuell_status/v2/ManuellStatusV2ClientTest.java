@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
@@ -14,10 +14,9 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
 public class ManuellStatusV2ClientTest {
@@ -33,8 +32,8 @@ public class ManuellStatusV2ClientTest {
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        AuthService authService = Mockito.mock(AuthService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
+        PersonService authService = Mockito.mock(PersonService.class);
+        when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, authService);
         manuellStatusV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }

@@ -1,0 +1,55 @@
+name: Deploy alerts
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'alerts-prod.yaml'
+      - 'alerts-prod-arena.yaml'
+      - 'alerts-dev.yaml'
+      - 'alerts-dev-arena.yaml'
+      - '.github/workflows/alerts.yaml'
+
+concurrency:
+  group: deploy_alerts_prod
+  cancel-in-progress: true
+
+jobs:
+  apply-alerts-dev:
+    name: Apply alerts to dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: deploy to dev
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: alerts-dev.yaml
+      - name: deploy arena alert
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: alerts-dev-arena.yaml
+
+  apply-alerts-prod:
+    name: Apply alerts to prod
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v1
+      - name: deploy to prod
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-fss
+          RESOURCE: alerts-prod.yaml
+      - name: deploy arena alert
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-fss
+          RESOURCE: alerts-prod-arena.yaml

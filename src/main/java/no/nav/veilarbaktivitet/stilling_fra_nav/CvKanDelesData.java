@@ -1,7 +1,10 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import lombok.*;
-import no.nav.veilarbaktivitet.domain.InnsenderData;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.With;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 
@@ -14,4 +17,5 @@ public class CvKanDelesData {
     Date endretTidspunkt;
     String endretAv;
     InnsenderData endretAvType;
+    Date avtaltDato;
 }

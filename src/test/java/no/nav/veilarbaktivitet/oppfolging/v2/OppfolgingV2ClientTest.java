@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.oppfolging.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import no.nav.veilarbaktivitet.domain.Person;
-import no.nav.veilarbaktivitet.service.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
@@ -32,9 +32,9 @@ public class OppfolgingV2ClientTest {
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        AuthService authService = Mockito.mock(AuthService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(Optional.of(FNR));
-        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, authService);
+        PersonService personService = Mockito.mock(PersonService.class);
+        when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
+        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService);
         oppfolgingV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 

@@ -6,19 +6,16 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.veilarbaktivitet.helsesjekk.ArenaServiceHelsesjekk;
-import no.nav.veilarbaktivitet.helsesjekk.DatabaseHelsesjekk;
-import no.nav.veilarbaktivitet.helsesjekk.KafkaHelsesjekk;
-import no.nav.veilarbaktivitet.motesms.MoteSMSService;
+import no.nav.veilarbaktivitet.arena.ArenaServiceHelsesjekk;
+import no.nav.veilarbaktivitet.config.database.DatabaseHelsesjekk;
+import no.nav.veilarbaktivitet.config.kafka.KafkaHelsesjekk;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@Profile("!dev") //TODO fiks
 public class HelsesjekkConfig {
 
     @Bean
@@ -28,7 +25,6 @@ public class HelsesjekkConfig {
             Pep pep,
             DatabaseHelsesjekk databaseHelsesjekk,
             UnleashClient unleashClient,
-            MoteSMSService moteSMSService,
             KafkaHelsesjekk kafkaHelsesjekk
     ) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
@@ -37,7 +33,6 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("Unleash", false, unleashClient),
-                new SelfTestCheck("MoteServicemelding", false, moteSMSService),
                 new SelfTestCheck("Kafka", false, kafkaHelsesjekk)
         );
 

@@ -1,20 +1,28 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.brukernotifikasjon.schemas.Nokkel;
+import no.nav.brukernotifikasjon.schemas.Oppgave;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.domain.AktivitetDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.domain.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.util.ITestService;
-import no.nav.veilarbaktivitet.util.MockBruker;
-import no.nav.veilarbaktivitet.util.WireMockUtil;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
+import no.nav.veilarbaktivitet.util.AktivitetTestService;
+import no.nav.veilarbaktivitet.util.KafkaTestService;
+import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
@@ -26,15 +34,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.concurrent.ListenableFuture;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.time.Duration;
 import java.util.UUID;
 
-import static org.junit.Assert.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -44,7 +53,10 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class DelingAvCvITest {
 
     @Autowired
-    ITestService testService;
+    KafkaTestService testService;
+
+    @Autowired
+    AktivitetTestService aktivitetTestService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -58,12 +70,24 @@ public class DelingAvCvITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
-    /***** Ekte bønner *****/
+    @Value("${topic.ut.brukernotifikasjon.oppgave}")
+    private String oppgaveTopic;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    String groupId;
+
+    @Value("${app.env.aktivitetsplan.basepath}")
+    private String aktivitetsplanBasepath;
 
     @Autowired
-    KafkaTemplate<String, ForesporselOmDelingAvCv> producer;
+    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
+
+    Consumer<Nokkel, Oppgave> oppgaveConsumer;
+
+    @Autowired
+    SendOppgaveCron sendOppgaveCron;
 
     @After
     public void verify_no_unmatched() {
@@ -77,52 +101,113 @@ public class DelingAvCvITest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
-        consumer = testService.createConsumer(utTopic);
+        consumer = testService.createStringAvroConsumer(utTopic);
+        oppgaveConsumer = testService.createAvroAvroConsumer(oppgaveTopic);
     }
 
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        WireMockUtil.stubBruker(mockBruker);
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
+            assertions.assertAll();
+        });
+    }
+
+
+    @Test
+    public void happy_case_tomme_strenger() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
+        KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
+        melding.setKontaktInfo(kontaktinfo);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
+            assertions.assertAll();
+        });
+    }
+
+    @Test
+    public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
+        melding.setKontaktInfo(null);
+        melding.setSoknadsfrist(null);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = consumerRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
+            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
+            assertions.assertAll();
+        });
+    }
+
+    @Test
+    public void ugyldig_aktorid() {
+        MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
+
+        //TODO se på om vi burde unngå bruker her
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
+
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
+                .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + mockBruker.getAktorId() + "\": {" +
+                        "    \"identer\": []" +
+                        "  }" +
+                        "}")));
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, melding.getBestillingsId(), melding);
-
-
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
+        ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
-            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
-            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
+            assertions.assertThat(value.getAktivitetId()).isNull();
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
+            assertions.assertThat(value.getKanIkkeOppretteBegrunnelse().getFeilmelding()).isEqualTo("Finner ingen gydlig ident for aktorId");
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
-
-        AktivitetsplanDTO aktivitetsplanDTO = testService.hentAktiviteterForFnr(port, mockBruker.getFnr());
-
-        assertEquals(1, aktivitetsplanDTO.aktiviteter.size());
-        AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().get(0);
-
-        //TODO skriv bedre test
-        assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
-        assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals("/rekrutteringsbistand/" + melding.getStillingsId(), aktivitetDTO.getLenke());
-        assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().bestillingsId);
-
+        assertTrue(memoryLoggerAppender.contains("*** Kan ikke behandle melding", Level.WARN));
     }
 
     @Test
     public void ikke_under_oppfolging() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        mockBruker.setUnderOppfolging(false);
-        WireMockUtil.stubBruker(mockBruker);
+
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -141,13 +226,11 @@ public class DelingAvCvITest {
 
     @Test
     public void under_oppfolging_kvp() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        mockBruker.setUnderOppfolging(true);
-        mockBruker.setErUnderKvp(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -167,12 +250,11 @@ public class DelingAvCvITest {
 
     @Test
     public void under_manuell_oppfolging() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        mockBruker.setErManuell(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -192,12 +274,11 @@ public class DelingAvCvITest {
 
     @Test
     public void reservert_i_krr() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        mockBruker.setErReservertKrr(true);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
 
 
         producer.send(innTopic, melding.getBestillingsId(), melding);
@@ -218,12 +299,11 @@ public class DelingAvCvITest {
 
     @Test
     public void mangler_nivaa4() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        mockBruker.setHarBruktNivaa4(false);
-        WireMockUtil.stubBruker(mockBruker);
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
         final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
@@ -241,12 +321,12 @@ public class DelingAvCvITest {
     }
 
     @Test
+    @SneakyThrows
     public void duplikat_bestillingsId_ignoreres() {
-        MockBruker mockBruker = MockBruker.happyBruker("1234", "4321");
-        WireMockUtil.stubBruker(mockBruker);
+        MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
-        ForesporselOmDelingAvCv melding = createMelding(bestillingsId, mockBruker.getAktorId());
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         producer.send(innTopic, melding.getBestillingsId(), melding);
 
 
@@ -261,40 +341,11 @@ public class DelingAvCvITest {
             assertions.assertAll();
         });
 
-        ForesporselOmDelingAvCv duplikatMelding = createMelding(bestillingsId, mockBruker.getAktorId());
-        producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding);
-        Exception exception = assertThrows(IllegalStateException.class, () -> getSingleRecord(consumer, utTopic, 5000));
-        assertEquals("No records found for topic", exception.getMessage());
-    }
+        ForesporselOmDelingAvCv duplikatMelding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
+        SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
+        testService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
 
-    static ForesporselOmDelingAvCv createMelding(String bestillingsId, String aktorId) {
-        return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(aktorId)
-                .setArbeidsgiver("arbeidsgiver")
-                .setArbeidssteder(List.of(
-                        Arbeidssted.newBuilder()
-                                .setAdresse("adresse")
-                                .setPostkode("1234")
-                                .setKommune("kommune")
-                                .setBy("by")
-                                .setFylke("fylke")
-                                .setLand("land").build(),
-                        Arbeidssted.newBuilder()
-                                .setAdresse("VillaRosa")
-                                .setPostkode(null)
-                                .setKommune(null)
-                                .setBy(null)
-                                .setFylke(null)
-                                .setLand("spania").build()))
-                .setBestillingsId(bestillingsId)
-                .setOpprettet(Instant.now())
-                .setOpprettetAv("Z999999")
-                .setCallId("callId")
-                .setSoknadsfrist("10102021")
-                .setStillingsId("stillingsId")
-                .setStillingstittel("stillingstittel")
-                .setSvarfrist(Instant.now().plus(5, ChronoUnit.DAYS))
-                .build();
+        ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
+        assertTrue(poll.isEmpty());
     }
-
 }

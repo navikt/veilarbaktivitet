@@ -1,0 +1,18 @@
+package no.nav.veilarbaktivitet.aktivitet.domain;
+
+public enum AktivitetTransaksjonsType {
+    OPPRETTET,
+    STATUS_ENDRET,
+    DETALJER_ENDRET,
+    AVTALT,
+    AVTALT_DATO_ENDRET,
+    ETIKETT_ENDRET,
+    MOTE_TID_OG_STED_ENDRET,
+    REFERAT_OPPRETTET,
+    REFERAT_ENDRET,
+    REFERAT_PUBLISERT,
+    BLE_HISTORISK,
+    FORHAANDSORIENTERING_LEST,
+    DEL_CV_SVART,
+    SOKNADSSTATUS_ENDRET
+}

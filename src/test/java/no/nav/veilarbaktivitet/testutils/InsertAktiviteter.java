@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.db.Database;
-import no.nav.veilarbaktivitet.db.dao.AktivitetDAO;
-import no.nav.veilarbaktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.config.database.Database;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class InsertAktiviteter {
@@ -22,7 +22,7 @@ public class InsertAktiviteter {
         insertNyAktivitet(AktivitetDataTestBuilder.nySokeAvtaleAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyEgenaktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat(), akotrid, aktivitetDAO);
-        insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssøk(), akotrid, aktivitetDAO);
+        insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssok(), akotrid, aktivitetDAO);
     }
 
     private static void insertNyAktivitet(AktivitetData aktivitetData, String aktorId, AktivitetDAO aktivitetDAO) {

@@ -2,9 +2,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 public enum VarselStatus {
     PENDING,
-    FORSOKT_SENDT,
-    SENDT_OK,
-    FEILET,
+    SENDT,
     SKAL_AVSLUTTES,
-    AVSLUTTET
+    AVSLUTTET,
+    AVBRUTT
 }

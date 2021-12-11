@@ -1,18 +1,18 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.domain.Person;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.VarselKvitteringStatus;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-class BrukerNotifikasjonDAO {
+public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
@@ -23,7 +23,7 @@ class BrukerNotifikasjonDAO {
             Person.Fnr foedselsnummer,
             String melding,
             UUID oppfolgingsperiode,
-            Varseltype type,
+            VarselType type,
             VarselStatus status
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
@@ -34,24 +34,26 @@ class BrukerNotifikasjonDAO {
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
                 .addValue("status", status.name())
+                .addValue("varsel_kvittering_status", VarselKvitteringStatus.IKKE_SATT.name())
                 .addValue("melding", melding);
         jdbcTemplate.update("" +
-                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, sendt, melding) " +
-                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, CURRENT_TIMESTAMP, :melding) ",
+                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, varsel_kvittering_status,opprettet, melding) " +
+                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :melding) ",
                 params);
     }
 
-    private final List<String> skalIkkeAvsluttes = List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name());
-
-    long setDone(long aktivitetId, Varseltype varseltype) {
+    long setDone(long aktivitetId, VarselType varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktivitetId", aktivitetId)
-                .addValue("status", VarselStatus.SKAL_AVSLUTTES.name())
-                .addValue("type", varseltype.name())
-                .addValue("statuses", skalIkkeAvsluttes);
+                .addValue("type", varseltype.name());
 
         return jdbcTemplate.update("" +
-                        " Update brukernotifikasjon set status=:status where aktivitet_id=:aktivitetId and type = :type and status not in (:statuses)",
+                        " update BRUKERNOTIFIKASJON" +
+                        " set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end" +
+                        " where AKTIVITET_ID = :aktivitetId " +
+                        " and TYPE = :type" +
+                        " and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')",
                 params);
     }
+
 }

@@ -1,9 +1,12 @@
 package no.nav.veilarbaktivitet.mock;
 
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.aktoroppslag.BrukerIdenter;
 import no.nav.common.health.HealthCheckResult;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Fnr;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +32,11 @@ public class AktorOppslackMock implements AktorOppslagClient {
     @Override
     public Map<Fnr, AktorId> hentAktorIdBolk(List<Fnr> list) {
         return Collections.emptyMap();
+    }
+
+    @Override
+    public BrukerIdenter hentIdenter(EksternBrukerId brukerId) {
+        throw new NotImplementedException();
     }
 
     @Override

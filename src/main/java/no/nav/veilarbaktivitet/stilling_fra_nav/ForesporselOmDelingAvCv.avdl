@@ -1,6 +1,29 @@
 [
     {
         "type": "record",
+        "name": "KontaktInfo",
+        "namespace": "no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv",
+        "fields": [
+            {
+                "name": "navn",
+                "type": "string"
+
+            },
+            {
+                "name": "tittel",
+                "type": "string"
+            },
+            {
+                "name": "mobil",
+                "type": [
+                    "string",
+                    "null"
+                ]
+            }
+        ]
+    },
+    {
+        "type": "record",
         "name": "Arbeidssted",
         "namespace": "no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv",
         "fields": [
@@ -90,7 +113,7 @@
             },
             {
                 "name": "soknadsfrist",
-                "type": "string"
+                "type": ["string", "null"]
             },
             {
                 "name": "arbeidsgiver",
@@ -102,6 +125,10 @@
                     "type": "array",
                     "items": "Arbeidssted"
                 }
+            },
+            {
+                "name": "kontaktInfo",
+                "type": ["KontaktInfo", "null"]
             }
         ]
     }

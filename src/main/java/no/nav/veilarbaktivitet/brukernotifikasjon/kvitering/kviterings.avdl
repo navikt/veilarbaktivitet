@@ -1,0 +1,28 @@
+{
+  "type": "record",
+  "namespace": "no.nav.doknotifikasjon.schemas",
+  "name": "DoknotifikasjonStatus",
+  "fields": [
+    {
+      "name": "bestillingsId",
+      "type": "string"
+    },
+    {
+      "name": "bestillerId",
+      "type": "string"
+    },
+    {
+      "name": "status",
+      "type": "string"
+    },
+    {
+      "name": "melding",
+      "type": "string"
+    },
+    {
+      "name": "distribusjonId",
+      "type": ["null", "long"],
+      "default": null
+    }
+  ]
+}

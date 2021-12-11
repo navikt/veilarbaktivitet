@@ -24,6 +24,29 @@
     {
         "namespace": "no.nav.veilarbaktivitet.avro",
         "type": "record",
+        "name": "KanIkkeOppretteBegrunnelse",
+        "fields": [
+
+            {
+                "name": "feilmelding",
+                "type": ["string", "null"]
+            },
+            {
+                "name": "begrunnelse",
+                "type": {
+                        "name": "BegrunnelseEnum",
+                        "type": "enum",
+                        "symbols": [
+                                   "UGYLDIG_OPPFOLGINGSSTATUS",
+                                   "UGYLDIG_INPUT"
+                                   ]
+                }
+            }
+        ]
+    },
+    {
+        "namespace": "no.nav.veilarbaktivitet.avro",
+        "type": "record",
         "name": "Svar",
         "fields": [
             {
@@ -75,7 +98,7 @@
                         "HAR_VARSLET",
                         "KAN_IKKE_VARSLE",
                         "HAR_SVART",
-                        "SVARFRIST_UTLOPT"
+                        "AVBRUTT"
                     ]
                 }
             },
@@ -85,6 +108,10 @@
                     "Svar",
                     "null"
                 ]
+            },
+            {
+                "name": "kanIkkeOppretteBegrunnelse",
+                "type": ["KanIkkeOppretteBegrunnelse", "null"]
             }
         ]
     }

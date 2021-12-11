@@ -1,0 +1,11 @@
+alter table STILLING_FRA_NAV
+    add LIVSLOPSSTATUS varchar(255) default 'HAR_SVART' not null;
+
+alter table STILLING_FRA_NAV MODIFY
+(
+    LIVSLOPSSTATUS varchar (255) DEFAULT (NULL)
+);
+
+update STILLING_FRA_NAV
+set LIVSLOPSSTATUS='PROVER_VARSLING'
+where CV_KAN_DELES is null;
