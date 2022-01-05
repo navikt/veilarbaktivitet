@@ -63,7 +63,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse;
         try {
-            oppfolgingResponse = oppfolgingClient.getUnderoppfolging(aktorId);
+            oppfolgingResponse = oppfolgingClient.fetchUnderoppfolging(aktorId);
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
