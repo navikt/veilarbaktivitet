@@ -1,0 +1,1 @@
+alter table aktivitet add  oppfolgingsperiode_uuid varchar;

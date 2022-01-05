@@ -34,7 +34,8 @@ public class AktivitetDTOMapper {
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(erEkstern ? null : aktivitet.getEndretAv()) // null ut endretAv når bruker er ekstern
                 .setHistorisk(aktivitet.getHistoriskDato() != null)
-                .setTransaksjonsType(aktivitet.getTransaksjonsType());
+                .setTransaksjonsType(aktivitet.getTransaksjonsType())
+                .setOppfolgingsperiodeId(aktivitet.getOppfolgingsperiodeId());
 
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingSokData).accept(aktivitetDTO, aktivitet.getStillingsSoekAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapEgenAktivitetData).accept(aktivitetDTO, aktivitet.getEgenAktivitetData());

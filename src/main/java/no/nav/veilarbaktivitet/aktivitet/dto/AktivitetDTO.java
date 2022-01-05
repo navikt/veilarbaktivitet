@@ -40,7 +40,7 @@ public class AktivitetDTO {
     private String lagtInnAv;
     private AktivitetTransaksjonsType transaksjonsType;
     private String malid;
-    private UUID oppfolingsPeriodeId;
+    private UUID oppfolgingsperiodeId;
 
     // stillingaktivitet
     private EtikettTypeDTO etikett;

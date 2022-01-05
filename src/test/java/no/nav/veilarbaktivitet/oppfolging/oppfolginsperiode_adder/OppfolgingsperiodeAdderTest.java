@@ -13,24 +13,24 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class OppfolingsperiodeAdderTest extends SpringTestClass {
+public class OppfolgingsperiodeAdderTest extends SpringTestClass {
     @Autowired
-    OppfolingsperiodeAdder addder;
+    OppfolgingsperiodeAdder adder;
 
     @Test
-    public void skalLeggeTillOppfolingsperioder() {
+    public void skalLeggeTilOppfolgingsperioder() {
         MockBruker mockBruker = MockNavService.crateHappyBruker();
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO oprrettet = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO opprettet = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
 
-        assertNull(oprrettet.getOppfolingsPeriodeId());
+        assertNull(opprettet.getOppfolgingsperiodeId());
 
-        addder.addOppfolingsperioderForEnBruker();
+        adder.addOppfolingsperioderForEnBruker();
 
-        AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, oprrettet.getId());
+        AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 
-        assertEquals(mockBruker.getOppfolgingsPeriode(), etterAdd.getOppfolingsPeriodeId());
+        assertEquals(mockBruker.getOppfolgingsPeriode(), etterAdd.getOppfolgingsperiodeId());
     }
 }

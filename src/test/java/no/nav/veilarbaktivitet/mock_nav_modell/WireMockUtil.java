@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -34,15 +35,21 @@ public class WireMockUtil {
                         .withBody("{\"erUnderOppfolging\":" + underOppfolging + "}")));
 
         if (underOppfolging) {
-            String body = JsonUtils.toJson(OppfolgingPeriodeMinimalDTO.builder()
+            OppfolgingPeriodeMinimalDTO oppfolgingsperiode = OppfolgingPeriodeMinimalDTO.builder()
                     .startDato(ZonedDateTime.now().minusDays(5))
                     .uuid(periode)
-                    .build());
+                    .build();
+            String gjeldendePeriode = JsonUtils.toJson(oppfolgingsperiode);
 
+            String oppfolgingsperioder = JsonUtils.toJson(List.of(gjeldendePeriode));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
-                            .withBody(body)));
+                            .withBody(gjeldendePeriode)));
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
+                    .willReturn(ok()
+                            .withHeader("Content-Type", "text/json")
+                            .withBody("[" + gjeldendePeriode + "]")));
 
         } else {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)

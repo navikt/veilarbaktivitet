@@ -14,7 +14,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class OppfolingsperiodeAdder {
+public class OppfolgingsperiodeAdder {
     private final AdderDao dao;
     private final OppfolgingV2Client client;
 
@@ -26,11 +26,11 @@ public class OppfolingsperiodeAdder {
             return false;
         }
 
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingPeriodeMinimalDTOS = client.hentOppfolingsPerioder(aktorId).get();
+        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolingsPerioder(aktorId).get();
 
-        for (OppfolgingPeriodeMinimalDTO opfolingsperiode :
-                oppfolgingPeriodeMinimalDTOS) {
-            dao.oppdaterAktiviteterForPeriode(aktorId, opfolingsperiode.getStartDato(), opfolingsperiode.getSluttDato(), opfolingsperiode.getUuid());
+        for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode :
+                oppfolgingperioder) {
+            dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
         }
 
         return true;

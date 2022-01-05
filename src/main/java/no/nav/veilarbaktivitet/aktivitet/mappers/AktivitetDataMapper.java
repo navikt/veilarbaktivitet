@@ -33,7 +33,8 @@ public class AktivitetDataMapper {
                 // TODO: Ikke bruk statiske ting som dette inne i en mapper
                 .lagtInnAv(AuthContextHolderThreadLocal.instance().erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
                 .lenke(aktivitetDTO.getLenke())
-                .malid(aktivitetDTO.getMalid());
+                .malid(aktivitetDTO.getMalid())
+                .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());
 
         switch (aktivitetType){
             case EGENAKTIVITET:

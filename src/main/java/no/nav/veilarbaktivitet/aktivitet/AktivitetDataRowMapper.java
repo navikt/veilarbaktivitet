@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
+import java.util.UUID;
 
 public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
 
@@ -49,7 +50,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .lestAvBrukerForsteGang(Database.hentDato(rs, "lest_av_bruker_forste_gang"))
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
                 .malid(rs.getString("mal_id"))
-                .fhoId(rs.getString("fho_id"));
+                .fhoId(rs.getString("fho_id"))
+                .oppfolgingsperiodeId(UUID.fromString(rs.getString("oppfolgingsperiode_uuid")));
 
         switch (type) {
             case EGENAKTIVITET:

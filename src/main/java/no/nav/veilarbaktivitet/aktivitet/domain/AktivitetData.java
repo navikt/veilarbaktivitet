@@ -9,11 +9,12 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Value
 @With
 @Builder(toBuilder = true)
-@ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt"})
+@ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
 public class AktivitetData {
 
     /**
@@ -71,6 +72,8 @@ public class AktivitetData {
     boolean automatiskOpprettet;
     String malid;
     String fhoId;
+
+    UUID oppfolgingsperiodeId;
 
     EgenAktivitetData egenAktivitetData;
     StillingsoekAktivitetData stillingsSoekAktivitetData;
