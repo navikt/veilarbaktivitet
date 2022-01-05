@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -40,7 +39,6 @@ import static org.junit.Assert.assertTrue;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-@Slf4j
 public class OppfolgingAvsluttetConsumerTest {
 
     @Autowired
@@ -48,7 +46,6 @@ public class OppfolgingAvsluttetConsumerTest {
 
     @Autowired
     AktivitetTestService testAktivitetservice;
-
 
     @Autowired
     JdbcTemplate jdbc;
