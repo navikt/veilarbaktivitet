@@ -1,0 +1,1 @@
+alter table aktivitet add  oppfolignsperiode_uuid varchar;

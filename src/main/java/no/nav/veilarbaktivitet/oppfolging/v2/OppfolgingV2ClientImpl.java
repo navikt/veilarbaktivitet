@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -54,6 +55,25 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
                 return Optional.empty();
             }
             return RestUtils.parseJsonResponse(response, OppfolgingPeriodeMinimalDTO.class);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+        }
+    }
+
+    @Override
+    public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolingsPerioder(Person.AktorId aktorId) {
+        Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
+
+        String uri = String.format("%s/v2/oppfolging/perioder?fnr=%s", baseUrl, fnr.get());
+        Request request = new Request.Builder()
+                .url(uri)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                return Optional.empty();
+            }
+            return RestUtils.parseJsonArrayResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
         }
