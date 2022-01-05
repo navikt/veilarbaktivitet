@@ -101,7 +101,6 @@ public class AktivitetTestService {
      * @return Aktiviteten
      */
     public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-
         return opprettAktivitet(port, mockBruker, mockBruker, aktivitetDTO);
     }
 

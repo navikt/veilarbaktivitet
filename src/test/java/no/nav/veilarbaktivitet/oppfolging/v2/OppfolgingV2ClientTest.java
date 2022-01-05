@@ -24,7 +24,7 @@ public class OppfolgingV2ClientTest {
     private static final Person.Fnr FNR = Person.fnr("10108000398");
     private static final String OPPFOLGING_RESPONS ="oppfolging/v2/oppfolgingRespons.json";
 
-    private OppfolgingV2Client oppfolgingV2Client;
+    private OppfolgingV2ClientImpl oppfolgingV2Client;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(8089);
@@ -45,7 +45,7 @@ public class OppfolgingV2ClientTest {
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(OPPFOLGING_RESPONS)));
-        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingV2Response = oppfolgingV2Client.getUnderoppfolging(AKTORID);
+        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingV2Response = oppfolgingV2Client.fetchUnderoppfolging(AKTORID);
 
         assertThat(oppfolgingV2Response).get()
                 .hasFieldOrPropertyWithValue("erUnderOppfolging", true);
@@ -57,7 +57,7 @@ public class OppfolgingV2ClientTest {
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));
-        Exception exception = assertThrows(ResponseStatusException.class, () -> oppfolgingV2Client.getUnderoppfolging(AKTORID));
+        Exception exception = assertThrows(ResponseStatusException.class, () -> oppfolgingV2Client.fetchUnderoppfolging(AKTORID));
         MatcherAssert.assertThat(exception.getMessage(), containsString("Uventet status 400"));
     }
 }

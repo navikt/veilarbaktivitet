@@ -62,7 +62,7 @@ public class BrukernotifikasjonService {
         Person.Fnr fnr = personService
                 .getFnrForAktorId(aktorId);
 
-        OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.getGjeldendePeriode(aktorId)
+        OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.fetchGjeldendePeriode(aktorId)
                 .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
 
         dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING);
