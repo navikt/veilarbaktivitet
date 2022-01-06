@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
+package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.person.Person;

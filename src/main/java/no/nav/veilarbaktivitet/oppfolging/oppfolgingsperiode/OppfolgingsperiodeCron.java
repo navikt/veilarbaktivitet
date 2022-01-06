@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
+package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OppfolgingsperiodeCron {
     private final LeaderElectionClient leaderElectionClient;
-    private final Oppfolgingsperiode oppfolgingsperiodeAdder;
+    private final OppfolgingsperiodeService oppfolgingsperiodeServiceAdder;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -21,7 +21,7 @@ public class OppfolgingsperiodeCron {
     )
     public void addOppfolgingsperioder() {
         if (leaderElectionClient.isLeader()) {
-            while (oppfolgingsperiodeAdder.addOppfolgingsperioderForEnBruker());
+            while (oppfolgingsperiodeServiceAdder.addOppfolgingsperioderForEnBruker());
             log.info("ferdig med aa legge til alle oppfolgingsperioder");
         }
     }

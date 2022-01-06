@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
+package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
 import no.nav.veilarbaktivitet.SpringBootBaseTest;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -20,10 +20,10 @@ import static org.junit.Assert.assertNull;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class OppfolgingsperiodeTest extends SpringBootBaseTest {
+public class OppfolgingsperiodeServiceTest extends SpringBootBaseTest {
 
     @Autowired
-    OppfolgingsperiodeCron oppfolgingsperiodeAdderCron;
+    OppfolgingsperiodeCron oppfolgingsperiodeCron;
 
     @Test
     public void skalLeggeTilOppfolgingsperioder() {
@@ -35,7 +35,7 @@ public class OppfolgingsperiodeTest extends SpringBootBaseTest {
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
-        oppfolgingsperiodeAdderCron.addOppfolgingsperioder();
+        oppfolgingsperiodeCron.addOppfolgingsperioder();
 
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 
