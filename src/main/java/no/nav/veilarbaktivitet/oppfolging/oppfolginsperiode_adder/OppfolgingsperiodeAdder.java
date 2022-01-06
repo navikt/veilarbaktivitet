@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +28,9 @@ public class OppfolgingsperiodeAdder {
             return false;
         }
 
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolgingsperioder(aktorId).get();
+        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client
+                .hentOppfolgingsperioder(aktorId)
+                .orElseThrow(() -> new NoSuchElementException(String.format("ingen oppfolgingsperioder for aktorid=%s", aktorId)));
 
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
