@@ -18,7 +18,7 @@ public class AdderDao {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get())
                 .addValue("startDato", startDato)
-                .addValue("sluttdato", sluttDato)
+                .addValue("sluttDato", sluttDato)
                 .addValue("oppfolgingsPeriodeId", uuid);
 
         if (sluttDato != null) {

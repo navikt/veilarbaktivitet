@@ -39,9 +39,15 @@ public class WireMockUtil {
                     .startDato(ZonedDateTime.now().minusDays(5))
                     .uuid(periode)
                     .build();
+            OppfolgingPeriodeMinimalDTO gammelPeriode = OppfolgingPeriodeMinimalDTO.builder()
+                    .startDato(ZonedDateTime.now().minusDays(100))
+                    .sluttDato(ZonedDateTime.now().minusDays(50))
+                    .uuid(UUID.randomUUID())
+                    .build();
+
             String gjeldendePeriode = JsonUtils.toJson(oppfolgingsperiode);
 
-            String oppfolgingsperioder = JsonUtils.toJson(List.of(oppfolgingsperiode));
+            String oppfolgingsperioder = JsonUtils.toJson(List.of(oppfolgingsperiode, gammelPeriode));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
