@@ -27,7 +27,7 @@ public class OppfolgingsperiodeAdderTest extends SpringTestClass {
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
-        adder.addOppfolingsperioderForEnBruker();
+        adder.addOppfolgingsperioderForEnBruker();
 
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 

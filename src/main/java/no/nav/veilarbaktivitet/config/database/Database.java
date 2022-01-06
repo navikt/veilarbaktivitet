@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.config.database;
+
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -10,6 +12,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
 
@@ -57,6 +60,16 @@ public class Database {
                 .map(java.sql.Date::getTime)
                 .map(Date::new)
                 .orElse(null);
+    }
+
+    public static UUID hentUUID(ResultSet rs, String kolonneNavn) throws SQLException {
+        String uuid = rs.getString(kolonneNavn);
+
+        if (StringUtils.isEmpty(uuid)) {
+            return null;
+        }
+
+        return UUID.fromString(uuid);
     }
 
     @FunctionalInterface

@@ -12,7 +12,6 @@ import org.springframework.jdbc.core.RowMapper;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Optional;
-import java.util.UUID;
 
 public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
 
@@ -23,6 +22,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
 
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
+
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
@@ -51,7 +51,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
                 .malid(rs.getString("mal_id"))
                 .fhoId(rs.getString("fho_id"))
-                .oppfolgingsperiodeId(UUID.fromString(rs.getString("oppfolgingsperiode_uuid")));
+                .oppfolgingsperiodeId(Database.hentUUID(rs, "oppfolgingsperiode_uuid"));
 
         switch (type) {
             case EGENAKTIVITET:
