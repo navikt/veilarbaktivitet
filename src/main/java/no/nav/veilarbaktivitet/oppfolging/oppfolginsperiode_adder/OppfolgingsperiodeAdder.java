@@ -7,10 +7,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -20,13 +17,14 @@ public class OppfolgingsperiodeAdder {
 
     @Transactional
     public boolean addOppfolingsperioderForEnBruker() {
-        Person.AktorId aktorId = dao.hentEnBrukerUtenOpfolingsPeriode();
+        Person.AktorId aktorId = dao.hentEnBrukerUtenOppfolgingsperiode();
 
         if (aktorId == null) {
             return false;
         }
 
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolingsPerioder(aktorId).get();
+        // TODO vurder eventuell feilhåndtering.
+        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolgingsPerioder(aktorId).get();
 
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode :
                 oppfolgingperioder) {

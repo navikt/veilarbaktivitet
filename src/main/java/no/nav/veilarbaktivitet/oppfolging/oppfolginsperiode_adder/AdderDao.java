@@ -41,7 +41,7 @@ public class AdderDao {
 
     }
 
-    public Person.AktorId hentEnBrukerUtenOpfolingsPeriode() {
+    public Person.AktorId hentEnBrukerUtenOppfolgingsperiode() {
         String aktorId = template.getJdbcTemplate().queryForObject("""
                 SELECT AKTOR_ID from AKTIVITET
                 where OPPFOLGINGSPERIODE_UUID is null
