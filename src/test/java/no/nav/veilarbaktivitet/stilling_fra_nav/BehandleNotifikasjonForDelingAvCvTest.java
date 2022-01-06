@@ -84,7 +84,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     public void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
 
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav
@@ -141,7 +141,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     @Test
     public void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav

@@ -107,7 +107,7 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
@@ -126,7 +126,7 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case_tomme_strenger() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
@@ -147,7 +147,7 @@ public class DelingAvCvITest {
 
     @Test
     public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
         melding.setSoknadsfrist(null);
@@ -171,7 +171,7 @@ public class DelingAvCvITest {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
 
         //TODO se på om vi burde unngå bruker her
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
 
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
                 .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
@@ -323,7 +323,7 @@ public class DelingAvCvITest {
     @Test
     @SneakyThrows
     public void duplikat_bestillingsId_ignoreres() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);

@@ -4,8 +4,9 @@ package no.nav.veilarbaktivitet;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class SpringTestClass {
+public class SpringBootBaseTest {
     @Autowired
     protected KafkaTestService testService;
 
@@ -35,4 +36,7 @@ public class SpringTestClass {
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
+    @Test
+    @Ignore("base klasse for integrasjonstest")
+    public void sushi() {}
 }

@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode_adder;
 
-import no.nav.veilarbaktivitet.SpringTestClass;
+import no.nav.veilarbaktivitet.SpringBootBaseTest;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
@@ -13,13 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class OppfolgingsperiodeAdderTest extends SpringTestClass {
+public class OppfolgingsperiodeAdderTest extends SpringBootBaseTest {
+
     @Autowired
-    OppfolgingsperiodeAdder adder;
+    OppfolgingsperiodeAdderCron oppfolgingsperiodeAdderCron;
 
     @Test
     public void skalLeggeTilOppfolgingsperioder() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -27,10 +28,10 @@ public class OppfolgingsperiodeAdderTest extends SpringTestClass {
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
-        adder.addOppfolgingsperioderForEnBruker();
+        oppfolgingsperiodeAdderCron.addOppfolgingsperioder();
 
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 
-        assertEquals(mockBruker.getOppfolgingsPeriode(), etterAdd.getOppfolgingsperiodeId());
+        assertEquals(mockBruker.getOppfolgingsperiode(), etterAdd.getOppfolgingsperiodeId());
     }
 }

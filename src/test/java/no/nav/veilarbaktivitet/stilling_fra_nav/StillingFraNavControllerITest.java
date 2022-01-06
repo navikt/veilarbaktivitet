@@ -91,7 +91,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_ja() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
@@ -112,7 +112,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void happy_case_svar_nei() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
@@ -149,7 +149,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void svar_naar_frist_utlopt_feiler() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
@@ -174,7 +174,7 @@ public class StillingFraNavControllerITest {
 
     @Test
     public void historikk_del_cv_transaksjoner() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
@@ -220,7 +220,7 @@ public class StillingFraNavControllerITest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
         ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
         assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), singleRecord.value().getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), singleRecord.value().getGrupperingsId());
     }
 
     private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {

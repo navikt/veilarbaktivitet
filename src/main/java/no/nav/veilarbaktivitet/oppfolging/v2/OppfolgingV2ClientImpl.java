@@ -61,7 +61,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     }
 
     @Override
-    public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsPerioder(Person.AktorId aktorId) {
+    public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsperioder(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging/perioder?fnr=%s", baseUrl, fnr.get());

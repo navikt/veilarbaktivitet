@@ -42,7 +42,7 @@ class AvsluttSender {
             Done done = Done
                     .newBuilder()
                     .setFodselsnummer(fnrForAktorId.get())
-                    .setGrupperingsId(skalAvluttes.getOppfolgingsPeriode().toString())
+                    .setGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
                     .setTidspunkt(Instant.now().toEpochMilli())
                     .build();
 

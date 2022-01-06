@@ -124,7 +124,7 @@ public class BrukernotifikasjonKvitteringTest {
     @SneakyThrows
     @Test
     public void notifikasjonsstatus_tester() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
@@ -245,7 +245,7 @@ public class BrukernotifikasjonKvitteringTest {
         final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         Oppgave oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), oppgave.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;

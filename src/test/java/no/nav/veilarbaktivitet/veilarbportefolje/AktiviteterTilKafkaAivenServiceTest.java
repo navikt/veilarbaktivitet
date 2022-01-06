@@ -87,7 +87,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
     @Test
     public void skal_sende_meldinger_til_portefolje() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -113,7 +113,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
     @Test
     public void skal_committe_hver_melding() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData1 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);

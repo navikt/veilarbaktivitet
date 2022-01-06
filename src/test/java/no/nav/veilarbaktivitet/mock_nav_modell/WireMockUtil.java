@@ -21,7 +21,7 @@ public class WireMockUtil {
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
 
-        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsPeriode());
+        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsperiode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp);
         aktor(fnr, aktorId);

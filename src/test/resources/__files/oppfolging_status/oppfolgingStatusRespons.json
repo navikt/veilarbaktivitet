@@ -12,7 +12,7 @@
   },
   "kanStarteOppfolging": true,
   "avslutningStatus": null,
-  "oppfolgingsPerioder": [],
+  "oppfolgingsperioder": [],
   "harSkriveTilgang": true,
   "kanReaktiveres": false,
   "servicegruppe": "IVURD",

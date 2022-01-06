@@ -27,7 +27,7 @@ public class OppfolgingsperiodeAdder {
             return false;
         }
 
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolgingsPerioder(aktorId).get();
+        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client.hentOppfolgingsperioder(aktorId).get();
 
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());

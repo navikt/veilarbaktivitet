@@ -11,7 +11,7 @@ public class MockNavService {
     private static final Map<String, MockBruker> aktorIdBruker = new HashMap<>();
     private static final Map<String, MockVeileder> veleder = new HashMap<>();
 
-    public static MockBruker crateHappyBruker() {
+    public static MockBruker createHappyBruker() {
         return createBruker(BrukerOptions.happyBruker());
     }
 

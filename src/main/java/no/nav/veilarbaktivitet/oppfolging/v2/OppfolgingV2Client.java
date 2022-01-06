@@ -10,5 +10,5 @@ public interface OppfolgingV2Client {
 
     Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId);
 
-    Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsPerioder(Person.AktorId aktorId);
+    Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsperioder(Person.AktorId aktorId);
 }
