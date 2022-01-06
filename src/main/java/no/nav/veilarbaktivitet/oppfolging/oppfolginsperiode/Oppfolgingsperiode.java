@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode_adder;
+package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +15,8 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OppfolgingsperiodeAdder {
-    private final AdderDao dao;
+public class Oppfolgingsperiode {
+    private final OppfolgingsperiodeDao dao;
     private final OppfolgingV2Client client;
 
     @Transactional

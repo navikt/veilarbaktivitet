@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode_adder;
+package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
 
 import no.nav.veilarbaktivitet.SpringBootBaseTest;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class OppfolgingsperiodeAdderTest extends SpringBootBaseTest {
+public class OppfolgingsperiodeTest extends SpringBootBaseTest {
 
     @Autowired
-    OppfolgingsperiodeAdderCron oppfolgingsperiodeAdderCron;
+    OppfolgingsperiodeCron oppfolgingsperiodeAdderCron;
 
     @Test
     public void skalLeggeTilOppfolgingsperioder() {

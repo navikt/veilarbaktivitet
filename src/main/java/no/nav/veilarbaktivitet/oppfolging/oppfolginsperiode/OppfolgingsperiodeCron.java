@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode_adder;
+package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,9 +11,9 @@ import org.springframework.stereotype.Service;
 @EnableScheduling
 @Slf4j
 @RequiredArgsConstructor
-public class OppfolgingsperiodeAdderCron {
+public class OppfolgingsperiodeCron {
     private final LeaderElectionClient leaderElectionClient;
-    private final OppfolgingsperiodeAdder oppfolgingsperiodeAdder;
+    private final Oppfolgingsperiode oppfolgingsperiodeAdder;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",

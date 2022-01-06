@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode_adder;
+package no.nav.veilarbaktivitet.oppfolging.oppfolginsperiode;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.person.Person;
@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-public class AdderDao {
+public class OppfolgingsperiodeDao {
     private final NamedParameterJdbcTemplate template;
 
     public long oppdaterAktiviteterForPeriode(Person aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato, UUID uuid) {
