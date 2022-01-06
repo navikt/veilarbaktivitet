@@ -41,7 +41,7 @@ public class WireMockUtil {
                     .build();
             String gjeldendePeriode = JsonUtils.toJson(oppfolgingsperiode);
 
-            String oppfolgingsperioder = JsonUtils.toJson(List.of(gjeldendePeriode));
+            String oppfolgingsperioder = JsonUtils.toJson(List.of(oppfolgingsperiode));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
@@ -49,7 +49,7 @@ public class WireMockUtil {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
-                            .withBody("[" + gjeldendePeriode + "]")));
+                            .withBody(oppfolgingsperioder)));
 
         } else {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
