@@ -1,1 +1,1 @@
-alter table aktivitet add  oppfolgingsperiode_uuid varchar;
+alter table aktivitet add  oppfolgingsperiode_uuid varchar(40);
