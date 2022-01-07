@@ -20,12 +20,12 @@ public class OppfolgingsperiodeDao {
                 .addValue("aktorId", aktorId.get())
                 .addValue("startDato", startDato)
                 .addValue("sluttDato", sluttDato)
-                .addValue("oppfolgingsperiodeId", uuid);
+                .addValue("oppfolgingsperiodeId", uuid.toString());
 
         if (sluttDato != null) {
             return template.update("""
                 UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :oppfolgingsperiodeId
-                WHERE AKTOR_ID = :aktorId 
+                WHERE AKTOR_ID = :aktorId
                 AND OPPRETTET_DATO BETWEEN :startDato AND :sluttDato
                 AND OPPFOLGINGSPERIODE_UUID IS NULL
                 """, params);
@@ -33,7 +33,7 @@ public class OppfolgingsperiodeDao {
             // aktiv (siste) periode
             return template.update("""
                 UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :oppfolgingsperiodeId
-                WHERE AKTOR_ID = :aktorId 
+                WHERE AKTOR_ID = :aktorId
                 AND OPPRETTET_DATO >= :startDato
                 AND OPPFOLGINGSPERIODE_UUID IS NULL
                 """, params);
