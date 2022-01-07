@@ -37,7 +37,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, OppfolgingV2UnderOppfolgingDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+            throw internalServerError(e, request.url().toString());
         }
     }
 
@@ -56,7 +56,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
             }
             return RestUtils.parseJsonResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+            throw internalServerError(e, request.url().toString());
         }
     }
 
@@ -75,10 +75,13 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
             }
             return RestUtils.parseJsonArrayResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+            throw internalServerError(e, request.url().toString());
         }
     }
 
+    private ResponseStatusException internalServerError(Exception cause, String url) {
+        return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s", url), cause);
+    }
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
