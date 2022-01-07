@@ -94,7 +94,7 @@ public class DelingAvCvFristUtloptServiceTest {
 
     @Test
     public void utlopte_aktiviteter_skal_avsluttes_automatisk() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
@@ -120,7 +120,7 @@ public class DelingAvCvFristUtloptServiceTest {
 
     @Test
     public void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));

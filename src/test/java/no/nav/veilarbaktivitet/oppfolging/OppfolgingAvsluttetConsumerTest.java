@@ -72,8 +72,8 @@ public class OppfolgingAvsluttetConsumerTest {
     @Test
     @SuppressWarnings("java:S2925")
     public void skal_avslutte_aktiviteter_for() throws ExecutionException, InterruptedException {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
-        MockBruker mockBruker2 = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker2 = MockNavService.createHappyBruker();
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);

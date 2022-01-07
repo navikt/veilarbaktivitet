@@ -4,6 +4,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -20,7 +21,7 @@ public class WireMockUtil {
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
 
-        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsPeriode());
+        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsperiode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp);
         aktor(fnr, aktorId);
@@ -34,15 +35,27 @@ public class WireMockUtil {
                         .withBody("{\"erUnderOppfolging\":" + underOppfolging + "}")));
 
         if (underOppfolging) {
-            String body = JsonUtils.toJson(OppfolgingPeriodeMinimalDTO.builder()
+            OppfolgingPeriodeMinimalDTO oppfolgingsperiode = OppfolgingPeriodeMinimalDTO.builder()
                     .startDato(ZonedDateTime.now().minusDays(5))
                     .uuid(periode)
-                    .build());
+                    .build();
+            OppfolgingPeriodeMinimalDTO gammelPeriode = OppfolgingPeriodeMinimalDTO.builder()
+                    .startDato(ZonedDateTime.now().minusDays(100))
+                    .sluttDato(ZonedDateTime.now().minusDays(50))
+                    .uuid(UUID.randomUUID())
+                    .build();
 
+            String gjeldendePeriode = JsonUtils.toJson(oppfolgingsperiode);
+
+            String oppfolgingsperioder = JsonUtils.toJson(List.of(oppfolgingsperiode, gammelPeriode));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
-                            .withBody(body)));
+                            .withBody(gjeldendePeriode)));
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
+                    .willReturn(ok()
+                            .withHeader("Content-Type", "text/json")
+                            .withBody(oppfolgingsperioder)));
 
         } else {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
@@ -74,6 +87,38 @@ public class WireMockUtil {
             stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
                     .willReturn(aResponse().withStatus(204)));
         }
+    }
+
+    public static void aktorUtenGjeldende(String fnr, String aktorId) {
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
+                .withHeader("Nav-Personidenter", equalTo(fnr))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + fnr + "\": {" +
+                        "    \"identer\": [" +
+                        "      {" +
+                        "        \"ident\": \"" + aktorId + "\"," +
+                        "        \"identgruppe\": \"AktoerId\"," +
+                        "        \"gjeldende\": false" +
+                        "      }" +
+                        "    ]" +
+                        "  }" +
+                        "}")));
+
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
+                .withHeader("Nav-Personidenter", equalTo(aktorId))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + aktorId + "\": {" +
+                        "    \"identer\": [" +
+                        "      {" +
+                        "        \"ident\": \"" + fnr + "\"," +
+                        "        \"identgruppe\": \"NorskIdent\"," +
+                        "        \"gjeldende\": false" +
+                        "      }" +
+                        "    ]" +
+                        "  }" +
+                        "}")));
     }
 
     private static void aktor(String fnr, String aktorId) {

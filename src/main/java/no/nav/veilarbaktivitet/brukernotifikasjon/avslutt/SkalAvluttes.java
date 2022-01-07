@@ -10,5 +10,5 @@ import java.util.UUID;
 class SkalAvluttes {
     private final String brukernotifikasjonId;
     private final String aktorId;
-    private final UUID oppfolgingsPeriode;
+    private final UUID oppfolgingsperiode;
 }

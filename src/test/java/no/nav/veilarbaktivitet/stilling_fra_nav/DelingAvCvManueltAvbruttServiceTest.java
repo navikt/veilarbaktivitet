@@ -86,7 +86,7 @@ public class DelingAvCvManueltAvbruttServiceTest {
 
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 

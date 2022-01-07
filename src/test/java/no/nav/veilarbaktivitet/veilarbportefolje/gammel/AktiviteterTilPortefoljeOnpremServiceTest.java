@@ -86,7 +86,7 @@ public class AktiviteterTilPortefoljeOnpremServiceTest {
 
     @Test
     public void skal_sende_meldinger_til_portefolje() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -103,7 +103,7 @@ public class AktiviteterTilPortefoljeOnpremServiceTest {
 
     @Test
     public void skal_fugere_sammen_med_aiven() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 

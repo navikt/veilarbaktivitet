@@ -22,6 +22,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
 
     public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
+
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
@@ -49,7 +50,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .lestAvBrukerForsteGang(Database.hentDato(rs, "lest_av_bruker_forste_gang"))
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
                 .malid(rs.getString("mal_id"))
-                .fhoId(rs.getString("fho_id"));
+                .fhoId(rs.getString("fho_id"))
+                .oppfolgingsperiodeId(Database.hentMabyUUID(rs, "oppfolgingsperiode_uuid"));
 
         switch (type) {
             case EGENAKTIVITET:

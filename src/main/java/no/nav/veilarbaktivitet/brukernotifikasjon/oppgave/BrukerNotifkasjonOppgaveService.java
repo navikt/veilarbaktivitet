@@ -60,7 +60,7 @@ class BrukerNotifkasjonOppgaveService {
             long aktivitetId,
             Person.Fnr fnr,
             String tekst,
-            String oppfolgingsPeriode
+            String oppfolgingsperiode
     ) {
 
         URL link = createAktivitetLink(aktivitetId);
@@ -68,7 +68,7 @@ class BrukerNotifkasjonOppgaveService {
         return new OppgaveBuilder()
                 .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withFodselsnummer(fnr.get())
-                .withGrupperingsId(oppfolgingsPeriode)
+                .withGrupperingsId(oppfolgingsperiode)
                 .withTekst(tekst)
                 .withLink(link)
                 .withSikkerhetsnivaa(sikkerhetsnivaa)

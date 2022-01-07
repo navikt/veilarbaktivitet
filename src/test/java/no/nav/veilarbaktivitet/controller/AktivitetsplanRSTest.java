@@ -89,7 +89,7 @@ public class AktivitetsplanRSTest {
 
     @Before
     public void setup() {
-        mockBruker = MockNavService.crateHappyBruker();
+        mockBruker = MockNavService.createHappyBruker();
         when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(Person.aktorId(mockBruker.getAktorId())));
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
         when(authService.erInternBruker()).thenReturn(Boolean.TRUE);

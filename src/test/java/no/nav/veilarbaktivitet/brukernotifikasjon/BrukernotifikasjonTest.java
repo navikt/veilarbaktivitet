@@ -114,7 +114,7 @@ public class BrukernotifikasjonTest {
     @SneakyThrows
     @Test
     public void happy_case() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
@@ -126,7 +126,7 @@ public class BrukernotifikasjonTest {
 
     @Test
     public void skal_ikke_produsere_meldinger_for_avsluttet_oppgave() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
@@ -143,7 +143,7 @@ public class BrukernotifikasjonTest {
 
     @Test
     public void skal_ikke_sende_meldinger_for_avbrutte_aktiviteter() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -182,7 +182,7 @@ public class BrukernotifikasjonTest {
 
     @Test
     public void skal_avslutte_avbrutteAktiviteter() {
-        MockBruker mockBruker = MockNavService.crateHappyBruker();
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
@@ -212,7 +212,7 @@ public class BrukernotifikasjonTest {
         assertEquals(oppgaveRecord.key().getSystembruker(), doneRecord.key().getSystembruker());
         assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
 
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), done.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), done.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), done.getFodselsnummer());
     }
 
@@ -254,7 +254,7 @@ public class BrukernotifikasjonTest {
         final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         Oppgave oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), oppgave.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;
@@ -272,7 +272,7 @@ public class BrukernotifikasjonTest {
         assertEquals(oppgaveRecord.key().getSystembruker(), doneRecord.key().getSystembruker());
         assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
 
-        assertEquals(mockBruker.getOppfolgingsPeriode().toString(), done.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), done.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), done.getFodselsnummer());
     }
 
