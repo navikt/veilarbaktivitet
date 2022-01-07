@@ -31,7 +31,7 @@ public class OppfolgingsperiodeService {
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder = client
                 .hentOppfolgingsperioder(aktorId)
-                .orElseThrow(() -> new NoSuchElementException(String.format("ingen oppfolgingsperioder for aktorid=%s", aktorId)));
+                .orElseThrow(() -> new NoSuchElementException(String.format("ingen oppfolgingsperioder for aktorid=%s", aktorId.get())));
 
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
