@@ -22,6 +22,7 @@ public class Database {
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
+    public final static String UKJENT_UUID = "UKJENT_UUID";
 
     public Database(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -62,10 +63,14 @@ public class Database {
                 .orElse(null);
     }
 
-    public static UUID hentUUID(ResultSet rs, String kolonneNavn) throws SQLException {
+    public static UUID hentMabyUUID(ResultSet rs, String kolonneNavn) throws SQLException {
         String uuid = rs.getString(kolonneNavn);
 
         if (StringUtils.isEmpty(uuid)) {
+            return null;
+        }
+
+        if (uuid.equals(UKJENT_UUID)) {
             return null;
         }
 

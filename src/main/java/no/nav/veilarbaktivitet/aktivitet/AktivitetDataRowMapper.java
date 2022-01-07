@@ -51,7 +51,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .automatiskOpprettet(rs.getBoolean("automatisk_opprettet"))
                 .malid(rs.getString("mal_id"))
                 .fhoId(rs.getString("fho_id"))
-                .oppfolgingsperiodeId(Database.hentUUID(rs, "oppfolgingsperiode_uuid"));
+                .oppfolgingsperiodeId(Database.hentMabyUUID(rs, "oppfolgingsperiode_uuid"));
 
         switch (type) {
             case EGENAKTIVITET:
