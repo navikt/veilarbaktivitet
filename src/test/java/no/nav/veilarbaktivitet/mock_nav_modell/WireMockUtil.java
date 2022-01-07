@@ -89,6 +89,38 @@ public class WireMockUtil {
         }
     }
 
+    public static void aktorUtenGjeldende(String fnr, String aktorId) {
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
+                .withHeader("Nav-Personidenter", equalTo(fnr))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + fnr + "\": {" +
+                        "    \"identer\": [" +
+                        "      {" +
+                        "        \"ident\": \"" + aktorId + "\"," +
+                        "        \"identgruppe\": \"AktoerId\"," +
+                        "        \"gjeldende\": false" +
+                        "      }" +
+                        "    ]" +
+                        "  }" +
+                        "}")));
+
+        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
+                .withHeader("Nav-Personidenter", equalTo(aktorId))
+                .willReturn(ok().withBody("" +
+                        "{" +
+                        "  \"" + aktorId + "\": {" +
+                        "    \"identer\": [" +
+                        "      {" +
+                        "        \"ident\": \"" + fnr + "\"," +
+                        "        \"identgruppe\": \"NorskIdent\"," +
+                        "        \"gjeldende\": false" +
+                        "      }" +
+                        "    ]" +
+                        "  }" +
+                        "}")));
+    }
+
     private static void aktor(String fnr, String aktorId) {
         stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
                 .withHeader("Nav-Personidenter", equalTo(fnr))

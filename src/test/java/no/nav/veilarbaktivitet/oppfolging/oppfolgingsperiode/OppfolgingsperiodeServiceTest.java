@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import static no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil.aktorUtenGjeldende;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -47,6 +48,30 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
         assertNull(opprettet.getOppfolgingsperiodeId());
 
         oppfolgingsperiodeCron.addOppfolgingsperioder();
+
+        AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
+
+        assertNull(etterAdd.getOppfolgingsperiodeId());
+    }
+
+    @Test(timeout = 5000)
+    public void skalHåntereUkjentAktorId() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO opprettet = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
+
+        assertNull(opprettet.getOppfolgingsperiodeId());
+        aktorUtenGjeldende("ukjent_fnr", "ukjent_aktorid");
+
+        //endrer til ukjent aktorid
+        jdbc.update("update AKTIVITET set AKTOR_ID = 'ukjent_aktorid' where AKTIVITET_ID = " + opprettet.getId());
+
+        oppfolgingsperiodeCron.addOppfolgingsperioder();
+
+        //endrer tilbake til gyldig aktorid for og hente ut resultatet
+        jdbc.update("update AKTIVITET set AKTOR_ID = "+ mockBruker.getAktorId() +" where AKTIVITET_ID = " + opprettet.getId());
 
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 

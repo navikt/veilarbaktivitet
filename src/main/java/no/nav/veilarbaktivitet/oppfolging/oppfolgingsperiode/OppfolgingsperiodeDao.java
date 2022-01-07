@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-import static no.nav.veilarbaktivitet.config.database.Database.UKJENT_UUID;
 
 @Repository
 @Slf4j
@@ -59,14 +58,25 @@ public class OppfolgingsperiodeDao {
         return Person.aktorId(aktorId);
     }
 
+    public void setUkjentAktorId(Person.AktorId aktorId) {
+        MapSqlParameterSource source = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get());
+
+        template.update("""
+                    update  AKTIVITET
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent aktorId'
+                    where AKTOR_ID = :aktorId
+                    and OPPFOLGINGSPERIODE_UUID is null
+                """, source);
+    }
+
     public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
-                .addValue("aktorId", aktorId.get())
-                .addValue("UKJENT_UUID", UKJENT_UUID);
+                .addValue("aktorId", aktorId.get());
 
         int antallOppdatert = template.update("""
                     update  AKTIVITET
-                    set OPPFOLGINGSPERIODE_UUID = :UKJENT_UUID
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent oppfolginsperiode'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                     and OPPRETTET_DATO < date '2020-01-01'

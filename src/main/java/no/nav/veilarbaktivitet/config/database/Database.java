@@ -22,7 +22,6 @@ public class Database {
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
-    public final static String UKJENT_UUID = "UKJENT_UUID";
 
     public Database(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -70,11 +69,11 @@ public class Database {
             return null;
         }
 
-        if (uuid.equals(UKJENT_UUID)) {
-            return null;
-        }
-
+       try {
         return UUID.fromString(uuid);
+       } catch (IllegalArgumentException e) {
+           return  null;
+       }
     }
 
     @FunctionalInterface
