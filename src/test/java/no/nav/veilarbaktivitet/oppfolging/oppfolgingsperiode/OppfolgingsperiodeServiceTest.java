@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
-import no.nav.veilarbaktivitet.SpringBootBaseTest;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
@@ -18,10 +18,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
-public class OppfolgingsperiodeServiceTest extends SpringBootBaseTest {
+public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
 
     @Autowired
     OppfolgingsperiodeCron oppfolgingsperiodeCron;
