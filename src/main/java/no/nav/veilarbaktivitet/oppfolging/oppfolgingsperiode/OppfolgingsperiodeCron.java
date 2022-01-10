@@ -17,7 +17,7 @@ public class OppfolgingsperiodeCron {
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+            fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
     )
     public void addOppfolgingsperioder() {
         if (leaderElectionClient.isLeader()) {

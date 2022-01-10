@@ -20,14 +20,10 @@ public class OppfolgingsperiodeService {
 
     @Timed(value = "oppfolgingsperiodeAdder500", histogram = true)
     public boolean oppdater500brukere() {
-        return dao.hentEnBrukerUtenOppfolgingsperiode(500).stream().map(this::addOppfolgingsperioderForEnBruker).toList().size() == 500;
+        return dao.hentBrukereUtenOppfolgingsperiode(500).stream().map(this::addOppfolgingsperioderForEnBruker).toList().size() == 500;
     }
 
     public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
-        if (aktorId == null) {
-            log.info("Fant ingen brukere uten oppfølgingsperiode");
-            return false;
-        }
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder;
         try {
