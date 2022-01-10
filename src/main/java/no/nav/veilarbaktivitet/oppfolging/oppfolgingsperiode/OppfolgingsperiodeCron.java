@@ -20,7 +20,7 @@ public class OppfolgingsperiodeCron {
             fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
     )
     @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask",
-            lockAtLeastForString = "PT5M", lockAtMostForString = "PT14M")
+            lockAtLeastForString = "PT1S", lockAtMostForString = "PT14M")
     public void addOppfolgingsperioder() {
         long antall = oppfolgingsperiodeServiceAdder.oppdater500brukere();
         log.info("oppdatert {} brukere med oppfolginsperiode", antall);
