@@ -20,11 +20,6 @@ public class OppfolingsPeriodePersonSerivce {
 
     @Timed(value = "oppfolgingsperiodeAdder", histogram = true)
     public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
-        if (aktorId == null) {
-            log.info("Fant ingen brukere uten oppfølgingsperiode");
-            return false;
-        }
-
         List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder;
         try {
             oppfolgingperioder = client
