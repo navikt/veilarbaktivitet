@@ -16,37 +16,11 @@ import java.util.List;
 @Slf4j
 public class OppfolgingsperiodeService {
     private final OppfolgingsperiodeDao dao;
-    private final OppfolgingV2Client client;
-
-    @Timed(value = "oppfolgingsperiodeAdder500", histogram = true)
+    private final OppfolingsPeriodePersonSerivce service;
+    @Timed
     public boolean oppdater500brukere() {
-        return dao.hentEnBrukerUtenOppfolgingsperiode(500).stream().map(this::addOppfolgingsperioderForEnBruker).toList().size() == 500;
+        return dao.hentEnBrukerUtenOppfolgingsperiode(500).parallelStream().map(service::addOppfolgingsperioderForEnBruker).toList().size() == 500;
     }
 
-    public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
-        if (aktorId == null) {
-            log.info("Fant ingen brukere uten oppfølgingsperiode");
-            return false;
-        }
 
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder;
-        try {
-            oppfolgingperioder = client
-                    .hentOppfolgingsperioder(aktorId)
-                    .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
-
-        } catch (IngenGjeldendeIdentException e) {
-            dao.setUkjentAktorId(aktorId);
-            log.warn("ukjent aktorId {}", aktorId);
-            return true;
-        }
-        for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
-            long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
-            log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={}", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
-        }
-
-        dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
-
-        return true;
-    }
 }
