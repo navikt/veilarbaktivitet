@@ -22,5 +22,4 @@ public class OppfolgingsperiodeService {
         return dao.hentEnBrukerUtenOppfolgingsperiode(500).stream().map(service::addOppfolgingsperioderForEnBruker).toList().size() == 500;
     }
 
-
 }

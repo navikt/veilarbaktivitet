@@ -47,7 +47,7 @@ public class OppfolgingsperiodeDao {
     }
 
     @Timed
-    public List<Person.AktorId> hentEnBrukerUtenOppfolgingsperiode(int max) {
+    public List<Person.AktorId> hentBrukereUtenOppfolgingsperiode(int max) {
 
         MapSqlParameterSource params = new MapSqlParameterSource("maks", max);
         return template.queryForList(
