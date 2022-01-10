@@ -8,10 +8,8 @@ import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.oppfolging.v2.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
@@ -20,11 +18,12 @@ public class OppfolgingsperiodeService {
     private final OppfolgingsperiodeDao dao;
     private final OppfolgingV2Client client;
 
-    @Transactional
-    @Timed(value = "oppfolgingsperiodeAdder", histogram = true)
-    public boolean addOppfolgingsperioderForEnBruker() {
-        Person.AktorId aktorId = dao.hentEnBrukerUtenOppfolgingsperiode();
+    @Timed(value = "oppfolgingsperiodeAdder500", histogram = true)
+    public boolean oppdater500brukere() {
+        return dao.hentEnBrukerUtenOppfolgingsperiode(500).stream().map(this::addOppfolgingsperioderForEnBruker).toList().size() == 500;
+    }
 
+    public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
         if (aktorId == null) {
             log.info("Fant ingen brukere uten oppfølgingsperiode");
             return false;

@@ -21,8 +21,10 @@ public class OppfolgingsperiodeCron {
     )
     public void addOppfolgingsperioder() {
         if (leaderElectionClient.isLeader()) {
-            while (oppfolgingsperiodeServiceAdder.addOppfolgingsperioderForEnBruker());
+            while (oppfolgingsperiodeServiceAdder.oppdater500brukere());
             log.info("ferdig med aa legge til alle oppfolgingsperioder");
         }
     }
+
+
 }

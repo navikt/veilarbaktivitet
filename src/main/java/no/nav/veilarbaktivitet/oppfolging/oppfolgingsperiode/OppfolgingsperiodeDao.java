@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -46,19 +47,17 @@ public class OppfolgingsperiodeDao {
     }
 
     @Timed
-    public Person.AktorId hentEnBrukerUtenOppfolgingsperiode() {
-        String aktorId;
-        try {
-            aktorId = template.getJdbcTemplate().queryForObject("""
-                    SELECT AKTOR_ID from AKTIVITET
-                    where OPPFOLGINGSPERIODE_UUID is null
-                    fetch next 1 row ONLY
-                    """, String.class);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
-        }
+    public List<Person.AktorId> hentEnBrukerUtenOppfolgingsperiode(int max) {
 
-        return Person.aktorId(aktorId);
+        MapSqlParameterSource params = new MapSqlParameterSource("maks", max);
+        return template.queryForList(
+                    """
+                    SELECT distinct AKTOR_ID from AKTIVITET
+                    where OPPFOLGINGSPERIODE_UUID is null
+                    fetch next :maks row ONLY
+                    """, params, String.class
+
+            ).stream().map(Person::aktorId).toList();
     }
 
     @Timed
