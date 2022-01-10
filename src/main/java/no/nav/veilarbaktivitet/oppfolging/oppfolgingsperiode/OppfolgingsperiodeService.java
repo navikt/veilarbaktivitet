@@ -19,7 +19,12 @@ public class OppfolgingsperiodeService {
     private final OppfolingsPeriodePersonSerivce service;
     @Timed
     public boolean oppdater500brukere() {
-        return dao.hentEnBrukerUtenOppfolgingsperiode(500).stream().map(service::addOppfolgingsperioderForEnBruker).toList().size() == 500;
+        return dao
+                .hentBrukereUtenOppfolgingsperiode(500)
+                .stream()
+                .map(service::addOppfolgingsperioderForEnBruker)
+                .toList()
+                .size() == 500;
     }
 
 }
