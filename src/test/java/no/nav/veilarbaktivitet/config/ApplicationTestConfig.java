@@ -1,6 +1,10 @@
 
 package no.nav.veilarbaktivitet.config;
 
+import net.javacrumbs.shedlock.core.LockConfiguration;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.core.SimpleLock;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -19,6 +23,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jms.core.JmsTemplate;
 
 import javax.sql.DataSource;
+
+import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 
@@ -74,6 +80,11 @@ public class ApplicationTestConfig {
         return mock(ArenaServiceHelsesjekk.class);
     }
 
+    @Bean
+    public LockProvider lockProvider() {
+        return lockConfiguration -> Optional.of((SimpleLock) () -> {
+        });
+    }
     @Bean
     LeaderElectionClient leaderElectionClient() {
         return () -> true;
