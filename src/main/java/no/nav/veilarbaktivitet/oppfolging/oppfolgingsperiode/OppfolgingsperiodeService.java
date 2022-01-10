@@ -18,13 +18,13 @@ public class OppfolgingsperiodeService {
     private final OppfolgingsperiodeDao dao;
     private final OppfolingsPeriodePersonSerivce service;
     @Timed
-    public boolean oppdater500brukere() {
+    public long oppdater500brukere() {
         return dao
                 .hentBrukereUtenOppfolgingsperiode(500)
                 .stream()
                 .map(service::addOppfolgingsperioderForEnBruker)
                 .toList()
-                .size() == 500;
+                .size();
     }
 
 }

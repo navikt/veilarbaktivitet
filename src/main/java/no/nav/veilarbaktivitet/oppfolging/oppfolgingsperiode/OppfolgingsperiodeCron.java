@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.job.leader_election.LeaderElectionClient;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,19 +12,15 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @RequiredArgsConstructor
 public class OppfolgingsperiodeCron {
-    private final LeaderElectionClient leaderElectionClient;
     private final OppfolgingsperiodeService oppfolgingsperiodeServiceAdder;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
     )
+    @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtLeastFor = "PT1S", lockAtMostFor = "PT10M")
     public void addOppfolgingsperioder() {
-        if (leaderElectionClient.isLeader()) {
-            while (oppfolgingsperiodeServiceAdder.oppdater500brukere());
-            log.info("ferdig med aa legge til alle oppfolgingsperioder");
-        }
+        long antall = oppfolgingsperiodeServiceAdder.oppdater500brukere();
+        log.info("oppdatert {} brukere med oppfolginsperiode", antall);
     }
-
-
 }
