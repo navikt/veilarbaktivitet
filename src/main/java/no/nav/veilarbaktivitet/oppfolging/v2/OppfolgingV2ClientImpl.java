@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.v2;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
@@ -60,6 +61,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         }
     }
 
+    @Timed
     @Override
     public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsperioder(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);

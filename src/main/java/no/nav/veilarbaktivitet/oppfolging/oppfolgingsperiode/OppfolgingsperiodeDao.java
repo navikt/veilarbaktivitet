@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.person.Person;
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class OppfolgingsperiodeDao {
     private final NamedParameterJdbcTemplate template;
 
+    @Timed
     public long oppdaterAktiviteterForPeriode(Person aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato, UUID uuid) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get())
@@ -43,6 +45,7 @@ public class OppfolgingsperiodeDao {
         }
     }
 
+    @Timed
     public Person.AktorId hentEnBrukerUtenOppfolgingsperiode() {
         String aktorId;
         try {
@@ -58,6 +61,7 @@ public class OppfolgingsperiodeDao {
         return Person.aktorId(aktorId);
     }
 
+    @Timed
     public void setUkjentAktorId(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
@@ -70,6 +74,7 @@ public class OppfolgingsperiodeDao {
                 """, source);
     }
 
+    @Timed
     public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
