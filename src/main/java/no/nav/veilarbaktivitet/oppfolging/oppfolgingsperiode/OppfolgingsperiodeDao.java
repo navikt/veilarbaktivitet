@@ -4,7 +4,6 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.person.Person;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -47,7 +46,7 @@ public class OppfolgingsperiodeDao {
     }
 
     @Timed
-    public List<Person.AktorId> hentEnBrukerUtenOppfolgingsperiode(int max) {
+    public List<Person.AktorId> hentBrukereUtenOppfolgingsperiode(int max) {
 
         MapSqlParameterSource params = new MapSqlParameterSource("maks", max);
         return template.queryForList(
