@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @EnableScheduling
+@EnableSchedulerLock(defaultLockAtMostFor = "PT15M")
 @Slf4j
 @RequiredArgsConstructor
 public class OppfolgingsperiodeCron {
