@@ -1,5 +1,4 @@
 package no.nav.veilarbaktivitet.config;
-
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.job.leader_election.LeaderElectionClient;
