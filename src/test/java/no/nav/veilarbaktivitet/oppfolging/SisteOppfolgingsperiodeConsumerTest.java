@@ -15,10 +15,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -30,11 +36,11 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     @Autowired
     KafkaTemplate<String, String> producer;
 
-    @Value("${topic.inn.oppfolgingSistePeriode}")
+    @Value("${topic.inn.sisteOppfolgingsperiode}")
     String oppfolgingSistePeriodeTopic;
 
     @Test
-    public void skal_opprette_siste_oppfolgingsperiode() {
+    public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = SisteOppfolgingsperiodeV1.builder()
@@ -42,11 +48,9 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
                 .aktorId(mockBruker.getAktorId())
                 .startDato(ZonedDateTime.now())
                 .build();
-
-        producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(sisteOppfolgingsperiodeV1));
-
+        SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(sisteOppfolgingsperiodeV1)).get(1, SECONDS);
+        kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
         record SisteOppfolgingsperiode(UUID oppfolgingsperiode, String aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato) {}
-
         await().atMost(5, SECONDS).until(() -> {
             try {
                 SisteOppfolgingsperiode sisteOppfolgingsperiode = jdbc.queryForObject("SELECT * FROM siste_oppfolgingsperiode WHERE aktor_id=?", SisteOppfolgingsperiode.class, mockBruker.getAktorId());
