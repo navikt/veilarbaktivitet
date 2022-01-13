@@ -18,7 +18,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @AutoConfigureWireMock(port = 0)
 public class SpringBootTestBase {
     @Autowired
-    protected KafkaTestService testService;
+    protected KafkaTestService kafkaTestService;
 
     @Autowired
     protected AktivitetTestService testAktivitetservice;

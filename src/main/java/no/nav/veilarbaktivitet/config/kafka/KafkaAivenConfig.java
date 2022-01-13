@@ -78,12 +78,38 @@ public class KafkaAivenConfig {
 
     @Bean
     <K extends SpecificRecordBase, V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<K, V> avroAvrokafkaListenerContainerFactory(
-            ConsumerFactory<K, V> kafkaConsumerFactory
-    ) {
+            ConsumerFactory<K, V> kafkaConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<K, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        return configureConcurrentKafkaListenerContainerFactory(kafkaConsumerFactory, factory);
+    }
+
+    private <K extends SpecificRecordBase, V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<K, V> configureConcurrentKafkaListenerContainerFactory(ConsumerFactory<K, V> kafkaConsumerFactory, ConcurrentKafkaListenerContainerFactory<K, V> factory) {
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.getContainerProperties()
-                .setAuthorizationExceptionRetryInterval(Duration.ofSeconds(10L));
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
+
+        factory.setConcurrency(3);
+        // TODO replace with DefaultErrorHandler
+        factory.setErrorHandler(new SeekToCurrentErrorHandler(
+                (rec, thr) -> log.error("Exception={} oppstått i kafka-consumer record til topic={}, partition={}, offset={}, bestillingsId={} feilmelding={}",
+                        thr.getClass().getSimpleName(),
+                        rec.topic(),
+                        rec.partition(),
+                        rec.offset(),
+                        rec.key(),
+                        thr.getCause()
+                ),
+                new FixedBackOff(DEFAULT_INTERVAL, UNLIMITED_ATTEMPTS)));
+        return factory;
+    }
+
+    @Bean
+    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
+            ConsumerFactory<String, V> kafkaConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(kafkaConsumerFactory);
+        factory.getContainerProperties()
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
 
         factory.setConcurrency(3);
         factory.setErrorHandler(new SeekToCurrentErrorHandler(
@@ -100,13 +126,12 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
-            ConsumerFactory<String, V> kafkaConsumerFactory
-    ) {
-        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    ConcurrentKafkaListenerContainerFactory<String, String> stringStringKafkaListenerContainerFactory(
+            ConsumerFactory<String, String> kafkaConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.getContainerProperties()
-                .setAuthorizationExceptionRetryInterval(Duration.ofSeconds(10L));
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
 
         factory.setConcurrency(3);
         factory.setErrorHandler(new SeekToCurrentErrorHandler(
