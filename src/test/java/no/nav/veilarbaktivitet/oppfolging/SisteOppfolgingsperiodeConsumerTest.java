@@ -14,16 +14,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.util.concurrent.ListenableFuture;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -39,6 +39,9 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     @Value("${topic.inn.sisteOppfolgingsperiode}")
     String oppfolgingSistePeriodeTopic;
 
+    @Autowired
+    private SistePeriodeDAO sistePeriodeDAO;
+
     @Test
     public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
@@ -50,15 +53,16 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
                 .build();
         SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(sisteOppfolgingsperiodeV1)).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
-        record SisteOppfolgingsperiode(UUID oppfolgingsperiode, String aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato) {}
+
+
         await().atMost(5, SECONDS).until(() -> {
             try {
-                SisteOppfolgingsperiode sisteOppfolgingsperiode = jdbc.queryForObject("SELECT * FROM siste_oppfolgingsperiode WHERE aktor_id=?", SisteOppfolgingsperiode.class, mockBruker.getAktorId());
-                assert sisteOppfolgingsperiode != null;
-                Assertions.assertThat(sisteOppfolgingsperiode.oppfolgingsperiode()).isEqualTo(mockBruker.getOppfolgingsperiode());
-                Assertions.assertThat(sisteOppfolgingsperiode.aktorId()).isEqualTo(mockBruker.getAktorId());
-                Assertions.assertThat(sisteOppfolgingsperiode.startDato()).isEqualTo(sisteOppfolgingsperiodeV1.getStartDato());
-                Assertions.assertThat(sisteOppfolgingsperiode.sluttDato()).isNull();
+                Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId());
+                assert oppfolgingsperiode != null;
+                Assertions.assertThat(oppfolgingsperiode.oppfolgingsperiode()).isEqualTo(mockBruker.getOppfolgingsperiode());
+                Assertions.assertThat(oppfolgingsperiode.aktorid()).isEqualTo(mockBruker.getAktorId());
+                Assertions.assertThat(oppfolgingsperiode.startTid()).isEqualTo(sisteOppfolgingsperiodeV1.getStartDato());
+                Assertions.assertThat(oppfolgingsperiode.sluttTid()).isNull();
 
                 return true;
             } catch (EmptyResultDataAccessException error) {

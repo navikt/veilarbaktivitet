@@ -1,0 +1,8 @@
+package no.nav.veilarbaktivitet.oppfolging;
+
+import java.time.ZonedDateTime;
+import java.util.UUID;
+
+public record Oppfolgingsperiode(String aktorid, UUID oppfolgingsperiode, ZonedDateTime startTid,
+                                 ZonedDateTime sluttTid) {
+}
