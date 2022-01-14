@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import org.assertj.core.api.Assertions;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     @Autowired
     private SistePeriodeDAO sistePeriodeDAO;
 
+    @Ignore
     @Test
     public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
