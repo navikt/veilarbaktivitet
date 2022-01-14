@@ -19,6 +19,7 @@ import java.time.ZonedDateTime;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -42,7 +43,7 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         SisteOppfolgingsperiodeV1 startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
                 .uuid(mockBruker.getOppfolgingsperiode())
                 .aktorId(mockBruker.getAktorId())
-                .startDato(ZonedDateTime.now().minusHours(1))
+                .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .build();
         SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(startOppfolgiong)).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
@@ -55,7 +56,7 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         Assertions.assertThat(oppfolgingsperiode.sluttTid()).isNull();
 
 
-        SisteOppfolgingsperiodeV1 avsluttetOppfolgingsperide = startOppfolgiong.withSluttDato(ZonedDateTime.now());
+        SisteOppfolgingsperiodeV1 avsluttetOppfolgingsperide = startOppfolgiong.withSluttDato(ZonedDateTime.now().truncatedTo(MILLIS));
         SendResult<String, String> avsluttetSendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(avsluttetOppfolgingsperide)).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, avsluttetSendResult.getRecordMetadata().offset(), 5);
 
