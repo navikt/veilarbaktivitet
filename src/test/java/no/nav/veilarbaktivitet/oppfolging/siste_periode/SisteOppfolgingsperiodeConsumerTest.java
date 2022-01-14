@@ -22,9 +22,6 @@ import java.util.concurrent.TimeoutException;
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
 public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
 
     @Autowired
