@@ -23,9 +23,5 @@ public class SisteOppfolgingsperiodeConsumer {
                         sisteOppfolgingsperiodeV1.uuid,
                         sisteOppfolgingsperiodeV1.startDato,
                         sisteOppfolgingsperiodeV1.sluttDato));
-
-
-
-
     }
 }
