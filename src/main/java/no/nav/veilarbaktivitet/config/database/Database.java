@@ -10,6 +10,10 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -62,7 +66,14 @@ public class Database {
                 .orElse(null);
     }
 
-    public static UUID hentMabyUUID(ResultSet rs, String kolonneNavn) throws SQLException {
+    public static ZonedDateTime hentZonedDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
+        return  ofNullable(rs.getTimestamp(kolonneNavn))
+                .map(java.sql.Timestamp::toInstant)
+                .map(instant -> ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()))
+                .orElse(null);
+    }
+
+    public static UUID hentMaybeUUID(ResultSet rs, String kolonneNavn) throws SQLException {
         String uuid = rs.getString(kolonneNavn);
 
         if (StringUtils.isEmpty(uuid)) {

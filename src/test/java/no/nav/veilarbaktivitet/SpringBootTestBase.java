@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -18,19 +19,22 @@ import org.springframework.test.context.junit4.SpringRunner;
 @AutoConfigureWireMock(port = 0)
 public class SpringBootTestBase {
     @Autowired
-    protected KafkaTestService testService;
+    protected KafkaTestService kafkaTestService;
 
     @Autowired
     protected AktivitetTestService testAktivitetservice;
 
     @Autowired
-    protected JdbcTemplate jdbc;
+    protected JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @LocalServerPort
     protected int port;
 
     @Before
     public void setUp() {
-        DbTestUtils.cleanupTestDb(jdbc);
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 }

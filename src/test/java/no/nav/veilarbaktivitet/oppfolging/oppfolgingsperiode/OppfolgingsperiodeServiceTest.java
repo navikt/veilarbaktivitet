@@ -43,7 +43,7 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO opprettet = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
-        jdbc.update("update AKTIVITET set OPPRETTET_DATO = DATE '2017-08-01' where AKTIVITET_ID = " + opprettet.getId());
+        jdbcTemplate.update("update AKTIVITET set OPPRETTET_DATO = DATE '2017-08-01' where AKTIVITET_ID = " + opprettet.getId());
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
@@ -66,12 +66,12 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
         aktorUtenGjeldende("ukjent_fnr", "ukjent_aktorid");
 
         //endrer til ukjent aktorid
-        jdbc.update("update AKTIVITET set AKTOR_ID = 'ukjent_aktorid' where AKTIVITET_ID = " + opprettet.getId());
+        jdbcTemplate.update("update AKTIVITET set AKTOR_ID = 'ukjent_aktorid' where AKTIVITET_ID = " + opprettet.getId());
 
         oppfolgingsperiodeCron.addOppfolgingsperioder();
 
         //endrer tilbake til gyldig aktorid for og hente ut resultatet
-        jdbc.update("update AKTIVITET set AKTOR_ID = "+ mockBruker.getAktorId() +" where AKTIVITET_ID = " + opprettet.getId());
+        jdbcTemplate.update("update AKTIVITET set AKTOR_ID = "+ mockBruker.getAktorId() +" where AKTIVITET_ID = " + opprettet.getId());
 
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 

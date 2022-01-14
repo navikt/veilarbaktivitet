@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging;
+package no.nav.veilarbaktivitet.oppfolging.avslutt;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import no.nav.common.json.JsonUtils;
