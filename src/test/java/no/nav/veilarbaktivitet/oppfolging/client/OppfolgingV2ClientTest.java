@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.v2;
+package no.nav.veilarbaktivitet.oppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import no.nav.veilarbaktivitet.person.Person;

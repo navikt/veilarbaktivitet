@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging;
+package no.nav.veilarbaktivitet.oppfolging.siste_periode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,14 +15,12 @@ class SistePeriodeDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
 
-    private RowMapper<Oppfolgingsperiode> rowmapper= (rs, rowNum) -> {
-        return new Oppfolgingsperiode(
-                rs.getString("AKTORID"),
-                Database.hentMaybeUUID(rs, "PERIODE_UUID"),
-                Database.hentZonedDateTime(rs, "STARTDATO"),
-                Database.hentZonedDateTime(rs, "SLUTTDATO")
-        );
-    };
+    private RowMapper<Oppfolgingsperiode> rowmapper= (rs, rowNum) -> new Oppfolgingsperiode(
+            rs.getString("AKTORID"),
+            Database.hentMaybeUUID(rs, "PERIODE_UUID"),
+            Database.hentZonedDateTime(rs, "STARTDATO"),
+            Database.hentZonedDateTime(rs, "SLUTTDATO")
+    );
 
     Oppfolgingsperiode hentSisteOppfolgingsPeriode(String aktorId) {
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("aktorId", aktorId);
