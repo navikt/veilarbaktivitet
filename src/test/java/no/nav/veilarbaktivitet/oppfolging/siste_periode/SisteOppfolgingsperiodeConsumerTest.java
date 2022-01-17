@@ -22,6 +22,7 @@ import java.util.concurrent.TimeoutException;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.awaitility.Awaitility.await;
 
 public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
 
@@ -34,7 +35,6 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     @Autowired
     private SistePeriodeDAO sistePeriodeDAO;
 
-    @Ignore
     @Test
     public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
@@ -45,7 +45,9 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
                 .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .build();
         SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(startOppfolgiong)).get(1, SECONDS);
-        kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
+ //       kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
+        await().atMost(5, SECONDS).until(() -> kafkaTestService.erKonsumert(oppfolgingSistePeriodeTopic, "veilarbaktivitet-temp2", sendResult.getRecordMetadata().offset()));
+
 
         Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId());
         assert oppfolgingsperiode != null;
@@ -57,7 +59,8 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
 
         SisteOppfolgingsperiodeV1 avsluttetOppfolgingsperide = startOppfolgiong.withSluttDato(ZonedDateTime.now().truncatedTo(MILLIS));
         SendResult<String, String> avsluttetSendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(avsluttetOppfolgingsperide)).get(1, SECONDS);
-        kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, avsluttetSendResult.getRecordMetadata().offset(), 5);
+ //       kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, avsluttetSendResult.getRecordMetadata().offset(), 5);
+        await().atMost(5, SECONDS).until(() -> kafkaTestService.erKonsumert(oppfolgingSistePeriodeTopic, "veilarbaktivitet-temp2", avsluttetSendResult.getRecordMetadata().offset()));
 
 
         Oppfolgingsperiode oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId());
