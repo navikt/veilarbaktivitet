@@ -34,7 +34,6 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     @Autowired
     private SistePeriodeDAO sistePeriodeDAO;
 
-    @Ignore
     @Test
     public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
