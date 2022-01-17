@@ -55,7 +55,7 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
     }
 
     @Test(timeout = 5000)
-    public void skalHåntereUkjentAktorId() {
+    public void skalHandtereUkjentAktorId() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
@@ -73,6 +73,7 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
         //endrer tilbake til gyldig aktorid for og hente ut resultatet
         jdbcTemplate.update("update AKTIVITET set AKTOR_ID = "+ mockBruker.getAktorId() +" where AKTIVITET_ID = " + opprettet.getId());
 
+        // TODO finn ut hvorfor testen feiler sporadisk med 403 her.
         AktivitetDTO etterAdd = testAktivitetservice.hentAktivitet(port, mockBruker, opprettet.getId());
 
         assertNull(etterAdd.getOppfolgingsperiodeId());
