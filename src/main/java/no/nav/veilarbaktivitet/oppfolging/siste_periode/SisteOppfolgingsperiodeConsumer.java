@@ -13,8 +13,7 @@ import org.springframework.stereotype.Service;
 class SisteOppfolgingsperiodeConsumer {
     private final SistePeriodeDAO sistePeriodeDAO;
 
-    //TODO slett groupId = "veilarbaktivitet-temp2"
-@KafkaListener(topics = "${topic.inn.sisteOppfolgingsperiode}", containerFactory = "stringStringKafkaListenerContainerFactory", groupId = "veilarbaktivitet-temp2")
+    @KafkaListener(topics = "${topic.inn.sisteOppfolgingsperiode}", containerFactory = "stringStringKafkaListenerContainerFactory")
     void opprettEllerOppdaterSistePeriode(ConsumerRecord<String, String> consumerRecord) {
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = JsonUtils.fromJson(consumerRecord.value(), SisteOppfolgingsperiodeV1.class);
         log.info("Siste oppfølgingsperiode: {}", sisteOppfolgingsperiodeV1);
