@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-class SistePeriodeDAO {
+public class SistePeriodeDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
 
@@ -22,7 +22,7 @@ class SistePeriodeDAO {
             Database.hentZonedDateTime(rs, "SLUTTDATO")
     );
 
-    Oppfolgingsperiode hentSisteOppfolgingsPeriode(String aktorId) {
+    public Oppfolgingsperiode hentSisteOppfolgingsPeriode(String aktorId) {
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("aktorId", aktorId);
         return jdbc.queryForObject(
                 "SELECT * FROM siste_oppfolgingsperiode WHERE aktorid=:aktorId",

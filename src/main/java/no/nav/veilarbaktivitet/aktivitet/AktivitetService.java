@@ -7,6 +7,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode.OppfolgingsperiodeDao;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.OppfolgingsperiodeService;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
 import no.nav.veilarbaktivitet.util.MappingUtils;
@@ -15,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -26,9 +30,11 @@ import static no.nav.common.utils.StringUtils.nullOrEmpty;
 public class AktivitetService {
 
     private final AktivitetDAO aktivitetDAO;
+    private final SistePeriodeDAO sistePeriodeDAO;
     private final AvtaltMedNavService avtaltMedNavService;
     private final KvpService kvpService;
     private final MetricService metricService;
+    private final OppfolgingsperiodeService oppfolgingsperiodeService;
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
@@ -60,6 +66,13 @@ public class AktivitetService {
     }
 
     public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
+        UUID oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(aktorId.get()).oppfolgingsperiode();
+        // TODO sjekke om periode er aktiv?
+
+        if (oppfolgingsperiode == null) {
+            oppfolgingsperiode = oppfolgingsperiodeService.fallbackKallOppfolging(aktorId);
+        }
+
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .aktorId(aktorId.get())
@@ -68,9 +81,11 @@ public class AktivitetService {
                 .opprettetDato(new Date())
                 .endretAv(endretAvPerson.get())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
+                .oppfolgingsperiodeId(oppfolgingsperiode)
                 .build();
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
+        ;
         nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);

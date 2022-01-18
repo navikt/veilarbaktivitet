@@ -136,19 +136,21 @@ public class AktivitetDAO {
                 .addValue("kontorsperre_enhet_id", aktivitet.getKontorsperreEnhetId())
                 .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
                 .addValue("mal_id", aktivitet.getMalid())
-                .addValue("fho_id", fhoId);
+                .addValue("fho_id", fhoId)
+                .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId()!= null ? aktivitet.getOppfolgingsperiodeId().toString() : null);
         //language=SQL
         database.getNamedJdbcTemplate().update(
                 """
                         INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
                         fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode,
                         avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke,
-                        avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id)
+                        avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id, oppfolgingsperiode_uuid)
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
                         :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
                         :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
-                        :automatisk_opprettet, :mal_id, :fho_id)
+                        :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid
+                        )
                         """, params);
 
 
