@@ -25,14 +25,15 @@ public class AktivitetDAO {
 
     // TODO: Refaktorer spørring. Her joines mange tabeller som kan ha kolonner med samme navn. Hva som hentes ut av ResultSet kommer an på rekkefølgen det joines.
     // language=sql
-    private static final String SELECT_AKTIVITET = "SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.* FROM AKTIVITET A " +
-            "LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon " +
-            "LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon " +
-            "LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon " +
-            "LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon " +
-            "LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon " +
-            "LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon " +
-            "LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon ";
+    private static final String SELECT_AKTIVITET = """
+            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.* FROM AKTIVITET A
+            LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon
+            LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon
+            LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon
+            LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon
+            LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon
+            LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon
+            LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon\s""";
 
     private final Database database;
 
@@ -137,15 +138,19 @@ public class AktivitetDAO {
                 .addValue("mal_id", aktivitet.getMalid())
                 .addValue("fho_id", fhoId);
         //language=SQL
-        database.getNamedJdbcTemplate().update("INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode," +
-                "fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode," +
-                "avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke, " +
-                "avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id) " +
-                "VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato, " +
-                ":til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar, " +
-                ":opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt, " +
-                ":gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id, " +
-                ":automatisk_opprettet, :mal_id, :fho_id)", params);
+        database.getNamedJdbcTemplate().update(
+                """
+                        INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
+                        fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode,
+                        avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke,
+                        avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id)
+                        VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
+                        :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
+                        :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
+                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
+                        :automatisk_opprettet, :mal_id, :fho_id)
+                        """, params);
+
 
         insertStillingsSoek(aktivitetId, versjon, aktivitet.getStillingsSoekAktivitetData());
         insertEgenAktivitet(aktivitetId, versjon, aktivitet.getEgenAktivitetData());
@@ -179,24 +184,16 @@ public class AktivitetDAO {
                     .addValue("referat", moteData.getReferat())
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             // language=sql
-            database.getNamedJdbcTemplate().update("INSERT INTO MOTE(" +
-                            "aktivitet_id, " +
-                            "versjon, " +
-                            "adresse," +
-                            "forberedelser, " +
-                            "kanal, " +
-                            "referat, " +
-                            "referat_publisert" +
-                            ") VALUES( " +
-                            ":aktivitet_id, " +
-                            ":versjon, " +
-                            ":adresse, " +
-                            ":forberedelser, " +
-                            ":kanal, " +
-                            ":referat, " +
-                            ":referat_publisert)",
-                    params
-            );
+            database.getNamedJdbcTemplate().update("""
+                    INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
+                    :aktivitet_id,
+                    :versjon,
+                    :adresse,
+                    :forberedelser,
+                    :kanal,
+                    :referat,
+                    :referat_publisert)
+                    """, params);
         });
     }
 
@@ -212,13 +209,12 @@ public class AktivitetDAO {
                             .addValue("kontaktperson", stillingsoek.getKontaktPerson())
                             .addValue("etikett", EnumUtils.getName(stillingsoek.getStillingsoekEtikett()));
                     // language=sql
-                    database.getNamedJdbcTemplate().update(
-                            "INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel," +
-                                    "arbeidsgiver, arbeidssted, kontaktperson, etikett) " +
-                                    "VALUES(:aktivitet_id, :versjon, :stillingstittel, " +
-                                    ":arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)",
-                            params
-                    );
+                    database.getNamedJdbcTemplate().update("""
+                            INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel,
+                            arbeidsgiver, arbeidssted, kontaktperson, etikett)
+                            VALUES(:aktivitet_id, :versjon, :stillingstittel,
+                            :arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)
+                            """, params);
                 });
     }
 
@@ -249,8 +245,10 @@ public class AktivitetDAO {
                             .addValue("avtale_oppfolging", sokeAvtale.getAvtaleOppfolging());
                     // language=sql
                     database.getNamedJdbcTemplate().update(
-                            "INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging) " +
-                                    "VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)",
+                            """
+                                    INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging)
+                                    VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)
+                                    """,
                             params
                     );
                 });
@@ -267,9 +265,11 @@ public class AktivitetDAO {
                             .addValue("arbeidstid", iJobb.getArbeidstid());
                     // language=sql
                     database.getNamedJdbcTemplate().update(
-                            "INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status," +
-                                    " ansettelsesforhold, arbeidstid) VALUES(:aktivitet_id, :versjon, :jobb_status," +
-                                    " :ansettelsesforhold, :arbeidstid)",
+                            """
+                                    INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status,
+                                    ansettelsesforhold, arbeidstid) VALUES(:aktivitet_id, :versjon, :jobb_status,
+                                    :ansettelsesforhold, :arbeidstid)
+                                    """,
                             params
                     );
                 });
@@ -286,10 +286,13 @@ public class AktivitetDAO {
                             .addValue("effekt", behandling.getEffekt())
                             .addValue("behandling_oppfolging", behandling.getBehandlingOppfolging());
                     // language=sql
-                    database.getNamedJdbcTemplate().update("INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type, " +
-                                    "behandling_sted, effekt, behandling_oppfolging) " +
-                                    "VALUES(:aktivitet_id, :versjon, :behandling_type, " +
-                                    ":behandling_sted, :effekt, :behandling_oppfolging)",
+                    database.getNamedJdbcTemplate().update(
+                            """
+                                    INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type,
+                                    behandling_sted, effekt, behandling_oppfolging)
+                                    VALUES(:aktivitet_id, :versjon, :behandling_type,
+                                    :behandling_sted, :effekt, :behandling_oppfolging)
+                                    """,
                             params);
                 });
     }
@@ -321,45 +324,48 @@ public class AktivitetDAO {
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
                             // language=sql
                             database.getNamedJdbcTemplate().update(
-                                    " insert into " +
-                                            " STILLING_FRA_NAV(AKTIVITET_ID, " +
-                                            "VERSJON, " +
-                                            "CV_KAN_DELES, " +
-                                            "CV_KAN_DELES_TIDSPUNKT, " +
-                                            "CV_KAN_DELES_AV, " +
-                                            "CV_KAN_DELES_AV_TYPE, " +
-                                            "CV_KAN_DELES_AVTALT_DATO," +
-                                            "soknadsfrist, " +
-                                            "svarfrist, " +
-                                            "arbeidsgiver, " +
-                                            "bestillingsId, " +
-                                            "stillingsId, " +
-                                            "arbeidssted, " +
-                                            "varselid, " +
-                                            "kontaktperson_navn, " +
-                                            "kontaktperson_tittel, " +
-                                            "kontaktperson_mobil, " +
-                                            "soknadsstatus, " +
-                                            "livslopsstatus) " +
-                                            " VALUES ( :aktivitet_id, " +
-                                            ":versjon, " +
-                                            ":cv_kan_deles, " +
-                                            ":cv_kan_deles_tidspunkt, " +
-                                            ":cv_kan_deles_av, " +
-                                            ":cv_kan_deles_av_type, " +
-                                            ":cv_kan_deles_avtalt_dato, " +
-                                            ":soknadsfrist , " +
-                                            ":svarfrist , " +
-                                            ":arbeidsgiver , " +
-                                            ":bestillingsId , " +
-                                            ":stillingsId , " +
-                                            ":arbeidssted , " +
-                                            ":varselid , " +
-                                            ":kontaktperson_navn , " +
-                                            ":kontaktperson_tittel , " +
-                                            ":kontaktperson_mobil , " +
-                                            ":soknadsstatus, " +
-                                            ":livslopsstatus)",
+                                    """ 
+                                            insert into STILLING_FRA_NAV (
+                                            AKTIVITET_ID,
+                                            VERSJON,
+                                            CV_KAN_DELES,
+                                            CV_KAN_DELES_TIDSPUNKT,
+                                            CV_KAN_DELES_AV,
+                                            CV_KAN_DELES_AV_TYPE,
+                                            CV_KAN_DELES_AVTALT_DATO,
+                                            soknadsfrist,
+                                            svarfrist,
+                                            arbeidsgiver,
+                                            bestillingsId,
+                                            stillingsId,
+                                            arbeidssted,
+                                            varselid,
+                                            kontaktperson_navn,
+                                            kontaktperson_tittel,
+                                            kontaktperson_mobil,
+                                            soknadsstatus,
+                                            livslopsstatus
+                                            ) VALUES (
+                                            :aktivitet_id,
+                                            :versjon,
+                                            :cv_kan_deles,
+                                            :cv_kan_deles_tidspunkt,
+                                            :cv_kan_deles_av,
+                                            :cv_kan_deles_av_type,
+                                            :cv_kan_deles_avtalt_dato,
+                                            :soknadsfrist ,
+                                            :svarfrist ,
+                                            :arbeidsgiver ,
+                                            :bestillingsId ,
+                                            :stillingsId ,
+                                            :arbeidssted ,
+                                            :varselid ,
+                                            :kontaktperson_navn ,
+                                            :kontaktperson_tittel ,
+                                            :kontaktperson_mobil ,
+                                            :soknadsstatus,
+                                            :livslopsstatus)
+                                            """,
                                     parms
                             );
                         }
@@ -400,7 +406,9 @@ public class AktivitetDAO {
 
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
         // language=sql
-        database.update("UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP " +
-                "WHERE aktivitet_id = ?", aktivitetId);
+        database.update("""
+                UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP
+                WHERE aktivitet_id = ?
+                """, aktivitetId);
     }
 }
