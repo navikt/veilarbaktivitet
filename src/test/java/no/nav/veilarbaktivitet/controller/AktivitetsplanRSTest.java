@@ -385,6 +385,7 @@ public class AktivitetsplanRSTest {
                 .setTransaksjonsType(aktivitet.getTransaksjonsType())
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(AuthContextHolderThreadLocal.instance().getSubject().orElseThrow())
+                .setOppfolgingsperiodeId(aktivitet.getOppfolgingsperiodeId())
         ));
     }
 

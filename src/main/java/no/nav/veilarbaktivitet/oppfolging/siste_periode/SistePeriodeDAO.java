@@ -3,15 +3,18 @@ package no.nav.veilarbaktivitet.oppfolging.siste_periode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.config.database.Database;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-public class SistePeriodeDAO {
+class SistePeriodeDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
 
@@ -22,12 +25,16 @@ public class SistePeriodeDAO {
             Database.hentZonedDateTime(rs, "SLUTTDATO")
     );
 
-    public Oppfolgingsperiode hentSisteOppfolgingsPeriode(String aktorId) {
+    Optional<Oppfolgingsperiode> hentSisteOppfolgingsPeriode(String aktorId) {
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("aktorId", aktorId);
-        return jdbc.queryForObject(
-                "SELECT * FROM siste_oppfolgingsperiode WHERE aktorid=:aktorId",
-                params,
-                rowmapper);
+        try {
+            return Optional.of(jdbc.queryForObject(
+                    "SELECT * FROM siste_oppfolgingsperiode WHERE aktorid=:aktorId",
+                    params,
+                    rowmapper));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
 

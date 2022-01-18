@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OppfolingsPeriodePersonSerivce {
+public class OppfolgingsperiodePersonService {
     private final OppfolgingsperiodeDao dao;
     private final OppfolgingV2Client client;
 

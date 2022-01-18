@@ -11,8 +11,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2UnderOppfolgingDTO;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
@@ -27,7 +27,6 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -37,7 +36,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final AktivitetService aktivitetService;
     private final DelingAvCvService delingAvCvService;
     private final KvpService kvpService;
-    private final OppfolgingV2Client oppfolgingClient;
+    private final SistePeriodeService sistePeriodeService;
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavProducerClient producerClient;
     private final StillingFraNavMetrikker metrikker;
@@ -61,17 +60,19 @@ public class OpprettForesporselOmDelingAvCv {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
 
-        Optional<OppfolgingV2UnderOppfolgingDTO> oppfolgingResponse;
+        boolean underOppfolging;
         try {
-            oppfolgingResponse = oppfolgingClient.fetchUnderoppfolging(aktorId);
+            sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+            underOppfolging = true;
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
+        } catch (IngenGjeldendePeriodeException exception) {
+            underOppfolging = false;
         }
 
         boolean underKvp = kvpService.erUnderKvp(aktorId);
-        boolean underOppfolging = oppfolgingResponse.map(OppfolgingV2UnderOppfolgingDTO::isErUnderOppfolging).orElse(false);
 
         if (!underOppfolging || underKvp) {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());

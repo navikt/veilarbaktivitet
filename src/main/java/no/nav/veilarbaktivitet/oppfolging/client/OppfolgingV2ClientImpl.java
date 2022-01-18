@@ -44,6 +44,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
 
     @Override
     public Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId) {
+        log.warn("Henter gjeldende periode for {} fra veilarboppfolging. Intern tabell SISTE_OPPFOLGINGSPERIODE kan være ute av sync." );
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
