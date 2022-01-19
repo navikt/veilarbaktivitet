@@ -15,10 +15,7 @@ public class OppfolgingsperiodeService {
     public long oppdater500brukere() {
         return dao
                 .hentBrukereUtenOppfolgingsperiode(500)
-                .stream()
-                .map(service::addOppfolgingsperioderForEnBruker)
-                .toList()
-                .size();
+                .stream().map(service::addOppfolgingsperioderForEnBruker).count();
     }
 
 }

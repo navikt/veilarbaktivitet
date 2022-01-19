@@ -29,7 +29,7 @@ public class OppfolgingsperiodePersonService {
         } catch (IngenGjeldendeIdentException e) {
             dao.setUkjentAktorId(aktorId);
             log.warn("ukjent aktorId {}", aktorId);
-            return true;
+            return false ;
         }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
