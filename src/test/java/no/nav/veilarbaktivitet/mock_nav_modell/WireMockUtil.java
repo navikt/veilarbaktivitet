@@ -21,14 +21,25 @@ public class WireMockUtil {
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
 
-        oppfolging(fnr, underOppfolging, mockBruker.getOppfolgingsperiode());
+        boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
+
+        oppfolging(fnr, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
     }
 
-    private static void oppfolging(String fnr, boolean underOppfolging, UUID periode) {
+    private static void oppfolging(String fnr, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
+        if (oppfolgingFeiler) {
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
+                    .willReturn(aResponse().withStatus(500)));
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
+                    .willReturn(aResponse().withStatus(500)));
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
+                    .willReturn(aResponse().withStatus(500)));
+            return;
+        }
         stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")

@@ -13,6 +13,14 @@ public class BrukerOptions {
     private boolean erUnderKvp;
     private boolean harBruktNivaa4;
 
+    private boolean oppfolgingFeiler;
+    /*
+    @TODO
+    private boolean manuellFeiler;
+    private boolean krrFeiler;
+    private boolean kvpFeiler;
+     */
+
     public static BrukerOptions happyBruker() {
         return happyBrukerBuilder()
                 .build();

@@ -4,6 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
+import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.UUID;
 
@@ -28,5 +29,9 @@ public class MockBruker extends RestassuredUser {
 
     public boolean harIdent(String ident) {
         return super.ident.equals(ident) || aktorId.equals(ident);
+    }
+
+    public Person.AktorId getAktorIdAsAktorId() {
+        return Person.aktorId(aktorId);
     }
 }
