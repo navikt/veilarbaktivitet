@@ -13,7 +13,8 @@ public class GjeldendePeriodeMetrikk {
 
     public GjeldendePeriodeMetrikk(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
-        meterRegistry.counter(EKSTERN_GJELDENDE_OPPFOLGINGSPERIODE, GJELDENDE_TAG);
+        meterRegistry.counter(EKSTERN_GJELDENDE_OPPFOLGINGSPERIODE, GJELDENDE_TAG, "true");
+        meterRegistry.counter(EKSTERN_GJELDENDE_OPPFOLGINGSPERIODE, GJELDENDE_TAG, "false");
     }
 
     public void tellKallTilEksternOppfolgingsperiode(boolean harGjeldende) {
