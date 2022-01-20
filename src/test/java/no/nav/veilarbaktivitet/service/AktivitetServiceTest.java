@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -56,6 +57,9 @@ public class AktivitetServiceTest {
     @Mock
     private AvtaltMedNavService avtaltMedNavService;
 
+    @Mock
+    private SistePeriodeService sistePeriodeService;
+
     @Captor
     private ArgumentCaptor<AktivitetData> argumentCaptor;
 
@@ -63,7 +67,7 @@ public class AktivitetServiceTest {
 
     @Before
     public void setup() {
-        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, new KvpService(kvpClient), metricService);
+        aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, new KvpService(kvpClient), metricService, sistePeriodeService);
     }
 
     @Test

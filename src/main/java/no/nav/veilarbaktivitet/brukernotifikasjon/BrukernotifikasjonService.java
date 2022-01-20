@@ -6,8 +6,7 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -23,7 +22,7 @@ import java.util.UUID;
 public class BrukernotifikasjonService {
 
     private final PersonService personService;
-    private final OppfolgingV2Client oppfolgingClient;
+    private final SistePeriodeService sistePeriodeService;
     private final BrukerNotifikasjonDAO dao;
 
     private final Nivaa4Client nivaa4Client;
@@ -62,10 +61,9 @@ public class BrukernotifikasjonService {
         Person.Fnr fnr = personService
                 .getFnrForAktorId(aktorId);
 
-        OppfolgingPeriodeMinimalDTO oppfolging = oppfolgingClient.fetchGjeldendePeriode(aktorId)
-                .orElseThrow(() -> new IllegalStateException("bruker ikke under oppfolging"));
+        UUID gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
 
-        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, oppfolging.getUuid(), varseltype, VarselStatus.PENDING);
+        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING);
 
         return uuid;
     }

@@ -21,6 +21,7 @@ import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.junit.*;
@@ -53,9 +54,10 @@ public class StillingFraNavControllerTest {
     private final MetricService metricService = mock(MetricService.class);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(database);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
+    private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
     private final AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
 
-    private final AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService);
+    private final AktivitetService aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, kvpService, metricService, sistePeriodeService);
     private final AuthService authService = mock(AuthService.class);
     private final AktivitetAppService appService = new AktivitetAppService(authService, aktivitetService, metricService);
 

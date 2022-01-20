@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
@@ -33,8 +35,9 @@ public class OppfolgingV2ClientTest {
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         PersonService personService = Mockito.mock(PersonService.class);
+        GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
-        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService);
+        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService, gjeldendePeriodeMetrikk);
         oppfolgingV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 

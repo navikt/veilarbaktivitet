@@ -4,6 +4,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
@@ -23,6 +24,7 @@ import java.util.Optional;
 public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     private final OkHttpClient client;
     private final PersonService personService;
+    private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
@@ -43,6 +45,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     }
 
     @Override
+    @Timed
     public Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
@@ -53,8 +56,10 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         try (Response response = client.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(false);
                 return Optional.empty();
             }
+            gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(true);
             return RestUtils.parseJsonResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());

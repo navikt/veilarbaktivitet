@@ -10,15 +10,12 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OppfolgingsperiodeService {
     private final OppfolgingsperiodeDao dao;
-    private final OppfolingsPeriodePersonSerivce service;
+    private final OppfolgingsperiodePersonService service;
     @Timed
     public long oppdater500brukere() {
         return dao
                 .hentBrukereUtenOppfolgingsperiode(500)
-                .stream()
-                .map(service::addOppfolgingsperioderForEnBruker)
-                .toList()
-                .size();
+                .stream().map(service::addOppfolgingsperioderForEnBruker).count();
     }
 
 }

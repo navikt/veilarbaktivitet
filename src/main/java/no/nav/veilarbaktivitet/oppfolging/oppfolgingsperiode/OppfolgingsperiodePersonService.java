@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OppfolingsPeriodePersonSerivce {
+public class OppfolgingsperiodePersonService {
     private final OppfolgingsperiodeDao dao;
     private final OppfolgingV2Client client;
 
@@ -29,7 +29,7 @@ public class OppfolingsPeriodePersonSerivce {
         } catch (IngenGjeldendeIdentException e) {
             dao.setUkjentAktorId(aktorId);
             log.warn("ukjent aktorId {}", aktorId);
-            return true;
+            return false ;
         }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
