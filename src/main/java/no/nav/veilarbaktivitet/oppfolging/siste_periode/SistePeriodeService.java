@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.siste_periode;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
@@ -14,6 +15,7 @@ public class SistePeriodeService {
     private final OppfolgingV2Client oppfolgingV2Client;
     private final SistePeriodeDAO sistePeriodeDAO;
 
+    @Timed
     public UUID hentGjeldendeOppfolgingsperiodeMedFallback(Person.AktorId aktorId) {
 
         Supplier<IngenGjeldendePeriodeException> exceptionSupplier = () -> new IngenGjeldendePeriodeException(String.format("AktorId: %s har ingen gjeldende oppfølgingsperiode", aktorId.get()));
