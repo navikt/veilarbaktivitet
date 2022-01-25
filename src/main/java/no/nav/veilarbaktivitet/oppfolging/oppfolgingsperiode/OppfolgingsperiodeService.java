@@ -17,8 +17,8 @@ public class OppfolgingsperiodeService {
                 .hentBrukereUtenOppfolgingsperiode(500)
                 .stream()
                 .map(service::addOppfolgingsperioderForEnBruker)
-                .filter(it -> it)
-                .count();
+                .toList() //kan ikke bruke count() her da den hopper over mappen.
+                .size();
     }
 
 }
