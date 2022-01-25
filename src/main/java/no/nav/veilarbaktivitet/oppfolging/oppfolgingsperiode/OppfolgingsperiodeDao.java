@@ -4,7 +4,6 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.person.Person;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -77,6 +76,7 @@ public class OppfolgingsperiodeDao {
     public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
+        log.info("går gjennom setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode for aktorid: {} ", aktorId);
 
         int antallOppdatert = template.update("""
                     update  AKTIVITET
