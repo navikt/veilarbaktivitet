@@ -39,6 +39,7 @@ public class OppfolgingsperiodeDao {
             return template.update("""
                     UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :oppfolgingsperiodeId
                     WHERE AKTOR_ID = :aktorId
+                    and HISTORISK_DATO is null
                     AND OPPFOLGINGSPERIODE_UUID IS NULL
                     """, params);
         }
