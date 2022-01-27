@@ -20,7 +20,6 @@ public class OppfolgingsperiodePersonService {
 
     @Timed(value = "oppfolgingsperiodeAdder", histogram = true)
     public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
-        log.info("oppdaterer oppfolgingsperioder for aktorid: {} ", aktorId);
         List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder;
         try {
             oppfolgingperioder = client
@@ -29,7 +28,7 @@ public class OppfolgingsperiodePersonService {
 
         } catch (IngenGjeldendeIdentException e) {
             dao.setUkjentAktorId(aktorId);
-            log.warn("ukjent aktorId {}", aktorId);
+            log.warn("ukjent aktorId {}", aktorId.get());
             return false;
         }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
