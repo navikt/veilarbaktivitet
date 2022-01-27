@@ -69,7 +69,7 @@ public class OppfolgingsperiodeDao {
 
         template.update("""
                     update  AKTIVITET
-                    set OPPFOLGINGSPERIODE_UUID = 'ukjent aktorId'
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent_aktorId'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
@@ -83,7 +83,7 @@ public class OppfolgingsperiodeDao {
 
         int antallOppdatert = template.update("""
                     update  AKTIVITET
-                    set OPPFOLGINGSPERIODE_UUID = 'ukjent oppfolginsperiode'
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent_oppfolgingsperiode'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
