@@ -39,7 +39,7 @@ public class OppfolgingsperiodeDao {
             return template.update("""
                     UPDATE AKTIVITET SET OPPFOLGINGSPERIODE_UUID = :oppfolgingsperiodeId
                     WHERE AKTOR_ID = :aktorId
-                    AND OPPRETTET_DATO >= :startDato
+                    and HISTORISK_DATO is null
                     AND OPPFOLGINGSPERIODE_UUID IS NULL
                     """, params);
         }
@@ -50,13 +50,16 @@ public class OppfolgingsperiodeDao {
 
         MapSqlParameterSource params = new MapSqlParameterSource("maks", max);
         return template.queryForList(
-                    """
-                    SELECT distinct AKTOR_ID from AKTIVITET
-                    where OPPFOLGINGSPERIODE_UUID is null
-                    fetch next :maks row ONLY
-                    """, params, String.class
+                """
+                        SELECT distinct AKTOR_ID from AKTIVITET
+                        where OPPFOLGINGSPERIODE_UUID is null
+                        fetch next :maks row ONLY
+                        """, params, String.class
 
-            ).stream().map(Person::aktorId).toList();
+        )
+                .stream()
+                .map(Person::aktorId)
+                .toList();
     }
 
     @Timed
@@ -66,7 +69,7 @@ public class OppfolgingsperiodeDao {
 
         template.update("""
                     update  AKTIVITET
-                    set OPPFOLGINGSPERIODE_UUID = 'ukjent aktorId'
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent_aktorId'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
@@ -80,13 +83,27 @@ public class OppfolgingsperiodeDao {
 
         int antallOppdatert = template.update("""
                     update  AKTIVITET
-                    set OPPFOLGINGSPERIODE_UUID = 'ukjent oppfolginsperiode'
+                    set OPPFOLGINGSPERIODE_UUID = 'ukjent_oppfolgingsperiode'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
 
-        if(antallOppdatert != 0) {
-            log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {}", aktorId.get(),  antallOppdatert);
+        if (antallOppdatert != 0) {
+            log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {}", aktorId.get(), antallOppdatert);
         }
+    }
+
+    public int oppdaterAktiviteterMedSluttdato(Person.AktorId aktorId, ZonedDateTime sluttDato, UUID uuid) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get())
+                .addValue("sluttDato", sluttDato)
+                .addValue("uuid", uuid.toString());
+        return template.update("""
+                update AKTIVITET
+                set OPPFOLGINGSPERIODE_UUID = :uuid
+                where OPPFOLGINGSPERIODE_UUID is null
+                and AKTOR_ID = :aktorId
+                and HISTORISK_DATO = :sluttDato
+                """, params);
     }
 }

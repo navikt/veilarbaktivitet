@@ -20,22 +20,34 @@ public class OppfolgingsperiodePersonService {
 
     @Timed(value = "oppfolgingsperiodeAdder", histogram = true)
     public boolean addOppfolgingsperioderForEnBruker(Person.AktorId aktorId) {
-        log.info("oppdaterer oppfolgingsperioder for aktorid: {} ", aktorId);
         List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder;
         try {
             oppfolgingperioder = client
                     .hentOppfolgingsperioder(aktorId)
                     .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
 
+            if(oppfolgingperioder.isEmpty()) {
+                log.warn("ingen oppfolingsperioder for {}", aktorId.get());
+            }
+
         } catch (IngenGjeldendeIdentException e) {
             dao.setUkjentAktorId(aktorId);
-            log.warn("ukjent aktorId {}", aktorId);
-            return false ;
+            log.warn("ukjent aktorId {}", aktorId.get());
+            return false;
         }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
             log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={}", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
         }
+
+        oppfolgingperioder
+                .stream()
+                .filter(it -> it.getSluttDato() != null)
+                .forEach(oppfolgingsperiode -> {
+                            long raderOppdatert = dao.oppdaterAktiviteterMedSluttdato(aktorId, oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
+                            log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={} basert på sluttdato", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
+                        }
+                );
 
         dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
 
