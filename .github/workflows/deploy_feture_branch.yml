@@ -1,11 +1,9 @@
-name: deploy dev og prod
+name: deploy feture branch
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 concurrency:
-  group: deploy_prod
+  group: deploy_feture_branch
   cancel-in-progress: true
 
 env:
@@ -53,18 +51,3 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: nais-q.yaml
           VAR: version=${{ env.IMAGE_TAG }},namespace=q1
-
-  deploy-prod:
-    name: Deploy application to prod
-    needs: deploy-dev
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v1
-      - name: Deploy application
-        uses: nais/deploy/actions/deploy@v1
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-fss
-          RESOURCE: nais.yaml
-          VAR: version=${{ env.IMAGE_TAG }}
