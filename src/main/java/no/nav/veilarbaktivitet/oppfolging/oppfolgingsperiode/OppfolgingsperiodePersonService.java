@@ -26,7 +26,7 @@ public class OppfolgingsperiodePersonService {
                     .hentOppfolgingsperioder(aktorId)
                     .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
 
-            if(oppfolgingperioder.isEmpty()) {
+            if (oppfolgingperioder.isEmpty()) {
                 int raderOppdatert = dao.setTilInngenPeriodePaaBruker(aktorId);
                 log.warn("ingen oppfolingsperioder for aktørid: {} antall aktivteter oppdatert: {}", aktorId.get(), raderOppdatert);
                 return false;
@@ -50,7 +50,9 @@ public class OppfolgingsperiodePersonService {
                 .filter(it -> it.getSluttDato() != null)
                 .forEach(oppfolgingsperiode -> {
                             long raderOppdatert = dao.oppdaterAktiviteterMedSluttdato(aktorId, oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
-                            log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={} basert på sluttdato", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
+                            if (raderOppdatert > 0) {
+                                log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={} basert på sluttdato", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
+                            }
                         }
                 );
 
