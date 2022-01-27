@@ -1,1 +1,0 @@
-update AKTIVITET set OPPFOLGINGSPERIODE_UUID = null where OPPFOLGINGSPERIODE_UUID in ('ukjent aktorId',  'ukjent oppfolginsperiode')

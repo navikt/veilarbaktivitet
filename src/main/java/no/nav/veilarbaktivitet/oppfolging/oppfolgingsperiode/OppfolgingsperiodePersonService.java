@@ -26,6 +26,10 @@ public class OppfolgingsperiodePersonService {
                     .hentOppfolgingsperioder(aktorId)
                     .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
 
+            if(oppfolgingperioder.isEmpty()) {
+                log.warn("ingen oppfolingsperioder for {}", aktorId.get());
+            }
+
         } catch (IngenGjeldendeIdentException e) {
             dao.setUkjentAktorId(aktorId);
             log.warn("ukjent aktorId {}", aktorId.get());
