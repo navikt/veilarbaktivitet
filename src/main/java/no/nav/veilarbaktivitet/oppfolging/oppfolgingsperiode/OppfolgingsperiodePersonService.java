@@ -37,6 +37,7 @@ public class OppfolgingsperiodePersonService {
             log.warn("ukjent aktorId {}", aktorId.get());
             return false;
         }
+
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
             if (raderOppdatert > 0) {
@@ -53,7 +54,10 @@ public class OppfolgingsperiodePersonService {
                         }
                 );
 
-        dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
+        int antallUtenOppfolingsperiode = dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
+        if (antallUtenOppfolingsperiode != 0) {
+            log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {} brukeren har {} perioder", aktorId.get(), antallUtenOppfolingsperiode, oppfolgingperioder.size());
+        }
 
         return true;
     }

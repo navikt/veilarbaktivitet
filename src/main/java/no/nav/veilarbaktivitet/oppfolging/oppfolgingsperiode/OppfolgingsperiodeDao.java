@@ -76,20 +76,16 @@ public class OppfolgingsperiodeDao {
     }
 
     @Timed
-    public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
+    public int setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
 
-        int antallOppdatert = template.update("""
+        return template.update("""
                     update  AKTIVITET
                     set OPPFOLGINGSPERIODE_UUID = 'ukjent_oppfolgingsperiode'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
-
-        if (antallOppdatert != 0) {
-            log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {}", aktorId.get(), antallOppdatert);
-        }
     }
 
     public int oppdaterAktiviteterMedSluttdato(Person.AktorId aktorId, ZonedDateTime sluttDato, UUID uuid) {
