@@ -27,7 +27,9 @@ public class OppfolgingsperiodePersonService {
                     .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
 
             if(oppfolgingperioder.isEmpty()) {
-                log.warn("ingen oppfolingsperioder for {}", aktorId.get());
+                dao.setTilInngenPeriodePaaBruker(aktorId);
+                log.warn("ingen oppfolingsperioder for {} antall aktivteter oppdatert {}", aktorId.get());
+                return false;
             }
 
         } catch (IngenGjeldendeIdentException e) {

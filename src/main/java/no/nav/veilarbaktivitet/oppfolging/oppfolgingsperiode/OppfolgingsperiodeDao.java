@@ -50,13 +50,13 @@ public class OppfolgingsperiodeDao {
 
         MapSqlParameterSource params = new MapSqlParameterSource("maks", max);
         return template.queryForList(
-                """
-                        SELECT distinct AKTOR_ID from AKTIVITET
-                        where OPPFOLGINGSPERIODE_UUID is null
-                        fetch next :maks row ONLY
-                        """, params, String.class
+                        """
+                                SELECT distinct AKTOR_ID from AKTIVITET
+                                where OPPFOLGINGSPERIODE_UUID is null
+                                fetch next :maks row ONLY
+                                """, params, String.class
 
-        )
+                )
                 .stream()
                 .map(Person::aktorId)
                 .toList();
@@ -79,7 +79,6 @@ public class OppfolgingsperiodeDao {
     public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
-        log.info("går gjennom setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode for aktorid: {} ", aktorId);
 
         int antallOppdatert = template.update("""
                     update  AKTIVITET
@@ -105,5 +104,16 @@ public class OppfolgingsperiodeDao {
                 and AKTOR_ID = :aktorId
                 and HISTORISK_DATO = :sluttDato
                 """, params);
+    }
+
+    public int setTilInngenPeriodePaaBruker(Person.AktorId aktorId) {
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId);
+
+        return template.update("""
+                update  AKTIVITET set OPPFOLGINGSPERIODE_UUID = 'bruker_uten_periode'
+                where AKTOR_ID = :aktorId
+                and OPPFOLGINGSPERIODE_UUID is null
+                """, params
+        );
     }
 }
