@@ -103,10 +103,11 @@ public class OppfolgingsperiodeDao {
     }
 
     public int setTilInngenPeriodePaaBruker(Person.AktorId aktorId) {
-        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId);
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get());
 
         return template.update("""
-                update  AKTIVITET set OPPFOLGINGSPERIODE_UUID = 'bruker_uten_periode'
+                update AKTIVITET
+                set OPPFOLGINGSPERIODE_UUID = 'bruker_uten_periode'
                 where AKTOR_ID = :aktorId
                 and OPPFOLGINGSPERIODE_UUID is null
                 """, params
