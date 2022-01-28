@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet;
 
 
+import io.restassured.RestAssured;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -35,6 +36,7 @@ public abstract class SpringBootTestBase {
 
     @Before
     public void setUp() {
+        RestAssured.port = port;
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 }
