@@ -3,13 +3,9 @@ package no.nav.veilarbaktivitet.internapi;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.internapi.api.InternalApi;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
-import no.nav.veilarbaktivitet.internapi.model.Mote;
 import no.nav.veilarbaktivitet.internapi.model.Oppfolgingsperiode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,7 +19,6 @@ public class InternApiController implements InternalApi {
     @Override
     public ResponseEntity<Aktivitet> hentAktivitet(Integer aktivitetId) {
         return ResponseEntity.of(internapiService.hentAktivitet(aktivitetId));
-
     }
 
     @Override
