@@ -55,7 +55,7 @@
                 <groupId>org.openapitools</groupId>
                 <artifactId>openapi-generator-maven-plugin</artifactId>
                 <!-- RELEASE_VERSION -->
-                <version>5.3.0</version>
+                <version>5.3.1</version>
                 <!-- /RELEASE_VERSION -->
                 <executions>
                     <execution>
@@ -64,12 +64,15 @@
                         </goals>
                         <configuration>
                             <inputSpec>${project.basedir}/src/main/resources/openapi/AktivitetsplanSpec.yaml</inputSpec>
-                            <packageName>src/main/java/no/nav/veilarbapi</packageName>
                             <generatorName>spring</generatorName>
+                            <packageName>no.nav.veilarbaktivitet.internapi</packageName>
+                            <apiPackage>no.nav.veilarbaktivitet.internapi.api</apiPackage>
+                            <modelPackage>no.nav.veilarbaktivitet.internapi.model</modelPackage>
                             <configOptions>
                                 <openApiNullable>false</openApiNullable>
                                 <interfaceOnly>true</interfaceOnly>
                                 <skipDefaultInterface>true</skipDefaultInterface>
+                                <additionalModelTypeAnnotations>@lombok.experimental.SuperBuilder</additionalModelTypeAnnotations>
                             </configOptions>
                         </configuration>
                     </execution>

@@ -3,10 +3,10 @@ info:
   title: Aktivitetsplan API
   version: '1.0'
 servers:
-  - url: https://api.server.test/v1
+  - url: https://veilarbaktivitet
 components:
   schemas:
-    baseaktivitet:
+    aktivitet:
       type: object
       discriminator:
         propertyName: aktivitet_type
@@ -60,7 +60,7 @@ components:
           format: date-time
     egenaktivitet:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             hensikt:
@@ -69,7 +69,7 @@ components:
               type: string
     jobbsoeking:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             arbeidsgiver:
@@ -89,7 +89,7 @@ components:
               type: string
     sokeavtale:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             antallStillingerSokes:
@@ -100,7 +100,7 @@ components:
               type: string
     ijobb:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             jobbStatusType:
@@ -114,7 +114,7 @@ components:
               type: string
     behandling:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             behandlingType:
@@ -127,7 +127,7 @@ components:
               type: string
     mote:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             adresse:
@@ -146,7 +146,7 @@ components:
               type: boolean
     samtalereferat:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             kanal:
@@ -161,7 +161,7 @@ components:
               type: boolean
     stilling_fra_nav:
       allOf:
-        - $ref: '#/components/schemas/baseaktivitet'
+        - $ref: '#/components/schemas/aktivitet'
         - type: object
           properties:
             cvKanDelesData:
@@ -213,22 +213,13 @@ components:
           items:
             $ref: '#/components/schemas/aktivitet'
           description: Liste med aktiviteter tilknyttet en oppfølgingsperiode
-    aktivitet:
-      type: object
-      oneOf:
-        - $ref: '#/components/schemas/egenaktivitet'
-        - $ref: '#/components/schemas/jobbsoeking'
-        - $ref: '#/components/schemas/sokeavtale'
-        - $ref: '#/components/schemas/ijobb'
-        - $ref: '#/components/schemas/behandling'
-        - $ref: '#/components/schemas/mote'
-        - $ref: '#/components/schemas/samtalereferat'
-        - $ref: '#/components/schemas/stilling_fra_nav'
+
 paths:
-  /aktivitetsplan:
+  /internal/api/v1/aktivitet/:
     get:
+      operationId: hentAktiviteter
       tags:
-        - Oppfølging
+        - Aktiviteter
       description: ''
       parameters:
         - name: aktorId
@@ -246,3 +237,23 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/oppfolgingsperiode'
+  /internal/api/v1/aktivitet/{aktivitetId}:
+    get:
+      operationId: hentAktivitet
+      tags:
+        - Aktiviteter
+      description: ''
+      parameters:
+        - name: aktivitetId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Numerisk id til aktiviteten
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/aktivitet'
