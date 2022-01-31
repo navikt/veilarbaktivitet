@@ -35,15 +35,15 @@ public class InternApiControllerTest extends SpringBootTestBase {
     public void kanari() {
         MockVeileder veileder = MockNavService.createVeileder();
 
-        Response response = veileder.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet/{aktivitetId}",1)
+        Aktivitet aktivitet = veileder.createRequest()
+                .get("/veilarbaktivitet/internal/api/v1/aktivitet/{aktivitetId}",1)
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
-                .response();
-        Mote mote = response.as(Mote.class);
+                .response()
+                .as(Aktivitet.class);
 
-        Assertions.assertThat(mote).isInstanceOf(Mote.class);
+        Assertions.assertThat(aktivitet).isInstanceOf(Mote.class);
     }
 
 }

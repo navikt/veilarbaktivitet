@@ -72,7 +72,7 @@
                                 <openApiNullable>false</openApiNullable>
                                 <interfaceOnly>true</interfaceOnly>
                                 <skipDefaultInterface>true</skipDefaultInterface>
-                                <additionalModelTypeAnnotations>@lombok.experimental.SuperBuilder</additionalModelTypeAnnotations>
+                                <additionalModelTypeAnnotations>@lombok.experimental.SuperBuilder @lombok.NoArgsConstructor</additionalModelTypeAnnotations>
                             </configOptions>
                         </configuration>
                     </execution>
