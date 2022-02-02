@@ -1,3 +1,3 @@
-alter table BRUKERNOTIFIKASJON add column smsTekst nvarchar2(160);
-alter table BRUKERNOTIFIKASJON add column epostTittel nvarchar2(200);
-alter table BRUKERNOTIFIKASJON add column epostBody varchar(10000);
+alter table BRUKERNOTIFIKASJON add column smsTekst varchar2(160);
+alter table BRUKERNOTIFIKASJON add column epostTittel varchar2(200);
+alter table BRUKERNOTIFIKASJON add column epostBody varchar2(10000);
