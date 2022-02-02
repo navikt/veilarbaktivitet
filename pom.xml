@@ -391,7 +391,7 @@
         <dependency>
             <groupId>com.github.navikt</groupId>
             <artifactId>brukernotifikasjon-schemas</artifactId>
-            <version>1.2021.08.27-09.12-f8a8cbc76319</version>
+            <version>v1.3.1</version>
         </dependency>
 
         <dependency>

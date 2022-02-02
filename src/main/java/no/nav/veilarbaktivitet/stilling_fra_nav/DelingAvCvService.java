@@ -39,7 +39,7 @@ public class DelingAvCvService {
 
         AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, avtaltDato, erEksternBruker);
 
-        brukernotifikasjonService.oppgaveDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
         metrikker.countSvar(erEksternBruker, kanDeles);
 

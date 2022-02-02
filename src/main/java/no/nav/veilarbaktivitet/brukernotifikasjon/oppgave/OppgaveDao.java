@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -25,7 +26,11 @@ public class OppgaveDao {
                     .brukernotifikasjonId(rs.getString("brukernotifikasjon_id"))
                     .id(rs.getLong("id"))
                     .melding(rs.getString("melding"))
+                    .varselType(VarselType.valueOf(rs.getString("type")))
                     .oppfolgingsperiode(rs.getString("oppfolgingsperiode"))
+                    .smsTekst(rs.getString("smstekst"))
+                    .epostTitel(rs.getString("eposttittel"))
+                    .epostBody(rs.getString("epostBody"))
                     .build();
 
     public List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
@@ -35,15 +40,16 @@ public class OppgaveDao {
                 .addValue("limit", maxAntall);
 
         return jdbcTemplate
-                .query("" +
-                                " select ID, BRUKERNOTIFIKASJON_ID, B.AKTIVITET_ID, MELDING, OPPFOLGINGSPERIODE, A.AKTOR_ID" +
-                                " from BRUKERNOTIFIKASJON B " +
-                                " inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID" +
-                                " where STATUS = :status " +
-                                " and A.HISTORISK_DATO is null" +
-                                " and A.LIVSLOPSTATUS_KODE not in(:finalAktivitetStatus)" +
-                                " and A.GJELDENDE = 1 " +
-                                " fetch first :limit rows only",
+                .query("""
+                                 select ID, BRUKERNOTIFIKASJON_ID, B.AKTIVITET_ID, MELDING, OPPFOLGINGSPERIODE, A.AKTOR_ID, b.TYPE, SMSTEKST, EPOSTTITTEL, EPOSTBODY
+                                 from BRUKERNOTIFIKASJON B
+                                 inner join AKTIVITET A on A.AKTIVITET_ID = B.AKTIVITET_ID
+                                 where STATUS = :status
+                                 and A.HISTORISK_DATO is null
+                                 and A.LIVSLOPSTATUS_KODE not in(:finalAktivitetStatus)
+                                 and A.GJELDENDE = 1
+                                 fetch first :limit rows only
+                                """,
                         parameterSource, rowMapper);
     }
 
