@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
+import no.nav.brukernotifikasjon.schemas.Beskjed;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
@@ -67,12 +68,17 @@ public class BrukernotifikasjonTest {
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     String oppgaveTopic;
 
+    @Value("${topic.ut.brukernotifikasjon.beskjed}")
+    String beskjedTopic;
+
     @Value("${topic.ut.brukernotifikasjon.done}")
     String doneTopic;
 
     Consumer<Nokkel, Done> doneConsumer;
 
     Consumer<Nokkel, Oppgave> oppgaveConsumer;
+
+    Consumer<Nokkel, Beskjed> beskjedConsumer;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
@@ -100,6 +106,7 @@ public class BrukernotifikasjonTest {
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
+        beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
     }
 
@@ -113,7 +120,7 @@ public class BrukernotifikasjonTest {
 
     @SneakyThrows
     @Test
-    public void happy_case() {
+    public void happy_case_oppgave() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -124,6 +131,104 @@ public class BrukernotifikasjonTest {
         avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
     }
 
+    @SneakyThrows
+    @Test
+    public void skalSendeOppgaveMedEgentTekst() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+
+        String epostTitel = "epostTitel";
+        String epostTekst = "EpostTekst";
+        String SMSTekst = "SMSTekst";
+
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                Long.parseLong(aktivitetDTO.getId()),
+                Long.parseLong(aktivitetDTO.getVersjon()),
+                Person.aktorId(mockBruker.getAktorId()),
+                "Testvarsel",
+                VarselType.STILLING_FRA_NAV,
+                epostTitel,
+                epostTekst,
+                SMSTekst
+        );
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+
+        assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
+        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        Oppgave oppgave = oppgaveRecord.value();
+
+        assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
+        assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
+        assertEquals(SMSTekst, oppgave.getSmsVarslingstekst());
+        oppgaveSendtOk(oppgaveRecord);
+        avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
+    }
+
+    @SneakyThrows
+    @Test
+    public void skalSendeBeskjedMedEgentTekst() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+
+        String epostTitel = "epostTitel";
+        String epostTekst = "EpostTekst";
+        String SMSTekst = "SMSTekst";
+
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                Long.parseLong(aktivitetDTO.getId()),
+                Long.parseLong(aktivitetDTO.getVersjon()),
+                Person.aktorId(mockBruker.getAktorId()),
+                "Testvarsel",
+                VarselType.MOTE_SMS,
+                epostTitel,
+                epostTekst,
+                SMSTekst
+        );
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+
+        assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
+        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        Beskjed oppgave = oppgaveRecord.value();
+
+        assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
+        assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
+        assertEquals(SMSTekst, oppgave.getSmsVarslingstekst());
+    }
+
+    @SneakyThrows
+    @Test
+    public void skal_sendeBeskjed() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
+
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                Long.parseLong(aktivitetDTO.getId()),
+                Long.parseLong(aktivitetDTO.getVersjon()),
+                Person.aktorId(mockBruker.getAktorId()),
+                "Testvarsel",
+                VarselType.MOTE_SMS
+        );
+
+        sendOppgaveCron.sendBrukernotifikasjoner();
+
+        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        Beskjed oppgave = oppgaveRecord.value();
+
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
+        assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
+    }
+
     @Test
     public void skal_ikke_produsere_meldinger_for_avsluttet_oppgave() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
@@ -131,8 +236,8 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        brukernotifikasjonService.opprettOppgavePaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
-        brukernotifikasjonService.oppgaveDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
@@ -148,7 +253,7 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
-        brukernotifikasjonService.opprettOppgavePaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -239,7 +344,7 @@ public class BrukernotifikasjonTest {
     }
 
     private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        brukernotifikasjonService.opprettOppgavePaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -261,7 +366,7 @@ public class BrukernotifikasjonTest {
     }
 
     private void avsluttOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO, ConsumerRecord<Nokkel, Oppgave> oppgaveRecord) {
-        brukernotifikasjonService.oppgaveDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 

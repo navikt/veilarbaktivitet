@@ -29,7 +29,7 @@ public class BrukernotifikasjonService {
     private final ManuellStatusV2Client manuellStatusClient;
 
 
-    public void oppgaveDone(
+    public void setDone(
             long aktivitetId,
             VarselType varseltype
     ) {
@@ -49,12 +49,32 @@ public class BrukernotifikasjonService {
         return !erManuell && !erReservertIKrr && harBruktNivaa4;
     }
 
-    public UUID opprettOppgavePaaAktivitet(
+    public UUID opprettVarselPaaAktivitet(
             long aktivitetId,
             long aktitetVersion,
             Person.AktorId aktorId,
-            String tekst,
+            String ditNavTekst,
             VarselType varseltype
+    ) {
+        return opprettVarselPaaAktivitet(
+                aktivitetId,
+                aktitetVersion,
+                aktorId,
+                ditNavTekst,
+                varseltype,
+                null, null, null //Disse settes til standartekst av brukernotifiaksjoenr hvis ikke satt
+        );
+    }
+
+    public UUID opprettVarselPaaAktivitet(
+            long aktivitetId,
+            long aktitetVersion,
+            Person.AktorId aktorId,
+            String ditNavTekst,
+            VarselType varseltype,
+            String epostTitel,
+            String epostBody,
+            String smsTekst
     ) {
         UUID uuid = UUID.randomUUID();
 
@@ -63,9 +83,9 @@ public class BrukernotifikasjonService {
 
         UUID gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
 
-        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, tekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING);
-
+        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, epostTitel, epostBody, smsTekst);
         return uuid;
+
     }
 
 }

@@ -88,7 +88,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (kanVarsle) {
-            brukernotifikasjonService.opprettOppgavePaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
+            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
         } else {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);

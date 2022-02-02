@@ -230,7 +230,7 @@ public class BrukernotifikasjonKvitteringTest {
     }
 
     private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        brukernotifikasjonService.opprettOppgavePaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
