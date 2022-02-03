@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import static java.time.temporal.ChronoUnit.MILLIS;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -24,7 +26,14 @@ public class OppfolgingsperiodePersonService {
         try {
             oppfolgingperioder = client
                     .hentOppfolgingsperioder(aktorId)
-                    .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
+                    .orElse(List.of())
+                    .stream()
+                    .map(it -> {
+                        it.setSluttDato(it.getSluttDato().truncatedTo(MILLIS));
+                        it.setStartDato(it.getSluttDato().truncatedTo(MILLIS));
+                        return  it;
+                    })
+                    .toList(); //Finnes bruker uten oppfolginsperioder
 
             if (oppfolgingperioder.isEmpty()) {
                 int raderOppdatert = dao.setTilInngenPeriodePaaBruker(aktorId);
@@ -39,6 +48,7 @@ public class OppfolgingsperiodePersonService {
         }
 
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
+            oppfolgingsperiode.setSluttDato(oppfolgingsperiode.getSluttDato().truncatedTo(MILLIS));
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
             if (raderOppdatert > 0) {
                 log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={}", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
