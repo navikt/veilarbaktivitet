@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
 
@@ -27,14 +28,16 @@ public class OppfolgingsperiodePersonService {
         try {
             oppfolgingperioder = client
                     .hentOppfolgingsperioder(aktorId)
-                    .orElse(List.of())
+                    .orElse(List.of()) //Finnes bruker uten oppfolginsperioder
                     .stream()
                     .map(it -> {
-                        it.setSluttDato(it.getSluttDato().truncatedTo(MILLIS));
-                        it.setStartDato(it.getSluttDato().truncatedTo(MILLIS));
-                        return  it;
+                        var oppdatertSluttdato = it.withSluttDato(Optional
+                                .ofNullable(it.getSluttDato())
+                                .map(time -> time.truncatedTo(MILLIS))
+                                .orElse(null));
+                        return  oppdatertSluttdato.withStartDato(it.getStartDato().truncatedTo(MILLIS));
                     })
-                    .toList(); //Finnes bruker uten oppfolginsperioder
+                    .toList();
 
             if (oppfolgingperioder.isEmpty()) {
                 int raderOppdatert = dao.setTilInngenPeriodePaaBruker(aktorId);
@@ -53,7 +56,6 @@ public class OppfolgingsperiodePersonService {
             return true;
         }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
-            oppfolgingsperiode.setSluttDato(oppfolgingsperiode.getSluttDato().truncatedTo(MILLIS));
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
             if (raderOppdatert > 0) {
                 log.info("lagt til oppfolgingsperiode={} i {} antall aktivitetsversjoner for aktorid={}", oppfolgingsperiode.getUuid(), raderOppdatert, aktorId.get());
@@ -71,10 +73,7 @@ public class OppfolgingsperiodePersonService {
                         }
                 );
 
-        OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode = oppfolgingperioder
-                .stream()
-                .min(Comparator.comparing(OppfolgingPeriodeMinimalDTO::getStartDato))
-                .get();
+        OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode = getEldsteOppfolgingsPeriode(oppfolgingperioder);
 
         dao.plaserEldreEnElsteIElsete(aktorId, eldsteOppfolgingsPeriode);
 
@@ -84,5 +83,12 @@ public class OppfolgingsperiodePersonService {
         }
 
         return true;
+    }
+
+    static OppfolgingPeriodeMinimalDTO getEldsteOppfolgingsPeriode(List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder) {
+        return oppfolgingperioder
+                .stream()
+                .min(Comparator.comparing(OppfolgingPeriodeMinimalDTO::getStartDato))
+                .get();
     }
 }
