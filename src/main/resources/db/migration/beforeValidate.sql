@@ -1,0 +1,1 @@
+delete from "schema_version" where "installed_rank" = 71 and "checksum" = 1652014462 and "success" = 0;
