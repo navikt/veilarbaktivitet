@@ -9,7 +9,11 @@ import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+
+import static java.time.temporal.ChronoUnit.MILLIS;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +28,16 @@ public class OppfolgingsperiodePersonService {
         try {
             oppfolgingperioder = client
                     .hentOppfolgingsperioder(aktorId)
-                    .orElse(List.of()); //Finnes bruker uten oppfolginsperioder
+                    .orElse(List.of()) //Finnes bruker uten oppfolginsperioder
+                    .stream()
+                    .map(it -> {
+                        var oppdatertSluttdato = it.withSluttDato(Optional
+                                .ofNullable(it.getSluttDato())
+                                .map(time -> time.truncatedTo(MILLIS))
+                                .orElse(null));
+                        return  oppdatertSluttdato.withStartDato(it.getStartDato().truncatedTo(MILLIS));
+                    })
+                    .toList();
 
             if (oppfolgingperioder.isEmpty()) {
                 int raderOppdatert = dao.setTilInngenPeriodePaaBruker(aktorId);
@@ -38,6 +51,10 @@ public class OppfolgingsperiodePersonService {
             return false;
         }
 
+        if(oppfolgingperioder.size() == 1) {
+            dao.plaserAlleAktiviterIOppfolgingsPeriode(oppfolgingperioder.get(0), aktorId);
+            return true;
+        }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
             if (raderOppdatert > 0) {
@@ -56,11 +73,22 @@ public class OppfolgingsperiodePersonService {
                         }
                 );
 
+        OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode = getEldsteOppfolgingsPeriode(oppfolgingperioder);
+
+        dao.plaserEldreEnElsteIElsete(aktorId, eldsteOppfolgingsPeriode);
+
         int antallUtenOppfolingsperiode = dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
         if (antallUtenOppfolingsperiode != 0) {
             log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {} brukeren har {} perioder", aktorId.get(), antallUtenOppfolingsperiode, oppfolgingperioder.size());
         }
 
         return true;
+    }
+
+    static OppfolgingPeriodeMinimalDTO getEldsteOppfolgingsPeriode(List<OppfolgingPeriodeMinimalDTO> oppfolgingperioder) {
+        return oppfolgingperioder
+                .stream()
+                .min(Comparator.comparing(OppfolgingPeriodeMinimalDTO::getStartDato))
+                .get();
     }
 }
