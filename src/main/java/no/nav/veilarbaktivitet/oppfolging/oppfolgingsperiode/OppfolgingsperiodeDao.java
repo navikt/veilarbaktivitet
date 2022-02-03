@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -112,5 +113,25 @@ public class OppfolgingsperiodeDao {
                 and OPPFOLGINGSPERIODE_UUID is null
                 """, params
         );
+    }
+
+    public void plaserAlleAktiviterIOppfolgingsPeriode(OppfolgingPeriodeMinimalDTO oppfolgingPeriodeMinimalDTO, Person.AktorId aktorId) {
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get())
+                .addValue("uuid", oppfolgingPeriodeMinimalDTO.getUuid().toString());
+
+        template.update("""
+                update AKTIVITET set OPPFOLGINGSPERIODE_UUID = :uuid and AKTOR_ID = :aktorId where OPPFOLGINGSPERIODE_UUID is null
+                """, params);
+    }
+
+    public void plaserEldreEnElsteIElsete(Person.AktorId aktorId, OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode) {
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get())
+                .addValue("uuid", eldsteOppfolgingsPeriode.getUuid().toString())
+                .addValue("sluttDato", eldsteOppfolgingsPeriode.getSluttDato());
+
+        template.update("""
+                update AKTIVITET set OPPFOLGINGSPERIODE_UUID = :uuid and AKTOR_ID = :aktorId
+                where OPPFOLGINGSPERIODE_UUID is null and (OPPRETTET_DATO < :sluttDato or :sluttDato is null)
+                """, params);
     }
 }

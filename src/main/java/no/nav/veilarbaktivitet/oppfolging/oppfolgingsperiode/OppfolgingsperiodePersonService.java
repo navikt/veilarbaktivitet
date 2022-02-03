@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 
 import static java.time.temporal.ChronoUnit.MILLIS;
@@ -47,6 +48,10 @@ public class OppfolgingsperiodePersonService {
             return false;
         }
 
+        if(oppfolgingperioder.size() == 1) {
+            dao.plaserAlleAktiviterIOppfolgingsPeriode(oppfolgingperioder.get(0), aktorId);
+            return true;
+        }
         for (OppfolgingPeriodeMinimalDTO oppfolgingsperiode : oppfolgingperioder) {
             oppfolgingsperiode.setSluttDato(oppfolgingsperiode.getSluttDato().truncatedTo(MILLIS));
             long raderOppdatert = dao.oppdaterAktiviteterForPeriode(aktorId, oppfolgingsperiode.getStartDato(), oppfolgingsperiode.getSluttDato(), oppfolgingsperiode.getUuid());
@@ -65,6 +70,13 @@ public class OppfolgingsperiodePersonService {
                             }
                         }
                 );
+
+        OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode = oppfolgingperioder
+                .stream()
+                .min(Comparator.comparing(OppfolgingPeriodeMinimalDTO::getStartDato))
+                .get();
+
+        dao.plaserEldreEnElsteIElsete(aktorId, eldsteOppfolgingsPeriode);
 
         int antallUtenOppfolingsperiode = dao.setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(aktorId);
         if (antallUtenOppfolingsperiode != 0) {
