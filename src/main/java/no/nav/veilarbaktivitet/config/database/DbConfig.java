@@ -51,8 +51,10 @@ public class DbConfig {
     }
 
     public static void migrateDb(DataSource dataSource) {
-        var flyway = new Flyway();
-        flyway.setDataSource(dataSource);
+
+        var flyway = new Flyway(Flyway.configure()
+                .dataSource(dataSource)
+                .validateMigrationNaming(true));
         flyway.migrate();
     }
 
