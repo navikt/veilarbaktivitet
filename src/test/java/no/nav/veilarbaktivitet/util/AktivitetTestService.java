@@ -105,7 +105,6 @@ public class AktivitetTestService {
     }
 
     public AktivitetDTO opprettAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
-
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
         Response response = user
@@ -114,6 +113,24 @@ public class AktivitetTestService {
                 .body(aktivitetPayloadJson)
                 .when()
                 .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
+        assertNotNull(aktivitet);
+        assertNotNull(aktivitet.getId());
+        AktivitetAssertUtils.assertOpprettetAktivitet(aktivitet, aktivitetDTO);
+
+        return aktivitet;
+    }
+
+    public AktivitetDTO opprettAktivitetSomVeileder(int port, MockVeileder veileder, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+        Response response = veileder
+                .createRequest()
+                .body(aktivitetDTO)
+                .when()
+                .post(veileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

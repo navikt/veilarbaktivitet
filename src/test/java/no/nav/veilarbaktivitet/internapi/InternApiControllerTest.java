@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
+import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Mote;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -16,6 +18,9 @@ import org.junit.Test;
 import org.springframework.http.HttpStatus;
 
 import java.util.Date;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class InternApiControllerTest extends SpringBootTestBase {
@@ -28,18 +33,9 @@ public class InternApiControllerTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO moteAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        // Opprett møteaktivitet
-        Response response = veileder
-                .createRequest()
-                .body(moteAktivitet)
-                .when()
-                .post("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny?fnr=" + mockBruker.getFnr())
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetSomVeileder(port, veileder, mockBruker, moteAktivitet);
 
-        AktivitetDTO opprettetAktivitet = response.as(AktivitetDTO.class);
-
+        // Test "/internal/api/v1/aktivitet/{aktivitetId}"
         Mote aktivitet = veileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet/{aktivitetId}", opprettetAktivitet.getId())
                 .then()
@@ -56,6 +52,23 @@ public class InternApiControllerTest extends SpringBootTestBase {
             a.assertThat(aktivitet.getReferat()).isEqualTo(opprettetAktivitet.getReferat());
             a.assertAll();
         });
+
+        AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
+
+        aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
+
+        // Test "/internal/api/v1/aktivitet/"
+        Response response = veileder.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+        List<Aktivitet> aktiviteter = response.jsonPath().getList(".", Aktivitet.class);
+
+        assertThat(aktiviteter.size()).isEqualTo(2);
+        assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
     }
 
 }

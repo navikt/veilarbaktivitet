@@ -3,9 +3,11 @@ package no.nav.veilarbaktivitet.internapi;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.EgenAktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetTypeEnum;
+import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Mote;
 
 import java.time.ZoneOffset;
@@ -28,21 +30,21 @@ public class InternAktivitetMapper {
                 .build();
 
         return switch (aktivitetType) {
-            case EGENAKTIVITET -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case JOBBSOEKING -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case SOKEAVTALE -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case IJOBB -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case BEHANDLING -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case MOTE -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case SAMTALEREFERAT -> mapTilMoteAktivitet(aktivitetData, aktivitet);
-            case STILLING_FRA_NAV -> mapTilMoteAktivitet(aktivitetData, aktivitet);
+            case EGENAKTIVITET -> mapTilEgenaktivitet(aktivitetData, aktivitet);
+            case JOBBSOEKING -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case SOKEAVTALE -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case IJOBB -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case BEHANDLING -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case MOTE -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case SAMTALEREFERAT -> mapTilMoteaktivitet(aktivitetData, aktivitet);
+            case STILLING_FRA_NAV -> mapTilMoteaktivitet(aktivitetData, aktivitet);
         };
     }
 
-    public static Mote mapTilMoteAktivitet(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    public static Mote mapTilMoteaktivitet(AktivitetData aktivitetData, Aktivitet aktivitet) {
         MoteData moteData = aktivitetData.getMoteData();
 
-        val mote = Mote.builder()
+        val moteaktivitet = Mote.builder()
                 .aktivitetType(AktivitetTypeEnum.MOTE)
                 .adresse(moteData.getAdresse())
                 .forberedelser(moteData.getForberedelser())
@@ -51,7 +53,19 @@ public class InternAktivitetMapper {
                 .referatPublisert(moteData.isReferatPublisert())
                 .build();
 
-        return (Mote)merge(aktivitet, mote);
+        return (Mote)merge(aktivitet, moteaktivitet);
+    }
+
+    public static Egenaktivitet mapTilEgenaktivitet(AktivitetData aktivitetData, Aktivitet aktivitet) {
+        EgenAktivitetData egenAktivitetData = aktivitetData.getEgenAktivitetData();
+
+        val egenaktivitet = Egenaktivitet.builder()
+                .aktivitetType(AktivitetTypeEnum.EGENAKTIVITET)
+                .hensikt(egenAktivitetData.getHensikt())
+                .oppfolging(egenAktivitetData.getOppfolging())
+                .build();
+
+        return (Egenaktivitet) merge(aktivitet, egenaktivitet);
     }
 
     public static Aktivitet merge(Aktivitet base, Aktivitet aktivitet) {

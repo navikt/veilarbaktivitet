@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +31,12 @@ public class InternApiController implements InternalApi {
 
     @Override
     public ResponseEntity<List<Aktivitet>> hentAktiviteter(String aktorId) {
-        return null;
+        List<Aktivitet> aktiviteter = Optional.of(internApiService.hentAktiviteter(aktorId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+                .stream()
+                .map(InternAktivitetMapper::mapTilAktivitet)
+                .collect(Collectors.toList());
+        return ResponseEntity.of(Optional.of(aktiviteter));
     }
 
     @Override

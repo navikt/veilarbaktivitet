@@ -215,7 +215,7 @@ components:
           description: Liste med aktiviteter tilknyttet en oppfølgingsperiode
 
 paths:
-  /internal/api/v1/aktivitet/:
+  /internal/api/v1/aktivitet:
     get:
       operationId: hentAktiviteter
       tags:

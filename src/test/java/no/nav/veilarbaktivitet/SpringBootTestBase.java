@@ -23,7 +23,7 @@ public abstract class SpringBootTestBase {
     protected KafkaTestService kafkaTestService;
 
     @Autowired
-    protected AktivitetTestService testAktivitetservice;
+    protected AktivitetTestService aktivitetTestService;
 
     @Autowired
     protected JdbcTemplate jdbcTemplate;
