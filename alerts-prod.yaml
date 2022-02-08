@@ -49,14 +49,6 @@ spec:
       description: Vedvarende feilrate i veilarbaktivitet
       action: https://logs.adeo.no/goto/9106e407dee95bb4692f316564dd5330  https://grafana.adeo.no/d/000000283/nais-app-dashbord?orgId=1&var-interval=$__auto_interval_interval&var-datasource=prod-fss&var-team=pto&var-app=veilarbaktivitet&var-namespace=All&var-docker_image=5e399fce17a0617acda62a3b4c969210d05abc17&var-ingress_url=All&from=now-4d&to=now
       sla: se på denne i løpet av de neste dagene.
-    - alert: Feil mot brukernotifikasjon
-      for: 1s
-      description: fått feilmelding fra dokument om burekrnotifikasjon
-      sla: se på denne i løpet av de neste dagene.
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
-      severity: warning
-      expr: |
-        sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
     - alert: Flere feil mot brukernotifikasjon
       for: 1s
       description: fått feilmelding fra dokument om brukernotifikasjon
@@ -73,3 +65,9 @@ spec:
       severity: warning
       expr: |
         sum(increase(antalSMSFeilet_total{application="veilarbaktivitet"}[5m])) > 0.8
+    - alert: feil ved deploy?
+      expr: 'kube_deployment_status_replicas_unavailable{deployment="veilarbaktivitet"} > 0'
+      for: 2m
+      action: https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
+      description: feilet deploy?
+      severity: warning
