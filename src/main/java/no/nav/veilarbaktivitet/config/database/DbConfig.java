@@ -54,6 +54,7 @@ public class DbConfig {
 
         var flyway = new Flyway(Flyway.configure()
                 .dataSource(dataSource)
+                .table("schema_version")
                 .validateMigrationNaming(true));
         flyway.migrate();
     }
