@@ -28,15 +28,15 @@ public class InternApiControllerTest extends SpringBootTestBase {
     @Test
     public void sushi() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO moteAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetSomVeileder(port, veileder, mockBruker, moteAktivitet);
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetSomVeileder(port, mockVeileder, mockBruker, moteAktivitet);
 
         // Test "/internal/api/v1/aktivitet/{aktivitetId}"
-        Mote aktivitet = veileder.createRequest()
+        Mote aktivitet = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet/{aktivitetId}", opprettetAktivitet.getId())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
@@ -59,7 +59,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
         aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
 
         // Test "/internal/api/v1/aktivitet/"
-        Response response = veileder.createRequest()
+        Response response = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
@@ -70,5 +70,4 @@ public class InternApiControllerTest extends SpringBootTestBase {
         assertThat(aktiviteter.size()).isEqualTo(2);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
     }
-
 }

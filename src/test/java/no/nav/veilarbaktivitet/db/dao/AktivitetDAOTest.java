@@ -242,7 +242,7 @@ public class AktivitetDAOTest {
     }
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
-        return addAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat());
+        return addAktivitet(AktivitetDataTestBuilder.nySamtaleReferat());
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillingFraNav() {

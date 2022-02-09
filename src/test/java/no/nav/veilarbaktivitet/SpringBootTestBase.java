@@ -35,7 +35,7 @@ public abstract class SpringBootTestBase {
     protected int port;
 
     @Before
-    public void setUp() {
+    public void setup() {
         RestAssured.port = port;
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }

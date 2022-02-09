@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.internapi;
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.internapi.api.InternalApi;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
-import no.nav.veilarbaktivitet.internapi.model.Oppfolgingsperiode;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -12,7 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -24,28 +22,18 @@ public class InternApiController implements InternalApi {
     public ResponseEntity<Aktivitet> hentAktivitet(Integer aktivitetId) {
         Aktivitet aktivitet = Optional.of(internApiService.hentAktivitet(aktivitetId))
                 .map(InternAktivitetMapper::mapTilAktivitet)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT));
 
         return ResponseEntity.of(Optional.of(aktivitet));
     }
 
     @Override
-    public ResponseEntity<List<Aktivitet>> hentAktiviteter(String aktorId) {
-        List<Aktivitet> aktiviteter = Optional.of(internApiService.hentAktiviteter(aktorId))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND))
+    public ResponseEntity<List<Aktivitet>> hentAktiviteter(String aktorId, UUID oppfolgingsperiodeId) {
+        List<Aktivitet> aktiviteter = Optional.of(internApiService.hentAktiviteter(aktorId, oppfolgingsperiodeId))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT))
                 .stream()
                 .map(InternAktivitetMapper::mapTilAktivitet)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.of(Optional.of(aktiviteter));
-    }
-
-    @Override
-    public ResponseEntity<Oppfolgingsperiode> hentOppfolgingsperiode(UUID oppfolgingsperiodeId) {
-        return null;
-    }
-
-    @Override
-    public ResponseEntity<List<Oppfolgingsperiode>> hentOppfolgingsperioder(String aktorId) {
-        return null;
     }
 }

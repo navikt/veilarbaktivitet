@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
@@ -42,10 +43,19 @@ public class AktivitetDAO {
         this.database = database;
     }
 
+    public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
+        // language=sql
+        return database.query(SELECT_AKTIVITET +
+                        " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
+                AktivitetDataRowMapper::mapAktivitet,
+                oppfolgingsperiodeId.toString()
+        );
+    }
+
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
-                        " WHERE A.aktor_id = ? and A.gjeldende = 1",
+                        " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktorId.get()
         );
