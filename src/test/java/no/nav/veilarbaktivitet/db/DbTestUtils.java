@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.db;
 
 import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
@@ -40,9 +41,12 @@ public class DbTestUtils {
     }
 
     public static void initDb(DataSource dataSource) {
-        Flyway flyway = new Flyway();
-        flyway.setDataSource(dataSource);
-        flyway.setCleanOnValidationError(true);
+        FluentConfiguration config = Flyway
+                .configure()
+                .dataSource(dataSource)
+                .cleanOnValidationError(true)
+                .validateMigrationNaming(true);
+        Flyway flyway = new Flyway(config);
         flyway.migrate();
     }
 

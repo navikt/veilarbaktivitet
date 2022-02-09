@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.oppfolging.oppfolgingsperiode;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -76,20 +77,16 @@ public class OppfolgingsperiodeDao {
     }
 
     @Timed
-    public void setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
+    public int setOppfolgingsperiodeTilUkjentForGamleAktiviteterUtenOppfolgingsperiode(Person.AktorId aktorId) {
         MapSqlParameterSource source = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());
 
-        int antallOppdatert = template.update("""
+        return template.update("""
                     update  AKTIVITET
                     set OPPFOLGINGSPERIODE_UUID = 'ukjent_oppfolgingsperiode'
                     where AKTOR_ID = :aktorId
                     and OPPFOLGINGSPERIODE_UUID is null
                 """, source);
-
-        if (antallOppdatert != 0) {
-            log.warn("Oppdaterete aktivitere med ukjent oppfolgingsperiode for aktorid {} antall: {}", aktorId.get(), antallOppdatert);
-        }
     }
 
     public int oppdaterAktiviteterMedSluttdato(Person.AktorId aktorId, ZonedDateTime sluttDato, UUID uuid) {
@@ -107,13 +104,40 @@ public class OppfolgingsperiodeDao {
     }
 
     public int setTilInngenPeriodePaaBruker(Person.AktorId aktorId) {
-        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId);
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get());
 
         return template.update("""
-                update  AKTIVITET set OPPFOLGINGSPERIODE_UUID = 'bruker_uten_periode'
+                update AKTIVITET
+                set OPPFOLGINGSPERIODE_UUID = 'bruker_uten_periode'
                 where AKTOR_ID = :aktorId
                 and OPPFOLGINGSPERIODE_UUID is null
                 """, params
         );
+    }
+
+    public void plaserAlleAktiviterIOppfolgingsPeriode(OppfolgingPeriodeMinimalDTO oppfolgingPeriodeMinimalDTO, Person.AktorId aktorId) {
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get())
+                .addValue("uuid", oppfolgingPeriodeMinimalDTO.getUuid().toString());
+
+        template.update("""
+                update AKTIVITET 
+                set OPPFOLGINGSPERIODE_UUID = :uuid 
+                where AKTOR_ID = :aktorId 
+                and OPPFOLGINGSPERIODE_UUID is null
+                """, params);
+    }
+
+    public void plaserEldreEnElsteIElsete(Person.AktorId aktorId, OppfolgingPeriodeMinimalDTO eldsteOppfolgingsPeriode) {
+        MapSqlParameterSource params = new MapSqlParameterSource("aktorId", aktorId.get())
+                .addValue("uuid", eldsteOppfolgingsPeriode.getUuid().toString())
+                .addValue("startDato", eldsteOppfolgingsPeriode.getStartDato());
+
+        template.update("""
+                update AKTIVITET
+                set OPPFOLGINGSPERIODE_UUID = :uuid
+                where AKTOR_ID = :aktorId
+                and OPPFOLGINGSPERIODE_UUID is null
+                and (OPPRETTET_DATO <= :startDato)
+                """, params);
     }
 }

@@ -24,21 +24,31 @@ public class BrukerNotifikasjonDAO {
             String melding,
             UUID oppfolgingsperiode,
             VarselType type,
-            VarselStatus status
+            VarselStatus status,
+            String epostTitel,
+            String epostBody,
+            String smsTekst
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
                 .addValue("aktivitet_id", aktivitetId)
-                .addValue("aktivitet_version", aktitetVersion)
+                .addValue("opprettet_paa_aktivitet_version", aktitetVersion)
                 .addValue("foedselsnummer", foedselsnummer.get())
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
                 .addValue("status", status.name())
                 .addValue("varsel_kvittering_status", VarselKvitteringStatus.IKKE_SATT.name())
+                .addValue("epostTittel", epostTitel)
+                .addValue("epostBody", epostBody)
+                .addValue("smsTekst", smsTekst)
                 .addValue("melding", melding);
+
+
+
         jdbcTemplate.update("" +
-                        " INSERT INTO brukernotifikasjon (brukernotifikasjon_id, aktivitet_id, opprettet_paa_aktivitet_version, foedselsnummer, oppfolgingsperiode, type, status, varsel_kvittering_status,opprettet, melding) " +
-                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :melding) ",
+                        " INSERT INTO brukernotifikasjon " +
+                        "        ( brukernotifikasjon_id,  aktivitet_id,  opprettet_paa_aktivitet_version,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          melding,  smsTekst,  epostTittel,  epostBody) " +
+                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :opprettet_paa_aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :melding, :smsTekst, :epostTittel, :epostBody) ",
                 params);
     }
 
