@@ -54,8 +54,8 @@ public class AktivitetDTO {
     private String oppfolging;
 
     //sokeAvtaleAktivitet
-    private Long antallStillingerSokes;
-    private Long antallStillingerIUken;
+    private Integer antallStillingerSokes;
+    private Integer antallStillingerIUken;
     private String avtaleOppfolging;
 
     //iJobbAktivitet
