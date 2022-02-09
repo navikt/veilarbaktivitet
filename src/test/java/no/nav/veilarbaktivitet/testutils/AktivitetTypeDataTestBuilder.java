@@ -40,8 +40,8 @@ public class AktivitetTypeDataTestBuilder {
 
     public static SokeAvtaleAktivitetData nySokeAvtaleAktivitet() {
         return SokeAvtaleAktivitetData.builder()
-                .antallStillingerSokes(10L)
-                .antallStillingerIUken(2L)
+                .antallStillingerSokes(10)
+                .antallStillingerIUken(2)
                 .avtaleOppfolging("Oppfølging")
                 .build();
     }

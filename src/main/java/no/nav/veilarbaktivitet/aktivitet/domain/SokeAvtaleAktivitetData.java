@@ -8,7 +8,7 @@ import lombok.With;
 @Value
 @Builder
 public class SokeAvtaleAktivitetData {
-    public Long antallStillingerSokes;
-    public Long antallStillingerIUken;
+    public Integer antallStillingerSokes;
+    public Integer antallStillingerIUken;
     public String avtaleOppfolging;
 }
