@@ -11,11 +11,12 @@ import java.time.ZoneOffset;
 
 public class InternAktivitetMapper {
 
+    private InternAktivitetMapper() {}
+
     public static Aktivitet mapTilAktivitet(AktivitetData aktivitetData) {
         AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();
 
         Aktivitet aktivitet = Aktivitet.builder()
-                .kontorsperreEnhetId(aktivitetData.getKontorsperreEnhetId())
                 .avtaltMedNav(aktivitetData.isAvtalt())
                 .status(Aktivitet.StatusEnum.valueOf(aktivitetData.getStatus().name()))
                 .beskrivelse(aktivitetData.getBeskrivelse())
@@ -156,7 +157,6 @@ public class InternAktivitetMapper {
 
     private static Aktivitet merge(Aktivitet base, Aktivitet aktivitet) {
         return aktivitet
-                .kontorsperreEnhetId(base.getKontorsperreEnhetId())
                 .avtaltMedNav(base.getAvtaltMedNav())
                 .status(base.getStatus())
                 .beskrivelse(base.getBeskrivelse())

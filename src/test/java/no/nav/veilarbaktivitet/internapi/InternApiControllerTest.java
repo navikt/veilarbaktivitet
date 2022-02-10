@@ -22,7 +22,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 public class InternApiControllerTest extends SpringBootTestBase {
 
     @Test
@@ -58,7 +57,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
 
         aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
 
-        // Test "/internal/api/v1/aktivitet/"
+        // Test "/internal/api/v1/aktivitet"
         Response response = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
                 .then()
@@ -67,7 +66,25 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .response();
         List<Aktivitet> aktiviteter = response.jsonPath().getList(".", Aktivitet.class);
 
-        assertThat(aktiviteter.size()).isEqualTo(2);
+        assertThat(aktiviteter).hasSize(2);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
+    }
+
+    @Test
+    public void sushi2() {
+        // Forbidden (403)
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
+        mockVeilederUtenBruker.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .then()
+                .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
+
+        // Bad request (400) - ingen query parameter
+        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+        mockVeileder.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet")
+                .then()
+                .assertThat().statusCode(HttpStatus.BAD_REQUEST.value());
     }
 }
