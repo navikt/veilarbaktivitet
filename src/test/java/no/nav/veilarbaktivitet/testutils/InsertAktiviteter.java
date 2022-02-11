@@ -21,7 +21,7 @@ public class InsertAktiviteter {
         insertNyAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nySokeAvtaleAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyEgenaktivitet(), akotrid, aktivitetDAO);
-        insertNyAktivitet(AktivitetDataTestBuilder.nytSamtaleReferat(), akotrid, aktivitetDAO);
+        insertNyAktivitet(AktivitetDataTestBuilder.nySamtaleReferat(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssok(), akotrid, aktivitetDAO);
     }
 

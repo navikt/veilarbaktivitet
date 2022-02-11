@@ -53,12 +53,11 @@ public class AktivitetDataTestBuilder {
             case EGENAKTIVITET:
                 return nyEgenaktivitet();
             case SAMTALEREFERAT:
-                return nytSamtaleReferat();
+                return nySamtaleReferat();
             case STILLING_FRA_NAV:
                 return nyStillingFraNavMedCVKanDeles();
             default: throw new IllegalArgumentException("ukjent type");
         }
-
     }
 
     public static AktivitetData nyStillingFraNavMedCVKanDeles() {
@@ -120,7 +119,7 @@ public class AktivitetDataTestBuilder {
                 .build();
     }
 
-    public static AktivitetData nytSamtaleReferat() {
+    public static AktivitetData nySamtaleReferat() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
                 .moteData(AktivitetTypeDataTestBuilder.moteData())

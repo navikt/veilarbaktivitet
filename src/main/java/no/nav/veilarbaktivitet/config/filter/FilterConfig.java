@@ -107,6 +107,7 @@ public class FilterConfig {
         registration.setFilter(authenticationFilter);
         registration.setOrder(3);
         registration.addUrlPatterns("/api/*");
+        registration.addUrlPatterns("/internal/api/*");
         return registration;
     }
 

@@ -1,0 +1,263 @@
+openapi: 3.0.2
+info:
+  title: Aktivitetsplan API
+  version: '1.0'
+servers:
+  - url: https://veilarbaktivitet
+components:
+  schemas:
+    aktivitet:
+      type: object
+      discriminator:
+        propertyName: aktivitet_type
+      required:
+        - aktivitet_type
+      properties:
+        aktivitet_type:
+          type: string
+          enum:
+            - egenaktivitet
+            - jobbsoeking
+            - sokeavtale
+            - ijobb
+            - behandling
+            - mote
+            - samtalereferat
+            - stilling_fra_nav
+          example: samtalereferat
+        avtalt_med_nav:
+          type: boolean
+          description: Definer om den definerte aktiviteten er avtalt med NAV
+          example: true
+        status:
+          type: string
+          enum:
+            - PLANLAGT
+            - GJENNOMFORES
+            - FULLFORT
+            - BRUKER_ER_INTERESSERT
+            - AVBRUTT
+          example: FULLFORT
+        beskrivelse:
+          type: string
+          description: Beskrivelse av aktiviteten som er planlagt/gjennomført
+          example: NAV forventer at du søker omtrent 20 stillinger i denne perioden
+        tittel:
+          type: string
+        fra_dato:
+          type: string
+          format: date-time
+        til_dato:
+          type: string
+          format: date-time
+        opprettet_dato:
+          type: string
+          format: date-time
+        endret_dato:
+          type: string
+          format: date-time
+    egenaktivitet:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            hensikt:
+              type: string
+            oppfolging:
+              type: string
+    jobbsoeking:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            arbeidsgiver:
+              type: string
+            stillingsTittel:
+              type: string
+            arbeidssted:
+              type: string
+            stillingsoekEtikett:
+              type: string
+              enum:
+                - SOKNAD_SENDT
+                - INNKALT_TIL_INTERVJU
+                - AVSLAG
+                - JOBBTILBUD
+            kontaktPerson:
+              type: string
+    sokeavtale:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            antallStillingerSokes:
+              type: integer
+            antallStillingerIUken:
+              type: integer
+            avtaleOppfolging:
+              type: string
+    ijobb:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            jobbStatusType:
+              type: string
+              enum:
+                - HELTID
+                - DELTID
+            ansettelsesforhold:
+              type: string
+            arbeidstid:
+              type: string
+    behandling:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            behandlingType:
+              type: string
+            behandlingSted:
+              type: string
+            effekt:
+              type: string
+            behandlingOppfolging:
+              type: string
+    mote:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            adresse:
+              type: string
+            forberedelser:
+              type: string
+            kanal:
+              type: string
+              enum:
+                - OPPMOTE
+                - TELEFON
+                - INTERNETT
+            referat:
+              type: string
+            referatPublisert:
+              type: boolean
+    samtalereferat:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            kanal:
+              type: string
+              enum:
+                - OPPMOTE
+                - TELEFON
+                - INTERNETT
+            referat:
+              type: string
+            referatPublisert:
+              type: boolean
+    stilling_fra_nav:
+      allOf:
+        - $ref: '#/components/schemas/aktivitet'
+        - type: object
+          properties:
+            cvKanDelesData:
+              type: object
+              properties:
+                kanDeles:
+                  type: boolean
+                endretTidspunkt:
+                  type: string
+                  format: date-time
+                endretAv:
+                  type: string
+                endretAvType:
+                  type: string
+                  enum:
+                    - BRUKER
+                    - NAV
+                avtaltDato:
+                  type: string
+                  format: date
+            soknadsfrist:
+              type: string
+            svarfrist:
+              type: string
+              format: date
+            arbeidsgiver:
+              type: string
+            bestillingsId:
+              type: string
+            stillingsId:
+              type: string
+            arbeidssted:
+              type: string
+            soknadsstatus:
+              type: string
+              enum:
+                - VENTER
+                - SKAL_PAA_INTERVJU
+                - JOBBTILBUD
+                - AVSLAG
+
+paths:
+  /internal/api/v1/aktivitet:
+    get:
+      operationId: hentAktiviteter
+      tags:
+        - Aktiviteter
+      description: ''
+      parameters:
+        - name: aktorId
+          in: query
+          required: false
+          schema:
+            type: string
+          description: AktørID til personen man ønsker å hente ut aktivitetsplanen til
+        - name: oppfolgingsperiodeId
+          in: query
+          required: false
+          schema:
+            type: string
+            format: uuid
+          description: Uuid til oppfolgingsperioden
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/aktivitet'
+        '204':
+          description: Ingen aktiviteter for aktorId/oppfolgingsperiodeId
+        '400':
+          description: Trenger aktorId eller/og oppfolgingsperiodeId
+        '401':
+          description: Ikke logget inn
+        '403':
+          description: Ingen tilgang
+        '404':
+          description: Finner ikke aktorId/oppfolgingsperiodeId
+  /internal/api/v1/aktivitet/{aktivitetId}:
+    get:
+      operationId: hentAktivitet
+      tags:
+        - Aktiviteter
+      description: ''
+      parameters:
+        - name: aktivitetId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Numerisk id til aktiviteten
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/aktivitet'
