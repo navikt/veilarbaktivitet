@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Mote;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -57,17 +58,24 @@ public class InternApiControllerTest extends SpringBootTestBase {
 
         aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
 
+        // Sett bruker under KVP
+        BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
+        MockNavService.updateBruker(mockBruker, kvpOptions);
+        aktivitetTestService.opprettAktivitetSomVeileder(port, mockVeileder, mockBruker, moteAktivitet);
+
         // Test "/internal/api/v1/aktivitet"
-        Response response = mockVeileder.createRequest()
+        List<Aktivitet> aktiviteter = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
-                .response();
-        List<Aktivitet> aktiviteter = response.jsonPath().getList(".", Aktivitet.class);
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
 
         assertThat(aktiviteter).hasSize(2);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
+
+
 
         List<Aktivitet> aktiviteter2 = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode())
