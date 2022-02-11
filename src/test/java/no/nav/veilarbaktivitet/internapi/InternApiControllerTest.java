@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class InternApiControllerTest extends SpringBootTestBase {
 
     @Test
-    public void sushi() {
+    public void hentAktiviteterTest() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
@@ -68,10 +68,28 @@ public class InternApiControllerTest extends SpringBootTestBase {
 
         assertThat(aktiviteter).hasSize(2);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
+
+        List<Aktivitet> aktiviteter2 = mockVeileder.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
+        assertThat(aktiviteter2).hasSameElementsAs(aktiviteter);
+
+        List<Aktivitet> aktiviteter3 = mockVeileder.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}&oppfolgingsperiodeId={oppfolgingsperiodeId}", mockBruker.getAktorId(), mockBruker.getOppfolgingsperiode())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
+        assertThat(aktiviteter3).hasSameElementsAs(aktiviteter);
     }
 
     @Test
-    public void sushi2() {
+    public void skalFeileNaarManglerTilgang() {
         // Forbidden (403)
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
@@ -79,12 +97,29 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
                 .then()
                 .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
+    }
 
+    @Test
+    public void skalFeilNaarManglerParameter() {
         // Bad request (400) - ingen query parameter
+        MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
         mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet")
                 .then()
                 .assertThat().statusCode(HttpStatus.BAD_REQUEST.value());
     }
+
+    @Test
+    public void skalFeilNaarEksternBruker() {
+        // Forbidden (403)
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        mockBruker.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .then()
+                .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
+    }
+
+
+
 }
