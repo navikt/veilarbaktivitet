@@ -54,7 +54,7 @@ public class MoteSmsDAO {
 
     List<MoteNotifikasjon> hentMoterUtenVarsel(Duration fra, Duration til, int max) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("fra",  ZonedDateTime.now().plus(fra))
+                .addValue("fra", ZonedDateTime.now().plus(fra))
                 .addValue("til", ZonedDateTime.now().plus(til))
                 .addValue("limit", max);
 
@@ -80,25 +80,14 @@ public class MoteSmsDAO {
                 .addValue("kanal", moteNotifikasjon.kanalDTO().name())
                 .addValue("moteTid", moteNotifikasjon.startTid());
 
-        int antall = jdbc.update(
+        jdbc.update(
                 """
-                        update GJELDENDE_MOTE_SMS
-                        set MOTETID = :moteTid, KANAL = :kanal, BRUKERNOTIFIKASJON = 1
-                        where AKTIVITET_ID = :aktivit_id
+                        insert into GJELDENDE_MOTE_SMS
+                                (AKTIVITET_ID, MOTETID,  KANAL, BRUKERNOTIFIKASJON)
+                         values (:aktivit_id,  :moteTid, :kanal, 1)
                         """
                 , params
         );
-
-        if (antall == 0) {
-            jdbc.update(
-                    """
-                            insert into GJELDENDE_MOTE_SMS
-                                    (AKTIVITET_ID, MOTETID,  KANAL, BRUKERNOTIFIKASJON)
-                             values (:aktivit_id,  :moteTid, :kanal, 1)
-                            """
-                    , params
-            );
-        }
     }
 
 
