@@ -117,7 +117,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
 
-        assertThat(AktivitetTypeDTO.values().length).isEqualTo(aktiviteter.size());
+        assertThat(AktivitetTypeDTO.values()).hasSize(aktiviteter.size());
     }
 
     @Test
