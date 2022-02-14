@@ -7,7 +7,10 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetTypeEnum;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
-import java.time.ZoneOffset;
+import java.util.Optional;
+
+import static no.nav.veilarbaktivitet.util.DateUtils.toLocalDate;
+import static no.nav.veilarbaktivitet.util.DateUtils.toOffsetDateTime;
 
 public class InternAktivitetMapper {
 
@@ -21,10 +24,10 @@ public class InternAktivitetMapper {
                 .status(Aktivitet.StatusEnum.valueOf(aktivitetData.getStatus().name()))
                 .beskrivelse(aktivitetData.getBeskrivelse())
                 .tittel(aktivitetData.getTittel())
-                .fraDato(aktivitetData.getFraDato().toInstant().atOffset(ZoneOffset.UTC))
-                .tilDato(aktivitetData.getTilDato().toInstant().atOffset(ZoneOffset.UTC))
-                .opprettetDato(aktivitetData.getOpprettetDato().toInstant().atOffset(ZoneOffset.UTC))
-                .endretDato(aktivitetData.getOpprettetDato().toInstant().atOffset(ZoneOffset.UTC))
+                .fraDato(toOffsetDateTime(aktivitetData.getFraDato()))
+                .tilDato(toOffsetDateTime(aktivitetData.getTilDato()))
+                .opprettetDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
+                .endretDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
                 .build();
 
         return switch (aktivitetType) {
@@ -55,6 +58,7 @@ public class InternAktivitetMapper {
         StillingsoekAktivitetData stillingsSoekAktivitetData = aktivitetData.getStillingsSoekAktivitetData();
 
         val jobbsoeking = Jobbsoeking.builder()
+                .aktivitetType(AktivitetTypeEnum.JOBBSOEKING)
                 .arbeidsgiver(stillingsSoekAktivitetData.getArbeidsgiver())
                 .stillingsTittel(stillingsSoekAktivitetData.getStillingsTittel())
                 .arbeidssted(stillingsSoekAktivitetData.getArbeidssted())
@@ -69,6 +73,7 @@ public class InternAktivitetMapper {
         SokeAvtaleAktivitetData sokeAvtaleAktivitetData = aktivitetData.getSokeAvtaleAktivitetData();
 
         val sokeavtale = Sokeavtale.builder()
+                .aktivitetType(AktivitetTypeEnum.SOKEAVTALE)
                 .antallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
                 .antallStillingerIUken(sokeAvtaleAktivitetData.getAntallStillingerIUken())
                 .avtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging())
@@ -81,6 +86,7 @@ public class InternAktivitetMapper {
         IJobbAktivitetData iJobbAktivitetData = aktivitetData.getIJobbAktivitetData();
 
         val ijobb = Ijobb.builder()
+                .aktivitetType(AktivitetTypeEnum.IJOBB)
                 .jobbStatusType(Ijobb.JobbStatusTypeEnum.valueOf(iJobbAktivitetData.getJobbStatusType().name()))
                 .ansettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
                 .arbeidstid(iJobbAktivitetData.getArbeidstid())
@@ -93,6 +99,7 @@ public class InternAktivitetMapper {
         BehandlingAktivitetData behandlingAktivitetData = aktivitetData.getBehandlingAktivitetData();
 
         val behandling = Behandling.builder()
+                .aktivitetType(AktivitetTypeEnum.BEHANDLING)
                 .behandlingType(behandlingAktivitetData.getBehandlingType())
                 .behandlingSted(behandlingAktivitetData.getBehandlingSted())
                 .effekt(behandlingAktivitetData.getEffekt())
@@ -121,6 +128,7 @@ public class InternAktivitetMapper {
         MoteData moteData = aktivitetData.getMoteData();
 
         val samtalereferat = Samtalereferat.builder()
+                .aktivitetType(AktivitetTypeEnum.SAMTALEREFERAT)
                 .kanal(Samtalereferat.KanalEnum.valueOf(moteData.getKanal().name()))
                 .referat(moteData.getReferat())
                 .referatPublisert(moteData.isReferatPublisert())
@@ -131,29 +139,40 @@ public class InternAktivitetMapper {
 
     private static StillingFraNav mapTilStillingFraNav(AktivitetData aktivitetData, Aktivitet aktivitet) {
         StillingFraNavData stillingFraNavData = aktivitetData.getStillingFraNavData();
-        CvKanDelesData cvKanDelesData = stillingFraNavData.getCvKanDelesData();
+        StillingFraNavAllOfCvKanDelesData stillingFraNavCvKanDelesData = mapCvKanDelesData(stillingFraNavData.getCvKanDelesData());
 
-        StillingFraNavAllOfCvKanDelesData stillingFraNavCvKanDelesData = StillingFraNavAllOfCvKanDelesData.builder()
-                .kanDeles(cvKanDelesData.getKanDeles())
-                .endretTidspunkt(cvKanDelesData.getEndretTidspunkt().toInstant().atOffset(ZoneOffset.UTC))
-                .endretAv(cvKanDelesData.getEndretAv())
-                .endretAvType(StillingFraNavAllOfCvKanDelesData.EndretAvTypeEnum.valueOf(cvKanDelesData.getEndretAvType().name()))
-                .avtaltDato(cvKanDelesData.getAvtaltDato().toInstant().atOffset(ZoneOffset.UTC).toLocalDate())
-                .build();
+        StillingFraNav.SoknadsstatusEnum soknadsstatusEnum = Optional.ofNullable(stillingFraNavData.getSoknadsstatus())
+                .map(Enum::name)
+                .map(StillingFraNav.SoknadsstatusEnum::fromValue)
+                .orElse(null);
 
         StillingFraNav stillingFraNav = StillingFraNav.builder()
+                .aktivitetType(AktivitetTypeEnum.STILLING_FRA_NAV)
                 .cvKanDelesData(stillingFraNavCvKanDelesData)
                 .soknadsfrist(stillingFraNavData.getSoknadsfrist())
-                .svarfrist(stillingFraNavData.getSvarfrist().toInstant().atOffset(ZoneOffset.UTC).toLocalDate())
+                .svarfrist(toLocalDate(stillingFraNavData.getSvarfrist()))
                 .arbeidsgiver(stillingFraNavData.getArbeidsgiver())
                 .bestillingsId(stillingFraNavData.getBestillingsId())
                 .stillingsId(stillingFraNavData.getStillingsId())
                 .arbeidssted(stillingFraNavData.getArbeidssted())
-                .soknadsstatus(StillingFraNav.SoknadsstatusEnum.valueOf(stillingFraNavData.getSoknadsstatus().name()))
+                .soknadsstatus(soknadsstatusEnum)
                 .build();
 
         return (StillingFraNav) merge(aktivitet, stillingFraNav);
     }
+
+    private static StillingFraNavAllOfCvKanDelesData mapCvKanDelesData(CvKanDelesData cvKanDelesData) {
+        if (cvKanDelesData == null) return null;
+
+        return StillingFraNavAllOfCvKanDelesData.builder()
+                .kanDeles(cvKanDelesData.getKanDeles())
+                .endretTidspunkt(toOffsetDateTime(cvKanDelesData.getEndretTidspunkt()))
+                .endretAv(cvKanDelesData.getEndretAv())
+                .endretAvType(StillingFraNavAllOfCvKanDelesData.EndretAvTypeEnum.valueOf(cvKanDelesData.getEndretAvType().name()))
+                .avtaltDato(toLocalDate(cvKanDelesData.getAvtaltDato()))
+                .build();
+    }
+
 
     private static Aktivitet merge(Aktivitet base, Aktivitet aktivitet) {
         return aktivitet
