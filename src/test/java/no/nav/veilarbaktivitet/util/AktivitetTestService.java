@@ -126,21 +126,7 @@ public class AktivitetTestService {
     }
 
     public AktivitetDTO opprettAktivitetSomVeileder(int port, MockVeileder veileder, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        Response response = veileder
-                .createRequest()
-                .body(aktivitetDTO)
-                .when()
-                .post(veileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
-                .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
-
-        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
-        assertNotNull(aktivitet);
-        assertNotNull(aktivitet.getId());
-        AktivitetAssertUtils.assertOpprettetAktivitet(aktivitet, aktivitetDTO);
-
-        return aktivitet;
+        return opprettAktivitet(port, mockBruker, veileder, aktivitetDTO);
     }
 
     public static AktivitetDTO finnAktivitet(AktivitetsplanDTO aktivitetsplanDTO, String id) {

@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.internapi;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
@@ -12,6 +13,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
@@ -52,7 +54,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
             a.assertAll();
         });
 
-        AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet().withTilDato(null);
         AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
 
         aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
@@ -91,6 +93,31 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
         assertThat(aktiviteter3).hasSameElementsAs(aktiviteter);
+    }
+
+    @Test
+    public void skalFunkeForAlleAktivitettyper() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+
+        for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
+            if (type.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) {
+                aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+            } else {
+                AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(type);
+                aktivitetTestService.opprettAktivitet(port, mockBruker, mockVeileder, aktivitetDTO);
+            }
+        }
+
+        List<Aktivitet> aktiviteter = mockVeileder.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}", mockBruker.getAktorId())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
+
+        assertThat(AktivitetTypeDTO.values().length).isEqualTo(aktiviteter.size());
     }
 
     @Test
