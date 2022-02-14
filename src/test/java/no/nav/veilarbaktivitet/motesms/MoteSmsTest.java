@@ -32,7 +32,7 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
-public class Mote extends SpringBootTestBase {
+public class MoteSmsTest extends SpringBootTestBase {
 
     @Autowired
     MoteSMSService moteSMSService;
