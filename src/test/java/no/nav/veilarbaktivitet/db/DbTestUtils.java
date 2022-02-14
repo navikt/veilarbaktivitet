@@ -44,6 +44,7 @@ public class DbTestUtils {
         FluentConfiguration config = Flyway
                 .configure()
                 .dataSource(dataSource)
+                .table("schema_version")
                 .cleanOnValidationError(true)
                 .validateMigrationNaming(true);
         Flyway flyway = new Flyway(config);
