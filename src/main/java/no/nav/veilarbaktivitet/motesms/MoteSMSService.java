@@ -1,102 +1,57 @@
 package no.nav.veilarbaktivitet.motesms;
 
-
 import io.micrometer.core.annotation.Timed;
-import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.time.Duration;
 
-import static java.util.UUID.randomUUID;
-import static no.nav.veilarbaktivitet.util.DateUtils.omTimer;
+import static java.time.Duration.ofHours;
 
-@Slf4j
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
-    private final VarselQueueService varselQueue;
-    private final TransactionTemplate transactionTemplate;
-
-
-    private final MeterRegistry registry;
-    private final Counter antalSMSFeilet;
-    private final Counter antellGangerGjenomfort;
-    private AtomicLong smserSendt;
-    private AtomicLong aktivterSendtSmsPaa;
-
-    public MoteSMSService(
-            MoteSmsDAO moteSmsDAO,
-            VarselQueueService varselQueue,
-            PlatformTransactionManager platformTransactionManager,
-            MeterRegistry registry
-    ) {
-        this.moteSmsDAO = moteSmsDAO;
-        this.varselQueue = varselQueue;
-        this.transactionTemplate = new TransactionTemplate(platformTransactionManager);
-        this.registry = registry;
-
-        antalSMSFeilet = registry.counter("antalSMSFeilet");
-        antellGangerGjenomfort = registry.counter("antellGangerGjenomfort");
-    }
+    private final BrukernotifikasjonService brukernotifikasjonService;
 
     @Timed(value = "moteservicemelding", histogram = true)
-    public void sendServicemeldingerForNesteDogn() {
-        sendServicemeldinger(omTimer(1), omTimer(24));
+    public void sendMoteSms() {
+        sendServicemeldinger(ofHours(1), ofHours(24));
     }
 
-    protected void sendServicemeldinger(Date fra, Date til) {
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(fra, til);
-
-        if (!smsAktivitetData.isEmpty()) {
-            log.info("moteSMS antall hentet: " + smsAktivitetData.size());
-        }
-
-        smsAktivitetData.stream()
-                .filter(SmsAktivitetData::skalSendeServicevarsel)
-                .forEach(this::trySendServicemelding);
-
-        oppdaterMoteSmsMetrikker();
-        antellGangerGjenomfort.increment();
-
+    protected void sendServicemeldinger(Duration fra,Duration til) {
+        moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
+                .forEach(it -> {
+                    moteSmsDAO.updateGjeldendeSms(it);
+                    brukernotifikasjonService.opprettVarselPaaAktivitet(
+                            it.aktivitetId(),
+                            it.aktitetVersion(),
+                            it.aktorId(),
+                            it.getDitNavTekst(),
+                            VarselType.MOTE_SMS,
+                            it.getEpostTitel(),
+                            it.getEpostBody(),
+                            it.getSmsTekst()
+                    );
+                });
     }
 
-    private void trySendServicemelding(SmsAktivitetData aktivitetData) {
-        try {
-            sendServiceMelding(aktivitetData);
-        } catch (Exception e) {
-            log.error("feil med varsel paa motesms for aktivitetId " + aktivitetData.getAktivitetId(), e);
-            antalSMSFeilet.increment();
-        }
-    }
+    public void stopMoteSms() {
 
-    private void sendServiceMelding(SmsAktivitetData aktivitetData) {
-        transactionTemplate.executeWithoutResult(aktivitetdata -> {
-            String varselId = randomUUID().toString();
-            moteSmsDAO.insertSmsSendt(aktivitetData, varselId);
-            varselQueue.sendMoteSms(aktivitetData, varselId);
-        });
-    }
+        moteSmsDAO.hentMoterMedOppdatertTidEllerKanal(5000)
+                .forEach(it -> {
+                    brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
+                    moteSmsDAO.slettGjeldende(it); //TODO burde vi sende sms om at møtet er flyttet?
+                });
 
-    private void oppdaterMoteSmsMetrikker() {
-        long oppdatertSmsSendt = moteSmsDAO.antallSmsSendt();
-        long oppdatertAktivterSendtSmsPaa = moteSmsDAO.antallAktivteterSendtSmsPaa();
-
-        if (smserSendt == null) {
-            smserSendt = registry.gauge("antallSmsSendt", new AtomicLong(oppdatertSmsSendt));
-        } else {
-            smserSendt.set(oppdatertSmsSendt);
-        }
-
-        if (aktivterSendtSmsPaa == null) {
-            aktivterSendtSmsPaa = registry.gauge("antallAktiviteterSendtSmsPaa", new AtomicLong(oppdatertAktivterSendtSmsPaa));
-        } else {
-            aktivterSendtSmsPaa.set(oppdatertSmsSendt);
-        }
+        moteSmsDAO.hentMoteSmsSomFantStedForMerEnd(Duration.ofDays(7)) //Trenger vi denne? Holder det at bruker kan fjerne den og den forsvinner når aktiviteter er fulført/avbrut eller blir historisk
+                .forEach(it -> {
+                    brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
+                    moteSmsDAO.slettGjeldende(it);
+                });
     }
 }

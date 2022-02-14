@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.motesms;
+package no.nav.veilarbaktivitet.motesms.gammel;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class MoteSMSServiceTest {
+public class MoteSMSMqServiceTest {
 
     @Mock
     private JmsTemplate varselQueueJsm;
@@ -58,12 +58,12 @@ public class MoteSMSServiceTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
 
-    private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
+    private final MoteSmsMqDAO moteSmsMqDAO = new MoteSmsMqDAO(database);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
-    private MoteSMSService moteSMSService;
+    private MoteSMSMqService moteSMSMqService;
 
 
     @BeforeClass
@@ -78,8 +78,8 @@ public class MoteSMSServiceTest {
         DataSourceTransactionManager transactionManager = new DataSourceTransactionManager();
         transactionManager.setDataSource(jdbcTemplate.getDataSource());
 
-        moteSMSService = new MoteSMSService(
-                moteSmsDAO,
+        moteSMSMqService = new MoteSMSMqService(
+                moteSmsMqDAO,
                 varselQueue,
                 transactionManager,
                 meterRegistry);
@@ -87,7 +87,7 @@ public class MoteSMSServiceTest {
 
     @Test
     public void skalIkkeFeileMedTomListe() {
-        moteSMSService.sendServicemeldingerForNesteDogn();
+        moteSMSMqService.sendServicemeldingerForNesteDogn();
 
         assertThatMeldingerSendt(0,0);
     }
@@ -96,7 +96,7 @@ public class MoteSMSServiceTest {
     public void skalIkkeSendeFlereVarselrForEnAktivitet() {
         AktivitetData mote = nyttMote(betwheen);
         endreMote(mote, betwheen2);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(1,0);
 
@@ -112,7 +112,7 @@ public class MoteSMSServiceTest {
         nyttMote(betwheen);
         nyttMote(betwheen);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(2,0);
     }
@@ -126,7 +126,7 @@ public class MoteSMSServiceTest {
                 .doNothing()
                 .when(varselQueueJsm).send(any());
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatHistorikkInneholder(1);
         assertThatGjeldendeInneholder(1);
@@ -137,7 +137,7 @@ public class MoteSMSServiceTest {
         nyttMote(after);
         nyttMote(before);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(0,0);
     }
@@ -145,11 +145,11 @@ public class MoteSMSServiceTest {
     @Test
     public void skalIkkeSendeFlereGanger() {
         AktivitetData mote = nyttMote(betwheen);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         endreMote(mote, betwheen);
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
     }
 
@@ -159,12 +159,12 @@ public class MoteSMSServiceTest {
 
         AktivitetData oppdatert1 = aktivitetDAO.oppdaterAktivitet(aktivitetData.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.OPPMOTE)));
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         aktivitetDAO.oppdaterAktivitet(oppdatert1.withMoteData(aktivitetData.getMoteData().withKanal(KanalDTO.TELEFON)));
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
     }
 
@@ -173,12 +173,12 @@ public class MoteSMSServiceTest {
     public void skalSendePaaNyttHvisOppdatert() {
         AktivitetData mote = nyttMote(betwheen);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,0);
 
         endreMote(mote, betwheen2);
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
         assertThatMeldingerSendt(1,1);
 
     }
@@ -191,7 +191,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, AktivitetTypeData.MOTE, values[i]);
         }
 
-        moteSMSService.sendServicemeldinger(earlyCuttoff, lateCuttof);
+        moteSMSMqService.sendServicemeldinger(earlyCuttoff, lateCuttof);
 
         assertThatMeldingerSendt(values.length - 1,0);
 
@@ -205,7 +205,7 @@ public class MoteSMSServiceTest {
             insertAktivitet(i, betwheen, values[i], AktivitetStatus.GJENNOMFORES);
         }
 
-        moteSMSService.sendServicemeldinger(before, after);
+        moteSMSMqService.sendServicemeldinger(before, after);
 
         assertThatMeldingerSendt(1,0);
     }

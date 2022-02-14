@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.motesms;
+package no.nav.veilarbaktivitet.motesms.gammel;
 
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLAktoerId;
 import no.nav.melding.virksomhet.varsel.v1.varsel.XMLParameter;

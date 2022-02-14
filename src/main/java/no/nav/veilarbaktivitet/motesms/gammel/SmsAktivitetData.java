@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.motesms;
+package no.nav.veilarbaktivitet.motesms.gammel;
 
 import lombok.Builder;
 import lombok.Value;
