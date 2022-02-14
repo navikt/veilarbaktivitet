@@ -43,13 +43,14 @@ public class InternApiService {
         }
 
         if (oppfolgingsperiodeId == null) {
-            List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId));
-            authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
-            return filtrerKontorsperret(aktivitetData);
+            return filtrerKontorsperret(aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId)));
         }
 
         if (aktorId == null) {
-            return filtrerKontorsperret(aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId));
+            List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId);
+            if (aktivitetData.isEmpty()) return List.of();
+            authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.get(0).getAktorId()));
+            return filtrerKontorsperret(aktivitetData);
         }
 
         List<AktivitetData> aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
