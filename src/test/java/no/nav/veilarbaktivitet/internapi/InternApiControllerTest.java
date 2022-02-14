@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.internapi;
 
-import io.restassured.response.Response;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -75,8 +74,6 @@ public class InternApiControllerTest extends SpringBootTestBase {
         assertThat(aktiviteter).hasSize(2);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
 
-
-
         List<Aktivitet> aktiviteter2 = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode())
                 .then()
@@ -105,6 +102,15 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
                 .then()
                 .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
+
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
+
+        mockVeilederUtenBruker.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode().toString())
+                .then()
+                .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
     }
 
     @Test
@@ -127,7 +133,5 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .then()
                 .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
     }
-
-
 
 }
