@@ -68,13 +68,13 @@ public class MoteSmsDAO {
                 """, params, MoteSmsDAO::mapMoteNotifikasjon);
     }
 
-    public int slettGjeldende(long aktivitetId) {
+    void slettGjeldende(long aktivitetId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktivit_id", aktivitetId);
-        return jdbc.update("delete from  GJELDENDE_MOTE_SMS where AKTIVITET_ID = :aktivit_id", params);
+        jdbc.update("delete from  GJELDENDE_MOTE_SMS where AKTIVITET_ID = :aktivit_id", params);
     }
 
-    public void updateGjeldendeSms(MoteNotifikasjon moteNotifikasjon) {
+    void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktivit_id", moteNotifikasjon.aktivitetId())
                 .addValue("kanal", moteNotifikasjon.kanalDTO().name())

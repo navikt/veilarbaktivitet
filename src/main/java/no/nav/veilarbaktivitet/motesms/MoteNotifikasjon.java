@@ -12,7 +12,7 @@ record MoteNotifikasjon(long aktivitetId, long aktitetVersion, Person.AktorId ak
     private static final String melding = "Vi minner om at du har et %s %s";
 
     String getMoteTid() {
-        return startTid.format(DateTimeFormatter.ofPattern("EEEE d MMMM 'kl.' HH:mm", Locale.forLanguageTag("no")));
+        return startTid.format(DateTimeFormatter.ofPattern("EEEE d. MMMM 'kl.' HH:mm", Locale.forLanguageTag("no")));
     }
 
     private String getTekst() {

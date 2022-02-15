@@ -26,7 +26,7 @@ public class MoteSMSService {
     protected void sendServicemeldinger(Duration fra,Duration til) {
         moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
                 .forEach(it -> {
-                    moteSmsDAO.updateGjeldendeSms(it);
+                    moteSmsDAO.insertGjeldendeSms(it);
                     brukernotifikasjonService.opprettVarselPaaAktivitet(
                             it.aktivitetId(),
                             it.aktitetVersion(),
@@ -45,10 +45,10 @@ public class MoteSMSService {
         moteSmsDAO.hentMoterMedOppdatertTidEllerKanal(5000)
                 .forEach(it -> {
                     brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
-                    moteSmsDAO.slettGjeldende(it); //TODO burde vi sende sms om at møtet er flyttet?
+                    moteSmsDAO.slettGjeldende(it); //TODO endre til send beskjed sms om flyttet møte + skal sende på nytt hvis møtet er mere enn 48 timer fremm i tid
                 });
 
-        moteSmsDAO.hentMoteSmsSomFantStedForMerEnd(Duration.ofDays(7)) //Trenger vi denne? Holder det at bruker kan fjerne den og den forsvinner når aktiviteter er fulført/avbrut eller blir historisk
+        moteSmsDAO.hentMoteSmsSomFantStedForMerEnd(Duration.ofDays(7)) //TODO Trenger vi denne? Holder det at bruker kan fjerne den og den forsvinner når aktiviteter er fulført/avbrut eller blir historisk
                 .forEach(it -> {
                     brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
                     moteSmsDAO.slettGjeldende(it);

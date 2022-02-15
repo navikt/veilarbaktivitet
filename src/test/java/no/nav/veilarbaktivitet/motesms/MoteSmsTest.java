@@ -102,6 +102,13 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
         assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote);
 
+
+        aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
+        moteSMSService.stopMoteSms();
+        moteSMSService.sendMoteSms();
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        assertTrue("skal ikke sende på nytt for andre oppdateringer",kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+
     }
 
     private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid,AktivitetDTO mote) {
@@ -124,15 +131,16 @@ public class MoteSmsTest extends SpringBootTestBase {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
-        aktivitetDTO.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
+        ZonedDateTime fraDato = ZonedDateTime.now().plusHours(4);
+        aktivitetDTO.setFraDato(new Date(fraDato.toInstant().toEpochMilli()));
 
         for (KanalDTO kanal : KanalDTO.values()) {
             AktivitetDTO aktivitet = aktivitetDTO.toBuilder().kanal(kanal).build();
-            aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
+            AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
 
             moteSMSService.sendMoteSms();
             sendOppgaveCron.sendBrukernotifikasjoner();
-            getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+            assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato,response);
             assertTrue(kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
         }
     }
