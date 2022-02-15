@@ -153,12 +153,11 @@ public class MoteSmsTest extends SpringBootTestBase {
                 AktivitetTypeDTO.values()) {
             if(type == AktivitetTypeDTO.STILLING_FRA_NAV) {
                 aktivitetTestService.opprettStillingFraNav(happyBruker, port);
+            } else {
+                AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
+                aktivitet.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
+                aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
             }
-
-            AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
-            aktivitet.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
-            aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
-
         }
         moteSMSService.sendMoteSms();
         sendOppgaveCron.sendBrukernotifikasjoner();
