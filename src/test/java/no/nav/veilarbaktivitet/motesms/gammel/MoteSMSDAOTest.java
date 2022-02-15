@@ -48,7 +48,7 @@ public class MoteSMSDAOTest {
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(2);
+        assertThat(smsAktivitetData).hasSize(2);
 
         SmsAktivitetData aktivitetData = smsAktivitetData.get(0);
 
@@ -65,7 +65,7 @@ public class MoteSMSDAOTest {
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(1);
+        assertThat(smsAktivitetData).hasSize(1);
 
     }
 
@@ -75,7 +75,7 @@ public class MoteSMSDAOTest {
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(0);
+        assertThat(smsAktivitetData).isEmpty();
 
     }
 
@@ -86,7 +86,7 @@ public class MoteSMSDAOTest {
 
         List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(0);
+        assertThat(smsAktivitetData).isEmpty();
     }
 
     private Date createDate(int hour) {
