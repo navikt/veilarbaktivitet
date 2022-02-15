@@ -54,7 +54,7 @@ public class MoteSMSMqService {
         moteSmsMqDAO.hentIkkeAvbrutteMoterMellomMedGamelNotifikasjon(omTimer(1), omTimer(24))
                 .stream()
                 .map(SmsAktivitetData::getAktivitetId)
-                .forEach(it -> moteSmsMqDAO.slettGjeldende(it));
+                .forEach(moteSmsMqDAO::slettGjeldende);
     }
 
     protected void sendServicemeldinger(Date fra, Date til) {
