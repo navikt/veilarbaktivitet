@@ -48,6 +48,7 @@ public class DbTestUtils {
                 .cleanOnValidationError(true)
                 .validateMigrationNaming(true);
         Flyway flyway = new Flyway(config);
+        flyway.clean();
         flyway.migrate();
     }
 

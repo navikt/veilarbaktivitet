@@ -1,111 +1,94 @@
 package no.nav.veilarbaktivitet.motesms;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.config.database.Database;
-import org.springframework.stereotype.Component;
+import no.nav.veilarbaktivitet.person.Person;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Date;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 import java.util.List;
 
-@Component
-@Slf4j
+@Repository
+@RequiredArgsConstructor
+@Transactional
 public class MoteSmsDAO {
+    private final NamedParameterJdbcTemplate jdbc;
 
-    private final Database database;
-
-    public MoteSmsDAO(Database database) {
-        this.database = database;
+    @SneakyThrows
+    private static MoteNotifikasjon mapMoteNotifikasjon(ResultSet rs, int r) {
+        return new MoteNotifikasjon(rs.getInt("AKTIVITET_ID"), rs.getInt("VERSJON"), Person.aktorId(rs.getString("AKTOR_ID")), KanalDTO.valueOf(rs.getString("MOTE.KANAL")), Database.hentZonedDateTime(rs, "AKTIVITET.FRA_DATO"));
     }
 
-    public List<SmsAktivitetData> hentIkkeAvbrutteMoterMellom(Date fra, Date til) {
-        //language=sql
-        return database.query(
-                "select " +
-                        " AKTOR_ID " +
-                        ", AKTIVITET.AKTIVITET_ID as ID " +
-                        ", AKTIVITET.VERSJON as AKTIVITET_VERSJON" +
-                        ", FRA_DATO " +
-                        ", MOTETID " +
-                        ", MOTE.KANAL as AKTIVITET_KANAL" +
-                        ", GJELDENDE_MOTE_SMS.KANAL as SMS_KANAL"+
-                        " from AKTIVITET" +
-                        " left join MOTE on AKTIVITET.AKTIVITET_ID = MOTE.AKTIVITET_ID and AKTIVITET.VERSJON = MOTE.VERSJON"+
-                        " left join GJELDENDE_MOTE_SMS on AKTIVITET.AKTIVITET_ID = GJELDENDE_MOTE_SMS.AKTIVITET_ID" +
-                        " where AKTIVITET_TYPE_KODE  = 'MOTE'" +
-                        " and GJELDENDE = 1" +
-                        " and LIVSLOPSTATUS_KODE != 'AVBRUTT'" +
-                        " and FRA_DATO between ? and ?" +
-                        " and HISTORISK_DATO is null " +
-                        " order by FRA_DATO"
-                ,
-                this::mapper,
-                fra,
-                til
-                );
+    List<Long> hentMoteSmsSomFantStedForMerEnd(Duration duration) {
+        SqlParameterSource params = new MapSqlParameterSource("eldreEnd", ZonedDateTime.now().minus(duration));
+        return jdbc.queryForList("""
+                        select AKTIVITET_ID from GJELDENDE_MOTE_SMS
+                        where BRUKERNOTIFIKASJON = 1
+                        and MOTETID < :eldreEnd
+                        """,
+                params,
+                long.class);
     }
 
-
-    private SmsAktivitetData mapper(ResultSet rs) throws SQLException {
-        return SmsAktivitetData
-                .builder()
-                .aktorId(rs.getString("AKTOR_ID"))
-                .aktivitetId(rs.getLong("ID"))
-                .aktivtetVersion(rs.getLong("AKTIVITET_VERSJON"))
-                .moteTidAktivitet(rs.getTimestamp("FRA_DATO"))
-                .smsSendtMoteTid(rs.getTimestamp("MOTETID"))
-                .aktivitetKanal(rs.getString("AKTIVITET_KANAL"))
-                .smsKanal(rs.getString("SMS_KANAL"))
-                .build();
+    List<Long> hentMoterMedOppdatertTidEllerKanal(int max) {
+        MapSqlParameterSource params = new MapSqlParameterSource("limit", max);
+        return jdbc.queryForList(
+                """
+                        select AKTIVITET.AKTIVITET_ID from AKTIVITET
+                        inner join MOTE on AKTIVITET.AKTIVITET_ID = MOTE.AKTIVITET_ID and AKTIVITET.VERSJON = MOTE.VERSJON
+                        inner join GJELDENDE_MOTE_SMS SMS on AKTIVITET.AKTIVITET_ID = SMS.AKTIVITET_ID
+                        where GJELDENDE = 1
+                        and (SMS.MOTETID != AKTIVITET.FRA_DATO or SMS.KANAL != MOTE.KANAL)
+                        FETCH NEXT :limit ROWS ONLY
+                        """
+                , params, long.class);
     }
 
-    public void insertSmsSendt(SmsAktivitetData smsAktivitetData, String varselId) {
-        Date motetTid = smsAktivitetData.getMoteTidAktivitet();
-        Long aktiviteteId = smsAktivitetData.getAktivitetId();
-        Long aktivtetVersion = smsAktivitetData.getAktivtetVersion();
-        String kanal = smsAktivitetData.getAktivitetKanal();
+    List<MoteNotifikasjon> hentMoterUtenVarsel(Duration fra, Duration til, int max) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("fra", ZonedDateTime.now().plus(fra))
+                .addValue("til", ZonedDateTime.now().plus(til))
+                .addValue("limit", max);
 
-        //language=sql
-        int antall = database.update(
-                "update GJELDENDE_MOTE_SMS set MOTETID = ?, KANAL = ? where AKTIVITET_ID = ?"
-                , motetTid
-                , kanal
-                , aktiviteteId
-        );
+        return jdbc.query("""
+                select a.AKTIVITET_ID, a.VERSJON, a.AKTOR_ID, a.FRA_DATO, m.KANAL from AKTIVITET a
+                inner join MOTE m on a.AKTIVITET_ID = m.AKTIVITET_ID and a.VERSJON = m.VERSJON
+                where GJELDENDE = 1
+                and FRA_DATO between :fra and :til
+                and AKTIVITET_TYPE_KODE = 'MOTE'
+                and not exists(select * from GJELDENDE_MOTE_SMS SMS where a.AKTIVITET_ID = SMS.AKTIVITET_ID)
+                """, params, MoteSmsDAO::mapMoteNotifikasjon);
+    }
 
-        if (antall == 0) {
-            //language=sql
-            database.update(
-                    "insert into GJELDENDE_MOTE_SMS (AKTIVITET_ID, MOTETID, KANAL)" +
-                            " values (?, ?, ?)"
-                    , aktiviteteId
-                    , motetTid
-                    , kanal
-            );
-        }
+    void slettGjeldende(long aktivitetId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivit_id", aktivitetId);
+        jdbc.update("delete from  GJELDENDE_MOTE_SMS where AKTIVITET_ID = :aktivit_id", params);
+    }
 
-        //language=sql
-        database.update(
-                "insert into MOTE_SMS_HISTORIKK" +
-                        " (AKTIVITET_ID, VERSJON, MOTETID, VARSEL_ID, KANAL, SENDT) VALUES" +
-                        " (?,?,?,?,?,?)"
-                , aktiviteteId
-                , aktivtetVersion
-                , motetTid
-                , varselId
-                , kanal
-                , new Date()
+    void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivit_id", moteNotifikasjon.aktivitetId())
+                .addValue("kanal", moteNotifikasjon.kanalDTO().name())
+                .addValue("moteTid", moteNotifikasjon.startTid());
+
+        jdbc.update(
+                """
+                        insert into GJELDENDE_MOTE_SMS
+                                (AKTIVITET_ID, MOTETID,  KANAL, BRUKERNOTIFIKASJON)
+                         values (:aktivit_id,  :moteTid, :kanal, 1)
+                        """
+                , params
         );
     }
 
-    public long antallAktivteterSendtSmsPaa() {
-        //language=sql
-        return database.queryForObject("select count(*) from GJELDENDE_MOTE_SMS", Long.class);
-    }
 
-    public long antallSmsSendt() {
-        //language=sql
-        return database.queryForObject("select count(*) from MOTE_SMS_HISTORIKK", Long.class);
-    }
 }

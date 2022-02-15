@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.motesms;
+package no.nav.veilarbaktivitet.motesms.gammel;
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -25,7 +25,7 @@ public class MoteSMSDAOTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
-    private final MoteSmsDAO moteSmsDAO = new MoteSmsDAO(database);
+    private final MoteSmsMqDAO moteSmsMqDAO = new MoteSmsMqDAO(database);
 
 
     private final Date bofore = createDate(1);
@@ -46,9 +46,9 @@ public class MoteSMSDAOTest {
         AktivitetData aktivitetData1 = opprettMote(betwheen2);
         AktivitetData aktivitetData2 = opprettMote(betwheen);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(2);
+        assertThat(smsAktivitetData).hasSize(2);
 
         SmsAktivitetData aktivitetData = smsAktivitetData.get(0);
 
@@ -63,9 +63,9 @@ public class MoteSMSDAOTest {
         AktivitetData mote = opprettMote(betwheen2);
         oppdaterMote(mote, betwheen);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(1);
+        assertThat(smsAktivitetData).hasSize(1);
 
     }
 
@@ -73,9 +73,9 @@ public class MoteSMSDAOTest {
     public void skalIkkeHenteAvbrutt() {
         opprettAvbruttMote(betwheen);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(0);
+        assertThat(smsAktivitetData).isEmpty();
 
     }
 
@@ -84,9 +84,9 @@ public class MoteSMSDAOTest {
         opprettMote(bofore);
         opprettMote(after);
 
-        List<SmsAktivitetData> smsAktivitetData = moteSmsDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
+        List<SmsAktivitetData> smsAktivitetData = moteSmsMqDAO.hentIkkeAvbrutteMoterMellom(earlyCuttoff, lateCuttof);
 
-        assertThat(smsAktivitetData.size()).isEqualTo(0);
+        assertThat(smsAktivitetData).isEmpty();
     }
 
     private Date createDate(int hour) {

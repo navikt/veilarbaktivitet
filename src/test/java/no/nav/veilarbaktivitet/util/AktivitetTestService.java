@@ -125,6 +125,28 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
+    public AktivitetDTO oppdatterAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+        String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
+
+        Response response = user
+                .createRequest()
+                .and()
+                .body(aktivitetPayloadJson)
+                .when()
+                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId(), mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
+        assertNotNull(aktivitet);
+        assertNotNull(aktivitet.getId());
+        AktivitetAssertUtils.assertOpprettetAktivitet(aktivitet, aktivitetDTO);
+
+        return aktivitet;
+    }
+
+
     public AktivitetDTO opprettAktivitetSomVeileder(int port, MockVeileder veileder, MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         return opprettAktivitet(port, mockBruker, veileder, aktivitetDTO);
     }
