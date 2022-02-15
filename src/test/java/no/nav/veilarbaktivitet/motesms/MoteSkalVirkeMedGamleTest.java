@@ -33,7 +33,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class MoteSkalVirkeMedGamle extends SpringBootTestBase {
+public class MoteSkalVirkeMedGamleTest extends SpringBootTestBase {
     @BeforeClass
     public static void settup() {
         System.setProperty("AKTIVITETSPLAN_URL", "aktivitesplan_url");
