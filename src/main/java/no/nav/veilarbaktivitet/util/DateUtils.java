@@ -4,9 +4,7 @@ import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -62,6 +60,17 @@ public class DateUtils {
     public static Date omTimer(int timer) {
         long time = new Date().getTime();
         return new Date(time + timer * 1000 * 60 * 60);
+    }
+
+    public static OffsetDateTime toOffsetDateTime(Date date) {
+        if (date == null) return null;
+        return date.toInstant().atOffset(ZoneOffset.UTC);
+    }
+
+    public static LocalDate toLocalDate(Date date) {
+        if (date == null) return null;
+        return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+
     }
 
 }

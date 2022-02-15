@@ -123,6 +123,7 @@ public class AktivitetDataTestBuilder {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
                 .moteData(AktivitetTypeDataTestBuilder.moteData())
+                .tilDato(null)
                 .build();
     }
 

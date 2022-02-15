@@ -30,33 +30,48 @@ public class InternApiService {
     }
 
     public List<AktivitetData> hentAktiviteter(String aktorId, UUID oppfolgingsperiodeId) {
-        if (authService.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
-        if (aktorId != null) {
-            authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
-        }
-
         if (aktorId == null && oppfolgingsperiodeId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        if (oppfolgingsperiodeId == null) {
-            List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId));
-            authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
-            return filtrerKontorsperret(aktivitetData);
+        if (authService.erEksternBruker()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        if (aktorId == null) {
-            return filtrerKontorsperret(aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId));
+        if (aktorId != null && oppfolgingsperiodeId != null) {
+            return hentAktiviteterFiltrert(aktorId, oppfolgingsperiodeId);
         }
 
+        if (oppfolgingsperiodeId != null) {
+            return hentAktiviteter(oppfolgingsperiodeId);
+        }
+
+        if (aktorId != null) {
+            return hentAktiviteter(aktorId);
+        }
+
+        throw new IllegalArgumentException();
+    }
+
+    private List<AktivitetData> hentAktiviteterFiltrert(String aktorId, UUID oppfolgingsperiodeId) {
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
         List<AktivitetData> aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
                 .stream()
                 .filter(a -> a.getOppfolgingsperiodeId().toString().equals(oppfolgingsperiodeId.toString()))
                 .toList();
         return filtrerKontorsperret(aktiviteter);
+    }
+
+    private List<AktivitetData> hentAktiviteter(String aktorId) {
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
+        return filtrerKontorsperret(aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId)));
+    }
+
+    private List<AktivitetData> hentAktiviteter(UUID oppfolgingsperiodeId) {
+        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId);
+        if (aktivitetData.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.get(0).getAktorId()));
+        return filtrerKontorsperret(aktivitetData);
     }
 
     private List<AktivitetData> filtrerKontorsperret(List<AktivitetData> aktiviteter) {

@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers;
 public class AktivitetDtoTestBuilder {
 
     public static AktivitetDTO nyAktivitet(AktivitetTypeDTO aktivitetTypeDTO) {
+        //TODO implementer denne ordenltig
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet(Helpers.Type.getData(aktivitetTypeDTO));
         return  AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
     }
