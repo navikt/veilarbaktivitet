@@ -25,4 +25,13 @@ public class OppfolgingsperiodeCron {
         long antall = oppfolgingsperiodeServiceAdder.oppdater500brukere();
         log.info("oppdatert {} brukere med oppfolginsperiode", antall);
     }
+
+    @Scheduled(
+            cron = "0 0 22 16 * *"
+    ) //TODO bare kjøres en gang husk og slette før neste månde
+    @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtMostFor = "PT20H")
+    public void sammkjorOppfolignsperiode() {
+        oppfolgingsperiodeServiceAdder.samskjorAktiviter(10_000);
+    }
+
 }

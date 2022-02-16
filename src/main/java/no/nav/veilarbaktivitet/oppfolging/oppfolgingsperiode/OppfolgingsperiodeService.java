@@ -21,4 +21,14 @@ public class OppfolgingsperiodeService {
                 .size();
     }
 
+    @Timed
+    public void samskjorAktiviter(int maksantall) {
+        int aktiitet_id = dao.hentSisteOppdaterteAktivitet();
+        if(aktiitet_id > 13_317_753) {
+            log.info("ferdig med samskjoreing");
+            return;
+        }
+        dao.matchPeriodeForAktivitet(aktiitet_id, aktiitet_id + maksantall);
+        dao.oppdaterSiteOppdaterteAktivitet(aktiitet_id + maksantall);
+    }
 }
