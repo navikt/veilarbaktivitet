@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -19,6 +20,35 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OppfolgingsperiodeDao {
     private final NamedParameterJdbcTemplate template;
+
+    public long matchPeriodeForAktivitet(int minAktivitetId, int maxAktivitetId) {
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        return template.update("""
+                update AKTIVITET a1 set OPPFOLGINGSPERIODE_UUID = (select  OPPFOLGINGSPERIODE_UUID from AKTIVITET a2 where a1.AKTIVITET_ID = a2.AKTIVITET_ID and a2.GJELDENDE = 1)
+                where a1.GJELDENDE = 0
+                and a1.AKTIVITET_ID <= :maks_aktivitet_id
+                and a1.AKTIVITET_ID > :min_aktivitet_id
+                """, params);
+    }
+
+    public int hentSisteOppdaterteAktivitet() {
+        Integer integer = template.getJdbcTemplate().queryForObject(
+                """ 
+                        select AKTIVITET_ID from aktivitetJobb;
+                        """
+                , Integer.class);
+
+        return Optional.ofNullable(integer).orElse(0);
+    }
+
+    public void oppdaterSiteOppdaterteAktivitet(int aktivitetId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitet_id", aktivitetId);
+
+        template.update("""
+                update aktivitetJobb set AKTIVITET_ID = :aktivitet_id
+                """, params);
+    }
 
     @Timed
     public long oppdaterAktiviteterForPeriode(Person aktorId, ZonedDateTime startDato, ZonedDateTime sluttDato, UUID uuid) {
