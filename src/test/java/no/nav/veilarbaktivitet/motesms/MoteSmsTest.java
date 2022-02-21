@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -24,6 +25,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.kafka.core.ConsumerFactory;
 
+import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -54,6 +56,9 @@ public class MoteSmsTest extends SpringBootTestBase {
 
     @Autowired
     SendOppgaveCron sendOppgaveCron;
+
+    @Autowired
+    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @LocalServerPort
     protected int port;
@@ -163,5 +168,31 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
         getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
         assertTrue("skal bare ha opprettet sms for møtet", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+    }
+
+    @Test
+    public void skalFjereneGamleMoter() {
+        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
+        ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
+        aktivitet.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
+        AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
+
+        moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        ConsumerRecord<Nokkel, Beskjed> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
+
+        moteSMSService.stopMoteSms();
+        sendOppgaveCron.sendBrukernotifikasjoner();
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+
+        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+
+        String varsleId = varsel.key().getEventId();
+        String doneId = singleRecord.key().getEventId();
+
+        assertEquals(varsleId, doneId);
     }
 }
