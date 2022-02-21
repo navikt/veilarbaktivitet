@@ -22,11 +22,6 @@ import java.util.List;
 public class MoteSmsDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
-    @SneakyThrows
-    private static MoteNotifikasjon mapMoteNotifikasjon(ResultSet rs, int r) {
-        return new MoteNotifikasjon(rs.getInt("AKTIVITET_ID"), rs.getInt("VERSJON"), Person.aktorId(rs.getString("AKTOR_ID")), KanalDTO.valueOf(rs.getString("MOTE.KANAL")), Database.hentZonedDateTime(rs, "AKTIVITET.FRA_DATO"));
-    }
-
     List<Long> hentMoteSmsSomFantStedForMerEnd(Duration duration) {
         SqlParameterSource params = new MapSqlParameterSource("eldreEnd", ZonedDateTime.now().minus(duration));
         return jdbc.queryForList("""
@@ -59,13 +54,23 @@ public class MoteSmsDAO {
                 .addValue("limit", max);
 
         return jdbc.query("""
-                select a.AKTIVITET_ID, a.VERSJON, a.AKTOR_ID, a.FRA_DATO, m.KANAL from AKTIVITET a
+                select a.AKTIVITET_ID as id, a.VERSJON as aktivitet_version, a.AKTOR_ID as aktor_id, a.FRA_DATO as startdato, m.KANAL as kanal from AKTIVITET a
                 inner join MOTE m on a.AKTIVITET_ID = m.AKTIVITET_ID and a.VERSJON = m.VERSJON
                 where GJELDENDE = 1
                 and FRA_DATO between :fra and :til
                 and AKTIVITET_TYPE_KODE = 'MOTE'
                 and not exists(select * from GJELDENDE_MOTE_SMS SMS where a.AKTIVITET_ID = SMS.AKTIVITET_ID)
                 """, params, MoteSmsDAO::mapMoteNotifikasjon);
+    }
+
+    @SneakyThrows
+    private static MoteNotifikasjon mapMoteNotifikasjon(ResultSet rs, int r) {
+        int id = rs.getInt("id");
+        int version = rs.getInt("aktivitet_version");
+        Person.AktorId aktorId = Person.aktorId(rs.getString("aktor_id"));
+        KanalDTO kanal = KanalDTO.valueOf(rs.getString("kanal"));
+        ZonedDateTime startTid = Database.hentZonedDateTime(rs, "startdato");
+        return new MoteNotifikasjon(id, version, aktorId, kanal, startTid);
     }
 
     void slettGjeldende(long aktivitetId) {
