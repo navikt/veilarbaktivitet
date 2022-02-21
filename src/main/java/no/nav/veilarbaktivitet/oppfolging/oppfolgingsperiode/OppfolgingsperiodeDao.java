@@ -36,7 +36,7 @@ public class OppfolgingsperiodeDao {
     public int hentSisteOppdaterteAktivitet() {
         Integer integer = template.getJdbcTemplate().queryForObject(
                 """ 
-                        select AKTIVITET_ID from aktivitetJobb;
+                        select AKTIVITET_ID from aktivitetJobb
                         """
                 , Integer.class);
 
@@ -176,7 +176,7 @@ public class OppfolgingsperiodeDao {
     public int hentMaksAktivitetId() {
         return template.getJdbcTemplate().queryForObject(
                 """ 
-                        select maks_id from aktivitetJobb;
+                        select maks_id from aktivitetJobb
                         """
                 , Integer.class);
     }
