@@ -24,7 +24,8 @@ public class OppfolgingsperiodeService {
     @Timed
     public void samskjorAktiviter(int maksantall) {
         int aktiitetId = dao.hentSisteOppdaterteAktivitet();
-        if(aktiitetId > 13_317_753) {
+        int maksId = dao.hentMaksAktivitetId();
+        if(aktiitetId > maksId) {
             log.info("ferdig med samskjoreing");
             return;
         }

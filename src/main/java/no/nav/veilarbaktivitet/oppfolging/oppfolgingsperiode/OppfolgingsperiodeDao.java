@@ -170,4 +170,12 @@ public class OppfolgingsperiodeDao {
                 and (OPPRETTET_DATO <= :startDato)
                 """, params);
     }
+
+    public int hentMaksAktivitetId() {
+        return template.getJdbcTemplate().queryForObject(
+                """ 
+                        select maks_id from aktivitetJobb;
+                        """
+                , Integer.class);
+    }
 }
