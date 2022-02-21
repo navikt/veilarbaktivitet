@@ -22,7 +22,9 @@ public class OppfolgingsperiodeDao {
     private final NamedParameterJdbcTemplate template;
 
     public long matchPeriodeForAktivitet(int minAktivitetId, int maxAktivitetId) {
-        MapSqlParameterSource params = new MapSqlParameterSource();
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("maks_aktivitet_id", maxAktivitetId)
+                .addValue("min_aktivitet_id", minAktivitetId);
         return template.update("""
                 update AKTIVITET a1 set OPPFOLGINGSPERIODE_UUID = (select  OPPFOLGINGSPERIODE_UUID from AKTIVITET a2 where a1.AKTIVITET_ID = a2.AKTIVITET_ID and a2.GJELDENDE = 1)
                 where a1.GJELDENDE = 0
@@ -34,7 +36,7 @@ public class OppfolgingsperiodeDao {
     public int hentSisteOppdaterteAktivitet() {
         Integer integer = template.getJdbcTemplate().queryForObject(
                 """ 
-                        select AKTIVITET_ID from aktivitetJobb;
+                        select AKTIVITET_ID from aktivitetJobb
                         """
                 , Integer.class);
 
@@ -169,5 +171,13 @@ public class OppfolgingsperiodeDao {
                 and OPPFOLGINGSPERIODE_UUID is null
                 and (OPPRETTET_DATO <= :startDato)
                 """, params);
+    }
+
+    public int hentMaksAktivitetId() {
+        return template.getJdbcTemplate().queryForObject(
+                """ 
+                        select maks_id from aktivitetJobb
+                        """
+                , Integer.class);
     }
 }

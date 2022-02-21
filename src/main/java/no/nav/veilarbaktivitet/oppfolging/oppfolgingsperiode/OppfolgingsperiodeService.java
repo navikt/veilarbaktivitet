@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 public class OppfolgingsperiodeService {
     private final OppfolgingsperiodeDao dao;
     private final OppfolgingsperiodePersonService service;
+
     @Timed
     public long oppdater500brukere() {
         return dao
@@ -23,12 +24,13 @@ public class OppfolgingsperiodeService {
 
     @Timed
     public void samskjorAktiviter(int maksantall) {
-        int aktiitet_id = dao.hentSisteOppdaterteAktivitet();
-        if(aktiitet_id > 13_317_753) {
+        int aktiitetId = dao.hentSisteOppdaterteAktivitet();
+        int maksId = dao.hentMaksAktivitetId();
+        if (aktiitetId > maksId) {
             log.info("ferdig med samskjoreing");
             return;
         }
-        dao.matchPeriodeForAktivitet(aktiitet_id, aktiitet_id + maksantall);
-        dao.oppdaterSiteOppdaterteAktivitet(aktiitet_id + maksantall);
+        dao.matchPeriodeForAktivitet(aktiitetId, aktiitetId + maksantall);
+        dao.oppdaterSiteOppdaterteAktivitet(Math.min(aktiitetId + maksantall, maksId));
     }
 }
