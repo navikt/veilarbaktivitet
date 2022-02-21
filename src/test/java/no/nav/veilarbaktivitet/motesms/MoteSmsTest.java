@@ -81,54 +81,29 @@ public class MoteSmsTest extends SpringBootTestBase {
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
 
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
+        cronjobber();
+        ConsumerRecord<Nokkel, Beskjed> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
 
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        assertTrue("skal ikke sende på nytt",kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+        cronjobber();
+        assertTrue("skal ikke sende på nytt", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
 
         AktivitetDTO nyKanal = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
-
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
+        cronjobber();
+        harAvsluttetVarsel(orginalMelding);
+        ConsumerRecord<Nokkel, Beskjed> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
 
         ZonedDateTime ny_startTid = startTid.plusHours(2);
         AktivitetDTO nyTid = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyKanal.setFraDato(new Date(ny_startTid.toInstant().toEpochMilli())));
 
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        cronjobber();
+        harAvsluttetVarsel(ny_kanal_varsel);
         assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote);
 
-
         aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
-        moteSMSService.stopMoteSms();
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        cronjobber();
         assertTrue("skal ikke sende på nytt for andre oppdateringer",kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
 
-    }
-
-    private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid,AktivitetDTO mote) {
-        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
-        Beskjed value = oppgaveRecord.value();
-
-        MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(melding, happyBruker.getFnr(), value.getFodselsnummer());
-        assertTrue(melding, value.getEksternVarsling());
-        assertEquals(melding, expected.getSmsTekst(), value.getSmsVarslingstekst());
-        assertEquals(melding, expected.getDitNavTekst(), value.getTekst());
-        assertEquals(melding, expected.getEpostTitel(), value.getEpostVarslingstittel());
-        assertEquals(melding, expected.getEpostBody(), value.getEpostVarslingstekst());
-        assertTrue(melding, value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
-        return oppgaveRecord;
     }
 
     @Test
@@ -143,8 +118,7 @@ public class MoteSmsTest extends SpringBootTestBase {
             AktivitetDTO aktivitet = aktivitetDTO.toBuilder().kanal(kanal).build();
             AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
 
-            moteSMSService.sendMoteSms();
-            sendOppgaveCron.sendBrukernotifikasjoner();
+            cronjobber();
             assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato,response);
             assertTrue(kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
         }
@@ -164,8 +138,8 @@ public class MoteSmsTest extends SpringBootTestBase {
                 aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
             }
         }
-        moteSMSService.sendMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
+
+        cronjobber();
         getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
         assertTrue("skal bare ha opprettet sms for møtet", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
     }
@@ -183,16 +157,41 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
         ConsumerRecord<Nokkel, Beskjed> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
-        moteSMSService.stopMoteSms();
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+        cronjobber();
 
         kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+        harAvsluttetVarsel(varsel);
+    }
+
+
+    private void harAvsluttetVarsel(ConsumerRecord<Nokkel, Beskjed> varsel) {
         ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
 
         String varsleId = varsel.key().getEventId();
         String doneId = singleRecord.key().getEventId();
 
         assertEquals("skal ha sendt stop for varsel", varsleId, doneId);
+    }
+
+    private void cronjobber() {
+        moteSMSService.stopMoteSms();
+        moteSMSService.sendMoteSms();
+        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
+        sendOppgaveCron.sendBrukernotifikasjoner();
+    }
+
+    private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid,AktivitetDTO mote) {
+        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        Beskjed value = oppgaveRecord.value();
+
+        MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
+        assertEquals(melding, happyBruker.getFnr(), value.getFodselsnummer());
+        assertTrue(melding, value.getEksternVarsling());
+        assertEquals(melding, expected.getSmsTekst(), value.getSmsVarslingstekst());
+        assertEquals(melding, expected.getDitNavTekst(), value.getTekst());
+        assertEquals(melding, expected.getEpostTitel(), value.getEpostVarslingstittel());
+        assertEquals(melding, expected.getEpostBody(), value.getEpostVarslingstekst());
+        assertTrue(melding, value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
+        return oppgaveRecord;
     }
 }
