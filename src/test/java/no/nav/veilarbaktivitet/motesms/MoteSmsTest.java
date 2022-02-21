@@ -193,6 +193,6 @@ public class MoteSmsTest extends SpringBootTestBase {
         String varsleId = varsel.key().getEventId();
         String doneId = singleRecord.key().getEventId();
 
-        assertEquals("skal ha sendt stop for varsel",varsleId, doneId);
+        assertEquals("skal ha sendt stop for varsel", varsleId, doneId);
     }
 }
