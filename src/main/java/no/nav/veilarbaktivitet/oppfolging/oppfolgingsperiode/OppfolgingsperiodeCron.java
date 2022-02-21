@@ -27,9 +27,10 @@ public class OppfolgingsperiodeCron {
     }
 
     @Scheduled(
-            cron = "0 0 22 16 * *"
-    ) //TODO bare kjøres en gang husk og slette før neste månde
-    @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtMostFor = "PT20H")
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
+    ) //TODO slett når ferdig
+    @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtMostFor = "PT10M")
     public void sammkjorOppfolignsperiode() {
         oppfolgingsperiodeServiceAdder.samskjorAktiviter(10_000);
     }
