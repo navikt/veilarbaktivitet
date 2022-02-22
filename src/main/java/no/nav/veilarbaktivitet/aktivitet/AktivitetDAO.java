@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -158,7 +160,7 @@ public class AktivitetDAO {
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
                         :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
-                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
+                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperreﬁ_enhet_id,
                         :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid
                         )
                         """, params);
@@ -312,8 +314,6 @@ public class AktivitetDAO {
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
-                            var cvKanDelesData = stilling.getCvKanDelesData();
-                            var kontaktpersonData = stilling.getKontaktpersonData();
                             MapSqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
@@ -327,19 +327,18 @@ public class AktivitetDAO {
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
 
-                            if (cvKanDelesData != null) {
-                                parms.addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
-                                        .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
-                                        .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
-                                        .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
-                                        .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.getAvtaltDato());
-                            }
+                            var cvKanDelesData = stilling.getCvKanDelesData() != null ? stilling.getCvKanDelesData() : CvKanDelesData.builder().build();
+                            parms.addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
+                                    .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
+                                    .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
+                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.getAvtaltDato());
 
-                            if (kontaktpersonData != null) {
-                                parms.addValue("kontaktperson_navn", kontaktpersonData.getNavn())
-                                        .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
-                                        .addValue("kontaktperson_mobil", kontaktpersonData.getMobil());
-                            }
+
+                            var kontaktpersonData = stilling.getKontaktpersonData() != null ? stilling.getKontaktpersonData() : KontaktpersonData.builder().build();
+                            parms.addValue("kontaktperson_navn", kontaktpersonData.getNavn())
+                                    .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
+                                    .addValue("kontaktperson_mobil", kontaktpersonData.getMobil());
 
 
                             // language=sql
