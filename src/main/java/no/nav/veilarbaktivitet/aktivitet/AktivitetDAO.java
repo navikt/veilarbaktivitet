@@ -160,7 +160,7 @@ public class AktivitetDAO {
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
                         :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
-                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperreﬁ_enhet_id,
+                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
                         :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid
                         )
                         """, params);
