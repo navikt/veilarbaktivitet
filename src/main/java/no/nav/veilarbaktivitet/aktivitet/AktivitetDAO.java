@@ -147,7 +147,7 @@ public class AktivitetDAO {
                 .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
                 .addValue("mal_id", aktivitet.getMalid())
                 .addValue("fho_id", fhoId)
-                .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId()!= null ? aktivitet.getOppfolgingsperiodeId().toString() : null);
+                .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null ? aktivitet.getOppfolgingsperiodeId().toString() : null);
         //language=SQL
         database.getNamedJdbcTemplate().update(
                 """
@@ -314,14 +314,9 @@ public class AktivitetDAO {
                 .ifPresent(stilling -> {
                             var cvKanDelesData = stilling.getCvKanDelesData();
                             var kontaktpersonData = stilling.getKontaktpersonData();
-                            SqlParameterSource parms = new MapSqlParameterSource()
+                            MapSqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
-                                    .addValue("cv_kan_deles", cvKanDelesData != null ? cvKanDelesData.getKanDeles() : null)
-                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
-                                    .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
-                                    .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
-                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData != null ? cvKanDelesData.getAvtaltDato() : null)
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())
@@ -329,11 +324,24 @@ public class AktivitetDAO {
                                     .addValue("stillingsId", stilling.getStillingsId())
                                     .addValue("arbeidssted", stilling.getArbeidssted())
                                     .addValue("varselid", stilling.getVarselId())
-                                    .addValue("kontaktperson_navn", kontaktpersonData != null ? kontaktpersonData.getNavn() : null)
-                                    .addValue("kontaktperson_tittel", kontaktpersonData != null ? kontaktpersonData.getTittel() : null)
-                                    .addValue("kontaktperson_mobil", kontaktpersonData != null ? kontaktpersonData.getMobil() : null)
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
+
+                            if (cvKanDelesData != null) {
+                                parms.addValue("cv_kan_deles", cvKanDelesData.getKanDeles())
+                                        .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.getEndretTidspunkt())
+                                        .addValue("cv_kan_deles_av", cvKanDelesData.getEndretAv())
+                                        .addValue("cv_kan_deles_av_type", EnumUtils.getName(cvKanDelesData.getEndretAvType()))
+                                        .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.getAvtaltDato());
+                            }
+
+                            if (kontaktpersonData != null) {
+                                parms.addValue("kontaktperson_navn", kontaktpersonData.getNavn())
+                                        .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
+                                        .addValue("kontaktperson_mobil", kontaktpersonData.getMobil());
+                            }
+
+
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     """ 
