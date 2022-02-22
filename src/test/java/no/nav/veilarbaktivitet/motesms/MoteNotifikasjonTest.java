@@ -38,7 +38,7 @@ public class MoteNotifikasjonTest {
         MoteNotifikasjon oppmote = create(KanalDTO.OPPMOTE, startTid);
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
-        assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getEpostTitel());
+        assertEquals("Påminnelse om møte ", oppmote.getEpostTitel());
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
     }
 
@@ -47,7 +47,7 @@ public class MoteNotifikasjonTest {
         MoteNotifikasjon oppmote = create(KanalDTO.TELEFON, startTid);
         assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
-        assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42", oppmote.getEpostTitel());
+        assertEquals("Påminnelse om møte", oppmote.getEpostTitel());
         assertEquals("Vi minner om at du har et telefonmøte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
     }
 
@@ -56,7 +56,7 @@ public class MoteNotifikasjonTest {
         MoteNotifikasjon oppmote = create(KanalDTO.INTERNETT, startTid);
         assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());
-        assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42", oppmote.getEpostTitel());
+        assertEquals("Påminnelse om møte", oppmote.getEpostTitel());
         assertEquals("Vi minner om at du har et videomøte mandag 14. februar kl. 14:42 \nVennlig hilsen NAV", oppmote.getEpostBody());
     }
 }

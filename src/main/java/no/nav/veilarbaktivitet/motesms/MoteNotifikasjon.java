@@ -24,7 +24,7 @@ record MoteNotifikasjon(long aktivitetId, long aktitetVersion, Person.AktorId ak
     }
 
     String getEpostTitel() {
-        return getTekst();
+        return "Påminnelse om møte";
     }
 
     String getEpostBody() {
