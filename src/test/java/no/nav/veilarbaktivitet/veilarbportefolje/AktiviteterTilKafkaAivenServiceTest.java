@@ -13,7 +13,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import no.nav.veilarbaktivitet.veilarbportefolje.gammel.AktiviteterTilPortefoljeService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -47,9 +46,6 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
     @Autowired
     AktivitetTestService aktivitetTestService;
-
-    @Autowired
-    AktiviteterTilPortefoljeService aktiviteterTilPortefoljeService;
 
     @Autowired
     CronService cronService;
