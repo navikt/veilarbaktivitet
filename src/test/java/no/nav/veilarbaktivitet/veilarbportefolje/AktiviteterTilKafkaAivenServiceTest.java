@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -68,9 +70,15 @@ public class AktiviteterTilKafkaAivenServiceTest {
     @Autowired
     KafkaStringTemplate portefoljeProducer;
 
+    @Autowired
+    LockProvider lockProvider;
+
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+
+        JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
+        l.clearCache();
 
         Mockito.when(unleashClient.isEnabled(CronService.STOPP_AKTIVITETER_TIL_KAFKA)).thenReturn(false);
 
