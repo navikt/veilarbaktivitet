@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -309,19 +312,20 @@ public class AktivitetDAO {
                 });
     }
 
+
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
-                            var cvKanDelesData = stilling.getCvKanDelesData();
-                            var kontaktpersonData = stilling.getKontaktpersonData();
+                            var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
+                            var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue("aktivitet_id", aktivitetId)
                                     .addValue("versjon", versjon)
-                                    .addValue("cv_kan_deles", cvKanDelesData != null ? cvKanDelesData.getKanDeles() : null)
-                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData != null ? cvKanDelesData.getEndretTidspunkt() : null)
-                                    .addValue("cv_kan_deles_av", cvKanDelesData != null ? cvKanDelesData.getEndretAv() : null)
-                                    .addValue("cv_kan_deles_av_type", cvKanDelesData != null ? EnumUtils.getName(cvKanDelesData.getEndretAvType()) : null)
-                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData != null ? cvKanDelesData.getAvtaltDato() : null)
+                                    .addValue("cv_kan_deles", cvKanDelesData.map(CvKanDelesData::getKanDeles).orElse(null))
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.map(CvKanDelesData::getEndretTidspunkt).orElse(null))
+                                    .addValue("cv_kan_deles_av", cvKanDelesData.map(CvKanDelesData::getEndretAv).orElse(null))
+                                    .addValue("cv_kan_deles_av_type", cvKanDelesData.map(CvKanDelesData::getEndretAvType).map(Enum::name).orElse(null))
+                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.map(CvKanDelesData::getAvtaltDato).orElse(null))
                                     .addValue("soknadsfrist", stilling.getSoknadsfrist())
                                     .addValue("svarfrist", stilling.getSvarfrist())
                                     .addValue("arbeidsgiver", stilling.getArbeidsgiver())
@@ -329,11 +333,12 @@ public class AktivitetDAO {
                                     .addValue("stillingsId", stilling.getStillingsId())
                                     .addValue("arbeidssted", stilling.getArbeidssted())
                                     .addValue("varselid", stilling.getVarselId())
-                                    .addValue("kontaktperson_navn", kontaktpersonData != null ? kontaktpersonData.getNavn() : null)
-                                    .addValue("kontaktperson_tittel", kontaktpersonData != null ? kontaktpersonData.getTittel() : null)
-                                    .addValue("kontaktperson_mobil", kontaktpersonData != null ? kontaktpersonData.getMobil() : null)
+                                    .addValue("kontaktperson_navn", kontaktpersonData.map(KontaktpersonData::getNavn).orElse(null))
+                                    .addValue("kontaktperson_tittel", kontaktpersonData.map(KontaktpersonData::getTittel).orElse(null))
+                                    .addValue("kontaktperson_mobil",  kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()));
+
                             // language=sql
                             database.getNamedJdbcTemplate().update(
                                     """ 
