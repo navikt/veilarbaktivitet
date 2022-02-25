@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.motesms;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
@@ -51,6 +52,7 @@ public class MoteSmsDAO {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("fra", ZonedDateTime.now().plus(fra))
                 .addValue("til", ZonedDateTime.now().plus(til))
+                .addValue("avslutteteAktiviteter", List.of(AktivitetStatus.AVBRUTT.name(), AktivitetStatus.FULLFORT.name()))
                 .addValue("limit", max);
 
         return jdbc.query("""
@@ -59,6 +61,8 @@ public class MoteSmsDAO {
                 where GJELDENDE = 1
                 and FRA_DATO between :fra and :til
                 and AKTIVITET_TYPE_KODE = 'MOTE'
+                and HISTORISK_DATO is null
+                and LIVSLOPSTATUS_KODE not in (:avslutteteAktiviteter)
                 and not exists(select * from GJELDENDE_MOTE_SMS SMS where a.AKTIVITET_ID = SMS.AKTIVITET_ID)
                 """, params, MoteSmsDAO::mapMoteNotifikasjon);
     }
