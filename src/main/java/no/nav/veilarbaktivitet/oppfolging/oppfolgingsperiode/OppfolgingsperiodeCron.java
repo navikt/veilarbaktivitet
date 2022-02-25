@@ -25,11 +25,7 @@ public class OppfolgingsperiodeCron {
         long antall = oppfolgingsperiodeServiceAdder.oppdater500brukere();
         log.info("oppdatert {} brukere med oppfolginsperiode", antall);
     }
-
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
-    ) //TODO slett når ferdig
+    //TODO slett når ferdig
     @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtMostFor = "PT10M")
     public void sammkjorOppfolignsperiode() {
         oppfolgingsperiodeServiceAdder.samskjorAktiviter(10_000);
