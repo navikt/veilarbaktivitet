@@ -58,16 +58,6 @@ public class CronService {
     }
 
     @Scheduled(
-            initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
-    )
-    public void sendMeldingerTilPortefoljeAiven() {
-        if (leaderElectionClient.isLeader() && !unleashClient.isEnabled(STOPP_AKTIVITETER_TIL_KAFKA)) {
-            aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
-        }
-    }
-
-    @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
