@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -13,7 +15,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import no.nav.veilarbaktivitet.veilarbportefolje.gammel.AktiviteterTilPortefoljeService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -30,8 +31,7 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -49,10 +49,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
     AktivitetTestService aktivitetTestService;
 
     @Autowired
-    AktiviteterTilPortefoljeService aktiviteterTilPortefoljeService;
-
-    @Autowired
-    CronService cronService;
+    AktiviteterTilKafkaService cronService;
 
     @Autowired
     KafkaTestService kafkaTestService;
@@ -73,9 +70,15 @@ public class AktiviteterTilKafkaAivenServiceTest {
     @Autowired
     KafkaStringTemplate portefoljeProducer;
 
+    @Autowired
+    LockProvider lockProvider;
+
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+
+        JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
+        l.clearCache();
 
         Mockito.when(unleashClient.isEnabled(CronService.STOPP_AKTIVITETER_TIL_KAFKA)).thenReturn(false);
 
@@ -92,7 +95,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
         AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(port, mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
-        cronService.sendMeldingerTilPortefoljeAiven();
+        cronService.sendOppTil5000AktiviterTilPortefolje();
 
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, portefoljeTopic, 5000);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
@@ -105,7 +108,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
 
-        cronService.sendMeldingerTilPortefoljeAiven();
+        cronService.sendOppTil5000AktiviterTilPortefolje();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, protefoljeConsumer));
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(aktivitetRawJson, aktivterKafkaConsumer));
@@ -129,11 +132,8 @@ public class AktiviteterTilKafkaAivenServiceTest {
                 .when(portefoljeProducer)
                 .send((ProducerRecord<String, String>) Mockito.any(ProducerRecord.class));
 
-        try {
-            cronService.sendMeldingerTilPortefoljeAiven();
-        } catch (Exception e) {
-            // ignore
-        }
+
+        assertThrows(IllegalStateException.class, () -> cronService.sendOppTil5000AktiviterTilPortefolje());
 
         Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NOT NULL", Long.class)).isEqualTo(1);
         Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL", Long.class)).isEqualTo(1);
