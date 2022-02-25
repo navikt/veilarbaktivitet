@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet;
 
 
 import io.restassured.RestAssured;
+import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -31,6 +33,9 @@ public abstract class SpringBootTestBase {
     @Autowired
     protected NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
+    @Autowired
+    private LockProvider lockProvider;
+
     @LocalServerPort
     protected int port;
 
@@ -38,5 +43,7 @@ public abstract class SpringBootTestBase {
     public void setup() {
         RestAssured.port = port;
         DbTestUtils.cleanupTestDb(jdbcTemplate);
+        JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
+        l.clearCache();
     }
 }

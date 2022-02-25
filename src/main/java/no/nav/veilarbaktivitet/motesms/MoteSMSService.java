@@ -3,8 +3,11 @@ package no.nav.veilarbaktivitet.motesms;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import org.slf4j.MDC;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -18,9 +21,16 @@ public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
     private final BrukernotifikasjonService brukernotifikasjonService;
 
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
     @Timed(value = "moteservicemelding", histogram = true)
     public void sendMoteSms() {
+        MDC.put("running.job", "moteSmsService");
         sendServicemeldinger(ofHours(1), ofHours(24));
+        MDC.clear();
     }
 
     protected void sendServicemeldinger(Duration fra,Duration til) {
@@ -40,7 +50,14 @@ public class MoteSMSService {
                 });
     }
 
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    @SchedulerLock(name = "stopp_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
+    @Timed(value = "stopmoteservicemelding", histogram = true)
     public void stopMoteSms() {
+        MDC.put("running.job", "moteSmsServiceStopper");
 
         moteSmsDAO.hentMoterMedOppdatertTidEllerKanal(5000)
                 .forEach(it -> {
@@ -53,5 +70,7 @@ public class MoteSMSService {
                     brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
                     moteSmsDAO.slettGjeldende(it);
                 });
+
+        MDC.clear();
     }
 }
