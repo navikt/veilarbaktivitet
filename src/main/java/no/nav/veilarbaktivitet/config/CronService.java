@@ -6,7 +6,6 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.job.leader_election.LeaderElectionClient;
 import no.nav.veilarbaktivitet.avtalt_med_nav.varsel.AvtaltVarselService;
 import no.nav.veilarbaktivitet.motesms.MoteSMSService;
-import no.nav.veilarbaktivitet.motesms.gammel.MoteSMSMqService;
 import no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilKafkaService;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CronService {
 
-    private final MoteSMSMqService moteSMSMqService;
     private final LeaderElectionClient leaderElectionClient;
     private final AktiviteterTilKafkaService aktiviteterTilKafkaService;
     private final AvtaltVarselService avtaltVarselService;
@@ -36,11 +34,7 @@ public class CronService {
     public void sendMoteServicemelding() {
         MDC.put("running.job", "moteSmsService");
         if (leaderElectionClient.isLeader()) {
-            if (unleashClient.isEnabled(BRUKERNOTIFIKASJON_MOTE_SMS)) {
-                moteSMSService.sendMoteSms();
-            } else {
-                moteSMSMqService.sendServicemeldingerForNesteDogn();
-            }
+            moteSMSService.sendMoteSms();
         }
         MDC.clear();
     }
