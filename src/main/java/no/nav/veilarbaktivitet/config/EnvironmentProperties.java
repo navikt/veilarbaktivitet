@@ -22,4 +22,7 @@ public class EnvironmentProperties {
     private String environmentName;
     private String cxfStsUrl;
     private String unleashUrl;
+    private String naisAadDiscoveryUrl;
+    private String naisAadClientId;
+
 }

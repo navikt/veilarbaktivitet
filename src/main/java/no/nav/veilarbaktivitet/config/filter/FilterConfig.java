@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.filter;
 
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.ServiceUserTokenFinder;
@@ -62,6 +63,14 @@ public class FilterConfig {
                 .withUserRole(UserRole.INTERN);
     }
 
+    private OidcAuthenticatorConfig naisAzureAdConfig(EnvironmentProperties properties) {
+        return new OidcAuthenticatorConfig()
+                .withDiscoveryUrl(properties.getNaisAadDiscoveryUrl())
+                .withClientId(properties.getNaisAadClientId())
+                .withUserRoleResolver(new AzureAdUserRoleResolver());
+    }
+
+
     private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
@@ -100,7 +109,8 @@ public class FilterConfig {
                         azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
                         openAmStsAuthConfig(properties),
-                        naisStsAuthConfig(properties)
+                        naisStsAuthConfig(properties),
+                        naisAzureAdConfig(properties)
                 )
         );
 
