@@ -64,7 +64,7 @@ spec:
         avg(brukernotifikasjon_mangler_kvittering{application="veilarbaktivitet"}) > 0.5
     - alert: feil ved deploy?
       expr: 'kube_deployment_status_replicas_unavailable{deployment="veilarbaktivitet"} > 0'
-      for: 5m
+      for: 10m
       action: https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       description: feilet deploy?
       severity: warning
