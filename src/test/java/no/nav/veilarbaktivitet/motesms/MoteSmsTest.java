@@ -5,6 +5,8 @@ import no.nav.brukernotifikasjon.schemas.Beskjed;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
@@ -60,6 +62,9 @@ public class MoteSmsTest extends SpringBootTestBase {
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
+    @Autowired
+    AktivitetService aktivitetService;
+
     @LocalServerPort
     protected int port;
 
@@ -102,7 +107,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
         aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
         cronjobber();
-        assertTrue("skal ikke sende på nytt for andre oppdateringer",kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+        assertTrue("skal ikke sende på nytt for andre oppdateringer", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
 
     }
 
@@ -119,7 +124,7 @@ public class MoteSmsTest extends SpringBootTestBase {
             AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
 
             cronjobber();
-            assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato,response);
+            assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato, response);
             assertTrue(kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
         }
     }
@@ -130,7 +135,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
-            if(type == AktivitetTypeDTO.STILLING_FRA_NAV) {
+            if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
                 aktivitetTestService.opprettStillingFraNav(happyBruker, port);
             } else {
                 AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
@@ -163,6 +168,58 @@ public class MoteSmsTest extends SpringBootTestBase {
         harAvsluttetVarsel(varsel);
     }
 
+    @Test
+    public void skalIkkeOppreteVarsleHistorisk() {
+        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
+        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
+        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
+        aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
+        aktivitetService.settAktiviteterTilHistoriske(happyBruker.getAktorIdAsAktorId(), new Date());
+
+
+        cronjobber();
+        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
+        assertEquals(0, antall);
+        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+
+    }
+
+    @Test
+    public void skalIkkeOppreteVarsleFulfort() {
+        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
+        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
+        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
+        aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
+
+        cronjobber();
+        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
+        assertEquals(0, antall);
+        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+
+    }
+
+    @Test
+    public void skalIkkeOppreteVarsleAvbrutt() {
+        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
+        ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
+        aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
+        aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
+
+        cronjobber();
+        int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
+        assertEquals(0, antall);
+        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+    }
+
 
     private void harAvsluttetVarsel(ConsumerRecord<Nokkel, Beskjed> varsel) {
         ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
@@ -180,18 +237,18 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
     }
 
-    private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid,AktivitetDTO mote) {
+    private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
         final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
         Beskjed value = oppgaveRecord.value();
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(melding, happyBruker.getFnr(), value.getFodselsnummer());
-        assertTrue(melding, value.getEksternVarsling());
-        assertEquals(melding, expected.getSmsTekst(), value.getSmsVarslingstekst());
-        assertEquals(melding, expected.getDitNavTekst(), value.getTekst());
-        assertEquals(melding, expected.getEpostTitel(), value.getEpostVarslingstittel());
-        assertEquals(melding, expected.getEpostBody(), value.getEpostVarslingstekst());
-        assertTrue(melding, value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
+        assertEquals(melding + " fnr", happyBruker.getFnr(), value.getFodselsnummer());
+        assertTrue(melding + " eksternvarsling", value.getEksternVarsling());
+        assertEquals(melding + " sms tekst", expected.getSmsTekst(), value.getSmsVarslingstekst());
+        assertEquals(melding + " ditnav tekst", expected.getDitNavTekst(), value.getTekst());
+        assertEquals(melding + " epost tittel tekst", expected.getEpostTitel(), value.getEpostVarslingstittel());
+        assertEquals(melding + " epost body tekst", expected.getEpostBody(), value.getEpostVarslingstekst());
+        assertTrue(melding + " mote link tekst", value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
         return oppgaveRecord;
     }
 }
