@@ -55,8 +55,8 @@ spec:
       expr: |
         sum(increase(antalSMSFeilet_total{application="veilarbaktivitet"}[5m])) > 0.8
     - alert: feil ved deploy?
-      expr: 'kube_deployment_status_replicas_unavailable{deployment="veilarbaktivitet"} > 0'
-      for: 2m
+        expr: 'kube_deployment_status_replicas_unavailable{deployment="veilarbaktivitet"} > 0'
+      for: 5m
       action: https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       description: feilet deploy?
       severity: warning
