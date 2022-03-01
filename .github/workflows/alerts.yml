@@ -5,10 +5,10 @@ on:
     branches:
       - main
     paths:
-      - 'alerts-prod.yaml'
-      - 'alerts-prod-arena.yaml'
-      - 'alerts-dev.yaml'
-      - 'alerts-dev-arena.yaml'
+      - 'nais/alerts-prod.yaml'
+      - 'nais/alerts-prod-low-priority.yaml'
+      - 'nais/alerts-dev.yaml'
+      - 'nais/alerts-dev-low-priority.yaml'
       - '.github/workflows/alerts.yaml'
 
 concurrency:
@@ -27,13 +27,13 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: alerts-dev.yaml
+          RESOURCE: nais/alerts-dev.yaml
       - name: deploy arena alert
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-fss
-          RESOURCE: alerts-dev-arena.yaml
+          RESOURCE: nais/alerts-dev-arena.yaml
 
   apply-alerts-prod:
     name: Apply alerts to prod
@@ -46,10 +46,10 @@ jobs:
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: alerts-prod.yaml
+          RESOURCE: nais/alerts-prod.yaml
       - name: deploy arena alert
         uses: nais/deploy/actions/deploy@v1
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-fss
-          RESOURCE: alerts-prod-arena.yaml
+          RESOURCE: nais/alerts-prod-low-priority.yaml
