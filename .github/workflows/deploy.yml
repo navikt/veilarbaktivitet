@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker build nais/Dockerfile -t ${IMAGE}:${IMAGE_TAG} .
+          docker build -t ${IMAGE}:${IMAGE_TAG} nais/Dockerfile
           docker push ${IMAGE}:${IMAGE_TAG}
 
   deploy-dev:
