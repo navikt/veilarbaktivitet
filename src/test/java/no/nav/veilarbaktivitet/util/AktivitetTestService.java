@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
@@ -141,7 +142,7 @@ public class AktivitetTestService {
         AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
         assertNotNull(aktivitet);
         assertNotNull(aktivitet.getId());
-        AktivitetAssertUtils.assertOpprettetAktivitet(aktivitet, aktivitetDTO);
+        AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
 
         return aktivitet;
     }
@@ -275,4 +276,25 @@ public class AktivitetTestService {
 
     }
 
+    public AktivitetDTO oppdatterAktivitetStatus(int port, MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, AktivitetStatus status) {
+        AktivitetDTO aktivitetDTO = orginalAktivitet.toBuilder().status(status).build();
+        String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
+
+        Response response = user
+                .createRequest()
+                .and()
+                .body(aktivitetPayloadJson)
+                .when()
+                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
+        assertNotNull(aktivitet);
+        assertNotNull(aktivitet.getId());
+        AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
+
+        return aktivitet;
+    }
 }
