@@ -64,6 +64,12 @@ spec:
       claims:
         extra:
           - "NAVident"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: veilarbapi
+          namespace: pto
+          cluster: dev-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
