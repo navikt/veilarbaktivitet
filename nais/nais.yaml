@@ -56,6 +56,12 @@ spec:
     enabled: true
   kafka:
     pool: nav-prod
+  azure:
+    application:
+      enabled: true
+      claims:
+        extra:
+          - "NAVident"
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
