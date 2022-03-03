@@ -4,6 +4,7 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
+import lombok.val;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
@@ -158,7 +159,8 @@ public class BrukernotifikasjonKvitteringTest {
 
 
         String brukernotifikasjonId = OPPGAVE_KVITERINGS_PREFIX + eventId;
-        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"))));
+        val consumerrecord = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(consumerrecord));
         assertVarselStatusErSendt(eventId);//SKAl ikke ha endret seg
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.FEILET); //SKAl ikke ha endret seg
     }
