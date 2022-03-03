@@ -41,7 +41,7 @@ public class SisteOppfolgingsperiodeConsumerTest extends SpringBootTestBase {
                 .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .build();
         SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(startOppfolgiong)).get(1, SECONDS);
-        kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 5);
+        kafkaTestService.assertErKonsumertAiven(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset(), 10);
 
 
         Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId()).orElseThrow();
