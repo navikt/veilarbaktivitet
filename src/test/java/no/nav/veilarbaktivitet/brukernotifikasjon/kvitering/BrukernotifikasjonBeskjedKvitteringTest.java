@@ -163,7 +163,16 @@ public class BrukernotifikasjonBeskjedKvitteringTest {
         Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(ugyldigstatus));
 
         String feilprefixId = "feilprefix-" + eventId;
-        val feilPrefix = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, feilprefixId, status(eventId, "ugyldig_status"));
+
+        DoknotifikasjonStatus melding = DoknotifikasjonStatus
+                .newBuilder()
+                .setStatus(OVERSENDT)
+                .setBestillingsId(feilprefixId)
+                .setBestillerId("veilarbaktivitet")
+                .setMelding("her er en melding")
+                .setDistribusjonId(1L)
+                .build();
+        val feilPrefix = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, feilprefixId, melding );
         Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(feilPrefix));
 
 
