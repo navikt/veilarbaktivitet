@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
-import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -101,19 +100,17 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         // les oppgave-notifikasjon
         final ConsumerRecord<Nokkel, Oppgave> utenSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId1 = utenSvarOppgave.key().getEventId();
-        String brukernotifikasjonId1 = "O-" + credentials.username + "-" + eventId1;
+        String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
 
         DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FERDIGSTILT);
-        ConsumeStatus consumeStatus1 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
-        assertThat(consumeStatus1).isEqualTo(ConsumeStatus.OK);
+        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
 
         final ConsumerRecord<Nokkel, Oppgave> medSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId2 = medSvarOppgave.key().getEventId();
-        String brukernotifikasjonId2 = "O-" + credentials.username + "-" + eventId2;
+        String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
 
         DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FERDIGSTILT);
-        ConsumeStatus consumeStatus2 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
-        assertThat(consumeStatus2).isEqualTo(ConsumeStatus.OK);
+        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
@@ -158,19 +155,17 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         // les oppgave-notifikasjon
         final ConsumerRecord<Nokkel, Oppgave> utenSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId1 = utenSvarOppgave.key().getEventId();
-        String brukernotifikasjonId1 = "O-" + credentials.username + "-" + eventId1;
+        String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
 
         DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FEILET);
-        ConsumeStatus consumeStatus1 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
-        assertThat(consumeStatus1).isEqualTo(ConsumeStatus.OK);
+        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
 
         final ConsumerRecord<Nokkel, Oppgave> medSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId2 = medSvarOppgave.key().getEventId();
-        String brukernotifikasjonId2 = "O-" + credentials.username + "-" + eventId2;
+        String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
 
         DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FEILET);
-        ConsumeStatus consumeStatus2 = eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
-        assertThat(consumeStatus2).isEqualTo(ConsumeStatus.OK);
+        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFeiledeNotifikasjoner(500);
@@ -201,7 +196,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
                 .newBuilder()
                 .setStatus(status)
                 .setBestillingsId(bestillingsId)
-                .setBestillerId(credentials.username)
+                .setBestillerId("veilarbaktivitet")
                 .setMelding("her er en melding")
                 .setDistribusjonId(1L)
                 .build();
