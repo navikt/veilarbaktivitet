@@ -159,6 +159,13 @@ public class BrukernotifikasjonKvitteringTest {
 
 
         String brukernotifikasjonId = OPPGAVE_KVITERINGS_PREFIX + eventId;
+        val ugyldigstatus = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(ugyldigstatus));
+
+        String feilprefixId = "feilprefix-" + eventId;
+        val feilPrefix = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, feilprefixId, status(eventId, "ugyldig_status"));
+        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(feilPrefix));
+
         val consumerrecord = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"));
         Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(consumerrecord));
         assertVarselStatusErSendt(eventId);//SKAl ikke ha endret seg
