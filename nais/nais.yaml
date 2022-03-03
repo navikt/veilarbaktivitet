@@ -56,6 +56,18 @@ spec:
     enabled: true
   kafka:
     pool: nav-prod
+  azure:
+    application:
+      enabled: true
+      claims:
+        extra:
+          - "NAVident"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: veilarbapi
+          namespace: pto
+          cluster: prod-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
