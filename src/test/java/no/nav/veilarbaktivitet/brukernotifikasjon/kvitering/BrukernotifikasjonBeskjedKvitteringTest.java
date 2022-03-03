@@ -50,7 +50,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
-public class BrukernotifikasjonKvitteringTest {
+public class BrukernotifikasjonBeskjedKvitteringTest {
 
     @Autowired
     BrukernotifikasjonService brukernotifikasjonService;
@@ -101,7 +101,7 @@ public class BrukernotifikasjonKvitteringTest {
     @Value("${app.env.aktivitetsplan.basepath}")
     String basepath;
 
-    private final static String OPPGAVE_KVITERINGS_PREFIX = "O-veilarbaktivitet-";
+    private final static String BESSKJED_KVOTERINGS_PREFIX = "B-veilarbaktivitet-";
 
     @Before
     public void setUp() {
@@ -157,7 +157,7 @@ public class BrukernotifikasjonKvitteringTest {
         Assertions.assertEquals(0, gauge.value());
 
 
-        String brukernotifikasjonId = OPPGAVE_KVITERINGS_PREFIX + eventId;
+        String brukernotifikasjonId = BESSKJED_KVOTERINGS_PREFIX + eventId;
         Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"))));
         assertVarselStatusErSendt(eventId);//SKAl ikke ha endret seg
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.FEILET); //SKAl ikke ha endret seg
@@ -177,7 +177,7 @@ public class BrukernotifikasjonKvitteringTest {
 
 
     private void consumAndAssertStatus(String eventId, DoknotifikasjonStatus message, VarselKvitteringStatus expectedEksternVarselStatus) {
-        String brukernotifikasjonId = OPPGAVE_KVITERINGS_PREFIX + eventId;
+        String brukernotifikasjonId = BESSKJED_KVOTERINGS_PREFIX + eventId;
         eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, message));
 
         assertVarselStatusErSendt(eventId);
@@ -199,7 +199,7 @@ public class BrukernotifikasjonKvitteringTest {
     }
 
     private DoknotifikasjonStatus status(String eventId, String status) {
-        String bestillingsId = OPPGAVE_KVITERINGS_PREFIX + eventId;
+        String bestillingsId = BESSKJED_KVOTERINGS_PREFIX + eventId;
         return DoknotifikasjonStatus
                 .newBuilder()
                 .setStatus(status)
