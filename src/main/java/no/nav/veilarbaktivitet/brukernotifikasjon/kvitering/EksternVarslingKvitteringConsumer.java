@@ -30,7 +30,6 @@ public class EksternVarslingKvitteringConsumer {
     @KafkaListener(topics = "${topic.inn.eksternVarselKvittering}", containerFactory = "stringAvroKafkaListenerContainerFactory")
     public void consume(ConsumerRecord<String, DoknotifikasjonStatus> kafkaRecord) {
         DoknotifikasjonStatus melding = kafkaRecord.value();
-        String bestillerid =melding.getBestillerId();
         if (!APP_NAME_TO_BRUKERNOTIFIKASJONER.equals(melding.getBestillerId())) {
             return;
         }
