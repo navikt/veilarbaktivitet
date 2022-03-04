@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>17</java.version>
-        <common.version>2.2021.12.09_11.56-a71c36a61ba3</common.version>
+        <common.version>2.2022.02.18_14.38-8d8bb494bd41</common.version>
         <confluent.version>6.1.1</confluent.version>
         <quartz.version>2.3.2</quartz.version>
 
