@@ -33,20 +33,22 @@ public class MoteSMSService {
         MDC.clear();
     }
 
-    protected void sendServicemeldinger(Duration fra,Duration til) {
+    protected void sendServicemeldinger(Duration fra, Duration til) {
         moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
                 .forEach(it -> {
                     moteSmsDAO.insertGjeldendeSms(it);
-                    brukernotifikasjonService.opprettVarselPaaAktivitet(
-                            it.aktivitetId(),
-                            it.aktitetVersion(),
-                            it.aktorId(),
-                            it.getDitNavTekst(),
-                            VarselType.MOTE_SMS,
-                            it.getEpostTitel(),
-                            it.getEpostBody(),
-                            it.getSmsTekst()
-                    );
+                    if (brukernotifikasjonService.kanVarsles(it.aktorId())) {
+                        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                                it.aktivitetId(),
+                                it.aktitetVersion(),
+                                it.aktorId(),
+                                it.getDitNavTekst(),
+                                VarselType.MOTE_SMS,
+                                it.getEpostTitel(),
+                                it.getEpostBody(),
+                                it.getSmsTekst()
+                        );
+                    }
                 });
     }
 
