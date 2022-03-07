@@ -42,6 +42,11 @@ components:
           type: string
           description: Beskrivelse av aktiviteten som er planlagt/gjennomført
           example: NAV forventer at du søker omtrent 20 stillinger i denne perioden
+        aktivitet_id:
+          type: string
+        oppfolgingsperiode_id:
+          type: string
+          format: uuid
         tittel:
           type: string
         fra_dato:

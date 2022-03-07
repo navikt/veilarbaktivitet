@@ -21,6 +21,8 @@ public class InternAktivitetMapper {
 
         Aktivitet aktivitet = Aktivitet.builder()
                 .avtaltMedNav(aktivitetData.isAvtalt())
+                .aktivitetId(aktivitetData.getId().toString())
+                .oppfolgingsperiodeId(aktivitetData.getOppfolgingsperiodeId())
                 .status(Aktivitet.StatusEnum.valueOf(aktivitetData.getStatus().name()))
                 .beskrivelse(aktivitetData.getBeskrivelse())
                 .tittel(aktivitetData.getTittel())
@@ -57,12 +59,13 @@ public class InternAktivitetMapper {
     private static Jobbsoeking mapTilJobbsoeking(AktivitetData aktivitetData, Aktivitet aktivitet) {
         StillingsoekAktivitetData stillingsSoekAktivitetData = aktivitetData.getStillingsSoekAktivitetData();
 
+        Optional<StillingsoekEtikettData> stillingsoekEtikett = Optional.ofNullable(stillingsSoekAktivitetData.getStillingsoekEtikett());
         val jobbsoeking = Jobbsoeking.builder()
                 .aktivitetType(AktivitetTypeEnum.JOBBSOEKING)
                 .arbeidsgiver(stillingsSoekAktivitetData.getArbeidsgiver())
                 .stillingsTittel(stillingsSoekAktivitetData.getStillingsTittel())
                 .arbeidssted(stillingsSoekAktivitetData.getArbeidssted())
-                .stillingsoekEtikett(Jobbsoeking.StillingsoekEtikettEnum.valueOf(stillingsSoekAktivitetData.getStillingsoekEtikett().name()))
+                .stillingsoekEtikett(stillingsoekEtikett.map(Enum::name).map(Jobbsoeking.StillingsoekEtikettEnum::valueOf).orElse(null))
                 .kontaktPerson(stillingsSoekAktivitetData.getKontaktPerson())
                 .build();
 
@@ -85,9 +88,10 @@ public class InternAktivitetMapper {
     private static Ijobb mapTilIjobb(AktivitetData aktivitetData, Aktivitet aktivitet) {
         IJobbAktivitetData iJobbAktivitetData = aktivitetData.getIJobbAktivitetData();
 
+        Optional<JobbStatusTypeData> jobbStatusType = Optional.ofNullable(iJobbAktivitetData.getJobbStatusType());
         val ijobb = Ijobb.builder()
                 .aktivitetType(AktivitetTypeEnum.IJOBB)
-                .jobbStatusType(Ijobb.JobbStatusTypeEnum.valueOf(iJobbAktivitetData.getJobbStatusType().name()))
+                .jobbStatusType(jobbStatusType.map(Enum::name).map(Ijobb.JobbStatusTypeEnum::valueOf).orElse(null))
                 .ansettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
                 .arbeidstid(iJobbAktivitetData.getArbeidstid())
                 .build();
