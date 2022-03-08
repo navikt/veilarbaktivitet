@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.internapi;
 
-import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.internapi.model.*;
+import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetBuilder;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetTypeEnum;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
@@ -19,7 +19,18 @@ public class InternAktivitetMapper {
     public static Aktivitet mapTilAktivitet(AktivitetData aktivitetData) {
         AktivitetTypeData aktivitetType = aktivitetData.getAktivitetType();
 
-        Aktivitet aktivitet = Aktivitet.builder()
+        AktivitetBuilder<?, ?> builder = switch (aktivitetType) {
+            case EGENAKTIVITET -> mapTilEgenaktivitet(aktivitetData);
+            case JOBBSOEKING -> mapTilJobbsoeking(aktivitetData);
+            case SOKEAVTALE -> mapTilSokeavtale(aktivitetData);
+            case IJOBB -> mapTilIjobb(aktivitetData);
+            case BEHANDLING -> mapTilBehandling(aktivitetData);
+            case MOTE -> mapTilMote(aktivitetData);
+            case SAMTALEREFERAT -> mapTilSamtalereferat(aktivitetData);
+            case STILLING_FRA_NAV -> mapTilStillingFraNav(aktivitetData);
+        };
+
+        return builder
                 .avtaltMedNav(aktivitetData.isAvtalt())
                 .aktivitetId(aktivitetData.getId().toString())
                 .oppfolgingsperiodeId(aktivitetData.getOppfolgingsperiodeId())
@@ -31,117 +42,85 @@ public class InternAktivitetMapper {
                 .opprettetDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
                 .endretDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
                 .build();
-
-        return switch (aktivitetType) {
-            case EGENAKTIVITET -> mapTilEgenaktivitet(aktivitetData, aktivitet);
-            case JOBBSOEKING -> mapTilJobbsoeking(aktivitetData, aktivitet);
-            case SOKEAVTALE -> mapTilSokeavtale(aktivitetData, aktivitet);
-            case IJOBB -> mapTilIjobb(aktivitetData, aktivitet);
-            case BEHANDLING -> mapTilBehandling(aktivitetData, aktivitet);
-            case MOTE -> mapTilMote(aktivitetData, aktivitet);
-            case SAMTALEREFERAT -> mapTilSamtalereferat(aktivitetData, aktivitet);
-            case STILLING_FRA_NAV -> mapTilStillingFraNav(aktivitetData, aktivitet);
-        };
     }
 
-    private static Egenaktivitet mapTilEgenaktivitet(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilEgenaktivitet(AktivitetData aktivitetData) {
         EgenAktivitetData egenAktivitetData = aktivitetData.getEgenAktivitetData();
 
-        val egenaktivitet = Egenaktivitet.builder()
+        return Egenaktivitet.builder()
                 .aktivitetType(AktivitetTypeEnum.EGENAKTIVITET)
                 .hensikt(egenAktivitetData.getHensikt())
-                .oppfolging(egenAktivitetData.getOppfolging())
-                .build();
-
-        return (Egenaktivitet) merge(aktivitet, egenaktivitet);
+                .oppfolging(egenAktivitetData.getOppfolging());
     }
 
-    private static Jobbsoeking mapTilJobbsoeking(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilJobbsoeking(AktivitetData aktivitetData) {
         StillingsoekAktivitetData stillingsSoekAktivitetData = aktivitetData.getStillingsSoekAktivitetData();
 
         Optional<StillingsoekEtikettData> stillingsoekEtikett = Optional.ofNullable(stillingsSoekAktivitetData.getStillingsoekEtikett());
-        val jobbsoeking = Jobbsoeking.builder()
+        return Jobbsoeking.builder()
                 .aktivitetType(AktivitetTypeEnum.JOBBSOEKING)
                 .arbeidsgiver(stillingsSoekAktivitetData.getArbeidsgiver())
                 .stillingsTittel(stillingsSoekAktivitetData.getStillingsTittel())
                 .arbeidssted(stillingsSoekAktivitetData.getArbeidssted())
                 .stillingsoekEtikett(stillingsoekEtikett.map(Enum::name).map(Jobbsoeking.StillingsoekEtikettEnum::valueOf).orElse(null))
-                .kontaktPerson(stillingsSoekAktivitetData.getKontaktPerson())
-                .build();
-
-        return (Jobbsoeking) merge(aktivitet, jobbsoeking);
+                .kontaktPerson(stillingsSoekAktivitetData.getKontaktPerson());
     }
 
-    private static Sokeavtale mapTilSokeavtale(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilSokeavtale(AktivitetData aktivitetData) {
         SokeAvtaleAktivitetData sokeAvtaleAktivitetData = aktivitetData.getSokeAvtaleAktivitetData();
 
-        val sokeavtale = Sokeavtale.builder()
+        return Sokeavtale.builder()
                 .aktivitetType(AktivitetTypeEnum.SOKEAVTALE)
                 .antallStillingerSokes(sokeAvtaleAktivitetData.getAntallStillingerSokes())
                 .antallStillingerIUken(sokeAvtaleAktivitetData.getAntallStillingerIUken())
-                .avtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging())
-                .build();
-
-        return (Sokeavtale) merge(aktivitet, sokeavtale);
+                .avtaleOppfolging(sokeAvtaleAktivitetData.getAvtaleOppfolging());
     }
 
-    private static Ijobb mapTilIjobb(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilIjobb(AktivitetData aktivitetData) {
         IJobbAktivitetData iJobbAktivitetData = aktivitetData.getIJobbAktivitetData();
 
         Optional<JobbStatusTypeData> jobbStatusType = Optional.ofNullable(iJobbAktivitetData.getJobbStatusType());
-        val ijobb = Ijobb.builder()
+        return Ijobb.builder()
                 .aktivitetType(AktivitetTypeEnum.IJOBB)
                 .jobbStatusType(jobbStatusType.map(Enum::name).map(Ijobb.JobbStatusTypeEnum::valueOf).orElse(null))
                 .ansettelsesforhold(iJobbAktivitetData.getAnsettelsesforhold())
-                .arbeidstid(iJobbAktivitetData.getArbeidstid())
-                .build();
-
-        return (Ijobb) merge(aktivitet, ijobb);
+                .arbeidstid(iJobbAktivitetData.getArbeidstid());
     }
 
-    private static Behandling mapTilBehandling(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilBehandling(AktivitetData aktivitetData) {
         BehandlingAktivitetData behandlingAktivitetData = aktivitetData.getBehandlingAktivitetData();
 
-        val behandling = Behandling.builder()
+        return Behandling.builder()
                 .aktivitetType(AktivitetTypeEnum.BEHANDLING)
                 .behandlingType(behandlingAktivitetData.getBehandlingType())
                 .behandlingSted(behandlingAktivitetData.getBehandlingSted())
                 .effekt(behandlingAktivitetData.getEffekt())
-                .behandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging())
-                .build();
-
-        return (Behandling) merge(aktivitet, behandling);
+                .behandlingOppfolging(behandlingAktivitetData.getBehandlingOppfolging());
     }
 
-    private static Mote mapTilMote(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilMote(AktivitetData aktivitetData) {
         MoteData moteData = aktivitetData.getMoteData();
 
-        val moteaktivitet = Mote.builder()
+        return Mote.builder()
                 .aktivitetType(AktivitetTypeEnum.MOTE)
                 .adresse(moteData.getAdresse())
                 .forberedelser(moteData.getForberedelser())
                 .kanal(Mote.KanalEnum.valueOf(moteData.getKanal().name()))
                 .referat(moteData.getReferat())
-                .referatPublisert(moteData.isReferatPublisert())
-                .build();
-
-        return (Mote) merge(aktivitet, moteaktivitet);
+                .referatPublisert(moteData.isReferatPublisert());
     }
 
-    private static Samtalereferat mapTilSamtalereferat(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilSamtalereferat(AktivitetData aktivitetData) {
         MoteData moteData = aktivitetData.getMoteData();
 
-        val samtalereferat = Samtalereferat.builder()
+        return Samtalereferat.builder()
                 .aktivitetType(AktivitetTypeEnum.SAMTALEREFERAT)
                 .kanal(Samtalereferat.KanalEnum.valueOf(moteData.getKanal().name()))
                 .referat(moteData.getReferat())
-                .referatPublisert(moteData.isReferatPublisert())
-                .build();
-
-        return (Samtalereferat) merge(aktivitet, samtalereferat);
+                .referatPublisert(moteData.isReferatPublisert());
     }
 
-    private static StillingFraNav mapTilStillingFraNav(AktivitetData aktivitetData, Aktivitet aktivitet) {
+    private static AktivitetBuilder<?, ?> mapTilStillingFraNav(AktivitetData aktivitetData) {
         StillingFraNavData stillingFraNavData = aktivitetData.getStillingFraNavData();
         StillingFraNavAllOfCvKanDelesData stillingFraNavCvKanDelesData = mapCvKanDelesData(stillingFraNavData.getCvKanDelesData());
 
@@ -150,7 +129,7 @@ public class InternAktivitetMapper {
                 .map(StillingFraNav.SoknadsstatusEnum::fromValue)
                 .orElse(null);
 
-        StillingFraNav stillingFraNav = StillingFraNav.builder()
+        return StillingFraNav.builder()
                 .aktivitetType(AktivitetTypeEnum.STILLING_FRA_NAV)
                 .cvKanDelesData(stillingFraNavCvKanDelesData)
                 .soknadsfrist(stillingFraNavData.getSoknadsfrist())
@@ -159,10 +138,7 @@ public class InternAktivitetMapper {
                 .bestillingsId(stillingFraNavData.getBestillingsId())
                 .stillingsId(stillingFraNavData.getStillingsId())
                 .arbeidssted(stillingFraNavData.getArbeidssted())
-                .soknadsstatus(soknadsstatusEnum)
-                .build();
-
-        return (StillingFraNav) merge(aktivitet, stillingFraNav);
+                .soknadsstatus(soknadsstatusEnum);
     }
 
     private static StillingFraNavAllOfCvKanDelesData mapCvKanDelesData(CvKanDelesData cvKanDelesData) {
@@ -175,18 +151,5 @@ public class InternAktivitetMapper {
                 .endretAvType(StillingFraNavAllOfCvKanDelesData.EndretAvTypeEnum.valueOf(cvKanDelesData.getEndretAvType().name()))
                 .avtaltDato(toLocalDate(cvKanDelesData.getAvtaltDato()))
                 .build();
-    }
-
-
-    private static Aktivitet merge(Aktivitet base, Aktivitet aktivitet) {
-        return aktivitet
-                .avtaltMedNav(base.getAvtaltMedNav())
-                .status(base.getStatus())
-                .beskrivelse(base.getBeskrivelse())
-                .tittel(base.getTittel())
-                .fraDato(base.getFraDato())
-                .tilDato(base.getTilDato())
-                .opprettetDato(base.getOpprettetDato())
-                .endretDato(base.getOpprettetDato());
     }
 }
