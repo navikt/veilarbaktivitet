@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -16,10 +15,6 @@ import org.springframework.stereotype.Service;
 public class OppfolgingsperiodeCron {
     private final OppfolgingsperiodeService oppfolgingsperiodeServiceAdder;
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.oppfolgingsperiode.fixedDelay}"
-    )
     @SchedulerLock(name = "addOppfolgingsperioder_scheduledTask", lockAtMostFor = "PT10M")
     public void addOppfolgingsperioder() {
         long antall = oppfolgingsperiodeServiceAdder.oppdater500brukere();
