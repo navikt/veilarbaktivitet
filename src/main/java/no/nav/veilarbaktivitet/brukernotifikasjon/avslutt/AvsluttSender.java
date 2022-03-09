@@ -3,10 +3,10 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import no.nav.brukernotifikasjon.schemas.Done;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.brukernotifikasjon.schemas.input.DoneInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.common.utils.Credentials;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -20,13 +20,18 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 class AvsluttSender {
-    private final KafkaProducerClient<Nokkel, Done> producer;
+    private final KafkaAvroAvroTemplate<NokkelInput, DoneInput> producer;
     private final AvsluttDao avsluttDao;
     private final PersonService personService;
     private final Credentials serviceUserCredentials;
 
     @Value("${topic.ut.brukernotifikasjon.done}")
     private String doneToppic;
+
+    @Value("${app.env.appname}")
+    private String appname;
+    @Value("${app.env.namespace}")
+    private String namespace;
 
 
     @SneakyThrows
@@ -39,15 +44,18 @@ class AvsluttSender {
         Person.Fnr fnrForAktorId = personService.getFnrForAktorId(Person.aktorId(aktorId));
         boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvsluttet(brukernotifikasjonId);
         if (markertAvsluttet) {
-            Done done = Done
+            DoneInput done = DoneInput
                     .newBuilder()
-                    .setFodselsnummer(fnrForAktorId.get())
-                    .setGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
                     .setTidspunkt(Instant.now().toEpochMilli())
                     .build();
 
-            Nokkel nokkel = new Nokkel(serviceUserCredentials.username, brukernotifikasjonId);
-            final ProducerRecord<Nokkel, Done> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);
+            NokkelInput nokkel = NokkelInput.newBuilder()
+                    .setAppnavn(appname)
+                    .setNamespace(namespace)
+                    .setFodselsnummer(fnrForAktorId.get())
+                    .setEventId(brukernotifikasjonId)
+                    .build();
+            final ProducerRecord<NokkelInput, DoneInput> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);
 
             producer.send(kafkaMelding).get();
         }

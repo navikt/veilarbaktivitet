@@ -2,12 +2,12 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.brukernotifikasjon.schemas.Done;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
+import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.*;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
@@ -45,7 +45,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -63,6 +62,9 @@ public class StillingFraNavControllerITest {
     AktivitetTestService aktivitetTestService;
 
     @Autowired
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+
+    @Autowired
     JdbcTemplate jdbc;
     @Autowired
     KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
@@ -72,12 +74,8 @@ public class StillingFraNavControllerITest {
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
     @LocalServerPort
     private int port;
-    @Value("${topic.inn.stillingFraNav}")
-    private String innTopic;
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-    @Value("${topic.ut.brukernotifikasjon.done}")
-    private String brukernotifkasjonFerdigToppik;
 
     @After
     public void verify_no_unmatched() {
@@ -96,7 +94,7 @@ public class StillingFraNavControllerITest {
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        val brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
@@ -105,7 +103,7 @@ public class StillingFraNavControllerITest {
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
-        assertBrukernotifikasjonStoppet(mockBruker);
+        brukernotifikasjonAsserts.stoppet(mockBruker.getFnrAsFnr(), brukernotifikajonOppgave.key());
 
         skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }
@@ -212,15 +210,6 @@ public class StillingFraNavControllerITest {
         assertOppdatertAktivitet(aktivitetDTO, statusOppdatertRespons);
 
         return statusOppdatertRespons;
-    }
-
-    private void assertBrukernotifikasjonStoppet(MockBruker mockBruker) {
-        Consumer<Nokkel, Done> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigToppik);
-        //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
-        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(avroAvroConsumer, brukernotifkasjonFerdigToppik, 5000);
-        assertEquals(mockBruker.getFnr(), singleRecord.value().getFodselsnummer());
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), singleRecord.value().getGrupperingsId());
     }
 
     private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {

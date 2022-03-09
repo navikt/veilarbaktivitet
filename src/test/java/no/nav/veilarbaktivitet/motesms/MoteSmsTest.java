@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.motesms;
 
 
-import no.nav.brukernotifikasjon.schemas.Beskjed;
-import no.nav.brukernotifikasjon.schemas.Done;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
+import no.nav.brukernotifikasjon.schemas.input.DoneInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -41,9 +41,9 @@ public class MoteSmsTest extends SpringBootTestBase {
     @Autowired
     MoteSMSService moteSMSService;
 
-    Consumer<Nokkel, Beskjed> beskjedConsumer;
+    Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
 
-    Consumer<Nokkel, Done> doneConsumer;
+    Consumer<NokkelInput, DoneInput> doneConsumer;
 
 
     @Autowired
@@ -87,7 +87,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
 
         cronjobber();
-        ConsumerRecord<Nokkel, Beskjed> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
+        ConsumerRecord<NokkelInput, BeskjedInput> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
 
         cronjobber();
         assertTrue("skal ikke sende på nytt", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
@@ -95,7 +95,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO nyKanal = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
         cronjobber();
         harAvsluttetVarsel(orginalMelding);
-        ConsumerRecord<Nokkel, Beskjed> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
+        ConsumerRecord<NokkelInput, BeskjedInput> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
 
         ZonedDateTime ny_startTid = startTid.plusHours(2);
@@ -160,7 +160,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
         moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
         sendOppgaveCron.sendBrukernotifikasjoner();
-        ConsumerRecord<Nokkel, Beskjed> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
+        ConsumerRecord<NokkelInput, BeskjedInput> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
         cronjobber();
 
@@ -221,8 +221,8 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
 
-    private void harAvsluttetVarsel(ConsumerRecord<Nokkel, Beskjed> varsel) {
-        ConsumerRecord<Nokkel, Done> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+    private void harAvsluttetVarsel(ConsumerRecord<NokkelInput, BeskjedInput> varsel) {
+        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
 
         String varsleId = varsel.key().getEventId();
         String doneId = singleRecord.key().getEventId();
@@ -237,12 +237,12 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
     }
 
-    private ConsumerRecord<Nokkel, Beskjed> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
-        Beskjed value = oppgaveRecord.value();
+    private ConsumerRecord<NokkelInput, BeskjedInput> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        BeskjedInput value = oppgaveRecord.value();
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(melding + " fnr", happyBruker.getFnr(), value.getFodselsnummer());
+        assertEquals(melding + " fnr", happyBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
         assertTrue(melding + " eksternvarsling", value.getEksternVarsling());
         assertEquals(melding + " sms tekst", expected.getSmsTekst(), value.getSmsVarslingstekst());
         assertEquals(melding + " ditnav tekst", expected.getDitNavTekst(), value.getTekst());

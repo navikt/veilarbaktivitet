@@ -1,12 +1,11 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -67,7 +66,9 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     private String utTopic;
 
     Consumer<String, DelingAvCvRespons> rekrutteringsbistandConsumer;
-    Consumer<Nokkel, Oppgave> oppgaveConsumer;
+
+    @Autowired
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @LocalServerPort
     private int port;
@@ -76,10 +77,9 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
 
-        oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
     }
 
-    @Test
+    @Test //TODO rydd denne testen
     public void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
 
         // sett opp testdata
@@ -88,24 +88,24 @@ public class BehandleNotifikasjonForDelingAvCvTest {
 
         // Opprett stilling fra nav
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        AktivitetDTO medSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
         // trigger utsendelse av oppgave-notifikasjoner
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        String eventId1 = utenSvarOppgave.key().getEventId();
 
-        medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, medSvar, new Date(), port);
+        AktivitetDTO medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date(), port);
 
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        final ConsumerRecord<Nokkel, Oppgave> utenSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        String eventId1 = utenSvarOppgave.key().getEventId();
+
         String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
 
         DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FERDIGSTILT);
         eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
 
-        final ConsumerRecord<Nokkel, Oppgave> medSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId2 = medSvarOppgave.key().getEventId();
         String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
 
@@ -135,7 +135,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         assertThat(behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500)).isZero();
     }
 
-    @Test
+    @Test //TODO rydd denne testen
     public void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
         MockBruker mockBruker = MockNavService.createHappyBruker();
@@ -143,24 +143,24 @@ public class BehandleNotifikasjonForDelingAvCvTest {
 
         // Opprett stilling fra nav
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        AktivitetDTO medSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
         // trigger utsendelse av oppgave-notifikasjoner
         sendOppgaveCron.sendBrukernotifikasjoner();
 
-        medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, medSvar, new Date(), port);
+        AktivitetDTO medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date(), port);
 
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        final ConsumerRecord<Nokkel, Oppgave> utenSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId1 = utenSvarOppgave.key().getEventId();
         String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
 
         DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FEILET);
         eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
 
-        final ConsumerRecord<Nokkel, Oppgave> medSvarOppgave = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
         String eventId2 = medSvarOppgave.key().getEventId();
         String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
 

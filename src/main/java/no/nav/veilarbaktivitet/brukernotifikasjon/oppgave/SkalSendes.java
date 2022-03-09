@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 @Getter
 @Builder
 class SkalSendes {
-    private final long id;
+    private final long brukernotifikasjonLopeNummer;
     private final String brukernotifikasjonId;
     private final VarselType varselType;
     private final long aktivitetId;

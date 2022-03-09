@@ -27,6 +27,10 @@ public class MockBruker extends RestassuredUser {
         return super.ident;
     }
 
+    public Person.Fnr getFnrAsFnr() {
+        return Person.fnr(super.ident);
+    }
+
     public boolean harIdent(String ident) {
         return super.ident.equals(ident) || aktorId.equals(ident);
     }

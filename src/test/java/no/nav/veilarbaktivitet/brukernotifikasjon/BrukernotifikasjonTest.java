@@ -7,6 +7,9 @@ import no.nav.brukernotifikasjon.schemas.Beskjed;
 import no.nav.brukernotifikasjon.schemas.Done;
 import no.nav.brukernotifikasjon.schemas.Nokkel;
 import no.nav.brukernotifikasjon.schemas.Oppgave;
+import no.nav.brukernotifikasjon.schemas.input.DoneInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.common.utils.Credentials;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -74,9 +77,9 @@ public class BrukernotifikasjonTest {
     @Value("${topic.ut.brukernotifikasjon.done}")
     String doneTopic;
 
-    Consumer<Nokkel, Done> doneConsumer;
+    Consumer<NokkelInput, DoneInput> doneConsumer;
 
-    Consumer<Nokkel, Oppgave> oppgaveConsumer;
+    Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
 
     Consumer<Nokkel, Beskjed> beskjedConsumer;
 
