@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.controller;
 
 import io.restassured.RestAssured;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
 public class StartTest {
 
     @Autowired
-    KafkaAvroTemplate<ForesporselOmDelingAvCv> template;
+    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> template;
 
     @LocalServerPort
     private int port;

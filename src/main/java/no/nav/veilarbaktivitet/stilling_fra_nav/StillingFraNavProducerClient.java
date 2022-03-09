@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.avro.*;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class StillingFraNavProducerClient {
-    private final KafkaAvroTemplate<DelingAvCvRespons> producerClient;
+    private final KafkaStringAvroTemplate<DelingAvCvRespons> producerClient;
     private final String topicUt;
 
     public StillingFraNavProducerClient(
-            KafkaAvroTemplate<DelingAvCvRespons> producerClient,
+            KafkaStringAvroTemplate<DelingAvCvRespons> producerClient,
             @Value("${topic.ut.stillingFraNav}") String topicUt
     ) {
         this.producerClient = producerClient;

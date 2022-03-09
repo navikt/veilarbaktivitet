@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -65,7 +65,7 @@ public class StillingFraNavControllerITest {
     @Autowired
     JdbcTemplate jdbc;
     @Autowired
-    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
+    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
     @Autowired
     SendOppgaveCron sendOppgaveCron;
     @Autowired
