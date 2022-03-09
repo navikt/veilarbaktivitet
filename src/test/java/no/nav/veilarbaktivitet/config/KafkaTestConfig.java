@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.config;
 
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
@@ -31,7 +31,7 @@ import java.util.stream.Collectors;
 @Configuration
 @SpyBeans({
         @SpyBean(KafkaStringTemplate.class),
-        @SpyBean(KafkaAvroTemplate.class),
+        @SpyBean(KafkaStringAvroTemplate.class),
         @SpyBean(KafkaJsonTemplate.class)
 })
 public class KafkaTestConfig {
