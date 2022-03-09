@@ -38,7 +38,7 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V extends SpecificRecordBase> ProducerFactory<String, V> avroProducerFactory(KafkaProperties kafkaProperties) {
+    <V extends SpecificRecordBase> ProducerFactory<String, V> stringAvroProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
@@ -75,8 +75,8 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V extends SpecificRecordBase> KafkaStringAvroTemplate<V> kafkaAvroTemplate(ProducerFactory<String, V> avroProducerFactory) {
-        return new KafkaStringAvroTemplate<>(avroProducerFactory);
+    <V extends SpecificRecordBase> KafkaStringAvroTemplate<V> kafkaAvroTemplate(ProducerFactory<String, V> stringAvroProducerFactory) {
+        return new KafkaStringAvroTemplate<>(stringAvroProducerFactory);
     }
 
     @Bean
