@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.common.utils.Credentials;
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
@@ -59,9 +58,6 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     @Autowired
     EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
 
-    @Value("${topic.ut.brukernotifikasjon.oppgave}")
-    private String oppgaveTopic;
-
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
@@ -86,32 +82,20 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-        // Opprett stilling fra nav
+        // Opprett stilling fra nav og send varsel
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
         AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
         var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
-        // trigger utsendelse av oppgave-notifikasjoner
-        String eventId1 = utenSvarOppgave.key().getEventId();
-
         AktivitetDTO medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date(), port);
 
-        // simuler kvittering fra brukernotifikasjoner
+        //kviteringer på varsel
+        brukernotifikasjonAsserts.sendEksternVarseltOk(utenSvarOppgave);
+        brukernotifikasjonAsserts.sendEksternVarseltOk(medSvarOppgave);
 
-        // les oppgave-notifikasjon
 
-        String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
-
-        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FERDIGSTILT);
-        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
-
-        String eventId2 = medSvarOppgave.key().getEventId();
-        String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
-
-        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FERDIGSTILT);
-        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
-
+        //Send meldinger til rekruteringsbistand
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
         assertThat(behandlede).isEqualTo(2);
@@ -155,17 +139,8 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        String eventId1 = utenSvarOppgave.key().getEventId();
-        String brukernotifikasjonId1 = "O-veilarbaktivitet-" + eventId1;
-
-        DoknotifikasjonStatus doknotifikasjonStatus1 = doknotifikasjonStatus(brukernotifikasjonId1, EksternVarslingKvitteringConsumer.FEILET);
-        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId1, doknotifikasjonStatus1));
-
-        String eventId2 = medSvarOppgave.key().getEventId();
-        String brukernotifikasjonId2 = "O-veilarbaktivitet-" + eventId2;
-
-        DoknotifikasjonStatus doknotifikasjonStatus2 = doknotifikasjonStatus(brukernotifikasjonId2, EksternVarslingKvitteringConsumer.FEILET);
-        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("notifikasjonstatus", 1, 1, brukernotifikasjonId2, doknotifikasjonStatus2));
+        brukernotifikasjonAsserts.sendEksternVarseletFeilet(utenSvarOppgave);
+        brukernotifikasjonAsserts.sendEksternVarseletFeilet(medSvarOppgave);
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFeiledeNotifikasjoner(500);
@@ -188,17 +163,5 @@ public class BehandleNotifikasjonForDelingAvCvTest {
 
         // sjekk at vi ikke behandler ting vi ikke skal behandle
         assertThat(behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500)).isZero();
-    }
-
-
-    private DoknotifikasjonStatus doknotifikasjonStatus(String bestillingsId, String status) {
-        return DoknotifikasjonStatus
-                .newBuilder()
-                .setStatus(status)
-                .setBestillingsId(bestillingsId)
-                .setBestillerId("veilarbaktivitet")
-                .setMelding("her er en melding")
-                .setDistribusjonId(1L)
-                .build();
     }
 }
