@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -69,8 +68,6 @@ public class DelingAvCvITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
-    @Value("${topic.ut.brukernotifikasjon.oppgave}")
-    private String oppgaveTopic;
 
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
@@ -85,9 +82,6 @@ public class DelingAvCvITest {
 
     @Autowired
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
-
-    @Autowired
-    SendOppgaveCron sendOppgaveCron;
 
     @After
     public void verify_no_unmatched() {
@@ -109,7 +103,6 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
-        sendOppgaveCron.sendBrukernotifikasjoner();
         var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
         var oppgave = brukernotifikajonOppgave.value();
 

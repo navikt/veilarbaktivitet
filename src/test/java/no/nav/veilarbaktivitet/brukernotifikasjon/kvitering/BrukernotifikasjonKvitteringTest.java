@@ -5,9 +5,9 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.SneakyThrows;
 import lombok.val;
-import no.nav.brukernotifikasjon.schemas.Done;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.brukernotifikasjon.schemas.Oppgave;
+import no.nav.brukernotifikasjon.schemas.input.DoneInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
+import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -77,9 +77,9 @@ public class BrukernotifikasjonKvitteringTest {
     @Value("${topic.ut.brukernotifikasjon.done}")
     String doneTopic;
 
-    Consumer<Nokkel, Done> doneConsumer;
+    Consumer<NokkelInput, DoneInput> doneConsumer;
 
-    Consumer<Nokkel, Oppgave> oppgaveConsumer;
+    Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
@@ -130,7 +130,7 @@ public class BrukernotifikasjonKvitteringTest {
         assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
 
 
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         String eventId = oppgaveRecord.key().getEventId();
 
         assertVarselStatusErSendt(eventId);
@@ -242,7 +242,7 @@ public class BrukernotifikasjonKvitteringTest {
         return status(eventId, OVERSENDT);
     }
 
-    private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+    private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
@@ -255,11 +255,12 @@ public class BrukernotifikasjonKvitteringTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = oppgaveRecord.value();
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        NokkelInput nokkel = oppgaveRecord.key();
+        OppgaveInput oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), nokkel.getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), nokkel.getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;
     }

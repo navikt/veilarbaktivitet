@@ -58,7 +58,7 @@ public class BrukernotifikasjonAsserts {
     SendOppgaveCron sendOppgaveCron;
 
     public ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        Consumer<NokkelInput, OppgaveInput> avroAvroConsumer = testService.createAvroAvroConsumer(brukernotifkasjonFerdigTopic);
+        Consumer<NokkelInput, OppgaveInput> avroAvroConsumer = testService.createAvroAvroConsumer(oppgaveTopic);
         sendOppgaveCron.sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(avroAvroConsumer, oppgaveTopic, 5000);
 
@@ -97,7 +97,7 @@ public class BrukernotifikasjonAsserts {
     @SneakyThrows
     public void sendVarsel(ConsumerRecord<NokkelInput, SpecificRecord> record, String status) {
         String kviteringsId = getKviteringsId(record);
-        DoknotifikasjonStatus doknot = doknotifikasjonStatus(record.key().getEventId(), status);
+        DoknotifikasjonStatus doknot = doknotifikasjonStatus(kviteringsId, status);
         SendResult<String, DoknotifikasjonStatus> result = kviteringsTopic.send(kviteringsToppic, kviteringsId, doknot).get();
         testService.assertErKonsumertAiven(kviteringsToppic, result.getRecordMetadata().offset(), 5);
     }

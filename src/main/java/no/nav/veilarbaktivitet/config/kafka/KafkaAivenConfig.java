@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
@@ -86,6 +87,10 @@ public class KafkaAivenConfig {
     @Bean
     <V extends SpecificRecordBase> KafkaAvroTemplate<V> kafkaAvroTemplate(ProducerFactory<String, V> avroProducerFactory) {
         return new KafkaAvroTemplate<>(avroProducerFactory);
+    }
+    @Bean
+    <K extends SpecificRecordBase, V extends SpecificRecordBase> KafkaAvroAvroTemplate<K, V> kafkaAvroAvroTemplate(ProducerFactory<K, V> avroAvroProducerFactory) {
+        return new KafkaAvroAvroTemplate<>(avroAvroProducerFactory);
     }
 
     @Bean

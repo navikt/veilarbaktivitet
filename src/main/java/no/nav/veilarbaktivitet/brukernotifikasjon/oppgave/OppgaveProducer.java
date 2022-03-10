@@ -5,8 +5,8 @@ import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
-import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.utils.Credentials;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,7 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Service
 public class OppgaveProducer {
-    private final KafkaProducerClient<NokkelInput, OppgaveInput> kafkaOppgaveProducer;
+    private final KafkaAvroAvroTemplate<NokkelInput, OppgaveInput> kafkaOppgaveProducer;
     private final Credentials serviceUserCredentials;
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     private String oppgaveToppic;
@@ -56,7 +56,7 @@ public class OppgaveProducer {
                 .build();
 
         final ProducerRecord<NokkelInput, OppgaveInput> kafkaMelding = new ProducerRecord<>(oppgaveToppic, nokkel, oppgave);
-        return kafkaOppgaveProducer.send(kafkaMelding).get().offset();
+        return kafkaOppgaveProducer.send(kafkaMelding).get().getRecordMetadata().offset();
     }
 
 }

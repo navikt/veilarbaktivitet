@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -23,7 +22,6 @@ class AvsluttSender {
     private final KafkaAvroAvroTemplate<NokkelInput, DoneInput> producer;
     private final AvsluttDao avsluttDao;
     private final PersonService personService;
-    private final Credentials serviceUserCredentials;
 
     @Value("${topic.ut.brukernotifikasjon.done}")
     private String doneToppic;
@@ -53,6 +51,7 @@ class AvsluttSender {
                     .setAppnavn(appname)
                     .setNamespace(namespace)
                     .setFodselsnummer(fnrForAktorId.get())
+                    .setGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
                     .setEventId(brukernotifikasjonId)
                     .build();
             final ProducerRecord<NokkelInput, DoneInput> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);

@@ -3,10 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.restassured.response.Response;
 import lombok.SneakyThrows;
-import no.nav.brukernotifikasjon.schemas.Beskjed;
-import no.nav.brukernotifikasjon.schemas.Done;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.brukernotifikasjon.schemas.Oppgave;
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
@@ -53,6 +50,11 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 @AutoConfigureWireMock(port = 0)
 public class BrukernotifikasjonTest {
 
+    @Value("${app.env.appname}")
+    private String appname;
+    @Value("${app.env.namespace}")
+    private String namespace;
+
     @Autowired
     BrukernotifikasjonService brukernotifikasjonService;
 
@@ -81,7 +83,7 @@ public class BrukernotifikasjonTest {
 
     Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
 
-    Consumer<Nokkel, Beskjed> beskjedConsumer;
+    Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
@@ -103,6 +105,9 @@ public class BrukernotifikasjonTest {
 
     @Value("${app.env.aktivitetsplan.basepath}")
     String basepath;
+
+    @Autowired
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @Before
     public void setUp() {
@@ -129,7 +134,7 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         oppgaveSendtOk(oppgaveRecord);
         avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
     }
@@ -156,19 +161,23 @@ public class BrukernotifikasjonTest {
                 epostTekst,
                 SMSTekst
         );
-
         sendOppgaveCron.sendBrukernotifikasjoner();
+        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+
+        NokkelInput key = oppgaveSendt.key();
+        assertEquals(mockBruker.getFnr(), key.getFodselsnummer());
+        assertEquals(appname, key.getAppnavn());
+        assertEquals(namespace, key.getNamespace());
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = oppgaveRecord.value();
+        OppgaveInput oppgave = oppgaveSendt.value();
 
         assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
         assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
         assertEquals(SMSTekst, oppgave.getSmsVarslingstekst());
-        oppgaveSendtOk(oppgaveRecord);
-        avsluttOppgave(mockBruker, aktivitetDTO, oppgaveRecord);
+        oppgaveSendtOk(oppgaveSendt);
+        avsluttOppgave(mockBruker, aktivitetDTO, oppgaveSendt);
     }
 
     @SneakyThrows
@@ -198,8 +207,8 @@ public class BrukernotifikasjonTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
-        Beskjed oppgave = oppgaveRecord.value();
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        BeskjedInput oppgave = oppgaveRecord.value();
 
         assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
         assertEquals(epostTekst, oppgave.getEpostVarslingstekst());
@@ -224,12 +233,13 @@ public class BrukernotifikasjonTest {
 
         sendOppgaveCron.sendBrukernotifikasjoner();
 
-        final ConsumerRecord<Nokkel, Beskjed> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
-        Beskjed oppgave = oppgaveRecord.value();
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        NokkelInput nokkel = oppgaveRecord.key();
+        BeskjedInput beskjed = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
-        assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), nokkel.getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), nokkel.getFodselsnummer());
+        assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), beskjed.getLink());
     }
 
     @Test
@@ -295,7 +305,7 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(port, mockBruker, skalOpprettes);
 
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         oppgaveSendtOk(oppgaveRecord);
 
         mockBruker
@@ -314,20 +324,22 @@ public class BrukernotifikasjonTest {
 
         assertTrue("Skal ikke produsert oppgave meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
 
-        final ConsumerRecord<Nokkel, Done> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
-        Done done = doneRecord.value();
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
 
-        assertEquals(oppgaveRecord.key().getSystembruker(), doneRecord.key().getSystembruker());
-        assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
+        NokkelInput oppgaveNokkel = oppgaveRecord.key();
+        NokkelInput doneNokkel = doneRecord.key();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), done.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), done.getFodselsnummer());
+        assertEquals(oppgaveNokkel.getAppnavn(), doneNokkel.getAppnavn());
+        assertEquals(oppgaveNokkel.getNamespace(), doneNokkel.getNamespace());
+        assertEquals(oppgaveNokkel.getEventId(), doneNokkel.getEventId());
+
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), doneNokkel.getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), doneNokkel.getFodselsnummer());
     }
 
 
-    private void oppgaveSendtOk(ConsumerRecord<Nokkel, Oppgave> oppgaveRecord) {
+    private void oppgaveSendtOk(ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord) {
         String eventId = oppgaveRecord.key().getEventId();
-        String brukernotifikasjonId = "O-" + credentials.username + "-" + eventId;
 
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
@@ -346,7 +358,7 @@ public class BrukernotifikasjonTest {
                 .build();
     }
 
-    private ConsumerRecord<Nokkel, Oppgave> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
+    private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
@@ -359,29 +371,29 @@ public class BrukernotifikasjonTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<Nokkel, Oppgave> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = oppgaveRecord.value();
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        OppgaveInput oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgave.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), oppgave.getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgaveRecord.key().getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;
     }
 
-    private void avsluttOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO, ConsumerRecord<Nokkel, Oppgave> oppgaveRecord) {
+    private void avsluttOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO, ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord) {
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsere oppgave", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
-        final ConsumerRecord<Nokkel, Done> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
-        Done done = doneRecord.value();
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+        DoneInput done = doneRecord.value();
 
-        assertEquals(oppgaveRecord.key().getSystembruker(), doneRecord.key().getSystembruker());
+        assertEquals(oppgaveRecord.key().getAppnavn(), doneRecord.key().getAppnavn());
         assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), done.getGrupperingsId());
-        assertEquals(mockBruker.getFnr(), done.getFodselsnummer());
+        assertEquals(mockBruker.getOppfolgingsperiode().toString(), doneRecord.key().getGrupperingsId());
+        assertEquals(mockBruker.getFnr(), doneRecord.key().getFodselsnummer());
     }
 
 }
