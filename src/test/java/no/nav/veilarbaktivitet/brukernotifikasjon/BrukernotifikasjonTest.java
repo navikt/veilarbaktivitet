@@ -107,10 +107,12 @@ public class BrukernotifikasjonTest {
     String basepath;
 
     @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @Before
     public void setUp() {
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);

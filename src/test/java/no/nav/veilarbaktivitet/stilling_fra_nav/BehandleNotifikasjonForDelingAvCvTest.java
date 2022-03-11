@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -64,6 +65,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     Consumer<String, DelingAvCvRespons> rekrutteringsbistandConsumer;
 
     @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @LocalServerPort
@@ -71,6 +73,7 @@ public class BehandleNotifikasjonForDelingAvCvTest {
 
     @Before
     public void cleanupBetweenTests() {
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc);
 
     }

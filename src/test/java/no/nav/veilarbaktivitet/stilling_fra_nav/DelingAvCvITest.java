@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -81,6 +82,7 @@ public class DelingAvCvITest {
     Consumer<String, DelingAvCvRespons> consumer;
 
     @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @After
@@ -94,6 +96,7 @@ public class DelingAvCvITest {
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
 
         consumer = testService.createStringAvroConsumer(utTopic);
     }
