@@ -9,7 +9,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -77,7 +77,7 @@ public class DelingAvCvITest {
     private String aktivitetsplanBasepath;
 
     @Autowired
-    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
+    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 

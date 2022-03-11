@@ -7,7 +7,7 @@ import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.avro.specific.SpecificRecord;
@@ -25,7 +25,7 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
     Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
-    private KafkaAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+    private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
 

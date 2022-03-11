@@ -8,7 +8,7 @@ import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class BrukernotifikasjonAssertsConfig {
     private String kviteringsToppic;
 
     @Autowired
-    private KafkaAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+    private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
 
     @Value("${app.env.appname}")
     private String appname;

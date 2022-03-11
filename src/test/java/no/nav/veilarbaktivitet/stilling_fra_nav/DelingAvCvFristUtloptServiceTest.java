@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -63,12 +63,12 @@ public class DelingAvCvFristUtloptServiceTest {
     String groupId;
 
     @Autowired
-    KafkaAvroTemplate<ForesporselOmDelingAvCv> producer;
+    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 
     @Autowired
-    KafkaAvroTemplate<DelingAvCvRespons> responsKafkaTemplate;
+    KafkaStringAvroTemplate<DelingAvCvRespons> responsKafkaTemplate;
 
     @Autowired
     DelingAvCvFristUtloptService delingAvCvFristUtloptService;
