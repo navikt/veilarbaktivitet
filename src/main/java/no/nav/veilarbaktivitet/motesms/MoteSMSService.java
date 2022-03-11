@@ -48,6 +48,8 @@ public class MoteSMSService {
                                 it.getEpostBody(),
                                 it.getSmsTekst()
                         );
+                    } else {
+                        log.info("bruker kan ikke varsles {}", it.aktorId());
                     }
                 });
     }
