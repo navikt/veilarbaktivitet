@@ -9,6 +9,7 @@ import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroTemplate;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -26,12 +27,14 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
     private KafkaAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
     BrukernotifikasjonAssertsConfig config;
+    KafkaTestService kafkaTestService;
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {
         oppgaveConsumer = config.createOppgaveConsumer();
         beskjedConsumer = config.createBeskjedConsumer();
         kviteringsProducer = config.getKviteringsProducer();
         doneInputConsumer = config.createDoneConsumer();
+        kafkaTestService = config.getTestService();
         this.config = config;
     }
 
@@ -47,13 +50,30 @@ public class BrukernotifikasjonAsserts {
         return singleRecord;
     }
 
+    public ConsumerRecord<NokkelInput, BeskjedInput> beskjedSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
+        return beskjedSendt(fnr);
+        //TODO assert aktivitetdto
+    }
 
-    public ConsumerRecord<NokkelInput, DoneInput> stoppet(Person.Fnr fnr, NokkelInput eventNokkel) {
+    public ConsumerRecord<NokkelInput, BeskjedInput> beskjedSendt(Person.Fnr fnr) {
+        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 5000);
+
+        NokkelInput key = singleRecord.key();
+        assertEquals(fnr.get(), key.getFodselsnummer());
+        assertEquals(config.getAppname(), key.getAppnavn());
+        assertEquals(config.getNamespace(), key.getNamespace());
+
+        return singleRecord;
+    }
+
+
+    public ConsumerRecord<NokkelInput, DoneInput> stoppet(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 5000);
         NokkelInput key = singleRecord.key();
-        assertEquals(fnr.get(), key.getFodselsnummer());
+        assertEquals(eventNokkel.getFodselsnummer(), key.getFodselsnummer());
         assertEquals(eventNokkel.getEventId(), key.getEventId());
         assertEquals(config.getAppname(), key.getAppnavn());
         assertEquals(config.getNamespace(), key.getNamespace());
@@ -75,7 +95,16 @@ public class BrukernotifikasjonAsserts {
         String kviteringsId = getKviteringsId(record);
         DoknotifikasjonStatus doknot = doknotifikasjonStatus(kviteringsId, status);
         SendResult<String, DoknotifikasjonStatus> result = kviteringsProducer.send(config.getKviteringsToppic(), kviteringsId, doknot).get();
-        config.getTestService().assertErKonsumertAiven(config.getKviteringsToppic(), result.getRecordMetadata().offset(), 5);
+        kafkaTestService.assertErKonsumertAiven(config.getKviteringsToppic(), result.getRecordMetadata().offset(), 5);
+    }
+
+    public void skalIkkeHaProdusertFlereMeldinger() {
+        config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
+        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+
+        kafkaTestService.harKonsumertAlleMeldinger(config.getOppgaveTopic(), oppgaveConsumer);
+        kafkaTestService.harKonsumertAlleMeldinger(config.getBrukernotifkasjonFerdigTopic(), doneInputConsumer);
+        kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer);
     }
 
 

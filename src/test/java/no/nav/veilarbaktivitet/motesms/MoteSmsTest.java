@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.motesms;
 
 
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
-import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -10,6 +9,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -18,7 +19,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,7 +33,6 @@ import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
 public class MoteSmsTest extends SpringBootTestBase {
@@ -41,10 +40,9 @@ public class MoteSmsTest extends SpringBootTestBase {
     @Autowired
     MoteSMSService moteSMSService;
 
-    Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
-
-    Consumer<NokkelInput, DoneInput> doneConsumer;
-
+    @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @Autowired
     ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
@@ -71,9 +69,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     @Before
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
-
-        beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
-        doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
     @Test
@@ -86,14 +82,15 @@ public class MoteSmsTest extends SpringBootTestBase {
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
 
-        cronjobber();
+        moteSmsCronjobber();
         ConsumerRecord<NokkelInput, BeskjedInput> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
 
-        cronjobber();
-        assertTrue("skal ikke sende på nytt", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+        moteSmsCronjobber();
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
 
         AktivitetDTO nyKanal = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
-        cronjobber();
+        moteSmsCronjobber();
         harAvsluttetVarsel(orginalMelding);
         ConsumerRecord<NokkelInput, BeskjedInput> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
@@ -101,13 +98,13 @@ public class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime ny_startTid = startTid.plusHours(2);
         AktivitetDTO nyTid = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyKanal.setFraDato(new Date(ny_startTid.toInstant().toEpochMilli())));
 
-        cronjobber();
+        moteSmsCronjobber();
         harAvsluttetVarsel(ny_kanal_varsel);
         assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote);
 
         aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
-        cronjobber();
-        assertTrue("skal ikke sende på nytt for andre oppdateringer", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+        moteSmsCronjobber();
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger(); //"skal ikke sende på nytt for andre oppdateringer"
 
     }
 
@@ -123,9 +120,9 @@ public class MoteSmsTest extends SpringBootTestBase {
             AktivitetDTO aktivitet = aktivitetDTO.toBuilder().kanal(kanal).build();
             AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
 
-            cronjobber();
+            moteSmsCronjobber();
             assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato, response);
-            assertTrue(kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+            brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
         }
     }
 
@@ -144,9 +141,9 @@ public class MoteSmsTest extends SpringBootTestBase {
             }
         }
 
-        cronjobber();
-        getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
-        assertTrue("skal bare ha opprettet sms for møtet", kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer));
+        moteSmsCronjobber();
+        brukernotifikasjonAsserts.beskjedSendt(happyBruker.getFnrAsFnr());
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
     }
 
     @Test
@@ -162,10 +159,10 @@ public class MoteSmsTest extends SpringBootTestBase {
         sendOppgaveCron.sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, BeskjedInput> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
-        cronjobber();
+        moteSmsCronjobber();
 
-        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
         harAvsluttetVarsel(varsel);
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
     }
 
     @Test
@@ -180,10 +177,10 @@ public class MoteSmsTest extends SpringBootTestBase {
         aktivitetService.settAktiviteterTilHistoriske(happyBruker.getAktorIdAsAktorId(), new Date());
 
 
-        cronjobber();
+        moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
 
     }
 
@@ -197,10 +194,10 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
         aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
 
-        cronjobber();
+        moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
 
     }
 
@@ -214,31 +211,24 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
         aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
 
-        cronjobber();
+        moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        kafkaTestService.harKonsumertAlleMeldinger(beskjedTopic, beskjedConsumer);
+        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
     }
 
 
     private void harAvsluttetVarsel(ConsumerRecord<NokkelInput, BeskjedInput> varsel) {
-        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
-
-        String varsleId = varsel.key().getEventId();
-        String doneId = singleRecord.key().getEventId();
-
-        assertEquals("skal ha sendt stop for varsel", varsleId, doneId);
+        brukernotifikasjonAsserts.stoppet(varsel.key());
     }
 
-    private void cronjobber() {
+    private void moteSmsCronjobber() {
         moteSMSService.stopMoteSms();
         moteSMSService.sendMoteSms();
-        avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
-        sendOppgaveCron.sendBrukernotifikasjoner();
     }
 
     private ConsumerRecord<NokkelInput, BeskjedInput> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.beskjedSendt(happyBruker.getFnrAsFnr(), mote);
         BeskjedInput value = oppgaveRecord.value();
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);

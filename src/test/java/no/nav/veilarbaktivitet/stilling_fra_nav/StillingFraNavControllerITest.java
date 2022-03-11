@@ -106,7 +106,7 @@ public class StillingFraNavControllerITest {
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
-        brukernotifikasjonAsserts.stoppet(mockBruker.getFnrAsFnr(), brukernotifikajonOppgave.key());
+        brukernotifikasjonAsserts.stoppet(brukernotifikajonOppgave.key());
 
         skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }
