@@ -20,15 +20,15 @@ public class EksternVarslingKvitteringConsumer {
     public static final String INFO = "INFO";
     public static final String OVERSENDT = "OVERSENDT";
     public static final String FERDIGSTILT = "FERDIGSTILT";
-    private final String oppgave_prefix;
-    private final String beskjed_prefix;
+    private final String oppgavePrefix;
+    private final String beskjedPrefix;
     private final String appname;
 
     public EksternVarslingKvitteringConsumer(KvitteringDAO kvitteringDAO, KvitteringMetrikk kvitteringMetrikk, @Value("${app.env.appname}") String appname) {
         this.kvitteringDAO = kvitteringDAO;
         this.kvitteringMetrikk = kvitteringMetrikk;
-        oppgave_prefix = "O-" + appname + "-";
-        beskjed_prefix = "B-" + appname + "-";
+        oppgavePrefix = "O-" + appname + "-";
+        beskjedPrefix = "B-" + appname + "-";
         this.appname = appname;
     }
 
@@ -44,11 +44,11 @@ public class EksternVarslingKvitteringConsumer {
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
         log.info("Konsumerer DoknotifikasjonStatus bestillingsId={}, status={}", brukernotifikasjonBestillingsId, melding.getStatus());
 
-        if (!brukernotifikasjonBestillingsId.startsWith(oppgave_prefix) && !brukernotifikasjonBestillingsId.startsWith(beskjed_prefix)) {
+        if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
             log.error("mottok melding med feil prefiks, {}", melding);
             throw new IllegalArgumentException("mottok melding med feil prefiks");
         }
-        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgave_prefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
         String status = melding.getStatus();
 
