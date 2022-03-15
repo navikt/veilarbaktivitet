@@ -50,12 +50,12 @@ public class BrukernotifikasjonAsserts {
         return singleRecord;
     }
 
-    public ConsumerRecord<NokkelInput, BeskjedInput> beskjedSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        return beskjedSendt(fnr);
+    public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
+        return assertBeskjedSendt(fnr);
         //TODO assert aktivitetdto
     }
 
-    public ConsumerRecord<NokkelInput, BeskjedInput> beskjedSendt(Person.Fnr fnr) {
+    public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {
         config.getSendOppgaveCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 5000);
 
@@ -98,7 +98,7 @@ public class BrukernotifikasjonAsserts {
         kafkaTestService.assertErKonsumertAiven(config.getKviteringsToppic(), result.getRecordMetadata().offset(), 5);
     }
 
-    public void skalIkkeHaProdusertFlereMeldinger() {
+    public void assertSkalIkkeHaProdusertFlereMeldinger() {
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
         config.getSendOppgaveCron().sendBrukernotifikasjoner();
 

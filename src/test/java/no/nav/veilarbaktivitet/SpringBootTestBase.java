@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.junit.Before;
@@ -25,6 +26,7 @@ public abstract class SpringBootTestBase {
     protected KafkaTestService kafkaTestService;
 
     @Autowired
+    private StillingFraNavTestService stillingFraNavTestService;
     protected AktivitetTestService aktivitetTestService;
 
     @Autowired
@@ -45,5 +47,6 @@ public abstract class SpringBootTestBase {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
     }
 }

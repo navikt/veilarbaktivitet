@@ -43,8 +43,9 @@ public class DelingAvCvManueltAvbruttServiceTest {
     @Autowired
     KafkaTestService testService;
 
-    @Autowired
     AktivitetTestService aktivitetTestService;
+    @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
 
     @Autowired
     JdbcTemplate jdbc;
@@ -80,6 +81,7 @@ public class DelingAvCvManueltAvbruttServiceTest {
 
     @Before
     public void cleanupBetweenTests() {
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
         DbTestUtils.cleanupTestDb(jdbc);
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(Integer.MAX_VALUE);
     }
@@ -87,8 +89,8 @@ public class DelingAvCvManueltAvbruttServiceTest {
     @Test
     public void happy_case() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-        AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
+        AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         consumer = testService.createStringAvroConsumer(utTopic);
 
@@ -102,11 +104,11 @@ public class DelingAvCvManueltAvbruttServiceTest {
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
 
-        AktivitetDTO originalAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, skalBehandles.getId());
+        AktivitetDTO originalAktivitet = aktivitetTestService.hentAktivitet(mockBruker, skalBehandles.getId());
 
         delingAvCvCronService.notifiserAvbruttEllerFullfortUtenSvar();
 
-        AktivitetDTO oppdatertAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, skalBehandles.getId());
+        AktivitetDTO oppdatertAktivitet = aktivitetTestService.hentAktivitet(mockBruker, skalBehandles.getId());
         AktivitetDTO expectedAktivitet = originalAktivitet.setStillingFraNavData(originalAktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER));
 
         assertOppdatertAktivitet(expectedAktivitet, oppdatertAktivitet);
@@ -124,7 +126,7 @@ public class DelingAvCvManueltAvbruttServiceTest {
             assertions.assertAll();
         });
 
-        AktivitetDTO skalVaereUendret = aktivitetTestService.hentAktivitet(port, mockBruker, skalIkkeBehandles.getId());
+        AktivitetDTO skalVaereUendret = aktivitetTestService.hentAktivitet(mockBruker, skalIkkeBehandles.getId());
         assertEquals(skalIkkeBehandles, skalVaereUendret);
     }
 

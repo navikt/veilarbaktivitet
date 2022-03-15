@@ -55,7 +55,12 @@ public class DelingAvCvITest {
     KafkaTestService testService;
 
     @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
     AktivitetTestService aktivitetTestService;
+    @Before
+    public void setupAktivitetTestService() {
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
+    }
 
     @Autowired
     JdbcTemplate jdbc;
@@ -104,7 +109,7 @@ public class DelingAvCvITest {
     @Test
     public void happy_case() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
         var oppgave = brukernotifikajonOppgave.value();
@@ -125,7 +130,7 @@ public class DelingAvCvITest {
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
         var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
         var oppgave = brukernotifikajonOppgave.value();
@@ -145,7 +150,7 @@ public class DelingAvCvITest {
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
         melding.setSoknadsfrist(null);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
         var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
         var oppgave = brukernotifikajonOppgave.value();

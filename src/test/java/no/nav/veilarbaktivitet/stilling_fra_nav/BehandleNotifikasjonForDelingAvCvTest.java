@@ -45,7 +45,12 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     Credentials credentials;
 
     @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
     AktivitetTestService aktivitetTestService;
+    @Before
+    public void setupAktivitetTestService() {
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
+    }
 
     @Autowired
     SendOppgaveCron sendOppgaveCron;
@@ -86,12 +91,12 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav og send varsel
-        AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
         var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
-        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
         var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
-        AktivitetDTO medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date(), port);
+        AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         //kviteringer på varsel
         brukernotifikasjonAsserts.sendEksternVarseltOk(utenSvarOppgave);
@@ -111,11 +116,11 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         assertThat(kafkaTestService.harKonsumertAlleMeldinger(utTopic, rekrutteringsbistandConsumer)).isTrue();
 
         // sjekk at StillingFraNav.LivslopStatus = HAR_VARSLET
-        AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, veileder, utenSvar.getId());
+        AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(mockBruker, veileder, utenSvar.getId());
         AktivitetDTO expectedAktivitet = behandletAktivitet.toBuilder().stillingFraNavData(behandletAktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
         AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, behandletAktivitet);
 
-        AktivitetDTO ikkeBehandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, veileder, medSvar.getId());
+        AktivitetDTO ikkeBehandletAktivitet = aktivitetTestService.hentAktivitet(mockBruker, veileder, medSvar.getId());
         AktivitetAssertUtils.assertOppdatertAktivitet(medSvar, ikkeBehandletAktivitet);
 
         // sjekk at vi ikke behandler ting vi ikke skal behandle
@@ -129,15 +134,15 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav
-        AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
         var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
-        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
         var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
         // trigger utsendelse av oppgave-notifikasjoner
         sendOppgaveCron.sendBrukernotifikasjoner();
 
-        AktivitetDTO medSvar = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date(), port);
+        AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         // simuler kvittering fra brukernotifikasjoner
 
@@ -157,11 +162,11 @@ public class BehandleNotifikasjonForDelingAvCvTest {
         assertThat(kafkaTestService.harKonsumertAlleMeldinger(utTopic, rekrutteringsbistandConsumer)).isTrue();
 
         // sjekk at StillingFraNav.LivslopStatus = KAN_IKKE_VARSLE
-        AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, veileder, utenSvar.getId());
+        AktivitetDTO behandletAktivitet = aktivitetTestService.hentAktivitet(mockBruker, veileder, utenSvar.getId());
         AktivitetDTO expectedAktivitet = behandletAktivitet.toBuilder().stillingFraNavData(behandletAktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)).build();
         AktivitetAssertUtils.assertOppdatertAktivitet(expectedAktivitet, behandletAktivitet);
 
-        AktivitetDTO ikkeBehandletAktivitet = aktivitetTestService.hentAktivitet(port, mockBruker, veileder, medSvar.getId());
+        AktivitetDTO ikkeBehandletAktivitet = aktivitetTestService.hentAktivitet(mockBruker, veileder, medSvar.getId());
         AktivitetAssertUtils.assertOppdatertAktivitet(medSvar, ikkeBehandletAktivitet);
 
         // sjekk at vi ikke behandler ting vi ikke skal behandle

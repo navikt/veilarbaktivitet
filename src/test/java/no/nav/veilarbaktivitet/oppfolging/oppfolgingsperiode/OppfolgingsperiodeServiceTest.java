@@ -27,13 +27,13 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
         oppfolgingsperiodeCron.addOppfolgingsperioder();
 
-        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(port, mockBruker, opprettet.getId());
+        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(mockBruker, opprettet.getId());
 
         assertEquals(mockBruker.getOppfolgingsperiode(), etterAdd.getOppfolgingsperiodeId());
     }
@@ -44,14 +44,14 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
         jdbcTemplate.update("update AKTIVITET set OPPRETTET_DATO = DATE '2017-08-01' where AKTIVITET_ID = " + opprettet.getId());
 
         assertNull(opprettet.getOppfolgingsperiodeId());
 
         oppfolgingsperiodeCron.addOppfolgingsperioder();
 
-        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(port, mockBruker, opprettet.getId());
+        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(mockBruker, opprettet.getId());
 
         assertNull(etterAdd.getOppfolgingsperiodeId());
     }
@@ -62,7 +62,7 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO opprettet = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
 
         assertNull(opprettet.getOppfolgingsperiodeId());
         aktorUtenGjeldende("ukjent_fnr", "ukjent_aktorid");
@@ -76,7 +76,7 @@ public class OppfolgingsperiodeServiceTest extends SpringBootTestBase {
         jdbcTemplate.update("update AKTIVITET set AKTOR_ID = "+ mockBruker.getAktorId() +" where AKTIVITET_ID = " + opprettet.getId());
 
         // TODO finn ut hvorfor testen feiler sporadisk med 403 her.
-        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(port, mockBruker, opprettet.getId());
+        AktivitetDTO etterAdd = aktivitetTestService.hentAktivitet(mockBruker, opprettet.getId());
 
         assertNull(etterAdd.getOppfolgingsperiodeId());
     }

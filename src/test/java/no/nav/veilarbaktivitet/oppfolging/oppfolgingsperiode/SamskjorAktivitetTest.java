@@ -20,7 +20,7 @@ public class SamskjorAktivitetTest extends SpringBootTestBase {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN);
         aktivitetDTO.setTittel("OrginalTittel");
-        AktivitetDTO aktivitet = aktivitetTestService.opprettAktivitet(port, happyBruker, aktivitetDTO);
+        AktivitetDTO aktivitet = aktivitetTestService.opprettAktivitet(happyBruker, aktivitetDTO);
         aktivitet.setTittel("nyTittel");
         AktivitetDTO oppdatertAktivitet = aktivitetTestService.oppdatterAktivitet(port, happyBruker, happyBruker, aktivitet);
 
