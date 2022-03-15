@@ -3,6 +3,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder;
+import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
@@ -13,7 +15,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Service
@@ -42,17 +45,16 @@ class AvsluttSender {
         Person.Fnr fnrForAktorId = personService.getFnrForAktorId(Person.aktorId(aktorId));
         boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvsluttet(brukernotifikasjonId);
         if (markertAvsluttet) {
-            DoneInput done = DoneInput
-                    .newBuilder()
-                    .setTidspunkt(Instant.now().toEpochMilli())
+            DoneInput done = new DoneInputBuilder()
+                    .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                     .build();
 
-            NokkelInput nokkel = NokkelInput.newBuilder()
-                    .setAppnavn(appname)
-                    .setNamespace(namespace)
-                    .setFodselsnummer(fnrForAktorId.get())
-                    .setGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
-                    .setEventId(brukernotifikasjonId)
+            NokkelInput nokkel = new NokkelInputBuilder()
+                    .withAppnavn(appname)
+                    .withNamespace(namespace)
+                    .withFodselsnummer(fnrForAktorId.get())
+                    .withGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
+                    .withEventId(brukernotifikasjonId)
                     .build();
             final ProducerRecord<NokkelInput, DoneInput> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);
 

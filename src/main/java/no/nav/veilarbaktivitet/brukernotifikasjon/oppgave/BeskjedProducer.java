@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import no.nav.brukernotifikasjon.schemas.builders.BeskjedInputBuilder;
+import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
@@ -15,7 +17,6 @@ import org.springframework.stereotype.Service;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -34,25 +35,25 @@ public class BeskjedProducer {
     @SneakyThrows
     public long sendBeskjed(SkalSendes skalSendes, Person.Fnr fnr, URL aktivitetLink) {
         int sikkerhetsnivaa = 3;
-        NokkelInput nokkel = NokkelInput.newBuilder()
-                .setAppnavn(appname)
-                .setNamespace(namespace)
-                .setFodselsnummer(fnr.get())
-                .setGrupperingsId(skalSendes.getOppfolgingsperiode())
-                .setEventId(skalSendes.getBrukernotifikasjonId())
+        NokkelInput nokkel = new NokkelInputBuilder()
+                .withAppnavn(appname)
+                .withNamespace(namespace)
+                .withFodselsnummer(fnr.get())
+                .withGrupperingsId(skalSendes.getOppfolgingsperiode())
+                .withEventId(skalSendes.getBrukernotifikasjonId())
                 .build();
 
-        BeskjedInput beskjed = BeskjedInput.newBuilder()
-                .setTidspunkt(LocalDateTime.now(ZoneOffset.UTC).toEpochSecond(ZoneOffset.UTC))
-                .setTekst(skalSendes.getMelding())
-                .setLink(aktivitetLink.toString())
-                .setSikkerhetsnivaa(sikkerhetsnivaa)
-                .setEksternVarsling(true)
-                .setSmsVarslingstekst(skalSendes.getSmsTekst())
-                .setPrefererteKanaler(List.of(PreferertKanal.SMS.toString()))
-                .setSmsVarslingstekst(skalSendes.getSmsTekst()) //blir dafult tekst hvis null
-                .setEpostVarslingstittel(skalSendes.getEpostTitel()) //blir dafult tekst hvis null
-                .setEpostVarslingstekst(skalSendes.getEpostBody()) //blir dafult tekst hvis null
+        BeskjedInput beskjed = new BeskjedInputBuilder()
+                .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
+                .withTekst(skalSendes.getMelding())
+                .withLink(aktivitetLink)
+                .withSikkerhetsnivaa(sikkerhetsnivaa)
+                .withEksternVarsling(true)
+                .withSmsVarslingstekst(skalSendes.getSmsTekst())
+                .withPrefererteKanaler(PreferertKanal.SMS)
+                .withSmsVarslingstekst(skalSendes.getSmsTekst()) //blir dafult tekst hvis null
+                .withEpostVarslingstittel(skalSendes.getEpostTitel()) //blir dafult tekst hvis null
+                .withEpostVarslingstekst(skalSendes.getEpostBody())
                 .build();
 
         final ProducerRecord<NokkelInput,BeskjedInput> kafkaMelding = new ProducerRecord<>(beskjedToppic, nokkel, beskjed);
