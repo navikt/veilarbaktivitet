@@ -33,6 +33,7 @@ public class InternAktivitetMapper {
         return builder
                 .avtaltMedNav(aktivitetData.isAvtalt())
                 .aktivitetId(aktivitetData.getId().toString())
+                .kontorsperreEnhetId(aktivitetData.getKontorsperreEnhetId())
                 .oppfolgingsperiodeId(aktivitetData.getOppfolgingsperiodeId())
                 .status(Aktivitet.StatusEnum.valueOf(aktivitetData.getStatus().name()))
                 .beskrivelse(aktivitetData.getBeskrivelse())

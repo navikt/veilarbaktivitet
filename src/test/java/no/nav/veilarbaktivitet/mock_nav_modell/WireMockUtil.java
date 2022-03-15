@@ -20,12 +20,13 @@ public class WireMockUtil {
         boolean kanVarsles = mockBruker.getBrukerOptions().isKanVarsles();
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
+        String kontorsperreEnhet = mockBruker.getBrukerOptions().getKontorsperreEnhet();
 
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
 
         oppfolging(fnr, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
-        kvp(aktorId, erUnderKvp);
+        kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
     }
@@ -88,12 +89,12 @@ public class WireMockUtil {
                         .withBody("{\"erUnderManuellOppfolging\":" + erManuell + ",\"krrStatus\":{\"kanVarsles\":" + kanVarsles + ",\"erReservert\":" + erReservertKrr + "}}")));
     }
 
-    private static void kvp(String aktorId, boolean erUnderKvp) {
+    private static void kvp(String aktorId, boolean erUnderKvp, String enhet) {
         if (erUnderKvp) {
             stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
-                            .withBody("{\"enhet\":\"9999\"}")));
+                            .withBody("{\"enhet\":\"" + enhet + "\"}")));
         } else {
             stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
                     .willReturn(aResponse().withStatus(204)));
