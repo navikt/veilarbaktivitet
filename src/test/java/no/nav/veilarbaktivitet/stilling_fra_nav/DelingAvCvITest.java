@@ -4,12 +4,11 @@ import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.brukernotifikasjon.schemas.Nokkel;
-import no.nav.brukernotifikasjon.schemas.Oppgave;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -70,8 +69,6 @@ public class DelingAvCvITest {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
-    @Value("${topic.ut.brukernotifikasjon.oppgave}")
-    private String oppgaveTopic;
 
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
@@ -84,10 +81,9 @@ public class DelingAvCvITest {
 
     Consumer<String, DelingAvCvRespons> consumer;
 
-    Consumer<Nokkel, Oppgave> oppgaveConsumer;
-
     @Autowired
-    SendOppgaveCron sendOppgaveCron;
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @After
     public void verify_no_unmatched() {
@@ -100,9 +96,9 @@ public class DelingAvCvITest {
     @Before
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
 
         consumer = testService.createStringAvroConsumer(utTopic);
-        oppgaveConsumer = testService.createAvroAvroConsumer(oppgaveTopic);
     }
 
     @Test
@@ -110,14 +106,13 @@ public class DelingAvCvITest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
 
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = consumerRecord.value();
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
-            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(brukernotifikajonOppgave.key().getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });
@@ -132,14 +127,13 @@ public class DelingAvCvITest {
         melding.setKontaktInfo(kontaktinfo);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = consumerRecord.value();
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
-            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(brukernotifikajonOppgave.key().getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });
@@ -153,14 +147,13 @@ public class DelingAvCvITest {
         melding.setSoknadsfrist(null);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
 
-        sendOppgaveCron.sendBrukernotifikasjoner();
-        final ConsumerRecord<Nokkel, Oppgave> consumerRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
-        Oppgave oppgave = consumerRecord.value();
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var oppgave = brukernotifikajonOppgave.value();
 
-        SoftAssertions.assertSoftly(assertions -> {
+        SoftAssertions.assertSoftly(assertions -> { //todo tenkpå cpy paste fra testen over
             assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
-            assertions.assertThat(oppgave.getFodselsnummer()).isEqualTo(mockBruker.getFnr());
+            assertions.assertThat(brukernotifikajonOppgave.key().getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });

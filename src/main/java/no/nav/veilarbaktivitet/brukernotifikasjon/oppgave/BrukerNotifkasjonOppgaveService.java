@@ -29,7 +29,7 @@ class BrukerNotifkasjonOppgaveService {
     @Transactional
     @Timed(value="brukernotifikasjon_opprett_oppgave_sendt")
     public void send(SkalSendes skalSendes) {
-        boolean oppdatertOk = dao.setSendt(skalSendes.getId());
+        boolean oppdatertOk = dao.setSendt(skalSendes.getBrukernotifikasjonLopeNummer());
 
         if (oppdatertOk) {
             sendVarsel(skalSendes);

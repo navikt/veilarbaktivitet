@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
@@ -47,6 +48,15 @@ public class KafkaAivenConfig {
     }
 
     @Bean
+    <K extends  SpecificRecordBase, V extends SpecificRecordBase> ProducerFactory<K, V> avroAvroProducerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
+        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
+        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, io.confluent.kafka.serializers.KafkaAvroSerializer.class);
+        return new DefaultKafkaProducerFactory<>(producerProperties);
+    }
+
+    @Bean
     <V> ProducerFactory<String, V> jsonProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
@@ -77,6 +87,10 @@ public class KafkaAivenConfig {
     @Bean
     <V extends SpecificRecordBase> KafkaStringAvroTemplate<V> kafkaAvroTemplate(ProducerFactory<String, V> stringAvroProducerFactory) {
         return new KafkaStringAvroTemplate<>(stringAvroProducerFactory);
+    }
+    @Bean
+    <K extends SpecificRecordBase, V extends SpecificRecordBase> KafkaAvroAvroTemplate<K, V> kafkaAvroAvroTemplate(ProducerFactory<K, V> avroAvroProducerFactory) {
+        return new KafkaAvroAvroTemplate<>(avroAvroProducerFactory);
     }
 
     @Bean

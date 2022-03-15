@@ -24,7 +24,7 @@ public class OppgaveDao {
                     .aktivitetId(rs.getLong("aktivitet_id"))
                     .aktorId(rs.getString("aktor_id"))
                     .brukernotifikasjonId(rs.getString("brukernotifikasjon_id"))
-                    .id(rs.getLong("id"))
+                    .brukernotifikasjonLopeNummer(rs.getLong("id"))
                     .melding(rs.getString("melding"))
                     .varselType(VarselType.valueOf(rs.getString("type")))
                     .oppfolgingsperiode(rs.getString("oppfolgingsperiode"))

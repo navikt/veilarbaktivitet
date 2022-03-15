@@ -36,6 +36,8 @@ import java.util.UUID;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
+
+//TODO skriv denen bort fra service
 @Service
 public class AktivitetTestService {
 
