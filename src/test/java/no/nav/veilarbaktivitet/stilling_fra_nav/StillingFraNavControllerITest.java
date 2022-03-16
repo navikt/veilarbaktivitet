@@ -60,7 +60,12 @@ public class StillingFraNavControllerITest {
     KafkaTestService testService;
 
     @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
     AktivitetTestService aktivitetTestService;
+    @Before
+    public void setupAktivitetTestService() {
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
+    }
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -95,14 +100,14 @@ public class StillingFraNavControllerITest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         val brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
-        AktivitetDTO svartJaPaaDelingAvCv = AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
+        AktivitetDTO svartJaPaaDelingAvCv = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO);
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
@@ -115,12 +120,12 @@ public class StillingFraNavControllerITest {
     public void happy_case_svar_nei() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
 
-        AktivitetDTO actualAktivitet = AktivitetTestService.svarPaaDelingAvCv(false, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
+        AktivitetDTO actualAktivitet = aktivitetTestService.svarPaaDelingAvCv(false, mockBruker, veileder, aktivitetDTO, AVTALT_DATO);
 
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(false)
@@ -154,7 +159,7 @@ public class StillingFraNavControllerITest {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt);
         DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
                 .aktivitetVersjon(Long.parseLong(aktivitetDTO.getVersjon()))
                 .avtaltDato(AVTALT_DATO)
@@ -178,11 +183,11 @@ public class StillingFraNavControllerITest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
-        AktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO, port);
+        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO);
 
-        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), port, mockBruker, veileder);
+        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), mockBruker, veileder);
 
         List<AktivitetTransaksjonsType> transaksjoner = aktivitetDTOS.stream().map(AktivitetDTO::getTransaksjonsType).collect(Collectors.toList());
 

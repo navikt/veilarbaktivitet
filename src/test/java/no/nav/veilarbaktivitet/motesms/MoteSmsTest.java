@@ -80,14 +80,14 @@ public class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
 
         moteSmsCronjobber();
         ConsumerRecord<NokkelInput, BeskjedInput> orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
         moteSmsCronjobber();
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
         AktivitetDTO nyKanal = aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
         moteSmsCronjobber();
@@ -104,7 +104,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
         aktivitetTestService.oppdatterAktivitet(port, happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
         moteSmsCronjobber();
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger(); //"skal ikke sende på nytt for andre oppdateringer"
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger(); //"skal ikke sende på nytt for andre oppdateringer"
 
     }
 
@@ -118,11 +118,11 @@ public class MoteSmsTest extends SpringBootTestBase {
 
         for (KanalDTO kanal : KanalDTO.values()) {
             AktivitetDTO aktivitet = aktivitetDTO.toBuilder().kanal(kanal).build();
-            AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
+            AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
 
             moteSmsCronjobber();
             assertForventetMeldingSendt(kanal.name() + "skal ha riktig melding", happyBruker, kanal, fraDato, response);
-            brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+            brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
         }
     }
 
@@ -133,17 +133,17 @@ public class MoteSmsTest extends SpringBootTestBase {
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
             if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
-                aktivitetTestService.opprettStillingFraNav(happyBruker, port);
+                aktivitetTestService.opprettStillingFraNav(happyBruker);
             } else {
                 AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
                 aktivitet.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
-                aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
+                aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
             }
         }
 
         moteSmsCronjobber();
-        brukernotifikasjonAsserts.beskjedSendt(happyBruker.getFnrAsFnr());
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
     }
 
     @Test
@@ -153,7 +153,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
         aktivitet.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO response = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitet);
+        AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
 
         moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
         sendOppgaveCron.sendBrukernotifikasjoner();
@@ -162,7 +162,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         moteSmsCronjobber();
 
         harAvsluttetVarsel(varsel);
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
     }
 
     @Test
@@ -173,14 +173,14 @@ public class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
         aktivitetService.settAktiviteterTilHistoriske(happyBruker.getAktorIdAsAktorId(), new Date());
 
 
         moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
     }
 
@@ -191,13 +191,13 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
+        aktivitetTestService.oppdatterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
 
         moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
     }
 
@@ -208,13 +208,13 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(port, happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdatterAktivitetStatus(port, happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
+        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
+        aktivitetTestService.oppdatterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
 
         moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
         assertEquals(0, antall);
-        brukernotifikasjonAsserts.skalIkkeHaProdusertFlereMeldinger();
+        brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
     }
 
 
@@ -228,7 +228,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     private ConsumerRecord<NokkelInput, BeskjedInput> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.beskjedSendt(happyBruker.getFnrAsFnr(), mote);
+        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr(), mote);
         BeskjedInput value = oppgaveRecord.value();
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);

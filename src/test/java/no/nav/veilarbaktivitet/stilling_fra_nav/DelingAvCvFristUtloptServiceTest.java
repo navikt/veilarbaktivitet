@@ -45,7 +45,12 @@ public class DelingAvCvFristUtloptServiceTest {
     KafkaTestService testService;
 
     @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
     AktivitetTestService aktivitetTestService;
+    @Before
+    public void setupAktivitetTestService() {
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
+    }
 
     @Autowired
     JdbcTemplate jdbc;
@@ -100,12 +105,12 @@ public class DelingAvCvFristUtloptServiceTest {
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
 
-        AktivitetDTO skalIkkeBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, port);
-        AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+        AktivitetDTO skalIkkeBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker);
+        AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
         delingAvCvCronService.avsluttUtlopedeAktiviteter();
 
-        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
+        AktivitetsplanDTO aktivitetsplanDTO = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
         assertEquals(skalIkkeBliAvbrutt, finnAktivitet(aktivitetsplanDTO, skalIkkeBliAvbrutt.getId()));
 
         AktivitetDTO skalVaereAvbrutt = finnAktivitet(aktivitetsplanDTO, skalBliAvbrutt.getId());
@@ -124,11 +129,11 @@ public class DelingAvCvFristUtloptServiceTest {
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
-        AktivitetDTO skalFeile = aktivitetTestService.opprettStillingFraNav(mockBruker, melding, port);
+        AktivitetDTO skalFeile = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
         ForesporselOmDelingAvCv melding2 = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding2.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
-        AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding2, port);
+        AktivitetDTO skalBliAvbrutt = aktivitetTestService.opprettStillingFraNav(mockBruker, melding2);
 
         Mockito
                 .doThrow(IllegalStateException.class)
@@ -140,7 +145,7 @@ public class DelingAvCvFristUtloptServiceTest {
         int avsluttet = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
         assertEquals(2, avsluttet);
 
-        AktivitetsplanDTO run1 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
+        AktivitetsplanDTO run1 = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
         AktivitetDTO skalVaereAvbrutt = finnAktivitet(run1, skalBliAvbrutt.getId());
         AktivitetDTO expected = skalBliAvbrutt.toBuilder()
                 .status(AktivitetStatus.AVBRUTT)
@@ -156,7 +161,7 @@ public class DelingAvCvFristUtloptServiceTest {
         int i = delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(500);
         assertEquals(1, i);
 
-        AktivitetsplanDTO run2 = aktivitetTestService.hentAktiviteterForFnr(port, mockBruker);
+        AktivitetsplanDTO run2 = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
         AktivitetDTO skaVereLikSomFeilet = finnAktivitet(run2, skalVaereAvbrutt.getId());
         assertEquals(skalVaereAvbrutt, skaVereLikSomFeilet);
 

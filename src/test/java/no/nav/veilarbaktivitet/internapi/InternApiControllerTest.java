@@ -34,7 +34,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO moteAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetSomVeileder(port, mockVeileder, mockBruker, moteAktivitet);
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 
         // Test "/internal/api/v1/aktivitet/{aktivitetId}"
         Mote aktivitet = mockVeileder.createRequest()
@@ -57,12 +57,12 @@ public class InternApiControllerTest extends SpringBootTestBase {
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet().withTilDato(null);
         AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
 
-        aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
+        aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
 
         // Sett bruker under KVP
         BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).kontorsperreEnhet("9999").build();
         MockNavService.updateBruker(mockBruker, kvpOptions);
-        aktivitetTestService.opprettAktivitetSomVeileder(port, mockVeileder, mockBruker, moteAktivitet);
+        aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 
         // Test "/internal/api/v1/aktivitet"
         List<Aktivitet> aktiviteter = mockVeileder.createRequest()
@@ -121,10 +121,10 @@ public class InternApiControllerTest extends SpringBootTestBase {
 
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
             if (type.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) {
-                aktivitetTestService.opprettStillingFraNav(mockBruker, port);
+                aktivitetTestService.opprettStillingFraNav(mockBruker);
             } else {
                 AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(type);
-                aktivitetTestService.opprettAktivitet(port, mockBruker, mockVeileder, aktivitetDTO);
+                aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, aktivitetDTO);
             }
         }
 
@@ -151,7 +151,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-        aktivitetTestService.opprettAktivitet(port, mockBruker, egenAktivitet);
+        aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
 
         mockVeilederUtenBruker.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode().toString())

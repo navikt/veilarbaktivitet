@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -45,7 +46,9 @@ public class OppfolgingAvsluttetConsumerTest {
     KafkaTestService testService;
 
     @Autowired
+    StillingFraNavTestService stillingFraNavTestService;
     AktivitetTestService testAktivitetservice;
+
 
     @Autowired
     JdbcTemplate jdbc;
@@ -66,6 +69,7 @@ public class OppfolgingAvsluttetConsumerTest {
 
     @Before
     public void cleanupBetweenTests() {
+        testAktivitetservice = new AktivitetTestService(stillingFraNavTestService, port);
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
@@ -78,11 +82,11 @@ public class OppfolgingAvsluttetConsumerTest {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
-        AktivitetDTO skalIkkeBliHistoriskMockBruker2 = testAktivitetservice.opprettAktivitet(port, mockBruker2, aktivitetDTO);
-        AktivitetDTO skalBliHistorisk = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO skalIkkeBliHistoriskMockBruker2 = testAktivitetservice.opprettAktivitet(mockBruker2, aktivitetDTO);
+        AktivitetDTO skalBliHistorisk = testAktivitetservice.opprettAktivitet(mockBruker, aktivitetDTO);
 
         Thread.sleep(10);
-        AktivitetDTO skalIkkeBliHistorisk = testAktivitetservice.opprettAktivitet(port, mockBruker, aktivitetDTO);
+        AktivitetDTO skalIkkeBliHistorisk = testAktivitetservice.opprettAktivitet(mockBruker, aktivitetDTO);
         ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(skalBliHistorisk.getEndretDato().toInstant(), ZoneId.systemDefault()).plusNanos(5000);
         OppfolgingAvsluttetKafkaDTO oppfolgingAvsluttetKafkaDTO = new OppfolgingAvsluttetKafkaDTO()
                 .setAktorId(mockBruker.getAktorId())
@@ -92,7 +96,7 @@ public class OppfolgingAvsluttetConsumerTest {
         SendResult<String, String> sendResult = producer.send(oppfolgingAvsluttetTopic, JsonUtils.toJson(oppfolgingAvsluttetKafkaDTO)).get();
         testService.assertErKonsumertOnprem(oppfolgingAvsluttetTopic, sendResult.getRecordMetadata().offset(), 5);
 
-        List<AktivitetDTO> aktiviteter = testAktivitetservice.hentAktiviteterForFnr(port, mockBruker).aktiviteter;
+        List<AktivitetDTO> aktiviteter = testAktivitetservice.hentAktiviteterForFnr(mockBruker).aktiviteter;
         AktivitetDTO skalVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalBliHistorisk.getId())).findAny().get();
         AktivitetAssertUtils.assertOppdatertAktivitet(skalBliHistorisk.setHistorisk(true), skalVaereHistorisk);
         assertEquals(AktivitetTransaksjonsType.BLE_HISTORISK, skalVaereHistorisk.getTransaksjonsType());
@@ -100,7 +104,7 @@ public class OppfolgingAvsluttetConsumerTest {
         AktivitetDTO skalIkkeVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalIkkeBliHistorisk.getId())).findAny().get();
         assertEquals(skalIkkeBliHistorisk, skalIkkeVaereHistorisk);
 
-        AktivitetDTO skalIkkeVaereHistoriskMockBruker2 = testAktivitetservice.hentAktiviteterForFnr(port, mockBruker2).aktiviteter.get(0);
+        AktivitetDTO skalIkkeVaereHistoriskMockBruker2 = testAktivitetservice.hentAktiviteterForFnr(mockBruker2).aktiviteter.get(0);
         assertEquals(skalIkkeBliHistoriskMockBruker2, skalIkkeVaereHistoriskMockBruker2);
     }
 }

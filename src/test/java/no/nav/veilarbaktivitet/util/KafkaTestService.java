@@ -27,6 +27,7 @@ import static org.awaitility.Awaitility.await;
 @RequiredArgsConstructor
 public class KafkaTestService {
 
+
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
 
     private final ConsumerFactory<String, Object> stringJsonConsumerFactory;
