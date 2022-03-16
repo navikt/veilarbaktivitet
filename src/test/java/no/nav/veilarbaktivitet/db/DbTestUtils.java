@@ -24,7 +24,6 @@ public class DbTestUtils {
             "MOTE",
             "BEHANDLING",
             "AKTIVITET",
-            "ARENA_FORHAANDSORIENTERING",
             "FORHAANDSORIENTERING",
             "SHEDLOCK"
     );
