@@ -60,7 +60,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
         aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
 
         // Sett bruker under KVP
-        BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
+        BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).kontorsperreEnhet("9999").build();
         MockNavService.updateBruker(mockBruker, kvpOptions);
         aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 
@@ -73,26 +73,45 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
 
-        assertThat(aktiviteter).hasSize(2);
+        assertThat(aktiviteter).hasSize(3);
         assertThat(aktiviteter.get(1)).isInstanceOf(Egenaktivitet.class);
+        assertThat(aktiviteter.get(2).getKontorsperreEnhetId()).isNotNull();
 
-        List<Aktivitet> aktiviteter2 = mockVeileder.createRequest()
+        // Lag veileder uten tilgang til mockbrukers enhet
+        MockVeileder mockVeileder2 = MockNavService.createVeileder();
+        mockVeileder2.setNasjonalTilgang(true);
+
+        List<Aktivitet> aktiviteter2 = mockVeileder2.createRequest()
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
+
+        assertThat(aktiviteter2).hasSize(2);
+        assertThat(aktiviteter2.get(1)).isInstanceOf(Egenaktivitet.class);
+        assertThat(aktiviteter2.stream().map(Aktivitet::getKontorsperreEnhetId).toList()).containsOnlyNulls();
+
+
+
+        List<Aktivitet> aktiviteter3 = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?oppfolgingsperiodeId=" + mockBruker.getOppfolgingsperiode())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
-        assertThat(aktiviteter2).hasSameElementsAs(aktiviteter);
+        assertThat(aktiviteter3).hasSameElementsAs(aktiviteter);
 
-        List<Aktivitet> aktiviteter3 = mockVeileder.createRequest()
+        List<Aktivitet> aktiviteter4 = mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}&oppfolgingsperiodeId={oppfolgingsperiodeId}", mockBruker.getAktorId(), mockBruker.getOppfolgingsperiode())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
-        assertThat(aktiviteter3).hasSameElementsAs(aktiviteter);
+        assertThat(aktiviteter4).hasSameElementsAs(aktiviteter);
     }
 
     @Test

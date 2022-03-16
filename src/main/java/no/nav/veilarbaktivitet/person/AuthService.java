@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
+import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -70,7 +71,11 @@ public class AuthService {
     }
 
     public boolean sjekKvpTilgang(String enhet) {
-        if (authContextHolder.erEksternBruker() || enhet == null) {
+        if (StringUtils.isEmpty(enhet)) {
+            return true;
+        }
+
+        if (authContextHolder.erEksternBruker()) {
             return true;
         }
 
