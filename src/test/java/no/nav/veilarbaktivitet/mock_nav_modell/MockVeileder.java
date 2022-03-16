@@ -31,6 +31,6 @@ public class MockVeileder extends RestassuredUser {
     }
 
     public boolean harTilgangTilEnhet(String enhet) {
-        return brukerList.stream().anyMatch(it -> it.getEnhet().equals(enhet));
+        return brukerList.stream().anyMatch(it -> it.getBrukerOptions().getKontorsperreEnhet().equals(enhet));
     }
 }

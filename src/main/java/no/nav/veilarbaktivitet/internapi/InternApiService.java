@@ -77,7 +77,7 @@ public class InternApiService {
     private List<AktivitetData> filtrerKontorsperret(List<AktivitetData> aktiviteter) {
         return aktiviteter
                 .stream()
-                .filter(a -> a.getKontorsperreEnhetId() == null)
+                .filter( a -> authService.sjekKvpTilgang(a.getKontorsperreEnhetId()))
                 .toList();
     }
 }

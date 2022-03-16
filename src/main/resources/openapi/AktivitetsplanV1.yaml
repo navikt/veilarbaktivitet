@@ -25,6 +25,8 @@ components:
             - samtalereferat
             - stilling_fra_nav
           example: samtalereferat
+        kontorsperre_enhet_id:
+          type: string
         avtalt_med_nav:
           type: boolean
           description: Definer om den definerte aktiviteten er avtalt med NAV
