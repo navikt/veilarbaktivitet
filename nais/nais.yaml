@@ -11,6 +11,7 @@ spec:
   ingresses:
     - https://veilarbaktivitet.nais.adeo.no
     - https://app.adeo.no/veilarbaktivitet
+    - https://veilarbpersonflate.intern.nav.no/veilarbaktivitet
   port: 8080
   prometheus:
     enabled: true
