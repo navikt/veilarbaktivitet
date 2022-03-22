@@ -50,9 +50,11 @@ public class BrukerNotifikasjonDAO {
                 smsTekst
         );
 
-        long brukernotifikasjon_id = Optional
-                .ofNullable(keyHolder.getKey())
-                .map(Number::longValue)
+
+
+        String brukernotifikasjon_id = Optional
+                .ofNullable(keyHolder.getKeyAs(Object.class))
+                .map(Object::toString)
                 .orElseThrow();
 
         SqlParameterSource params = new MapSqlParameterSource()
