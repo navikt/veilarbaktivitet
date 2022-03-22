@@ -135,6 +135,8 @@ public class BrukerNotifikasjonDAO {
                 .flatMap( it -> it.entrySet().stream().map(entery -> "key: " + entery.getKey() + " valeu: " + entery.getValue()))
                 .forEach(it -> log.info(it));
 
+        log.info("tostring: " + keyHolder.getKeyAs(Object.class).toString());
+
         if (generatedKey == null) {
             throw new DataAccessResourceFailureException("Generated key not present");
         }
