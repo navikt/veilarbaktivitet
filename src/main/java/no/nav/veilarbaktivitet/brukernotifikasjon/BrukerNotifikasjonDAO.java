@@ -1,26 +1,30 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
+import oracle.sql.ROWID;
+import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.net.URL;
-import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
-@Transactional
 public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
+    @Transactional
     void opprettBrukernotifikasjonPaaAktivitet(//TODO refactor to object
             UUID brukernotifikasjonId,
             long aktivitetId,
@@ -51,14 +55,10 @@ public class BrukerNotifikasjonDAO {
         );
 
 
-
-        String brukernotifikasjon_id = Optional
-                .ofNullable(keyHolder.getKeyAs(Object.class))
-                .map(Object::toString)
-                .orElseThrow();
+        long brukernotifikasjonDbId = getGeneratedKey(keyHolder);
 
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", brukernotifikasjon_id)
+                .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
                 .addValue("aktivitet_id", aktivitetId)
                 .addValue("opprettet_paa_aktivitet_version", aktitetVersion);
 
@@ -122,6 +122,26 @@ public class BrukerNotifikasjonDAO {
                         " and TYPE = :type" +
                         " and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')",
                 params);
+    }
+
+
+    @SneakyThrows
+    public static long getGeneratedKey(KeyHolder keyHolder) {
+        Object generatedKey = keyHolder.getKeyAs(Object.class);
+
+        if (generatedKey == null) {
+            throw new DataAccessResourceFailureException("Generated key not present");
+        }
+
+        if (generatedKey instanceof BigDecimal key) {
+            // Used by H2
+            return key.longValue();
+        } else if (generatedKey instanceof ROWID key) {
+            // Used by Oracle
+            return key.longValue();
+        } else {
+            throw new DataAccessResourceFailureException("Unknown generated key type");
+        }
     }
 
 }
