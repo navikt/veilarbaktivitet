@@ -11,6 +11,9 @@ public class AktivitetDtoTestBuilder {
     public static AktivitetDTO nyAktivitet(AktivitetTypeDTO aktivitetTypeDTO) {
         //TODO implementer denne ordenltig
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet(Helpers.Type.getData(aktivitetTypeDTO));
-        return  AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        aktivitetDTO.setId(null);
+        aktivitetDTO.setVersjon(null);
+        return aktivitetDTO;
     }
 }

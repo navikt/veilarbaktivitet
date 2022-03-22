@@ -4,6 +4,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
+import no.nav.common.types.identer.NavIdent;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -20,6 +21,10 @@ public class MockVeileder extends RestassuredUser {
 
     public String getNavIdent() {
         return super.ident;
+    }
+
+    public NavIdent getNavIdentAsNavident() {
+        return new NavIdent(super.ident);
     }
 
     public void addBruker(MockBruker bruker) {
