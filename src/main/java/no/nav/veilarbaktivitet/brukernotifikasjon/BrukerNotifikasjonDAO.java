@@ -106,7 +106,7 @@ public class BrukerNotifikasjonDAO {
                         " INSERT INTO brukernotifikasjon " +
                         "        ( brukernotifikasjon_id,  aktivitet_id,  opprettet_paa_aktivitet_version,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          url,  melding,  smsTekst,  epostTittel,  epostBody) " +
                         " VALUES (:brukernotifikasjon_id, :aktivitet_id, :opprettet_paa_aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :url, :melding, :smsTekst, :epostTittel, :epostBody) ",
-                params, generatedKeyHolder);
+                params, generatedKeyHolder, new String[]{"ID"});
         return generatedKeyHolder;
 
     }
