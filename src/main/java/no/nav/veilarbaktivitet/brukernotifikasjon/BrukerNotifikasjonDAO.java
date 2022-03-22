@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
 import oracle.sql.ROWID;
@@ -20,6 +21,7 @@ import java.util.UUID;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -128,6 +130,10 @@ public class BrukerNotifikasjonDAO {
     @SneakyThrows
     public static long getGeneratedKey(KeyHolder keyHolder) {
         Object generatedKey = keyHolder.getKeyAs(Object.class);
+
+        keyHolder.getKeyList().stream()
+                .flatMap( it -> it.entrySet().stream().map(entery -> "key: " + entery.getKey() + " valeu: " + entery.getValue()))
+                .forEach(it -> log.info(it));
 
         if (generatedKey == null) {
             throw new DataAccessResourceFailureException("Generated key not present");
