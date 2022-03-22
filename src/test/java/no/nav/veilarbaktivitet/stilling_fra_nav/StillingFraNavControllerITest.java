@@ -6,6 +6,7 @@ import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
@@ -18,6 +19,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -46,6 +48,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -192,6 +195,69 @@ public class StillingFraNavControllerITest {
         List<AktivitetTransaksjonsType> transaksjoner = aktivitetDTOS.stream().map(AktivitetDTO::getTransaksjonsType).collect(Collectors.toList());
 
         Assertions.assertThat(transaksjoner).containsOnly(AktivitetTransaksjonsType.OPPRETTET, AktivitetTransaksjonsType.DEL_CV_SVART, AktivitetTransaksjonsType.STATUS_ENDRET);
+    }
+
+    @Test
+    public void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
+        for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
+            oppdaterKanCvDeles_feilAktivitetstype_feiler(type);
+        }
+    }
+
+    private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
+        if(typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) return;
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
+
+        AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitet(mockBruker, veileder, aktivitetDTO);
+
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(oppretetDto.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
+                .kanDeles(false)
+                .build();
+
+        int statusCode = veileder
+                .createRequest()
+                .and()
+                .param("aktivitetId", oppretetDto.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .extract()
+                .statusCode();
+
+        assertEquals(typeDTO.name() + " skal ikke kunne bli svart på", HttpStatus.BAD_REQUEST.value(), statusCode);
+
+    }
+
+    @Test
+    public void oppdaterKanCvDeles_feilVersjon_feiler() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+
+        AktivitetDTO orginal = aktivitetTestService.opprettStillingFraNav(mockBruker);
+        AktivitetDTO oppdatert = aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, orginal, AktivitetStatus.PLANLAGT);
+        DelingAvCvDTO delingAvCvDTO = DelingAvCvDTO.builder()
+                .aktivitetVersjon(Long.parseLong(orginal.getVersjon()))
+                .avtaltDato(AVTALT_DATO)
+                .kanDeles(false)
+                .build();
+
+        int statusCode = veileder
+                .createRequest()
+                .and()
+                .param("aktivitetId", oppdatert.getId())
+                .body(delingAvCvDTO)
+                .when()
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .then()
+                .extract()
+                .statusCode();
+
+        assertEquals("skal ikke kunne oppdatere aktivitet med feil version", HttpStatus.CONFLICT.value(), statusCode);
     }
 
     private AktivitetDTO skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {

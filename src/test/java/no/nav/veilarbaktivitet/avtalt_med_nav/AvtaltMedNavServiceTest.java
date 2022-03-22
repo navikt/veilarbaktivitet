@@ -1,51 +1,48 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
-import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
-import no.nav.veilarbaktivitet.config.database.Database;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.mock;
 
-@RunWith(MockitoJUnitRunner.class)
-public class AvtaltMedNavServiceTest {
+public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
-    private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
-    private static final NavIdent veilederIdent = NavIdent.of("V123");
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
-    private final Database database = new Database(jdbcTemplate);
-    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    private static final MockBruker bruker= MockNavService.createHappyBruker();
+    private static final MockVeileder veileder = MockNavService.createVeileder();
 
-    private final MetricService metricService = mock(MetricService.class);
+    private static final Person.AktorId AKTOR_ID = bruker.getAktorIdAsAktorId();
+    private static final NavIdent veilederIdent = veileder.getNavIdentAsNavident();
 
-    private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDAO, meterRegistry);
+    @Autowired
+    private AktivitetDAO aktivitetDAO;
+
+    @Autowired
+    private MeterRegistry meterRegistry;
+    @Autowired
+    AvtaltMedNavService avtaltMedNavService;
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
     @Before
     @After
     public void cleanUp() {
-        DbTestUtils.cleanupTestDb(jdbcTemplate);
+        meterRegistry.clear();
     }
 
     @Test
