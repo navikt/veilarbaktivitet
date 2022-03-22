@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
@@ -9,9 +10,11 @@ import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 
+import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,6 +30,9 @@ public class BrukernotifikasjonService {
 
     private final Nivaa4Client nivaa4Client;
     private final ManuellStatusV2Client manuellStatusClient;
+
+    @Value("${app.env.aktivitetsplan.basepath}")
+    private String aktivitetsplanBasepath;
 
 
     public void setDone(
@@ -82,10 +88,16 @@ public class BrukernotifikasjonService {
                 .getFnrForAktorId(aktorId);
 
         UUID gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+        URL aktivtetUrl = createAktivitetLink(aktivitetId);
 
-        dao.opprettBrukernotifikasjon(uuid, aktivitetId, aktitetVersion, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, epostTitel, epostBody, smsTekst);
+        dao.opprettBrukernotifikasjonPaaAktivitet(uuid, aktivitetId, aktitetVersion, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
         return uuid;
 
+    }
+
+    @SneakyThrows
+    private URL createAktivitetLink(long aktivitetId) {
+        return new URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId);
     }
 
 }
