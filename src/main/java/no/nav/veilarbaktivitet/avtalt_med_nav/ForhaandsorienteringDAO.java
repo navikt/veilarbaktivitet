@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -37,6 +36,7 @@ public class ForhaandsorienteringDAO {
     public Forhaandsorientering insert(AvtaltMedNavDTO fhoData, long aktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
         var fho = fhoData.getForhaandsorientering();
+        // language=sql
         database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO)" +
                         "VALUES (?,?,?,?,?,?,?,?,?,?)",
                 id.toString(),
@@ -58,6 +58,7 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, String arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
+        // language=sql
         database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO)" +
                         "VALUES (?,?,?,?,?,?,?,?,?,?)",
                 id.toString(),
@@ -117,7 +118,7 @@ public class ForhaandsorienteringDAO {
                     "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
                     parms,
                     ForhaandsorienteringDAO::mapRow);
-        }).flatMap(List::stream).collect(Collectors.toList());
+        }).flatMap(List::stream).toList();
     }
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
