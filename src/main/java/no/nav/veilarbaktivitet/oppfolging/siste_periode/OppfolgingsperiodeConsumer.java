@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.oppfolging.siste_periode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 class OppfolgingsperiodeConsumer {
     private final SistePeriodeDAO sistePeriodeDAO;
+    private final AktivitetService aktivitetService;
 
     @KafkaListener(topics = "${topic.inn.oppfolgingsperiode}", containerFactory = "stringStringKafkaListenerContainerFactory")
     void opprettEllerOppdaterSistePeriode(ConsumerRecord<String, String> consumerRecord) {
@@ -23,5 +25,9 @@ class OppfolgingsperiodeConsumer {
                         sisteOppfolgingsperiodeV1.uuid,
                         sisteOppfolgingsperiodeV1.startDato,
                         sisteOppfolgingsperiodeV1.sluttDato));
+
+        if(sisteOppfolgingsperiodeV1.sluttDato != null) {
+            aktivitetService.settAktiviteterTilHistoriske(sisteOppfolgingsperiodeV1.uuid, sisteOppfolgingsperiodeV1.sluttDato);
+        }
     }
 }

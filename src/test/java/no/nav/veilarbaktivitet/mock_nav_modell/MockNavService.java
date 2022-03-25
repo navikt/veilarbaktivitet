@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -27,6 +28,11 @@ public class MockNavService {
 
     public static void updateBruker(MockBruker mockBruker, BrukerOptions brukerOptions) {
         mockBruker.setBrukerOptions(brukerOptions);
+        WireMockUtil.stubBruker(mockBruker);
+    }
+
+    public static void newOppfolingsperiode(MockBruker mockBruker) {
+        mockBruker.setOppfolgingsperiode(UUID.randomUUID());
         WireMockUtil.stubBruker(mockBruker);
     }
 

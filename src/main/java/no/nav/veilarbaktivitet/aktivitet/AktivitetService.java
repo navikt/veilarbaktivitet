@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -279,19 +280,15 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
-        hentAktiviteterForAktorId(aktoerId)
+    public void settAktiviteterTilHistoriske(UUID oppfolingsperiode, ZonedDateTime sluttDato) {
+        Date slutDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
+        aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
-                .filter(a -> skalBliHistorisk(a, sluttDato))
-                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
+                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(slutDatoDate))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());
                     aktivitetDAO.oppdaterAktivitet(a);
                 });
-    }
-
-    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
-        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
     @Transactional
