@@ -45,7 +45,7 @@ class AvsluttDao {
                         "   Select * from AKTIVITET A" +
                         "   where GJELDENDE = 1 " +
                         "   and A.AKTIVITET_ID = B.AKTIVITET_ID " +
-                        "   and (HISTORISK_DATO is not null or a.LIVSLOPSTATUS_KODE in(:avslutteteAktiviteter))" +
+                        "   and a.LIVSLOPSTATUS_KODE in(:avslutteteAktiviteter)" +
                         ")",
                 param
         );
