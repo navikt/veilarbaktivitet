@@ -281,10 +281,10 @@ public class AktivitetService {
 
     @Transactional
     public void settAktiviteterTilHistoriske(UUID oppfolingsperiode, ZonedDateTime sluttDato) {
-        Date slutDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
+        Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
         aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
-                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(slutDatoDate))
+                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());
                     aktivitetDAO.oppdaterAktivitet(a);

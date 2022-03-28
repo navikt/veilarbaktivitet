@@ -44,7 +44,7 @@ public class KafkaTestConfig {
             @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
-            @Value("${topic.inn.oppfolgingsperiode}") String oppfokgingsperiode) {
+            @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode) {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
@@ -57,7 +57,7 @@ public class KafkaTestConfig {
                 eksternVarselKvittering,
                 aktivitetRawJson,
                 portefoljeTopic,
-                oppfokgingsperiode);
+                oppfolgingsperiode);
     }
 
     @Bean
