@@ -37,8 +37,8 @@ public class ForhaandsorienteringDAO {
         var id = UUID.randomUUID();
         var fho = fhoData.getForhaandsorientering();
         // language=sql
-        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO)" +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)" +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?, 1)",
                 id.toString(),
                 aktorId.get(),
                 aktivitetId,
@@ -80,8 +80,8 @@ public class ForhaandsorienteringDAO {
 
     public void markerSomLest(String id, Date lestDato, Long lestVersjon) {
         // language=sql
-        var rows = database
-                .update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_SKAL_STOPPES = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
+        int rows = database.update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_SKAL_STOPPES = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
+
         if (rows != 1) {
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
@@ -173,6 +173,7 @@ public class ForhaandsorienteringDAO {
                         "where VARSEL_ID is null " +
                         "   and VARSEL_SKAL_STOPPES is null " +
                         "   and TYPE != ? " +
+                        "   and brukernotifikasjon is null" +
                         " fetch first ? rows only",
                 new BeanPropertyRowMapper<>(VarselIdHolder.class), Type.IKKE_SEND_FORHAANDSORIENTERING.toString(), limit);
     }
@@ -206,6 +207,7 @@ public class ForhaandsorienteringDAO {
                         "where VARSEL_SKAL_STOPPES is not null " +
                         "   and VARSEL_STOPPET is null " +
                         "   and VARSEL_ID is not null" +
+                        "   and brukernotifikasjon is null" +
                         " fetch first ? rows only",
                 String.class, limit);
     }

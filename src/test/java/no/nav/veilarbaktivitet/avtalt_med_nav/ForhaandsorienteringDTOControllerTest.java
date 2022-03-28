@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
@@ -56,6 +57,9 @@ public class ForhaandsorienteringDTOControllerTest {
     @Mock
     private AuthService authService;
 
+    @Mock
+    private BrukernotifikasjonService brukernotifikasjonService;
+
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
 
@@ -63,7 +67,7 @@ public class ForhaandsorienteringDTOControllerTest {
 
     @Before
     public void setup() {
-        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry);
+        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonService);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
 
         DbTestUtils.cleanupTestDb(jdbc);
