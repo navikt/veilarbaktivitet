@@ -126,7 +126,7 @@ class BrukerNotifikasjonDAO {
                 params);
     }
 
-    long setDoneGruperingside(UUID uuid) {
+    long setDoneGrupperingsID(UUID uuid) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("oppfolgingsperiode", uuid.toString());
         //TODO implement avsluttet aktivitesversion?
