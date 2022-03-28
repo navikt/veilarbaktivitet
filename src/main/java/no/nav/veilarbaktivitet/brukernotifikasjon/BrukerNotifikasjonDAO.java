@@ -126,4 +126,17 @@ class BrukerNotifikasjonDAO {
                 params);
     }
 
+    long setDoneGrupperingsID(UUID uuid) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("oppfolgingsperiode", uuid.toString());
+        //TODO implement avsluttet aktivitesversion?
+
+        return jdbcTemplate.update("""
+                        update BRUKERNOTIFIKASJON
+                        set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end
+                        where OPPFOLGINGSPERIODE = :oppfolgingsperiode
+                        and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
+                        """,
+                params);
+    }
 }

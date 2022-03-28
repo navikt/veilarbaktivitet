@@ -30,7 +30,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Date;
 import java.util.Optional;
 
-import static java.util.Arrays.asList;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -264,36 +263,6 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void settAktiviteterTilHistoriske_ingenHistoriskDato_oppdaterAktivitet() {
-        gitt_aktivitet(lagEnNyAktivitet());
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
-        verify(aktivitetDAO).oppdaterAktivitet(any());
-    }
-
-    @Test
-    public void settAktiviteterTilHistoriske_harHistoriskDato_oppdaterIkkeAktivitet() {
-        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(new Date(0)));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), new Date());
-        verify(aktivitetDAO, never()).oppdaterAktivitet(any());
-    }
-
-    @Test
-    public void settAktiviteterTilHistoriske_opprettetEtterSluttDato_ikkeOppdaterAktivitet() {
-        Date sluttdato = new Date();
-        gitt_aktivitet(lagEnNyAktivitet().withOpprettetDato(new Date(sluttdato.getTime() + 1)));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
-        verify(aktivitetDAO, never()).oppdaterAktivitet(any());
-    }
-
-    @Test
-    public void settAktiviteterTilHistoriske_likHistoriskDato_ikkeOppdaterAktivitet() {
-        Date sluttdato = new Date();
-        gitt_aktivitet(lagEnNyAktivitet().withHistoriskDato(sluttdato));
-        aktivitetService.settAktiviteterTilHistoriske(Person.aktorId("aktorId"), sluttdato);
-        verify(aktivitetDAO, never()).oppdaterAktivitet(any());
-    }
-
-    @Test
     public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
         gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
@@ -301,9 +270,7 @@ public class AktivitetServiceTest {
     }
 
     private void gitt_aktivitet(AktivitetData aktivitetData) {
-        when(aktivitetDAO.hentAktiviteterForAktorId(any(Person.AktorId.class))).thenReturn(asList(aktivitetData));
         when(aktivitetDAO.hentAktivitet(aktivitetData.getId())).thenReturn(aktivitetData);
-
     }
 
     public AktivitetData lagEnNyAktivitet() {

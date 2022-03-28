@@ -174,7 +174,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetService.settAktiviteterTilHistoriske(happyBruker.getAktorIdAsAktorId(), new Date());
+        aktivitetService.settAktiviteterTilHistoriske(happyBruker.getOppfolgingsperiode(), ZonedDateTime.now());
 
 
         moteSmsCronjobber();

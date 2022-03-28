@@ -100,4 +100,7 @@ public class BrukernotifikasjonService {
         return new URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId);
     }
 
+    public void setDoneGrupperingsID(UUID uuid) {
+        dao.setDoneGrupperingsID(uuid);
+    }
 }

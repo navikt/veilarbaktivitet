@@ -40,12 +40,11 @@ public class KafkaTestConfig {
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
             @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
-            @Value("${app.kafka.oppfolgingAvsluttetTopic}") String oppfolgingAvsluttetTopic,
             @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
             @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
-            @Value("${topic.inn.sisteOppfolgingsperiode}") String sisteOppfokgingsperiode) {
+            @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode) {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
@@ -54,12 +53,11 @@ public class KafkaTestConfig {
                 innStillingFraNav,
                 utStillingFraNav,
                 endringPaaAktivitetTopic,
-                oppfolgingAvsluttetTopic,
                 kvpAvsluttetTopic,
                 eksternVarselKvittering,
                 aktivitetRawJson,
                 portefoljeTopic,
-                sisteOppfokgingsperiode);
+                oppfolgingsperiode);
     }
 
     @Bean

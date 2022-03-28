@@ -11,7 +11,8 @@ import java.util.UUID;
 @Getter
 public class MockBruker extends RestassuredUser {
     private final String aktorId;
-    private final UUID oppfolgingsperiode = UUID.randomUUID();
+    @Setter(AccessLevel.PACKAGE)
+    private UUID oppfolgingsperiode = UUID.randomUUID();
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
