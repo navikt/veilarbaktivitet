@@ -121,7 +121,7 @@ class BrukerNotifikasjonDAO {
             update BRUKERNOTIFIKASJON b
             set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end
             where exists(select * from AKTIVITET_BRUKERNOTIFIKASJON ab
-                            where b.BRUKERNOTIFIKASJON_ID = ab.BRUKERNOTIFIKASJON_ID
+                            where b.id = ab.BRUKERNOTIFIKASJON_ID
                             and ab.AKTIVITET_ID = :aktivitetId)
             and TYPE = :type
             and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')

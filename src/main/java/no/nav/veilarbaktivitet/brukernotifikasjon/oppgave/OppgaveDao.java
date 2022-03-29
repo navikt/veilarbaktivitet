@@ -50,30 +50,41 @@ public class OppgaveDao {
         return jdbcTemplate
                 .query("""
                                  select ID, BRUKERNOTIFIKASJON_ID, MELDING, OPPFOLGINGSPERIODE, FOEDSELSNUMMER, TYPE, SMSTEKST, EPOSTTITTEL, EPOSTBODY, URL
-                                 from BRUKERNOTIFIKASJON
+                                 from BRUKERNOTIFIKASJON b
                                  where STATUS = :status
+                                 and not exists(
+                                    select * from AKTIVITET a
+                                    inner join AKTIVITET_BRUKERNOTIFIKASJON ab on a.AKTIVITET_ID = ab.AKTIVITET_ID
+                                    and ab.BRUKERNOTIFIKASJON_ID = b.ID
+                                    and a.GJELDENDE = 1
+                                    and (a.LIVSLOPSTATUS_KODE in(:finalAktivitetStatus) or a.HISTORISK_DATO is not null)
+                                 )
                                  fetch first :limit rows only
                                 """,
                         parameterSource, rowMapper);
     }
 
+
+    //TODO skriv om til og bruke kafka topic
     public int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
                 .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
                 .addValue("avbruttStatus", VarselStatus.AVBRUTT.name());
 
-        return jdbcTemplate.update("" +
-                        " update BRUKERNOTIFIKASJON B" +
-                        " set STATUS = :avbruttStatus " +
-                        " where STATUS =:skal_avsluttes " +
-                        " and FORSOKT_SENDT is null" +
-                        " and exists( " +
-                        "   Select * from AKTIVITET A " +
-                        "   where a.AKTIVITET_ID = b.AKTIVITET_ID " +
-                        "   and GJELDENDE = 1 " +
-                        "   and (HISTORISK_DATO is not null or LIVSLOPSTATUS_KODE in(:finalAktivitetStatus))" +
-                        ")",
+        return jdbcTemplate.update("""
+                         update BRUKERNOTIFIKASJON B
+                         set STATUS = :avbruttStatus
+                         where STATUS =:skal_avsluttes
+                         and FORSOKT_SENDT is null
+                         and exists(
+                           Select * from AKTIVITET A
+                           inner join AKTIVITET_BRUKERNOTIFIKASJON AB on A.AKTIVITET_ID = AB.AKTIVITET_ID and A.VERSJON = AB.OPPRETTET_PAA_AKTIVITET_VERSION
+                           where ab.BRUKERNOTIFIKASJON_ID = B.ID
+                           and GJELDENDE = 1
+                           and (HISTORISK_DATO is not null or LIVSLOPSTATUS_KODE in(:finalAktivitetStatus))
+                        )
+                        """,
                 param);
     }
 
