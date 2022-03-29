@@ -13,5 +13,4 @@ public class ForhaandsorienteringDTO {
     private Type type;
     private String tekst;
     private Date lestDato;
-
 }

@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
 
+import io.restassured.specification.RequestSpecification;
 import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
@@ -21,6 +22,11 @@ public class MockVeileder extends RestassuredUser {
 
     public String getNavIdent() {
         return super.ident;
+    }
+
+    public RequestSpecification createRequest(MockBruker mockBruker) {
+        return createRequest()
+                .queryParam("fnr", mockBruker.getFnr());
     }
 
     public NavIdent getNavIdentAsNavident() {

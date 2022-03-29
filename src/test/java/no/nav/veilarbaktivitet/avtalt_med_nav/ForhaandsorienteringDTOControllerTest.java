@@ -83,6 +83,8 @@ public class ForhaandsorienteringDTOControllerTest {
         doReturn(Optional.of(Person.navIdent(ident)))
                 .when(authService).getLoggedInnUser();
 
+        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
     }
 
@@ -175,8 +177,6 @@ public class ForhaandsorienteringDTOControllerTest {
         assertEquals(markertSomAvtalt.getForhaandsorientering().getTekst(), forventetDTO.getForhaandsorientering().getTekst());
 
     }
-
-
 
     private AvtaltMedNavDTO lagForhaandsorentering(AktivitetData orginal) {
         AvtaltMedNavDTO fho = new AvtaltMedNavDTO();
