@@ -196,7 +196,8 @@ public class ForhaandsorienteringDAO {
                         "set VARSEL_STOPPET = CURRENT_TIMESTAMP " +
                         "where VARSEL_ID is null " +
                         "   and VARSEL_SKAL_STOPPES is not null " +
-                        "   and VARSEL_STOPPET is null "
+                        "   and VARSEL_STOPPET is null " +
+                        "   and BRUKERNOTIFIKASJON is null"
         );
     }
 
