@@ -33,12 +33,12 @@ public class BeskjedProducer {
     private String namespace;
 
     @SneakyThrows
-    public long sendBeskjed(SkalSendes skalSendes, Person.Fnr fnr, URL aktivitetLink) {
+    public long sendBeskjed(SkalSendes skalSendes) {
         int sikkerhetsnivaa = 3;
         NokkelInput nokkel = new NokkelInputBuilder()
                 .withAppnavn(appname)
                 .withNamespace(namespace)
-                .withFodselsnummer(fnr.get())
+                .withFodselsnummer(skalSendes.getFnr().get())
                 .withGrupperingsId(skalSendes.getOppfolgingsperiode())
                 .withEventId(skalSendes.getBrukernotifikasjonId())
                 .build();
@@ -46,7 +46,7 @@ public class BeskjedProducer {
         BeskjedInput beskjed = new BeskjedInputBuilder()
                 .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withTekst(skalSendes.getMelding())
-                .withLink(aktivitetLink)
+                .withLink(skalSendes.getUrl())
                 .withSikkerhetsnivaa(sikkerhetsnivaa)
                 .withEksternVarsling(true)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst())

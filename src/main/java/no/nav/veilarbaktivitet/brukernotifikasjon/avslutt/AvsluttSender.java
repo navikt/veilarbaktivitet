@@ -39,10 +39,9 @@ class AvsluttSender {
     @Transactional
     @Timed(value="brukernotifikasjon_avslutt_oppgave_sendt")
     public void avsluttOppgave(SkalAvluttes skalAvluttes) {
-        String aktorId = skalAvluttes.getAktorId();
+        Person.Fnr fnr = skalAvluttes.getFnr();
         String brukernotifikasjonId = skalAvluttes.getBrukernotifikasjonId();
 
-        Person.Fnr fnrForAktorId = personService.getFnrForAktorId(Person.aktorId(aktorId));
         boolean markertAvsluttet = avsluttDao.markerOppgaveSomAvsluttet(brukernotifikasjonId);
         if (markertAvsluttet) {
             DoneInput done = new DoneInputBuilder()
@@ -52,7 +51,7 @@ class AvsluttSender {
             NokkelInput nokkel = new NokkelInputBuilder()
                     .withAppnavn(appname)
                     .withNamespace(namespace)
-                    .withFodselsnummer(fnrForAktorId.get())
+                    .withFodselsnummer(fnr.get())
                     .withGrupperingsId(skalAvluttes.getOppfolgingsperiode().toString())
                     .withEventId(brukernotifikasjonId)
                     .build();

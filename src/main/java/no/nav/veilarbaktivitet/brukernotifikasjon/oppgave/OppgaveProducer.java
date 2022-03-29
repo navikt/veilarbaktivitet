@@ -32,13 +32,13 @@ public class OppgaveProducer {
     private String namespace;
 
     @SneakyThrows
-    long sendOppgave(SkalSendes skalSendes, Person.Fnr fnr, URL aktivitetLink) {
+    long sendOppgave(SkalSendes skalSendes) {
         int sikkerhetsnivaa = 3;
 
         NokkelInput nokkel = new NokkelInputBuilder()
                 .withAppnavn(appname)
                 .withNamespace(namespace)
-                .withFodselsnummer(fnr.get())
+                .withFodselsnummer(skalSendes.getFnr().get())
                 .withGrupperingsId(skalSendes.getOppfolgingsperiode())
                 .withEventId(skalSendes.getBrukernotifikasjonId())
                 .build();
@@ -46,7 +46,7 @@ public class OppgaveProducer {
         OppgaveInput oppgave = new OppgaveInputBuilder()
                 .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withTekst(skalSendes.getMelding())
-                .withLink(aktivitetLink)
+                .withLink(skalSendes.getUrl())
                 .withSikkerhetsnivaa(sikkerhetsnivaa)
                 .withEksternVarsling(true)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst())
