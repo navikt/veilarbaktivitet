@@ -17,7 +17,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.junit.Assert.assertNull;
 
@@ -89,7 +89,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     }
 
-    @Test(expected = EmptyResultDataAccessException.class)
+    @Test(expected = DataIntegrityViolationException.class)
     public void opprettFHO_maaHaMatchendeAktivitet() {
         var fhoDTO = ForhaandsorienteringDTO.builder()
                 .type(defaultType)
