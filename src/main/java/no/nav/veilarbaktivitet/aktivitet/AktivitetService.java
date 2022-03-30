@@ -292,6 +292,22 @@ public class AktivitetService {
     }
 
     @Transactional
+    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
+        hentAktiviteterForAktorId(aktoerId)
+                .stream()
+                .filter(a -> skalBliHistorisk(a, sluttDato))
+                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
+                .forEach(a -> {
+                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
+                    aktivitetDAO.oppdaterAktivitet(a);
+                });
+    }
+
+    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
+        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
+    }
+
+    @Transactional
     public AktivitetData settLestAvBrukerTidspunkt(Long aktivitetId) {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitetId);
         return hentAktivitetMedForhaandsorientering(aktivitetId);
