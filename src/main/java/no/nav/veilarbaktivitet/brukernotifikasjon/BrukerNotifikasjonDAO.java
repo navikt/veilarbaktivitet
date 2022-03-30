@@ -117,13 +117,15 @@ class BrukerNotifikasjonDAO {
                 .addValue("type", varseltype.name());
         //TODO implement avsluttet aktivitesversion?
 
-        return jdbcTemplate.update("" +
-                        " update BRUKERNOTIFIKASJON" +
-                        " set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end" +
-                        " where AKTIVITET_ID = :aktivitetId " +
-                        " and TYPE = :type" +
-                        " and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')",
-                params);
+        return jdbcTemplate.update("""
+            update BRUKERNOTIFIKASJON b
+            set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end
+            where exists(select * from AKTIVITET_BRUKERNOTIFIKASJON ab
+                            where b.id = ab.BRUKERNOTIFIKASJON_ID
+                            and ab.AKTIVITET_ID = :aktivitetId)
+            and TYPE = :type
+            and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
+            """, params);
     }
 
     long setDoneGrupperingsID(UUID uuid) {

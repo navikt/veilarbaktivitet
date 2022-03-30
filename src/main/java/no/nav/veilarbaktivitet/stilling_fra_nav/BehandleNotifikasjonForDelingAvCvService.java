@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.brukernotifikasjon.Brukernotifikasjon;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.KvitteringDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
@@ -20,7 +20,7 @@ public class BehandleNotifikasjonForDelingAvCvService {
     private final KvitteringDAO kvitteringDAO;
 
     @Transactional
-    public void behandleFerdigstiltKvittering(Brukernotifikasjon brukernotifikasjon) {
+    public void behandleFerdigstiltKvittering(BrukernotifikasjonAktivitetIder brukernotifikasjon) {
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(brukernotifikasjon.getAktivitetId());
 
         // Hvis aktiviteten er svart trenger vi ikke å varsle
@@ -36,7 +36,7 @@ public class BehandleNotifikasjonForDelingAvCvService {
         stillingFraNavProducerClient.sendVarslet(aktivitetData);
     }
 
-    public void behandleFeiletKvittering(Brukernotifikasjon brukernotifikasjon) {
+    public void behandleFeiletKvittering(BrukernotifikasjonAktivitetIder brukernotifikasjon) {
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(brukernotifikasjon.getAktivitetId());
 
         // Hvis aktiviteten er svart trenger vi ikke å varsle men vi setter nofigikasjonen til ferdig behandlet

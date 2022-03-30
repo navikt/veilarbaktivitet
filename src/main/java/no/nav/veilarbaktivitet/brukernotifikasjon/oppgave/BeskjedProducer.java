@@ -7,14 +7,11 @@ import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
-import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -22,7 +19,6 @@ import java.time.ZoneOffset;
 @RequiredArgsConstructor
 public class BeskjedProducer {
     private final KafkaAvroAvroTemplate<NokkelInput, BeskjedInput> kafkaBeskjedProducer;
-    private final Credentials serviceUserCredentials;
 
     @Value("${topic.ut.brukernotifikasjon.beskjed}")
     private String beskjedToppic;
@@ -33,12 +29,12 @@ public class BeskjedProducer {
     private String namespace;
 
     @SneakyThrows
-    public long sendBeskjed(SkalSendes skalSendes, Person.Fnr fnr, URL aktivitetLink) {
+    public long sendBeskjed(SkalSendes skalSendes) {
         int sikkerhetsnivaa = 3;
         NokkelInput nokkel = new NokkelInputBuilder()
                 .withAppnavn(appname)
                 .withNamespace(namespace)
-                .withFodselsnummer(fnr.get())
+                .withFodselsnummer(skalSendes.getFnr().get())
                 .withGrupperingsId(skalSendes.getOppfolgingsperiode())
                 .withEventId(skalSendes.getBrukernotifikasjonId())
                 .build();
@@ -46,7 +42,7 @@ public class BeskjedProducer {
         BeskjedInput beskjed = new BeskjedInputBuilder()
                 .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withTekst(skalSendes.getMelding())
-                .withLink(aktivitetLink)
+                .withLink(skalSendes.getUrl())
                 .withSikkerhetsnivaa(sikkerhetsnivaa)
                 .withEksternVarsling(true)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst())
@@ -56,7 +52,7 @@ public class BeskjedProducer {
                 .withEpostVarslingstekst(skalSendes.getEpostBody())
                 .build();
 
-        final ProducerRecord<NokkelInput,BeskjedInput> kafkaMelding = new ProducerRecord<>(beskjedToppic, nokkel, beskjed);
+        final ProducerRecord<NokkelInput, BeskjedInput> kafkaMelding = new ProducerRecord<>(beskjedToppic, nokkel, beskjed);
         return kafkaBeskjedProducer.send(kafkaMelding).get().getRecordMetadata().offset();
     }
 }

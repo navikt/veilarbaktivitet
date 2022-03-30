@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.UUID;
 
@@ -9,6 +10,6 @@ import java.util.UUID;
 @RequiredArgsConstructor
 class SkalAvluttes {
     private final String brukernotifikasjonId;
-    private final String aktorId;
+    private final Person.Fnr fnr;
     private final UUID oppfolgingsperiode;
 }

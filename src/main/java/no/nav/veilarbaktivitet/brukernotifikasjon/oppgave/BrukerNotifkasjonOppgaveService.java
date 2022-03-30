@@ -37,12 +37,10 @@ class BrukerNotifkasjonOppgaveService {
     }
 
     private void sendVarsel(SkalSendes skalSendes) {
-        Person.Fnr fnr = personService.getFnrForAktorId(Person.aktorId(skalSendes.getAktorId()));
-        URL aktivitetLink = createAktivitetLink(skalSendes.getAktivitetId());
         VarselType varselType = skalSendes.getVarselType();
         long offset = switch (varselType.getBrukernotifikasjonType()) {
-            case OPPGAVE -> oppgaveProducer.sendOppgave(skalSendes,fnr, aktivitetLink);
-            case BESKJED -> beskjedProducer.sendBeskjed(skalSendes,fnr, aktivitetLink);
+            case OPPGAVE -> oppgaveProducer.sendOppgave(skalSendes);
+            case BESKJED -> beskjedProducer.sendBeskjed(skalSendes);
         };
     }
 

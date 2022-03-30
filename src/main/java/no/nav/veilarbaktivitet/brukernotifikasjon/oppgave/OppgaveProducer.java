@@ -7,14 +7,11 @@ import no.nav.brukernotifikasjon.schemas.builders.OppgaveInputBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.domain.PreferertKanal;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
-import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
@@ -22,7 +19,6 @@ import java.time.ZoneOffset;
 @Service
 public class OppgaveProducer {
     private final KafkaAvroAvroTemplate<NokkelInput, OppgaveInput> kafkaOppgaveProducer;
-    private final Credentials serviceUserCredentials;
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     private String oppgaveToppic;
 
@@ -32,13 +28,13 @@ public class OppgaveProducer {
     private String namespace;
 
     @SneakyThrows
-    long sendOppgave(SkalSendes skalSendes, Person.Fnr fnr, URL aktivitetLink) {
+    long sendOppgave(SkalSendes skalSendes) {
         int sikkerhetsnivaa = 3;
 
         NokkelInput nokkel = new NokkelInputBuilder()
                 .withAppnavn(appname)
                 .withNamespace(namespace)
-                .withFodselsnummer(fnr.get())
+                .withFodselsnummer(skalSendes.getFnr().get())
                 .withGrupperingsId(skalSendes.getOppfolgingsperiode())
                 .withEventId(skalSendes.getBrukernotifikasjonId())
                 .build();
@@ -46,7 +42,7 @@ public class OppgaveProducer {
         OppgaveInput oppgave = new OppgaveInputBuilder()
                 .withTidspunkt(LocalDateTime.now(ZoneOffset.UTC))
                 .withTekst(skalSendes.getMelding())
-                .withLink(aktivitetLink)
+                .withLink(skalSendes.getUrl())
                 .withSikkerhetsnivaa(sikkerhetsnivaa)
                 .withEksternVarsling(true)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst())
