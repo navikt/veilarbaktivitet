@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
@@ -37,7 +37,7 @@ public class OpprettForesporselOmDelingAvCv {
     private final DelingAvCvService delingAvCvService;
     private final KvpService kvpService;
     private final SistePeriodeService sistePeriodeService;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
     private final StillingFraNavProducerClient producerClient;
     private final StillingFraNavMetrikker metrikker;
 
@@ -81,14 +81,14 @@ public class OpprettForesporselOmDelingAvCv {
 
         Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
 
-        boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
+        boolean kanVarsle = brukernotifikasjonAktivitetService.kanVarsles(aktorId);
 
         AktivitetData aktivitetData = map(melding, kanVarsle);
 
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
 
         if (kanVarsle) {
-            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
+            brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
         } else {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);

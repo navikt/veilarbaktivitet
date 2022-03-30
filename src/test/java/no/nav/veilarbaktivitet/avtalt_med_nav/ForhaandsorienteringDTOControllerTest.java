@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
@@ -58,7 +58,7 @@ public class ForhaandsorienteringDTOControllerTest {
     private AuthService authService;
 
     @Mock
-    private BrukernotifikasjonService brukernotifikasjonService;
+    private BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
 
@@ -67,7 +67,7 @@ public class ForhaandsorienteringDTOControllerTest {
 
     @Before
     public void setup() {
-        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonService);
+        AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonAktivitetService);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
 
         DbTestUtils.cleanupTestDb(jdbc);
@@ -83,7 +83,7 @@ public class ForhaandsorienteringDTOControllerTest {
         doReturn(Optional.of(Person.navIdent(ident)))
                 .when(authService).getLoggedInnUser();
 
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(brukernotifikasjonAktivitetService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
 
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
     }

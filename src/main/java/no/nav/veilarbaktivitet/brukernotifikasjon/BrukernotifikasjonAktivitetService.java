@@ -22,11 +22,11 @@ import java.util.UUID;
 @Slf4j
 @EnableScheduling
 @RequiredArgsConstructor
-public class BrukernotifikasjonService {
+public class BrukernotifikasjonAktivitetService {
 
     private final PersonService personService;
     private final SistePeriodeService sistePeriodeService;
-    private final BrukerNotifikasjonDAO dao;
+    private final BrukerNotifikasjonAktivitetDAO dao;
 
     private final Nivaa4Client nivaa4Client;
     private final ManuellStatusV2Client manuellStatusClient;

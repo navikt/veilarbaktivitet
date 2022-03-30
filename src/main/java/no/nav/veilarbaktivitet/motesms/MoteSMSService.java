@@ -4,7 +4,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,7 +19,7 @@ import static java.time.Duration.ofHours;
 @RequiredArgsConstructor
 public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -37,8 +37,8 @@ public class MoteSMSService {
         moteSmsDAO.hentMoterUtenVarsel(fra, til, 5000)
                 .forEach(it -> {
                     moteSmsDAO.insertGjeldendeSms(it);
-                    if (brukernotifikasjonService.kanVarsles(it.aktorId())) {
-                        brukernotifikasjonService.opprettVarselPaaAktivitet(
+                    if (brukernotifikasjonAktivitetService.kanVarsles(it.aktorId())) {
+                        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
                                 it.aktivitetId(),
                                 it.aktitetVersion(),
                                 it.aktorId(),
@@ -65,13 +65,13 @@ public class MoteSMSService {
 
         moteSmsDAO.hentMoterMedOppdatertTidEllerKanal(5000)
                 .forEach(it -> {
-                    brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
+                    brukernotifikasjonAktivitetService.setDone(it, VarselType.MOTE_SMS);
                     moteSmsDAO.slettGjeldende(it); //TODO endre til send beskjed sms om flyttet møte + skal sende på nytt hvis møtet er mere enn 48 timer fremm i tid
                 });
 
         moteSmsDAO.hentMoteSmsSomFantStedForMerEnd(Duration.ofDays(7)) //TODO Trenger vi denne? Holder det at bruker kan fjerne den og den forsvinner når aktiviteter er fulført/avbrut eller blir historisk
                 .forEach(it -> {
-                    brukernotifikasjonService.setDone(it, VarselType.MOTE_SMS);
+                    brukernotifikasjonAktivitetService.setDone(it, VarselType.MOTE_SMS);
                     moteSmsDAO.slettGjeldende(it);
                 });
 
