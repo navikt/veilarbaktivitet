@@ -7,22 +7,28 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonArenaDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonArenaAktivitetService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
+import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
+import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,12 +38,19 @@ public class ArenaControllerTest {
     private final UserInContext context = mock(UserInContext.class);
     private final AuthService authService = mock(AuthService.class);
     private final ArenaAktivitetConsumer consumer = mock(ArenaAktivitetConsumer.class);
+    private final PersonService personService = mock(PersonService.class);
+    private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
+    private final Nivaa4Client nivaa4Client = mock(Nivaa4Client.class);
+    private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
+    private String aktivitetsplanBasepath = "http://localhost:3000";
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
+    private final BrukerNotifikasjonArenaDAO notifikasjonArenaDAO = new BrukerNotifikasjonArenaDAO(new NamedParameterJdbcTemplate(jdbc));
+    private final BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonArenaAktivitetService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath );
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final ArenaService service = new ArenaService(consumer, fhoDao, authService,meterRegistry);
+    private final ArenaService service = new ArenaService(consumer, fhoDao, authService,meterRegistry, brukernotifikasjonArenaAktivitetService);
     private final ArenaController controller = new ArenaController(context, authService, service);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
@@ -72,6 +85,10 @@ public class ArenaControllerTest {
         when(authService.getAktorIdForPersonBrukerService(fnr)).thenReturn(Optional.of(aktorid));
         when(authService.getAktorIdForPersonBrukerService(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
         when(context.getFnr()).thenReturn(Optional.of(fnr));
+        when(manuellStatusClient.get(aktorid)).thenReturn(Optional.of(new ManuellStatusV2DTO(false, new ManuellStatusV2DTO.KrrStatus(true, false))));
+        when(nivaa4Client.get(aktorid)).thenReturn(Optional.of(Nivaa4DTO.builder().harbruktnivaa4(true).build()));
+        when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
+        when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
     }
 
     @Before

@@ -18,7 +18,7 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-class BrukerNotifikasjonDAO {
+class BrukerNotifikasjonAktivitetDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 

@@ -59,8 +59,8 @@ public class ForhaandsorienteringDAO {
     public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, String arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
         // language=sql
-        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO)" +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?)",
+        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)" +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,1)",
                 id.toString(),
                 aktorId.get(),
                 null,

@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonArenaAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
+import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAANDSORIENTERING_DITT_NAV_TEKST;
 
 @Slf4j
 @Component
@@ -31,17 +34,18 @@ public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
+    private final BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "arena.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
 
-    @java.beans.ConstructorProperties({"consumer", "dao", "authService", "meterRegistry"})
-    public ArenaService(ArenaAktivitetConsumer consumer, ForhaandsorienteringDAO fhoDAO, AuthService authService, MeterRegistry meterRegistry) {
+    public ArenaService(ArenaAktivitetConsumer consumer, ForhaandsorienteringDAO fhoDAO, AuthService authService, MeterRegistry meterRegistry, BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService) {
         this.consumer = consumer;
         this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
+        this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall arena aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
@@ -84,6 +88,7 @@ public class ArenaService {
         );
     }
 
+    @Transactional
     public ArenaAktivitetDTO opprettFHO(String arenaaktivitetId, Person.Fnr fnr, ForhaandsorienteringDTO forhaandsorientering, String opprettetAv) throws ResponseStatusException {
         ArenaAktivitetDTO arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten finnes ikke"));
@@ -97,8 +102,13 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Det er allerede sendt forhaandsorientering på aktiviteten");
         }
 
-        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
+        if (!brukernotifikasjonArenaAktivitetService.kanVarsles(aktorId)) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bruker kan ikke varsles");
+        }
 
+        brukernotifikasjonArenaAktivitetService.opprettVarselPaaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+
+        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO());
     }
@@ -116,6 +126,8 @@ public class ArenaService {
             log.warn("Kan ikke markere forhåndsorientering som lest. Forhåndsorienteringen for aktivitet med id:" + aktivitetId + " er allerede lest");
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Forhåndsorienteringen er allerede lest");
         }
+
+        brukernotifikasjonArenaAktivitetService.setDone(aktivitetId, VarselType.FORHAANDSORENTERING);
 
         fhoDAO.markerSomLest(fho.getId(), new Date(), null);
 

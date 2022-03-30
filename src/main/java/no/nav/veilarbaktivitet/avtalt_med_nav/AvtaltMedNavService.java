@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
@@ -29,24 +29,26 @@ public class AvtaltMedNavService {
     private final AktivitetDAO aktivitetDAO;
     private final ForhaandsorienteringDAO fhoDAO;
     private final MeterRegistry meterRegistry;
-    private final BrukernotifikasjonService brukernotifikasjonService;
+    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
+
+    public static final String FORHAANDSORIENTERING_DITT_NAV_TEKST = "Du har fått en viktig oppgave du må gjøre.";
 
 
     public AvtaltMedNavService(MetricService metricService,
                                AktivitetDAO aktivitetDAO,
                                ForhaandsorienteringDAO fhoDAO,
                                MeterRegistry meterRegistry,
-                               BrukernotifikasjonService brukernotifikasjonService) {
+                               BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService) {
 
         this.metricService = metricService;
         this.aktivitetDAO = aktivitetDAO;
         this.fhoDAO = fhoDAO;
         this.meterRegistry = meterRegistry;
-        this.brukernotifikasjonService = brukernotifikasjonService;
+        this.brukernotifikasjonAktivitetService = brukernotifikasjonAktivitetService;
 
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall aktiviteter som er avtalt med NAV")
@@ -68,10 +70,10 @@ public class AvtaltMedNavService {
 
         var fho = fhoDAO.insert(avtaltDTO, aktivitetId, aktorId, ident.get(), now);
         if(!fhoDTO.getType().equals(Type.IKKE_SEND_FORHAANDSORIENTERING)) {
-            if(!brukernotifikasjonService.kanVarsles(aktorId)){
+            if(!brukernotifikasjonAktivitetService.kanVarsles(aktorId)){
                 throw new IllegalStateException("bruker kan ikke varsles");
             }
-            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, "Du har fått en viktig oppgave du må gjøre.", VarselType.FORHAANDSORENTERING);
+            brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
@@ -107,7 +109,7 @@ public class AvtaltMedNavService {
                 .build();
 
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
-        brukernotifikasjonService.setDone(Integer.parseInt(fho.getAktivitetId()), VarselType.FORHAANDSORENTERING);
+        brukernotifikasjonAktivitetService.setDone(Integer.parseInt(fho.getAktivitetId()), VarselType.FORHAANDSORENTERING);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 
