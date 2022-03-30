@@ -39,8 +39,8 @@ public class SendOppgaveCron {
     }
 
     @Scheduled(
-            initialDelayString = "${app.env.scheduled.brukernotifikasjon.oppgave.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.brukernotifikasjon.oppgave.fixedDelay}"
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     public void countForsinkedeVarslerSisteDognet() {
         Integer antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
