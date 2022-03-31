@@ -46,6 +46,7 @@ public class BeskjedProducer {
                 .withSikkerhetsnivaa(sikkerhetsnivaa)
                 .withEksternVarsling(true)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst())
+                .withSynligFremTil(LocalDateTime.now(ZoneOffset.UTC).plusMonths(1))
                 .withPrefererteKanaler(PreferertKanal.SMS)
                 .withSmsVarslingstekst(skalSendes.getSmsTekst()) //blir dafult tekst hvis null
                 .withEpostVarslingstittel(skalSendes.getEpostTitel()) //blir dafult tekst hvis null
