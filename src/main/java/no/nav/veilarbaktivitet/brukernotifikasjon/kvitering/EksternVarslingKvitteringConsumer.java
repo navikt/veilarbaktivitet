@@ -50,6 +50,8 @@ public class EksternVarslingKvitteringConsumer {
         }
         String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
 
+        kvitteringDAO.lagreKvitering(bestillingsId, melding);
+
         String status = melding.getStatus();
 
         switch (status) {
