@@ -19,7 +19,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
@@ -36,12 +35,12 @@ public class AktivitetService {
 
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(aktorId);
-        var fhoIder = aktiviteter.stream().map(AktivitetData::getFhoId).collect(Collectors.toList());
+        var fhoIder = aktiviteter.stream().map(AktivitetData::getFhoId).toList();
         var forhaandsorienteringer = avtaltMedNavService.hentFHO(fhoIder);
 
         return aktiviteter.stream()
                 .map(mergeMedForhaandsorientering(forhaandsorienteringer))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public AktivitetData hentAktivitetMedForhaandsorientering(long id) {
@@ -289,22 +288,6 @@ public class AktivitetService {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());
                     aktivitetDAO.oppdaterAktivitet(a);
                 });
-    }
-
-    @Transactional
-    public void settAktiviteterTilHistoriske(Person.AktorId aktoerId, Date sluttDato) {
-        hentAktiviteterForAktorId(aktoerId)
-                .stream()
-                .filter(a -> skalBliHistorisk(a, sluttDato))
-                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDato))
-                .forEach(a -> {
-                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
-                    aktivitetDAO.oppdaterAktivitet(a);
-                });
-    }
-
-    private boolean skalBliHistorisk(AktivitetData aktivitetData, Date sluttdato) {
-        return aktivitetData.getHistoriskDato() == null && aktivitetData.getOpprettetDato().before(sluttdato);
     }
 
     @Transactional
