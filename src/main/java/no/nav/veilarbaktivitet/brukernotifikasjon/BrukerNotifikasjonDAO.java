@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.net.URL;
 import java.util.Optional;
@@ -18,46 +17,15 @@ import java.util.UUID;
 @Repository
 @RequiredArgsConstructor
 @Slf4j
-class BrukerNotifikasjonAktivitetDAO {
+public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    @Transactional
-    public void opprettBrukernotifikasjonPaaAktivitet(//TODO refactor to object
-            UUID brukernotifikasjonId,
+    public void aktivitetTilBrukernotifikasjon(//TODO refactor to object
+            long brukernotifikasjonDbId,
             long aktivitetId,
-            long aktitetVersion,
-            Person.Fnr foedselsnummer,
-            String melding,
-            UUID oppfolgingsperiode,
-            VarselType type,
-            VarselStatus status,
-            URL url,
-            String epostTitel,
-            String epostBody,
-            String smsTekst
+            long aktitetVersion
     ) {
-        GeneratedKeyHolder keyHolder = opprettBrukernotifikasjon(
-                brukernotifikasjonId,
-                aktivitetId,
-                aktitetVersion,
-                foedselsnummer,
-                melding,
-                oppfolgingsperiode,
-                type,
-                status,
-                url,
-                epostTitel,
-                epostBody,
-                smsTekst
-        );
-
-
-        long brukernotifikasjonDbId = Optional
-                .ofNullable(keyHolder.getKeyAs(Object.class))
-                .map(Object::toString)
-                .map(Long::parseLong)
-                .orElseThrow();
 
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
@@ -71,10 +39,8 @@ class BrukerNotifikasjonAktivitetDAO {
                 """, params);
     }
 
-    private GeneratedKeyHolder opprettBrukernotifikasjon(
+    long opprettBrukernotifikasjon(
             UUID brukernotifikasjonId,
-            long aktivitetId,
-            long aktitetVersion,
             Person.Fnr foedselsnummer,
             String melding,
             UUID oppfolgingsperiode,
@@ -87,8 +53,6 @@ class BrukerNotifikasjonAktivitetDAO {
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
-                .addValue("aktivitet_id", aktivitetId)
-                .addValue("opprettet_paa_aktivitet_version", aktitetVersion)
                 .addValue("foedselsnummer", foedselsnummer.get())
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
@@ -104,11 +68,27 @@ class BrukerNotifikasjonAktivitetDAO {
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update("" +
                         " INSERT INTO brukernotifikasjon " +
-                        "        ( brukernotifikasjon_id,  aktivitet_id,  opprettet_paa_aktivitet_version,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          url,  melding,  smsTekst,  epostTittel,  epostBody) " +
-                        " VALUES (:brukernotifikasjon_id, :aktivitet_id, :opprettet_paa_aktivitet_version, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :url, :melding, :smsTekst, :epostTittel, :epostBody) ",
+                        "        ( brukernotifikasjon_id,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          url,  melding,  smsTekst,  epostTittel,  epostBody) " +
+                        " VALUES (:brukernotifikasjon_id, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :url, :melding, :smsTekst, :epostTittel, :epostBody) ",
                 params, generatedKeyHolder, new String[]{"ID"});
-        return generatedKeyHolder;
+        return Optional
+                .ofNullable(generatedKeyHolder.getKeyAs(Object.class))
+                .map(Object::toString)
+                .map(Long::parseLong)
+                .orElseThrow();
 
+    }
+
+    void arenaAktivitetTilBrukernotifikasjon(long brukernotifikasjonDbId, String arenaAktivitetId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
+                .addValue("arena_aktivitet_id", arenaAktivitetId);
+
+        jdbcTemplate.update("""
+                insert into ARENA_AKTIVITET_BRUKERNOTIFIKASJON
+                       (  brukernotifikasjon_id,  ARENA_AKTIVITET_ID)
+                values ( :brukernotifikasjon_id, :arena_aktivitet_id)
+                """, params);
     }
 
     long setDone(long aktivitetId, VarselType varseltype) {
@@ -123,6 +103,23 @@ class BrukerNotifikasjonAktivitetDAO {
             where exists(select * from AKTIVITET_BRUKERNOTIFIKASJON ab
                             where b.id = ab.BRUKERNOTIFIKASJON_ID
                             and ab.AKTIVITET_ID = :aktivitetId)
+            and TYPE = :type
+            and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
+            """, params);
+    }
+
+    long setDone(String arenaAktivitetId, VarselType varseltype) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("arenaAktivitetId", arenaAktivitetId)
+                .addValue("type", varseltype.name());
+        //TODO implement avsluttet aktivitesversion?
+
+        return jdbcTemplate.update("""
+            update BRUKERNOTIFIKASJON b
+            set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end
+            where exists(select * from ARENA_AKTIVITET_BRUKERNOTIFIKASJON ab
+                            where b.id = ab.BRUKERNOTIFIKASJON_ID
+                            and ab.ARENA_AKTIVITET_ID = :arenaAktivitetId)
             and TYPE = :type
             and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
             """, params);

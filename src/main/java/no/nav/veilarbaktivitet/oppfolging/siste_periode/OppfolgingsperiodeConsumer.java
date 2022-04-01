@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 class OppfolgingsperiodeConsumer {
     private final SistePeriodeDAO sistePeriodeDAO;
     private final AktivitetService aktivitetService;
-    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
+    private final BrukernotifikasjonService brukernotifikasjonService;
 
     @KafkaListener(topics = "${topic.inn.oppfolgingsperiode}", containerFactory = "stringStringKafkaListenerContainerFactory")
     void opprettEllerOppdaterSistePeriode(ConsumerRecord<String, String> consumerRecord) {
@@ -24,7 +24,7 @@ class OppfolgingsperiodeConsumer {
         uppsertOppfolgingsperiode(sisteOppfolgingsperiodeV1);
 
         if(sisteOppfolgingsperiodeV1.sluttDato != null) {
-            brukernotifikasjonAktivitetService.setDoneGrupperingsID(sisteOppfolgingsperiodeV1.uuid);
+            brukernotifikasjonService.setDoneGrupperingsID(sisteOppfolgingsperiodeV1.uuid);
             aktivitetService.settAktiviteterTilHistoriske(sisteOppfolgingsperiodeV1.uuid, sisteOppfolgingsperiodeV1.sluttDato);
         }
 

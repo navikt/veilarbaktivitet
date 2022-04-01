@@ -57,7 +57,7 @@ public class BrukernotifikasjonTest {
     private String namespace;
 
     @Autowired
-    BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
+    BrukernotifikasjonService brukernotifikasjonService;
 
     @Autowired
     StillingFraNavTestService stillingFraNavTestService;
@@ -159,7 +159,7 @@ public class BrukernotifikasjonTest {
         String epostTekst = "EpostTekst";
         String SMSTekst = "SMSTekst";
 
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -200,7 +200,7 @@ public class BrukernotifikasjonTest {
         String epostTekst = "EpostTekst";
         String SMSTekst = "SMSTekst";
 
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -231,7 +231,7 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -257,8 +257,8 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
-        brukernotifikasjonAktivitetService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
@@ -274,7 +274,7 @@ public class BrukernotifikasjonTest {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -367,7 +367,7 @@ public class BrukernotifikasjonTest {
     }
 
     private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
@@ -389,7 +389,7 @@ public class BrukernotifikasjonTest {
     }
 
     private void avsluttOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO, ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord) {
-        brukernotifikasjonAktivitetService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
         sendOppgaveCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 

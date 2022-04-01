@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
@@ -27,7 +27,7 @@ public class DelingAvCvService {
     private final AuthService authService;
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
-    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
+    private final BrukernotifikasjonService brukernotifikasjonService;
     private final StillingFraNavMetrikker metrikker;
 
     public boolean aktivitetAlleredeOpprettetForBestillingsId(String bestillingsId) {
@@ -39,7 +39,7 @@ public class DelingAvCvService {
 
         AktivitetData endeligAktivitet = oppdaterSvarPaaOmCvKanDeles(aktivitetData, kanDeles, avtaltDato, erEksternBruker);
 
-        brukernotifikasjonAktivitetService.setDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.setDone(aktivitetData.getId(), VarselType.STILLING_FRA_NAV);
         stillingFraNavProducerClient.sendSvart(endeligAktivitet);
         metrikker.countSvar(erEksternBruker, kanDeles);
 

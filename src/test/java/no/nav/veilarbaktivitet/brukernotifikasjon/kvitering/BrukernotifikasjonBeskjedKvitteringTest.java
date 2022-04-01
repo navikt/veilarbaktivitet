@@ -12,7 +12,7 @@ import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
@@ -55,7 +55,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 public class BrukernotifikasjonBeskjedKvitteringTest {
 
     @Autowired
-    BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
+    BrukernotifikasjonService brukernotifikasjonService;
 
     @Autowired
     StillingFraNavTestService stillingFraNavTestService;
@@ -250,7 +250,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest {
     }
 
     private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
-        brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(
+        brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
                 Person.aktorId(mockBruker.getAktorId()),
