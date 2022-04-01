@@ -9,6 +9,8 @@ import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.UUID;
 @Slf4j
 @EnableScheduling
 public class BrukernotifikasjonService {
+    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
 
     private final PersonService personService;
     private final SistePeriodeService sistePeriodeService;
@@ -65,7 +68,13 @@ public class BrukernotifikasjonService {
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(ManuellStatusV2DTO.KrrStatus::isErReservert).orElse(true);
         boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
-        return !erManuell && !erReservertIKrr && harBruktNivaa4;
+
+        boolean kanVarsles = !erManuell && !erReservertIKrr && harBruktNivaa4;
+        if(!kanVarsles) {
+            secureLogs.info("bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}, harBruktNivaa4: {}", aktorId, erManuell, erReservertIKrr, harBruktNivaa4);
+        }
+
+        return kanVarsles;
     }
 
     @Transactional
