@@ -27,7 +27,7 @@ public class PepMock implements Pep {
         if (authContextHolder.getRole().get().equals(UserRole.EKSTERN)) {
             return true;
         }
-        String ident = authContextHolder.getSubject().get();
+        String ident = authContextHolder.getUid().get();
         return MockNavService.getVeileder(ident).harTilgangTilEnhet(enhetId.get());
     }
 
@@ -44,9 +44,9 @@ public class PepMock implements Pep {
     @Override
     public boolean harTilgangTilPerson(String innloggetBrukerIdToken, ActionId actionId, EksternBrukerId eksternBrukerId) {
         if (authContextHolder.getRole().get().equals(UserRole.EKSTERN)) {
-            return MockNavService.getBruker(authContextHolder.getSubject().get()).harIdent(eksternBrukerId.get());
+            return MockNavService.getBruker(authContextHolder.getUid().get()).harIdent(eksternBrukerId.get());
         }
-        return this.harTilgangTilBruker(authContextHolder.getSubject().get(), eksternBrukerId.get());
+        return this.harTilgangTilBruker(authContextHolder.getUid().get(), eksternBrukerId.get());
     }
 
     private boolean harTilgangTilBruker(String veilederId, String brukerId) {
