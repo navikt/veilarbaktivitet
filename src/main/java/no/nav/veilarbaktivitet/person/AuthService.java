@@ -118,7 +118,7 @@ public class AuthService {
     }
 
     public Optional<String> getInnloggetBrukerIdent() {
-        return authContextHolder.getSubject();
+        return authContextHolder.getUid();
     }
 
     public boolean erEksternBruker() {
@@ -135,7 +135,7 @@ public class AuthService {
 
     private Optional<Person.AktorId> getAktorIdForEksternBruker() {
         return authContextHolder.erEksternBruker()
-                ? authContextHolder.getSubject().flatMap(sub -> personService.getAktorIdForPersonBruker(Person.fnr(sub)))
+                ? authContextHolder.getUid().flatMap(sub -> personService.getAktorIdForPersonBruker(Person.fnr(sub)))
                 : Optional.empty();
     }
 }
