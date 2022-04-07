@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -12,9 +11,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -33,17 +30,10 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     private AktivitetDAO aktivitetDAO;
 
     @Autowired
-    private MeterRegistry meterRegistry;
-    @Autowired
     AvtaltMedNavService avtaltMedNavService;
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
-    @Before
-    @After
-    public void cleanUp() {
-        meterRegistry.clear();
-    }
 
     @Test
     public void opprettFHO_oppdatererInterneFHOVerdier() {
