@@ -170,7 +170,7 @@ public class BrukernotifikasjonTest {
                 SMSTekst
         );
         sendOppgaveCron.sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
 
         NokkelInput key = oppgaveSendt.key();
         assertEquals(mockBruker.getFnr(), key.getFodselsnummer());
@@ -215,7 +215,7 @@ public class BrukernotifikasjonTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 10000);
         BeskjedInput oppgave = oppgaveRecord.value();
 
         assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
@@ -241,7 +241,7 @@ public class BrukernotifikasjonTest {
 
         sendOppgaveCron.sendBrukernotifikasjoner();
 
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 5000);
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 10000);
         NokkelInput nokkel = oppgaveRecord.key();
         BeskjedInput beskjed = oppgaveRecord.value();
 
@@ -332,7 +332,7 @@ public class BrukernotifikasjonTest {
 
         assertTrue("Skal ikke produsert oppgave meldinger", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
 
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 10000);
 
         NokkelInput oppgaveNokkel = oppgaveRecord.key();
         NokkelInput doneNokkel = doneRecord.key();
@@ -379,7 +379,7 @@ public class BrukernotifikasjonTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
         OppgaveInput oppgave = oppgaveRecord.value();
 
         assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgaveRecord.key().getGrupperingsId());
@@ -394,7 +394,7 @@ public class BrukernotifikasjonTest {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsere oppgave", kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer));
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 5000);
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 10000);
         DoneInput done = doneRecord.value();
 
         assertEquals(oppgaveRecord.key().getAppnavn(), doneRecord.key().getAppnavn());
