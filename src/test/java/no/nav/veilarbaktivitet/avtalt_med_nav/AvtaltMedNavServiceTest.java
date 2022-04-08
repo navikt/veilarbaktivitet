@@ -12,9 +12,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -38,12 +36,6 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     AvtaltMedNavService avtaltMedNavService;
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
-
-    @Before
-    @After
-    public void cleanUp() {
-        meterRegistry.clear();
-    }
 
     @Test
     public void opprettFHO_oppdatererInterneFHOVerdier() {
