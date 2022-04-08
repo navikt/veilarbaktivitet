@@ -4,20 +4,18 @@ import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
-import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,15 +24,9 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
@@ -45,28 +37,8 @@ import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporse
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
 @Slf4j
-public class DelingAvCvITest {
-
-    @Autowired
-    KafkaTestService testService;
-
-    @Autowired
-    StillingFraNavTestService stillingFraNavTestService;
-    AktivitetTestService aktivitetTestService;
-    @Before
-    public void setupAktivitetTestService() {
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
-    }
-
-    @Autowired
-    JdbcTemplate jdbc;
-
-    @LocalServerPort
-    private int port;
+public class DelingAvCvITest extends SpringBootTestBase {
 
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
@@ -93,17 +65,14 @@ public class DelingAvCvITest {
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
-
         consumer.unsubscribe();
         consumer.close();
     }
 
     @Before
     public void cleanupBetweenTests() {
-        DbTestUtils.cleanupTestDb(jdbc);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
-
-        consumer = testService.createStringAvroConsumer(utTopic);
+        consumer = kafkaTestService.createStringAvroConsumer(utTopic);
     }
 
     @Test
@@ -341,7 +310,7 @@ public class DelingAvCvITest {
 
         ForesporselOmDelingAvCv duplikatMelding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
-        testService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
+        kafkaTestService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
 
         ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
