@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
-import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -30,8 +29,6 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     @Autowired
     private AktivitetDAO aktivitetDAO;
 
-    @Autowired
-    private MeterRegistry meterRegistry;
     @Autowired
     AvtaltMedNavService avtaltMedNavService;
     final String defaultTekst = "tekst";

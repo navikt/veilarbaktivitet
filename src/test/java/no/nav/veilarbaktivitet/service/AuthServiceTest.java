@@ -55,7 +55,7 @@ class AuthServiceTest {
 
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
         when(authContextHolder.erEksternBruker()).thenReturn(true);
-        when(authContextHolder.getSubject()).thenReturn(Optional.of(FNR));
+        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
         when(aktorOppslagClient.hentAktorId(any())).thenReturn(AktorId.of(AKTORID));
         Optional<Person> loggedInnUser = authService.getLoggedInnUser();
         assertEquals(eksternBruker, loggedInnUser.get());
