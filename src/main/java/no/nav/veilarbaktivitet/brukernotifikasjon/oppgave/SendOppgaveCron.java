@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.job.leader_election.LeaderElectionClient;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,6 @@ import java.util.List;
 @EnableScheduling
 @RequiredArgsConstructor
 public class SendOppgaveCron {
-    private final LeaderElectionClient leaderElectionClient;
     private final BrukerNotifkasjonOppgaveService internalService;
     private final OppgaveDao oppgaveDao;
     private final OppgaveMetrikk oppgaveMetrikk;
@@ -21,10 +20,9 @@ public class SendOppgaveCron {
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
+    @SchedulerLock(name = "send_brukernotifikasjoner", lockAtMostFor = "PT20M")
     public void sendBrukernotifikasjoner() {
-        if (leaderElectionClient.isLeader()) {
             sendAlle(500);
-        }
     }
 
     void sendAlle(int maxBatchSize) {
@@ -43,7 +41,7 @@ public class SendOppgaveCron {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     public void countForsinkedeVarslerSisteDognet() {
-        Integer antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
+        int antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
         oppgaveMetrikk.countForsinkedeVarslerSisteDognet(antall);
     }
 }
