@@ -34,7 +34,6 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
-
     @Test
     public void opprettFHO_oppdatererInterneFHOVerdier() {
 
