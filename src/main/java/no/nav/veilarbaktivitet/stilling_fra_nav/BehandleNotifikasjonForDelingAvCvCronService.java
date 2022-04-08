@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.job.leader_election.LeaderElectionClient;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.KvitteringDAO;
@@ -15,7 +15,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class BehandleNotifikasjonForDelingAvCvCronService {
 
-    private final LeaderElectionClient leaderElectionClient;
     private final KvitteringDAO kvitteringsDao;
     private final BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
 
@@ -23,20 +22,18 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
+    @SchedulerLock(name = "deling_av_cv_behandleFerdigstilteNotifikasjoner", lockAtMostFor = "PT20M")
     public void behandleFerdigstilteNotifikasjoner() {
-        if (leaderElectionClient.isLeader()) {
-            while (behandleFerdigstilteNotifikasjoner(500) == 500) ;
-        }
+        while (behandleFerdigstilteNotifikasjoner(500) == 500) ;
     }
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
+    @SchedulerLock(name = "deling_av_cv_behandleFeiledeNotifikasjoner", lockAtMostFor = "PT20M")
     public void behandleFeiledeNotifikasjoner() {
-        if (leaderElectionClient.isLeader()) {
-            while (behandleFeiledeNotifikasjoner(500) == 500) ;
-        }
+        while (behandleFeiledeNotifikasjoner(500) == 500) ;
     }
 
     public int behandleFerdigstilteNotifikasjoner(int maksAntall) {
