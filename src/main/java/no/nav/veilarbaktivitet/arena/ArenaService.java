@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonArenaAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
@@ -34,13 +34,13 @@ public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
-    private final BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService;
+    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "arena.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
 
-    public ArenaService(ArenaAktivitetConsumer consumer, ForhaandsorienteringDAO fhoDAO, AuthService authService, MeterRegistry meterRegistry, BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService) {
+    public ArenaService(ArenaAktivitetConsumer consumer, ForhaandsorienteringDAO fhoDAO, AuthService authService, MeterRegistry meterRegistry, BrukernotifikasjonService brukernotifikasjonArenaAktivitetService) {
         this.consumer = consumer;
         this.authService = authService;
         this.meterRegistry = meterRegistry;
@@ -106,7 +106,7 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bruker kan ikke varsles");
         }
 
-        brukernotifikasjonArenaAktivitetService.opprettVarselPaaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+        brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
 
         var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();

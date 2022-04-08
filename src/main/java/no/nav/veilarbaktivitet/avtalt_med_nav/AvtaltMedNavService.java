@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
@@ -29,7 +29,7 @@ public class AvtaltMedNavService {
     private final AktivitetDAO aktivitetDAO;
     private final ForhaandsorienteringDAO fhoDAO;
     private final MeterRegistry meterRegistry;
-    private final BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService;
+    private final BrukernotifikasjonService brukernotifikasjonService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "aktivitet.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
@@ -42,13 +42,13 @@ public class AvtaltMedNavService {
                                AktivitetDAO aktivitetDAO,
                                ForhaandsorienteringDAO fhoDAO,
                                MeterRegistry meterRegistry,
-                               BrukernotifikasjonAktivitetService brukernotifikasjonAktivitetService) {
+                               BrukernotifikasjonService brukernotifikasjonService) {
 
         this.metricService = metricService;
         this.aktivitetDAO = aktivitetDAO;
         this.fhoDAO = fhoDAO;
         this.meterRegistry = meterRegistry;
-        this.brukernotifikasjonAktivitetService = brukernotifikasjonAktivitetService;
+        this.brukernotifikasjonService = brukernotifikasjonService;
 
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall aktiviteter som er avtalt med NAV")
@@ -70,10 +70,10 @@ public class AvtaltMedNavService {
 
         var fho = fhoDAO.insert(avtaltDTO, aktivitetId, aktorId, ident.get(), now);
         if(!fhoDTO.getType().equals(Type.IKKE_SEND_FORHAANDSORIENTERING)) {
-            if(!brukernotifikasjonAktivitetService.kanVarsles(aktorId)){
+            if(!brukernotifikasjonService.kanVarsles(aktorId)){
                 throw new IllegalStateException("bruker kan ikke varsles");
             }
-            brukernotifikasjonAktivitetService.opprettVarselPaaAktivitet(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
@@ -109,7 +109,7 @@ public class AvtaltMedNavService {
                 .build();
 
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
-        brukernotifikasjonAktivitetService.setDone(Integer.parseInt(fho.getAktivitetId()), VarselType.FORHAANDSORENTERING);
+        brukernotifikasjonService.setDone(Integer.parseInt(fho.getAktivitetId()), VarselType.FORHAANDSORENTERING);
 
         metricService.oppdaterAktivitetMetrikk(aktivitet, true, aktivitet.isAutomatiskOpprettet());
 

@@ -7,8 +7,8 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonArenaDAO;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonArenaAktivitetService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
@@ -46,8 +46,8 @@ public class ArenaControllerTest {
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
-    private final BrukerNotifikasjonArenaDAO notifikasjonArenaDAO = new BrukerNotifikasjonArenaDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final BrukernotifikasjonArenaAktivitetService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonArenaAktivitetService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath );
+    private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
+    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db);
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService service = new ArenaService(consumer, fhoDao, authService,meterRegistry, brukernotifikasjonArenaAktivitetService);
