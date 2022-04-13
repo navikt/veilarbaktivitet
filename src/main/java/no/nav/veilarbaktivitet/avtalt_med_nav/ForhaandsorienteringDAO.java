@@ -3,13 +3,11 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
-import no.nav.veilarbaktivitet.avtalt_med_nav.varsel.VarselIdHolder;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
@@ -166,62 +164,5 @@ public class ForhaandsorienteringDAO {
                 .build();
     }
 
-    public List<VarselIdHolder> hentVarslerSkalSendes(int limit) {
-        return database.getJdbcTemplate().query("" +
-                        "select ID, AKTIVITET_ID, ARENAAKTIVITET_ID, AKTOR_ID " +
-                        "from FORHAANDSORIENTERING " +
-                        "where VARSEL_ID is null " +
-                        "   and VARSEL_SKAL_STOPPES is null " +
-                        "   and TYPE != ? " +
-                        "   and brukernotifikasjon is null" +
-                        " fetch first ? rows only",
-                new BeanPropertyRowMapper<>(VarselIdHolder.class), Type.IKKE_SEND_FORHAANDSORIENTERING.toString(), limit);
-    }
-
-    public void markerVarselSomSendt(String id, String varselId) {
-        int update = database.getJdbcTemplate().update("" +
-                        "update FORHAANDSORIENTERING set VARSEL_ID = ?" +
-                        " where ID = ? and VARSEL_ID is null",
-                varselId, id);
-
-        if (update != 1L) {
-            throw new IllegalStateException("Forhaandsorientering allerede sendt");
-        }
-    }
-
-    public long setVarselStoppetForIkkeSendt() {
-        return database.getJdbcTemplate().update(
-                "" +
-                        "update FORHAANDSORIENTERING " +
-                        "set VARSEL_STOPPET = CURRENT_TIMESTAMP " +
-                        "where VARSEL_ID is null " +
-                        "   and VARSEL_SKAL_STOPPES is not null " +
-                        "   and VARSEL_STOPPET is null " +
-                        "   and BRUKERNOTIFIKASJON is null"
-        );
-    }
-
-    public List<String> hentVarslerSomSkalStoppes(int limit) {
-        return database.getJdbcTemplate().queryForList("" +
-                        "select VARSEL_ID " +
-                        "from FORHAANDSORIENTERING " +
-                        "where VARSEL_SKAL_STOPPES is not null " +
-                        "   and VARSEL_STOPPET is null " +
-                        "   and VARSEL_ID is not null" +
-                        "   and brukernotifikasjon is null" +
-                        " fetch first ? rows only",
-                String.class, limit);
-    }
-
-    public void markerVareslStoppetSomSendt(String varselId) {
-        int update = database.getJdbcTemplate().update("" +
-                "update FORHAANDSORIENTERING set VARSEL_STOPPET = CURRENT_TIMESTAMP" +
-                " where VARSEL_STOPPET is null " +
-                "   and VARSEL_ID = ? ", varselId);
-
-        if (update != 1L) {
-            throw new IllegalStateException("Forhaandsorentering varsel allerede stoppet");
-        }
-    }
 
 }
