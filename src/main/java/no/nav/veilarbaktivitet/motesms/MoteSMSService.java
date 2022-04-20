@@ -25,7 +25,7 @@ public class MoteSMSService {
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
-    @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M", lockAtLeastFor = "PT30S")
+    @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
     @Timed(value = "moteservicemelding", histogram = true)
     public void sendMoteSms() {
         MDC.put("running.job", "moteSmsService");

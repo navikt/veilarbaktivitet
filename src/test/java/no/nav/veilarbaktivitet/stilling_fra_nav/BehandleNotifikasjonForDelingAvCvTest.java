@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import no.nav.common.utils.Credentials;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
@@ -13,30 +14,22 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
-public class BehandleNotifikasjonForDelingAvCvTest {
+public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
     @Autowired
     BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
@@ -44,13 +37,6 @@ public class BehandleNotifikasjonForDelingAvCvTest {
     @Autowired
     Credentials credentials;
 
-    @Autowired
-    StillingFraNavTestService stillingFraNavTestService;
-    AktivitetTestService aktivitetTestService;
-    @Before
-    public void setupAktivitetTestService() {
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
-    }
 
     @Autowired
     SendOppgaveCron sendOppgaveCron;
