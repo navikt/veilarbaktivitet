@@ -47,7 +47,7 @@ public class BrukernotifikasjonAsserts {
 
     public ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
         config.getSendOppgaveCron().sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 5000);
+        ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
         assertEquals(fnr.get(), key.getFodselsnummer());
@@ -64,7 +64,7 @@ public class BrukernotifikasjonAsserts {
 
     public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {
         config.getSendOppgaveCron().sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 5000);
+        ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
         assertEquals(fnr.get(), key.getFodselsnummer());
@@ -78,7 +78,7 @@ public class BrukernotifikasjonAsserts {
     public ConsumerRecord<NokkelInput, DoneInput> stoppet(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 5000);
+        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 10000);
         NokkelInput key = singleRecord.key();
         assertEquals(eventNokkel.getFodselsnummer(), key.getFodselsnummer());
         assertEquals(eventNokkel.getEventId(), key.getEventId());

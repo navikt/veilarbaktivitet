@@ -288,7 +288,7 @@ public class StillingFraNavControllerITest {
 
     private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         Svar expectedSvar = Svar.newBuilder()

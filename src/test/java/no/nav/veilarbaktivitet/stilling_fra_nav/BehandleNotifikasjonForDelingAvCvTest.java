@@ -95,7 +95,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
-        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 5000);
+        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 10000);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.HAR_VARSLET);
 
@@ -141,7 +141,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
-        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 5000);
+        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 10000);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
 

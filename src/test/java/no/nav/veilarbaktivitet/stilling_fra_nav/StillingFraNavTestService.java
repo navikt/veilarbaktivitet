@@ -50,7 +50,7 @@ public class StillingFraNavTestService {
         kafkaAvroTemplate.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, stillingFraNavUtTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, stillingFraNavUtTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {

@@ -103,13 +103,13 @@ public class AktiviteterTilKafkaAivenServiceTest {
         AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
-        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, portefoljeTopic, 5000);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, portefoljeTopic, 10000);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         assertEquals(opprettetAktivitet.getId(), melding.getAktivitetId());
         assertEquals(opprettetAktivitet.getVersjon(), melding.getVersion().toString());
 
-        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktivterKafkaConsumer, aktivitetRawJson, 5000);
+        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktivterKafkaConsumer, aktivitetRawJson, 10000);
         AktivitetData aktivitetMelding = singleRecord.value();
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));

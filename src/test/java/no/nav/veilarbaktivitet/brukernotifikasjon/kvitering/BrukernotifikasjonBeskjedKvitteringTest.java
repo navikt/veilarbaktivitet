@@ -249,7 +249,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 5000);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
         NokkelInput nokkel = oppgaveRecord.key();
         OppgaveInput oppgave = oppgaveRecord.value();
 
