@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -29,15 +29,11 @@ import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -52,23 +48,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
-@Slf4j
-public class StillingFraNavControllerITest {
+public class StillingFraNavControllerITest extends SpringBootTestBase {
 
     public static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
-    @Autowired
-    KafkaTestService testService;
-
-    @Autowired
-    StillingFraNavTestService stillingFraNavTestService;
-    AktivitetTestService aktivitetTestService;
-    @Before
-    public void setupAktivitetTestService() {
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
-    }
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -108,7 +90,7 @@ public class StillingFraNavControllerITest {
         val brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = kafkaTestService.createStringAvroConsumer(utTopic);
 
         AktivitetDTO svartJaPaaDelingAvCv = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, AVTALT_DATO);
 
@@ -126,7 +108,7 @@ public class StillingFraNavControllerITest {
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
-        final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(utTopic);
+        final Consumer<String, DelingAvCvRespons> consumer = kafkaTestService.createStringAvroConsumer(utTopic);
 
         AktivitetDTO actualAktivitet = aktivitetTestService.svarPaaDelingAvCv(false, mockBruker, veileder, aktivitetDTO, AVTALT_DATO);
 
@@ -288,7 +270,7 @@ public class StillingFraNavControllerITest {
 
     private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = record.value();
 
         Svar expectedSvar = Svar.newBuilder()

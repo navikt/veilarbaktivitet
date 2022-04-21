@@ -113,7 +113,7 @@ public class DelingAvCvManueltAvbruttServiceTest {
 
         assertOppdatertAktivitet(expectedAktivitet, oppdatertAktivitet);
 
-        final ConsumerRecord<String, DelingAvCvRespons> avbruttMelding = getSingleRecord(consumer, utTopic, 5000);
+        final ConsumerRecord<String, DelingAvCvRespons> avbruttMelding = getSingleRecord(consumer, utTopic, 10000);
         DelingAvCvRespons value = avbruttMelding.value();
         String bestillingsId = skalBehandles.getStillingFraNavData().bestillingsId;
 
