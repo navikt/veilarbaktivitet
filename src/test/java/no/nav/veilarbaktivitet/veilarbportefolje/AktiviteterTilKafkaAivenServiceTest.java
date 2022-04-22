@@ -7,7 +7,6 @@ import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.config.CronService;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -85,8 +84,6 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
-
-        Mockito.when(unleashClient.isEnabled(CronService.STOPP_AKTIVITETER_TIL_KAFKA)).thenReturn(false);
 
         protefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktivterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);

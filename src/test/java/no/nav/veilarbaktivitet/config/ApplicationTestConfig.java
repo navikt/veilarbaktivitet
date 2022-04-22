@@ -15,7 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jms.core.JmsTemplate;
 
 import javax.sql.DataSource;
 
@@ -46,11 +45,6 @@ public class ApplicationTestConfig {
     @Bean
     public MetricsClient metricsClient() {
         return new MetricsClientMock();
-    }
-
-    @Bean
-    public JmsTemplate varselQueue() {
-        return mock(JmsTemplate.class);
     }
 
     @Bean
