@@ -51,6 +51,7 @@ class SistePeriodeDAO {
                 STARTDATO = :startTid,
                 SLUTTDATO = :sluttTid
                 where AKTORID = :aktorId
+                and (STARTDATO < :startTid or PERIODE_UUID = :periode)
                 """, params);
         if (antallOppdatert == 1) {
             log.info("oppdatert oppfolgignsperiode {}", oppfolgingsperiode);
