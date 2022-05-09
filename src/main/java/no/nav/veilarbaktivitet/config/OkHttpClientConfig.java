@@ -38,7 +38,6 @@ public class OkHttpClientConfig {
 
     @Bean
     public AzureAdMachineToMachineTokenClient tokenClient() {
-
         return AzureAdTokenClientBuilder.builder()
             .withNaisDefaults()
             .buildMachineToMachineTokenClient();

@@ -50,6 +50,7 @@ public class ArenaController {
         return arenaService.hentAktiviteter(fnr);
     }
 
+
     @GetMapping("/harTiltak")
     boolean hentHarTiltak() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
