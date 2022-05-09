@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -23,6 +25,23 @@ public class OkHttpClientConfig {
         builder.eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests")
                 .build());
         return builder.build();
+    }
+
+    @Bean
+    public OkHttpClient veilarbarenaClient(SystemUserTokenProvider tokenProvider, MeterRegistry meterRegistry) {
+        var builder = RestClient.baseClientBuilder();
+        builder.addInterceptor(new SystemUserOidcTokenProviderInterceptor(tokenProvider));
+        builder.eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests")
+                .build());
+        return builder.build();
+    }
+
+    @Bean
+    public AzureAdMachineToMachineTokenClient tokenClient() {
+
+        return AzureAdTokenClientBuilder.builder()
+            .withNaisDefaults()
+            .buildMachineToMachineTokenClient();
     }
 
     private static class SystemUserOidcTokenProviderInterceptor implements Interceptor {
