@@ -53,15 +53,15 @@ public class VeilarbarenaMapper {
         Optional.ofNullable(aktiviteter.getTiltaksaktiviteter()).ifPresent(tiltakList ->
                 result.addAll(tiltakList.stream()
                         .map(VeilarbarenaMapper::mapTilAktivitet)
-                        .collect(toList())));
+                        .toList()));
         Optional.ofNullable(aktiviteter.getGruppeaktiviteter()).ifPresent(gruppeList ->
                 result.addAll(gruppeList.stream()
                         .map(VeilarbarenaMapper::mapTilAktivitet)
-                        .collect(toList())));
+                        .toList()));
         Optional.ofNullable(aktiviteter.getUtdanningsaktiviteter()).ifPresent(utdanningList ->
                 result.addAll(utdanningList.stream()
                         .map(VeilarbarenaMapper::mapTilAktivitet)
-                        .collect(toList())));
+                        .toList()));
         return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).toList();
     }
 
@@ -98,7 +98,7 @@ public class VeilarbarenaMapper {
                 .setTiltakLokaltNavn(tiltaksaktivitet.getTiltakLokaltNavn())
                 .setArrangoer(tiltaksaktivitet.getArrangor())
                 .setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
-                .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke()) // todo legg til i veilarbarena
+                .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
                 .setStatusSistEndret(mapToDate(tiltaksaktivitet.getStatusSistEndret()))
                 .setOpprettetDato(mapToDate(tiltaksaktivitet.getStatusSistEndret()));
 
@@ -130,8 +130,8 @@ public class VeilarbarenaMapper {
 
     private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Gruppeaktivitet gruppeaktivitet) {
         List<MoteplanDTO> motePlan = new ArrayList<>();
-        Optional.ofNullable(gruppeaktivitet.getMoteplan())
-                .ifPresent(moeteplanListe -> moeteplanListe.stream() // todo - moteplan = liste?
+        Optional.ofNullable(gruppeaktivitet.getMoteplanListe())
+                .ifPresent(moeteplanListe -> moeteplanListe.stream()
                         .map(VeilarbarenaMapper::mapTilMoteplan)
                         .forEach(motePlan::add)
                 );
@@ -176,10 +176,11 @@ public class VeilarbarenaMapper {
     private static AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime startOfDay = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
-        LocalDateTime endOfDay = ofInstant(sluttDato.toInstant(), systemDefault()).toLocalDate().plusDays(1).atStartOfDay();
+        LocalDateTime startDatoStart = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
+        LocalDateTime sluttDatoSlutt = ofInstant(sluttDato.toInstant(), systemDefault()).toLocalDate().plusDays(1).atStartOfDay();
 
-        return now.isBefore(startOfDay) ? PLANLAGT : now.isBefore(endOfDay) ? GJENNOMFORES : FULLFORT;
+        AktivitetStatus gjennomforesEllerFullfort = now.isBefore(sluttDatoSlutt) ? GJENNOMFORES : FULLFORT;
+        return now.isBefore(startDatoStart) ? PLANLAGT : gjennomforesEllerFullfort;
     }
 
     private static MoteplanDTO mapTilMoteplan(AktiviteterDTO.Gruppeaktivitet.Moteplan moteplan) {

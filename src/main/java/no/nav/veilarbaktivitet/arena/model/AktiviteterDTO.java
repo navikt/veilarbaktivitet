@@ -56,7 +56,7 @@ public class AktiviteterDTO {
         String aktivitetId;
         String beskrivelse;
         String status;
-        List<Moteplan> moteplan;
+        List<Moteplan> moteplanListe;
 
         @Data
         @Accessors(chain = true)
