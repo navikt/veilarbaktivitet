@@ -23,7 +23,6 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.assertj.core.api.Assertions;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -129,7 +128,8 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalFeileUtenForhaandsorienteringsType() {
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(ForhaandsorienteringDTO.builder().build(), "arenaAktivitetId"));
+        ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, "arenaAktivitetId"));
         assertEquals( "forhaandsorientering.type kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
@@ -162,10 +162,11 @@ public class ArenaControllerTest {
                         .setGruppeaktiviteter(List.of(medFho))
                         .setTiltaksaktiviteter(List.of(utenFho))));
 
+        String medFhoId = prefixArenaId(medFho.getAktivitetId());
 
-        controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId()));
+        controller.opprettFHO(forhaandsorientering, medFhoId);
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId())));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFhoId));
         assertEquals( "Det er allerede sendt forhaandsorientering på aktiviteten", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
@@ -218,33 +219,6 @@ public class ArenaControllerTest {
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(prefixArenaId(utenFho.getAktivitetId())));
     }
 
-    private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {
-        return new AktiviteterDTO.Tiltaksaktivitet()
-                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
-                .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
-                .setAktivitetId(getRandomString());
-    }
-
-    private AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {
-        return new AktiviteterDTO.Gruppeaktivitet()
-                .setMoteplanListe(List.of(
-                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setSluttKlokkeslett("12:00:00")
-                                ,
-                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setSluttKlokkeslett("12:00:00")
-                        )
-
-                )
-                .setAktivitetId(getRandomString());
-    }
-
     @Test
     public void hentArenaAktiviteterSkalReturnereArenaAktiviteter() {
 
@@ -264,12 +238,12 @@ public class ArenaControllerTest {
     public void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
         Date start = new Date();
 
-        AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet = createTiltaksaktivitet();
+        AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet = createUtdanningsaktivitet();
 
         when(veilarbarenaClient.hentAktiviteter(fnr))
-                .thenReturn(Optional.of(new AktiviteterDTO().setTiltaksaktiviteter(List.of(tiltaksaktivitet))));
+                .thenReturn(Optional.of(new AktiviteterDTO().setUtdanningsaktiviteter(List.of(utdanningsaktivitet))));
 
-        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, prefixArenaId(tiltaksaktivitet.getAktivitetId()));
+        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, prefixArenaId(utdanningsaktivitet.getAktivitetId()));
 
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
 
@@ -329,8 +303,47 @@ public class ArenaControllerTest {
 
         when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId()));
+
+        String arenaAktivitetId = prefixArenaId(medFho.getAktivitetId());
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaAktivitetId));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+    }
+
+    private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {
+        return new AktiviteterDTO.Tiltaksaktivitet()
+                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
+                .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
+                .setAktivitetId(getRandomString());
+    }
+
+    private AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {
+        return new AktiviteterDTO.Gruppeaktivitet()
+                .setMoteplanListe(List.of(
+                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setStartKlokkeslett("10:00:00")
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setSluttKlokkeslett("12:00:00")
+                                ,
+                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setStartKlokkeslett("10:00:00")
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setSluttKlokkeslett("12:00:00")
+                        )
+
+                )
+                .setAktivitetId(getRandomString());
+    }
+
+    private AktiviteterDTO.Utdanningsaktivitet createUtdanningsaktivitet() {
+        AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode periode = new AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode()
+                .setFom(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                .setTom(LocalDate.ofInstant(Instant.now().plus(4, ChronoUnit.DAYS), ZoneId.systemDefault()));
+
+        return new AktiviteterDTO.Utdanningsaktivitet()
+                .setAktivitetId(getRandomString())
+                .setAktivitetPeriode(periode);
     }
 }
