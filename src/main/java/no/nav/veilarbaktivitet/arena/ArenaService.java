@@ -30,7 +30,6 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 @Slf4j
 @Component
 public class ArenaService {
-    private final ArenaAktivitetConsumer consumer;
     private final ForhaandsorienteringDAO fhoDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
@@ -42,14 +41,12 @@ public class ArenaService {
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
 
     public ArenaService(
-            ArenaAktivitetConsumer consumer,
             ForhaandsorienteringDAO fhoDAO,
             AuthService authService,
             MeterRegistry meterRegistry,
             BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
             VeilarbarenaClient veilarbarenaClient
     ) {
-        this.consumer = consumer;
         this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
@@ -80,7 +77,7 @@ public class ArenaService {
     }
 
     public boolean harAktiveTiltak(Person.Fnr ident) {
-        return consumer.hentArenaAktiviteter(ident)
+        return hentAktiviteter(ident)
                 .stream()
                 .map(ArenaAktivitetDTO::getStatus)
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);

@@ -14,7 +14,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.tjeneste.virksomhet.tiltakogaktivitet.v1.binding.TiltakOgAktivitetV1;
 import org.apache.cxf.interceptor.LoggingOutInterceptor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -67,22 +66,5 @@ public class ApplicationContext {
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
-    }
-
-    @Bean
-    public static TiltakOgAktivitetV1 tiltakOgAktivitetV1Client(EnvironmentProperties properties, Credentials credentials) {
-        StsConfig stsConfig = StsConfig.builder()
-                .url(properties.getCxfStsUrl())
-                .username(credentials.username)
-                .password(credentials.password)
-                .build();
-
-        return new CXFClient<>(TiltakOgAktivitetV1.class)
-                .address(getRequiredProperty(ApplicationContext.VIRKSOMHET_TILTAKOGAKTIVITET_V1_ENDPOINTURL_PROPERTY))
-                .withOutInterceptor(new LoggingOutInterceptor())
-                .configureStsForSubject(stsConfig)
-                .timeout(10_000, 5_000) // sett ned read timeout til 5s, mulig 2s er et bedre tall om arena tregheter fortsatt er et problem
-                .build();
-
     }
 }

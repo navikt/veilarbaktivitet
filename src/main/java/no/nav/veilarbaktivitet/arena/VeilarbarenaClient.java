@@ -1,9 +1,11 @@
 package no.nav.veilarbaktivitet.arena;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.veilarbaktivitet.arena.VeilarbarenaHelsesjekk.HealthStatus;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import okhttp3.OkHttpClient;
@@ -23,7 +25,7 @@ import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 @Service
 @RequiredArgsConstructor
 public class VeilarbarenaClient {
-    private final OkHttpClient veilarbarenaClient;
+    private final OkHttpClient veilarbarenaHttpClient;
 
     private final AzureAdMachineToMachineTokenClient tokenClient;
 
@@ -31,18 +33,38 @@ public class VeilarbarenaClient {
 
     private final String tokenScope = String.format("api://%s.%s.%s/.default", cluster, "pto", "veilarbarena");
 
-    @Value("${VEILARBARENAAPI_URL}")
-    private String baseUrl;
+    @Value("${app.env.veilarena.serviceurl}")
+    private String veilarbarenaServiceUrl;
 
+    @Value("${app.env.veilarena.port}")
+    private int veilarbarenaServicePort;
+
+
+    public HealthStatus  ping() {
+        String uri = String.format("http://%s:%s/internal/selftest", veilarbarenaServiceUrl, veilarbarenaServicePort);
+        Request request = new Request.Builder()
+                .url(uri)
+                .build();
+        try (Response response = veilarbarenaHttpClient.newCall(request).execute()) {
+            if (response.code() != HttpStatus.OK.value()) {
+                return HealthStatus.ERROR;
+            }
+        } catch (Exception e) {
+            return HealthStatus.UNAVAILABLE;
+        }
+        return HealthStatus.OK;
+    }
+
+    @Timed
     public Optional<AktiviteterDTO> hentAktiviteter(Person.Fnr fnr) {
         String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
 
-        String uri = String.format("%s/arena/aktiviteter?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("http://%s:%s/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, veilarbarenaServicePort, fnr.get());
         Request request = new Request.Builder()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .url(uri)
                 .build();
-        try (Response response = veilarbarenaClient.newCall(request).execute()) {
+        try (Response response = veilarbarenaHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
 
             if (response.code() == HttpStatus.NO_CONTENT.value()) {

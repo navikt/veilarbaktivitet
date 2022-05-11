@@ -32,9 +32,9 @@ public class VeilarbarenaMapper {
     private static final String DATO_FORMAT = "yyyy-MM-dd";
     private static final String ARENA_PREFIX = "ARENA";
 
-    private static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
-    private static final String JOBBKLUBB_NAVN = "Jobbklubb";
-    private static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
+    static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
+    static final String JOBBKLUBB_NAVN = "Jobbklubb";
+    static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
 
     private static final Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
 
@@ -93,7 +93,7 @@ public class VeilarbarenaMapper {
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))
                 .setTilDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom))
                 .setAvtalt(true)
-                .setDeltakelseProsent(tiltaksaktivitet.getDeltakelseProsent().floatValue())
+                .setDeltakelseProsent(tiltaksaktivitet.getDeltakelseProsent() != null ? tiltaksaktivitet.getDeltakelseProsent().floatValue() : null)
                 .setTiltaksnavn(tiltaksaktivitet.getTiltaksnavn())
                 .setTiltakLokaltNavn(tiltaksaktivitet.getTiltakLokaltNavn())
                 .setArrangoer(tiltaksaktivitet.getArrangor())
@@ -138,7 +138,7 @@ public class VeilarbarenaMapper {
 
         Date startDato = motePlan.get(0).getStartDato();
         Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
-        AktivitetStatus status = gruppeaktivitet.getStatus().equals("AVBR") ?
+        AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
                 .setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
@@ -169,7 +169,7 @@ public class VeilarbarenaMapper {
                 .setAvtalt(true);
     }
 
-    private static String prefixArenaId(String arenaId) {
+    public static String prefixArenaId(String arenaId) {
         return ARENA_PREFIX + arenaId;
     }
 
@@ -207,7 +207,7 @@ public class VeilarbarenaMapper {
         return Optional.ofNullable(localdate).map(DateUtils::toDate).orElse(null);
     }
 
-    private enum ArenaStatus {
+    enum ArenaStatus {
         AKTUELL(PLANLAGT),
         AVSLAG(AVBRUTT),
         DELAVB(AVBRUTT),

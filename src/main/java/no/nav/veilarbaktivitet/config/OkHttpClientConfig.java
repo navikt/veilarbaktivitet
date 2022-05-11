@@ -12,6 +12,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.io.IOException;
 
@@ -28,15 +29,13 @@ public class OkHttpClientConfig {
     }
 
     @Bean
-    public OkHttpClient veilarbarenaClient(SystemUserTokenProvider tokenProvider, MeterRegistry meterRegistry) {
+    public OkHttpClient veilarbarenaHttpClient() {
         var builder = RestClient.baseClientBuilder();
-        builder.addInterceptor(new SystemUserOidcTokenProviderInterceptor(tokenProvider));
-        builder.eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests")
-                .build());
         return builder.build();
     }
 
     @Bean
+    @Profile("!dev")
     public AzureAdMachineToMachineTokenClient tokenClient() {
         return AzureAdTokenClientBuilder.builder()
             .withNaisDefaults()

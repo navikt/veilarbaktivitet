@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arena;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
@@ -21,6 +22,8 @@ import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
+import org.assertj.core.api.Assertions;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -28,8 +31,13 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.prefixArenaId;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -37,11 +45,12 @@ import static org.mockito.Mockito.*;
 public class ArenaControllerTest {
     private final UserInContext context = mock(UserInContext.class);
     private final AuthService authService = mock(AuthService.class);
-    private final ArenaAktivitetConsumer consumer = mock(ArenaAktivitetConsumer.class);
     private final PersonService personService = mock(PersonService.class);
     private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
     private final Nivaa4Client nivaa4Client = mock(Nivaa4Client.class);
     private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
+
+    private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
     private String aktivitetsplanBasepath = "http://localhost:3000";
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
@@ -49,9 +58,10 @@ public class ArenaControllerTest {
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db);
+
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final ArenaService service = new ArenaService(consumer, fhoDao, authService,meterRegistry, brukernotifikasjonArenaAktivitetService);
-    private final ArenaController controller = new ArenaController(context, authService, service);
+    private final ArenaService arenaService = new ArenaService(fhoDao, authService,meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
@@ -104,8 +114,8 @@ public class ArenaControllerTest {
 
     @Test
     public void harTiltakSkalReturnereTrueMedTiltak() {
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(new ArenaAktivitetDTO().setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)));
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn( Optional.of(new AktiviteterDTO().setGruppeaktiviteter(List.of(createGruppeaktivitet()))));
 
         assertTrue(controller.hentHarTiltak());
     }
@@ -133,8 +143,8 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalFeileHvisArenaAktivitetenIkkeFinnes() {
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(new ArenaAktivitetDTO()));
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()));
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, "Arena123"));
         assertEquals( "Aktiviteten finnes ikke", exception.getReason());
@@ -143,36 +153,42 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalFeileHvisAleredeSendtForhaandsorientering() {
-        ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
-        tilFho.setId(getRandomString());
-        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
-        ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
-        ikkeTilFho.setId(getRandomString());
+        AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
 
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(tilFho, ikkeTilFho));
+        AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
 
-        controller.opprettFHO(forhaandsorientering, tilFho.getId());
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(medFho))
+                        .setTiltaksaktiviteter(List.of(utenFho))));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, tilFho.getId()));
+
+        controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId()));
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId())));
         assertEquals( "Det er allerede sendt forhaandsorientering på aktiviteten", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
     @Test
     public void sendForhaandsorienteringSkalreturnereAktivitetMedForhaandsorientering() {
-        ArenaAktivitetDTO medFHO = new ArenaAktivitetDTO();
-        medFHO.setId("tilFho");
-        medFHO.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
-        ArenaAktivitetDTO utenFHO = new ArenaAktivitetDTO();
-        utenFHO.setId("ikkeTilFho");
 
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(medFHO, utenFHO));
+        AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
 
-        ArenaAktivitetDTO arenaAktivitetDTO = controller.opprettFHO(forhaandsorientering, medFHO.getId());
+        AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
 
-        assertEquals(medFHO.setForhaandsorientering(forhaandsorientering), arenaAktivitetDTO);
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(medFho))
+                        .setTiltaksaktiviteter(List.of(utenFho))));
+
+        ArenaAktivitetDTO arenaAktivitetDTO = controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId()));
+        Optional<ArenaAktivitetDTO> gruppeAktivitet = arenaService.hentAktiviteter(fnr).stream().filter(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)).findAny();
+        assertTrue(gruppeAktivitet.isPresent());
+        ArenaAktivitetDTO gr = gruppeAktivitet.get();
+
+        assertEquals(gr, arenaAktivitetDTO);
+        assertEquals(gr.getForhaandsorientering().getTekst(), forhaandsorientering.getTekst());
     }
 
     private String getRandomString(){
@@ -181,50 +197,79 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalOppdaterehentArenaAktiviteter() {
-        ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
-        tilFho.setId(getRandomString());
-        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
-        ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
-        ikkeTilFho.setId(getRandomString());
+        AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
 
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(tilFho, ikkeTilFho));
+        AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
 
-        controller.opprettFHO(forhaandsorientering, tilFho.getId());
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(medFho))
+                        .setTiltaksaktiviteter(List.of(utenFho))));
+
+
+
+
+        controller.opprettFHO(forhaandsorientering, prefixArenaId(medFho.getAktivitetId()));
         List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
 
-        List<ArenaAktivitetDTO> forventet = List.of(tilFho.setForhaandsorientering(forhaandsorientering), ikkeTilFho);
+        Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
+        Assertions.assertThat(arenaAktivitetDTOS)
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(prefixArenaId(medFho.getAktivitetId())) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(prefixArenaId(utenFho.getAktivitetId())));
+    }
 
-        assertEquals(forventet, arenaAktivitetDTOS);
+    private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {
+        return new AktiviteterDTO.Tiltaksaktivitet()
+                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
+                .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
+                .setAktivitetId(getRandomString());
+    }
+
+    private AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {
+        return new AktiviteterDTO.Gruppeaktivitet()
+                .setMoteplanListe(List.of(
+                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setStartKlokkeslett("10:00:00")
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setSluttKlokkeslett("12:00:00")
+                                ,
+                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setStartKlokkeslett("10:00:00")
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setSluttKlokkeslett("12:00:00")
+                        )
+
+                )
+                .setAktivitetId(getRandomString());
     }
 
     @Test
     public void hentArenaAktiviteterSkalReturnereArenaAktiviteter() {
 
-        ArenaAktivitetDTO t1 = new ArenaAktivitetDTO();
-        t1.setId(getRandomString());
-        ArenaAktivitetDTO t2 = new ArenaAktivitetDTO();
-        t2.setId(getRandomString());
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(
+                                createGruppeaktivitet(),
+                                createGruppeaktivitet()
+                                ))));
 
-        List<ArenaAktivitetDTO> tiltak = List.of(t1, t2);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
 
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(tiltak);
-
-        assertEquals(tiltak, controller.hentArenaAktiviteter());
+        Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
     }
 
     @Test
     public void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
         Date start = new Date();
-        ArenaAktivitetDTO a1 = new ArenaAktivitetDTO();
-        a1.setId(getRandomString());
-        a1.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
 
-        when(consumer.hentArenaAktiviteter(fnr))
-                .thenReturn(List.of(a1));
+        AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet = createTiltaksaktivitet();
 
-        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, a1.getId());
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO().setTiltaksaktiviteter(List.of(tiltaksaktivitet))));
+
+        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, prefixArenaId(tiltaksaktivitet.getAktivitetId()));
 
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
 
@@ -250,15 +295,10 @@ public class ArenaControllerTest {
 
     @Test
     public void tilgangskontrollPaaHentArenaAktiviteterSkalFinnes() {
-        ArenaAktivitetDTO t1 = new ArenaAktivitetDTO();
-        t1.setId(getRandomString());
-        ArenaAktivitetDTO t2 = new ArenaAktivitetDTO();
-        t2.setId(getRandomString());
 
-        List<ArenaAktivitetDTO> tiltak = List.of(t1, t2);
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO().setTiltaksaktiviteter(List.of(new AktiviteterDTO.Tiltaksaktivitet().setAktivitetId(getRandomString())))));
 
-        when(consumer.hentArenaAktiviteter(ikkeTilgangFnr))
-                .thenReturn(tiltak);
 
         when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
@@ -278,18 +318,18 @@ public class ArenaControllerTest {
 
     @Test
     public void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
-        ArenaAktivitetDTO tilFho = new ArenaAktivitetDTO();
-        tilFho.setId("tilFho");
-        tilFho.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
-        ArenaAktivitetDTO ikkeTilFho = new ArenaAktivitetDTO();
-        ikkeTilFho.setId("ikkeTilFho");
+        AktiviteterDTO.Gruppeaktivitet medFho = new AktiviteterDTO.Gruppeaktivitet().setAktivitetId(getRandomString());
 
-        when(consumer.hentArenaAktiviteter(ikkeTilgangFnr))
-                .thenReturn(List.of(tilFho, ikkeTilFho));
+        AktiviteterDTO.Tiltaksaktivitet utenFho = new AktiviteterDTO.Tiltaksaktivitet().setAktivitetId(getRandomString());
+
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(medFho))
+                        .setTiltaksaktiviteter(List.of(utenFho))));
 
         when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, tilFho.getId()));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId()));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
     }
