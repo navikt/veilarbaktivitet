@@ -36,12 +36,9 @@ public class VeilarbarenaClient {
     @Value("${app.env.veilarena.serviceurl}")
     private String veilarbarenaServiceUrl;
 
-    @Value("${app.env.veilarena.port}")
-    private int veilarbarenaServicePort;
-
 
     public HealthStatus  ping() {
-        String uri = String.format("http://%s:%s/internal/selftest", veilarbarenaServiceUrl, veilarbarenaServicePort);
+        String uri = String.format("http://%s/internal/selftest", veilarbarenaServiceUrl);
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -59,7 +56,7 @@ public class VeilarbarenaClient {
     public Optional<AktiviteterDTO> hentAktiviteter(Person.Fnr fnr) {
         String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
 
-        String uri = String.format("http://%s:%s/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, veilarbarenaServicePort, fnr.get());
+        String uri = String.format("http://%s/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, fnr.get());
         Request request = new Request.Builder()
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .url(uri)
