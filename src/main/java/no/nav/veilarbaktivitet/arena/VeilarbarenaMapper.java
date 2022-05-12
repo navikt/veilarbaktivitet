@@ -191,12 +191,14 @@ public class VeilarbarenaMapper {
     }
 
     private static Date mapDateTimeToDate(LocalDate localDate, String klokkeslett) {
+        if (klokkeslett == null) {
+            return DateUtils.toDate(localDate);
+        }
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss");
         LocalTime localTime = LocalTime.parse(klokkeslett, dateTimeFormatter);
 
         LocalDateTime localDateTime = localDate.atTime(localTime);
-
-        return DateUtils.toDate(localDateTime.toLocalDate());
+        return Date.from(localDateTime.atZone(systemDefault()).toInstant());
     }
 
     private static Date mapPeriodeToDate(AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode periode, Function<AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode, LocalDate> periodeDate) {
