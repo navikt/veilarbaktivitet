@@ -6,8 +6,9 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
+import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.arena.ArenaServiceHelsesjekk;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import org.mockito.Mockito;
@@ -30,6 +31,11 @@ public class ApplicationTestConfig {
         SystemUserTokenProvider systemUserTokenProvider = mock(SystemUserTokenProvider.class);
         Mockito.when(systemUserTokenProvider.getSystemUserToken()).thenReturn("mockSystemUserToken");
         return systemUserTokenProvider;
+    }
+
+    @Bean
+    public AzureAdMachineToMachineTokenClient tokenClient() {
+        return mock(AzureAdMachineToMachineTokenClient.class);
     }
 
     @Bean
@@ -60,11 +66,6 @@ public class ApplicationTestConfig {
     @Bean
     UnleashClient unleashClient() {
         return mock(UnleashClient.class);
-    }
-
-    @Bean
-    ArenaServiceHelsesjekk arenaServiceHelsesjekk() {
-        return mock(ArenaServiceHelsesjekk.class);
     }
 
 }

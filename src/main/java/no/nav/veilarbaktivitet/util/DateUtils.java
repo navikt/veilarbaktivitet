@@ -28,6 +28,10 @@ public class DateUtils {
         }).orElse(null);
     }
 
+    public static Date toDate(LocalDate localDate) {
+        return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
+    }
+
     public static Date getDate(XMLGregorianCalendar xmlGregorianCalendar){
         return ofNullable(xmlGregorianCalendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)

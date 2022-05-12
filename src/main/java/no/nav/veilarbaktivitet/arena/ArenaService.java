@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
@@ -21,7 +22,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
@@ -30,45 +30,54 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 @Slf4j
 @Component
 public class ArenaService {
-    private final ArenaAktivitetConsumer consumer;
     private final ForhaandsorienteringDAO fhoDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
+    private final VeilarbarenaClient veilarbarenaClient;
 
     public static final String AVTALT_MED_NAV_COUNTER = "arena.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
     public static final String FORHAANDSORIENTERING_TYPE_LABEL = "ForhaandsorienteringType";
 
-    public ArenaService(ArenaAktivitetConsumer consumer, ForhaandsorienteringDAO fhoDAO, AuthService authService, MeterRegistry meterRegistry, BrukernotifikasjonService brukernotifikasjonArenaAktivitetService) {
-        this.consumer = consumer;
+    public ArenaService(
+            ForhaandsorienteringDAO fhoDAO,
+            AuthService authService,
+            MeterRegistry meterRegistry,
+            BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
+            VeilarbarenaClient veilarbarenaClient
+    ) {
         this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
         this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
+        this.veilarbarenaClient = veilarbarenaClient;
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall arena aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
                 .register(meterRegistry);
     }
 
-
     public List<ArenaAktivitetDTO> hentAktiviteter(Person.Fnr fnr) {
-        List<ArenaAktivitetDTO> aktiviteterFraArena = consumer.hentArenaAktiviteter(fnr);
+        Optional<AktiviteterDTO> aktiviteterFraArena = veilarbarenaClient.hentAktiviteter(fnr);
+
+        if (aktiviteterFraArena.isEmpty()) return List.of();
+
+        List<ArenaAktivitetDTO> aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get());
 
         Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
 
         List<Forhaandsorientering> forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId);
 
-        return aktiviteterFraArena
+        return aktiviteter
                 .stream()
                 .map(mergeMedForhaandsorientering(forhaandsorienteringData))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public boolean harAktiveTiltak(Person.Fnr ident) {
-        return consumer.hentArenaAktiviteter(ident)
+        return hentAktiviteter(ident)
                 .stream()
                 .map(ArenaAktivitetDTO::getStatus)
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);

@@ -6,7 +6,7 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
-import no.nav.veilarbaktivitet.arena.ArenaServiceHelsesjekk;
+import no.nav.veilarbaktivitet.arena.VeilarbarenaHelsesjekk;
 import no.nav.veilarbaktivitet.config.database.DatabaseHelsesjekk;
 import no.nav.veilarbaktivitet.config.kafka.KafkaHelsesjekk;
 import org.springframework.context.annotation.Bean;
@@ -20,7 +20,7 @@ public class HelsesjekkConfig {
 
     @Bean
     public SelfTestChecks selfTestChecks(
-            ArenaServiceHelsesjekk arenaServiceHelsesjekk,
+            VeilarbarenaHelsesjekk veilarbarenaHelsesjekk,
             AktorOppslagClient aktorOppslagClient,
             Pep pep,
             DatabaseHelsesjekk databaseHelsesjekk,
@@ -28,7 +28,7 @@ public class HelsesjekkConfig {
             KafkaHelsesjekk kafkaHelsesjekk
     ) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
-                new SelfTestCheck("TiltakOgAktivitetV1", false, arenaServiceHelsesjekk),
+                new SelfTestCheck("Veilarbarena", false, veilarbarenaHelsesjekk),
                 new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
                 new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
