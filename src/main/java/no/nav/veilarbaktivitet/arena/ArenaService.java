@@ -66,7 +66,7 @@ public class ArenaService {
         List<ArenaAktivitetDTO> aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get());
 
         Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke aktorId"));
 
         List<Forhaandsorientering> forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId);
 

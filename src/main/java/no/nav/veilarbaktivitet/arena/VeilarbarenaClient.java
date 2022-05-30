@@ -70,7 +70,7 @@ public class VeilarbarenaClient {
 
             return RestUtils.parseJsonResponse(response, AktiviteterDTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot veilarbarena", e);
+            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Feil ved kall mot veilarbarena", e);
         }
     }
 
