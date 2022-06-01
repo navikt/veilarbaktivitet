@@ -29,7 +29,7 @@ spec:
         for: 8h
         severity: warning
         description: Vedvarende feilrate i veilarbaktivitet
-        action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
+        action: https://grafana.nais.io/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
         sla: se på denne i løpet av de neste dagene.
       - alert: Høy feilrate mot arena
         expr: |
@@ -48,7 +48,7 @@ spec:
         for: 1s
         severity: '#e5e5ff'
         description: Høy feilrate mot arena i veilarbaktivitet.
-        action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
+        action: https://grafana.nais.io/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       - alert: Vedvarende feilrate mot arena
         expr: |
           (((
@@ -66,4 +66,4 @@ spec:
         for: 8h
         severity: '#e5e5ff'
         description: Vedvarende feilrate mot arena i veilarbaktivitet
-        action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
+        action: https://grafana.nais.io/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
