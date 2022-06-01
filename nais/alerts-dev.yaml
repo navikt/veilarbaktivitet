@@ -28,7 +28,7 @@ spec:
       for: 1s
       severity: danger
       description: Høy feilrate mot veilarbaktivitet.
-      action: https://grafana.adeo.no/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
+      action: https://grafana.nais.io/d/z4LNWq-Mz/dab-alarmer \n https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       sla: se på denne så fort som mulig (innefor arbeidstid)
     - alert: Feil mot brukernotifikasjon
       for: 1s
