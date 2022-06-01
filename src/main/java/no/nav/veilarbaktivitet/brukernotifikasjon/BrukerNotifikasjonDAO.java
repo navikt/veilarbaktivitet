@@ -39,6 +39,17 @@ public class BrukerNotifikasjonDAO {
                 """, params);
     }
 
+    public boolean finnesBrukernotifikasjon(String bestillingsId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("brukernotifikasjon_id", bestillingsId);
+        String sql = """
+            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
+            WHERE BRUKERNOTIFIKASJON_ID=:brukernotifikasjon_id
+        """;
+        int antall = jdbcTemplate.queryForObject(sql, params, int.class);
+        return antall > 0;
+    }
+
     long opprettBrukernotifikasjon(
             UUID brukernotifikasjonId,
             Person.Fnr foedselsnummer,

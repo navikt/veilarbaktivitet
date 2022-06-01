@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -14,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class EksternVarslingKvitteringConsumer {
     private final KvitteringDAO kvitteringDAO;
+
+    private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
     private final KvitteringMetrikk kvitteringMetrikk;
 
     public static final String FEILET = "FEILET";
@@ -24,8 +27,9 @@ public class EksternVarslingKvitteringConsumer {
     private final String beskjedPrefix;
     private final String appname;
 
-    public EksternVarslingKvitteringConsumer(KvitteringDAO kvitteringDAO, KvitteringMetrikk kvitteringMetrikk, @Value("${app.env.appname}") String appname) {
+    public EksternVarslingKvitteringConsumer(KvitteringDAO kvitteringDAO, BrukerNotifikasjonDAO brukerNotifikasjonDAO, KvitteringMetrikk kvitteringMetrikk, @Value("${app.env.appname}") String appname) {
         this.kvitteringDAO = kvitteringDAO;
+        this.brukerNotifikasjonDAO = brukerNotifikasjonDAO;
         this.kvitteringMetrikk = kvitteringMetrikk;
         oppgavePrefix = "O-" + appname + "-";
         beskjedPrefix = "B-" + appname + "-";
@@ -44,12 +48,17 @@ public class EksternVarslingKvitteringConsumer {
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
         log.info("Konsumerer DoknotifikasjonStatus bestillingsId={}, status={}", brukernotifikasjonBestillingsId, melding.getStatus());
 
-        if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
-            log.error("mottok melding med feil prefiks, {}", melding);
-            throw new IllegalArgumentException("mottok melding med feil prefiks");
-        }
-        String bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+        String bestillingsId;
 
+        if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
+            bestillingsId = brukernotifikasjonBestillingsId;
+        } else {
+            bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
+        }
+        if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(bestillingsId)) {
+            log.warn("Mottok kvittering for brukernotifikasjon bestillingsid={} som ikke finnes i våre systemer", bestillingsId);
+            throw new IllegalArgumentException("Ugyldig bestillingsid.");
+        }
         kvitteringDAO.lagreKvitering(bestillingsId, melding);
 
         String status = melding.getStatus();
