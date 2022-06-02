@@ -151,7 +151,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
         Assertions.assertEquals(0, gauge.value());
 
 
-        String brukernotifikasjonId = BESSKJED_KVOTERINGS_PREFIX + eventId;
+        String brukernotifikasjonId = eventId;
         val ugyldigstatus = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"));
         Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(ugyldigstatus));
 
