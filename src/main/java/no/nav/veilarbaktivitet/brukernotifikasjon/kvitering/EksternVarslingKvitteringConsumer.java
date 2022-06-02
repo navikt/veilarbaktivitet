@@ -48,13 +48,8 @@ public class EksternVarslingKvitteringConsumer {
         String brukernotifikasjonBestillingsId = melding.getBestillingsId();
         log.info("Konsumerer DoknotifikasjonStatus bestillingsId={}, status={}", brukernotifikasjonBestillingsId, melding.getStatus());
 
-        String bestillingsId;
+        String bestillingsId = utledBestillingsId(brukernotifikasjonBestillingsId);
 
-        if (!brukernotifikasjonBestillingsId.startsWith(oppgavePrefix) && !brukernotifikasjonBestillingsId.startsWith(beskjedPrefix)) {
-            bestillingsId = brukernotifikasjonBestillingsId;
-        } else {
-            bestillingsId = brukernotifikasjonBestillingsId.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
-        }
         if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(bestillingsId)) {
             log.warn("Mottok kvittering for brukernotifikasjon bestillingsid={} som ikke finnes i våre systemer", bestillingsId);
             throw new IllegalArgumentException("Ugyldig bestillingsid.");
@@ -87,6 +82,14 @@ public class EksternVarslingKvitteringConsumer {
 
         if (melding.getDistribusjonId() == null) {
             kvitteringMetrikk.incrementBrukernotifikasjonKvitteringMottatt(status);
+        }
+    }
+
+    private String utledBestillingsId(String inputBestillingsid) {
+        if (!inputBestillingsid.startsWith(oppgavePrefix) && !inputBestillingsid.startsWith(beskjedPrefix)) {
+            return inputBestillingsid;
+        } else {
+           return inputBestillingsid.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
         }
     }
 }
