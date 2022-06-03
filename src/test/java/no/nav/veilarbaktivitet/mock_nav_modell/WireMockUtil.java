@@ -102,66 +102,73 @@ public class WireMockUtil {
     }
 
     public static void aktorUtenGjeldende(String fnr, String aktorId) {
-        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
-                .withHeader("Nav-Personidenter", equalTo(fnr))
-                .willReturn(ok().withBody("" +
-                        "{" +
-                        "  \"" + fnr + "\": {" +
-                        "    \"identer\": [" +
-                        "      {" +
-                        "        \"ident\": \"" + aktorId + "\"," +
-                        "        \"identgruppe\": \"AktoerId\"," +
-                        "        \"gjeldende\": false" +
-                        "      }" +
-                        "    ]" +
-                        "  }" +
-                        "}")));
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+                .withRequestBody(matching("^.*FOLKEREGISTERIDENT.*"))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId)))
+                .willReturn(aResponse()
+                        .withBody("""
+                                {
+                                  "data": {
+                                    "hentIdenter": {
+                                      "identer": []
+                                    }
+                                  }
+                                }
+                                """)));
 
-        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
-                .withHeader("Nav-Personidenter", equalTo(aktorId))
-                .willReturn(ok().withBody("" +
-                        "{" +
-                        "  \"" + aktorId + "\": {" +
-                        "    \"identer\": [" +
-                        "      {" +
-                        "        \"ident\": \"" + fnr + "\"," +
-                        "        \"identgruppe\": \"NorskIdent\"," +
-                        "        \"gjeldende\": false" +
-                        "      }" +
-                        "    ]" +
-                        "  }" +
-                        "}")));
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+                .withRequestBody(matching("^.*AKTORID.*"))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(fnr)))
+                .willReturn(aResponse()
+                        .withBody("""
+                                {
+                                  "data": {
+                                    "hentIdenter": {
+                                      "identer": []
+                                    }
+                                  }
+                                }
+                                """)));
     }
 
     private static void aktor(String fnr, String aktorId) {
-        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=AktoerId")
-                .withHeader("Nav-Personidenter", equalTo(fnr))
-                .willReturn(ok().withBody("" +
-                        "{" +
-                        "  \"" + fnr + "\": {" +
-                        "    \"identer\": [" +
-                        "      {" +
-                        "        \"ident\": \"" + aktorId + "\"," +
-                        "        \"identgruppe\": \"AktoerId\"," +
-                        "        \"gjeldende\": true" +
-                        "      }" +
-                        "    ]" +
-                        "  }" +
-                        "}")));
 
-        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
-                .withHeader("Nav-Personidenter", equalTo(aktorId))
-                .willReturn(ok().withBody("" +
-                        "{" +
-                        "  \"" + aktorId + "\": {" +
-                        "    \"identer\": [" +
-                        "      {" +
-                        "        \"ident\": \"" + fnr + "\"," +
-                        "        \"identgruppe\": \"NorskIdent\"," +
-                        "        \"gjeldende\": true" +
-                        "      }" +
-                        "    ]" +
-                        "  }" +
-                        "}")));
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+                .withRequestBody(matching("^.*FOLKEREGISTERIDENT.*"))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId)))
+                        .willReturn(aResponse()
+                                .withBody("""
+                                {
+                                  "data": {
+                                    "hentIdenter": {
+                                      "identer": [{
+                                         "ident": "%s",
+                                         "historisk": false,
+                                         "gruppe": "FOLKEREGISTERIDENT"
+                                      }
+                                      ]
+                                    }
+                                  }
+                                }
+                                """.formatted(fnr))));
+
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+                .withRequestBody(matching("^.*AKTORID.*"))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(fnr)))
+                .willReturn(aResponse()
+                        .withBody("""
+                                {
+                                  "data": {
+                                    "hentIdenter": {
+                                      "identer": [{
+                                         "ident": "%s",
+                                         "historisk": false,
+                                         "gruppe": "AKTORID"
+                                         
+                                      }]
+                                    }
+                                  }
+                                }
+                                """.formatted(aktorId))));
     }
 }

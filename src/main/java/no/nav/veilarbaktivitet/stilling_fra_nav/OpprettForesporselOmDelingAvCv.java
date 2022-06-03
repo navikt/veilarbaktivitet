@@ -65,7 +65,7 @@ public class OpprettForesporselOmDelingAvCv {
             sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
             underOppfolging = true;
         } catch (IngenGjeldendeIdentException exception) {
-            producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gydlig ident for aktorId");
+            producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {

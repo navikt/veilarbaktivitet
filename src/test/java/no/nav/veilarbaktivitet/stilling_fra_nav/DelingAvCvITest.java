@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTempla
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
@@ -140,14 +141,8 @@ public class DelingAvCvITest extends SpringBootTestBase {
         //TODO se på om vi burde unngå bruker her
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
-        stubFor(get("/aktorTjeneste/identer?gjeldende=true&identgruppe=NorskIdent")
-                .withHeader("Nav-Personidenter", equalTo(mockBruker.getAktorId()))
-                .willReturn(ok().withBody("" +
-                        "{" +
-                        "  \"" + mockBruker.getAktorId() + "\": {" +
-                        "    \"identer\": []" +
-                        "  }" +
-                        "}")));
+        WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
+
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
@@ -160,7 +155,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
             assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
             assertions.assertThat(value.getAktivitetId()).isNull();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
-            assertions.assertThat(value.getKanIkkeOppretteBegrunnelse().getFeilmelding()).isEqualTo("Finner ingen gydlig ident for aktorId");
+            assertions.assertThat(value.getKanIkkeOppretteBegrunnelse().getFeilmelding()).isEqualTo("Finner ingen gyldig ident for aktorId");
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });

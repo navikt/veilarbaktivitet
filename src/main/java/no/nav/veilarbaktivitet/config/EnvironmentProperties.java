@@ -17,7 +17,6 @@ public class EnvironmentProperties {
     private String loginserviceIdportenAudience;
     private String naisStsDiscoveryUrl;
     private String abacUrl;
-    private String aktorregisterUrl;
     private String kafkaBrokersUrl;
     private String environmentName;
     private String cxfStsUrl;
