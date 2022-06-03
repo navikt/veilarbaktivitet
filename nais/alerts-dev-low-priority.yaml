@@ -8,7 +8,7 @@ metadata:
 spec:
   receivers:
     slack:
-      channel: '#team_dab_alerts'
+      channel: '#team_dab_alerts_dev'
     route:
       repeatInterval: 48h
     alerts:
