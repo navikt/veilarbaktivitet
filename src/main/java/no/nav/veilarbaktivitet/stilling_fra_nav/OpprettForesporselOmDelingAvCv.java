@@ -152,8 +152,10 @@ public class OpprettForesporselOmDelingAvCv {
         if (kontaktInfo == null) {
             return null;
         }
+        String orginalNavn = kontaktInfo.getNavn();
+        String navnUnder250 = orginalNavn == null ? null : orginalNavn.substring(0, Math.min(orginalNavn.length(), 240));
         return KontaktpersonData.builder()
-                .navn(kontaktInfo.getNavn())
+                .navn(navnUnder250)
                 .tittel(kontaktInfo.getTittel())
                 .mobil(kontaktInfo.getMobil())
                 .build();
