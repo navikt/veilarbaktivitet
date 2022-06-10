@@ -72,6 +72,9 @@ spec:
         - application: veilarbapi
           namespace: pto
           cluster: dev-gcp
+        - application: veilarbpersonflatefs
+          namespace: pto
+          cluster: dev-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
