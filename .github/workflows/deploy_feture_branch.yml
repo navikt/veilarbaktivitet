@@ -20,6 +20,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'maven'
       - name: Build maven artifacts
         run: mvn -B package
       - name: Build and push Docker image
