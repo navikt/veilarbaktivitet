@@ -2,14 +2,15 @@ package no.nav.veilarbaktivitet.config.filter;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.log.MarkerBuilder;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.FilterConfig;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +26,11 @@ public class SecureLogsfilterFilter implements Filter {
     private final AuthService authService;
     private final UserInContext userInContext;
 
+
+    @Override
+    public void init(FilterConfig filterConfig) throws ServletException {
+
+    }
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
@@ -46,6 +52,11 @@ public class SecureLogsfilterFilter implements Filter {
                 .field("queryString", httpRequest.getQueryString())
                 .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
                 .log(log::info);
+
+    }
+
+    @Override
+    public void destroy() {
 
     }
 
