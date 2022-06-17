@@ -12,6 +12,10 @@ plugins {
     id("org.sonarqube") version "3.4.0.2513"
 }
 
+dependencyLocking {
+    lockAllConfigurations()
+}
+
 sonarqube {
     properties {
         property("sonar.projectKey", "navikt_veilarbaktivitet")
