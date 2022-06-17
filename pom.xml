@@ -124,7 +124,7 @@
                                 <configuration>
                                     <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
                                     <includes>
-                                        <include>**/*.avdl</include>
+                                        <include>**/*.avsc</include>
                                     </includes>
                                 </configuration>
                             </execution>
