@@ -8,8 +8,28 @@ plugins {
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
+    id ("jacoco")
+    id("org.sonarqube") version "3.4.0.2513"
 }
 
+sonarqube {
+    properties {
+        property("sonar.projectKey", "navikt_veilarbaktivitet")
+        property( "sonar.organization", "navikt")
+        property( "sonar.host.url", "https://sonarcloud.io")
+    }
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+    }
+}
+
+tasks.sonarqube {
+    dependsOn(tasks.jacocoTestReport)
+}
 
 repositories {
     mavenCentral()
