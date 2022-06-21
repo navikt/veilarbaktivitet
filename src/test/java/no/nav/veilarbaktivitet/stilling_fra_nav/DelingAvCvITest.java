@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -61,8 +62,8 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
-    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
