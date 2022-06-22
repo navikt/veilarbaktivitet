@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -27,14 +28,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.util.Date;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -44,6 +45,9 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     @Value("${topic.inn.stillingFraNav}")
     private String innTopic;
+
+    @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
+    private String innSoknadsoppdatering;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
@@ -58,12 +62,17 @@ public class DelingAvCvITest extends SpringBootTestBase {
     @Autowired
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
+    @Autowired
+    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> jsonProducer;
+
     Consumer<String, DelingAvCvRespons> consumer;
+    Consumer<String, RekrutteringsbistandStatusoppdatering> soknadsoppdateringConsumer;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
 
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+
     @After
     public void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
@@ -75,6 +84,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         consumer = kafkaTestService.createStringAvroConsumer(utTopic);
+        soknadsoppdateringConsumer = kafkaTestService.createStringJsonConsumer(innSoknadsoppdatering);
     }
 
     @Test
@@ -310,5 +320,25 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
         ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
+    }
+
+    @Test
+    public void sender_rekrutteringsbistandStatusoppdatering_som_kan_konsumeres() {
+        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
+        RekrutteringsbistandStatusoppdatering soknadsoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", tidspunkt);
+
+        String key = UUID.randomUUID().toString();
+        jsonProducer.send(innSoknadsoppdatering, key, soknadsoppdatering);
+        ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord = getSingleRecord(soknadsoppdateringConsumer, innSoknadsoppdatering, 10000);
+        RekrutteringsbistandStatusoppdatering value = singleRecord.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(singleRecord.key()).isEqualTo(key);
+            assertions.assertThat(value.detaljer()).isNullOrEmpty();
+            assertions.assertThat(value.tidspunkt()).isEqualTo(tidspunkt);
+            assertions.assertThat(value.type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
+            assertions.assertAll();
+        });
+
     }
 }

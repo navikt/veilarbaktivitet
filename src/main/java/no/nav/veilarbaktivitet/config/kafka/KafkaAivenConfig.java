@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -17,8 +18,8 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
+import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.time.Duration;
@@ -102,6 +103,30 @@ public class KafkaAivenConfig {
     }
 
     @Bean
+    <V> ConcurrentKafkaListenerContainerFactory<String, V> stringJsonListenerContainerFactory(
+            ConsumerFactory<String, V> kafkaConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(kafkaConsumerFactory);
+        factory.getContainerProperties()
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
+        factory.setConcurrency(3);
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+
+    @Bean
+    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
+            ConsumerFactory<String, V> kafkaConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(kafkaConsumerFactory);
+        factory.getContainerProperties()
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
+        factory.setConcurrency(3);
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
+    }
+
+    @Bean
     DefaultErrorHandler errorHandler() {
         return new DefaultErrorHandler((rec, thr) -> log.error("Exception={} oppstått i kafka-consumer record til topic={}, partition={}, offset={}, bestillingsId={} feilmelding={}",
                 thr.getClass().getSimpleName(),
@@ -122,18 +147,6 @@ public class KafkaAivenConfig {
         factory.setConcurrency(3);
         factory.setCommonErrorHandler(errorHandler());
 
-        return factory;
-    }
-
-    @Bean
-    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
-            ConsumerFactory<String, V> kafkaConsumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.getContainerProperties()
-                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
-        factory.setConcurrency(3);
-        factory.setCommonErrorHandler(errorHandler());
         return factory;
     }
 
@@ -175,4 +188,14 @@ public class KafkaAivenConfig {
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
+
+    @Bean
+    <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties) {
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
+        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
+        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
+        consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+        return new DefaultKafkaConsumerFactory<>(consumerProperties);
+    }
+
 }
