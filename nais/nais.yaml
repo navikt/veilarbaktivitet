@@ -11,7 +11,7 @@ spec:
   ingresses:
     - https://veilarbaktivitet.nais.adeo.no
     - https://app.adeo.no/veilarbaktivitet
-    - https://veilarbpersonflate.intern.nav.no/veilarbaktivitet
+    - https://veilarbaktivitet.prod-fss-pub.nais.io
   port: 8080
   prometheus:
     enabled: true
@@ -68,6 +68,9 @@ spec:
       rules:
         - application: veilarbapi
           namespace: pto
+          cluster: prod-gcp
+        - application: veilarbpersonflate
+          namespace: poao
           cluster: prod-gcp
   env:
     - name: APP_ENVIRONMENT_NAME

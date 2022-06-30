@@ -13,7 +13,6 @@ spec:
     - https://app-q1.adeo.no/veilarbaktivitet
     - https://app-q1.dev.adeo.no/veilarbaktivitet
     - https://app.dev.adeo.no/veilarbaktivitet
-    - https://veilarbpersonflate.dev.intern.nav.no/veilarbaktivitet
     - https://veilarbaktivitet.dev-fss-pub.nais.io
   port: 8080
   prometheus:
