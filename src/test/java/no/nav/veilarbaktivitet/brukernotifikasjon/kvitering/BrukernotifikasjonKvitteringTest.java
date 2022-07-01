@@ -24,9 +24,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -35,15 +33,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.*;
 import static org.junit.Assert.assertEquals;
@@ -175,7 +169,31 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.FEILET); //SKAl ikke ha endret seg
     }
 
-    private void infoOgOVersendtSkalIkkeEndreStatus(String eventId, VarselKvitteringStatus expectedVarselKvitteringStatus) {
+    @SneakyThrows
+    @Test
+    public void ekstern_done_event() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
+        AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
+        assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+
+
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
+        String eventId = oppgaveRecord.key().getEventId();
+
+        assertVarselStatusErSendt(eventId);
+        assertEquals(1, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+
+        val message = statusUtenDistribusjonsId(eventId, FERDIGSTILT);
+        assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
+        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, eventId, message));
+
+        assertVarselStatusErAvsluttet(eventId);
+        assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
+    }
+
+        private void infoOgOVersendtSkalIkkeEndreStatus(String eventId, VarselKvitteringStatus expectedVarselKvitteringStatus) {
         consumAndAssertStatus(eventId, infoStatus(eventId), expectedVarselKvitteringStatus);
         consumAndAssertStatus(eventId, oversendtStatus(eventId), expectedVarselKvitteringStatus);
     }
@@ -197,10 +215,17 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
     }
 
     private void assertVarselStatusErSendt(String eventId) {
+    assertVarselStatus(eventId, VarselStatus.SENDT);
+    }
+    private void assertVarselStatusErAvsluttet(String eventId) {
+    assertVarselStatus(eventId, VarselStatus.AVSLUTTET);
+    }
+
+    private void assertVarselStatus(String eventId, VarselStatus varselStatus) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("eventId", eventId);
         String status = jdbc.queryForObject("SELECT STATUS from BRUKERNOTIFIKASJON where BRUKERNOTIFIKASJON_ID = :eventId", param, String.class);//TODO fiks denne når vi eksponerer det ut til apiet
-        assertEquals(VarselStatus.SENDT.name(), status);
+        assertEquals(varselStatus.name(), status);
     }
 
     private void assertEksternVarselStatus(String eventId, VarselKvitteringStatus expectedVarselStatus) {
@@ -219,6 +244,17 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
                 .setBestillerId("veilarbaktivitet")
                 .setMelding("her er en melding")
                 .setDistribusjonId(1L)
+                .build();
+    }
+
+    private DoknotifikasjonStatus statusUtenDistribusjonsId(String eventId, String status) {
+        return DoknotifikasjonStatus
+                .newBuilder()
+                .setStatus(status)
+                .setBestillingsId(eventId)
+                .setBestillerId("veilarbaktivitet")
+                .setMelding("her er en melding")
+                .setDistribusjonId(null)
                 .build();
     }
 

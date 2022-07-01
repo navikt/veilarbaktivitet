@@ -1,8 +1,10 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
+import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -15,6 +17,7 @@ import java.util.List;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class KvitteringDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
@@ -107,5 +110,24 @@ public class KvitteringDAO {
                         (  BRUKERNOTIFIKASJON_ID,  STATUS,  MELDING,  distribusjonId,  BESKJED )
                 VALUES  ( :BRUKERNOTIFIKASJON_ID, :STATUS, :MELDING, :distribusjonId, :BESKJED )
                 """, parameterSource);
+    }
+
+    public void setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(String brukernotifikasjonsId) {
+        MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("brukernotifikasjonsId", brukernotifikasjonsId)
+                .addValue("avsluttetStatus", VarselStatus.AVSLUTTET.name())
+                .addValue("eksternKvitteringIkkeSattStatus", VarselKvitteringStatus.IKKE_SATT.name());
+        int update = jdbc.update(
+            """
+                 update BRUKERNOTIFIKASJON
+                 set STATUS = :avsluttetStatus
+                 where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonsId
+                 AND VARSEL_KVITTERING_STATUS = :eksternKvitteringIkkeSattStatus
+                """
+                , param);
+
+        if (update > 0) {
+            log.warn("Brukernotifikasjon id={} avsluttet uten at eksterne varsel er sendt, fordi done ble sannsynligvis trigger av eksternt system.", brukernotifikasjonsId);
+        }
     }
 }
