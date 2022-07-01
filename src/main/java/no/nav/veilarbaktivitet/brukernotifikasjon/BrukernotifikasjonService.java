@@ -71,7 +71,7 @@ public class BrukernotifikasjonService {
 
         boolean kanVarsles = !erManuell && !erReservertIKrr && harBruktNivaa4;
         if(!kanVarsles) {
-            secureLogs.info("bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}, harBruktNivaa4: {}", aktorId, erManuell, erReservertIKrr, harBruktNivaa4);
+            secureLogs.info("bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}, harBruktNivaa4: {}", aktorId.get(), erManuell, erReservertIKrr, harBruktNivaa4);
         }
 
         return kanVarsles;

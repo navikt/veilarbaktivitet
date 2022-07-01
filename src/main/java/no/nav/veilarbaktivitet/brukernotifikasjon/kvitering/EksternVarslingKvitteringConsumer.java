@@ -73,6 +73,12 @@ public class EksternVarslingKvitteringConsumer {
                     log.info("Brukernotifikasjon fullført for bestillingsId={}", brukernotifikasjonBestillingsId);
                 } else {
                     log.info("Hele bestillingen inkludert revarsling er ferdig, bestillingsId={}", brukernotifikasjonBestillingsId);
+                    /**
+                     * Håndterer race condition der brukernotifikasjon blir satt til done fra andre systemer
+                     * (typisk ved at bruker er inne og leser på ditt nav)
+                     * før eksternt varsel er sendt ut
+                     */
+                    kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(bestillingsId);
                 }
                 break;
             default:
