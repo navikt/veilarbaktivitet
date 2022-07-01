@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 @AllArgsConstructor
@@ -25,11 +26,11 @@ public class KafkaAktivitetDAO {
     public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
         // language=sql
         return database.query("" +
-                        " SELECT *" +
-                        " FROM AKTIVITET" +
-                        " where AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL" +
-                        " order by VERSJON " +
-                        " FETCH NEXT 5000 ROWS ONLY",
+                              "SELECT SFN.AKTIVITET_ID as SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES, A.* FROM AKTIVITET A" +
+                              " LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon" +
+                              " where A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL" +
+                              " order by VERSJON" +
+                              " FETCH NEXT 5000 ROWS ONLY",
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
         );
     }
@@ -49,6 +50,12 @@ public class KafkaAktivitetDAO {
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
         InnsenderData lagtInnAv = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
         EndringsType transaksjonsType = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
+        boolean stillingFraNavDataFinnes = Objects.nonNull(rs.getObject("sfn_key"));
+        StillingFraNavPortefoljeData stillingFraNavData =
+                stillingFraNavDataFinnes ? new StillingFraNavPortefoljeData(CvKanDelesStatus.valueOf(
+                        rs.getInt("CV_KAN_DELES")),
+                        rs.getDate("SVARFRIST")
+                ) : null;
 
         return KafkaAktivitetMeldingV4.builder()
                 .aktivitetId(String.valueOf(rs.getLong("aktivitet_id")))
@@ -61,6 +68,7 @@ public class KafkaAktivitetDAO {
                 .aktivitetStatus(status)
                 .lagtInnAv(lagtInnAv)
                 .endringsType(transaksjonsType)
+                .stillingFraNavData(stillingFraNavData)
                 .avtalt(rs.getBoolean("avtalt"))
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .build();
