@@ -74,12 +74,12 @@ public class KafkaTestService {
         return newConsumer;
     }
 
-    public Consumer createStringStringConsumer(String topic) {
+    public Consumer<String, String> createStringStringConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
         Properties modifisertConfig = new Properties();
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        Consumer newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer<String, String> newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         seekToEnd(topic, newConsumer);
 
         return newConsumer;
