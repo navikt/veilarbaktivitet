@@ -3,4 +3,5 @@
     <include resource="no/nav/common/log/logback-default.xml"/>
     <!-- Logger cookies dersom den ikke parses riktig, noe vi ikke ønsker. Fikset i versjon 2.2020.10.13_14.48-80e4c2dc5856 av common-java-modules -->
     <logger name="org.apache.tomcat.util.http.parser.Cookie" level="OFF" />
+    <logger name="no.nav.veilarbaktivitet" level="DEBUG" />
 </configuration>

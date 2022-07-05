@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -42,6 +41,8 @@ class BrukerNotifkasjonOppgaveService {
             case OPPGAVE -> oppgaveProducer.sendOppgave(skalSendes);
             case BESKJED -> beskjedProducer.sendBeskjed(skalSendes);
         };
+
+        log.debug("Brukernotifikasjon {} med type {} publisert med offset {}", skalSendes.getBrukernotifikasjonId(), varselType.getBrukernotifikasjonType().name(), offset);
     }
 
     @SneakyThrows
