@@ -37,10 +37,11 @@ public class KafkaAktivitetDAO {
     @Timed
     public void updateSendtPaKafkaAven(Long versjon, Long kafkaOffset) {
         // language=sql
-        database.update("" +
-                        " update AKTIVITET " +
-                        " set PORTEFOLJE_KAFKA_OFFSET_AIVEN = ?" +
-                        " where VERSJON = ?",
+        database.update("""
+                 update AKTIVITET
+                 set PORTEFOLJE_KAFKA_OFFSET_AIVEN = ?
+                 where VERSJON = ?
+                 """,
                 kafkaOffset, versjon);
     }
 

@@ -34,6 +34,8 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 @Slf4j
 public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
+    private final MockBruker mockBruker = MockNavService.createHappyBruker();
+    private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
     @Value("${topic.ut.portefolje}")
     private String portefoljetopic;
 
@@ -56,13 +58,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     AktiviteterTilKafkaService aktiviteterTilKafkaService;
 
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
-
-    @After
-    public void verify_no_unmatched() {
-        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
-        portefoljeConsumer.unsubscribe();
-        portefoljeConsumer.close();
-    }
+    private AktivitetDTO stillingFraNav;
 
     @Before
     public void cleanupBetweenTests() {
@@ -72,87 +68,72 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
 
     @Test
     public void harIkkeSvart() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        aktivitetTestService.opprettStillingFraNav(mockBruker);
+        stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
 
-        ConsumerRecord<String, String> jason = getSingleRecord(portefoljeConsumer, portefoljetopic, 10000);
-        KafkaAktivitetMeldingV4 kafkaAktivitetMeldingV4 = JsonUtils.fromJson(jason.value(), KafkaAktivitetMeldingV4.class);
+        KafkaAktivitetMeldingV4 kafkaAktivitetMeldingV4 = lesSisteMelding(stillingFraNav.getId());
 
         Assertions.assertThat(kafkaAktivitetMeldingV4).isNotNull();
         Assertions.assertThat(kafkaAktivitetMeldingV4.getStillingFraNavData().cvKanDelesStatus()).isEqualTo(CvKanDelesStatus.IKKE_SVART);
     }
 
-    public static final Date AVTALT_DATO;
-
-    static {
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.YEAR, 1988);
-        cal.set(Calendar.MONTH, Calendar.JANUARY);
-        cal.set(Calendar.DAY_OF_MONTH, 1);
-        AVTALT_DATO = cal.getTime();
-    }
-
     @Test
     public void harSvartNei() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        aktivitetTestService.svarPaaDelingAvCv(Boolean.FALSE, mockBruker, mockVeileder, aktivitetDTO, AVTALT_DATO);
-
+        stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
+        svarPaDelingAvCv(Boolean.FALSE);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
 
-        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), mockBruker, mockVeileder);
-
-        ConsumerRecord<String, String> sisteConsumerRecord = null;
-
-        for (ConsumerRecord<String, String> r : getRecords(portefoljeConsumer, 10000, aktivitetDTOS.size())) {
-            sisteConsumerRecord = r;
-        }
-
-        Assertions.assertThat(sisteConsumerRecord).isNotNull();
-        KafkaAktivitetMeldingV4 sisteMelding = JsonUtils.fromJson(sisteConsumerRecord.value(), KafkaAktivitetMeldingV4.class);
+        KafkaAktivitetMeldingV4 sisteMelding = lesSisteMelding(stillingFraNav.getId());
         Assertions.assertThat(sisteMelding.getStillingFraNavData().cvKanDelesStatus()).isSameAs(CvKanDelesStatus.NEI);
     }
 
     @Test
     public void harSvartJa() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
-        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        aktivitetTestService.svarPaaDelingAvCv(Boolean.TRUE, mockBruker, mockVeileder, aktivitetDTO, AVTALT_DATO);
-
+        stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
+        svarPaDelingAvCv(Boolean.TRUE);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
 
-        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(aktivitetDTO.getId(), mockBruker, mockVeileder);
-
-        ConsumerRecord<String, String> sisteConsumerRecord = null;
-
-        for (ConsumerRecord<String, String> r : getRecords(portefoljeConsumer, 10000, aktivitetDTOS.size())) {
-            sisteConsumerRecord = r;
-        }
-
-        Assertions.assertThat(sisteConsumerRecord).isNotNull();
-        KafkaAktivitetMeldingV4 sisteMelding = JsonUtils.fromJson(sisteConsumerRecord.value(), KafkaAktivitetMeldingV4.class);
+        KafkaAktivitetMeldingV4 sisteMelding = lesSisteMelding(stillingFraNav.getId());
         Assertions.assertThat(sisteMelding.getStillingFraNavData().cvKanDelesStatus()).isSameAs(CvKanDelesStatus.JA);
     }
 
     @Test
     public void annenAktivitet() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-
-        AktivitetData nyMoteAktivitet = AktivitetDataTestBuilder.nyEgenaktivitet();
-        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
-        aktivitetTestService.opprettAktivitet(happyBruker, aktivitetDTO);
+        AktivitetData annenAktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withId(1337L);
+        AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(annenAktivitet, false);
+        aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
 
         ConsumerRecord<String, String> jason = getSingleRecord(portefoljeConsumer, portefoljetopic, 10000);
-
-        KafkaAktivitetMeldingV4 kafkaAktivitetMeldingV4 = JsonUtils.fromJson(jason.value(), KafkaAktivitetMeldingV4.class);
-
-        Assertions.assertThat(kafkaAktivitetMeldingV4).isNotNull();
+        var kafkaAktivitetMeldingV4 = JsonUtils.fromJson(jason.value(), KafkaAktivitetMeldingV4.class);
         Assertions.assertThat(kafkaAktivitetMeldingV4.getStillingFraNavData()).isNull();
     }
 
+    @After
+    public void verify_no_unmatched() {
+        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
+        portefoljeConsumer.unsubscribe();
+        portefoljeConsumer.close();
+    }
 
+    private KafkaAktivitetMeldingV4 lesSisteMelding(String id) {
+        List<AktivitetDTO> aktivitetDTOS = aktivitetTestService.hentVersjoner(id, mockBruker, mockVeileder);
+        KafkaAktivitetMeldingV4 sisteConsumerRecord = null;
+
+        for (ConsumerRecord<String, String> r : getRecords(portefoljeConsumer, 10000, aktivitetDTOS.size())) {
+            var melding = JsonUtils.fromJson(r.value(), KafkaAktivitetMeldingV4.class);
+            if (melding.getAktivitetId().equals(id)) sisteConsumerRecord = melding;
+        }
+
+        return sisteConsumerRecord;
+    }
+
+    private void svarPaDelingAvCv(Boolean kanDeleCv) {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, 1988);
+        cal.set(Calendar.MONTH, Calendar.JANUARY);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+
+        aktivitetTestService.svarPaaDelingAvCv(kanDeleCv, mockBruker, mockVeileder, stillingFraNav, cal.getTime());
+    }
 }
