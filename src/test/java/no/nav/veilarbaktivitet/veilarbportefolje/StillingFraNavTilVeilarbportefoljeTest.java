@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -25,14 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@Slf4j
 public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
@@ -42,10 +39,6 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     @Value("${spring.kafka.consumer.group-id}")
     String groupId;
 
-    @Value("${app.env.aktivitetsplan.basepath}")
-    private String aktivitetsplanBasepath;
-
-    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     @Autowired
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
@@ -64,6 +57,13 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljetopic);
+    }
+
+    @After
+    public void verify_no_unmatched() {
+        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
+        portefoljeConsumer.unsubscribe();
+        portefoljeConsumer.close();
     }
 
     @Test
@@ -107,13 +107,6 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         ConsumerRecord<String, String> jason = getSingleRecord(portefoljeConsumer, portefoljetopic, 10000);
         var kafkaAktivitetMeldingV4 = JsonUtils.fromJson(jason.value(), KafkaAktivitetMeldingV4.class);
         Assertions.assertThat(kafkaAktivitetMeldingV4.getStillingFraNavData()).isNull();
-    }
-
-    @After
-    public void verify_no_unmatched() {
-        assertTrue(WireMock.findUnmatchedRequests().isEmpty());
-        portefoljeConsumer.unsubscribe();
-        portefoljeConsumer.close();
     }
 
     private KafkaAktivitetMeldingV4 lesSisteMelding(String id) {
