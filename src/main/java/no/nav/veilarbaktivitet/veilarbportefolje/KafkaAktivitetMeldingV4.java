@@ -21,6 +21,7 @@ public class KafkaAktivitetMeldingV4 {
     AktivitetStatus aktivitetStatus;
     EndringsType endringsType;
     InnsenderData lagtInnAv;
+    StillingFraNavPortefoljeData stillingFraNavData;
     boolean avtalt;
     boolean historisk;
 }
