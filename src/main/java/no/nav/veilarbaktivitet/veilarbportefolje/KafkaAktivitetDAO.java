@@ -29,7 +29,8 @@ public class KafkaAktivitetDAO {
                         LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                         WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
                         ORDER BY A.VERSJON
-                        FETCH NEXT 5000 ROWS ONLY""",
+                        FETCH NEXT 5000 ROWS ONLY
+                        """,
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
         );
     }
