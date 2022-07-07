@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.util;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import org.springframework.web.bind.annotation.PostMapping;
