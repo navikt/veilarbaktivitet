@@ -15,7 +15,6 @@ import java.util.Map;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/logger")
