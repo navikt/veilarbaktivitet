@@ -23,13 +23,30 @@ public class FrontendloggerTest {
     Frontendlogger frontendlogger = new Frontendlogger(metricsClient);
 
     @Test
-    public void loggerSkalLeggePaEnvironment() {
+    public void loggerSkalLeggePaTagsOgFields() {
         HashMap<String, String> tags = new HashMap<>();
         tags.put("test", "test_value");
-        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test").setTags(tags));
+        HashMap<String, Object> fields = new HashMap<>();
+        fields.put("fields", "test_value");
+        fields.put("success", true);
+        fields.put("value", 1);
+        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test").setTags(tags).setFields(fields));
 
         Event expected = new Event("test.event");
         tags.forEach(expected::addTagToReport);
+        fields.forEach(expected::addFieldToReport);
+        expected.addTagToReport("environment", "q1");
+
+        verify(metricsClient, times(1)).report(eventCaptor.capture());
+        assertEquals(expected.getTags(), eventCaptor.getValue().getTags());
+        assertEquals(expected.getFields(), eventCaptor.getValue().getFields());
+    }
+
+    @Test
+    public void loggerSkalLeggeHandtereNull() {
+        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test"));
+
+        Event expected = new Event("test.event");
         expected.addTagToReport("environment", "q1");
 
         verify(metricsClient, times(1)).report(eventCaptor.capture());
