@@ -192,8 +192,14 @@ public class KafkaAivenConfig {
     @Bean
     <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
-        consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
-        consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
+        consumerProperties.put(
+                ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
+                org.apache.kafka.common.serialization.StringDeserializer.class);
+
+        consumerProperties.put(
+                ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
+                no.nav.common.kafka.consumer.util.deserializer.JsonObjectDeserializer.class);
+
         consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
