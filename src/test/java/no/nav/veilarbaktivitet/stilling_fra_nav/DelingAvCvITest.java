@@ -28,11 +28,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.Date;
 import java.util.UUID;
 
@@ -65,8 +67,11 @@ public class DelingAvCvITest extends SpringBootTestBase {
     @Autowired
     KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> jsonProducer;
 
+    @Autowired
+    ConsumerFactory<String, RekrutteringsbistandStatusoppdatering> stringJsonConsumerFactory;
+
     Consumer<String, DelingAvCvRespons> consumer;
-    Consumer<String, RekrutteringsbistandStatusoppdatering> soknadsoppdateringConsumer;
+    Consumer<String, RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringConsumer;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -84,7 +89,8 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         consumer = kafkaTestService.createStringAvroConsumer(utTopic);
-        soknadsoppdateringConsumer = kafkaTestService.createStringJsonConsumer(innSoknadsoppdatering);
+        rekrutteringsbistandStatusoppdateringConsumer = stringJsonConsumerFactory.createConsumer();
+        rekrutteringsbistandStatusoppdateringConsumer.subscribe(Collections.singleton(innSoknadsoppdatering));
     }
 
     @Test
@@ -329,14 +335,16 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
         String key = UUID.randomUUID().toString();
         jsonProducer.send(innSoknadsoppdatering, key, soknadsoppdatering);
-        ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord = getSingleRecord(soknadsoppdateringConsumer, innSoknadsoppdatering, 10000);
-        RekrutteringsbistandStatusoppdatering value = singleRecord.value();
+
+        ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord = rekrutteringsbistandStatusoppdateringConsumer
+                .poll(Duration.ofSeconds(3)).records(innSoknadsoppdatering)
+                .iterator().next();
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(singleRecord.key()).isEqualTo(key);
-            assertions.assertThat(value.detaljer()).isNullOrEmpty();
-            assertions.assertThat(value.tidspunkt()).isEqualTo(tidspunkt);
-            assertions.assertThat(value.type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
+            assertions.assertThat(singleRecord.value().detaljer()).isNullOrEmpty();
+            assertions.assertThat(singleRecord.value().tidspunkt()).isEqualTo(tidspunkt);
+            assertions.assertThat(singleRecord.value().type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
             assertions.assertAll();
         });
 
