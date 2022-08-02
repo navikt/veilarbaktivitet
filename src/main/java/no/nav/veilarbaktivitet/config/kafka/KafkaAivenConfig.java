@@ -1,10 +1,12 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -194,13 +196,11 @@ public class KafkaAivenConfig {
         Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
         consumerProperties.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
-                org.apache.kafka.common.serialization.StringDeserializer.class);
+                Deserializers.stringDeserializer());
 
         consumerProperties.put(
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                no.nav.common.kafka.consumer.util.deserializer.JsonObjectDeserializer.class);
-
-        consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
+                Deserializers.jsonDeserializer(RekrutteringsbistandStatusoppdatering.class));
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
