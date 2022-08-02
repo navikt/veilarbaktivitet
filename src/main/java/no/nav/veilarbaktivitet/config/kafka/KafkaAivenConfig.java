@@ -196,10 +196,9 @@ public class KafkaAivenConfig {
         consumerProperties.put(
                 ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG,
                 Deserializers.stringDeserializer());
-
         consumerProperties.put(
                 ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG,
-                Deserializers.jsonDeserializer(RekrutteringsbistandStatusoppdatering.class));
+                no.nav.common.kafka.consumer.util.deserializer.JsonObjectDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 

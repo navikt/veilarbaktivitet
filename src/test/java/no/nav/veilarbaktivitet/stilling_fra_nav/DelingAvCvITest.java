@@ -336,9 +336,10 @@ public class DelingAvCvITest extends SpringBootTestBase {
         String key = UUID.randomUUID().toString();
         jsonProducer.send(innSoknadsoppdatering, key, soknadsoppdatering);
 
-        ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord = rekrutteringsbistandStatusoppdateringConsumer
-                .poll(Duration.ofSeconds(3)).records(innSoknadsoppdatering)
-                .iterator().next();
+        ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord =
+                rekrutteringsbistandStatusoppdateringConsumer
+                        .poll(Duration.ofSeconds(3)).records(innSoknadsoppdatering)
+                        .iterator().next();
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(singleRecord.key()).isEqualTo(key);
