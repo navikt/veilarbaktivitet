@@ -5,7 +5,6 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
-import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
@@ -19,7 +18,6 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.time.Duration;
@@ -103,18 +101,6 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V> ConcurrentKafkaListenerContainerFactory<String, V> stringJsonListenerContainerFactory(
-            ConsumerFactory<String, V> stringJsonConsumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(stringJsonConsumerFactory);
-        factory.getContainerProperties()
-                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
-        factory.setConcurrency(3);
-        factory.setCommonErrorHandler(errorHandler());
-        return factory;
-    }
-
-    @Bean
     <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
             ConsumerFactory<String, V> stringAvroConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
@@ -186,19 +172,6 @@ public class KafkaAivenConfig {
         Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
         consumerProperties.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
-        return new DefaultKafkaConsumerFactory<>(consumerProperties);
-    }
-
-    @Bean
-    <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
-        consumerProperties.put(
-                ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS,
-                org.apache.kafka.common.serialization.StringDeserializer.class);
-        consumerProperties.put(
-                ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS,
-                org.springframework.kafka.support.serializer.JsonDeserializer.class);
-        consumerProperties.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
