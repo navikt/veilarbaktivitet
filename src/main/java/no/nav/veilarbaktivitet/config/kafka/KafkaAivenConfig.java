@@ -17,7 +17,6 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
-import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
 
@@ -96,9 +95,21 @@ public class KafkaAivenConfig {
 
     @Bean
     <K extends SpecificRecordBase, V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<K, V> avroAvrokafkaListenerContainerFactory(
-            ConsumerFactory<K, V> kafkaConsumerFactory) {
+            ConsumerFactory<K, V> avroAvroConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<K, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        return configureConcurrentKafkaListenerContainerFactory(kafkaConsumerFactory, factory);
+        return configureConcurrentKafkaListenerContainerFactory(avroAvroConsumerFactory, factory);
+    }
+
+    @Bean
+    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
+            ConsumerFactory<String, V> stringAvroConsumerFactory) {
+        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(stringAvroConsumerFactory);
+        factory.getContainerProperties()
+                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
+        factory.setConcurrency(3);
+        factory.setCommonErrorHandler(errorHandler());
+        return factory;
     }
 
     @Bean
@@ -126,22 +137,10 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V extends SpecificRecordBase> ConcurrentKafkaListenerContainerFactory<String, V> stringAvroKafkaListenerContainerFactory(
-            ConsumerFactory<String, V> kafkaConsumerFactory) {
-        ConcurrentKafkaListenerContainerFactory<String, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(kafkaConsumerFactory);
-        factory.getContainerProperties()
-                .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
-        factory.setConcurrency(3);
-        factory.setCommonErrorHandler(errorHandler());
-        return factory;
-    }
-
-    @Bean
     ConcurrentKafkaListenerContainerFactory<String, String> stringStringKafkaListenerContainerFactory(
-            ConsumerFactory<String, String> kafkaConsumerFactory) {
+            ConsumerFactory<String, String> stringStringConsumerFactory) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(kafkaConsumerFactory);
+        factory.setConsumerFactory(stringStringConsumerFactory);
         factory.getContainerProperties()
                 .setAuthExceptionRetryInterval(Duration.ofSeconds(10L));
 
@@ -175,4 +174,5 @@ public class KafkaAivenConfig {
         consumerProperties.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, io.confluent.kafka.serializers.KafkaAvroDeserializer.class);
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
+
 }
