@@ -4,6 +4,7 @@ import ch.qos.logback.classic.Level;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -63,10 +64,10 @@ public class DelingAvCvITest extends SpringBootTestBase {
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> foresporselOmDelingAvCvProducer;
 
     @Autowired
-    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringProducer;
+    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory;
 
     Consumer<String, DelingAvCvRespons> delingAvCvResponsConsumer;
-    Consumer<String, RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringConsumer;
+    Consumer<String, String> rekrutteringsbistandStatusoppdateringConsumer;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -84,7 +85,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         delingAvCvResponsConsumer = kafkaTestService.createStringAvroConsumer(stillingFraNavOppdatert);
-        rekrutteringsbistandStatusoppdateringConsumer = kafkaTestService.createStringJsonConsumer(innSoknadsoppdatering);
+        rekrutteringsbistandStatusoppdateringConsumer = kafkaTestService.createStringStringConsumer(innSoknadsoppdatering);
     }
 
     @Test
@@ -325,19 +326,22 @@ public class DelingAvCvITest extends SpringBootTestBase {
     @Test
     public void sender_rekrutteringsbistandStatusoppdatering_som_kan_konsumeres() {
         Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
-        RekrutteringsbistandStatusoppdatering soknadsoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", tidspunkt);
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", tidspunkt);
 
         String key = UUID.randomUUID().toString();
-        rekrutteringsbistandStatusoppdateringProducer.send(innSoknadsoppdatering, key, soknadsoppdatering);
+        navCommonJsonProducerFactory.send(innSoknadsoppdatering, key, sendtStatusoppdatering);
 
+        ConsumerRecord<String, String> singleRecord = getSingleRecord(rekrutteringsbistandStatusoppdateringConsumer, innSoknadsoppdatering, 10000);
 
-        final ConsumerRecord<String, RekrutteringsbistandStatusoppdatering> singleRecord = getSingleRecord(rekrutteringsbistandStatusoppdateringConsumer, innSoknadsoppdatering, 10000);
+        RekrutteringsbistandStatusoppdatering mottattStatusoppdatering =
+                JsonUtils.fromJson(singleRecord.value(), RekrutteringsbistandStatusoppdatering.class);
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(singleRecord.key()).isEqualTo(key);
-            assertions.assertThat(singleRecord.value().detaljer()).isNullOrEmpty();
-            assertions.assertThat(singleRecord.value().tidspunkt()).isEqualTo(tidspunkt);
-            assertions.assertThat(singleRecord.value().type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
+            assertions.assertThat(mottattStatusoppdatering.detaljer()).isNullOrEmpty();
+            assertions.assertThat(mottattStatusoppdatering.tidspunkt()).isEqualTo(tidspunkt);
+            assertions.assertThat(mottattStatusoppdatering.type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
             assertions.assertAll();
         });
 
