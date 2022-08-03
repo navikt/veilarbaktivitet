@@ -67,15 +67,6 @@ public class KafkaAivenConfig {
     }
 
     @Bean
-    <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
-        producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
-        producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
-        producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, no.nav.common.kafka.producer.serializer.JsonSerializer.class);
-        return new DefaultKafkaProducerFactory<>(producerProperties);
-    }
-
-    @Bean
     <V> ProducerFactory<String, V> stringProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
@@ -87,11 +78,6 @@ public class KafkaAivenConfig {
     @Bean
     <V> KafkaJsonTemplate<V> kafkaJsonTemplate(ProducerFactory<String, V> jsonProducerFactory) {
         return new KafkaJsonTemplate<>(jsonProducerFactory);
-    }
-
-    @Bean
-    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate(ProducerFactory<String, RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory) {
-        return new KafkaJsonTemplate<>(navCommonJsonProducerFactory);
     }
 
     @Bean
