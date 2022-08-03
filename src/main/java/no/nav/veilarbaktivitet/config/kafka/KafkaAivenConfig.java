@@ -1,14 +1,12 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaAvroAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import org.apache.avro.specific.SpecificRecordBase;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +20,6 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
-import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.time.Duration;
@@ -68,6 +65,7 @@ public class KafkaAivenConfig {
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
+
     @Bean
     <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
@@ -76,6 +74,7 @@ public class KafkaAivenConfig {
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, no.nav.common.kafka.producer.serializer.JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
+
     @Bean
     <V> ProducerFactory<String, V> stringProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
