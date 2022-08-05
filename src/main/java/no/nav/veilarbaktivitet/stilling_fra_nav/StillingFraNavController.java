@@ -63,7 +63,7 @@ public class StillingFraNavController {
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
 
         return Optional.of(aktivitet)
-                .map(a -> service.oppdaterSoknadsstatus(a, soknadsstatusDTO.getSoknadsstatus()))
+                .map(a -> service.oppdaterSoknadsstatus(a, soknadsstatusDTO.getSoknadsstatus(), authService.getLoggedInnUser().orElseThrow(RuntimeException::new)))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
     }

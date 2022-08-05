@@ -65,15 +65,14 @@ public class DelingAvCvService {
         metrikker.countManuletAvbrutt(aktivitet.getLagtInnAv());
     }
 
-    public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus) {
-        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+    public AktivitetData oppdaterSoknadsstatus(AktivitetData aktivitet, Soknadsstatus soknadsstatus, Person endretAv) {
 
         var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(soknadsstatus);
         var nyAktivitet = aktivitet.toBuilder()
-                .lagtInnAv(innloggetBruker.tilBrukerType())
+                .lagtInnAv(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
-                .endretAv(innloggetBruker.get())
+                .endretAv(endretAv.get())
                 .build();
 
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);

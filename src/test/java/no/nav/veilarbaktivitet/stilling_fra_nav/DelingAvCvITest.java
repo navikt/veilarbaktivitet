@@ -327,7 +327,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void sender_rekrutteringsbistandStatusoppdatering_som_kan_konsumeres() {
         Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
-                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", tidspunkt);
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", "E271828", tidspunkt);
 
         String key = UUID.randomUUID().toString();
         navCommonJsonProducerFactory.send(innSoknadsoppdatering, key, sendtStatusoppdatering);
