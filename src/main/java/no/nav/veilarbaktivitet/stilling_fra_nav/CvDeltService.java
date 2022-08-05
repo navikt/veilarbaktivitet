@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,9 @@ public class CvDeltService {
     public void cvdelt(ConsumerRecord<String, String> consumerRecord) {
         String bestillingsId = consumerRecord.key();
         RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
-        Person endretAv = Person.navIdent(rekrutteringsbistandStatusoppdatering.navIdent());
+        Person endretAv = Person.navIdent(Optional.ofNullable(
+                rekrutteringsbistandStatusoppdatering.navIdent())
+                .orElse("SYSTEM"));
 
         switch (rekrutteringsbistandStatusoppdatering.type()) {
             case CV_DELT -> delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).ifPresentOrElse(

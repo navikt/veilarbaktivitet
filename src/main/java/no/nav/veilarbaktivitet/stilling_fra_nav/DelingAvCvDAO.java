@@ -22,13 +22,12 @@ public class DelingAvCvDAO {
         return jdbcTemplate.query("""
                             SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.*
                             FROM AKTIVITET A
-                            JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON 
+                            LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON 
                             WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' 
                             AND BESTILLINGSID=:bestillingsId 
                             AND LIVSLOPSTATUS_KODE != 'AVBRUTT' 
                             AND GJELDENDE = 1 
                             AND HISTORISK_DATO is null
-                            AND SFN.CV_KAN_DELES IS NOT NULL
                             order by A.VERSJON desc
                             fetch first 1 rows only 
                         """,

@@ -48,7 +48,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     private String stillingFraNavForespurt;
 
     @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
-    private String innSoknadsoppdatering;
+    private String innRekrutteringsbistandStatusoppdatering;
 
     @Value("${topic.ut.stillingFraNav}")
     private String stillingFraNavOppdatert;
@@ -85,7 +85,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         delingAvCvResponsConsumer = kafkaTestService.createStringAvroConsumer(stillingFraNavOppdatert);
-        rekrutteringsbistandStatusoppdateringConsumer = kafkaTestService.createStringStringConsumer(innSoknadsoppdatering);
+        rekrutteringsbistandStatusoppdateringConsumer = kafkaTestService.createStringStringConsumer(innRekrutteringsbistandStatusoppdatering);
     }
 
     @Test
@@ -330,9 +330,9 @@ public class DelingAvCvITest extends SpringBootTestBase {
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", "E271828", tidspunkt);
 
         String key = UUID.randomUUID().toString();
-        navCommonJsonProducerFactory.send(innSoknadsoppdatering, key, sendtStatusoppdatering);
+        navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, key, sendtStatusoppdatering);
 
-        ConsumerRecord<String, String> singleRecord = getSingleRecord(rekrutteringsbistandStatusoppdateringConsumer, innSoknadsoppdatering, 10000);
+        ConsumerRecord<String, String> singleRecord = getSingleRecord(rekrutteringsbistandStatusoppdateringConsumer, innRekrutteringsbistandStatusoppdatering, 10000);
 
         RekrutteringsbistandStatusoppdatering mottattStatusoppdatering =
                 JsonUtils.fromJson(singleRecord.value(), RekrutteringsbistandStatusoppdatering.class);
