@@ -28,7 +28,7 @@ public class CvDeltService {
         String bestillingsId = consumerRecord.key();
         RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
         Person endretAv = Person.navIdent(Optional.ofNullable(
-                rekrutteringsbistandStatusoppdatering.navIdent())
+                rekrutteringsbistandStatusoppdatering.utførtAvNavIdent())
                 .orElse("SYSTEM"));
 
         switch (rekrutteringsbistandStatusoppdatering.type()) {
