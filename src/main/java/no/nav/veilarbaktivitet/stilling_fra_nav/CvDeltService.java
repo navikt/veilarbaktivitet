@@ -27,7 +27,7 @@ public class CvDeltService {
 
     @Transactional
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
-    @Timed
+    @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
         String bestillingsId = consumerRecord.key();
         RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);

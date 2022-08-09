@@ -12,7 +12,7 @@ class StillingFraNavMetrikker {
     private static final String stillingFraNavKanDeles = "stilling_fra_nav_kan_deles";
     private static final String stillingFraNavTidsfristUtlopt = "stilling_fra_nav_tidsfrist_utlopt";
     private static final String stillingFraNavManueltAvbrutt = "stilling_fra_nav_manuelt_avbrutt";
-    private static final String cvDeltMedArbeidgiver = "cv_delt_med_arbeidgiver";
+    private static final String cvDeltMedArbeidsgiver = "cv_delt_med_arbeidsgiver";
     private static final String erEksternBruker = "er_ekstern_bruker";
     private static final String kanDele = "kan_dele";
     private static final String kanVarsles = "kan_varsles";
@@ -37,7 +37,7 @@ class StillingFraNavMetrikker {
     }
 
     void countCvDelt(boolean success, String reason) {
-        Counter.builder(cvDeltMedArbeidgiver)
+        Counter.builder(cvDeltMedArbeidsgiver)
                 .tag(suksess, Boolean.toString(success))
                 .tag(aarsak, reason)
                 .register(meterRegistry)

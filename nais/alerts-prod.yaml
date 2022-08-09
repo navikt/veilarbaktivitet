@@ -71,3 +71,11 @@ spec:
       expr: selftests_aggregate_result_status{app="veilarbaktivitet"} > 0
       for: 1m
       action: "Sjekk app {{ $labels.app }} i namespace {{ $labels.kubernetes_namespace }} sine selftest for å se hva som er galt"
+    - alert: Mange tekniske feil i konsumering av rekrutteringsbistand-statusoppdatering-v1
+      for: 1s
+      description: Teknisk feil i kafka consumer
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      severity: danger
+      expr: |
+        sum(rate(kafka_consume_rekrutteringsbistand_statusoppdatering{success=false, app="veilarbaktivitet"}[1m])) > 10
