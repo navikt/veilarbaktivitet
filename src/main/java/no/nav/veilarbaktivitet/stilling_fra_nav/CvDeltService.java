@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
@@ -22,20 +23,34 @@ public class CvDeltService {
     private final DelingAvCvDAO delingAvCvDAO;
     private final DelingAvCvService delingAvCvService;
 
+    private final StillingFraNavMetrikker stillingFraNavMetrikker;
+
     @Transactional
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
+    @Timed
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
         String bestillingsId = consumerRecord.key();
         RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
 
+        if (rekrutteringsbistandStatusoppdatering == null) {
+            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
+            stillingFraNavMetrikker.countCvDelt(false, "Ugyldig melding");
+        }
+
         delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).ifPresentOrElse(
-                aktivitetData -> behandleRekrutteringsbistandoppdatering(
-                        bestillingsId,
-                        rekrutteringsbistandStatusoppdatering.type(),
-                        rekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
-                        aktivitetData
-                ),
-                () -> log.warn("Fant ikke aktivitet {}", bestillingsId)
+                aktivitetData -> {
+                    behandleRekrutteringsbistandoppdatering(
+                            bestillingsId,
+                            rekrutteringsbistandStatusoppdatering.type(),
+                            rekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
+                            aktivitetData
+                    );
+                    stillingFraNavMetrikker.countCvDelt(true, null);
+                },
+                () -> {
+                    stillingFraNavMetrikker.countCvDelt(false, "Bestillingsid ikke funnet");
+                    log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}. Eller aktivitet avbrutt eller historisk", bestillingsId)  ;
+                }
         );
     }
 
