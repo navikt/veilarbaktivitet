@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
@@ -13,10 +14,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
+import no.nav.veilarbaktivitet.mock_nav_modell.*;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
@@ -34,10 +33,15 @@ import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
+import static no.nav.veilarbaktivitet.veilarbportefolje.CvKanDelesStatus.JA;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -46,9 +50,6 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     @Value("${topic.inn.stillingFraNav}")
     private String stillingFraNavForespurt;
-
-    @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
-    private String innRekrutteringsbistandStatusoppdatering;
 
     @Value("${topic.ut.stillingFraNav}")
     private String stillingFraNavOppdatert;
@@ -63,11 +64,8 @@ public class DelingAvCvITest extends SpringBootTestBase {
     @Autowired
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> foresporselOmDelingAvCvProducer;
 
-    @Autowired
-    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory;
 
     Consumer<String, DelingAvCvRespons> delingAvCvResponsConsumer;
-    Consumer<String, String> rekrutteringsbistandStatusoppdateringConsumer;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -85,7 +83,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         delingAvCvResponsConsumer = kafkaTestService.createStringAvroConsumer(stillingFraNavOppdatert);
-        rekrutteringsbistandStatusoppdateringConsumer = kafkaTestService.createStringStringConsumer(innRekrutteringsbistandStatusoppdatering);
+
     }
 
     @Test
@@ -323,27 +321,4 @@ public class DelingAvCvITest extends SpringBootTestBase {
         assertTrue(poll.isEmpty());
     }
 
-    @Test
-    public void sender_rekrutteringsbistandStatusoppdatering_som_kan_konsumeres() {
-        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
-        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
-                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", "E271828", tidspunkt);
-
-        String key = UUID.randomUUID().toString();
-        navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, key, sendtStatusoppdatering);
-
-        ConsumerRecord<String, String> singleRecord = getSingleRecord(rekrutteringsbistandStatusoppdateringConsumer, innRekrutteringsbistandStatusoppdatering, 10000);
-
-        RekrutteringsbistandStatusoppdatering mottattStatusoppdatering =
-                JsonUtils.fromJson(singleRecord.value(), RekrutteringsbistandStatusoppdatering.class);
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(singleRecord.key()).isEqualTo(key);
-            assertions.assertThat(mottattStatusoppdatering.detaljer()).isNullOrEmpty();
-            assertions.assertThat(mottattStatusoppdatering.tidspunkt()).isEqualTo(tidspunkt);
-            assertions.assertThat(mottattStatusoppdatering.type()).isEqualTo(RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
-            assertions.assertAll();
-        });
-
-    }
 }
