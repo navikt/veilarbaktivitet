@@ -194,6 +194,9 @@ public class CvDeltServiceTest extends SpringBootTestBase {
 
     @Test
     public void consumertest_hvis_aktivitet_ikke_finnes_kalles_ikke_behandleRekrutteringsbistandoppdatering() throws ExecutionException, InterruptedException, TimeoutException {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        aktivitetTestService.opprettStillingFraNav(mockBruker);
+
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, Date.from(Instant.ofEpochSecond(1)));
         String bestillingsId = "666";
 

@@ -35,6 +35,7 @@ public class CvDeltService {
         if (rekrutteringsbistandStatusoppdatering == null) {
             log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
             stillingFraNavMetrikker.countCvDelt(false, "Ugyldig melding");
+            return;
         }
 
         delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).ifPresentOrElse(

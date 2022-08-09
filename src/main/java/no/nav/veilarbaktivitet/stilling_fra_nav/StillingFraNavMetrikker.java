@@ -37,10 +37,13 @@ class StillingFraNavMetrikker {
     }
 
     void countCvDelt(boolean success, String reason) {
-        Counter.builder(cvDeltMedArbeidsgiver)
-                .tag(suksess, Boolean.toString(success))
-                .tag(aarsak, reason)
-                .register(meterRegistry)
+
+        Counter.Builder tag = Counter.builder(cvDeltMedArbeidsgiver)
+                .tag(suksess, Boolean.toString(success));
+
+        if (reason != null) tag.tag(aarsak, reason);
+
+        tag.register(meterRegistry)
                 .increment();
     }
 
