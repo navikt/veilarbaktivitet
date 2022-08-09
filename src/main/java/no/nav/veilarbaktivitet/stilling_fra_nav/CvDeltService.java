@@ -30,7 +30,11 @@ public class CvDeltService {
     @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
         String bestillingsId = consumerRecord.key();
-        RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
+
+        RekrutteringsbistandStatusoppdatering rekrutteringsbistandStatusoppdatering = null;
+        try {
+            rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
+        } catch (Exception ignored) { }
 
         if (rekrutteringsbistandStatusoppdatering == null) {
             log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
@@ -38,12 +42,13 @@ public class CvDeltService {
             return;
         }
 
+        RekrutteringsbistandStatusoppdatering finalRekrutteringsbistandStatusoppdatering = rekrutteringsbistandStatusoppdatering;
         delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).ifPresentOrElse(
                 aktivitetData -> {
                     behandleRekrutteringsbistandoppdatering(
                             bestillingsId,
-                            rekrutteringsbistandStatusoppdatering.type(),
-                            rekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
+                            finalRekrutteringsbistandStatusoppdatering.type(),
+                            finalRekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
                             aktivitetData
                     );
                     stillingFraNavMetrikker.countCvDelt(true, null);
