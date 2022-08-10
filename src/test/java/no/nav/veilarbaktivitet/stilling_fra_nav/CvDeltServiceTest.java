@@ -20,6 +20,8 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.support.SendResult;
 
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -49,6 +51,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
     private final String DETALJER_TEKST = "";
     private final boolean JA = Boolean.TRUE;
     private final boolean NEI = Boolean.FALSE;
+    private final ZonedDateTime tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
 
     @Test
     public void happy_case_svart_ja() {
@@ -56,8 +59,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
-        aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, tidspunkt);
+        aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         String bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
 
         AktivitetData aktivitetData_for = delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).orElseThrow();
@@ -84,8 +86,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
-        aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, tidspunkt);
+        aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, null, tidspunkt);
@@ -111,7 +112,6 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, null, tidspunkt);
@@ -149,7 +149,12 @@ public class CvDeltServiceTest extends SpringBootTestBase {
                         .reduce((a, b) -> b)
                         .orElseThrow();
 
-        cvDeltService.behandleRekrutteringsbistandoppdatering(bestillingsId, RekrutteringsbistandStatusoppdateringEventType.CV_DELT, navIdent, aktivitetData_for);
+        cvDeltService.behandleRekrutteringsbistandoppdatering(
+                bestillingsId,
+                RekrutteringsbistandStatusoppdateringEventType.CV_DELT,
+                navIdent,
+                aktivitetData_for
+        );
 
         AktivitetData aktivitetData_etter = aktivitetDAO.hentAktiviteterForAktorId(mockBruker.getAktorIdAsAktorId()).stream()
                 .sorted(comparingLong(AktivitetData::getVersjon))
@@ -171,20 +176,29 @@ public class CvDeltServiceTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData_for = delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).orElseThrow();
 
-        Assertions.assertThatThrownBy(() -> cvDeltService.behandleRekrutteringsbistandoppdatering(bestillingsId, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, navIdent, aktivitetData_for))
-                .isInstanceOf(org.apache.commons.lang3.NotImplementedException.class);
+        Assertions.assertThatThrownBy(() -> cvDeltService.behandleRekrutteringsbistandoppdatering(
+                bestillingsId,
+                RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN,
+                navIdent,
+                aktivitetData_for
+        )).isInstanceOf(org.apache.commons.lang3.NotImplementedException.class);
     }
 
     @Test
     public void consumertest_behandleRekrutteringsbistandoppdatering_kalles() throws ExecutionException, InterruptedException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, Date.from(Instant.ofEpochSecond(1)));
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
         String bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
 
         AktivitetData aktivitetData = delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).orElseThrow();
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(rekrutteringsbistandstatusoppdateringtopic, bestillingsId, sendtStatusoppdatering).get(1, SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
+                navCommonJsonProducerFactory.send(
+                        rekrutteringsbistandstatusoppdateringtopic,
+                        bestillingsId,
+                        sendtStatusoppdatering
+                ).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 5);
 
         Mockito.verify(cvDeltService, Mockito.times(1)
@@ -197,10 +211,14 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         aktivitetTestService.opprettStillingFraNav(mockBruker);
 
-        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, Date.from(Instant.ofEpochSecond(1)));
-        String bestillingsId = "666";
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(rekrutteringsbistandstatusoppdateringtopic, bestillingsId, sendtStatusoppdatering).get(1, SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
+                navCommonJsonProducerFactory.send(
+                        rekrutteringsbistandstatusoppdateringtopic,
+                        "666",
+                        sendtStatusoppdatering
+                ).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 5);
 
         Mockito.verify(cvDeltService, Mockito.never().description("Consumeren skal ikke kalle metoden behandleRekrutteringsbistandoppdatering når vi ikke finner aktivitet"))
@@ -214,14 +232,16 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        Date tidspunkt = Date.from(Instant.ofEpochSecond(1));
-        aktivitetTestService.svarPaaDelingAvCv(NEI, mockBruker, veileder, aktivitetDTO, tidspunkt);
+        aktivitetTestService.svarPaaDelingAvCv(NEI, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
 
-        String bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
-        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, Date.from(Instant.ofEpochSecond(1)));
-
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(rekrutteringsbistandstatusoppdateringtopic, bestillingsId, sendtStatusoppdatering).get(1, SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
+                navCommonJsonProducerFactory.send(
+                        rekrutteringsbistandstatusoppdateringtopic,
+                        aktivitetDTO.getStillingFraNavData().bestillingsId,
+                        sendtStatusoppdatering
+                ).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 5);
 
         Mockito.verify(cvDeltService, Mockito.never().description("Consumeren skal ikke kalle metoden behandleRekrutteringsbistandoppdatering fordi aktivitet er AVBRUTT"))
