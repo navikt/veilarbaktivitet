@@ -27,7 +27,6 @@ public class DelingAvCvDAO {
                             AND BESTILLINGSID=:bestillingsId 
                             AND GJELDENDE = 1 
                             AND HISTORISK_DATO is null
-//                            AND SFN.SOKNADSSTATUS != 'CV_DELT'
                             order by A.VERSJON desc
                             fetch first 1 rows only 
                         """,
