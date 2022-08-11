@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 @Service
 @RequiredArgsConstructor
@@ -43,7 +45,9 @@ public class CvDeltService {
         }
 
         RekrutteringsbistandStatusoppdatering finalRekrutteringsbistandStatusoppdatering = rekrutteringsbistandStatusoppdatering;
-        delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId).ifPresentOrElse(
+        delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId)
+                .filter(valider(stillingFraNavMetrikker))
+                .ifPresentOrElse(
                 aktivitetData -> {
                     behandleRekrutteringsbistandoppdatering(
                             bestillingsId,
@@ -69,5 +73,44 @@ public class CvDeltService {
         } else if (type == RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN) {
             throw new NotImplementedException("Det er ikke støtte for IKKE_FATT_JOBBEN ennå");
         }
+    }
+
+    private Predicate<? super AktivitetData> valider(StillingFraNavMetrikker stillingFraNavMetrikker) {
+        return aktivitetData -> {
+
+            AktivitetStatus status = aktivitetData.getStatus();
+
+            if (status == AktivitetStatus.AVBRUTT) {
+                log.warn("Stilling fra NAV med bestillingsid: {} er i status AVBRUTT", aktivitetData.getStillingFraNavData().bestillingsId);
+                stillingFraNavMetrikker.countCvDelt(false, "Aktivitet AVBRUTT");
+                return false;
+            }
+
+            if (status == AktivitetStatus.FULLFORT) {
+                log.warn("Stilling fra NAV med bestillingsid: {} er i status FULLFORT", aktivitetData.getStillingFraNavData().bestillingsId);
+                stillingFraNavMetrikker.countCvDelt(false, "Aktivitet FULLFORT");
+                return false;
+            }
+
+            if (aktivitetData.getStillingFraNavData().cvKanDelesData == null) {
+                log.warn("Stilling fra NAV med bestillingsid: {} har ikke svart", aktivitetData.getStillingFraNavData().bestillingsId);
+                this.stillingFraNavMetrikker.countCvDelt(false, "Ikke svart");
+                return false;
+            }
+
+            if (aktivitetData.getStillingFraNavData().cvKanDelesData.getKanDeles() == Boolean.FALSE) {
+                log.error("Stilling fra NAV med bestillingsid: {} har svart NEI", aktivitetData.getStillingFraNavData().bestillingsId);
+                stillingFraNavMetrikker.countCvDelt(false, "Svart NEI");
+                return false;
+            }
+
+            if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.CV_DELT) {
+                log.warn("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
+                stillingFraNavMetrikker.countCvDelt(false, "Allerede delt");
+                return false;
+            }
+
+            return true;
+        };
     }
 }
