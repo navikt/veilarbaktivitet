@@ -50,6 +50,19 @@ public class BrukerNotifikasjonDAO {
         return antall > 0;
     }
 
+    public boolean finnesBrukernotifikasjonMedVarselTypeForAktivitet(long aktivitetsId, VarselType varselType) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitet_id", aktivitetsId)
+                .addValue("type", varselType.name());
+        String sql = """
+            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
+            WHERE AKTIVITET_ID = :aktivitet_id
+            AND TYPE = :type
+        """;
+        int antall = jdbcTemplate.queryForObject(sql, params, int.class);
+        return antall > 0;
+    }
+
     long opprettBrukernotifikasjon(
             UUID brukernotifikasjonId,
             Person.Fnr foedselsnummer,

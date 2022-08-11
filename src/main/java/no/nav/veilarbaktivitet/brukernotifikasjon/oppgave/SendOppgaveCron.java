@@ -12,7 +12,7 @@ import java.util.List;
 @EnableScheduling
 @RequiredArgsConstructor
 public class SendOppgaveCron {
-    private final BrukerNotifkasjonOppgaveService internalService;
+    private final BrukerNotifkasjonProducerService internalService;
     private final OppgaveDao oppgaveDao;
     private final OppgaveMetrikk oppgaveMetrikk;
 

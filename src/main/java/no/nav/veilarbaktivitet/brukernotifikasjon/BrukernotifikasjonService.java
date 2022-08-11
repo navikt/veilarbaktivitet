@@ -121,6 +121,10 @@ public class BrukernotifikasjonService {
 
     }
 
+    public boolean finnesBrukernotifikasjonMedVarselTypeForAktivitet(long aktivitetsId, VarselType varselType) {
+        return dao.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetsId, varselType);
+    }
+
     @Transactional
     public UUID opprettVarselPaaArenaAktivitet(
             String arenaAktivitetId,
