@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
+package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -11,10 +11,10 @@ import java.util.List;
 @Service
 @EnableScheduling
 @RequiredArgsConstructor
-public class SendOppgaveCron {
+public class SendBrukernotifikasjonCron {
     private final BrukerNotifkasjonProducerService internalService;
-    private final OppgaveDao oppgaveDao;
-    private final OppgaveMetrikk oppgaveMetrikk;
+    private final VarselDAO varselDao;
+    private final VarselMetrikk varselMetrikk;
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -41,7 +41,7 @@ public class SendOppgaveCron {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     public void countForsinkedeVarslerSisteDognet() {
-        int antall = oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(20);
-        oppgaveMetrikk.countForsinkedeVarslerSisteDognet(antall);
+        int antall = varselDao.hentAntallUkvitterteVarslerForsoktSendt(20);
+        varselMetrikk.countForsinkedeVarslerSisteDognet(antall);
     }
 }

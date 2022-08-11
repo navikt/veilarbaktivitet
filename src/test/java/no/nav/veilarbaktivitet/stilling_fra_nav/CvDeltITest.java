@@ -3,6 +3,9 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -11,6 +14,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
+import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,16 +36,31 @@ import static org.mockito.Mockito.verify;
 public class CvDeltITest extends SpringBootTestBase {
 
     private final ZonedDateTime tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
+
     @Autowired
     KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory;
 
     @Autowired
     KafkaStringTemplate kafkaStringTemplate;
 
+    @Autowired
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+
     @SpyBean
     StillingFraNavMetrikker stillingFraNavMetrikker;
+
     @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
     private String innRekrutteringsbistandStatusoppdatering;
+
+    @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+
+    @Before
+    public void setUp() {
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+    }
 
     @Test
     public void behandle_CvDelt_Happy_Case_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws Exception {
@@ -50,6 +69,7 @@ public class CvDeltITest extends SpringBootTestBase {
         String navIdent = "E271828";
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
+
         Date date = Date.from(Instant.ofEpochSecond(1));
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
 
@@ -63,7 +83,6 @@ public class CvDeltITest extends SpringBootTestBase {
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
-
 
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
@@ -79,6 +98,8 @@ public class CvDeltITest extends SpringBootTestBase {
         });
 
         verify(stillingFraNavMetrikker, times(1)).countCvDelt(eq(Boolean.TRUE), isNull());
+
+        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
     }
 
     @Test

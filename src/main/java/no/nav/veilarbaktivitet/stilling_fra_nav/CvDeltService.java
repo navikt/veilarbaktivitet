@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,9 +16,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Instant;
-import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 @Service
@@ -28,9 +24,6 @@ import java.util.Optional;
 public class CvDeltService {
 
     public static final String CV_DELT_DITT_NAV_TEKST = "NAV har delt din CV med arbeidsgiver på denne stillingen";
-    public static final String CV_DELT_EPOST_TITTEL = "Hei. Du har fått en ny beskjed på Ditt NAV.";
-    public static final String CV_DELT_EPOST_BODY = "Logg inn og se hva beskjeden gjelder. \nVennlig hilsen NAV";
-    public static final String CV_DELT_SMS_TEKST = "Hei. Du har fått en ny beskjed på Ditt NAV. Logg inn og se hva beskjeden gjelder. Vennlig hilsen NAV";
     private final DelingAvCvDAO delingAvCvDAO;
     private final DelingAvCvService delingAvCvService;
 
@@ -88,10 +81,7 @@ public class CvDeltService {
                 aktivitetData.getVersjon(),
                 Person.aktorId(aktivitetData.getAktorId()),
                 CV_DELT_DITT_NAV_TEKST,
-                VarselType.CV_DELT,
-                CV_DELT_EPOST_TITTEL,
-                CV_DELT_EPOST_BODY,
-                CV_DELT_SMS_TEKST
+                VarselType.CV_DELT
         );
     }
 

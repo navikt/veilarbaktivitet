@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
+package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import io.micrometer.core.instrument.Gauge;
@@ -17,17 +17,14 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.OppgaveDao;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
-import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.After;
@@ -35,17 +32,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
-import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.*;
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -59,10 +52,10 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @Autowired
-    SendOppgaveCron sendOppgaveCron;
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     @Autowired
-    OppgaveDao oppgaveDao;
+    VarselDAO varselDao;
 
     @Value("${topic.ut.brukernotifikasjon.oppgave}")
     String oppgaveTopic;
@@ -120,14 +113,14 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
-        assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+        assertEquals(0, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
 
 
         final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = opprettOppgave(mockBruker, aktivitetDTO);
         String eventId = oppgaveRecord.key().getEventId();
 
         assertVarselStatusErSendt(eventId);
-        assertEquals(1, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+        assertEquals(1, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
 
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
 
@@ -137,7 +130,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
 
         consumAndAssertStatus(eventId, okStatus(eventId), VarselKvitteringStatus.OK);
 
-        assertEquals(0, oppgaveDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
+        assertEquals(0, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1));
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.OK);
 
@@ -147,7 +140,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.FEILET);
 
         Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
-        sendOppgaveCron.countForsinkedeVarslerSisteDognet();
+        sendBrukernotifikasjonCron.countForsinkedeVarslerSisteDognet();
         Assertions.assertEquals(0, gauge.value());
 
 
@@ -245,7 +238,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
                 VarselType.STILLING_FRA_NAV
         );
 
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
+package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 class BrukerNotifkasjonProducerService {
-    private final OppgaveDao dao;
+    private final VarselDAO dao;
     private final OppgaveProducer oppgaveProducer;
     private final BeskjedProducer beskjedProducer;
 

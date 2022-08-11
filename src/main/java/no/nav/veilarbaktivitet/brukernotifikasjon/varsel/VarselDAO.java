@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
+package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -20,10 +20,10 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class OppgaveDao {
+public class VarselDAO {
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    RowMapper<SkalSendes> rowMapper = OppgaveDao::mapRow;
+    RowMapper<SkalSendes> rowMapper = VarselDAO::mapRow;
 
     @SneakyThrows
     private static SkalSendes mapRow(ResultSet rs, int rowNum) {

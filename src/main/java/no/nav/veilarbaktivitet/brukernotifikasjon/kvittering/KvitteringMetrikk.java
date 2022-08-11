@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
+package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;

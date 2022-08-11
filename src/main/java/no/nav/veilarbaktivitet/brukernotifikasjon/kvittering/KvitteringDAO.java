@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
+package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

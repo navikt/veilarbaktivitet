@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.kvitering;
+package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import lombok.extern.slf4j.Slf4j;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;

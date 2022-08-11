@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.KvitteringDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
