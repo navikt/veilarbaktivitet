@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
@@ -29,6 +30,7 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
     private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
 
@@ -72,6 +74,10 @@ public class BrukernotifikasjonAsserts {
         assertEquals(config.getNamespace(), key.getNamespace());
 
         return singleRecord;
+    }
+
+    public void assertIngenNyeBeskjeder() {
+        kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer);
     }
 
 

@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import junit.framework.TestCase;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -18,7 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.kafka.support.SendResult;
 
 import java.time.Instant;
@@ -28,10 +30,6 @@ import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 public class CvDeltITest extends SpringBootTestBase {
 
@@ -46,12 +44,11 @@ public class CvDeltITest extends SpringBootTestBase {
     @Autowired
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
-    @SpyBean
-    StillingFraNavMetrikker stillingFraNavMetrikker;
-
     @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
     private String innRekrutteringsbistandStatusoppdatering;
 
+    @Autowired
+    MeterRegistry meterRegistry;
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
 
@@ -60,6 +57,7 @@ public class CvDeltITest extends SpringBootTestBase {
     @Before
     public void setUp() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+        meterRegistry.clear();
     }
 
     @Test
@@ -97,9 +95,59 @@ public class CvDeltITest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        verify(stillingFraNavMetrikker, times(1)).countCvDelt(eq(Boolean.TRUE), isNull());
+        Counter counter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "true").counter();
+        TestCase.assertEquals(1.0, counter.count());
 
         brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+    }
+
+    @Test
+    public void duplikat_CvDelt_Skal_ikke_sende_duplikat_brukernotifikasjon() throws Exception {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        String navIdent = "E271828";
+
+        AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
+
+        Date date = Date.from(Instant.ofEpochSecond(1));
+        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
+
+        AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        String bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
+
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", navIdent, tidspunkt);
+
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
+
+        AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
+            assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
+            assertions.assertAll();
+        });
+
+        Counter counter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "true").counter();
+        TestCase.assertEquals(1.0, counter.count());
+
+        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult2 = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult2.getRecordMetadata().offset(), 10);
+
+        TestCase.assertEquals(1.0, counter.count());
+
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
 
     @Test
@@ -144,7 +192,8 @@ public class CvDeltITest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        verify(stillingFraNavMetrikker, times(1)).countCvDelt(eq(Boolean.TRUE), isNull());
+        Counter counter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "true").counter();
+        TestCase.assertEquals(1.0, counter.count());
 
     }
 
@@ -176,7 +225,8 @@ public class CvDeltITest extends SpringBootTestBase {
 
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
-        verify(stillingFraNavMetrikker, times(1)).countCvDelt(eq(Boolean.FALSE), any(String.class));
+        Counter counter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "false").counter();
+        TestCase.assertEquals(1.0, counter.count());
 
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
     }

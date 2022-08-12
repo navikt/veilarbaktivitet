@@ -8,16 +8,16 @@ import org.springframework.stereotype.Component;
 @Component
 class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
-    private static final String stillingFraNavOpprettet = "stilling_fra_nav_opprettet";
-    private static final String stillingFraNavKanDeles = "stilling_fra_nav_kan_deles";
-    private static final String stillingFraNavTidsfristUtlopt = "stilling_fra_nav_tidsfrist_utlopt";
-    private static final String stillingFraNavManueltAvbrutt = "stilling_fra_nav_manuelt_avbrutt";
-    private static final String cvDeltMedArbeidsgiver = "cv_delt_med_arbeidsgiver";
-    private static final String erEksternBruker = "er_ekstern_bruker";
-    private static final String kanDele = "kan_dele";
-    private static final String kanVarsles = "kan_varsles";
-    private static final String suksess = "success";
-    private static final String aarsak = "reason";
+    public static final String stillingFraNavOpprettet = "stilling_fra_nav_opprettet";
+    public static final String stillingFraNavKanDeles = "stilling_fra_nav_kan_deles";
+    public static final String stillingFraNavTidsfristUtlopt = "stilling_fra_nav_tidsfrist_utlopt";
+    public static final String stillingFraNavManueltAvbrutt = "stilling_fra_nav_manuelt_avbrutt";
+    public static final String cvDeltMedArbeidsgiver = "cv_delt_med_arbeidsgiver";
+    public static final String erEksternBruker = "er_ekstern_bruker";
+    public static final String kanDele = "kan_dele";
+    public static final String kanVarsles = "kan_varsles";
+    public static final String suksess = "success";
+    public static final String aarsak = "reason";
 
 
 
