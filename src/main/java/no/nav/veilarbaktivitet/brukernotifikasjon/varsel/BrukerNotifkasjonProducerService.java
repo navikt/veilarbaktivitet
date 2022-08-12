@@ -1,24 +1,20 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
+package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URL;
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-class BrukerNotifkasjonOppgaveService {
-    private final OppgaveDao dao;
-    private final PersonService personService;
+class BrukerNotifkasjonProducerService {
+    private final VarselDAO dao;
     private final OppgaveProducer oppgaveProducer;
     private final BeskjedProducer beskjedProducer;
 
@@ -43,11 +39,6 @@ class BrukerNotifkasjonOppgaveService {
         };
 
         log.debug("Brukernotifikasjon {} med type {} publisert med offset {}", skalSendes.getBrukernotifikasjonId(), varselType.getBrukernotifikasjonType().name(), offset);
-    }
-
-    @SneakyThrows
-    private URL createAktivitetLink(long aktivitetId) {
-        return new URL(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetId);
     }
 
     List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {

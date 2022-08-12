@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.oppgave;
+package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.VarselKvitteringStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -45,6 +45,19 @@ public class BrukerNotifikasjonDAO {
         String sql = """
             SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
             WHERE BRUKERNOTIFIKASJON_ID=:brukernotifikasjon_id
+        """;
+        int antall = jdbcTemplate.queryForObject(sql, params, int.class);
+        return antall > 0;
+    }
+
+    public boolean finnesBrukernotifikasjonMedVarselTypeForAktivitet(long aktivitetsId, VarselType varselType) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitet_id", aktivitetsId)
+                .addValue("type", varselType.name());
+        String sql = """
+            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
+            WHERE AKTIVITET_ID = :aktivitet_id
+            AND TYPE = :type
         """;
         int antall = jdbcTemplate.queryForObject(sql, params, int.class);
         return antall > 0;

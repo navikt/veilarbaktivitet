@@ -68,3 +68,11 @@ spec:
       action: https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       description: feilet deploy?
       severity: warning
+    - alert: Teknisk feil i konsumering av rekrutteringsbistand-statusoppdatering-v1
+      for: 3m
+      description: Teknisk feil i kafka consumer
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      severity: danger
+      expr: |
+        sum(rate(kafka_consume_rekrutteringsbistand_statusoppdatering_seconds_count{exception!='none'}[3m])) > 0.0

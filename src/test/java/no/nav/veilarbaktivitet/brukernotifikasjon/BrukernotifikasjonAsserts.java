@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
+import lombok.Getter;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
@@ -19,8 +20,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.support.SendResult;
 
-import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.FEILET;
-import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FEILET;
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -29,6 +30,7 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
     private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
 
@@ -46,7 +48,7 @@ public class BrukernotifikasjonAsserts {
     }
 
     public ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
@@ -63,7 +65,7 @@ public class BrukernotifikasjonAsserts {
     }
 
     public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
@@ -72,6 +74,10 @@ public class BrukernotifikasjonAsserts {
         assertEquals(config.getNamespace(), key.getNamespace());
 
         return singleRecord;
+    }
+
+    public void assertIngenNyeBeskjeder() {
+        kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer);
     }
 
 
@@ -107,7 +113,7 @@ public class BrukernotifikasjonAsserts {
 
     public void assertSkalIkkeHaProdusertFlereMeldinger() {
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
 
         kafkaTestService.harKonsumertAlleMeldinger(config.getOppgaveTopic(), oppgaveConsumer);
         kafkaTestService.harKonsumertAlleMeldinger(config.getBrukernotifkasjonFerdigTopic(), doneInputConsumer);
