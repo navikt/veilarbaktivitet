@@ -50,24 +50,28 @@ public class CvDeltService {
         }
 
         RekrutteringsbistandStatusoppdatering finalRekrutteringsbistandStatusoppdatering = rekrutteringsbistandStatusoppdatering;
-        delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId)
-                .filter(this::valider)
-                .ifPresentOrElse(
-                        aktivitetData -> {
-                            behandleRekrutteringsbistandoppdatering(
-                                    bestillingsId,
-                                    finalRekrutteringsbistandStatusoppdatering.type(),
-                                    finalRekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
-                                    aktivitetData
-                            );
-                            maybeBestillBrukernotifikasjon(aktivitetData);
-                            stillingFraNavMetrikker.countCvDelt(true, null);
-                        },
-                        () -> {
-                            stillingFraNavMetrikker.countCvDelt(false, "Bestillingsid ikke funnet");
-                            log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}. Eller aktivitet avbrutt eller historisk", bestillingsId);
-                        }
-                );
+
+        Optional<AktivitetData> optionalAktivitetData = delingAvCvDAO.hentAktivitetMedBestillingsId(bestillingsId);
+
+        if (optionalAktivitetData.isEmpty()) {
+            stillingFraNavMetrikker.countCvDelt(false, "Bestillingsid ikke funnet");
+            log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}, eller aktivitet er historisk", bestillingsId);
+        } else {
+            optionalAktivitetData
+                    .filter(this::valider)
+                    .ifPresent(
+                            aktivitetData -> {
+                                behandleRekrutteringsbistandoppdatering(
+                                        bestillingsId,
+                                        finalRekrutteringsbistandStatusoppdatering.type(),
+                                        finalRekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
+                                        aktivitetData
+                                );
+                                maybeBestillBrukernotifikasjon(aktivitetData);
+                                stillingFraNavMetrikker.countCvDelt(true, null);
+                            }
+                    );
+        }
     }
 
     private void maybeBestillBrukernotifikasjon(AktivitetData aktivitetData) {

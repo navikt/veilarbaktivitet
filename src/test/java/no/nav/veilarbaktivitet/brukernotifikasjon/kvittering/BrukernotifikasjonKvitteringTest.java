@@ -143,8 +143,8 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
         infoOgOVersendtSkalIkkeEndreStatus(eventId, VarselKvitteringStatus.FEILET);
 
-        Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
         sendBrukernotifikasjonCron.countForsinkedeVarslerSisteDognet();
+        Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
         Assertions.assertEquals(0, gauge.value());
 
 

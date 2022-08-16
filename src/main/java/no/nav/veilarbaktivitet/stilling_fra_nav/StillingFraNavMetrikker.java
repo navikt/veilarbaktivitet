@@ -34,8 +34,8 @@ class StillingFraNavMetrikker {
         meterRegistry.counter(stillingFraNavManueltAvbrutt, erEksternBruker, "" + false);
         meterRegistry.counter(stillingFraNavTidsfristUtlopt);
 
-        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, "" + true, aarsak, "");
-        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, "" + false, aarsak, "");
+        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(true));
+        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(false), aarsak, "");
     }
 
     void countCvDelt(boolean success, String reason) {
