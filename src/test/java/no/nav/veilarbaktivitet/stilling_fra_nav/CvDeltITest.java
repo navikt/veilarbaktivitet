@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -31,6 +32,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@DirtiesContext
 public class CvDeltITest extends SpringBootTestBase {
 
     private final ZonedDateTime tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
@@ -57,6 +59,7 @@ public class CvDeltITest extends SpringBootTestBase {
     @Before
     public void setUp() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
+        // meterRegistry.clear gjør at man ikke kan gjenbruke springcontext dersom man skal teste på metrikker
         meterRegistry.clear();
     }
 
