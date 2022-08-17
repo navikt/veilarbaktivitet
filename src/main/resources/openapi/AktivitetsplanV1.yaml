@@ -204,6 +204,7 @@ components:
               type: string
               enum:
                 - VENTER
+                - CV_DELT
                 - SKAL_PAA_INTERVJU
                 - JOBBTILBUD
                 - AVSLAG
