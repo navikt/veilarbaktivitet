@@ -110,9 +110,7 @@ public class CvDeltService {
         }
 
         if (status == AktivitetStatus.FULLFORT) {
-            log.warn("Stilling fra NAV med bestillingsid: {} er i status FULLFORT", aktivitetData.getStillingFraNavData().bestillingsId);
-            stillingFraNavMetrikker.countCvDelt(false, "Aktivitet FULLFORT");
-            return false;
+            log.info("Stilling fra NAV med bestillingsid: {} er i status FULLFORT. Setter CV_DELT etikett", aktivitetData.getStillingFraNavData().bestillingsId);
         }
 
         if (aktivitetData.getStillingFraNavData().cvKanDelesData == null) {
