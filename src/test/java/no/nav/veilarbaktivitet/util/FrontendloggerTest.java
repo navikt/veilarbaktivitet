@@ -30,7 +30,7 @@ public class FrontendloggerTest {
         fields.put("fields", "test_value");
         fields.put("success", true);
         fields.put("value", 1);
-        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test").setTags(tags).setFields(fields));
+        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent("test").setTags(tags).setFields(fields));
 
         Event expected = new Event("test.event");
         tags.forEach(expected::addTagToReport);
@@ -44,7 +44,7 @@ public class FrontendloggerTest {
 
     @Test
     public void loggerSkalLeggeHandtereNull() {
-        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent().setName("test"));
+        frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent("test"));
 
         Event expected = new Event("test.event");
         expected.addTagToReport("environment", "q1");
