@@ -21,7 +21,6 @@ import java.util.function.Function;
 
 import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
-import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
@@ -35,6 +34,7 @@ public class VeilarbarenaMapper {
     static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
     static final String JOBBKLUBB_NAVN = "Jobbklubb";
     static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
+    static final String ENKELTPLASS_AMO_NAVN = "Enkeltplass AMO";
 
     private static final Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
 
@@ -78,8 +78,14 @@ public class VeilarbarenaMapper {
 
         val erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(GRUPPE_AMO_NAVN);
-        if (erGruppeAmo){
+        if (erGruppeAmo) {
             return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
+        }
+
+        val erEnkeltplassAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(ENKELTPLASS_AMO_NAVN);
+        if (erEnkeltplassAmo) {
+            return "Enkeltplass AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
         }
 
         return tiltaksaktivitet.getTiltaksnavn();
