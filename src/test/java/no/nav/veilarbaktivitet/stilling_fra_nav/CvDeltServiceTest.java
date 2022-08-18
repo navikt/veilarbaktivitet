@@ -242,7 +242,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
                 ).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 10);
 
-        Mockito.verify(cvDeltService, Mockito.never().description("Consumeren skal ikke kalle metoden behandleRekrutteringsbistandoppdatering fordi aktivitet er AVBRUTT"))
+        Mockito.verify(cvDeltService, Mockito.times(1).description("Consumeren skal kalle metoden behandleRekrutteringsbistandoppdatering selv om aktivitet er FULLFORT"))
                 .behandleRekrutteringsbistandoppdatering(any(String.class), any(RekrutteringsbistandStatusoppdateringEventType.class), any(String.class), any(AktivitetData.class));
     }
 
