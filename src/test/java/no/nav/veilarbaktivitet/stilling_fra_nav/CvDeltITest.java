@@ -139,16 +139,18 @@ public class CvDeltITest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        Counter counter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "true").counter();
-        TestCase.assertEquals(1.0, counter.count());
+        Counter suksessCounter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "true").counter();
+        TestCase.assertEquals(1.0, suksessCounter.count());
 
         brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult2 = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
+
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult2.getRecordMetadata().offset(), 10);
 
-        TestCase.assertEquals(1.0, counter.count());
+        Counter feilCounter = meterRegistry.find(StillingFraNavMetrikker.cvDeltMedArbeidsgiver).tag(StillingFraNavMetrikker.suksess, "false").counter();
+        TestCase.assertEquals(1.0, feilCounter.count());
 
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }

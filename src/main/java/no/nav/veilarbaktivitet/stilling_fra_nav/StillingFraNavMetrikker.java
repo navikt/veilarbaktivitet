@@ -5,6 +5,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
+
 @Component
 class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
@@ -34,18 +36,15 @@ class StillingFraNavMetrikker {
         meterRegistry.counter(stillingFraNavManueltAvbrutt, erEksternBruker, "" + false);
         meterRegistry.counter(stillingFraNavTidsfristUtlopt);
 
-        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(true));
+        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(true), aarsak, "");
         meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(false), aarsak, "");
     }
 
     void countCvDelt(boolean success, String reason) {
-
-        Counter.Builder tag = Counter.builder(cvDeltMedArbeidsgiver)
-                .tag(suksess, Boolean.toString(success));
-
-        if (reason != null) tag.tag(aarsak, reason);
-
-        tag.register(meterRegistry)
+        Counter.builder(cvDeltMedArbeidsgiver)
+                .tag(suksess, Boolean.toString(success))
+                .tag(aarsak, Optional.ofNullable(reason).orElse(""))
+                .register(meterRegistry)
                 .increment();
     }
 
