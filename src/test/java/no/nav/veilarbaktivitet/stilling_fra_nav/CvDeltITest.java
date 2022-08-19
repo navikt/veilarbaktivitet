@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import junit.framework.TestCase;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -38,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
 @DirtiesContext
 public class CvDeltITest extends SpringBootTestBase {
@@ -78,7 +78,7 @@ public class CvDeltITest extends SpringBootTestBase {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
 
     }
 
@@ -111,6 +111,41 @@ public class CvDeltITest extends SpringBootTestBase {
         });
 
         Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+                SUKSESS, 1.0
+        ));
+
+        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+    }
+
+    @Test
+    public void behandle_ikke_fatt_jobben() throws Exception {
+        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
+        AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, INGEN_DETALJER, navIdent, tidspunkt);
+
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
+
+        AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(aktivitetData_etter.getEndretDato())
+                    .as("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
+                    .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
+            assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
+            assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.AVSLAG);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
+            assertions.assertAll();
+        });
+
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.IKKEFATTJOBBEN)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
 
@@ -244,7 +279,7 @@ public class CvDeltITest extends SpringBootTestBase {
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
     }
     @Test
-    public void consumertest_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
+    public void cvdelt_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
@@ -264,7 +299,7 @@ public class CvDeltITest extends SpringBootTestBase {
     }
 
     @Test
-    public void consumertest_hvis_aktivitet_ikke_finnes() throws ExecutionException, InterruptedException, TimeoutException {
+    public void cvdelt_hvis_aktivitet_ikke_finnes() throws ExecutionException, InterruptedException, TimeoutException {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
                 navCommonJsonProducerFactory.send(
@@ -281,7 +316,7 @@ public class CvDeltITest extends SpringBootTestBase {
     }
 
     @Test
-    public void consumertest_hvis_NEI_pa_deling_av_cv() throws ExecutionException, InterruptedException, TimeoutException {
+    public void cvdelt_hvis_NEI_pa_deling_av_cv() throws ExecutionException, InterruptedException, TimeoutException {
         aktivitetTestService.svarPaaDelingAvCv(NEI, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
@@ -302,9 +337,9 @@ public class CvDeltITest extends SpringBootTestBase {
     }
 
     @Test
-    public void consumertest_aktivitet_er_i_status_FULLFORT() throws ExecutionException, InterruptedException, TimeoutException {
+    public void cvdelt_aktivitet_er_i_status_FULLFORT() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
-        aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetDTO_svartJA, AktivitetStatus.FULLFORT);
+        aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetDTO_svartJA, FULLFORT);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
@@ -338,7 +373,7 @@ public class CvDeltITest extends SpringBootTestBase {
                 ));
     }
     @Test
-    public void consumertest_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
+    public void cvdelt_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetDTO_svartJA, AktivitetStatus.AVBRUTT);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
@@ -366,17 +401,16 @@ public class CvDeltITest extends SpringBootTestBase {
         return meterRegistry.find(metrikk).counters().stream()
                 .collect(Collectors.toMap(c -> c.getId().getTag("reason"), Counter::count, Double::sum));
     }
-
     private final String DETALJER_TEKST = "";
     private final boolean JA = Boolean.TRUE;
     private final boolean NEI = Boolean.FALSE;
     private final ZonedDateTime tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
+    private final String navIdent = "E271828";
+    private final MockBruker mockBruker = MockNavService.createHappyBruker();
+    private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+    private final Date date = Date.from(Instant.ofEpochSecond(1));
+    private final String SUKSESS = "";
+    private final String INGEN_DETALJER = "";
     private AktivitetDTO aktivitetDTO;
     private String bestillingsId;
-    final String navIdent = "E271828";
-    MockBruker mockBruker = MockNavService.createHappyBruker();
-    MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-    Date date = Date.from(Instant.ofEpochSecond(1));
-    private final String SUKSESS = "";
-    private String INGEN_DETALJER = "";
 }

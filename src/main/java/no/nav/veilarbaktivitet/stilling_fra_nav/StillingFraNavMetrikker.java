@@ -15,6 +15,7 @@ class StillingFraNavMetrikker {
     public static final String STILLINGFRANAVTIDSFRISTUTLOPT = "stilling_fra_nav_tidsfrist_utlopt";
     public static final String STILLINGFRANAVMANUELTAVBRUTT = "stilling_fra_nav_manuelt_avbrutt";
     public static final String CVDELTMEDARBEIDSGIVER = "cv_delt_med_arbeidsgiver";
+    public static final String IKKEFATTJOBBEN = "ikke_fatt_jobben";
     public static final String EREKSTERNBRUKER = "er_ekstern_bruker";
     public static final String KANDELE = "kan_dele";
     public static final String KANVARSLES = "kan_varsles";
@@ -38,10 +39,20 @@ class StillingFraNavMetrikker {
 
         meterRegistry.counter(CVDELTMEDARBEIDSGIVER, SUKSESS, Boolean.toString(true), AARSAK, "");
         meterRegistry.counter(CVDELTMEDARBEIDSGIVER, SUKSESS, Boolean.toString(false), AARSAK, "");
+
+        meterRegistry.counter(IKKEFATTJOBBEN, SUKSESS, Boolean.toString(true), AARSAK, "");
+        meterRegistry.counter(IKKEFATTJOBBEN, SUKSESS, Boolean.toString(false), AARSAK, "");
     }
 
     void countCvDelt(boolean success, String reason) {
         Counter.builder(CVDELTMEDARBEIDSGIVER)
+                .tag(SUKSESS, Boolean.toString(success))
+                .tag(AARSAK, Optional.ofNullable(reason).orElse(""))
+                .register(meterRegistry)
+                .increment();
+    }
+    void countIkkeFattJobben(boolean success, String reason) {
+        Counter.builder(IKKEFATTJOBBEN)
                 .tag(SUKSESS, Boolean.toString(success))
                 .tag(AARSAK, Optional.ofNullable(reason).orElse(""))
                 .register(meterRegistry)
