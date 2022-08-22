@@ -61,10 +61,9 @@ public class CvDeltServiceTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(NAVIDENT);
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isSameAs(InnsenderData.NAV);
-            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(AktivitetStatus.FULLFORT);
+            assertions.assertThat(aktivitetData_etter.getStatus()).as("Skal sette aktivitetstatus").isSameAs(AktivitetStatus.FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.AVSLAG);
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(AktivitetStatus.FULLFORT);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).as("Skal sette søknadstatus").isSameAs(Soknadsstatus.AVSLAG);
             assertions.assertAll();
         });
     }
@@ -99,23 +98,6 @@ public class CvDeltServiceTest extends SpringBootTestBase {
                             .livslopsStatus(LivslopsStatus.HAR_SVART)
                             .cvKanDelesData(CvKanDelesData.builder()
                                     .kanDeles(Boolean.TRUE)
-                                    .build())
-                            .build()
-            )
-            .build();
-
-    private final AktivitetData STILLING_FRA_NAV_HAR_SVART_NEI = AktivitetData.builder()
-            .id(Long.parseLong(BESTILLINGSID))
-            .versjon(1L)
-            .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
-            .lagtInnAv(InnsenderData.NAV)
-            .status(AktivitetStatus.GJENNOMFORES)
-            .stillingFraNavData(
-                    StillingFraNavData.builder()
-                            .soknadsstatus(Soknadsstatus.VENTER)
-                            .livslopsStatus(LivslopsStatus.HAR_SVART)
-                            .cvKanDelesData(CvKanDelesData.builder()
-                                    .kanDeles(Boolean.FALSE)
                                     .build())
                             .build()
             )

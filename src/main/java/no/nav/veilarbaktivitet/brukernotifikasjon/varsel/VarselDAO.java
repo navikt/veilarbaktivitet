@@ -65,12 +65,12 @@ public class VarselDAO {
     }
 
 
-    //TODO skriv om til og bruke kafka topic
+    //TODO skriv om til å bruke kafka topic
     public int avbrytIkkeSendteOppgaverForAvslutteteAktiviteter() {
         MapSqlParameterSource param = new MapSqlParameterSource()
+                .addValue("avbruttStatus", VarselStatus.AVBRUTT.name())
                 .addValue("skal_avsluttes", VarselStatus.PENDING.name())
-                .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()))
-                .addValue("avbruttStatus", VarselStatus.AVBRUTT.name());
+                .addValue("finalAktivitetStatus", List.of(AktivitetStatus.FULLFORT.name(), AktivitetStatus.AVBRUTT.name()));
 
         return jdbcTemplate.update("""
                          update BRUKERNOTIFIKASJON B

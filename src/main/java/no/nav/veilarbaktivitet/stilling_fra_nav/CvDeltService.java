@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Person;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -24,6 +23,7 @@ import java.util.Optional;
 public class CvDeltService {
 
     public static final String CV_DELT_DITT_NAV_TEKST = "NAV har delt din CV med arbeidsgiver på denne stillingen";
+    public static final String EN_TEKST_VI_KAN_FA_FRA_PO = "Det ble ikke deg denne gangen :-/";
     private final DelingAvCvDAO delingAvCvDAO;
     private final DelingAvCvService delingAvCvService;
 
@@ -41,6 +41,7 @@ public class CvDeltService {
         try {
             rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
         } catch (Exception ignored) {
+            log.debug("Feilet i fromJson");
         }
 
         if (rekrutteringsbistandStatusoppdatering == null) {
@@ -60,33 +61,32 @@ public class CvDeltService {
             optionalAktivitetData
                     .filter(this::valider)
                     .ifPresent(
-                            aktivitetData -> {
-                                behandleRekrutteringsbistandoppdatering(
-                                        bestillingsId,
-                                        finalRekrutteringsbistandStatusoppdatering.type(),
-                                        finalRekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
-                                        aktivitetData
-                                );
-                                maybeBestillBrukernotifikasjon(aktivitetData);
-                                stillingFraNavMetrikker.countCvDelt(true, null);
-                            }
+                            aktivitetData ->
+                                    behandleRekrutteringsbistandoppdatering(
+                                            bestillingsId,
+                                            finalRekrutteringsbistandStatusoppdatering.type(),
+                                            finalRekrutteringsbistandStatusoppdatering.utførtAvNavIdent(),
+                                            aktivitetData
+                                    )
                     );
         }
     }
 
-    private void maybeBestillBrukernotifikasjon(AktivitetData aktivitetData) {
-        if (brukernotifikasjonService.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetData.getId(), VarselType.CV_DELT)) {
-            log.warn("Brukernotifikasjon er allerede sendt for CV_DELT på bestillingsid {}", aktivitetData.getStillingFraNavData().bestillingsId);
+    private void maybeBestillBrukernotifikasjon(AktivitetData aktivitetData, VarselType varselType) {
+        if (brukernotifikasjonService.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetData.getId(), varselType)) {
+            log.warn("Brukernotifikasjon er allerede sendt for {} på bestillingsid {}", varselType, aktivitetData.getStillingFraNavData().bestillingsId);
             return;
         }
-
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 aktivitetData.getId(),
                 aktivitetData.getVersjon(),
                 Person.aktorId(aktivitetData.getAktorId()),
-                CV_DELT_DITT_NAV_TEKST,
-                VarselType.CV_DELT
-        );
+                switch (varselType) {
+                    case CV_DELT -> CV_DELT_DITT_NAV_TEKST;
+                    case IKKE_FATT_JOBBEN -> EN_TEKST_VI_KAN_FA_FRA_PO;
+                    default -> "";
+                },
+                varselType);
     }
 
     public void behandleRekrutteringsbistandoppdatering(String bestillingsId, RekrutteringsbistandStatusoppdateringEventType type, String navIdent, AktivitetData aktivitet) {
@@ -95,8 +95,13 @@ public class CvDeltService {
         if (type == RekrutteringsbistandStatusoppdateringEventType.CV_DELT) {
             delingAvCvService.oppdaterSoknadsstatus(aktivitet, Soknadsstatus.CV_DELT, endretAv);
             log.info("Oppdaterte søknadsstatus på aktivitet {}", bestillingsId);
+            stillingFraNavMetrikker.countCvDelt(true, null);
+            maybeBestillBrukernotifikasjon(aktivitet, VarselType.CV_DELT);
         } else if (type == RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN) {
-            throw new NotImplementedException("Det er ikke støtte for IKKE_FATT_JOBBEN ennå");
+            delingAvCvService.ikkeFattJobben(aktivitet, endretAv);
+            log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
+            stillingFraNavMetrikker.countIkkeFattJobben(true, null);
+            maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
         }
     }
 

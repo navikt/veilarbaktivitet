@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -76,6 +77,17 @@ public class DelingAvCvService {
                 .build();
 
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+    }
+
+    public void ikkeFattJobben(AktivitetData aktivitet, @NonNull Person endretAv) {
+        StillingFraNavData nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.AVSLAG);
+        AktivitetData nyAktivitet = aktivitet
+                .withEndretAv(endretAv.get())
+                .withLagtInnAv(endretAv.tilBrukerType())
+                .withTransaksjonsType(AktivitetTransaksjonsType.IKKE_FATT_JOBBEN)
+                .withStatus(AktivitetStatus.FULLFORT)
+                .withStillingFraNavData(nyStillingFraNavData);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
