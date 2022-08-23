@@ -40,7 +40,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
 @DirtiesContext
-public class CvDeltITest extends SpringBootTestBase {
+public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
 
     @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
@@ -53,7 +53,7 @@ public class CvDeltITest extends SpringBootTestBase {
     KafkaStringTemplate kafkaStringTemplate;
 
     @Autowired
-    CvDeltService cvDeltService;
+    RekrutteringsbistandStatusoppdateringService rekrutteringsbistandStatusoppdateringService;
 
     @Autowired
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
@@ -135,7 +135,7 @@ public class CvDeltITest extends SpringBootTestBase {
             assertions.assertThat(aktivitetData_etter.getEndretDato())
                     .as("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
-            assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
+            assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
@@ -149,7 +149,8 @@ public class CvDeltITest extends SpringBootTestBase {
                 SUKSESS, 1.0
         ));
 
-        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        // TODO Trello-oppgave "Ny brukernotifikasjon_Ikke fått jobben"
+//        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
     }
 
     @Test

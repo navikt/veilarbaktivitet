@@ -5,26 +5,31 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import static org.mockito.ArgumentMatchers.any;
 
-public class CvDeltServiceTest extends SpringBootTestBase {
-
-    @SpyBean
-    DelingAvCvDAO delingAvCvDAO;
-
-    @SpyBean
-    CvDeltService cvDeltService;
+public class RekrutteringsbistandStatusoppdateringServiceTest extends SpringBootTestBase {
+    @Autowired
+    RekrutteringsbistandStatusoppdateringService rekrutteringsbistandStatusoppdateringService;
 
     @SpyBean
     AktivitetDAO aktivitetDAO;
+
+    @MockBean
+    StillingFraNavMetrikker stillingFraNavMetrikker;
+
+    @MockBean
+    BrukernotifikasjonService brukernotifikasjonService;
     private final ArgumentCaptor<AktivitetData> aktivitetjeger = ArgumentCaptor.forClass(AktivitetData.class);
 
     @Before
@@ -34,7 +39,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
 
     @Test
     public void happy_case_svart_ja() {
-        cvDeltService.behandleRekrutteringsbistandoppdatering(BESTILLINGSID, RekrutteringsbistandStatusoppdateringEventType.CV_DELT, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA);
+        rekrutteringsbistandStatusoppdateringService.behandleCvDelt(BESTILLINGSID, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA);
 
         Mockito.verify(aktivitetDAO).oppdaterAktivitet(aktivitetjeger.capture());
         AktivitetData aktivitetData_etter = aktivitetjeger.getValue();
@@ -52,8 +57,8 @@ public class CvDeltServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_men_dessverre_case_ikke_fatt_jobben() {
-        cvDeltService.behandleRekrutteringsbistandoppdatering(BESTILLINGSID, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA);
+    public void unhappy_case_ikke_fatt_jobben() {
+        rekrutteringsbistandStatusoppdateringService.behandleIkkeFattJobben(BESTILLINGSID, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA);
 
         Mockito.verify(aktivitetDAO).oppdaterAktivitet(aktivitetjeger.capture());
         AktivitetData aktivitetData_etter = aktivitetjeger.getValue();
@@ -70,7 +75,7 @@ public class CvDeltServiceTest extends SpringBootTestBase {
 
     @Test
     public void hvis_meldingen_mangler_navident_blir_navIdent_satt_til_SYSTEM() {
-        cvDeltService.behandleRekrutteringsbistandoppdatering(BESTILLINGSID, RekrutteringsbistandStatusoppdateringEventType.CV_DELT, null, STILLING_FRA_NAV_HAR_SVART_JA);
+        rekrutteringsbistandStatusoppdateringService.behandleCvDelt(BESTILLINGSID, null, STILLING_FRA_NAV_HAR_SVART_JA);
 
         Mockito.verify(aktivitetDAO).oppdaterAktivitet(aktivitetjeger.capture());
         AktivitetData aktivitetData_etter = aktivitetjeger.getValue();
@@ -90,6 +95,8 @@ public class CvDeltServiceTest extends SpringBootTestBase {
             .id(Long.parseLong(BESTILLINGSID))
             .versjon(1L)
             .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
+            .endretAv(NAVIDENT)
+            .aktorId("12345678901")
             .lagtInnAv(InnsenderData.NAV)
             .status(AktivitetStatus.GJENNOMFORES)
             .stillingFraNavData(
