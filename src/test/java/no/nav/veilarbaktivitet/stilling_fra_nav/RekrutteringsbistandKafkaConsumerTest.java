@@ -110,7 +110,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
 
@@ -123,7 +123,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
-                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, "Foo", navIdent, tidspunkt);
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
@@ -140,8 +140,10 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.AVSLAG);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.FIKK_IKKE_JOBBEN);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getIkkefattjobbendetaljer()).isEqualTo(ikkeFattJobbenDetaljer);
+
             assertions.assertAll();
         });
 
@@ -166,7 +168,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 "Aktivitet AVBRUTT", 1.0
         ));
     }
@@ -194,7 +196,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
         brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
@@ -202,7 +204,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult2 = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult2.getRecordMetadata().offset(), 10);
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0,
                 "Allerede delt", 1.0
         ));
@@ -251,7 +253,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
 
@@ -273,7 +275,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER)).containsExactlyInAnyOrderEntriesOf(Map.of(
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING)).containsExactlyInAnyOrderEntriesOf(Map.of(
                 "Ugyldig melding", 1.0
         ));
 
@@ -293,7 +295,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 10);
 
         Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER))
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Ikke svart", 1.0
                 ));
@@ -310,7 +312,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 ).get(1, SECONDS);
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 10);
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER))
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Bestillingsid ikke funnet", 1.0
                 ));
@@ -331,7 +333,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 10);
 
         Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER))
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Aktivitet AVBRUTT", 1.0
                 ));
@@ -368,7 +370,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER))
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "", 1.0
                 ));
@@ -391,12 +393,11 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
-        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.CVDELTMEDARBEIDSGIVER))
+        Assertions.assertThat(antallAvHverArsak(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING))
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Aktivitet AVBRUTT", 1.0
                 ));
     }
-
     @NotNull
     private Map<String, Double> antallAvHverArsak(String metrikk) {
         return meterRegistry.find(metrikk).counters().stream()
@@ -412,6 +413,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     private final Date date = Date.from(Instant.ofEpochSecond(1));
     private final String SUKSESS = "";
     private final String INGEN_DETALJER = "";
+    private final String ikkeFattJobbenDetaljer = "Bosu no hito tte nande ka na";
     private AktivitetDTO aktivitetDTO;
     private String bestillingsId;
 }

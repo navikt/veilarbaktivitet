@@ -58,7 +58,7 @@ public class RekrutteringsbistandStatusoppdateringServiceTest extends SpringBoot
 
     @Test
     public void unhappy_case_ikke_fatt_jobben() {
-        rekrutteringsbistandStatusoppdateringService.behandleIkkeFattJobben(BESTILLINGSID, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA);
+        rekrutteringsbistandStatusoppdateringService.behandleIkkeFattJobben(BESTILLINGSID, NAVIDENT, STILLING_FRA_NAV_HAR_SVART_JA, "Lorem ipsum dolor sit amet");
 
         Mockito.verify(aktivitetDAO).oppdaterAktivitet(aktivitetjeger.capture());
         AktivitetData aktivitetData_etter = aktivitetjeger.getValue();
@@ -68,7 +68,7 @@ public class RekrutteringsbistandStatusoppdateringServiceTest extends SpringBoot
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isSameAs(InnsenderData.NAV);
             assertions.assertThat(aktivitetData_etter.getStatus()).as("Skal sette aktivitetstatus").isSameAs(AktivitetStatus.FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).as("Skal sette søknadstatus").isSameAs(Soknadsstatus.AVSLAG);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).as("Skal sette søknadstatus").isSameAs(Soknadsstatus.FIKK_IKKE_JOBBEN);
             assertions.assertAll();
         });
     }

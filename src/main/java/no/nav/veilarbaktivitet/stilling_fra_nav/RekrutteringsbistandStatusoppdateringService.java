@@ -52,13 +52,15 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countCvDelt(true, null);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
         maybeBestillBrukernotifikasjon(aktivitet, VarselType.CV_DELT);
     }
 
-    public void behandleIkkeFattJobben(String bestillingsId, String navIdent, AktivitetData aktivitet) {
+    public void behandleIkkeFattJobben(String bestillingsId, String navIdent, AktivitetData aktivitet, String ikkefattjobbendetaljer) {
         Person endretAv = Person.navIdent(Optional.ofNullable(navIdent).orElse("SYSTEM"));
-        var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.AVSLAG);
+        var nyStillingFraNavData = aktivitet.getStillingFraNavData()
+                .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
+                .withSoknadsstatus(Soknadsstatus.FIKK_IKKE_JOBBEN);
         var nyAktivitet = aktivitet.toBuilder()
                 .lagtInnAv(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
@@ -68,51 +70,57 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countIkkeFattJobben(true, null);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
         // TODO Trello-oppgave "Ny brukernotifikasjon_Ikke fått jobben"
 //            maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
     }
 
-    private Boolean validerStillingFraNavOppdatering(AktivitetData aktivitetData) {
+    private boolean validerStillingFraNavOppdatering(AktivitetData aktivitetData, RekrutteringsbistandStatusoppdateringEventType type) {
         AktivitetStatus status = aktivitetData.getStatus();
+
+        if (status == AktivitetStatus.FULLFORT) {
+            log.info("Stilling fra NAV med bestillingsid: {} er i status FULLFORT. Setter {} etikett", aktivitetData.getStillingFraNavData().bestillingsId, type);
+        }
 
         if (status == AktivitetStatus.AVBRUTT) {
             log.warn("Stilling fra NAV med bestillingsid: {} er i status AVBRUTT", aktivitetData.getStillingFraNavData().bestillingsId);
-            stillingFraNavMetrikker.countCvDelt(false, "Aktivitet AVBRUTT");
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Aktivitet AVBRUTT", type);
             return false;
-        }
-
-        if (status == AktivitetStatus.FULLFORT) {
-            log.info("Stilling fra NAV med bestillingsid: {} er i status FULLFORT. Setter CV_DELT etikett", aktivitetData.getStillingFraNavData().bestillingsId);
         }
 
         if (aktivitetData.getStillingFraNavData().cvKanDelesData == null) {
             log.warn("Stilling fra NAV med bestillingsid: {} har ikke svart", aktivitetData.getStillingFraNavData().bestillingsId);
-            this.stillingFraNavMetrikker.countCvDelt(false, "Ikke svart");
+            this.stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ikke svart", type);
             return false;
         }
 
         if (aktivitetData.getStillingFraNavData().cvKanDelesData.getKanDeles() == Boolean.FALSE) {
             log.error("Stilling fra NAV med bestillingsid: {} har svart NEI", aktivitetData.getStillingFraNavData().bestillingsId);
-            stillingFraNavMetrikker.countCvDelt(false, "Svart NEI");
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Svart NEI", type);
             return false;
         }
 
         return true;
     }
 
-    Boolean validerCvDelt(AktivitetData aktivitetData) {
+    boolean validerCvDelt(AktivitetData aktivitetData) {
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.CV_DELT) {
             log.warn("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
-            stillingFraNavMetrikker.countCvDelt(false, "Allerede delt");
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede delt", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
             return false;
         }
 
-        return validerStillingFraNavOppdatering(aktivitetData);
+        return validerStillingFraNavOppdatering(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
     }
 
-    Boolean validerIkkeFattJobben(AktivitetData aktivitetData) {
-        return validerStillingFraNavOppdatering(aktivitetData);
+    boolean validerIkkeFattJobben(AktivitetData aktivitetData) {
+        if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.FIKK_IKKE_JOBBEN) {
+            log.warn("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede ikke fått jobben", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+            return false;
+        }
+
+        return validerStillingFraNavOppdatering(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
     }
 
 }

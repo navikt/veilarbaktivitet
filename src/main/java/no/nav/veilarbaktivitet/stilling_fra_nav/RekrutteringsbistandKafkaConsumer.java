@@ -35,27 +35,28 @@ public class RekrutteringsbistandKafkaConsumer {
 
         if (rekrutteringsbistandStatusoppdatering == null) {
             log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
-            stillingFraNavMetrikker.countCvDelt(false, "Ugyldig melding");
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ugyldig melding", RekrutteringsbistandStatusoppdateringEventType.UKJENT);
             return;
         }
 
         RekrutteringsbistandStatusoppdateringEventType type = rekrutteringsbistandStatusoppdatering.type();
         String navIdent = rekrutteringsbistandStatusoppdatering.utførtAvNavIdent();
+        String ikkeFattJobbenDetaljer = rekrutteringsbistandStatusoppdatering.detaljer();
 
         Optional<AktivitetData> optionalAktivitetData = dao.hentAktivitetMedBestillingsId(bestillingsId);
 
-        if (optionalAktivitetData.isEmpty()) {
-            stillingFraNavMetrikker.countCvDelt(false, "Bestillingsid ikke funnet");
-            log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}, eller aktivitet er historisk", bestillingsId);
-        } else {
-            AktivitetData aktivitetData = optionalAktivitetData.get();
-            if (RekrutteringsbistandStatusoppdateringEventType.CV_DELT == type && service.validerCvDelt(aktivitetData)) {
-                service.behandleCvDelt(bestillingsId, navIdent, aktivitetData);
+        if (optionalAktivitetData.isPresent()) {
+            AktivitetData forrigeAktivitetsdata = optionalAktivitetData.get();
+            if (RekrutteringsbistandStatusoppdateringEventType.CV_DELT == type && service.validerCvDelt(forrigeAktivitetsdata)) {
+                service.behandleCvDelt(bestillingsId, navIdent, forrigeAktivitetsdata);
             }
 
-            if (RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN == type && service.validerIkkeFattJobben(aktivitetData)) {
-                service.behandleIkkeFattJobben(bestillingsId, navIdent, aktivitetData);
+            if (RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN == type && service.validerIkkeFattJobben(forrigeAktivitetsdata)) {
+                service.behandleIkkeFattJobben(bestillingsId, navIdent, forrigeAktivitetsdata, ikkeFattJobbenDetaljer);
             }
+        } else {
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Bestillingsid ikke funnet", type);
+            log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}, eller aktivitet er historisk", bestillingsId);
         }
     }
 
