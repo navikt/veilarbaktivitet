@@ -208,6 +208,7 @@ components:
                 - SKAL_PAA_INTERVJU
                 - JOBBTILBUD
                 - AVSLAG
+                - FIKK_IKKE_JOBBEN
 
 paths:
   /internal/api/v1/aktivitet:
