@@ -15,7 +15,6 @@ class StillingFraNavMetrikker {
     public static final String STILLINGFRANAVTIDSFRISTUTLOPT = "stilling_fra_nav_tidsfrist_utlopt";
     public static final String STILLINGFRANAVMANUELTAVBRUTT = "stilling_fra_nav_manuelt_avbrutt";
     public static final String REKRUTTERINGSBISTANDSTATUSOPPDATERING = "rekrutteringsbistandstatusoppdatering";
-    public static final String IKKEFATTJOBBEN = "ikke_fatt_jobben";
     public static final String EREKSTERNBRUKER = "er_ekstern_bruker";
     public static final String KANDELE = "kan_dele";
     public static final String KANVARSLES = "kan_varsles";
