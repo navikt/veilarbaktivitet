@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
+import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -15,6 +17,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.InnsenderData;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.jetbrains.annotations.NotNull;
@@ -114,7 +117,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 SUKSESS, 1.0
         ));
 
-        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
     }
 
     @Test
@@ -154,9 +158,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
-
-        // TODO Trello-oppgave "Ny brukernotifikasjon_Ikke fått jobben"
-//        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST);
     }
 
     @Test
@@ -167,20 +170,22 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
 
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
 
         String ikkeFattJobbenDetaljer = """
-            Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
-            Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
-        """;
+                    Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
+                    Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
+                """;
         RekrutteringsbistandStatusoppdatering sendtStatusoppdateringFikkIkkeJobben =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultFikkIkkeJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringFikkIkkeJobben).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultFikkIkkeJobben.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+        ConsumerRecord<NokkelInput, BeskjedInput> etterIkkeFattJobben = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getEndretDato())
@@ -202,8 +207,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 SUKSESS, 2.0
         ));
 
-        // TODO Trello-oppgave "Ny brukernotifikasjon_Ikke fått jobben"
-//        brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
+        Assertions.assertThat(etterIkkeFattJobben.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST);
     }
 
     @Test
@@ -222,6 +227,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
                 "Aktivitet AVBRUTT", 1.0
         ));
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
 
     @Test
@@ -308,6 +314,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 SUKSESS, 1.0
         ));
 
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
     }
     @Test
     public void hvis_feil_i_json_skal_vi_ikke_endre_aktivitet_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
@@ -331,6 +339,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         ));
 
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
+
     }
     @Test
     public void cvdelt_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
@@ -350,6 +360,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Ikke svart", 1.0
                 ));
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
+
     }
 
     @Test
@@ -367,6 +379,8 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Bestillingsid ikke funnet", 1.0
                 ));
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
+
     }
 
     @Test
@@ -388,6 +402,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Aktivitet AVBRUTT", 1.0
                 ));
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
 
     @Test
@@ -425,6 +440,9 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "", 1.0
                 ));
+
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
     }
     @Test
     public void cvdelt_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
@@ -448,6 +466,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Aktivitet AVBRUTT", 1.0
                 ));
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
     @NotNull
     private Map<String, Double> antallAvHverArsak() {

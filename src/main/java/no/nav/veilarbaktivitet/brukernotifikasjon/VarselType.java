@@ -23,7 +23,7 @@ public enum VarselType {
         return brukernotifikasjonsType;
     }
 
-    public List<VarselType> varslerForBrukernotifikasjonstype(BrukernotifikasjonsType wanted) {
+    public static List<VarselType> varslerForBrukernotifikasjonstype(BrukernotifikasjonsType wanted) {
         return Arrays.stream(values()).filter(v -> v.brukernotifikasjonsType == wanted).toList();
     }
 

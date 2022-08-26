@@ -71,8 +71,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
         stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
-        // TODO Trello-oppgave "Ny brukernotifikasjon_Ikke fått jobben"
-//            maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
+        maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
     }
 
     private boolean validerStillingFraNavOppdatering(AktivitetData aktivitetData, RekrutteringsbistandStatusoppdateringEventType type) {

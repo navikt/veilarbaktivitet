@@ -18,9 +18,6 @@ class BrukerNotifkasjonProducerService {
     private final OppgaveProducer oppgaveProducer;
     private final BeskjedProducer beskjedProducer;
 
-    @Value("${app.env.aktivitetsplan.basepath}")
-    private String aktivitetsplanBasepath;
-
     @Transactional
     @Timed(value="brukernotifikasjon_opprett_oppgave_sendt")
     public void send(SkalSendes skalSendes) {

@@ -18,6 +18,7 @@ import org.apache.avro.specific.SpecificRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.assertj.core.api.Assertions;
 import org.springframework.kafka.support.SendResult;
 
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FEILET;
@@ -77,7 +78,10 @@ public class BrukernotifikasjonAsserts {
     }
 
     public void assertIngenNyeBeskjeder() {
-        kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer);
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
+        Assertions.assertThat(kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer))
+                .as("Skal ikke sendes melding")
+                .isTrue();
     }
 
 
