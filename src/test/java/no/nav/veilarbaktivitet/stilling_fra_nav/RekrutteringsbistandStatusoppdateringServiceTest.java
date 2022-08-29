@@ -68,7 +68,7 @@ public class RekrutteringsbistandStatusoppdateringServiceTest extends SpringBoot
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isSameAs(InnsenderData.NAV);
             assertions.assertThat(aktivitetData_etter.getStatus()).as("Skal sette aktivitetstatus").isSameAs(AktivitetStatus.FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).as("Skal sette søknadstatus").isSameAs(Soknadsstatus.FIKK_IKKE_JOBBEN);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).as("Skal sette søknadstatus").isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
             assertions.assertAll();
         });
     }

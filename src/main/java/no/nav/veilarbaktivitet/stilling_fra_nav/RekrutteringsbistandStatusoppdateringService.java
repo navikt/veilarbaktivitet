@@ -60,7 +60,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         Person endretAv = Person.navIdent(Optional.ofNullable(navIdent).orElse("SYSTEM"));
         var nyStillingFraNavData = aktivitet.getStillingFraNavData()
                 .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
-                .withSoknadsstatus(Soknadsstatus.FIKK_IKKE_JOBBEN);
+                .withSoknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN);
         var nyAktivitet = aktivitet.toBuilder()
                 .lagtInnAv(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
@@ -113,7 +113,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     boolean validerIkkeFattJobben(AktivitetData aktivitetData) {
-        if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.FIKK_IKKE_JOBBEN) {
+        if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.IKKE_FATT_JOBBEN) {
             log.warn("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede ikke fått jobben", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
             return false;

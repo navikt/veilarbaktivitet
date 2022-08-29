@@ -148,7 +148,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.FIKK_IKKE_JOBBEN);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getIkkefattjobbendetaljer()).isEqualTo(ikkeFattJobbenDetaljer);
 
@@ -180,10 +180,10 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
                     Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
                 """;
-        RekrutteringsbistandStatusoppdatering sendtStatusoppdateringFikkIkkeJobben =
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultFikkIkkeJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringFikkIkkeJobben).get(5, TimeUnit.SECONDS);
-        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultFikkIkkeJobben.getRecordMetadata().offset(), 10);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         ConsumerRecord<NokkelInput, BeskjedInput> etterIkkeFattJobben = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
 
@@ -196,7 +196,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.FIKK_IKKE_JOBBEN);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getIkkefattjobbendetaljer()).isEqualTo(ikkeFattJobbenDetaljer);
 
