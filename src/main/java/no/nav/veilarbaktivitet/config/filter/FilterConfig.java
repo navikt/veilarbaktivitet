@@ -101,6 +101,15 @@ public class FilterConfig {
     }
 
     @Bean
+    public FilterRegistrationBean<SecureLogsfilterFilter> secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
+        FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(secureLogsfilterFilter);
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(3);
+        return registration;
+    }
+
+    @Bean
     public FilterRegistrationBean authenticationFilterRegistrationBean(EnvironmentProperties properties) {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
@@ -115,18 +124,9 @@ public class FilterConfig {
         );
 
         registration.setFilter(authenticationFilter);
-        registration.setOrder(3);
+        registration.setOrder(4);
         registration.addUrlPatterns("/api/*");
         registration.addUrlPatterns("/internal/api/*");
-        return registration;
-    }
-
-    @Bean
-    public FilterRegistrationBean<SecureLogsfilterFilter> secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
-        FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(secureLogsfilterFilter);
-        registration.addUrlPatterns("/api/*");
-        registration.setOrder(4);
         return registration;
     }
 
