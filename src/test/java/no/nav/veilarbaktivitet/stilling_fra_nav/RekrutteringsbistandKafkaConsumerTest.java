@@ -156,12 +156,29 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
+        AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
-        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
         Assertions.assertThat(antallAvHverArsak())
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
-                        "Ikke delt cv", 1.0
+                        SUKSESS, 1.0
                 ));
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
+            assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
+            assertions.assertAll();
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData())
+                    .satisfies(stillingFraNavData -> {
+                                assertions.assertThat(stillingFraNavData.getIkkefattjobbendetaljer()).isEqualTo(ikkeFattJobbenDetaljer);
+                                assertions.assertThat(stillingFraNavData.getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
+                                assertions.assertThat(stillingFraNavData.getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
+                            }
+                    );
+            assertions.assertAll();
+        });
     }
     @Test
     public void behandle_ikke_fatt_jobben_etter_cv_delt() throws Exception {
@@ -217,7 +234,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         aktivitetTestService.svarPaaDelingAvCv(Boolean.FALSE, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
-                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, "", navIdent, tidspunkt);
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
@@ -226,7 +243,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
-                "Aktivitet AVBRUTT", 1.0
+                "Svart NEI", 1.0
         ));
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
@@ -401,7 +418,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
         Assertions.assertThat(antallAvHverArsak())
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
-                        "Aktivitet AVBRUTT", 1.0
+                        "Svart NEI", 1.0
                 ));
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
@@ -439,7 +456,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
         Assertions.assertThat(antallAvHverArsak())
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
-                        "", 1.0
+                        SUKSESS, 1.0
                 ));
 
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
@@ -462,11 +479,11 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         kafkaTestService.assertErKonsumertAiven(rekrutteringsbistandstatusoppdateringtopic, sendResult.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
-        Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
         Assertions.assertThat(antallAvHverArsak())
                 .containsExactlyInAnyOrderEntriesOf(Map.of(
                         "Aktivitet AVBRUTT", 1.0
                 ));
+        Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
     @NotNull
