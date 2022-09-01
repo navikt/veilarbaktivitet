@@ -119,6 +119,12 @@ public class RekrutteringsbistandStatusoppdateringService {
             return false;
         }
 
+        if (aktivitetData.getStillingFraNavData().getSoknadsstatus() != Soknadsstatus.CV_DELT) {
+            log.warn("Stilling fra NAV med bestillingsid: {} har ikke status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ikke delt cv", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+            return false;
+        }
+
         return validerStillingFraNavOppdatering(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
     }
 

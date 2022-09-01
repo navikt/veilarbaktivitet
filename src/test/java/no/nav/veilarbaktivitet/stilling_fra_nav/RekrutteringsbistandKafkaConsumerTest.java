@@ -122,8 +122,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_ikke_fatt_jobben() throws Exception {
-        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
+    public void behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv() throws Exception {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         String ikkeFattJobbenDetaljer = """
@@ -137,31 +136,33 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
-        AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
-
-        SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(aktivitetData_etter.getEndretDato())
-                    .as("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
-                    .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
-            assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
-            assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
-            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_for.getStillingFraNavData().getLivslopsStatus());
-            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getIkkefattjobbendetaljer()).isEqualTo(ikkeFattJobbenDetaljer);
-
-            assertions.assertAll();
-        });
-
-        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
-                SUKSESS, 1.0
-        ));
-        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
-        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST);
+        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
+        Assertions.assertThat(antallAvHverArsak())
+                .containsExactlyInAnyOrderEntriesOf(Map.of(
+                        "Ikke svart", 1.0
+                ));
     }
 
+    @Test
+    public void behandle_ikke_fatt_jobben_svart_men_cv_er_ikke_delt() throws Exception {
+        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
+        AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        String ikkeFattJobbenDetaljer = """
+                    Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
+                    Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
+                """;
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
+
+        Assertions.assertThat(aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId())).isEqualTo(aktivitetData_for);
+        Assertions.assertThat(antallAvHverArsak())
+                .containsExactlyInAnyOrderEntriesOf(Map.of(
+                        "Ikke delt cv", 1.0
+                ));
+    }
     @Test
     public void behandle_ikke_fatt_jobben_etter_cv_delt() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
