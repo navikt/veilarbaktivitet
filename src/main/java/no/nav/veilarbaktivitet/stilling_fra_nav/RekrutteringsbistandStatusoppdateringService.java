@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static java.util.Arrays.asList;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -61,12 +63,13 @@ public class RekrutteringsbistandStatusoppdateringService {
         var nyStillingFraNavData = aktivitet.getStillingFraNavData()
                 .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
                 .withSoknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN);
+        AktivitetStatus nyStatus = asList(AktivitetStatus.FULLFORT, AktivitetStatus.AVBRUTT).contains(aktivitet.getStatus()) ? aktivitet.getStatus() : AktivitetStatus.FULLFORT;
         var nyAktivitet = aktivitet.toBuilder()
                 .lagtInnAv(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.IKKE_FATT_JOBBEN)
                 .endretAv(endretAv.get())
-                .status(AktivitetStatus.FULLFORT)
+                .status(nyStatus)
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
@@ -87,6 +90,12 @@ public class RekrutteringsbistandStatusoppdateringService {
             return false;
         }
 
+        if (aktivitetData.getStatus() == AktivitetStatus.AVBRUTT) {
+            log.warn("Stilling fra NAV med bestillingsid: {} er i status AVBRUTT", aktivitetData.getStillingFraNavData().bestillingsId);
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Aktivitet AVBRUTT", type);
+            return false;
+        }
+
         return true;
     }
 
@@ -96,12 +105,6 @@ public class RekrutteringsbistandStatusoppdateringService {
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.CV_DELT) {
             log.warn("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede delt", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
-            return false;
-        }
-
-        if (aktivitetData.getStatus() == AktivitetStatus.AVBRUTT) {
-            log.warn("Stilling fra NAV med bestillingsid: {} er i status AVBRUTT", aktivitetData.getStillingFraNavData().bestillingsId);
-            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Aktivitet AVBRUTT", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
             return false;
         }
 

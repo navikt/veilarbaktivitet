@@ -40,6 +40,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
 @DirtiesContext
@@ -180,6 +181,59 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
     }
+
+    @Test
+    public void behandle_ikke_fatt_jobben_nar_aktivitet_er_avbrutt() throws Exception {
+        aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
+        ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
+        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
+                SUKSESS, 1.0
+        ));
+
+        AktivitetDTO aktivitetData_etterCvDelt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+        aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetData_etterCvDelt, AktivitetStatus.AVBRUTT);
+        AktivitetDTO aktivitetData_etterAvbrutt = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        String ikkeFattJobbenDetaljer = """
+                    Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
+                    Ansettelsesprosessen er ferdig. Lykke til videre med jobbsøkingen.
+                """;
+        RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
+                new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
+        AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
+
+        brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(aktivitetData_etter.getEndretDato())
+                    .as("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
+                    .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
+            assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ikke ny versjon av aktivitet").isEqualTo(aktivitetData_etterAvbrutt.getVersjon());
+            assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(aktivitetData_etterAvbrutt.getEndretAv());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(aktivitetData_etterAvbrutt.getLagtInnAv());
+            assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(AVBRUTT);
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(aktivitetData_etterAvbrutt.getStillingFraNavData().getSoknadsstatus());
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getLivslopsStatus()).isSameAs(aktivitetData_etterAvbrutt.getStillingFraNavData().getLivslopsStatus());
+            assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getIkkefattjobbendetaljer()).isNull();
+
+            assertions.assertAll();
+        });
+
+        Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
+                SUKSESS, 1.0,
+                "Aktivitet AVBRUTT", 1.0
+        ));
+
+        Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
+    }
+
     @Test
     public void behandle_ikke_fatt_jobben_etter_cv_delt() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
@@ -189,10 +243,10 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
-
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));
+
 
         String ikkeFattJobbenDetaljer = """
                     Vi har fått beskjed om at arbeidsgiveren har ansatt en person. Dessverre var det ikke deg denne gangen.
