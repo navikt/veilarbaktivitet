@@ -5,5 +5,6 @@ public enum Soknadsstatus {
     CV_DELT,
     SKAL_PAA_INTERVJU,
     JOBBTILBUD,
-    AVSLAG
+    AVSLAG,
+    IKKE_FATT_JOBBEN
 }

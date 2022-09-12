@@ -10,68 +10,71 @@ import java.util.Optional;
 @Component
 class StillingFraNavMetrikker {
     private final MeterRegistry meterRegistry;
-    public static final String stillingFraNavOpprettet = "stilling_fra_nav_opprettet";
-    public static final String stillingFraNavKanDeles = "stilling_fra_nav_kan_deles";
-    public static final String stillingFraNavTidsfristUtlopt = "stilling_fra_nav_tidsfrist_utlopt";
-    public static final String stillingFraNavManueltAvbrutt = "stilling_fra_nav_manuelt_avbrutt";
-    public static final String cvDeltMedArbeidsgiver = "cv_delt_med_arbeidsgiver";
-    public static final String erEksternBruker = "er_ekstern_bruker";
-    public static final String kanDele = "kan_dele";
-    public static final String kanVarsles = "kan_varsles";
-    public static final String suksess = "success";
-    public static final String aarsak = "reason";
+    public static final String STILLINGFRANAVOPPRETTET = "stilling_fra_nav_opprettet";
+    public static final String STILLINGFRANAVKANDELES = "stilling_fra_nav_kan_deles";
+    public static final String STILLINGFRANAVTIDSFRISTUTLOPT = "stilling_fra_nav_tidsfrist_utlopt";
+    public static final String STILLINGFRANAVMANUELTAVBRUTT = "stilling_fra_nav_manuelt_avbrutt";
+    public static final String REKRUTTERINGSBISTANDSTATUSOPPDATERING = "rekrutteringsbistandstatusoppdatering";
+    public static final String EREKSTERNBRUKER = "er_ekstern_bruker";
+    public static final String KANDELE = "kan_dele";
+    public static final String KANVARSLES = "kan_varsles";
+    public static final String SUKSESS = "success";
+    public static final String AARSAK = "reason";
+    public static final String STATUSOPPDATERINGSTYPE = "statusoppdateringstype";
+
 
 
 
     StillingFraNavMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
 
-        meterRegistry.counter(stillingFraNavOpprettet, kanVarsles, "" + true);
-        meterRegistry.counter(stillingFraNavOpprettet, kanVarsles, "" + false);
-        meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + true, kanDele, "" + true);
-        meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + true, kanDele, "" + false);
-        meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + false, kanDele, "" + true);
-        meterRegistry.counter(stillingFraNavKanDeles, erEksternBruker, "" + false, kanDele, "" + false);
-        meterRegistry.counter(stillingFraNavManueltAvbrutt, erEksternBruker, "" + true);
-        meterRegistry.counter(stillingFraNavManueltAvbrutt, erEksternBruker, "" + false);
-        meterRegistry.counter(stillingFraNavTidsfristUtlopt);
+        meterRegistry.counter(STILLINGFRANAVOPPRETTET, KANVARSLES, "" + true);
+        meterRegistry.counter(STILLINGFRANAVOPPRETTET, KANVARSLES, "" + false);
+        meterRegistry.counter(STILLINGFRANAVKANDELES, EREKSTERNBRUKER, "" + true, KANDELE, "" + true);
+        meterRegistry.counter(STILLINGFRANAVKANDELES, EREKSTERNBRUKER, "" + true, KANDELE, "" + false);
+        meterRegistry.counter(STILLINGFRANAVKANDELES, EREKSTERNBRUKER, "" + false, KANDELE, "" + true);
+        meterRegistry.counter(STILLINGFRANAVKANDELES, EREKSTERNBRUKER, "" + false, KANDELE, "" + false);
+        meterRegistry.counter(STILLINGFRANAVMANUELTAVBRUTT, EREKSTERNBRUKER, "" + true);
+        meterRegistry.counter(STILLINGFRANAVMANUELTAVBRUTT, EREKSTERNBRUKER, "" + false);
+        meterRegistry.counter(STILLINGFRANAVTIDSFRISTUTLOPT);
 
-        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(true), aarsak, "");
-        meterRegistry.counter(cvDeltMedArbeidsgiver, suksess, Boolean.toString(false), aarsak, "");
+        meterRegistry.counter(REKRUTTERINGSBISTANDSTATUSOPPDATERING, SUKSESS, Boolean.toString(true), AARSAK, "", STATUSOPPDATERINGSTYPE, "");
+        meterRegistry.counter(REKRUTTERINGSBISTANDSTATUSOPPDATERING, SUKSESS, Boolean.toString(false), AARSAK, "", STATUSOPPDATERINGSTYPE, "");
     }
 
-    void countCvDelt(boolean success, String reason) {
-        Counter.builder(cvDeltMedArbeidsgiver)
-                .tag(suksess, Boolean.toString(success))
-                .tag(aarsak, Optional.ofNullable(reason).orElse(""))
+    void countRekrutteringsbistandStatusoppdatering(boolean success, String reason, RekrutteringsbistandStatusoppdateringEventType type) {
+        Counter.builder(REKRUTTERINGSBISTANDSTATUSOPPDATERING)
+                .tag(SUKSESS, Boolean.toString(success))
+                .tag(AARSAK, Optional.ofNullable(reason).orElse(""))
+                .tag(STATUSOPPDATERINGSTYPE, type.name())
                 .register(meterRegistry)
                 .increment();
     }
 
     void countStillingFraNavOpprettet(boolean kanVarsles) {
-        Counter.builder(stillingFraNavOpprettet)
-                .tag(StillingFraNavMetrikker.kanVarsles, "" + kanVarsles)
+        Counter.builder(STILLINGFRANAVOPPRETTET)
+                .tag(StillingFraNavMetrikker.KANVARSLES, "" + kanVarsles)
                 .register(meterRegistry)
                 .increment();
     }
 
     void countSvar(boolean erEksternBruker, boolean svar) {
-        Counter.builder(stillingFraNavKanDeles)
-                .tag(StillingFraNavMetrikker.erEksternBruker, "" + erEksternBruker)
-                .tag(kanDele, "" + svar)
+        Counter.builder(STILLINGFRANAVKANDELES)
+                .tag(StillingFraNavMetrikker.EREKSTERNBRUKER, "" + erEksternBruker)
+                .tag(KANDELE, "" + svar)
                 .register(meterRegistry)
                 .increment();
     }
 
     void countManuletAvbrutt(InnsenderData brukerType) {
-        Counter.builder(stillingFraNavManueltAvbrutt)
-                .tag(erEksternBruker, "" + brukerType.equals(InnsenderData.BRUKER))
+        Counter.builder(STILLINGFRANAVMANUELTAVBRUTT)
+                .tag(EREKSTERNBRUKER, "" + brukerType.equals(InnsenderData.BRUKER))
                 .register(meterRegistry)
                 .increment();
     }
 
     void countTidsfristUtlopt() {
-        Counter.builder(stillingFraNavTidsfristUtlopt)
+        Counter.builder(STILLINGFRANAVTIDSFRISTUTLOPT)
                 .register(meterRegistry)
                 .increment();
     }

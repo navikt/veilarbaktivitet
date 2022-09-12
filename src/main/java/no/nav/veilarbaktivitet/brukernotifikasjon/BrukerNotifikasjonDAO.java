@@ -90,10 +90,11 @@ public class BrukerNotifikasjonDAO {
 
 
         GeneratedKeyHolder generatedKeyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update("" +
-                        " INSERT INTO brukernotifikasjon " +
-                        "        ( brukernotifikasjon_id,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          url,  melding,  smsTekst,  epostTittel,  epostBody) " +
-                        " VALUES (:brukernotifikasjon_id, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :url, :melding, :smsTekst, :epostTittel, :epostBody) ",
+        jdbcTemplate.update("""
+                         INSERT INTO brukernotifikasjon
+                                ( brukernotifikasjon_id,  foedselsnummer,  oppfolgingsperiode,  type,  status,  varsel_kvittering_status, opprettet,          url,  melding,  smsTekst,  epostTittel,  epostBody)
+                         VALUES (:brukernotifikasjon_id, :foedselsnummer, :oppfolgingsperiode, :type, :status, :varsel_kvittering_status, CURRENT_TIMESTAMP, :url, :melding, :smsTekst, :epostTittel, :epostBody)
+                    """,
                 params, generatedKeyHolder, new String[]{"ID"});
         return Optional
                 .ofNullable(generatedKeyHolder.getKeyAs(Object.class))

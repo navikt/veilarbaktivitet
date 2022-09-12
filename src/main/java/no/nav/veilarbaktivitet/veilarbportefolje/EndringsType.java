@@ -9,28 +9,13 @@ public enum EndringsType {
     HISTORISK;
 
     public static EndringsType get(AktivitetTransaksjonsType transaksjonsType) {
-        switch (transaksjonsType) {
-            case OPPRETTET:
-                return OPPRETTET;
-            case BLE_HISTORISK:
-                return HISTORISK;
-            case STATUS_ENDRET:
-                return FLYTTET;
-            case DETALJER_ENDRET:
-            case AVTALT:
-            case AVTALT_DATO_ENDRET:
-            case ETIKETT_ENDRET:
-            case MOTE_TID_OG_STED_ENDRET:
-            case REFERAT_OPPRETTET:
-            case REFERAT_ENDRET:
-            case REFERAT_PUBLISERT:
-            case FORHAANDSORIENTERING_LEST:
-            case DEL_CV_SVART:
-            case SOKNADSSTATUS_ENDRET:
-                return REDIGERT;
-            default:
-                throw new IllegalArgumentException(transaksjonsType.toString());
-        }
+        return switch (transaksjonsType) {
+            case OPPRETTET -> OPPRETTET;
+            case BLE_HISTORISK -> HISTORISK;
+            case STATUS_ENDRET -> FLYTTET;
+            case DETALJER_ENDRET, AVTALT, AVTALT_DATO_ENDRET, ETIKETT_ENDRET, MOTE_TID_OG_STED_ENDRET, REFERAT_OPPRETTET, REFERAT_ENDRET, REFERAT_PUBLISERT, FORHAANDSORIENTERING_LEST, DEL_CV_SVART, SOKNADSSTATUS_ENDRET, IKKE_FATT_JOBBEN
+                    -> REDIGERT;
+        };
     }
 
 }

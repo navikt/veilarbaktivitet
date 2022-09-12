@@ -72,8 +72,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
             case STILLING_FRA_NAV:
                 aktivitet.stillingFraNavData(mapStillingFraNav(rs));
                 break;
-            case MOTE:
-            case SAMTALEREFERAT:
+            case MOTE, SAMTALEREFERAT:
                 aktivitet.moteData(mapMoteData(rs));
                 break;
             default:
@@ -164,6 +163,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
+                .ikkefattjobbendetaljer(rs.getString("ikkefattjobbendetaljer"))
                 .build();
     }
 
