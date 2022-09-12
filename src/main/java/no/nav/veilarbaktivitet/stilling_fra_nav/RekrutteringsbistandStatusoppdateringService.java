@@ -63,7 +63,8 @@ public class RekrutteringsbistandStatusoppdateringService {
         var nyStillingFraNavData = aktivitet.getStillingFraNavData()
                 .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
                 .withSoknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN);
-        AktivitetStatus nyStatus = asList(AktivitetStatus.FULLFORT, AktivitetStatus.AVBRUTT).contains(aktivitet.getStatus()) ? aktivitet.getStatus() : AktivitetStatus.FULLFORT;
+        AktivitetStatus nyStatus = asList(AktivitetStatus.FULLFORT, AktivitetStatus.AVBRUTT).contains(aktivitet.getStatus()) ?
+                aktivitet.getStatus() : AktivitetStatus.FULLFORT;
         var nyAktivitet = aktivitet.toBuilder()
                 .lagtInnAv(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
@@ -112,7 +113,15 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     boolean validerIkkeFattJobben(AktivitetData aktivitetData) {
-        return validerStillingFraNavOppdatering(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+        if (!validerStillingFraNavOppdatering(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN)) return false;
+
+        if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.IKKE_FATT_JOBBEN) {
+            log.warn("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
+            stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede ikke fått jobben", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+            return false;
+        }
+
+        return true;
     }
 
 }
