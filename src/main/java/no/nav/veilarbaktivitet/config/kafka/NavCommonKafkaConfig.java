@@ -22,17 +22,19 @@ import java.util.List;
 import java.util.Properties;
 
 import static io.confluent.kafka.serializers.KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
 
 @Configuration
-public class KafkaOnpremConfig {
+public class NavCommonKafkaConfig {
+
+    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
+    public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
     private static final String ONPREM_KAFKA_DISABLED = "veilarbaktivitet.kafka.onprem.consumer.disabled";
 
     @Bean
-    public KafkaConsumerClient consumerClient(
+    public KafkaConsumerClient onpremConsumerClient(
             List<TopicConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
             Properties onPremConsumerProperties,
@@ -54,6 +56,27 @@ public class KafkaOnpremConfig {
     }
 
     @Bean
+    public KafkaConsumerClient aivenConsumerClient(
+            List<AivenConsumerConfig<?, ?>> topicConfigs,
+            MeterRegistry meterRegistry,
+            Properties aivenConsumerProperties
+    ) {
+        var clientBuilder = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties);
+
+        topicConfigs.forEach(it -> {
+            clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
+        });
+
+        var client = clientBuilder.build();
+
+        client.start();
+
+        return client;
+    }
+
+    @Bean
+    @Profile("!dev")
     public KafkaProducerClient<String, String> producerClient(Properties onPremProducerProperties, MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, String>builder()
                 .withMetrics(meterRegistry)
@@ -84,4 +107,15 @@ public class KafkaOnpremConfig {
         return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId, kafkaOnpremProperties.getBrokersUrl(), credentials);
     }
 
+    @Bean
+    @Profile("!dev")
+    Properties aivenConsumerProperties() {
+        return aivenDefaultConsumerProperties(CONSUMER_GROUP_ID);
+    }
+
+    @Bean
+    @Profile("!dev")
+    Properties aivenProducerProperties() {
+        return aivenDefaultProducerProperties(PRODUCER_CLIENT_ID);
+    }
 }

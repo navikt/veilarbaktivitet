@@ -58,6 +58,11 @@ public class AktivitetService {
         return aktivitetData.withForhaandsorientering(forhaandsorientering);
     }
 
+    public AktivitetData hentAktivitetForUUID(UUID uuid) {
+        // TODO
+        return null;
+    }
+
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }

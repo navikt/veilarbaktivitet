@@ -54,7 +54,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, "", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
         maybeBestillBrukernotifikasjon(aktivitet, VarselType.CV_DELT);
     }
 
@@ -74,7 +74,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, "", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
         maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
     }
 

@@ -114,6 +114,10 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
             assertions.assertAll();
         });
 
+
+        meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).counters().stream()
+                .collect(Collectors.toMap(c -> c.getId().getTag("reason"), Counter::count, Double::sum));
+
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
                 SUKSESS, 1.0
         ));

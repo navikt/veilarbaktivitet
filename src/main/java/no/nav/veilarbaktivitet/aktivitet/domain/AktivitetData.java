@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 import lombok.With;
+import no.nav.veilarbaktivitet.aktivitetskort.TiltaksaktivitetData;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
@@ -82,5 +83,6 @@ public class AktivitetData {
     BehandlingAktivitetData behandlingAktivitetData;
     MoteData moteData;
     StillingFraNavData stillingFraNavData;
+    TiltaksaktivitetData tiltaksaktivitetData;
 }
 
