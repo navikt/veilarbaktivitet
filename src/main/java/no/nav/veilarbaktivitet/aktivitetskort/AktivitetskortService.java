@@ -22,7 +22,7 @@ public class AktivitetskortService {
         AktivitetData aktivitetData = AktivitetskortMapper.map(aktivitetskortDTO.actionType, aktivitetskortDTO.payload);
 
         Optional<AktivitetData> maybeAktivitet = Optional.of(aktivitetData.getFunksjonellId())
-                .map(aktivitetDAO::hentAktivitet);
+                .map(aktivitetDAO::hentAktivitetByFunksjonellId);
 
         if (maybeAktivitet.isPresent()) { // TODO legg til endretAv felt i acl
             aktivitetService.oppdaterAktivitet(maybeAktivitet.get(), aktivitetData, Person.navIdent("test"));

@@ -51,6 +51,8 @@ public class AktivitetDAO {
     private static final String AKTIVITETID = "aktivitet_id";
     private static final String VERSJON = "versjon";
 
+    private static final RowMapper<AktivitetData> aktivitetsDataRowMapper = (rs, rowNum) -> AktivitetDataRowMapper.mapAktivitet(rs);
+
     public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
@@ -87,7 +89,7 @@ public class AktivitetDAO {
         return jdbcTemplate.queryForObject(SELECT_AKTIVITET +
                         " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
                 params,
-                (rs,i) -> new AktivitetDataRowMapper().mapAktivitet(rs)
+                aktivitetsDataRowMapper
         );
     }
 
