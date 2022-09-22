@@ -51,8 +51,11 @@ public class RekrutteringsbistandKafkaConsumer {
                 service.behandleCvDelt(bestillingsId, navIdent, forrigeAktivitetsdata);
             }
 
-            var featureToggleIkkeFattJobben = !System.getenv("NAIS_CLUSTER_NAME").contains("prod");
-            if (featureToggleIkkeFattJobben && RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN == type && service.validerIkkeFattJobben(forrigeAktivitetsdata)) {
+            // Featuretoggle i produksjonsmiljø for ikke_fatt_jobben-meldinger som fjernes når det er testet i dev
+            var ikkeFattJobbenBehandlingAktivert =
+                    !Optional.ofNullable(System.getenv("NAIS_CLUSTER_NAME")).orElse("").toLowerCase().contains("prod");
+
+            if (ikkeFattJobbenBehandlingAktivert && RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN == type && service.validerIkkeFattJobben(forrigeAktivitetsdata)) {
                 service.behandleIkkeFattJobben(bestillingsId, navIdent, forrigeAktivitetsdata, ikkeFattJobbenDetaljer);
             }
         } else {
