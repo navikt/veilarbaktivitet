@@ -54,7 +54,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, "", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
         maybeBestillBrukernotifikasjon(aktivitet, VarselType.CV_DELT);
     }
 

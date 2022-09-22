@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.ToString;
 import lombok.Value;
 import lombok.With;
-import no.nav.veilarbaktivitet.aktivitetskort.TiltaksaktivitetData;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
@@ -22,6 +21,10 @@ public class AktivitetData {
      * Teknisk id for aktiviteten
      */
     Long id;
+    /**
+     * Funksjonell id for aktiviteten
+     */
+    UUID funksjonellId;
     /**
      * Versjon inkrementeres når det utføres en transasjon på aktiviteten.
      * Denne er en global sekvens for alle aktiviteter, men for en enkelt aktivitet, vil en sortering på versjon gi rekkefølgen på transaksjonene

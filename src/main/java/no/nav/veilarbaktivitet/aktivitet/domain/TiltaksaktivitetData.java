@@ -1,7 +1,10 @@
-package no.nav.veilarbaktivitet.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitet.domain;
 
 import lombok.Builder;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Builder
@@ -12,6 +15,6 @@ public class TiltaksaktivitetData {
     String arrangornavn;
     Integer deltakelsesprosent;
     Integer dagerPerUke;
-    Date registrertDato;
-    Date statusEndretDato;
+    LocalDateTime registrertDato;
+    LocalDateTime statusEndretDato;
 }

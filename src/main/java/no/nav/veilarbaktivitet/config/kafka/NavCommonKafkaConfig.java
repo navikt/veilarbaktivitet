@@ -32,10 +32,11 @@ public class NavCommonKafkaConfig {
     public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
     private static final String ONPREM_KAFKA_DISABLED = "veilarbaktivitet.kafka.onprem.consumer.disabled";
+    private static final String AIVEN_KAFKA_DISABLED = "veilarbaktivitet.kafka.aiven.consumer.disabled";
 
     @Bean
     public KafkaConsumerClient onpremConsumerClient(
-            List<TopicConsumerConfig<?, ?>> topicConfigs,
+            List<OnpremConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
             Properties onPremConsumerProperties,
             UnleashClient unleashClient
@@ -59,10 +60,12 @@ public class NavCommonKafkaConfig {
     public KafkaConsumerClient aivenConsumerClient(
             List<AivenConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
-            Properties aivenConsumerProperties
+            Properties aivenConsumerProperties,
+            UnleashClient unleashClient
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenConsumerProperties);
+                .withProperties(aivenConsumerProperties)
+                .withToggle(() -> unleashClient.isEnabled(AIVEN_KAFKA_DISABLED));;
 
         topicConfigs.forEach(it -> {
             clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());

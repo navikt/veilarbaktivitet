@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
@@ -10,11 +12,15 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +31,7 @@ import static java.util.Optional.ofNullable;
 
 @Repository
 @Slf4j
+@RequiredArgsConstructor
 public class AktivitetDAO {
 
     // TODO: Refaktorer spørring. Her joines mange tabeller som kan ha kolonner med samme navn. Hva som hentes ut av ResultSet kommer an på rekkefølgen det joines.
@@ -40,13 +47,9 @@ public class AktivitetDAO {
             LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon\s""";
 
     private final Database database;
+    private final NamedParameterJdbcTemplate jdbcTemplate;
     private static final String AKTIVITETID = "aktivitet_id";
     private static final String VERSJON = "versjon";
-
-    @Autowired
-    public AktivitetDAO(Database database) {
-        this.database = database;
-    }
 
     public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
         // language=sql
@@ -72,6 +75,19 @@ public class AktivitetDAO {
                         " WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
+        );
+    }
+
+    public AktivitetData hentAktivitetByFunksjonellId(@NonNull UUID funksjonellId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("funksjonellId", funksjonellId);
+
+
+        // language=sql
+        return jdbcTemplate.queryForObject(SELECT_AKTIVITET +
+                        " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
+                params,
+                (rs,i) -> new AktivitetDataRowMapper().mapAktivitet(rs)
         );
     }
 

@@ -21,7 +21,7 @@ public class AktivitetskortService {
     public void upsertAktivitetskort(AktivitetskortDTO aktivitetskortDTO) {
         AktivitetData aktivitetData = AktivitetskortMapper.map(aktivitetskortDTO.actionType, aktivitetskortDTO.payload);
 
-        Optional<AktivitetData> maybeAktivitet = Optional.of(aktivitetData.getId())
+        Optional<AktivitetData> maybeAktivitet = Optional.of(aktivitetData.getFunksjonellId())
                 .map(aktivitetDAO::hentAktivitet);
 
         if (maybeAktivitet.isPresent()) { // TODO legg til endretAv felt i acl

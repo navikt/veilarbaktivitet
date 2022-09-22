@@ -4,7 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData.AktivitetDataBuilder;
+import no.nav.veilarbaktivitet.aktivitet.domain.TiltaksaktivitetData;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.commons.lang3.NotImplementedException;
+
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Date;
+
+import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
 
 public class AktivitetskortMapper {
 
@@ -39,10 +47,11 @@ public class AktivitetskortMapper {
                 .build();
 
         return builder
+                .funksjonellId(tiltaksaktivitetDTO.funksjonellId)
                 .aktorId(tiltaksaktivitetDTO.personIdent)
                 .tittel(tiltaksaktivitetDTO.tittel)
-                .fraDato(tiltaksaktivitetDTO.startDato)
-                .tilDato(tiltaksaktivitetDTO.sluttDato)
+                .fraDato(toDate(tiltaksaktivitetDTO.startDato))
+                .tilDato(toDate(tiltaksaktivitetDTO.sluttDato))
                 .beskrivelse(tiltaksaktivitetDTO.beskrivelse)
                 .status(tiltaksaktivitetDTO.statusDTO.status)
                 .tiltaksaktivitetData(tiltaksaktivitetData);

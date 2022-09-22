@@ -4,6 +4,7 @@ import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.veilarbaktivitet.config.kafka.OnpremConsumerConfig;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,7 +14,7 @@ import java.util.Date;
 
 
 @Service
-public class KvpAvsluttetKafkaKonsumer extends TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
+public class KvpAvsluttetKafkaKonsumer extends OnpremConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
     private final KVPAvsluttetService kvpService;
 
     public KvpAvsluttetKafkaKonsumer(

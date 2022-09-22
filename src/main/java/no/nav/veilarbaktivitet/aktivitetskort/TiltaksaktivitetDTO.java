@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.With;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.UUID;
 
@@ -15,8 +16,8 @@ public class TiltaksaktivitetDTO {
     UUID funksjonellId;
     String personIdent;
     String tittel;
-    Date startDato;
-    Date sluttDato;
+    LocalDateTime startDato;
+    LocalDateTime sluttDato;
     String beskrivelse;
     StatusDTO statusDTO;
 
@@ -25,6 +26,6 @@ public class TiltaksaktivitetDTO {
     String arrangornavn;
     Integer deltakelsesprosent;
     Integer dagerPerUke;
-    Date registrertDato;
-    Date statusEndretDato;
+    LocalDateTime registrertDato;
+    LocalDateTime statusEndretDato;
 }
