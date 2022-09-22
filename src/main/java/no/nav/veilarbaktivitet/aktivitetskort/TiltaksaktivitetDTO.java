@@ -2,10 +2,13 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 import lombok.With;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -13,19 +16,22 @@ import java.util.UUID;
 @With
 public class TiltaksaktivitetDTO {
     // aktivitetdata
-    UUID funksjonellId;
+    UUID id;
     String personIdent;
+    LocalDate startDato;
+    LocalDate sluttDato;
     String tittel;
-    LocalDateTime startDato;
-    LocalDateTime sluttDato;
     String beskrivelse;
-    StatusDTO statusDTO;
+    AktivitetStatus aktivitetStatus;
+    IdentDTO endretAv;
+    LocalDateTime endretDato;
 
     // tiltaksaktivitetdata spesifikt
-    TiltakDTO tiltakDTO;
-    String arrangornavn;
-    Integer deltakelsesprosent;
-    Integer dagerPerUke;
-    LocalDateTime registrertDato;
-    LocalDateTime statusEndretDato;
+    String arrangoernavn;
+    String tiltaksNavn;
+    String tiltaksKode;
+    String deltakelseStatus;
+
+    @Singular("detalj")
+    Map<String, String> detaljer;
 }

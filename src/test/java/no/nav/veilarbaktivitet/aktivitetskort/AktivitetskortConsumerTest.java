@@ -6,9 +6,10 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
-import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -17,12 +18,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.sql.Date;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 
 
 @RunWith(SpringRunner.class)
@@ -36,23 +36,25 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     String topic;
 
     @Test
-    public void happy_case_upsert_tiltaksaktivitet() {
+    public void happy_case_upsert_tiltaksaktivitet() throws InterruptedException {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitetDTO = TiltaksaktivitetDTO.builder()
-                .funksjonellId(funksjonellId)
-                .personIdent("A123456")
+                .id(funksjonellId)
+                .personIdent(mockBruker.getFnr())
+                .startDato(LocalDate.now().minusDays(30))
+                .sluttDato(LocalDate.now().minusDays(30))
                 .tittel("tittel")
-                .startDato(Date.from(Instant.now().minus(30, ChronoUnit.DAYS)))
-                .sluttDato(Date.from(Instant.now().plus(30, ChronoUnit.DAYS)))
                 .beskrivelse("beskrivelse")
-                .statusDTO(new StatusDTO(AktivitetStatus.PLANLAGT, "aarsak"))
-                .tiltakDTO(new TiltakDTO("kode", "navn"))
-                .arrangornavn("arrangornavn")
-                .deltakelsesprosent(40)
-                .dagerPerUke(2)
-                .registrertDato(Date.from(Instant.now()))
-                .statusEndretDato(Date.from(Instant.now()))
+                .aktivitetStatus(AktivitetStatus.PLANLAGT)
+                .endretAv(new IdentDTO("arenanoe", ARENAIDENT))
+                .endretDato(endretDato)
+                .tiltaksNavn("Arenakamp")
+                .tiltaksKode("FOO")
+                .arrangoernavn("arrangørnavn")
+                .deltakelseStatus("SOKT_INN")
+                .detalj("deltakelsesprosent", "40")
+                .detalj("dagerPerUke", "2")
                 .build();
         JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
 
@@ -66,9 +68,14 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(aktivitetskortDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> kafkaTestService.erKonsumert(topic, "veilarbaktivitet-consumer", recordMetadata.offset()));
+//        Awaitility.await().atMost(Duration.ofSeconds(50)).until(() -> kafkaTestService.erKonsumert(topic, "veilarbaktivitet-consumer", recordMetadata.offset()));
+        kafkaTestService.assertErKonsumertAiven(topic, recordMetadata.offset(), 10);
 
         System.out.println("test");
         Assertions.assertTrue(true);
     }
+
+
+    private final MockBruker mockBruker = MockNavService.createHappyBruker();
+    private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);
 }

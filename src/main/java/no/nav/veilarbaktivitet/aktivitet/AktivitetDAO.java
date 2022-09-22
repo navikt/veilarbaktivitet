@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -19,14 +19,13 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 @Repository
@@ -56,7 +55,7 @@ public class AktivitetDAO {
     public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
-                        " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
+                              " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 oppfolgingsperiodeId.toString()
         );
@@ -65,7 +64,7 @@ public class AktivitetDAO {
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
-                        " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
+                              " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktorId.get()
         );
@@ -74,29 +73,34 @@ public class AktivitetDAO {
     public AktivitetData hentAktivitet(long aktivitetId) {
         // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
-                        " WHERE A.aktivitet_id = ? and gjeldende = 1",
+                                       " WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
     }
 
-    public AktivitetData hentAktivitetByFunksjonellId(@NonNull UUID funksjonellId) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("funksjonellId", funksjonellId);
+    public Optional<AktivitetData> hentAktivitetByFunksjonellId(@NonNull UUID funksjonellId) {
 
-
+        AktivitetData aktivitetData;
+        try {
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("funksjonellId", funksjonellId);
+            aktivitetData = jdbcTemplate.queryForObject(SELECT_AKTIVITET +
+                                                        " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
+                    params,
+                    aktivitetsDataRowMapper
+            );
+        } catch (EmptyResultDataAccessException e) {
+            return empty();
+        }
         // language=sql
-        return jdbcTemplate.queryForObject(SELECT_AKTIVITET +
-                        " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
-                params,
-                aktivitetsDataRowMapper
-        );
+        return Optional.ofNullable(aktivitetData);
     }
 
     public AktivitetData hentAktivitetVersion(long version) {
         // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
-                        " WHERE A.VERSJON = ? ",
+                                       " WHERE A.VERSJON = ? ",
                 AktivitetDataRowMapper::mapAktivitet,
                 version
         );
@@ -170,20 +174,22 @@ public class AktivitetDAO {
                 .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
                 .addValue("mal_id", aktivitet.getMalid())
                 .addValue("fho_id", fhoId)
-                .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId()!= null ? aktivitet.getOppfolgingsperiodeId().toString() : null);
+                .addValue("funksjonell_id", aktivitet.getFunksjonellId())
+                .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
+                        ? aktivitet.getOppfolgingsperiodeId().toString() : null);
         //language=SQL
         database.getNamedJdbcTemplate().update(
                 """
                         INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
                         fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode,
                         avsluttet_kommentar, opprettet_dato, endret_dato, endret_av, lagt_inn_av, lenke,
-                        avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, automatisk_opprettet, mal_id, fho_id, oppfolgingsperiode_uuid)
+                        avtalt, gjeldende, transaksjons_type, historisk_dato, kontorsperre_enhet_id, 
+                        automatisk_opprettet, mal_id, fho_id, oppfolgingsperiode_uuid, FUNKSJONELL_ID)
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
                         :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
                         :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
-                        :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid
-                        )
+                        :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid, :funksjonell_id)
                         """, params);
 
 
@@ -263,7 +269,7 @@ public class AktivitetDAO {
                             .addValue("oppfolging", egen.getOppfolging());
                     // language=sql
                     database.getNamedJdbcTemplate().update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
-                                    "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
+                                                           "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
                             params
                     );
                 });
@@ -355,7 +361,7 @@ public class AktivitetDAO {
                                     .addValue("varselid", stilling.getVarselId())
                                     .addValue("kontaktperson_navn", kontaktpersonData.map(KontaktpersonData::getNavn).orElse(null))
                                     .addValue("kontaktperson_tittel", kontaktpersonData.map(KontaktpersonData::getTittel).orElse(null))
-                                    .addValue("kontaktperson_mobil",  kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
+                                    .addValue("kontaktperson_mobil", kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()))
                                     .addValue("ikkefattjobbendetaljer", stilling.getIkkefattjobbendetaljer());

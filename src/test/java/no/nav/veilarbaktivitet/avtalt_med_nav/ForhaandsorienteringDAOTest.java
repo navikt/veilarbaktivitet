@@ -12,6 +12,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.Collections;
 import java.util.Date;
@@ -29,7 +30,7 @@ public class ForhaandsorienteringDAOTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database, new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @After
     public void cleanup() {

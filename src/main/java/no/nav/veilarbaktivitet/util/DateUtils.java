@@ -32,10 +32,6 @@ public class DateUtils {
         return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static Date toDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
-    }
-
     public static Date getDate(XMLGregorianCalendar xmlGregorianCalendar){
         return ofNullable(xmlGregorianCalendar)
                 .map(XMLGregorianCalendar::toGregorianCalendar)
