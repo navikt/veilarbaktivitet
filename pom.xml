@@ -78,6 +78,17 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>com.googlecode.flyway</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>1.7</version>
+                <configuration>
+                    <driver>org.h2.Driver</driver>
+                    <url>jdbc:h2:file:~/database/veilarbaktivitet;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE;</url>
+                    <user>foo</user>
+                    <password></password>
+                </configuration>
+            </plugin>
         </plugins>
         <finalName>veilarbaktivitet</finalName>
     </build>

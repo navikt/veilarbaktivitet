@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.awaitility.Awaitility;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -68,9 +70,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(aktivitetskortDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
-//        Awaitility.await().atMost(Duration.ofSeconds(50)).until(() -> kafkaTestService.erKonsumert(topic, "veilarbaktivitet-consumer", recordMetadata.offset()));
-        kafkaTestService.assertErKonsumertAiven(topic, recordMetadata.offset(), 10);
-
+        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> kafkaTestService.erKonsumert(topic, "veilarbaktivitet-consumer", recordMetadata.offset()));
+//        RecordMetadata recordMetadata2 = producerClient.sendSync(producerRecord);
         System.out.println("test");
         Assertions.assertTrue(true);
     }
