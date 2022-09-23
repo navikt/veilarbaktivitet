@@ -149,4 +149,8 @@ public class KafkaTestService {
 
         return offsetAndMetadata.offset() == endOffset;
     }
+
+    public String getAivenConsumerGroup() {
+        return aivenGroupId;
+    }
 }

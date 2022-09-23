@@ -200,12 +200,15 @@ public class AktivitetDAO {
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
+        insertTiltak(aktivitetId, versjon, aktivitet.getTiltaksaktivitetData());
 
         AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(endretDato);
 
         log.info("opprettet {}", nyAktivitet);
         return nyAktivitet;
     }
+
+
 
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
         long aktivitetId = nesteAktivitetId();
@@ -416,6 +419,28 @@ public class AktivitetDAO {
                             );
                         }
                 );
+    }
+
+    private void insertTiltak(long aktivitetId, long versjon, TiltaksaktivitetData tiltaksaktivitetData) {
+        ofNullable(tiltaksaktivitetData)
+                .ifPresent(tiltak -> {
+                    SqlParameterSource params = new MapSqlParameterSource()
+                            .addValue(AKTIVITETID, aktivitetId)
+                            .addValue(VERSJON, versjon);
+                    // TODO REST
+
+                    // language=sql
+                    database.getNamedJdbcTemplate().update(
+                            """
+                                    INSERT INTO TILTAKSAKTIVITET(
+                                    aktivitet_id, versjon, tiltak_kode, tiltak_navn, deltakelsestatus, dager_per_uke, deltakelseprosent
+                                 ) VALUES(:aktivitet_id, :versjon)
+                                    """,
+                            // TODO REST
+                            // TODO 2 flytte dager_per_uke og deltakelseprosent ut i tiltakdetalj tabell
+                            params
+                    );
+                });
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {

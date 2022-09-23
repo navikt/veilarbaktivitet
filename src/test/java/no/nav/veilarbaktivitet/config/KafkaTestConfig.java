@@ -5,6 +5,7 @@ import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
@@ -128,10 +129,10 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties aivenConsumerProperties(@Value("app.kafka.consumer-group-id") String consumerGroupId, EmbeddedKafkaBroker embeddedKafka) {
+    Properties aivenConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
-                .withConsumerGroupId(consumerGroupId)
+                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .withPollProperties(1, 1000)

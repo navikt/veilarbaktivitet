@@ -6,6 +6,7 @@ import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -70,7 +71,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(aktivitetskortDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> kafkaTestService.erKonsumert(topic, "veilarbaktivitet-consumer", recordMetadata.offset()));
+        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.offset()));
 //        RecordMetadata recordMetadata2 = producerClient.sendSync(producerRecord);
         System.out.println("test");
         Assertions.assertTrue(true);
