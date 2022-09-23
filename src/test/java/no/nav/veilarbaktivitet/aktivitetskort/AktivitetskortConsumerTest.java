@@ -39,7 +39,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     String topic;
 
     @Test
-    public void happy_case_upsert_tiltaksaktivitet() throws InterruptedException {
+    public void happy_case_upsert_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitetDTO = TiltaksaktivitetDTO.builder()
@@ -47,14 +47,14 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
                 .sluttDato(LocalDate.now().minusDays(30))
-                .tittel("tittel")
-                .beskrivelse("beskrivelse")
+                .tittel("The Elder Scrolls: Arena")
+                .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
-                .endretAv(new IdentDTO("arenanoe", ARENAIDENT))
+                .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
                 .endretDato(endretDato)
-                .tiltaksNavn("Arenakamp")
-                .tiltaksKode("FOO")
-                .arrangoernavn("arrangørnavn")
+                .tiltaksNavn("Arendal")
+                .tiltaksKode("Arenatiltakskode")
+                .arrangoernavn("Arenaarrangørnavn")
                 .deltakelseStatus("SOKT_INN")
                 .detalj("deltakelsesprosent", "40")
                 .detalj("dagerPerUke", "2")
@@ -71,9 +71,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(aktivitetskortDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(5)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.offset()));
-//        RecordMetadata recordMetadata2 = producerClient.sendSync(producerRecord);
-        System.out.println("test");
+        Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.offset()));
         Assertions.assertTrue(true);
     }
 

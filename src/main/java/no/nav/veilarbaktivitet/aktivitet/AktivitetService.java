@@ -233,9 +233,7 @@ public class AktivitetService {
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
-                .versjon(aktivitet.getVersjon())
-                .build()
-        );
+                .build());
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 

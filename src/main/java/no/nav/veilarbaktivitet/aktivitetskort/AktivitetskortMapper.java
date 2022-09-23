@@ -39,7 +39,7 @@ public class AktivitetskortMapper {
                 .status(tiltaksaktivitetDTO.aktivitetStatus)
                 .tiltaksaktivitetData(mapTiltaksaktivitet(tiltaksaktivitetDTO))
                 .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
-                .lagtInnAv(tiltaksaktivitetDTO.endretAv.identType().mapToInnsenderType())//TODO
+                .lagtInnAv(tiltaksaktivitetDTO.endretAv.identType().mapToInnsenderType())
                 .build();
         return build;
     }

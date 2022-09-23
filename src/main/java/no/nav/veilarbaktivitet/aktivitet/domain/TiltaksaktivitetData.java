@@ -4,10 +4,10 @@ import lombok.Builder;
 
 @Builder
 public class TiltaksaktivitetData {
-    String tiltakskode;
-    String tiltaksnavn;
-    String arrangornavn;
-    String deltakelseStatus;
-    Integer dagerPerUke;
-    Integer deltakelsesprosent;
+    public String tiltakskode;
+    public String tiltaksnavn;
+    public String arrangornavn;
+    public String deltakelseStatus;
+    public Integer dagerPerUke;
+    public Integer deltakelsesprosent;
 }

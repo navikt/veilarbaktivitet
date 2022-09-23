@@ -20,13 +20,14 @@ public class AktivitetskortService {
 
     public void upsertAktivitetskort(AktivitetskortDTO aktivitetskortDTO) {
         AktivitetData aktivitetData = AktivitetskortMapper.map(aktivitetskortDTO.actionType, aktivitetskortDTO.payload);
-
         Optional<AktivitetData> maybeAktivitet = Optional.ofNullable(aktivitetData.getFunksjonellId())
                 .flatMap(aktivitetDAO::hentAktivitetByFunksjonellId);
-        if (maybeAktivitet.isPresent()) { // TODO legg til endretAv felt i acl
-            aktivitetService.oppdaterAktivitet(maybeAktivitet.get(), aktivitetData, Person.navIdent("test"));
+        Person.NavIdent endretAvIdent = Person.navIdent(aktivitetData.getEndretAv());
+
+        if (maybeAktivitet.isPresent()) {
+            aktivitetService.oppdaterAktivitet(maybeAktivitet.get(), aktivitetData, endretAvIdent);
         } else {
-            aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, Person.navIdent("test"));
+            aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent);
         }
     }
 }

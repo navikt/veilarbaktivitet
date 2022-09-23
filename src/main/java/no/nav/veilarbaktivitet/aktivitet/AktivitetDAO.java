@@ -19,10 +19,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static java.util.Optional.empty;
@@ -33,17 +30,19 @@ import static java.util.Optional.ofNullable;
 @RequiredArgsConstructor
 public class AktivitetDAO {
 
-    // TODO: Refaktorer spørring. Her joines mange tabeller som kan ha kolonner med samme navn. Hva som hentes ut av ResultSet kommer an på rekkefølgen det joines.
     // language=sql
     private static final String SELECT_AKTIVITET = """
-            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.* FROM AKTIVITET A
+            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
+                A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.*, T.* FROM AKTIVITET A
             LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon
             LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon
             LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon
             LEFT JOIN IJOBB IJ ON A.aktivitet_id = IJ.aktivitet_id AND A.versjon = IJ.versjon
             LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon
             LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon
-            LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon\s""";
+            LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon
+            LEFT JOIN TILTAKSAKTIVITET T on A.AKTIVITET_ID = T.AKTIVITET_ID and A.VERSJON = T.VERSJON
+            """;
 
     private final Database database;
     private final NamedParameterJdbcTemplate jdbcTemplate;
@@ -422,21 +421,24 @@ public class AktivitetDAO {
     }
 
     private void insertTiltak(long aktivitetId, long versjon, TiltaksaktivitetData tiltaksaktivitetData) {
-        ofNullable(tiltaksaktivitetData)
+        Optional.ofNullable(tiltaksaktivitetData)
                 .ifPresent(tiltak -> {
                     SqlParameterSource params = new MapSqlParameterSource()
                             .addValue(AKTIVITETID, aktivitetId)
-                            .addValue(VERSJON, versjon);
-                    // TODO REST
-
+                            .addValue(VERSJON, versjon)
+                            .addValue("tiltak_kode", tiltaksaktivitetData.tiltakskode)
+                            .addValue("tiltak_navn", tiltaksaktivitetData.tiltaksnavn)
+                            .addValue("arrangor_navn", tiltaksaktivitetData.arrangornavn)
+                            .addValue("deltakelsestatus", tiltaksaktivitetData.deltakelseStatus)
+                            .addValue("dager_per_uke", tiltaksaktivitetData.dagerPerUke)
+                            .addValue("deltakelseprosent", tiltaksaktivitetData.deltakelsesprosent);
                     // language=sql
                     database.getNamedJdbcTemplate().update(
                             """
-                                    INSERT INTO TILTAKSAKTIVITET(
-                                    aktivitet_id, versjon, tiltak_kode, tiltak_navn, deltakelsestatus, dager_per_uke, deltakelseprosent
-                                 ) VALUES(:aktivitet_id, :versjon)
-                                    """,
-                            // TODO REST
+                                       INSERT INTO TILTAKSAKTIVITET
+                                       (aktivitet_id, versjon, tiltak_kode, tiltak_navn, ARRANGOR_NAVN, deltakelsestatus, dager_per_uke, deltakelseprosent ) VALUES
+                                       (:aktivitet_id, :versjon, :tiltak_kode, :tiltak_navn, :arrangor_navn, :deltakelsestatus, :dager_per_uke, :deltakelseprosent)
+                                       """,
                             // TODO 2 flytte dager_per_uke og deltakelseprosent ut i tiltakdetalj tabell
                             params
                     );
