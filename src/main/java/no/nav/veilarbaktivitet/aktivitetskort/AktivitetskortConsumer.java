@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import lombok.ToString;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
+@ToString(of = {"aktivitetskortService"})
 public class AktivitetskortConsumer extends AivenConsumerConfig<String, AktivitetskortDTO> implements TopicConsumer<String, AktivitetskortDTO> {
 
     private final AktivitetskortService aktivitetskortService;
@@ -37,7 +39,6 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, Aktivite
                     aktivitetskortService.upsertAktivitetskort(aktivitetskortDTO);
             case UPSERT_GRUPPE_AKTIVITET_V1, UPSERT_UTDANNING_AKTIVITET_V1 -> throw new NotImplementedException();
         }
-
         return ConsumeStatus.OK;
     }
 }

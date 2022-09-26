@@ -14,7 +14,7 @@ import java.util.UUID;
 @Value
 @With
 @Builder(toBuilder = true)
-@ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
+@ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
 public class AktivitetData {
 
     /**

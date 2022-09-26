@@ -21,6 +21,7 @@ import java.util.UUID;
 public class AktivitetDTO {
 
     private String id;
+    private UUID funksjonellId;
     private String versjon;
 
     private String tittel;
@@ -77,4 +78,6 @@ public class AktivitetDTO {
     private boolean erReferatPublisert;
 
     private StillingFraNavData stillingFraNavData;
+
+    private TiltakDTO tiltak;
 }

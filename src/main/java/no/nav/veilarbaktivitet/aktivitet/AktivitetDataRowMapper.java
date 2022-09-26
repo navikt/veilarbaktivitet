@@ -27,6 +27,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
+                .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
                 .versjon(rs.getLong("versjon"))
                 .aktorId(rs.getString("aktor_id"))
                 .aktivitetType(type)
