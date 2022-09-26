@@ -25,6 +25,7 @@ public class DbTestUtils {
             "IJOBB",
             "MOTE",
             "BEHANDLING",
+            "TILTAKSAKTIVITET",
             "AKTIVITET",
             "FORHAANDSORIENTERING",
             "SHEDLOCK"

@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
@@ -56,6 +53,8 @@ public class AktivitetDataTestBuilder {
                 return nySamtaleReferat();
             case STILLING_FRA_NAV:
                 return nyStillingFraNavMedCVKanDeles();
+            case TILTAKSAKTIVITET:
+                return nyTiltaksaktivitet();
             default: throw new IllegalArgumentException("ukjent type");
         }
     }
@@ -124,6 +123,12 @@ public class AktivitetDataTestBuilder {
                 .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
                 .moteData(AktivitetTypeDataTestBuilder.moteData())
                 .tilDato(null)
+                .build();
+    }
+
+    public static AktivitetData nyTiltaksaktivitet() {
+        return AktivitetDataTestBuilder.nyAktivitet()
+                .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
                 .build();
     }
 

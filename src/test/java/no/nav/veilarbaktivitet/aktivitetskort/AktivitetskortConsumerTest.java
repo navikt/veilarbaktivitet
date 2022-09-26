@@ -62,9 +62,9 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
 
         AktivitetskortDTO aktivitetskortDTO = AktivitetskortDTO.builder()
-                .id(UUID.randomUUID())
-                .utsender("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDate.now())
+                .messageId(UUID.randomUUID())
+                .source("ARENA_TILTAK_AKTIVITET_ACL")
+                .sendt(LocalDateTime.now())
                 .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
                 .payload(payload)
                 .build();
