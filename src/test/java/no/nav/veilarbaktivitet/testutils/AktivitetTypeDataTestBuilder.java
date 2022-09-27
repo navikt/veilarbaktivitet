@@ -104,4 +104,14 @@ public class AktivitetTypeDataTestBuilder {
                 .livslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)
                 .build();
     }
+
+    public static TiltaksaktivitetData tiltaksaktivitetData() {
+        return TiltaksaktivitetData.builder()
+                .arrangornavn("NAV")
+                .dagerPerUke(5)
+                .deltakelseStatus("GJENN")
+                .tiltaksnavn("Kakebaking")
+                .tiltakskode("KODE123")
+                .build();
+    }
 }

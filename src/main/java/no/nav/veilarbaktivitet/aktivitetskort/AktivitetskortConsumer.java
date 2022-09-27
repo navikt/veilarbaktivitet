@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @ToString(of = {"aktivitetskortService"})
-public class AktivitetskortConsumer extends AivenConsumerConfig<String, AktivitetskortDTO> implements TopicConsumer<String, AktivitetskortDTO> {
+public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAktivitetWrapperDTO> implements TopicConsumer<String, KafkaAktivitetWrapperDTO> {
 
     private final AktivitetskortService aktivitetskortService;
 
@@ -25,18 +25,18 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, Aktivite
         this.aktivitetskortService = aktivitetskortService;
         this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
-        this.setValueDeserializer(Deserializers.jsonDeserializer(AktivitetskortDTO.class));
+        this.setValueDeserializer(Deserializers.jsonDeserializer(KafkaAktivitetWrapperDTO.class));
         this.setConsumer(this);
     }
 
     @Override
-    public ConsumeStatus consume(ConsumerRecord<String, AktivitetskortDTO> consumerRecord) {
-        AktivitetskortDTO aktivitetskortDTO = consumerRecord.value();
-        ActionType actionType = aktivitetskortDTO.actionType;
+    public ConsumeStatus consume(ConsumerRecord<String, KafkaAktivitetWrapperDTO> consumerRecord) {
+        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = consumerRecord.value();
+        ActionType actionType = kafkaAktivitetWrapperDTO.actionType;
 
         switch (actionType) {
             case UPSERT_TILTAK_AKTIVITET_V1 ->
-                    aktivitetskortService.upsertAktivitetskort(aktivitetskortDTO);
+                    aktivitetskortService.upsertAktivitetskort(kafkaAktivitetWrapperDTO);
             case UPSERT_GRUPPE_AKTIVITET_V1, UPSERT_UTDANNING_AKTIVITET_V1 -> throw new NotImplementedException();
         }
         return ConsumeStatus.OK;

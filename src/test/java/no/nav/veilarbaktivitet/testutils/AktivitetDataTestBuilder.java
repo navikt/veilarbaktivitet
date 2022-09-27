@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 import static java.util.Calendar.SECOND;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData.AktivitetDataBuilder;
@@ -126,9 +127,12 @@ public class AktivitetDataTestBuilder {
                 .build();
     }
 
+
     public static AktivitetData nyTiltaksaktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
+                .funksjonellId(UUID.randomUUID())
+                .tiltaksaktivitetData(AktivitetTypeDataTestBuilder.tiltaksaktivitetData())
                 .build();
     }
 

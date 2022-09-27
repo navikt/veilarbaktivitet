@@ -31,7 +31,7 @@ public class AktivitetskortMapper {
     private static AktivitetData mapTilAktivitetData(TiltaksaktivitetDTO tiltaksaktivitetDTO) {
         var build = AktivitetData.builder()
                 .funksjonellId(tiltaksaktivitetDTO.id)
-                .aktorId(tiltaksaktivitetDTO.personIdent)
+                .aktorId(tiltaksaktivitetDTO.personIdent) // TODO: Oversett til aktørid først
                 .tittel(tiltaksaktivitetDTO.tittel)
                 .fraDato(toDate(tiltaksaktivitetDTO.startDato))
                 .tilDato(toDate(tiltaksaktivitetDTO.sluttDato))
