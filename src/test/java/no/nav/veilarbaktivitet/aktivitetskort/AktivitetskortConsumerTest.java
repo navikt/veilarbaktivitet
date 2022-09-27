@@ -100,7 +100,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_upsert_existing_tiltaksaktivitet() {
+    public void happy_case_upsert_existing_tiltaksaktivitet() throws InterruptedException {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
@@ -112,12 +112,12 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         AktivitetskortDTO aktivitetskort =  aktivitetskort(payload);
         AktivitetskortDTO aktivitetskortUpdate =  aktivitetskort(payloadUpdate);
 
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(aktivitetskort));
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, funksjonellId.toString(), JsonUtils.toJson(aktivitetskort));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(1000)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.offset()));
 
-        ProducerRecord<String, String> producerRecordUpdate = new ProducerRecord<>(topic, "2", JsonUtils.toJson(aktivitetskortUpdate));
+        ProducerRecord<String, String> producerRecordUpdate = new ProducerRecord<>(topic, funksjonellId.toString(), JsonUtils.toJson(aktivitetskortUpdate));
         RecordMetadata recordMetadataUpdate = producerClient.sendSync(producerRecordUpdate);
+
         Awaitility.await().atMost(Duration.ofSeconds(1000)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataUpdate.offset()));
 
         // Skal funksjonell id eksponeres ut i api-et til frontend?

@@ -135,7 +135,7 @@ public class KafkaTestConfig {
                 .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
-                .withPollProperties(1, 1000)
+                .withPollProperties(10, 1000)
                 .build();
     }
 

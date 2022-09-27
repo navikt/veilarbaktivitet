@@ -28,7 +28,7 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 @Configuration
 public class NavCommonKafkaConfig {
 
-    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer";
+    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer-aiven";
     public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
     private static final String ONPREM_KAFKA_DISABLED = "veilarbaktivitet.kafka.onprem.consumer.disabled";
