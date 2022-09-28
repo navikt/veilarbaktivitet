@@ -22,10 +22,9 @@ public class AktivitetskortCompareUtil {
                 .withForhaandsorientering(null)
                 .withVersjon(null);
         try {
-            var eksisterendeJsonNode = mapper.readTree(mapper.writeValueAsString(eksisterendeMedRelevanteFelter));
-            var innkommendeJsonNode = mapper.readTree(mapper.writeValueAsString(innkommendeMedRelevanteFelter));
-            return eksisterendeJsonNode.equals(innkommendeJsonNode);
-        } catch (JsonProcessingException e) {
+            return !mapper.writeValueAsString(eksisterendeMedRelevanteFelter)
+                .equals(mapper.writeValueAsString(innkommendeMedRelevanteFelter));
+            } catch (JsonProcessingException e) {
             throw new IllegalStateException("Kunne ikke parse aktiviteter for sammenligning", e);
         }
 
