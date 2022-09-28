@@ -10,7 +10,9 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.apache.tomcat.jni.Local;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -19,6 +21,8 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -120,6 +124,9 @@ public class AktivitetDAO {
 
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, Date endretDato) {
+
+        LocalDateTime localDateTime = LocalDateTime.ofInstant(endretDato.toInstant(), ZoneId.systemDefault());
+
         long aktivitetId = aktivitet.getId();
 
         SqlParameterSource selectGjeldendeParams = new MapSqlParameterSource(AKTIVITETID, aktivitetId);
@@ -134,7 +141,7 @@ public class AktivitetDAO {
 
         long versjon = nesteVersjon();
 
-        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
+        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, localDateTime);
 
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
@@ -145,7 +152,7 @@ public class AktivitetDAO {
         return nyAktivitetVersjon;
     }
 
-    private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon, Date endretDato) {
+    private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon, LocalDateTime endretDato) {
         final String fhoId = ofNullable(aktivitet.getForhaandsorientering())
                 .map(Forhaandsorientering::getId)
                 .orElse(null);
@@ -201,18 +208,20 @@ public class AktivitetDAO {
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
         insertTiltak(aktivitetId, versjon, aktivitet.getTiltaksaktivitetData());
 
-        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(endretDato);
+        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(Date.from(endretDato.atZone(ZoneId.systemDefault()).toInstant()));
 
         log.info("opprettet {}", nyAktivitet);
         return nyAktivitet;
     }
 
 
-
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
+        return opprettNyAktivitet(aktivitet, LocalDateTime.now());
+    }
+
+    public AktivitetData opprettNyAktivitet(AktivitetData aktivitet, LocalDateTime endretDato) {
         long aktivitetId = nesteAktivitetId();
         long versjon = nesteVersjon();
-        Date endretDato = new Date();
         return insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
     }
 

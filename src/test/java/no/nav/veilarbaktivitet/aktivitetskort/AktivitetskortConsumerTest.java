@@ -7,6 +7,7 @@ import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -24,13 +25,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.sql.Date;
+import java.time.*;
 import java.util.Objects;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 @RunWith(SpringRunner.class)
@@ -91,6 +92,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .findFirst();
         Assertions.assertTrue(aktivitet.isPresent());
+
         Assertions.assertEquals(aktivitet.get().getStatus(), AktivitetStatus.PLANLAGT);
         Assertions.assertEquals(aktivitet.get().getTiltak(), new TiltakDTO(
                 tiltaksaktivitetDTO.tiltaksNavn,
@@ -155,13 +157,27 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
     @Test
     public void endretTidspunkts_skal_settes_fra_melding() {
-        // TODO implement
+        UUID funksjonellId = UUID.randomUUID();
+
+        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
+
+        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(payload);
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
+        RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
+        Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.offset()));
+
+        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
+                .aktiviteter.stream()
+                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
+                .findFirst();
+        Assertions.assertTrue(aktivitet.isPresent());
+        Instant endretDatoInstant = endretDato.atZone(ZoneId.systemDefault()).toInstant();
+        assertThat(aktivitet.get().getEndretDato()).isEqualTo(endretDatoInstant);
+
     }
 
-    @Test
-    public void fødselsnummer_er_oversatt_til_aktørid() {
-        // TODO: implement
-    }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);
