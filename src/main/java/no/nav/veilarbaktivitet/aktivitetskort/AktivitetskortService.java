@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +23,11 @@ public class AktivitetskortService {
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
 
+    private final PersonService personService;
+
     public void upsertAktivitetskort(KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO) {
-        AktivitetData aktivitetData = AktivitetskortMapper.map(kafkaAktivitetWrapperDTO.actionType, kafkaAktivitetWrapperDTO.payload);
+        Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(kafkaAktivitetWrapperDTO.payload.get("personIdent").asText())).orElseThrow();
+        AktivitetData aktivitetData = AktivitetskortMapper.map(kafkaAktivitetWrapperDTO.actionType, kafkaAktivitetWrapperDTO.payload, aktorIdForPersonBruker.get());
         Optional<AktivitetData> maybeAktivitet = Optional.ofNullable(aktivitetData.getFunksjonellId())
                 .flatMap(aktivitetDAO::hentAktivitetByFunksjonellId);
 

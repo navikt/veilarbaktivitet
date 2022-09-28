@@ -14,13 +14,13 @@ public class AktivitetskortMapper {
     private AktivitetskortMapper() {
     }
 
-    public static AktivitetData map(ActionType actionType, JsonNode payload) {
+    public static AktivitetData map(ActionType actionType, JsonNode payload, String aktorId) {
 
 
         AktivitetData aktivitetData = switch (actionType) {
             case UPSERT_TILTAK_AKTIVITET_V1 -> {
                 TiltaksaktivitetDTO tiltaksaktivitetDTO = JsonUtils.fromJson(payload.toString(), TiltaksaktivitetDTO.class);
-                yield mapTilAktivitetData(tiltaksaktivitetDTO);
+                yield mapTilAktivitetData(tiltaksaktivitetDTO, aktorId);
             }
             case UPSERT_GRUPPE_AKTIVITET_V1, UPSERT_UTDANNING_AKTIVITET_V1 -> throw new NotImplementedException("todo");
         };
@@ -28,10 +28,10 @@ public class AktivitetskortMapper {
         return aktivitetData;
     }
 
-    private static AktivitetData mapTilAktivitetData(TiltaksaktivitetDTO tiltaksaktivitetDTO) {
+    private static AktivitetData mapTilAktivitetData(TiltaksaktivitetDTO tiltaksaktivitetDTO, String aktorId) {
         var build = AktivitetData.builder()
                 .funksjonellId(tiltaksaktivitetDTO.id)
-                .aktorId(tiltaksaktivitetDTO.personIdent) // TODO: Oversett til aktørid først
+                .aktorId(aktorId)
                 .tittel(tiltaksaktivitetDTO.tittel)
                 .fraDato(toDate(tiltaksaktivitetDTO.startDato))
                 .tilDato(toDate(tiltaksaktivitetDTO.sluttDato))
