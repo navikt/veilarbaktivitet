@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
@@ -17,6 +18,8 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
 
 public class Nivaa4ClientTest {
 
@@ -27,11 +30,11 @@ public class Nivaa4ClientTest {
 
     @Before
     public void setup() {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        PersonService personService = Mockito.mock(PersonService.class);
+        AzureAdMachineToMachineTokenClient tokenClient = mock(AzureAdMachineToMachineTokenClient.class);
+        Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
+        PersonService personService = mock(PersonService.class);
         Mockito.when(personService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Person.fnr(FNR));
-        nivaa4Client = new Nivaa4ClientImpl(okHttpClient, personService);
-        nivaa4Client.setBaseUrl("http://localhost:8089/veilarbperson/api");
+        nivaa4Client = new Nivaa4ClientImpl("http://localhost:8089/veilarbperson/api", personService, tokenClient);
     }
 
     @Rule
