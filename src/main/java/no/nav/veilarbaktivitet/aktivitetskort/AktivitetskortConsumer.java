@@ -32,13 +32,13 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, KafkaAktivitetWrapperDTO> consumerRecord) {
         KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = consumerRecord.value();
-        ActionType actionType = kafkaAktivitetWrapperDTO.actionType;
 
-        switch (actionType) {
-            case UPSERT_TILTAK_AKTIVITET_V1 ->
-                    aktivitetskortService.upsertAktivitetskort(kafkaAktivitetWrapperDTO);
-            case UPSERT_GRUPPE_AKTIVITET_V1, UPSERT_UTDANNING_AKTIVITET_V1 -> throw new NotImplementedException();
+        if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
+            aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
+        } else {
+            throw new NotImplementedException("Unknown kafka message");
         }
+
         return ConsumeStatus.OK;
     }
 }

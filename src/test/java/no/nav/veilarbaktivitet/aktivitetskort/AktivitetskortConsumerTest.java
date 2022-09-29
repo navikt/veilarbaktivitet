@@ -64,8 +64,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .build();
     }
 
-    KafkaAktivitetWrapperDTO aktivitetskort(JsonNode payload) {
-        return KafkaAktivitetWrapperDTO.builder()
+    KafkaAktivitetWrapperDTO aktivitetskort(TiltaksaktivitetDTO payload) {
+        return KafkaTiltaksAktivitet.builder()
                 .messageId(UUID.randomUUID())
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
                 .sendt(LocalDateTime.now())
@@ -79,9 +79,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
 
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(payload);
+        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(tiltaksaktivitetDTO);
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
@@ -105,17 +104,14 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_upsert_existing_tiltaksaktivitet() throws InterruptedException {
+    public void happy_case_upsert_existing_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
         TiltaksaktivitetDTO tiltaksaktivitetUpdate = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES);
 
-        JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitet);
-        JsonNode payloadUpdate = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetUpdate);
-
-        KafkaAktivitetWrapperDTO aktivitetskort =  aktivitetskort(payload);
-        KafkaAktivitetWrapperDTO aktivitetskortUpdate =  aktivitetskort(payloadUpdate);
+        KafkaAktivitetWrapperDTO aktivitetskort =  aktivitetskort(tiltaksaktivitet);
+        KafkaAktivitetWrapperDTO aktivitetskortUpdate =  aktivitetskort(tiltaksaktivitetUpdate);
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, funksjonellId.toString(), JsonUtils.toJson(aktivitetskort));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
@@ -138,9 +134,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
 
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(payload);
+        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(tiltaksaktivitetDTO);
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
@@ -160,9 +155,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        JsonNode payload = JsonMapper.defaultObjectMapper().valueToTree(tiltaksaktivitetDTO);
 
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(payload);
+        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(tiltaksaktivitetDTO);
 
         ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);

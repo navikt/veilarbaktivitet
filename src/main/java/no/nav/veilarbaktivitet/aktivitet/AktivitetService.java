@@ -209,12 +209,12 @@ public class AktivitetService {
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
 
-    public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        aktivitetDAO.oppdaterAktivitet(originalAktivitet
+        val result = aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .toBuilder()
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .avtalt(aktivitet.isAvtalt())
@@ -235,6 +235,7 @@ public class AktivitetService {
                 .transaksjonsType(transType)
                 .build());
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
+        return result;
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {

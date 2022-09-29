@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
@@ -7,7 +8,7 @@ import org.junit.Test;
 public class AktivitetsCompareUtilTest {
 
     @Test
-    public void statusendring_skal_være_faktisk_endring() {
+    public void deltakelsestatusendring_skal_være_faktisk_endring() {
         var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
         var nyAktivitet = gammelAktivitet
                 .withTiltaksaktivitetData(gammelAktivitet
@@ -37,6 +38,18 @@ public class AktivitetsCompareUtilTest {
         var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
         var nyAktivitet = gammelAktivitet
                 .withForhaandsorientering(AktivitetDataTestBuilder.nyForhaandorientering());
+        Assertions.assertThat(
+                AktivitetskortCompareUtil
+                        .erFaktiskOppdatert(gammelAktivitet, nyAktivitet)
+        ).isFalse();
+    }
+
+    @Test
+    public void aktivitetsstatus_endring_er_ikke_faktisk_endring() {
+        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet()
+                .withStatus(AktivitetStatus.GJENNOMFORES);
+        var nyAktivitet = gammelAktivitet
+                .withStatus(AktivitetStatus.FULLFORT);
         Assertions.assertThat(
                 AktivitetskortCompareUtil
                         .erFaktiskOppdatert(gammelAktivitet, nyAktivitet)

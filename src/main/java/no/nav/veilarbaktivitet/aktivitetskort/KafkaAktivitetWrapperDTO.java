@@ -1,18 +1,26 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import lombok.Builder;
-import lombok.ToString;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Builder
-@ToString(of = {"payload"})
-public class KafkaAktivitetWrapperDTO {
+@JsonTypeInfo(
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
+    property = "actionType"
+)
+@JsonSubTypes({
+    @JsonSubTypes.Type(value = KafkaTiltaksAktivitet.class, name = "UPSERT_TILTAK_AKTIVITET_V1"),
+})
+@SuperBuilder
+@NoArgsConstructor
+public abstract class KafkaAktivitetWrapperDTO {
     UUID messageId;
     String source;
     LocalDateTime sendt;
     ActionType actionType;
-    JsonNode payload;
 }
