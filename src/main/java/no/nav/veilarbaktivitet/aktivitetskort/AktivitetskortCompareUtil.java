@@ -12,15 +12,20 @@ public class AktivitetskortCompareUtil {
     public static boolean erFaktiskOppdatert(AktivitetData innkommende, AktivitetData eksisterende) {
         var mapper = JsonUtils.getMapper();
         var eksisterendeMedRelevanteFelter = eksisterende
-                .withStatus(null)
                 .withId(null)
                 .withForhaandsorientering(null)
-                .withVersjon(null);
+                .withOppfolgingsperiodeId(null)
+                .withVersjon(null)
+                .withTransaksjonsType(null)
+                .withStatus(null);
+        // Innkommende vil aldri ha interne tekniske ider, transaksjonstype eller oppfølgingsperiode
         var innkommendeMedRelevanteFelter = innkommende
-                .withStatus(null)
                 .withId(null)
                 .withForhaandsorientering(null)
-                .withVersjon(null);
+                .withOppfolgingsperiodeId(null)
+                .withVersjon(null)
+                .withTransaksjonsType(null)
+                .withStatus(null);
         try {
             return !mapper.writeValueAsString(eksisterendeMedRelevanteFelter)
                 .equals(mapper.writeValueAsString(innkommendeMedRelevanteFelter));

@@ -104,7 +104,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_upsert_existing_tiltaksaktivitet() {
+    public void happy_case_upsert_status_existing_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
@@ -147,7 +147,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .toList();
         Assertions.assertEquals(aktiviteter.size(), 1);
-        Assertions.assertEquals(aktiviteter.stream().findFirst().get().getTransaksjonsType(), AktivitetTransaksjonsType.OPPRETTET);
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktiviteter.stream().findFirst().get().getTransaksjonsType() );
     }
 
     @Test

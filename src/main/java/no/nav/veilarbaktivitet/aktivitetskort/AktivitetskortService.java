@@ -12,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -23,10 +25,13 @@ public class AktivitetskortService {
     private final PersonService personService;
 
     public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) {
+        Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
         Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent)).orElseThrow();
-        AktivitetData aktivitetData = AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, aktorIdForPersonBruker.get());
-        Optional<AktivitetData> maybeAktivitet = Optional.ofNullable(aktivitetData.getFunksjonellId())
-                .flatMap(aktivitetDAO::hentAktivitetByFunksjonellId);
+
+        var aktivitetData = maybeAktivitet
+                .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
+                .orElse(AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, tiltaksaktivitet.endretDato, tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()));
+
 
         Person.NavIdent endretAvIdent = Person.navIdent(aktivitetData.getEndretAv());
 
@@ -40,7 +45,7 @@ public class AktivitetskortService {
     private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet, Person endretAvIdent) {
         var lol = Stream.of(gammelAktivitet)
             .map((aktivitet) -> {
-                if (AktivitetskortCompareUtil.erFaktiskOppdatert(aktivitet, nyAktivitet)) {
+                if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
                     return aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, endretAvIdent);
                 } else {
                     return aktivitet;
