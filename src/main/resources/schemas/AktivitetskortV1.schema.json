@@ -177,7 +177,39 @@
         }
       }
     }
-  }
+  },
+  "examples": [
+    {
+      "messageId": "329102a1-6253-4324-8b2b-c2da379055c0",
+      "source": "DAB",
+      "sendt": "2022-09-24T00:00:00.55555555",
+      "actionType": "UPSERT_TILTAK_AKTIVITET_V1",
+      "payload": {
+        "id": "f9820d83-0674-4df6-8d25-4322af86fbe0",
+        "eksternReferanseId": 1234567,
+        "personIdent": "12345678999",
+        "tittel": "Tiltak hos NAV Bærum",
+        "aktivitetStatus": "FULLFORT",
+        "startDato": "2022-04-01",
+        "sluttDato": "2022-06-30",
+        "beskrivelse": "beskrivelse",
+        "endretAv": {
+          "identType": "arenaIdent",
+          "ident": "AAA0000"
+        },
+        "endretTidspunkt": "2022-09-17T21:00:00",
+        "avtaltMedNav": true,
+        "tiltaksKode": "MIDLONTIL",
+        "tiltaksNavn": "Midlertidig lønnstilskudd",
+        "deltakelseStatus": "FATT_PLASS",
+        "arrangorNavn": "NAV BÆRUM",
+        "detaljer": {
+          "deltakelseProsent": "80",
+          "dagerPerUke": "4"
+        }
+      }
+    }
+  ]
 }
 
 
