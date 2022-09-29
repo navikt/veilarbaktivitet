@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
@@ -133,6 +135,17 @@ public class AktivitetDataTestBuilder {
                 .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
                 .funksjonellId(UUID.randomUUID())
                 .tiltaksaktivitetData(AktivitetTypeDataTestBuilder.tiltaksaktivitetData())
+                .build();
+    }
+
+    public static Forhaandsorientering nyForhaandorientering() {
+        return Forhaandsorientering.builder()
+                .id(UUID.randomUUID().toString())
+                .tekst("Lol")
+                .aktivitetId("abc")
+                .type(Type.SEND_PARAGRAF_11_9)
+                .opprettetAv("meg")
+                .opprettetDato(new Date())
                 .build();
     }
 
