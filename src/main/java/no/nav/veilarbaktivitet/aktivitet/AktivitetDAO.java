@@ -119,14 +119,11 @@ public class AktivitetDAO {
 
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
-        return oppdaterAktivitet(aktivitet, new Date());
+        return oppdaterAktivitet(aktivitet, LocalDateTime.now());
     }
 
     @Transactional
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, Date endretDato) {
-
-        LocalDateTime localDateTime = LocalDateTime.ofInstant(endretDato.toInstant(), ZoneId.systemDefault());
-
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, LocalDateTime endretDato) {
         long aktivitetId = aktivitet.getId();
 
         SqlParameterSource selectGjeldendeParams = new MapSqlParameterSource(AKTIVITETID, aktivitetId);
@@ -141,7 +138,7 @@ public class AktivitetDAO {
 
         long versjon = nesteVersjon();
 
-        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, localDateTime);
+        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
 
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)

@@ -9,7 +9,9 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
@@ -32,13 +34,12 @@ public class AktivitetskortService {
                 .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
                 .orElse(AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, tiltaksaktivitet.endretDato, tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()));
 
-
         Person.NavIdent endretAvIdent = Person.navIdent(aktivitetData.getEndretAv());
 
         maybeAktivitet
             .ifPresentOrElse(
                 (gammelAktivitet) -> oppdaterTiltaksAktivitet(gammelAktivitet, aktivitetData, endretAvIdent),
-                () -> opprettTiltaksAktivitet(aktivitetData, endretAvIdent)
+                () -> opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato)
             );
     }
 
@@ -65,7 +66,7 @@ public class AktivitetskortService {
         log.info(lol.get().toString());
     }
 
-    private void opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent) {
-        aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent);
+    private void opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
+        aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
     }
 }

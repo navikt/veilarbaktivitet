@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
+
 @Service
 @Transactional
 @Slf4j
@@ -84,7 +86,7 @@ public class AvtaltMedNavService {
                 .withLagtInnAv(InnsenderData.NAV) // alltid NAV
                 .withAvtalt(true);
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet, now);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet, dateToLocalDateTime(now));
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();

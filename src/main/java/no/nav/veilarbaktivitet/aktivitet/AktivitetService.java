@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +23,7 @@ import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
+import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 
 @Service
 @AllArgsConstructor
@@ -58,16 +60,15 @@ public class AktivitetService {
         return aktivitetData.withForhaandsorientering(forhaandsorientering);
     }
 
-    public AktivitetData hentAktivitetForUUID(UUID uuid) {
-        // TODO
-        return null;
-    }
-
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
     public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
+        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, LocalDateTime.now());
+    }
+
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet) {
         UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
 
         AktivitetData nyAktivivitet = aktivitet
@@ -75,7 +76,7 @@ public class AktivitetService {
                 .aktorId(aktorId.get())
                 .lagtInnAv(endretAvPerson.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .opprettetDato(new Date())
+                .opprettetDato(localDateTimeToDate(opprettet))
                 .endretAv(endretAvPerson.get())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .oppfolgingsperiodeId(oppfolgingsperiode)
@@ -83,7 +84,7 @@ public class AktivitetService {
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
 
-        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
+        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet, opprettet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);
         return nyAktivivitet;

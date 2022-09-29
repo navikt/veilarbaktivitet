@@ -151,10 +151,60 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
+    public void oppdatering_av_detaljer_gir_riktig_transaksjon() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        KafkaAktivitetWrapperDTO kafkaAktivitet =  aktivitetskort(tiltaksaktivitet);
+        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withTiltaksNavn("Nytt navn");
+        KafkaAktivitetWrapperDTO kafkaAktivitetEndret =  aktivitetskort(tiltaksaktivitetEndret);
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitet));
+        ProducerRecord<String, String> producerRecordEndret = new ProducerRecord<>(topic, "2", JsonUtils.toJson(kafkaAktivitetEndret));
+        producerClient.sendSync(producerRecord);
+        RecordMetadata recordMetadataEndret = producerClient.sendSync(producerRecordEndret);
+        Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataEndret.offset()));
+
+        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
+                .aktiviteter.stream()
+                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
+                .findFirst();
+        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get().getTransaksjonsType());
+    }
+
+    @Test
+    public void oppdatering_status_og_detaljer_gir_2_transaksjoner() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        KafkaAktivitetWrapperDTO kafkaAktivitet =  aktivitetskort(tiltaksaktivitet);
+        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withDeltakelseStatus("FÅTT_PLASS");
+        KafkaAktivitetWrapperDTO kafkaAktivitetEndret =  aktivitetskort(tiltaksaktivitetEndret);
+
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitet));
+        ProducerRecord<String, String> producerRecordEndret = new ProducerRecord<>(topic, "2", JsonUtils.toJson(kafkaAktivitetEndret));
+        producerClient.sendSync(producerRecord);
+        RecordMetadata recordMetadataEndret = producerClient.sendSync(producerRecordEndret);
+        Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataEndret.offset()));
+
+        var aktivitetId = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
+                .findFirst().get().getId();
+        var aktivitet = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
+
+        Assertions.assertEquals(aktivitet.size(), 3);
+        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.get(0).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get(1).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.get(2).getTransaksjonsType());
+    }
+
+    @Test
     public void endretTidspunkts_skal_settes_fra_melding() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withEndretDato(endretDato);
 
         KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskort(tiltaksaktivitetDTO);
 
