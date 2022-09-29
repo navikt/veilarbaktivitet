@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "http://example.com/example.json",
+  "title": "AktivitetskortV1 Schema",
+  "type": "object",
+  "required": [
+    "messageId",
+    "source",
+    "sendt",
+    "actionType",
+    "payload"
+  ],
+  "properties": {
+    "messageId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string",
+      "examples": [
+        "ARENA_TILTAK_AKTIVITET_ACL"
+      ]
+    },
+    "sendt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "actionType": {
+      "type": "string",
+      "enum": ["UPSERT_TILTAK_AKTIVITET_V1, UPSERT_UTDANNING_AKTIVITET_V1, UPSERT_GRUPPE_AKTIVITET_V1"]
+    },
+    "payload": {
+      "$ref": "#/definitions/payload"
+    }
+  },
+  "definitions": {
+    "payload": {
+      "type": "object",
+      "required": [
+        "id",
+        "personIdent",
+        "tittel",
+        "aktivitetStatus",
+        "startDato",
+        "beskrivelse",
+        "endretAv",
+        "endretTidspunkt",
+        "avtaltMedNav"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Funksjonell ID"
+        },
+        "eksternReferanseId": {
+          "type": "string"
+        },
+        "personIdent": {
+          "type": "string",
+          "examples": [
+            "Z123456"
+          ],
+          "description": "Identen til personen du vil lage en aktivitet til"
+        },
+        "tittel": {
+          "type": "string",
+          "description": "Tittelen på aktivitetskortet"
+        },
+        "aktivitetStatus": {
+          "type": "string",
+          "enum": [
+            "PLANLAGT, GJENNOMFORES, FULLFORT, BRUKER_ER_INTERESSERT, AVBRUTT"
+          ]
+        },
+        "startDato": {
+          "type": "string",
+          "format": "date",
+          "examples": [
+            "2022-03-01"
+          ]
+        },
+        "sluttDato": {
+          "type": "string",
+          "format": "date",
+          "examples": [
+            "2022-05-15"
+          ]
+        },
+        "beskrivelse": {
+          "type": "string"
+        },
+        "endretAv": {
+          "type": "object",
+          "required": [
+            "ident",
+            "identType"
+          ],
+          "properties": {
+            "ident": {
+              "type": "string",
+              "examples": [
+                "AAA123"
+              ]
+            },
+            "identType": {
+              "type": "string",
+              "enum": [
+                "arenaIdent"
+              ]
+            }
+          },
+          "examples": [
+            {
+              "ident": "AAA123",
+              "identType": "arenaIdent"
+            }
+          ]
+        },
+        "endretTidspunkt": {
+          "type": "string",
+          "format": "date-time",
+          "examples": [
+            "2022-09-17T21:00:14"
+          ]
+        },
+        "avtaltMedNav": {
+          "type": "boolean",
+          "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'"
+        }
+      },
+      "oneOf": [
+        { "$ref": "#/definitions/tiltakAktivitet" },
+        { "$ref": "#/definitions/utdanningsAktivitet" },
+        { "$ref": "#/definitions/gruppeAktivitet" }
+      ]
+    },
+    "tiltakAktivitet": {
+      "type": "object",
+      "required": [
+        "tiltaksKode",
+        "tiltaksNavn",
+        "arrangorNavn"
+      ],
+      "properties": {
+        "tiltaksKode": {
+          "type": "string",
+          "examples": [
+            "MIDLONTIL"
+          ]
+        },
+        "tiltaksNavn": {
+          "type": "string",
+          "examples": [
+            "Midlertidig lønnstilskudd"
+          ]
+        },
+        "deltakelseStatus": {
+          "type": "string"
+        },
+        "arrangorNavn": {
+          "type": "string",
+          "examples": [
+            "NAV BÆRUM"
+          ]
+        },
+        "detaljer": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet",
+          "examples": [
+            {
+              "deltakelseProsent": "100",
+              "dagerPerUke": "5"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+
+
+
