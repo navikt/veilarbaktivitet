@@ -136,7 +136,7 @@
         },
         "avtaltMedNav": {
           "type": "boolean",
-          "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'"
+          "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette gjelder typisk aktiviteter med aktivitetsplikt."
         }
       },
       "oneOf": [
@@ -157,22 +157,26 @@
           "type": "string",
           "examples": [
             "MIDLONTIL"
-          ]
+          ],
+          "description": "Kodeverksverdi for tiltakstypen. Denne verdien kommer fra domenet som eier tiltakstypene. Aktivitetsplan kan ha behov for å kjenne til mulige kodeverksverdier her for å kunne tilpasse visningen for ulike tiltakstyper."
         },
         "tiltaksNavn": {
           "type": "string",
           "examples": [
             "Midlertidig lønnstilskudd"
-          ]
+          ],
+          "description": "Navnet på tiltaket"
         },
         "deltakelseStatus": {
-          "type": "string"
+          "type": "string",
+          "description": "DeltakelseStatus/avtaleStatus/gjennomføringsStatus sier hvilken status tiltaksgjennomføringen har for den aktuelle brukeren. Gyldige verdier i dette feltet vil avhenge av hvilken tiltakstype det gjelder. Aktivitetsplan må kjenne til mulige verdier for denne koden for å kunne tilpasse visningen av aktivitetskortet.  "
         },
         "arrangorNavn": {
           "type": "string",
           "examples": [
             "NAV BÆRUM"
-          ]
+          ],
+          "description": "Navn på arrangøren av tiltaket."
         },
         "detaljer": {
           "type": "object",
