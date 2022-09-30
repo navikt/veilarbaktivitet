@@ -37,9 +37,14 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
     public ConsumeStatus consume(ConsumerRecord<String, KafkaAktivitetWrapperDTO> consumerRecord) {
         KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = consumerRecord.value();
 
-        if (hasSeenMessage(kafkaAktivitetWrapperDTO.messageId)) {
+        if (aktivitetskortService.harSettMelding(kafkaAktivitetWrapperDTO.messageId)) {
             log.warn("Previously handled message seen {} , ignoring", kafkaAktivitetWrapperDTO.messageId);
             return ConsumeStatus.OK;
+        } else {
+            aktivitetskortService.lagreMeldingsId(
+                kafkaAktivitetWrapperDTO.messageId,
+                kafkaAktivitetWrapperDTO.funksjonellId()
+            );
         }
 
         if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
@@ -49,10 +54,5 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
         }
 
         return ConsumeStatus.OK;
-    }
-
-    private boolean hasSeenMessage(UUID messageId) {
-        // TODO: Implement
-        return false;
     }
 }

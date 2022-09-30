@@ -18,9 +18,13 @@ import java.util.UUID;
 })
 @SuperBuilder
 @NoArgsConstructor
-public abstract class KafkaAktivitetWrapperDTO {
+public abstract class KafkaAktivitetWrapperDTO implements SomethingWithId {
     UUID messageId;
     String source;
     LocalDateTime sendt;
     ActionType actionType;
+}
+
+interface SomethingWithId {
+    abstract UUID funksjonellId();
 }

@@ -23,6 +23,7 @@ public class AktivitetskortService {
 
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
+    private final AktivitetsMessageDao aktivitetsMessageDao;
 
     private final PersonService personService;
 
@@ -69,4 +70,13 @@ public class AktivitetskortService {
     private void opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
         aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
     }
+
+    public boolean harSettMelding(UUID messageId) {
+        return aktivitetsMessageDao.exist(messageId);
+    }
+
+    public void lagreMeldingsId(UUID messageId, UUID funksjonellId) {
+        aktivitetsMessageDao.insert(messageId, funksjonellId);
+    }
+
 }
