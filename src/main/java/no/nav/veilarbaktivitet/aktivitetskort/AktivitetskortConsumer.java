@@ -5,9 +5,11 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.config.kafka.AivenConsumerConfig;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -47,11 +49,13 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
             );
         }
 
+        MDC.put(MetricService.SOURCE, kafkaAktivitetWrapperDTO.source);
         if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
             aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
+        MDC.clear();
 
         return ConsumeStatus.OK;
     }
