@@ -80,12 +80,12 @@ public class AktivitetAppService {
 
     private static boolean kanHaInterneForandringer(AktivitetData aktivitetData) {
         return aktivitetData.getAktivitetType() == AktivitetTypeData.MOTE ||
-                aktivitetData.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT;
+               aktivitetData.getAktivitetType() == AktivitetTypeData.SAMTALEREFERAT;
     }
 
     private static boolean erReferatetEndretForDetErPublisert(AktivitetData aktivitetData) {
         boolean referatEndret = AktivitetTransaksjonsType.REFERAT_ENDRET.equals(aktivitetData.getTransaksjonsType()) ||
-                AktivitetTransaksjonsType.REFERAT_OPPRETTET.equals(aktivitetData.getTransaksjonsType());
+                                AktivitetTransaksjonsType.REFERAT_OPPRETTET.equals(aktivitetData.getTransaksjonsType());
         return !aktivitetData.getMoteData().isReferatPublisert() && referatEndret;
     }
 
@@ -176,7 +176,7 @@ public class AktivitetAppService {
     private boolean ulovligOppdateringAvMedisinskBehandling(@NonNull AktivitetData original, @NonNull AktivitetData ny) {
         return ny.getAktivitetType() != AktivitetTypeData.BEHANDLING
                || original.getFraDato() != ny.getFraDato()
-               || original.getBeskrivelse().equals(ny.getBeskrivelse())
+               || !original.getBeskrivelse().equals(ny.getBeskrivelse())
                || !original.getBehandlingAktivitetData().equals(ny.getBehandlingAktivitetData());
     }
 
@@ -207,8 +207,8 @@ public class AktivitetAppService {
     private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
         AktivitetStatus status = aktivitetData.getStatus();
         return AktivitetStatus.AVBRUTT.equals(status)
-                || AktivitetStatus.FULLFORT.equals(status)
-                || aktivitetData.getHistoriskDato() != null;
+               || AktivitetStatus.FULLFORT.equals(status)
+               || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional
@@ -220,7 +220,7 @@ public class AktivitetAppService {
                 .getLoggedInnUser()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
 
-        if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())){
+        if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
