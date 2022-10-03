@@ -98,7 +98,7 @@
         },
         "beskrivelse": {
           "type": "string",
-          "description": ""
+          "description": "Beskrivende tekst for aktiviteten"
         },
         "endretAv": {
           "type": "object",
@@ -106,18 +106,21 @@
             "ident",
             "identType"
           ],
+          "description": "Sporingsfelt som identifiserer hvem som oppretter eller endrer aktiviteten",
           "properties": {
             "ident": {
               "type": "string",
               "examples": [
-                "AAA123"
-              ]
+                "Z999999"
+              ],
+              "description": "Id til bruker som oppretter eller endrer aktiviteten"
             },
             "identType": {
               "type": "string",
               "enum": [
                 "arenaIdent"
-              ]
+              ],
+              "description": "Type ident. Kan være navIdent, arenaIdent, på sikt kanskje tiltaksarrangør, arbeidsgiver eller eksternBruker"
             }
           },
           "examples": [
@@ -132,7 +135,8 @@
           "format": "date-time",
           "examples": [
             "2022-09-17T21:00:14"
-          ]
+          ],
+          "description": "Dato-tid for opprettelse eller endring i kildesystemet"
         },
         "avtaltMedNav": {
           "type": "boolean",
