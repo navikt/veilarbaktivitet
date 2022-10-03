@@ -234,20 +234,6 @@ public class AktivitetService {
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
     }
 
-    public void oppdaterTilDatoForMedisinskBehandling(AktivitetData originalAktivitet, Date tilDato, Person endretAv) {
-
-        AktivitetData nyAktivitet = originalAktivitet
-                .toBuilder()
-                .endretAv(endretAv.get())
-                .lagtInnAv(endretAv.tilBrukerType())
-                .tilDato(tilDato)
-                .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
-                .build();
-
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
-        metricService.oppdaterAktivitetMetrikk(nyAktivitet, false, originalAktivitet.isAutomatiskOpprettet());
-    }
-
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
         return originalBehandlingAktivitetData
                 .withBehandlingType(behandlingAktivitetData.getBehandlingType())

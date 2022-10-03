@@ -167,7 +167,7 @@ public class AktivitetAppService {
         }
 
         if (skalOppdatereTilDatoForMedisinskBehandling) {
-            aktivitetService.oppdaterTilDatoForMedisinskBehandling(original, aktivitet.getTilDato(), loggedInnUser);
+            aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
         } else {
             aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
         }
