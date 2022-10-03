@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -162,22 +161,11 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet er avtalt " + original.getAktivitetType());
         }
 
-        if (skalOppdatereTilDatoForMedisinskBehandling && ulovligOppdateringAvMedisinskBehandling(original, aktivitet)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet er avtalt " + original.getAktivitetType());
-        }
-
         if (skalOppdatereTilDatoForMedisinskBehandling) {
             aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
         } else {
             aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
         }
-    }
-
-    private boolean ulovligOppdateringAvMedisinskBehandling(@NonNull AktivitetData original, @NonNull AktivitetData ny) {
-        return ny.getAktivitetType() != AktivitetTypeData.BEHANDLING
-               || original.getFraDato() != ny.getFraDato()
-               || !original.getBeskrivelse().equals(ny.getBeskrivelse())
-               || !original.getBehandlingAktivitetData().equals(ny.getBehandlingAktivitetData());
     }
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
