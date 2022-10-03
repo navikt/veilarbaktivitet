@@ -151,7 +151,7 @@ public class AktivitetAppService {
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
         if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
-        } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
+        } else if (!orginalAktivitet.endringTillatt()) {
             throw new IllegalArgumentException(
                     String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
                             orginalAktivitet.getId())
@@ -169,14 +169,6 @@ public class AktivitetAppService {
                             orginalAktivitet.getId())
             );
         }
-    }
-
-
-    private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
-        AktivitetStatus status = aktivitetData.getStatus();
-        return AktivitetStatus.AVBRUTT.equals(status)
-                || AktivitetStatus.FULLFORT.equals(status)
-                || aktivitetData.getHistoriskDato() != null;
     }
 
     @Transactional

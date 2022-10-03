@@ -45,6 +45,10 @@ public class AktivitetskortService {
     }
 
     private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet, Person endretAvIdent) {
+        if (!gammelAktivitet.endringTillatt()) {
+            // TODO: Publish error to dead-letter-queue
+            return;
+        };
         var lol = Stream.of(gammelAktivitet)
             .map((aktivitet) -> {
                 if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
@@ -54,7 +58,7 @@ public class AktivitetskortService {
                 }
             })
             .map((aktivitet) -> {
-                if (aktivitet.getStatus() != nyAktivitet.getStatus()) {
+                if (aktivitet.getStatus() != nyAktivitet.getStatus() && aktivitet.endringTillatt()) {
                     return aktivitetService.oppdaterStatus(
                         aktivitet,
                         nyAktivitet, // TODO: Populer avbrutt-tekstfelt

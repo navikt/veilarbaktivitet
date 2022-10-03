@@ -229,11 +229,12 @@ public class AktivitetService {
                 .lenke(aktivitet.getLenke())
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
-                .stillingFraNavData(aktivitet.getStillingFraNavData())
+                .stillingFraNavData(aktivitet.getStillingFraNavData()) // TODO: Use merger
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
+                .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
                 .build());
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
         return result;
@@ -281,6 +282,16 @@ public class AktivitetService {
                 .withArbeidssted(stillingsoekAktivitetData.getArbeidssted())
                 .withKontaktPerson(stillingsoekAktivitetData.getKontaktPerson())
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
+    }
+
+    private TiltaksaktivitetData mergeTiltaksAktivitet(TiltaksaktivitetData left, TiltaksaktivitetData right) {
+        return left
+            .withTiltaksnavn(right.tiltaksnavn())
+            .withTiltakskode(right.tiltakskode())
+            .withArrangornavn(right.arrangornavn())
+            .withDagerPerUke(right.dagerPerUke())
+            .withDeltakelseStatus(right.deltakelseStatus())
+            .withDeltakelsesprosent(right.deltakelsesprosent());
     }
 
     @Transactional

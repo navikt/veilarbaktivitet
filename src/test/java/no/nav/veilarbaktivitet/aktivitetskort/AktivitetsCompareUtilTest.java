@@ -56,4 +56,17 @@ public class AktivitetsCompareUtilTest {
         ).isFalse();
     }
 
+    @Test
+    public void tiltaksnavn_endring_er_faktisk_endring() {
+        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
+        var nyAktivitet = gammelAktivitet
+            .withTiltaksaktivitetData(gammelAktivitet.getTiltaksaktivitetData()
+                .withTiltaksnavn("Nytt navn")
+            );
+        Assertions.assertThat(
+            AktivitetskortCompareUtil
+                .erFaktiskOppdatert(gammelAktivitet, nyAktivitet)
+        ).isTrue();
+    }
+
 }

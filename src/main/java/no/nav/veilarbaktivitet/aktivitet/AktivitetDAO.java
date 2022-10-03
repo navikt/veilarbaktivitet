@@ -432,12 +432,12 @@ public class AktivitetDAO {
                     SqlParameterSource params = new MapSqlParameterSource()
                             .addValue(AKTIVITETID, aktivitetId)
                             .addValue(VERSJON, versjon)
-                            .addValue("tiltak_kode", tiltaksaktivitetData.tiltakskode)
-                            .addValue("tiltak_navn", tiltaksaktivitetData.tiltaksnavn)
-                            .addValue("arrangor_navn", tiltaksaktivitetData.arrangornavn)
-                            .addValue("deltakelsestatus", tiltaksaktivitetData.deltakelseStatus)
-                            .addValue("dager_per_uke", tiltaksaktivitetData.dagerPerUke)
-                            .addValue("deltakelseprosent", tiltaksaktivitetData.deltakelsesprosent);
+                            .addValue("tiltak_kode", tiltaksaktivitetData.tiltakskode())
+                            .addValue("tiltak_navn", tiltaksaktivitetData.tiltaksnavn())
+                            .addValue("arrangor_navn", tiltaksaktivitetData.arrangornavn())
+                            .addValue("deltakelsestatus", tiltaksaktivitetData.deltakelseStatus())
+                            .addValue("dager_per_uke", tiltaksaktivitetData.dagerPerUke())
+                            .addValue("deltakelseprosent", tiltaksaktivitetData.deltakelsesprosent());
                     // language=sql
                     database.getNamedJdbcTemplate().update(
                             """

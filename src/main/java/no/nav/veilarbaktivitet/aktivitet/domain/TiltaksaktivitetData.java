@@ -5,11 +5,11 @@ import lombok.With;
 
 @Builder
 @With
-public class TiltaksaktivitetData {
-    public String tiltakskode;
-    public String tiltaksnavn;
-    public String arrangornavn;
-    public String deltakelseStatus;
-    public Integer dagerPerUke;
-    public Integer deltakelsesprosent;
-}
+public record TiltaksaktivitetData (
+    String tiltakskode,
+    String tiltaksnavn,
+    String arrangornavn,
+    String deltakelseStatus,
+    Integer dagerPerUke,
+    Integer deltakelsesprosent
+) {}
