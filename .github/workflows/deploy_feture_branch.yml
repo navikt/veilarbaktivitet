@@ -1,9 +1,9 @@
-name: deploy feature branch
+name: deploy feture branch
 on:
   workflow_dispatch:
 
 concurrency:
-  group: deploy_feature_branch
+  group: deploy_feture_branch
   cancel-in-progress: true
 
 env:
