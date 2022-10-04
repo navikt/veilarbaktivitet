@@ -39,7 +39,7 @@ public class AktivitetsplanController {
                 .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                .collect(Collectors.toList());
+                .toList();
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);
     }
@@ -61,7 +61,7 @@ public class AktivitetsplanController {
                 .map(aktivitetList -> aktivitetList
                         .stream()
                         .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                        .collect(Collectors.toList())
+                        .toList()
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
@@ -79,10 +79,6 @@ public class AktivitetsplanController {
     @PutMapping("/{id}")
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
-
-        log.debug("oppdaterAktivitet erEksternBruker: {}", erEksternBruker);
-        log.debug("oppdaterAktivitet aktivitet: {} ", aktivitet);
-
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)

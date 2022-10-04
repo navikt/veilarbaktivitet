@@ -149,19 +149,21 @@ public class AktivitetAppService {
     }
 
     private void oppdaterSomEksternBruker(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
-        boolean avtalt = original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.BEHANDLING;
         boolean denneAktivitetstypenKanIkkeEndresEksternt = !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType());
-        boolean skalOppdatereTilDatoForMedisinskBehandling = original.isAvtalt() && original.getAktivitetType() == AktivitetTypeData.BEHANDLING;
+
+        // Når behandling er avtalt må vi begrense hva som kan oppdateres til kun sluttdato for behandlingen.
+        // Når behandling ikke er avtalt, skal ekstern bruker ha mulighet til å endre flere ting.
+        boolean skalOppdatereTilDatoForAvtaltMedisinskBehandling = original.isAvtalt() && original.getAktivitetType() == AktivitetTypeData.BEHANDLING;
 
         if (denneAktivitetstypenKanIkkeEndresEksternt) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Feil aktivitetstype " + original.getAktivitetType());
         }
 
-        if (avtalt) {
+        if (original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.BEHANDLING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet er avtalt " + original.getAktivitetType());
         }
 
-        if (skalOppdatereTilDatoForMedisinskBehandling) {
+        if (skalOppdatereTilDatoForAvtaltMedisinskBehandling) {
             aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
         } else {
             aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
