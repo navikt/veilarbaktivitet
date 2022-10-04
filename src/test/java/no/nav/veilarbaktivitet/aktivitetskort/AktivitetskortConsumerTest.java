@@ -10,9 +10,12 @@ import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.awaitility.Awaitility;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -29,6 +32,7 @@ import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
 @RunWith(SpringRunner.class)
@@ -40,6 +44,16 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
     @Value("${topic.inn.aktivitetskort}")
     String topic;
+
+    @Value("${topic.inn.aktivitetskort-feil}")
+    String aktivitetskortFeilTopic;
+
+    Consumer<String, AktivitetskortFeilMelding> aktivitetskortFeilConsumer;
+
+    @Before
+    public void cleanupBetweenTests() {
+        aktivitetskortFeilConsumer = kafkaTestService.createStringJsonConsumer(aktivitetskortFeilTopic);
+    }
 
     TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
         return TiltaksaktivitetDTO.builder()
@@ -75,12 +89,12 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .build();
     }
 
-    private void sendOgVentPåTiltak(List<TiltaksaktivitetDTO> meldinger) {
+    void sendOgVentPåTiltak(List<TiltaksaktivitetDTO> meldinger) {
         var aktivitetskorter = meldinger.stream().map(this::aktivitetskortMelding).toList();
         sendOgVentPåMeldinger(aktivitetskorter);
     }
 
-    private void sendOgVentPåMeldinger(List<KafkaAktivitetWrapperDTO> meldinger) {
+    void sendOgVentPåMeldinger(List<KafkaAktivitetWrapperDTO> meldinger) {
         var lastrecord = Streams.mapWithIndex(meldinger.stream(),
                 (aktivitetskort, index) -> new ProducerRecord<>(topic, aktivitetskort.funksjonellId().toString(), JsonUtils.toJson(aktivitetskort)))
             .map((record) -> producerClient.sendSync(record))
@@ -244,6 +258,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
     }
+
     @Test
     public void fullført_aktivitet_kan_ikke_endres() {
         var funksjonellId = UUID.randomUUID();
@@ -255,7 +270,13 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
 
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
+
+        ConsumerRecord<String, AktivitetskortFeilMelding> singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        AktivitetskortFeilMelding record = singleRecord.value();
+
+        assertThat(record.aktivitetId()).isEqualTo(funksjonellId);
     }
+
     @Test
     public void aktivitet_kan_settes_til_avbrutt() {
         var funksjonellId = UUID.randomUUID();
@@ -268,6 +289,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
     }
+
 
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();

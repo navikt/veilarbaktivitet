@@ -13,8 +13,6 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.UUID;
-
 @Service
 @Slf4j
 @ToString(of = {"aktivitetskortService"})
@@ -53,6 +51,7 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
         if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
             aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
         } else {
+
             throw new NotImplementedException("Unknown kafka message");
         }
         MDC.clear();
