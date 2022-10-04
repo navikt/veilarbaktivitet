@@ -45,7 +45,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     @Value("${topic.inn.aktivitetskort}")
     String topic;
 
-    @Value("${topic.inn.aktivitetskort-feil}")
+    @Value("${topic.ut.aktivitetskort-feil}")
     String aktivitetskortFeilTopic;
 
     Consumer<String, AktivitetskortFeilMelding> aktivitetskortFeilConsumer;
@@ -285,6 +285,21 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         var tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT);
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+
+        var aktivitet = hentAktivitet(funksjonellId);
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
+    }
+
+    @Test
+    public void should_catch_deserializer_error() {
+        var funksjonellId = UUID.randomUUID();
+        var record = new ProducerRecord<>(topic, funksjonellId.toString(), """
+                { "lol": "123" }
+                """);
+        var metadata = producerClient.sendSync(record);
+
+        Awaitility.await().atMost(Duration.ofSeconds(1000))
+                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, metadata.offset()));
 
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);

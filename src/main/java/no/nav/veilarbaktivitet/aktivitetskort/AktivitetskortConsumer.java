@@ -10,8 +10,11 @@ import no.nav.veilarbaktivitet.config.kafka.AivenConsumerConfig;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -20,13 +23,16 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
 
     private final AktivitetskortService aktivitetskortService;
 
+    public final AktivitetsKortFeilProducer feilProducer;
+
     public AktivitetskortConsumer(
             AktivitetskortService aktivitetskortService,
             @Value("${topic.inn.aktivitetskort}")
-            String topic
-    ) {
+            String topic,
+            AktivitetsKortFeilProducer feilProducer) {
         super();
         this.aktivitetskortService = aktivitetskortService;
+        this.feilProducer = feilProducer;
         this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(Deserializers.jsonDeserializer(KafkaAktivitetWrapperDTO.class));
@@ -47,15 +53,25 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, KafkaAkt
             );
         }
 
-        MDC.put(MetricService.SOURCE, kafkaAktivitetWrapperDTO.source);
-        if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
-            aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
-        } else {
+        return consumeWithFeilhandtering(() -> {
+            if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
+                aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
+            } else {
+                throw new NotImplementedException("Unknown kafka message");
+            }
+            return ConsumeStatus.OK;
+        }, kafkaAktivitetWrapperDTO);
+    }
 
-            throw new NotImplementedException("Unknown kafka message");
+    private ConsumeStatus consumeWithFeilhandtering(Supplier<ConsumeStatus> block, KafkaAktivitetWrapperDTO message) {
+        try {
+            MDC.put(MetricService.SOURCE, message.source);
+            return block.get();
+        } /*catch (AktivitetsKortFunksjonellException e) {
+            feilProducer.publishAktivitetsFeil(e,  message.messageId,  message.funksjonellId());
+        } */finally {
+            MDC.clear();
+            return ConsumeStatus.OK;
         }
-        MDC.clear();
-
-        return ConsumeStatus.OK;
     }
 }
