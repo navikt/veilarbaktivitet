@@ -79,6 +79,10 @@ public class AktivitetsplanController {
     @PutMapping("/{id}")
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
+
+        log.debug("oppdaterAktivitet erEksternBruker: {}", erEksternBruker);
+        log.debug("oppdaterAktivitet aktivitet: {} ", aktivitet);
+
         return Optional.of(aktivitet)
                 .map(AktivitetDataMapper::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)

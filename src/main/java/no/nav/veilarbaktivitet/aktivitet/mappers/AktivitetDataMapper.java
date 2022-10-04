@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.mappers;
 
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
@@ -8,8 +9,12 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Optional;
 
+@Slf4j
 public class AktivitetDataMapper {
     public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
+
+        log.debug("mapTilAktivitetData aktivitet: {} ", aktivitetDTO);
+        log.debug("mapTilAktivitetData AuthContextHolderThreadLocal.instance().erEksternBruker(): {} ", AuthContextHolderThreadLocal.instance().erEksternBruker());
 
         val id = Optional.ofNullable(aktivitetDTO.getId())
                 .filter((s) -> !s.isEmpty())
@@ -18,6 +23,7 @@ public class AktivitetDataMapper {
         val versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
         val aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
 
+        log.debug("mapTilAktivitetData aktivitetType: {} ", aktivitetType);
         val aktivitetData = AktivitetData
                 .builder()
                 .id(id)
@@ -35,6 +41,9 @@ public class AktivitetDataMapper {
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
                 .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());
+
+        log.debug(" mapTilAktivitetData: {} ", aktivitetData);
+
 
         switch (aktivitetType){
             case EGENAKTIVITET:
