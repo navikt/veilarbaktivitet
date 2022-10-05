@@ -200,7 +200,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
                 .findFirst().get().getId();
         var aktivitet = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
 
-        Assertions.assertEquals(aktivitet.size(), 3);
+        Assertions.assertEquals(3, aktivitet.size());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.get(0).getTransaksjonsType());
         Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get(1).getTransaksjonsType());
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.get(2).getTransaksjonsType());

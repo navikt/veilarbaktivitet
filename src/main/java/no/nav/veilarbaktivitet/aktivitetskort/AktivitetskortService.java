@@ -28,7 +28,7 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) {
+    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
         Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent)).orElseThrow();
 
@@ -38,38 +38,37 @@ public class AktivitetskortService {
 
         Person.NavIdent endretAvIdent = Person.navIdent(aktivitetData.getEndretAv());
 
-        maybeAktivitet
-            .ifPresentOrElse(
-                (gammelAktivitet) -> oppdaterTiltaksAktivitet(gammelAktivitet, aktivitetData, endretAvIdent),
-                () -> opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato)
-            );
+        if (maybeAktivitet.isPresent()) {
+            oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
+        } else {
+            opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
+        }
     }
 
-    private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet, Person endretAvIdent) {
-        if (!gammelAktivitet.endringTillatt()) {
-            // TODO: Publish error to dead-letter-queue
-            return;
-        };
-        var lol = Stream.of(gammelAktivitet)
-            .map((aktivitet) -> {
-                if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
-                    return aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, endretAvIdent);
-                } else {
-                    return aktivitet;
-                }
-            })
-            .map((aktivitet) -> {
-                if (aktivitet.getStatus() != nyAktivitet.getStatus() && aktivitet.endringTillatt()) {
-                    return aktivitetService.oppdaterStatus(
-                        aktivitet,
-                        nyAktivitet, // TODO: Populer avbrutt-tekstfelt
-                       Person.navIdent(nyAktivitet.getEndretAv())
-                    );
-                } else {
-                    return aktivitet;
-                }
-            }).findFirst();
-        log.info(lol.get().toString());
+    private AktivitetData oppdaterDetaljer(AktivitetData aktivitet, AktivitetData nyAktivitet) {
+        if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
+            return aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, Person.navIdent(nyAktivitet.getEndretAv()));
+        }
+        return aktivitet;
+    }
+    private AktivitetData oppdaterStatus(AktivitetData aktivitet, AktivitetData nyAktivitet) {
+        if (aktivitet.getStatus() != nyAktivitet.getStatus()) {
+            return aktivitetService.oppdaterStatus(
+                aktivitet,
+                nyAktivitet, // TODO: Populer avbrutt-tekstfelt
+                Person.navIdent(nyAktivitet.getEndretAv())
+            );
+        } else {
+            return aktivitet;
+        }
+    }
+
+    private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
+        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil(nyAktivitet.getFunksjonellId().toString());
+        Stream.of(gammelAktivitet)
+            .map((aktivitet) -> oppdaterDetaljer(aktivitet, nyAktivitet))
+            .map((aktivitet) -> oppdaterStatus(aktivitet, nyAktivitet))
+            .findFirst();
     }
 
     private void opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {

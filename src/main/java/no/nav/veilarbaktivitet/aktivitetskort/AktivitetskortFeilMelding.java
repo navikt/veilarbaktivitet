@@ -4,6 +4,7 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.lang.String;
+import java.util.UUID;
 
 @Builder
 public record AktivitetskortFeilMelding(
@@ -29,9 +30,15 @@ class DeserialiseringsFeil extends AktivitetsKortFunksjonellException {
         super(key, errorMessage, failingMessage, cause);
     }
 }
-class UlovligStatusOvergangsFeil extends AktivitetsKortFunksjonellException {
-    public UlovligStatusOvergangsFeil(String key, ErrorMessage errorMessage, FailingMessage failingMessage, Throwable cause) {
-        super(key, errorMessage, failingMessage, cause);
+class UlovligEndringFeil extends AktivitetsKortFunksjonellException {
+    public UlovligEndringFeil(String key) {
+        super(key, new ErrorMessage("Ulovlig statusoppdatering"), null, null);
+    }
+}
+
+class DuplikatMeldingFeil extends AktivitetsKortFunksjonellException {
+    public DuplikatMeldingFeil(UUID key, FailingMessage failingMessage) {
+        super(key.toString(), new ErrorMessage("Melding allerede handtert, ignorer"), failingMessage, null);
     }
 }
 

@@ -60,19 +60,11 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         return consumeWithFeilhandtering(() -> {
-            KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = deserialiser(consumerRecord);
-            MDC.put(MetricService.SOURCE, kafkaAktivitetWrapperDTO.source);
+            var melding = deserialiser(consumerRecord);
+            ignorerHvisSettFør(melding, consumerRecord.value());
 
-            if (aktivitetskortService.harSettMelding(kafkaAktivitetWrapperDTO.messageId)) {
-                log.warn("Previously handled message seen {} , ignoring", kafkaAktivitetWrapperDTO.messageId);
-                return ConsumeStatus.OK;
-            } else {
-                aktivitetskortService.lagreMeldingsId(
-                        kafkaAktivitetWrapperDTO.messageId,
-                        kafkaAktivitetWrapperDTO.funksjonellId()
-                );
-            }
-            if (kafkaAktivitetWrapperDTO instanceof KafkaTiltaksAktivitet aktivitet) {
+            MDC.put(MetricService.SOURCE, melding.source);
+            if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
                 aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
             } else {
                 throw new NotImplementedException("Unknown kafka message");
@@ -81,9 +73,23 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         });
     }
 
+    private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message, String rawMessage) throws DuplikatMeldingFeil {
+        if (aktivitetskortService.harSettMelding(message.messageId)) {
+            log.warn("Previously handled message seen {} , ignoring", message.messageId);
+            throw new DuplikatMeldingFeil(message.funksjonellId(), new FailingMessage(rawMessage));
+        } else {
+            aktivitetskortService.lagreMeldingsId(
+                    message.messageId,
+                    message.funksjonellId()
+            );
+        }
+    }
+
     private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block) {
         try {
             return block.consume();
+        } catch (DuplikatMeldingFeil e) {
+            return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
             feilProducer.publishAktivitetsFeil(e);
         } finally {
