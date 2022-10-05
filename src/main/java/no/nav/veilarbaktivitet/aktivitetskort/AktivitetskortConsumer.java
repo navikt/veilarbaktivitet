@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -14,8 +15,6 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.function.Supplier;
 
 @Service
 @Slf4j
@@ -41,13 +40,19 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         this.setValueDeserializer(Deserializers.stringDeserializer());
         this.setConsumer(this);
         objectMapper.registerSubtypes(TiltaksaktivitetDTO.class, KafkaAktivitetWrapperDTO.class);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
     }
 
-    public KafkaAktivitetWrapperDTO fromJson(String json) {
+    public KafkaAktivitetWrapperDTO deserialiser(ConsumerRecord<String, String> record) throws DeserialiseringsFeil {
         try {
-            objectMapper.readValue(json, KafkaAktivitetWrapperDTO.class);
+            return objectMapper.readValue(record.value(), KafkaAktivitetWrapperDTO.class);
         } catch (Throwable throwable) {
-            throw new DeserialiseringsFeil("jackson ew", throwable.getCause());
+            throw new DeserialiseringsFeil(
+                    record.key(),
+                    new ErrorMessage("Could not deserialize message"),
+                    new FailingMessage(record.value()),
+                    throwable
+            );
         }
     }
 
@@ -55,11 +60,7 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         return consumeWithFeilhandtering(() -> {
-            KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = null;
-            try {
-                kafkaAktivitetWrapperDTO = objectMapper.readValue(consumerRecord.value(), KafkaAktivitetWrapperDTO.class);
-            } catch (Throwable throwable) {
-            }
+            KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = deserialiser(consumerRecord);
             MDC.put(MetricService.SOURCE, kafkaAktivitetWrapperDTO.source);
 
             if (aktivitetskortService.harSettMelding(kafkaAktivitetWrapperDTO.messageId)) {
@@ -80,15 +81,18 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         });
     }
 
-    private ConsumeStatus consumeWithFeilhandtering(Supplier<ConsumeStatus> block) {
+    private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block) {
         try {
-            return block.get();
-        }
-        /*catch (AktivitetsKortFunksjonellException e) {
-            feilProducer.publishAktivitetsFeil(e,  message.messageId,  message.funksjonellId());
-        } */finally {
+            return block.consume();
+        } catch (AktivitetsKortFunksjonellException e) {
+            feilProducer.publishAktivitetsFeil(e);
+        } finally {
             MDC.clear();
             return ConsumeStatus.OK;
         }
     }
+}
+
+interface MessageConsumer {
+    ConsumeStatus consume() throws AktivitetsKortFunksjonellException;
 }

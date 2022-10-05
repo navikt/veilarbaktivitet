@@ -49,11 +49,11 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     @Value("${topic.ut.aktivitetskort-feil}")
     String aktivitetskortFeilTopic;
 
-    Consumer<String, AktivitetskortFeilMelding> aktivitetskortFeilConsumer;
+    Consumer<String, String> aktivitetskortFeilConsumer;
 
     @Before
     public void cleanupBetweenTests() {
-        aktivitetskortFeilConsumer = kafkaTestService.createStringJsonConsumer(aktivitetskortFeilTopic);
+        aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
     }
 
     TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
@@ -272,10 +272,8 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
 
-        ConsumerRecord<String, AktivitetskortFeilMelding> singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
-        AktivitetskortFeilMelding record = singleRecord.value();
-
-        assertThat(record.aktivitetId()).isEqualTo(funksjonellId);
+        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId);
     }
 
     @Test
@@ -292,113 +290,19 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void should_catch_deserializer_error() {
-        var funksjonellId = UUID.randomUUID();
-        var record = new ProducerRecord<>(topic, funksjonellId.toString(), """
-                { "lol": "123" }
-                """);
-        var metadata = producerClient.sendSync(record);
-
-        Awaitility.await().atMost(Duration.ofSeconds(1000))
-                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, metadata.offset()));
-
-        var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
-    }
-
-    @Test
     public void should_catch_deserializer_error_2() {
         var funksjonellId = UUID.randomUUID();
-
-        @Language("json")
         String jsonPayload = """
-            {
-                "actionType":"UPSERT_TILTAK_AKTIVITET_V1",
-                "messageId":"c88f8804-bb98-4cc5-9092-274a48f7c616",
-                "source":"ARENA_TILTAK_AKTIVITET_ACL",
-                "sendt":"2022-10-04T15:02:34.430752+02:00",
-                "actionType":"UPSERT_TILTAK_AKTIVITET_V1",
-                "payload":{
-                    "id":"3f14f5d1-ca66-4b0f-b73c-07c554401509",
-                    "startDato":"2022-09-04T12:00:00+02:00",
-                    "sluttDato":"2022-09-04T12:00:00+02:00",
-                    "beskrivelse":"arenabeskrivelse",
-                    "aktivitetStatus":"GJENNOMFORES",
-                    "endretAv":{"ident":"arenaEndretav","identType":"ARENAIDENT"},
-                    "endretDato":"2022-10-04T15:02:34.430152+02:00",
-                    "arrangoernavn":"Arenaarrangørnavn",
-                    "tiltaksNavn":"Arendal",
-                    "tiltaksKode":"Arenatiltakskode",
-                    "deltakelseStatus":"SOKT_INN",
-                    "personIdent": null,
-                    "detaljer":{"deltakelsesprosent":"40","dagerPerUke":"2"}
-                }
-                }
+            {{{{{}
             """;
         var record = new ProducerRecord<>(topic, funksjonellId.toString(), jsonPayload);
-
         var metadata = producerClient.sendSync(record);
-
         Awaitility.await().atMost(Duration.ofSeconds(1000))
                 .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, metadata.offset()));
-
-//        var aktivitet = hentAktivitet(funksjonellId);
-//        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
-    }
-
-    @Test
-    public void lol() {
-        var dto = TiltaksaktivitetDTO.builder()
-                .id(UUID.randomUUID())
-                .personIdent("123123123")
-                .startDato(LocalDate.now().minusDays(30))
-                .sluttDato(LocalDate.now().minusDays(30))
-                .tittel("The Elder Scrolls: Arena")
-                .beskrivelse("arenabeskrivelse")
-                .aktivitetStatus(AktivitetStatus.GJENNOMFORES)
-                .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretDato(LocalDateTime.now())
-                .tiltaksNavn("Arendal")
-                .tiltaksKode("Arenatiltakskode")
-                .arrangoernavn("Arenaarrangørnavn")
-                .deltakelseStatus("SOKT_INN")
-                .detalj("deltakelsesprosent", "40")
-                .detalj("dagerPerUke", "2")
-                .build();
-        var message = KafkaTiltaksAktivitet.builder()
-                .messageId(UUID.randomUUID())
-                .source("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDateTime.now())
-                .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(dto)
-                .build();
-
-        @Language("json")
-        var messageString = """
-            {
-                "actionType":"UPSERT_TILTAK_AKTIVITET_V1",
-                "messageId":"c88f8804-bb98-4cc5-9092-274a48f7c616",
-                "source":"ARENA_TILTAK_AKTIVITET_ACL",
-                "sendt":"2022-10-04T15:02:34.430752+02:00",
-                "actionType":"UPSERT_TILTAK_AKTIVITET_V1",
-                "payload":{
-                    "id":"3f14f5d1-ca66-4b0f-b73c-07c554401509",
-                    "startDato":"2022-09-04T12:00:00+02:00",
-                    "sluttDato":"2022-09-04T12:00:00+02:00",
-                    "beskrivelse":"arenabeskrivelse",
-                    "aktivitetStatus":"GJENNOMFORES",
-                    "endretAv":{"ident":"arenaEndretav","identType":"ARENAIDENT"},
-                    "endretDato":"2022-10-04T15:02:34.430152+02:00",
-                    "arrangoernavn":"Arenaarrangørnavn",
-                    "tiltaksNavn":"Arendal",
-                    "tiltaksKode":"Arenatiltakskode",
-                    "deltakelseStatus":"SOKT_INN",
-                    "personIdent": null,
-                    "detaljer":{"deltakelsesprosent":"40","dagerPerUke":"2"}
-                }
-                }
-            """;
-        JsonUtils.fromJson(messageString, KafkaAktivitetWrapperDTO.class);
+        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
+        assertThat(payload.errorMessage()).isEqualTo("class no.nav.veilarbaktivitet.aktivitetskort.DeserialiseringsFeil Could not deserialize message");
     }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();

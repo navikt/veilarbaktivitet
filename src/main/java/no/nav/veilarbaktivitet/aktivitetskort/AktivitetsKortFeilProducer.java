@@ -6,8 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
-import java.util.UUID;
+import java.time.LocalDateTime;
 
 @Service
 public class AktivitetsKortFeilProducer {
@@ -18,17 +17,17 @@ public class AktivitetsKortFeilProducer {
     @Value("${topic.ut.aktivitetskort-feil}")
     String feiltopic;
 
-    public void publishAktivitetsFeil(AktivitetskortFeilMelding melding) {
-        var record = new ProducerRecord(feiltopic, melding.aktivitetId().toString(), JsonUtils.toJson(melding));
+    private void publishAktivitetsFeil(AktivitetskortFeilMelding melding) {
+        var record = new ProducerRecord<String, String>(feiltopic, melding.key(), JsonUtils.toJson(melding));
         producer.sendSync(record);
     }
 
-    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e, UUID messageId, UUID aktivitetId) {
+    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e) {
         publishAktivitetsFeil(AktivitetskortFeilMelding.builder()
-                .aktivitetId(aktivitetId)
-                .messageId(messageId)
-                .payload("Payload here")
-                .errorMessage(String.format("%s %s", e.getClass().getName(), e.getMessage()))
+                .key(e.key)
+                .failingMessage(e.failingMessage.value())
+                .errorMessage(String.format("%s %s", e.getClass(), e.getMessage()))
+                .timestamp(LocalDateTime.now())
                 .build()
         );
     }
