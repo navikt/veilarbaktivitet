@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +23,10 @@ public class AktivitetsKortFeilProducer {
         producer.sendSync(record);
     }
 
-    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e) {
+    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e, ConsumerRecord<String, String> record) {
         publishAktivitetsFeil(AktivitetskortFeilMelding.builder()
-                .key(e.key)
-                .failingMessage(e.failingMessage.value())
+                .key(record.key())
+                .failingMessage(record.value())
                 .errorMessage(String.format("%s %s", e.getClass(), e.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .build()

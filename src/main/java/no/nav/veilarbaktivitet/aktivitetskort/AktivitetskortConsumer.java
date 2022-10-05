@@ -50,7 +50,6 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
             throw new DeserialiseringsFeil(
                     record.key(),
                     new ErrorMessage("Could not deserialize message"),
-                    new FailingMessage(record.value()),
                     throwable
             );
         }
@@ -61,7 +60,7 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         return consumeWithFeilhandtering(() -> {
             var melding = deserialiser(consumerRecord);
-            ignorerHvisSettFør(melding, consumerRecord.value());
+            ignorerHvisSettFør(melding);
 
             MDC.put(MetricService.SOURCE, melding.source);
             if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
@@ -70,13 +69,13 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
                 throw new NotImplementedException("Unknown kafka message");
             }
             return ConsumeStatus.OK;
-        });
+        }, consumerRecord);
     }
 
-    private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message, String rawMessage) throws DuplikatMeldingFeil {
+    private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message) throws DuplikatMeldingFeil {
         if (aktivitetskortService.harSettMelding(message.messageId)) {
             log.warn("Previously handled message seen {} , ignoring", message.messageId);
-            throw new DuplikatMeldingFeil(message.funksjonellId(), new FailingMessage(rawMessage));
+            throw new DuplikatMeldingFeil(message.funksjonellId());
         } else {
             aktivitetskortService.lagreMeldingsId(
                     message.messageId,
@@ -85,13 +84,13 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         }
     }
 
-    private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block) {
+    private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block, ConsumerRecord<String, String> record) {
         try {
             return block.consume();
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
-            feilProducer.publishAktivitetsFeil(e);
+            feilProducer.publishAktivitetsFeil(e, record);
         } finally {
             MDC.clear();
             return ConsumeStatus.OK;

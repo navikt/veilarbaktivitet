@@ -273,7 +273,7 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
 
         var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
-        assertThat(singleRecord.key()).isEqualTo(funksjonellId);
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
     }
 
     @Test
