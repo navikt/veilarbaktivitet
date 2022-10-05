@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -119,15 +120,15 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        Person loggedInnUser = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        Supplier<Person> loggedInnUser = () -> authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         if (authService.erInternBruker()) {
-            oppdaterSomNav(aktivitet, original, loggedInnUser);
+            oppdaterSomNav(aktivitet, original, loggedInnUser.get());
 
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
 
         } else if (authService.erEksternBruker()) {
-            oppdaterSomEksternBruker(aktivitet, original, loggedInnUser);
+            oppdaterSomEksternBruker(aktivitet, original, loggedInnUser.get());
 
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
         }

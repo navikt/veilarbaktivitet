@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.service;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
@@ -33,13 +34,8 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AktivitetAppServiceTest {
-    private static final long AKTIVITET_ID = 666L;
-    public static final String KONTORSPERRE_ENHET_ID = "1224";
-    private final String TESTPERSONNUMMER = "01010012345";
-    private final ArgumentCaptor<AktivitetData> captureAktivitet = ArgumentCaptor.forClass(AktivitetData.class);
-    private final ArgumentCaptor<Person> capturePerson = ArgumentCaptor.forClass(Person.class);
-    private final String TESTNAVIDENT = "S314159";
 
+    private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
     @Mock
     private AuthService authService;
 
@@ -48,6 +44,9 @@ public class AktivitetAppServiceTest {
 
     @InjectMocks
     private AktivitetAppService appService;
+
+    @Mock @SuppressWarnings("unused") // Blir faktisk brukt
+    private MetricService metricService;
 
     @Test
     public void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
@@ -79,32 +78,18 @@ public class AktivitetAppServiceTest {
     public void eksternbruker_skal_kunne_endre_flere_ting_nar_ikke_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet()
                 .withAvtalt(false)
-                .withTilDato(toJavaUtilDate("2022-12-10"))
-                .withBeskrivelse("Avtalt beskrivelse")
-                .withBehandlingAktivitetData(
-                        BehandlingAktivitetData.builder()
-                                .effekt("Avtalt")
-                                .behandlingOppfolging("Avtalt")
-                                .behandlingSted("Avtalt")
-                                .behandlingType("Avtalt")
-                                .build()
-                );
-        AktivitetData oppdatertAktivitet = gammelAktivitet
-                .withTilDato(toJavaUtilDate("2022-12-12"))
+                .withBeskrivelse(AVTALT_BESKRIVELSE)
+                .withBehandlingAktivitetData(avtaltBehandlingsdata)
+                .withTilDato(toJavaUtilDate("2022-12-10"));
+        AktivitetData endretAktivitet = gammelAktivitet
                 .withBeskrivelse("Endret beskrivelse")
-                .withBehandlingAktivitetData(
-                        BehandlingAktivitetData.builder()
-                                .effekt("Endret effekt")
-                                .behandlingOppfolging("Endret behandlingOppfolging")
-                                .behandlingSted("Endret behandlingSted")
-                                .behandlingType("Endret behandlingType")
-                                .build()
-                );
+                .withBehandlingAktivitetData(endretBehandlingsdata)
+                .withTilDato(toJavaUtilDate("2022-12-12"));
 
         loggetInnSom(BRUKER);
-        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(endretAktivitet.getId())).thenReturn(gammelAktivitet);
 
-        appService.oppdaterAktivitet(oppdatertAktivitet);
+        appService.oppdaterAktivitet(endretAktivitet);
 
         verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
         verify(aktivitetService, times(1))
@@ -113,17 +98,16 @@ public class AktivitetAppServiceTest {
         SoftAssertions.assertSoftly(s -> {
             AktivitetData aktivitet = captureAktivitet.getValue();
             s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
-            s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
-            s.assertThat(aktivitet.getBeskrivelse()).isNotEqualTo(gammelAktivitet.getBeskrivelse());
-            s.assertThat(aktivitet.getBeskrivelse()).isEqualTo(oppdatertAktivitet.getBeskrivelse());
-            s.assertThat(aktivitet.getBehandlingAktivitetData()).isNotEqualTo(gammelAktivitet.getBehandlingAktivitetData());
-            s.assertThat(aktivitet.getBehandlingAktivitetData()).isEqualTo(oppdatertAktivitet.getBehandlingAktivitetData());
+            s.assertThat(aktivitet.getTilDato()).isEqualTo(endretAktivitet.getTilDato());
+            s.assertThat(aktivitet.getBeskrivelse()).isNotEqualTo(AVTALT_BESKRIVELSE);
+            s.assertThat(aktivitet.getBeskrivelse()).isEqualTo(endretAktivitet.getBeskrivelse());
+            s.assertThat(aktivitet.getBehandlingAktivitetData()).isNotEqualTo(avtaltBehandlingsdata);
+            s.assertThat(aktivitet.getBehandlingAktivitetData()).isEqualTo(endretBehandlingsdata);
             Person endretAv = capturePerson.getValue();
             s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
             s.assertThat(endretAv.tilBrukerType()).isSameAs(BRUKER);
             s.assertAll();
         });
-
     }
 
     @Test
@@ -148,6 +132,48 @@ public class AktivitetAppServiceTest {
             s.assertThat(endretAv.tilBrukerType()).isSameAs(NAV);
             s.assertAll();
         });
+    }
+
+    @Test
+    public void nav_skal_kunne_endre_noen_ting_selv_om_avtalt_mote() {
+        AktivitetData gammelAktivitet = nyMoteAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2000-01-01"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-01-01"));
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any(), any());
+    }
+
+    @Test
+    public void eksternbruker_skal_ikke_kunne_endre_andre_aktivitetstyper() {
+        AktivitetData annenAktivitetstype = nyIJobbAktivitet().withAvtalt(true);
+        AktivitetData endretAktivitet = annenAktivitetstype.withBeskrivelse("Endret beskrivelse");
+
+        loggetInnSom(BRUKER);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(annenAktivitetstype.getId())).thenReturn(annenAktivitetstype);
+
+        Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(endretAktivitet))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasStackTraceContaining("400 BAD_REQUEST");
+    }
+
+    @Test
+    public void ikke_innlogget_skal_ikke_kunne_endre_noe() {
+        when(authService.erEksternBruker()).thenReturn(false);
+        when(authService.erInternBruker()).thenReturn(false);
+        AktivitetData aktivitet = nyBehandlingAktivitet();
+        AktivitetData endretAktivitet = aktivitet
+                .withBeskrivelse("Endret beskrivelse")
+                .withBehandlingAktivitetData(endretBehandlingsdata);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(anyLong())).thenReturn(aktivitet);
+
+        Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(endretAktivitet))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasStackTraceContaining("403 FORBIDDEN");
     }
 
     @Test(expected = ResponseStatusException.class)
@@ -280,4 +306,23 @@ public class AktivitetAppServiceTest {
         when(authService.erInternBruker()).thenReturn(innsenderData == NAV);
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(innsenderData == BRUKER ? Person.aktorId(TESTPERSONNUMMER) : Person.navIdent(TESTNAVIDENT)));
     }
+
+    private static final long AKTIVITET_ID = 666L;
+    private static final String KONTORSPERRE_ENHET_ID = "1224";
+    private final String TESTPERSONNUMMER = "01010012345";
+    private final ArgumentCaptor<AktivitetData> captureAktivitet = ArgumentCaptor.forClass(AktivitetData.class);
+    private final ArgumentCaptor<Person> capturePerson = ArgumentCaptor.forClass(Person.class);
+    private final String TESTNAVIDENT = "S314159";
+    private final BehandlingAktivitetData endretBehandlingsdata = BehandlingAktivitetData.builder()
+            .effekt("Endret effekt")
+            .behandlingOppfolging("Endret behandlingOppfolging")
+            .behandlingSted("Endret behandlingSted")
+            .behandlingType("Endret behandlingType")
+            .build();
+    private final BehandlingAktivitetData avtaltBehandlingsdata = BehandlingAktivitetData.builder()
+            .effekt("Avtalt")
+            .behandlingOppfolging("Avtalt")
+            .behandlingSted("Avtalt")
+            .behandlingType("Avtalt")
+            .build();
 }
