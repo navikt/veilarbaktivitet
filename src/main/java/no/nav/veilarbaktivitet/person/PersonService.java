@@ -14,7 +14,7 @@ import java.util.Optional;
 public class PersonService {
     private final AktorOppslagClient aktorOppslagClient;
 
-    public Optional<Person.AktorId> getAktorIdForPersonBruker(Person person) throws UgyldigPersonIdentException {
+    public Optional<Person.AktorId> getAktorIdForPersonBruker(Person person) throws IkkeFunnetPersonException {
         if (!person.erEkstern()) {
             return Optional.empty();
         }
@@ -31,11 +31,11 @@ public class PersonService {
         }
     }
 
-    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) throws UgyldigPersonIdentException {
+    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) throws IkkeFunnetPersonException, UgyldigIdentException {
         return getFnrForPersonbruker(aktorId).orElseThrow(() -> new RuntimeException("aktorOppslagClient skal aldri returnere null"));
     }
 
-    public Optional<Person.Fnr> getFnrForPersonbruker(Person person) throws UgyldigPersonIdentException {
+    public Optional<Person.Fnr> getFnrForPersonbruker(Person person) throws IkkeFunnetPersonException, UgyldigIdentException {
         if (!person.erEkstern()) {
             return Optional.empty();
         }
@@ -58,15 +58,22 @@ public class PersonService {
          */
         return e.getErrors().stream().filter(error -> error.getMessage().equals("Fant ikke person")).findFirst().isPresent();
     }
+    private boolean isUgyldigIdentError(GraphqlErrorException e) {
+        /* Fra loggen
+        [GraphQLError(message=Ugyldig ident, locations=[Location(line=3, column=5)], path=[hentIdenter], extensions={code=bad_request, id=ugyldig_ident, classification=ValidationError})]         */
+        return e.getErrors().stream().filter(error -> error.getMessage().equals("Ugyldig ident")).findFirst().isPresent();
+    }
     private RuntimeException mapException(GraphqlErrorException e, Person person) {
         if (isFantIkkePersonError(e)) {
             if (person instanceof Person.AktorId) {
-                return new UgyldigPersonIdentException("Fant ikke person for aktørId=" + person.get());
+                return new IkkeFunnetPersonException("Fant ikke person for aktørId=" + person.get());
             } else {
-                return new UgyldigPersonIdentException("Fant ikke person for fnr=" + person.get());
+                return new IkkeFunnetPersonException("Fant ikke person for fnr=" + person.get());
             }
+        } else if (isUgyldigIdentError(e)) {
+            return new UgyldigIdentException("Ugyldig ident: " + person.get());
         } else {
-            return e;
+                return e;
         }
     }
 }

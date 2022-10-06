@@ -7,7 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import no.nav.veilarbaktivitet.person.UgyldigPersonIdentException;
+import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
+import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,12 +30,11 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil, UgyldigPersonIdentException {
+    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil, IkkeFunnetPersonException {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
 
 
-        Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent))
-                .orElseThrow(() -> new UgyldigIdentFeil(tiltaksaktivitet.personIdent, null));
+        Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(tiltaksaktivitet.personIdent));
 
         var aktivitetData = maybeAktivitet
                 .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
@@ -47,6 +47,16 @@ public class AktivitetskortService {
         } else {
             opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
         }
+    }
+
+    private Person.AktorId hentAktorId(Person.Fnr fnr) throws UgyldigIdentFeil {
+          try {
+              return personService.getAktorIdForPersonBruker(fnr).orElseThrow(() -> new UgyldigIdentFeil("Ugyldig identtype for " + fnr.get(), null));
+          } catch (UgyldigIdentException e) {
+              throw new UgyldigIdentFeil("Ugyldig ident for fnr :" + fnr.get(), e);
+          } catch (IkkeFunnetPersonException e) {
+              throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
+          }
     }
 
     private AktivitetData oppdaterDetaljer(AktivitetData aktivitet, AktivitetData nyAktivitet) {

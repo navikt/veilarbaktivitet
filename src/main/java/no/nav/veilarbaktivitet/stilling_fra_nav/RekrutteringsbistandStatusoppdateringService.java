@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.UgyldigPersonIdentException;
+import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -43,7 +43,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                         default -> "";
                     },
                     varselType);
-        } catch (UgyldigPersonIdentException e) {
+        } catch (IkkeFunnetPersonException e) {
             log.warn("Fikk ikke opprettet brukernotifikasjon pga ugyldig aktørId={}. Fortsetter behandling", aktivitetData.getAktorId());
         }
     }
