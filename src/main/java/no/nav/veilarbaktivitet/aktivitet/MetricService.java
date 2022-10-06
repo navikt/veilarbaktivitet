@@ -27,7 +27,7 @@ public class MetricService {
     private String getSource() {
         var mainSource = MDC.get(SOURCE);
         var logFilterSource = MDC.get(MDCConstants.MDC_CONSUMER_ID);
-        return mainSource != null ? mainSource : logFilterSource;
+        return Optional.ofNullable(mainSource != null ? mainSource : logFilterSource).orElse("unknown");
     }
 
     public void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {

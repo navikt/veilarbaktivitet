@@ -55,7 +55,7 @@ public class AktivitetskortService {
         }
         return aktivitet;
     }
-    private AktivitetData oppdaterStatus(AktivitetData aktivitet, AktivitetData nyAktivitet) {
+    AktivitetData oppdaterStatus(AktivitetData aktivitet, AktivitetData nyAktivitet) {
         if (aktivitet.getStatus() != nyAktivitet.getStatus()) {
             return aktivitetService.oppdaterStatus(
                 aktivitet,

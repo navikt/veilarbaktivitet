@@ -7,20 +7,18 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonMapper;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
-import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
-import no.nav.veilarbaktivitet.config.kafka.AivenConsumerConfig;
 import no.nav.veilarbaktivitet.person.UgyldigPersonIdentException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 @ToString(of = {"aktivitetskortService"})
-public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> implements TopicConsumer<String, String> {
+public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     private final AktivitetskortService aktivitetskortService;
 
@@ -29,17 +27,12 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     private static final ObjectMapper objectMapper = JsonMapper.defaultObjectMapper();
 
     public AktivitetskortConsumer(
-            AktivitetskortService aktivitetskortService,
-            @Value("${topic.inn.aktivitetskort}")
-            String topic,
-            AktivitetsKortFeilProducer feilProducer) {
+        AktivitetskortService aktivitetskortService,
+        AktivitetsKortFeilProducer feilProducer
+    ) {
         super();
         this.aktivitetskortService = aktivitetskortService;
         this.feilProducer = feilProducer;
-        this.setTopic(topic);
-        this.setKeyDeserializer(Deserializers.stringDeserializer());
-        this.setValueDeserializer(Deserializers.stringDeserializer());
-        this.setConsumer(this);
         objectMapper.registerSubtypes(TiltaksaktivitetDTO.class, KafkaAktivitetWrapperDTO.class);
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
     }
@@ -55,21 +48,40 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         }
     }
 
-
+    @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
-        return consumeWithFeilhandtering(() -> {
-            var melding = deserialiser(consumerRecord);
-            ignorerHvisSettFør(melding);
+        return consumeWithFeilhandtering(consumerRecord);
+    }
 
-            MDC.put(MetricService.SOURCE, melding.source);
-            if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
-                aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
-            } else {
-                throw new NotImplementedException("Unknown kafka message");
-            }
+
+    public ConsumeStatus consumeWithFeilhandtering(ConsumerRecord<String, String> record) {
+        try {
+            return consumeThrowing(record);
+        } catch (UgyldigPersonIdentException e) {
+            feilProducer.publishAktivitetsFeil(new UgyldigIdentFeil(e.getMessage(), e), record);
             return ConsumeStatus.OK;
-        }, consumerRecord);
+        } catch (DuplikatMeldingFeil e) {
+            return ConsumeStatus.OK;
+        } catch (AktivitetsKortFunksjonellException e) {
+            feilProducer.publishAktivitetsFeil(e, record);
+            return ConsumeStatus.OK;
+        } finally {
+            MDC.remove(MetricService.SOURCE);
+        }
+    }
+
+    ConsumeStatus consumeThrowing(ConsumerRecord<String, String> record) throws AktivitetsKortFunksjonellException {
+        var melding = deserialiser(record);
+        ignorerHvisSettFør(melding);
+
+        MDC.put(MetricService.SOURCE, melding.source);
+        if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
+            aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
+        } else {
+            throw new NotImplementedException("Unknown kafka message");
+        }
+        return ConsumeStatus.OK;
     }
 
     private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message) throws DuplikatMeldingFeil {
@@ -78,28 +90,9 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
             throw new DuplikatMeldingFeil();
         } else {
             aktivitetskortService.lagreMeldingsId(
-                    message.messageId,
-                    message.funksjonellId()
+                message.messageId,
+                message.funksjonellId()
             );
         }
     }
-
-    private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block, ConsumerRecord<String, String> record) {
-        try {
-            return block.consume();
-        } catch (UgyldigPersonIdentException e) {
-            feilProducer.publishAktivitetsFeil(new UgyldigIdentFeil(e.getMessage(), e), record);
-        } catch (DuplikatMeldingFeil e) {
-            return ConsumeStatus.OK;
-        } catch (AktivitetsKortFunksjonellException e) {
-            feilProducer.publishAktivitetsFeil(e, record);
-        } finally {
-            MDC.remove(MetricService.SOURCE);
-            return ConsumeStatus.OK;
-        }
-    }
-}
-
-interface MessageConsumer {
-    ConsumeStatus consume() throws AktivitetsKortFunksjonellException;
 }

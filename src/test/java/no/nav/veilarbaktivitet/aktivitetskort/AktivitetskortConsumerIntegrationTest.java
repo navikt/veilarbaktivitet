@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.awaitility.Awaitility;
@@ -22,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import static org.mockito.ArgumentMatchers.any;
 import org.springframework.test.context.junit4.SpringRunner;
 import shaded.com.google.common.collect.Streams;
 
@@ -32,12 +34,13 @@ import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doThrow;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class AktivitetskortConsumerTest extends SpringBootTestBase {
+public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     KafkaProducerClient<String, String> producerClient;
@@ -302,6 +305,42 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.errorMessage()).isEqualTo(String.format("class no.nav.veilarbaktivitet.aktivitetskort.UgyldigIdentFeil Fant ikke person for fnr=%s", mockBruker.getFnr()));
+    }
+
+
+
+    @Autowired
+    AktivitetskortConsumer aktivitetskortConsumer;
+    @Autowired
+    AktivitetsMessageDAO messageDAO;
+
+    @Autowired
+    AktivitetskortService aktivitetskortService;
+    @Test
+    public void should_not_commit_database_transaction_if_runtimeException_is_thrown2() {
+        UUID funksjonellId = UUID.randomUUID();
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        TiltaksaktivitetDTO tiltaksaktivitetOppdatert = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT)
+            .withTiltaksNavn("Nytt navn");
+        var aktivitetskort = aktivitetskortMelding(tiltaksaktivitet);
+        var aktivitetskortOppdatert = aktivitetskortMelding(tiltaksaktivitetOppdatert);
+
+        var record = new ConsumerRecord<>(topic, 0, 0, funksjonellId.toString(), JsonUtils.toJson(aktivitetskort));
+        var recordOppdatert = new ConsumerRecord<>(topic, 0, 1, funksjonellId.toString(), JsonUtils.toJson(aktivitetskortOppdatert));
+
+        /* Call consume directly to avoid retry / waiting for message to be consumed */
+        aktivitetskortConsumer.consume(record);
+
+        /* Simulate technical error after DETALJER_ENDRET processing */
+        doThrow(new IllegalStateException("Ikke lov")).when(aktivitetskortService).oppdaterStatus(any(), any());
+        Assertions.assertThrows(IllegalStateException.class, () -> aktivitetskortConsumer.consume(recordOppdatert));
+
+        /* Assert successful rollback */
+        assertThat(messageDAO.exist(aktivitetskortOppdatert.messageId)).isFalse();
+        var aktivitet = hentAktivitet(funksjonellId);
+         assertThat(aktivitet.getTiltak().tiltaksnavn()).isEqualTo(tiltaksaktivitet.getTiltaksNavn());
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+
     }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();

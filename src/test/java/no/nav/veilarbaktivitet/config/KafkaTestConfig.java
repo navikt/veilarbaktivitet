@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortService;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
@@ -39,7 +41,8 @@ import java.util.stream.Collectors;
 @SpyBeans({
         @SpyBean(KafkaStringTemplate.class),
         @SpyBean(KafkaStringAvroTemplate.class),
-        @SpyBean(KafkaJsonTemplate.class)
+        @SpyBean(KafkaJsonTemplate.class),
+        @SpyBean(AktivitetskortService.class)
 })
 public class KafkaTestConfig {
     @Bean

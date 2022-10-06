@@ -177,4 +177,9 @@ public class WireMockUtil {
                                 }
                                 """.formatted(aktorId))));
     }
+
+    public static void tekniskFeilPåPDL() {
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+            .willReturn(serverError().withBody("Teknisk feil")));
+    }
 }
