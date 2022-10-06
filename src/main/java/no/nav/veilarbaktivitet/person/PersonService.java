@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.person;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.client.utils.graphql.GraphqlError;
+import no.nav.common.client.utils.graphql.GraphqlErrorException;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import org.springframework.stereotype.Service;
@@ -26,7 +28,7 @@ public class PersonService {
         return Optional.ofNullable(aktorId).map(Person::aktorId);
     }
 
-    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) {
+    public Person.Fnr getFnrForAktorId(Person.AktorId aktorId) throws UgyldigPersonIdentException {
         return getFnrForPersonbruker(aktorId).orElseThrow(() -> new RuntimeException("aktorOppslagClient skal aldri returnere null"));
     }
 
@@ -39,8 +41,23 @@ public class PersonService {
             return Optional.of((Person.Fnr) person);
         }
 
-        String fnr = aktorOppslagClient.hentFnr(AktorId.of(person.get())).get();
-        return Optional.ofNullable(fnr).map(Person::fnr);
+        try {
+            String fnr = aktorOppslagClient.hentFnr(AktorId.of(person.get())).get();
+            return Optional.ofNullable(fnr).map(Person::fnr);
+        } catch (GraphqlErrorException e) {
+            /*
+            Fra loggen
+            [{"message":"Fant ikke person","locations":[{"line":1,"column":25}],"path":["hentIdenter"],"extensions":{"code":"not_found","classification":"ExecutionAborted"}}]
+             */
+            Optional<GraphqlError> fant_ikke_person = e.getErrors().stream().filter(error -> error.getMessage().equals("Fant ikke person")).findFirst();
+            if (fant_ikke_person.isPresent()) {
+                throw new UgyldigPersonIdentException("Fant ikke person for aktørId=" + person.get());
+            } else {
+                throw e;
+            }
+
+        }
+
 
     }
 }

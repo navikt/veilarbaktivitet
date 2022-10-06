@@ -20,7 +20,6 @@ public class RekrutteringsbistandKafkaConsumer {
     private final RekrutteringsbistandStatusoppdateringDAO dao;
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
 
-    @Transactional
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
     @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
