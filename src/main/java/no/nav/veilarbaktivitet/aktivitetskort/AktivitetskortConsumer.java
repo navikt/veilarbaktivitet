@@ -48,7 +48,6 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
             return objectMapper.readValue(record.value(), KafkaAktivitetWrapperDTO.class);
         } catch (Throwable throwable) {
             throw new DeserialiseringsFeil(
-                    record.key(),
                     new ErrorMessage("Could not deserialize message"),
                     throwable
             );
@@ -75,7 +74,7 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message) throws DuplikatMeldingFeil {
         if (aktivitetskortService.harSettMelding(message.messageId)) {
             log.warn("Previously handled message seen {} , ignoring", message.messageId);
-            throw new DuplikatMeldingFeil(message.funksjonellId());
+            throw new DuplikatMeldingFeil();
         } else {
             aktivitetskortService.lagreMeldingsId(
                     message.messageId,

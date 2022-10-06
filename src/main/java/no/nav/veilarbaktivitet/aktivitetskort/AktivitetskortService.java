@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -28,9 +29,12 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil {
+    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
-        Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent)).orElseThrow();
+
+
+        Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent))
+                .orElseThrow(() -> new UgyldigIdentFeil(tiltaksaktivitet.personIdent));
 
         var aktivitetData = maybeAktivitet
                 .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
@@ -64,7 +68,7 @@ public class AktivitetskortService {
     }
 
     private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
-        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil(nyAktivitet.getFunksjonellId().toString());
+        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
         Stream.of(gammelAktivitet)
             .map((aktivitet) -> oppdaterDetaljer(aktivitet, nyAktivitet))
             .map((aktivitet) -> oppdaterStatus(aktivitet, nyAktivitet))

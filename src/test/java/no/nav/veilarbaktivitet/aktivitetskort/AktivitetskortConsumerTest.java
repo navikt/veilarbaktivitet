@@ -10,12 +10,11 @@ import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.awaitility.Awaitility;
-import org.intellij.lang.annotations.Language;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -290,15 +289,15 @@ public class AktivitetskortConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void should_catch_deserializer_error_2() {
-        var funksjonellId = UUID.randomUUID();
-        String jsonPayload = """
-            {{{{{}
-            """;
-        var record = new ProducerRecord<>(topic, funksjonellId.toString(), jsonPayload);
-        var metadata = producerClient.sendSync(record);
-        Awaitility.await().atMost(Duration.ofSeconds(1000))
-                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, metadata.offset()));
+    public void should_catch_ugyldigident_error() {
+
+        WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
+
+        UUID funksjonellId = UUID.randomUUID();
+
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+
         var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
