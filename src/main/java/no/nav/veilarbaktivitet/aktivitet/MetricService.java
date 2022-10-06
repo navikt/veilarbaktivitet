@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import no.nav.common.log.MDCConstants;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -22,28 +23,33 @@ public class MetricService {
         this.metricsClient = metricsClient;
     }
 
+
+    private String getSource() {
+        var mainSource = MDC.get(SOURCE);
+        var logFilterSource = MDC.get(MDCConstants.MDC_CONSUMER_ID);
+        return mainSource != null ? mainSource : logFilterSource;
+    }
+
     public void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
-        var source = MDC.get(SOURCE);
         String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         Event ev = new Event("aktivitet.ny")
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
                 .addFieldToReport(AUTOMATISKOPPRETTET, aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport(MALID, malId)
-                .addFieldToReport(SOURCE, source);
+                .addFieldToReport(SOURCE, getSource());
 
         metricsClient.report(ev);
     }
 
     public void oppdaterAktivitetMetrikk(AktivitetData aktivitetData, boolean blittAvtalt, boolean erAutomatiskOpprettet) {
-        var source = MDC.get(SOURCE);
         String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         Event ev = new Event("aktivitet.oppdatert")
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
                 .addFieldToReport(AUTOMATISKOPPRETTET, erAutomatiskOpprettet)
                 .addFieldToReport(MALID, malId)
-                .addFieldToReport(SOURCE, source);
+                .addFieldToReport(SOURCE, getSource());
         metricsClient.report(ev);
     }
 
@@ -61,7 +67,6 @@ public class MetricService {
     }
 
     public void oppdatertStatus(AktivitetData aktivitetData, boolean oppdatertAvNAV) {
-        var source = MDC.get(SOURCE);
         String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         Event ev = new Event("aktivitet.oppdatert.status")
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
@@ -70,7 +75,7 @@ public class MetricService {
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .addFieldToReport(AUTOMATISKOPPRETTET, aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport(MALID, malId)
-                .addFieldToReport(SOURCE, source);
+                .addFieldToReport(SOURCE, getSource());
         metricsClient.report(ev);
     }
 

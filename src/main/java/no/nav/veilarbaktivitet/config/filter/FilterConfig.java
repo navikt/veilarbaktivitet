@@ -139,13 +139,4 @@ public class FilterConfig {
         return registration;
     }
 
-    @Bean
-    public FilterRegistrationBean setMDCFilter() {
-        var registration = new FilterRegistrationBean<MDCFilter>();
-        registration.setFilter(new MDCFilter());
-        registration.setOrder(6);
-        registration.addUrlPatterns("/api/*");
-        return registration;
-    }
-
 }
