@@ -94,7 +94,7 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
         } catch (AktivitetsKortFunksjonellException e) {
             feilProducer.publishAktivitetsFeil(e, record);
         } finally {
-            MDC.clear();
+            MDC.remove(MetricService.SOURCE);
             return ConsumeStatus.OK;
         }
     }
