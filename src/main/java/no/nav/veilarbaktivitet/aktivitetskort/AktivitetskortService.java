@@ -2,12 +2,12 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import no.nav.veilarbaktivitet.person.UgyldigPersonIdentException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -29,12 +29,12 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
+    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil, UgyldigPersonIdentException {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
 
 
         Person.AktorId aktorIdForPersonBruker = personService.getAktorIdForPersonBruker(Person.fnr(tiltaksaktivitet.personIdent))
-                .orElseThrow(() -> new UgyldigIdentFeil(tiltaksaktivitet.personIdent));
+                .orElseThrow(() -> new UgyldigIdentFeil(tiltaksaktivitet.personIdent, null));
 
         var aktivitetData = maybeAktivitet
                 .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))

@@ -110,9 +110,12 @@ public class WireMockUtil {
                                 {
                                   "data": {
                                     "hentIdenter": {
-                                      "identer": []
+                                      "identer": null
                                     }
-                                  }
+                                  },
+                                  "errors": [{
+                                    "message": "Fant ikke person"
+                                  }]
                                 }
                                 """)));
 
@@ -124,9 +127,12 @@ public class WireMockUtil {
                                 {
                                   "data": {
                                     "hentIdenter": {
-                                      "identer": []
+                                      "identer": null
                                     }
-                                  }
+                                  },
+                                  "errors": [{
+                                    "message": "Fant ikke person"
+                                  }]
                                 }
                                 """)));
     }

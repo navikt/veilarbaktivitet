@@ -10,6 +10,7 @@ import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.config.kafka.AivenConsumerConfig;
+import no.nav.veilarbaktivitet.person.UgyldigPersonIdentException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
@@ -86,6 +87,8 @@ public class AktivitetskortConsumer extends AivenConsumerConfig<String, String> 
     private ConsumeStatus consumeWithFeilhandtering(MessageConsumer block, ConsumerRecord<String, String> record) {
         try {
             return block.consume();
+        } catch (UgyldigPersonIdentException e) {
+            feilProducer.publishAktivitetsFeil(new UgyldigIdentFeil(e.getMessage(), e), record);
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {

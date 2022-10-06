@@ -39,8 +39,8 @@ class DuplikatMeldingFeil extends AktivitetsKortFunksjonellException {
 }
 
 class UgyldigIdentFeil extends AktivitetsKortFunksjonellException {
-    public UgyldigIdentFeil(String ugyldigIdent) {
-        super(new ErrorMessage(String.format("%s er ikke en gyldig ident", ugyldigIdent)), null);
+    public UgyldigIdentFeil(String errorMessage, Throwable cause) {
+        super(new ErrorMessage(errorMessage), cause);
     }
 }
 
