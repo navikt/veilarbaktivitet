@@ -304,7 +304,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
-        assertThat(payload.errorMessage()).isEqualTo(String.format("class no.nav.veilarbaktivitet.aktivitetskort.UgyldigIdentFeil Fant ikke person for fnr=%s", mockBruker.getFnr()));
+        assertThat(payload.errorMessage()).isEqualTo(String.format("class no.nav.veilarbaktivitet.aktivitetskort.UgyldigIdentFeil AktørId ikke funnet for fnr :%s", mockBruker.getFnr()));
     }
 
 

@@ -53,9 +53,6 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     public ConsumeStatus consume(ConsumerRecord<String, String> record) {
         try {
             return consumeThrowing(record);
-        } catch (IkkeFunnetPersonException e) {
-            feilProducer.publishAktivitetsFeil(new UgyldigIdentFeil(e.getMessage(), e), record);
-            return ConsumeStatus.OK;
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
