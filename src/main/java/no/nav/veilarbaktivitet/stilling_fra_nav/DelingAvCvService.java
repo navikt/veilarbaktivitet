@@ -12,11 +12,18 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 @Service
 @EnableScheduling
@@ -77,7 +84,29 @@ public class DelingAvCvService {
 
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
+    @NotNull
+    public static String utledArbeidstedtekst(List<Arbeidssted> arbeidssteder) {
 
+        Predicate<Arbeidssted> harKommune = arbeidssted ->
+                arbeidssted.getKommune() != null
+                && !arbeidssted.getKommune().isEmpty();
+
+        Predicate<Arbeidssted> harLand = arbeidssted ->
+                arbeidssted.getLand() != null
+                && !arbeidssted.getLand().isEmpty();
+
+        Predicate<Arbeidssted> harLandSattTilNorge = arbeidssted ->
+                "Norge".equalsIgnoreCase(arbeidssted.getLand());
+
+        Predicate<Arbeidssted> harKommuneINorge = harKommune.and(
+                harLandSattTilNorge.or(not(harLand))
+        );
+
+        return arbeidssteder.stream()
+                .filter(harLand.or(harKommuneINorge))
+                .map(it -> harKommuneINorge.test(it) ? it.getKommune() : it.getLand())
+                .collect(Collectors.joining(", "));
+    }
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
