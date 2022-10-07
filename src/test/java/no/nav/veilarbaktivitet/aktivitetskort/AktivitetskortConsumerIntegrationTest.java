@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
@@ -13,6 +16,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.awaitility.Awaitility;
@@ -35,6 +39,7 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
+import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
@@ -44,6 +49,15 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     KafkaProducerClient<String, String> producerClient;
+
+    @Autowired
+    AktivitetskortConsumer aktivitetskortConsumer;
+
+    @Autowired
+    AktivitetsMessageDAO messageDAO;
+
+    @Autowired
+    AktivitetskortService aktivitetskortService;
 
     @Value("${topic.inn.aktivitetskort}")
     String topic;
@@ -291,9 +305,31 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
     }
 
+
+    @Test
+    public void invalid_messages_should_catch_deserializer_error() {
+        List<AktivitetskortProducerUtil.Pair> messages = List.of(
+                AktivitetskortProducerUtil.missingFieldRecord(),
+                AktivitetskortProducerUtil.extraFieldRecord(),
+                AktivitetskortProducerUtil.invalidDateFieldRecord()
+        );
+
+        RecordMetadata lastRecordMetadata = messages.stream()
+                .map(pair -> new ProducerRecord<>(topic, pair.messageId().toString(), pair.json()))
+                .map(record -> producerClient.sendSync(record))
+                .reduce((first, second) -> second)
+                .get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(1000))
+                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset()));
+
+        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 10000, messages.size());
+
+        assertThat(records.count()).isEqualTo(messages.size());
+    }
+
     @Test
     public void should_catch_ugyldigident_error() {
-
         WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
 
         UUID funksjonellId = UUID.randomUUID();
@@ -307,15 +343,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(payload.errorMessage()).isEqualTo(String.format("class no.nav.veilarbaktivitet.aktivitetskort.UgyldigIdentFeil AktørId ikke funnet for fnr :%s", mockBruker.getFnr()));
     }
 
-
-
-    @Autowired
-    AktivitetskortConsumer aktivitetskortConsumer;
-    @Autowired
-    AktivitetsMessageDAO messageDAO;
-
-    @Autowired
-    AktivitetskortService aktivitetskortService;
     @Test
     public void should_not_commit_database_transaction_if_runtimeException_is_thrown2() {
         UUID funksjonellId = UUID.randomUUID();

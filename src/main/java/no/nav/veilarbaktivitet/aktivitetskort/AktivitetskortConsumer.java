@@ -35,6 +35,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         this.feilProducer = feilProducer;
         objectMapper.registerSubtypes(TiltaksaktivitetDTO.class, KafkaAktivitetWrapperDTO.class);
         objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
     public KafkaAktivitetWrapperDTO deserialiser(ConsumerRecord<String, String> record) throws DeserialiseringsFeil {
@@ -42,7 +43,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
             return objectMapper.readValue(record.value(), KafkaAktivitetWrapperDTO.class);
         } catch (Throwable throwable) {
             throw new DeserialiseringsFeil(
-                    new ErrorMessage("Could not deserialize message"),
+                    new ErrorMessage(throwable.getMessage()),
                     throwable
             );
         }
