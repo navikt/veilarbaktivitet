@@ -182,4 +182,6 @@ public class WireMockUtil {
         stubFor(post(urlEqualTo("/pdl/graphql"))
             .willReturn(serverError().withBody("Teknisk feil")));
     }
+
+
 }

@@ -17,6 +17,7 @@ import java.util.UUID;
 public class TiltaksaktivitetDTO {
     // aktivitetdata
     UUID id;
+    String eksternReferanseId;
     String personIdent;
     LocalDate startDato;
     LocalDate sluttDato;

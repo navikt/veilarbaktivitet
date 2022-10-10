@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -31,6 +32,7 @@ import shaded.com.google.common.collect.Streams;
 import java.time.*;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
@@ -40,8 +42,6 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
@@ -72,6 +72,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
         return TiltaksaktivitetDTO.builder()
                 .id(funksjonellId)
+                .eksternReferanseId(new Random().nextLong() + "")
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
                 .sluttDato(LocalDate.now().minusDays(30))
@@ -364,14 +365,17 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
          assertThat(aktivitet.getTiltak().tiltaksnavn()).isEqualTo(tiltaksaktivitet.getTiltaksNavn());
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
-
     }
 
     @Test
     public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
+        String arenaaktivitetId = "ARENA123";
+        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, arenaaktivitetId);
+
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withEksternReferanseId("123");
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
         var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
@@ -387,6 +391,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 tiltaksaktivitet.getDeltakelseStatus(),
                 Integer.parseInt(tiltaksaktivitet.getDetaljer().get("dagerPerUke")),
                 Integer.parseInt(tiltaksaktivitet.getDetaljer().get("deltakelsesprosent"))
+        ));
 
     }
 

@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.util;
 
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
@@ -7,11 +8,17 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
@@ -19,13 +26,19 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
+import org.junit.Rule;
 import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.prefixArenaId;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
 
 
 @RequiredArgsConstructor
@@ -211,7 +224,60 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public Forhaandsorientering opprettFHO() {
+    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, String arenaaktivitetId) {
+        stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId);
 
+        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
+
+        ForhaandsorienteringDTO forhaandsorienteringDTO = ForhaandsorienteringDTO.builder()
+                .id("id")
+                .type(Type.SEND_FORHAANDSORIENTERING)
+                .tekst("asd")
+                .lestDato(null)
+                .build();
+
+        Response response = mockVeileder
+                .createRequest()
+                .and()
+                .param("arenaaktivitetId", arenaaktivitetId)
+                .body(forhaandsorienteringDTO)
+                .when()
+                .put(mockVeileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(ArenaAktivitetDTO.class);
+    }
+
+    private void stub_hent_arenaaktiviteter(Person.Fnr fnr, String arenaaktivitetId) {
+        stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
+                .willReturn(aResponse().withStatus(200)
+                        .withBody("""
+                                {
+                                  "tiltaksaktiviteter": [
+                                      {
+                                        "tiltaksnavn": "tiltaksnavn",
+                                        "aktivitetId": "%s",
+                                        "tiltakLokaltNavn": "lokaltnavn",
+                                        "arrangor": "arrangor",
+                                        "bedriftsnummer": "asd",
+                                        "deltakelsePeriode": {
+                                            "fom": "2021-11-18",
+                                            "tom": "2021-11-25"
+                                        },
+                                        "deltakelseProsent": 60,
+                                        "deltakerStatus": "GJENN",
+                                        "statusSistEndret": "2021-11-18",
+                                        "begrunnelseInnsoking": "asd",
+                                        "antallDagerPerUke": 3.0
+                                      }
+                                  ],
+                                  "gruppeaktiviteter": [],
+                                  "utdanningsaktiviteter": []
+                                }
+                                """.formatted(arenaaktivitetId))));
     }
 }
