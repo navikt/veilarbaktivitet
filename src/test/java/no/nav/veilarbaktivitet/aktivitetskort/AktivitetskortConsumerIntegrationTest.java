@@ -1,8 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
@@ -367,6 +364,29 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
          assertThat(aktivitet.getTiltak().tiltaksnavn()).isEqualTo(tiltaksaktivitet.getTiltaksNavn());
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+
+    }
+
+    @Test
+    public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+
+        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
+                .aktiviteter.stream()
+                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
+                .findFirst();
+        Assertions.assertTrue(aktivitet.isPresent());
+
+        Assertions.assertEquals(aktivitet.get().getStatus(), AktivitetStatus.PLANLAGT);
+        Assertions.assertEquals(aktivitet.get().getTiltak(), new TiltakDTO(
+                tiltaksaktivitet.getTiltaksNavn(),
+                tiltaksaktivitet.getArrangoernavn(),
+                tiltaksaktivitet.getDeltakelseStatus(),
+                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("dagerPerUke")),
+                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("deltakelsesprosent"))
 
     }
 

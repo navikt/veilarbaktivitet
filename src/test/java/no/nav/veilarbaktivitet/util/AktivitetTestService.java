@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
@@ -208,5 +209,9 @@ public class AktivitetTestService {
         AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
 
         return aktivitet;
+    }
+
+    public Forhaandsorientering opprettFHO() {
+
     }
 }
