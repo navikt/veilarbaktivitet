@@ -93,7 +93,7 @@ public class ArenaService {
     private Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
         return arenaAktivitetDTO -> arenaAktivitetDTO.setForhaandsorientering(forhaandsorienteringData
                 .stream()
-                .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId()))
+                .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId().id()))
                 .findAny()
                 .map(AktivitetDTOMapper::mapForhaandsorientering)
                 .orElse(null)

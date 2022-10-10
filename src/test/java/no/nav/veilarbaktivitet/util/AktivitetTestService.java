@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.util;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.restassured.response.Response;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
@@ -8,11 +7,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
-import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -27,7 +24,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
-import org.junit.Rule;
 import org.springframework.http.HttpStatus;
 
 import java.util.Date;
@@ -239,7 +235,7 @@ public class AktivitetTestService {
         Response response = mockVeileder
                 .createRequest()
                 .and()
-                .param("arenaaktivitetId", arenaaktivitetId)
+                .param("arenaaktivitetId", arenaaktivitetId.id())
                 .body(forhaandsorienteringDTO)
                 .when()
                 .put(mockVeileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
