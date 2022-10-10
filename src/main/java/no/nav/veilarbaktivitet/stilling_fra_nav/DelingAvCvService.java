@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -84,6 +85,7 @@ public class DelingAvCvService {
 
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
+
     @NotNull
     public static String utledArbeidstedtekst(List<Arbeidssted> arbeidssteder) {
 
@@ -95,6 +97,10 @@ public class DelingAvCvService {
                 arbeidssted.getLand() != null
                 && !arbeidssted.getLand().isEmpty();
 
+        Predicate<Arbeidssted> harFylke = arbeidssted ->
+                arbeidssted.getFylke() != null
+                && !arbeidssted.getFylke().isEmpty();
+
         Predicate<Arbeidssted> harLandSattTilNorge = arbeidssted ->
                 "Norge".equalsIgnoreCase(arbeidssted.getLand());
 
@@ -102,11 +108,24 @@ public class DelingAvCvService {
                 harLandSattTilNorge.or(not(harLand))
         );
 
+        Predicate<Arbeidssted> harFylkeINorge = harFylke.and(
+                harLandSattTilNorge.or(not(harLand))
+        );
+
+        Function<Arbeidssted, String> velgKommuneFylkeEllerLand = arbeidssted -> {
+            if (harKommuneINorge.test(arbeidssted)) return arbeidssted.getKommune();
+            else if (harFylkeINorge.test(arbeidssted)) return arbeidssted.getFylke();
+            else return arbeidssted.getLand();
+        };
+
         return arbeidssteder.stream()
-                .filter(harLand.or(harKommuneINorge))
-                .map(it -> harKommuneINorge.test(it) ? it.getKommune() : it.getLand())
+                .filter(harLand.or(harKommuneINorge).or(harFylkeINorge))
+                .map(velgKommuneFylkeEllerLand.andThen(DelingAvCvUtils::storForbokstavStedsnavn))
                 .collect(Collectors.joining(", "));
     }
+
+
+
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
@@ -141,4 +160,7 @@ public class DelingAvCvService {
 
         return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
     }
+
+
+
 }

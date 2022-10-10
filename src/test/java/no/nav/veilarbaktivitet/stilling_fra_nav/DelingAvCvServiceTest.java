@@ -35,6 +35,16 @@ public class DelingAvCvServiceTest {
     }
 
     @Test
+    public void utledAdresser_fylke_i_norge() {
+        Arbeidssted arbeidssted = etArbeidssted("norge", null);
+        arbeidssted.setFylke("MØRE OG rOmSdAl");
+        String result = utledArbeidstedtekst(singletonList(
+                arbeidssted
+        ));
+        Assertions.assertThat(result).isEqualTo("Møre og Romsdal");
+    }
+
+    @Test
     public void utledAdresser_norge_men_mangler_kommune() {
         Arbeidssted arbeidssted = etArbeidssted("Norge", null);
         String result = utledArbeidstedtekst(singletonList(arbeidssted));
@@ -45,7 +55,7 @@ public class DelingAvCvServiceTest {
     public void utledAdresser_er_i_utlandet_og_har_kommune() {
         Arbeidssted arbeidssted = etArbeidssted("USA", "Bergen");
         String result = utledArbeidstedtekst(singletonList(arbeidssted));
-        Assertions.assertThat(result).isEqualTo("USA");
+        Assertions.assertThat(result).isEqualTo("Usa");
     }
 
     @Test
