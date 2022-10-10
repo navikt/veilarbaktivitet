@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -64,7 +65,7 @@ public class ForhaandsorienteringDAOTest {
     @Test
     public void insertForArenaAktivitet_oppdatererAlleFelter() {
         ArenaAktivitetDTO aktivitetData = new ArenaAktivitetDTO();
-        aktivitetData.setId("arenaId");
+        aktivitetData.setId(new ArenaId("arenaId"));
         aktivitetData.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         String veileder = "V123";
 

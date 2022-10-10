@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -370,7 +371,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
         String arenaaktivitetId = "ARENA123";
-        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, arenaaktivitetId);
+        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, new ArenaId(arenaaktivitetId));
 
         UUID funksjonellId = UUID.randomUUID();
 

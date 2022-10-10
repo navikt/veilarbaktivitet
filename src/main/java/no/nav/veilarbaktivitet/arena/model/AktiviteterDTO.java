@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.arena.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -16,7 +19,9 @@ public class AktiviteterDTO {
     @Data
     public static class Tiltaksaktivitet {
         String tiltaksnavn;
-        String aktivitetId;
+        @JsonAlias({ "aktivitetId" })
+        @JsonDeserialize(using = ArenaIdDeserializer.class)
+        ArenaId id;
         String tiltakLokaltNavn;
         String arrangor;
         String bedriftsnummer;
@@ -38,7 +43,7 @@ public class AktiviteterDTO {
     @Data
     public static class Utdanningsaktivitet {
         String aktivitetstype;
-        String aktivitetId;
+        ArenaId aktivitetId;
         String beskrivelse;
         AktivitetPeriode aktivitetPeriode;
 
@@ -53,7 +58,7 @@ public class AktiviteterDTO {
     @Data
     public static class Gruppeaktivitet {
         String aktivitetstype;
-        String aktivitetId;
+        ArenaId aktivitetId;
         String beskrivelse;
         String status;
         List<Moteplan> moteplanListe;

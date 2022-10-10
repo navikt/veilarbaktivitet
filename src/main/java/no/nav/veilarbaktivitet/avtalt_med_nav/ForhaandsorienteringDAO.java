@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 import com.google.common.collect.Lists;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -54,7 +55,7 @@ public class ForhaandsorienteringDAO {
         return getById(id.toString());
     }
 
-    public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, String arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
+    public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, ArenaId arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
         // language=sql
         database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)" +
@@ -63,7 +64,7 @@ public class ForhaandsorienteringDAO {
                 aktorId.get(),
                 null,
                 null,
-                arenaAktivitetId,
+                arenaAktivitetId.id(),
                 fho.getType().name(),
                 fho.getTekst(),
                 opprettetDato,
@@ -128,10 +129,10 @@ public class ForhaandsorienteringDAO {
         }
     }
 
-    public Forhaandsorientering getFhoForArenaAktivitet(String aktivitetId) {
+    public Forhaandsorientering getFhoForArenaAktivitet(ArenaId aktivitetId) {
         try {
             return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
-                    aktivitetId);
+                    aktivitetId.id());
         } catch (EmptyResultDataAccessException e) {
             return null;
         }

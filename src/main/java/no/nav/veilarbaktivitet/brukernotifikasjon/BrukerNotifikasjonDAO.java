@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -104,10 +105,10 @@ public class BrukerNotifikasjonDAO {
 
     }
 
-    void arenaAktivitetTilBrukernotifikasjon(long brukernotifikasjonDbId, String arenaAktivitetId) {
+    void arenaAktivitetTilBrukernotifikasjon(long brukernotifikasjonDbId, ArenaId arenaAktivitetId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
-                .addValue("arena_aktivitet_id", arenaAktivitetId);
+                .addValue("arena_aktivitet_id", arenaAktivitetId.id());
 
         jdbcTemplate.update("""
                 insert into ARENA_AKTIVITET_BRUKERNOTIFIKASJON
@@ -133,9 +134,9 @@ public class BrukerNotifikasjonDAO {
             """, params);
     }
 
-    long setDone(String arenaAktivitetId, VarselType varseltype) {
+    long setDone(ArenaId arenaAktivitetId, VarselType varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("arenaAktivitetId", arenaAktivitetId)
+                .addValue("arenaAktivitetId", arenaAktivitetId.id())
                 .addValue("type", varseltype.name());
         //TODO implement avsluttet aktivitesversion?
 

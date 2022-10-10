@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -31,14 +32,11 @@ import org.springframework.http.HttpStatus;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.prefixArenaId;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
 
 
 @RequiredArgsConstructor
@@ -224,8 +222,8 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, String arenaaktivitetId) {
-        stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId);
+    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, ArenaId arenaaktivitetId) {
+        stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
 
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
@@ -244,7 +242,7 @@ public class AktivitetTestService {
                 .param("arenaaktivitetId", arenaaktivitetId)
                 .body(forhaandsorienteringDTO)
                 .when()
-                .put(mockVeileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .put(mockVeileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
