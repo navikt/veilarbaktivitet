@@ -27,6 +27,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -73,7 +74,7 @@ public class AktivitetServiceTest {
     public void opprettAktivitet() {
         val aktivitet = lagEnNyAktivitet();
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -95,7 +96,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -282,7 +283,7 @@ public class AktivitetServiceTest {
     }
 
     public void captureOpprettAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()), any(LocalDateTime.class));
     }
 
     public AktivitetData getCapturedAktivitet() {

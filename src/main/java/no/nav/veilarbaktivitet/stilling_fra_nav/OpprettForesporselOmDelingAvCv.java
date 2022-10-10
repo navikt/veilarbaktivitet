@@ -14,8 +14,10 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
@@ -66,7 +68,7 @@ public class OpprettForesporselOmDelingAvCv {
         try {
             sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
             underOppfolging = true;
-        } catch (IngenGjeldendeIdentException exception) {
+        } catch (IkkeFunnetPersonException | UgyldigIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
