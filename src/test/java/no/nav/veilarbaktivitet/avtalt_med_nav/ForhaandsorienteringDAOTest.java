@@ -80,7 +80,7 @@ public class ForhaandsorienteringDAOTest {
         assertEquals(fho.getTekst(), fhoResultat.getTekst());
         assertNull(fhoResultat.getAktivitetId());
         assertNull(fhoResultat.getAktivitetVersjon());
-        assertEquals(aktivitetData.getId(), fhoResultat.getArenaAktivitetId());
+        assertEquals(aktivitetData.getId().id(), fhoResultat.getArenaAktivitetId());
         assertEquals(veileder, fhoResultat.getOpprettetAv());
         assertNull(fhoResultat.getLestDato());
 
