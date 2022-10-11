@@ -92,6 +92,11 @@ public class AktivitetService {
 
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+        return oppdaterStatus(originalAktivitet, aktivitet, endretAv, LocalDateTime.now());
+    }
+
+    @Transactional
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv, LocalDateTime endretDato) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -105,7 +110,7 @@ public class AktivitetService {
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
-        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet, endretDato);
     }
 
     public AktivitetData avsluttStillingFraNav(AktivitetData originalAktivitet, Person endretAv) {
@@ -210,7 +215,8 @@ public class AktivitetService {
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
 
-    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+    // TODO i fremtiden: hvis endretDato ligger i "aktivitet", bruk det, hvis ikke, LocalDateTime.now() i DAO
+    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv, LocalDateTime endretDato) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
         val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
 
@@ -235,9 +241,14 @@ public class AktivitetService {
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
                 .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
-                .build());
+                .build(),
+                endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
         return result;
+    }
+
+    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+        return oppdaterAktivitet(originalAktivitet, aktivitet, endretAv, LocalDateTime.now());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {

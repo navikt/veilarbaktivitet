@@ -8,7 +8,6 @@ import no.nav.common.json.JsonMapper;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;

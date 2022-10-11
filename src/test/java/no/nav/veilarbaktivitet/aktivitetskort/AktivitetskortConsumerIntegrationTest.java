@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -26,11 +27,14 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+
+import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
 import org.springframework.test.context.junit4.SpringRunner;
 import shaded.com.google.common.collect.Streams;
 
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -154,13 +158,13 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate));
 
-        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-                .aktiviteter.stream()
-                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst();
-        Assertions.assertTrue(aktivitet.isPresent());
-        Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.get().getStatus());
-        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.get().getTransaksjonsType());
+        AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
+
+        Assertions.assertNotNull(aktivitet);
+        assertThat(tiltaksaktivitet.endretDato).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
+        Assertions.assertEquals(tiltaksaktivitet.endretAv.ident(), aktivitet.getEndretAv());
+        Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
+        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
     }
 
     @Test
@@ -382,17 +386,11 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
                 .aktiviteter.stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst();
-        Assertions.assertTrue(aktivitet.isPresent());
+                .findFirst()
+                .get();
 
-        Assertions.assertEquals(aktivitet.get().getStatus(), AktivitetStatus.PLANLAGT);
-        Assertions.assertEquals(aktivitet.get().getTiltak(), new TiltakDTO(
-                tiltaksaktivitet.getTiltaksNavn(),
-                tiltaksaktivitet.getArrangoernavn(),
-                tiltaksaktivitet.getDeltakelseStatus(),
-                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("dagerPerUke")),
-                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("deltakelsesprosent"))
-        ));
+        Assertions.assertNotNull(aktivitet.getForhaandsorientering());
+        Assertions.assertEquals(arenaAktivitetDTO.getForhaandsorientering().getId(), aktivitet.getForhaandsorientering().getId());
 
     }
 

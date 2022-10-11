@@ -5,10 +5,13 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.UgyldigIdentException;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -26,7 +29,8 @@ public class AktivitetskortService {
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
-    private final AktivitetskortFeilDAO aktivitetskortFeilDAO;
+    private final ForhaandsorienteringDAO forhaandsorienteringDAO;
+
 
     private final PersonService personService;
 
@@ -45,7 +49,17 @@ public class AktivitetskortService {
         if (maybeAktivitet.isPresent()) {
             oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
         } else {
-            opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
+            AktivitetData opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
+            Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
+                    .ifPresent(fho -> {
+                        int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
+
+                        if (updated == 1) {
+                            aktivitetService.oppdaterAktivitet(opprettetAktivitet, opprettetAktivitet.withForhaandsorientering(fho), Person.navIdent(fho.getOpprettetAv()));
+                        }
+
+                        log.debug("La til teknisk id på FHO med id={}, tekniskId={}", fho.getId(), opprettetAktivitet.getId());
+                    });
         }
     }
 
@@ -61,7 +75,7 @@ public class AktivitetskortService {
 
     private AktivitetData oppdaterDetaljer(AktivitetData aktivitet, AktivitetData nyAktivitet) {
         if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
-            return aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, Person.navIdent(nyAktivitet.getEndretAv()));
+            return aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, Person.navIdent(nyAktivitet.getEndretAv()), DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato()));
         }
         return aktivitet;
     }
@@ -70,7 +84,8 @@ public class AktivitetskortService {
             return aktivitetService.oppdaterStatus(
                 aktivitet,
                 nyAktivitet, // TODO: Populer avbrutt-tekstfelt
-                Person.navIdent(nyAktivitet.getEndretAv())
+                Person.navIdent(nyAktivitet.getEndretAv()),
+                DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato())
             );
         } else {
             return aktivitet;
@@ -85,8 +100,8 @@ public class AktivitetskortService {
             .findFirst();
     }
 
-    private void opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
-        aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
+    private AktivitetData opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
+        return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
     }
 
     public boolean harSettMelding(UUID messageId) {

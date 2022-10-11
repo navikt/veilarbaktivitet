@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.intellij.lang.annotations.Language;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -136,6 +137,16 @@ public class ForhaandsorienteringDAO {
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
+    }
+
+    public int leggTilTekniskId(String fhoId, long aktivitetId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("fhoId", fhoId)
+                .addValue("aktivitetId", aktivitetId);
+        return database.getNamedJdbcTemplate().update("""
+                UPDATE FORHAANDSORIENTERING SET AKTIVITET_ID = :aktivitetId
+                WHERE ID = :fhoId
+                """, params);
     }
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
