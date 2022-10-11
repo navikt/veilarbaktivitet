@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -23,14 +24,11 @@ import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
-import org.springframework.test.context.junit4.SpringRunner;
 import shaded.com.google.common.collect.Streams;
 
 import java.time.*;
@@ -198,11 +196,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
 
-        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-                .aktiviteter.stream()
-                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst();
-        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get().getTransaksjonsType());
+        var aktivitet = hentAktivitet(funksjonellId);
+        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.getTransaksjonsType());
     }
 
     @Test
@@ -260,7 +255,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     private AktivitetDTO hentAktivitet(UUID funksjonellId) {
-        return aktivitetTestService.hentAktiviteterForFnr(mockBruker)
+        return aktivitetTestService.hentAktiviteterForFnr(mockBruker, veileder)
             .aktiviteter.stream()
             .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
             .findFirst().get();
@@ -375,7 +370,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
         String arenaaktivitetId = "ARENA123";
-        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, new ArenaId(arenaaktivitetId));
+        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, new ArenaId(arenaaktivitetId), veileder);
 
         UUID funksjonellId = UUID.randomUUID();
 
@@ -383,17 +378,17 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .withEksternReferanseId("123");
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
-        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-                .aktiviteter.stream()
-                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst()
-                .get();
+        var aktivitet = hentAktivitet(funksjonellId);
 
         Assertions.assertNotNull(aktivitet.getForhaandsorientering());
-        Assertions.assertEquals(arenaAktivitetDTO.getForhaandsorientering().getId(), aktivitet.getForhaandsorientering().getId());
-
+        assertThat(aktivitet.getEndretAv()).isEqualTo(veileder.getNavIdent());
+        // Assert endreDato is now because we forhaandsorientering was created during test-run
+        assertThat(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato())).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
+        assertThat(arenaAktivitetDTO.getForhaandsorientering().getId()).isEqualTo(aktivitet.getForhaandsorientering().getId());
+        assertThat(aktivitet.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET);
     }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
+    private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
     private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);
 }

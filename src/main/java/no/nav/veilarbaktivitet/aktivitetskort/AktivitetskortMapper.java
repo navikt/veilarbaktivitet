@@ -31,6 +31,7 @@ public class AktivitetskortMapper {
                 .lagtInnAv(tiltaksaktivitetDTO.endretAv.identType().mapToInnsenderType())
                 .opprettetDato(localDateTimeToDate(opprettetDato))
                 .endretDato(localDateTimeToDate(endretDato))
+                .endretAv(tiltaksaktivitetDTO.endretAv.ident())
                 .build();
     }
 

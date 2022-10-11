@@ -25,6 +25,10 @@ public abstract class Person {
         return new NavIdent(navIdent);
     }
 
+    public static ArenaIdent arenaIdent(String arenaIdent) {
+        return new ArenaIdent(arenaIdent);
+    }
+
     public boolean erEkstern() {
         return this instanceof AktorId || this instanceof Fnr;
     }
@@ -63,5 +67,9 @@ public abstract class Person {
         private NavIdent(String id) {
             super(id);
         }
+    }
+
+    public static class ArenaIdent extends Person {
+        private ArenaIdent(String id) { super(id); }
     }
 }

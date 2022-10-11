@@ -36,31 +36,39 @@ public class AktivitetskortService {
 
     public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
-
-
         Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(tiltaksaktivitet.personIdent));
 
+        Person endretAvIdent = toPerson(tiltaksaktivitet.getEndretAv());
         var aktivitetData = maybeAktivitet
                 .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
                 .orElse(AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, tiltaksaktivitet.endretDato, tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()));
 
-        Person.NavIdent endretAvIdent = Person.navIdent(aktivitetData.getEndretAv());
-
         if (maybeAktivitet.isPresent()) {
             oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
         } else {
-            AktivitetData opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
+            var opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
+
             Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
                     .ifPresent(fho -> {
                         int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
-
-                        if (updated == 1) {
-                            aktivitetService.oppdaterAktivitet(opprettetAktivitet, opprettetAktivitet.withForhaandsorientering(fho), Person.navIdent(fho.getOpprettetAv()));
-                        }
-
+                        if (updated == 0) return;
+                        aktivitetService.oppdaterAktivitet(
+                                opprettetAktivitet,
+                                opprettetAktivitet.withForhaandsorientering(fho),
+                                Person.navIdent(fho.getOpprettetAv()),
+                                DateUtils.dateToLocalDateTime(fho.getOpprettetDato())
+                        );
                         log.debug("La til teknisk id på FHO med id={}, tekniskId={}", fho.getId(), opprettetAktivitet.getId());
                     });
         }
+    }
+
+    private Person toPerson(IdentDTO ident) {
+        return switch (ident.identType()) {
+            case NAVIDENT -> Person.navIdent(ident.ident());
+            case PERSONBRUKERIDENT -> Person.fnr(ident.ident());
+            case ARENAIDENT -> Person.arenaIdent(ident.ident());
+        };
     }
 
     private Person.AktorId hentAktorId(Person.Fnr fnr) throws UgyldigIdentFeil {
@@ -84,7 +92,7 @@ public class AktivitetskortService {
             return aktivitetService.oppdaterStatus(
                 aktivitet,
                 nyAktivitet, // TODO: Populer avbrutt-tekstfelt
-                Person.navIdent(nyAktivitet.getEndretAv()),
+                Person.arenaIdent(nyAktivitet.getEndretAv()),
                 DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato())
             );
         } else {

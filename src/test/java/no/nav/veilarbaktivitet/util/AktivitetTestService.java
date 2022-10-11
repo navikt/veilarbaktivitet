@@ -218,11 +218,8 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, ArenaId arenaaktivitetId) {
+    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
         stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
-
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
-
         System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
 
         ForhaandsorienteringDTO forhaandsorienteringDTO = ForhaandsorienteringDTO.builder()
@@ -232,13 +229,13 @@ public class AktivitetTestService {
                 .lestDato(null)
                 .build();
 
-        Response response = mockVeileder
+        Response response = veileder
                 .createRequest()
                 .and()
                 .param("arenaaktivitetId", arenaaktivitetId.id())
                 .body(forhaandsorienteringDTO)
                 .when()
-                .put(mockVeileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .put(veileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

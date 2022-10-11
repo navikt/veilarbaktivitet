@@ -241,6 +241,7 @@ public class AktivitetService {
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
                 .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
+                .forhaandsorientering(aktivitet.getForhaandsorientering())
                 .build(),
                 endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
