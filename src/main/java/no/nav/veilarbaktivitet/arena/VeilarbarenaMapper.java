@@ -93,7 +93,7 @@ public class VeilarbarenaMapper {
 
     private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet) {
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
-                .setId(tiltaksaktivitet.getId())
+                .setId(tiltaksaktivitet.getAktivitetId())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))

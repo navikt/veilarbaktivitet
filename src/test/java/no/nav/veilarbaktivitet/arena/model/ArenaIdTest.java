@@ -5,8 +5,6 @@ import org.assertj.core.api.Assertions;
 import org.intellij.lang.annotations.Language;
 import org.junit.Test;
 
-import java.util.Date;
-
 public class ArenaIdTest {
 
     @Test
@@ -32,7 +30,7 @@ public class ArenaIdTest {
           }
         """;
         var tiltak = JsonUtils.fromJson(json, AktiviteterDTO.Tiltaksaktivitet.class);
-        Assertions.assertThat(tiltak.getId().id()).isEqualTo("ARENA123123");
+        Assertions.assertThat(tiltak.getAktivitetId().id()).isEqualTo("ARENA123123");
     }
 
     @Test
@@ -40,7 +38,7 @@ public class ArenaIdTest {
         var akt=  new AktiviteterDTO.Tiltaksaktivitet()
                 .setDeltakerStatus("GJENN")
                 .setTiltaksnavn("asdas")
-                .setId(new ArenaId("asd"));
+                .setAktivitetId(new ArenaId("asd"));
         var json = JsonUtils.toJson(akt);
         Assertions.assertThat(json).isEqualTo("""
                 {"tiltaksnavn":"asdas","id":"ARENAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}

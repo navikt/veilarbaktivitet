@@ -214,7 +214,7 @@ public class ArenaControllerTest {
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
-                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getId()));
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getAktivitetId()));
     }
 
     @Test
@@ -279,7 +279,7 @@ public class ArenaControllerTest {
 
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO().setTiltaksaktiviteter(List.of(new AktiviteterDTO.Tiltaksaktivitet()
-                        .setId(new ArenaId(getRandomString()))
+                        .setAktivitetId(new ArenaId(getRandomString()))
                 ))));
 
 
@@ -303,7 +303,7 @@ public class ArenaControllerTest {
     public void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
         AktiviteterDTO.Gruppeaktivitet medFho = new AktiviteterDTO.Gruppeaktivitet().setAktivitetId(new ArenaId(getRandomString()));
 
-        AktiviteterDTO.Tiltaksaktivitet utenFho = new AktiviteterDTO.Tiltaksaktivitet().setId(new ArenaId(getRandomString()));
+        AktiviteterDTO.Tiltaksaktivitet utenFho = new AktiviteterDTO.Tiltaksaktivitet().setAktivitetId(new ArenaId(getRandomString()));
 
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()
@@ -323,7 +323,7 @@ public class ArenaControllerTest {
         return new AktiviteterDTO.Tiltaksaktivitet()
                 .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
                 .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
-                .setId(new ArenaId(getRandomString()));
+                .setAktivitetId(new ArenaId(getRandomString()));
     }
 
     private AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {

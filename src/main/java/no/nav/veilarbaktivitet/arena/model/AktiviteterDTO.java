@@ -17,8 +17,7 @@ public class AktiviteterDTO {
     @Data
     public static class Tiltaksaktivitet {
         String tiltaksnavn;
-        @JsonAlias({ "aktivitetId" })
-        ArenaId id;
+        ArenaId aktivitetId;
         String tiltakLokaltNavn;
         String arrangor;
         String bedriftsnummer;
