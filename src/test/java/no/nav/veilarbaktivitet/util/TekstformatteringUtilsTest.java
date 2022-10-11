@@ -1,16 +1,16 @@
-package no.nav.veilarbaktivitet.stilling_fra_nav;
+package no.nav.veilarbaktivitet.util;
 
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvUtils.storForbokstavStedsnavn;
+import static no.nav.veilarbaktivitet.util.TekstformatteringUtils.storeForbokstaverStedsnavn;
 
-public class DelingAvCvUtilsTest {
+public class TekstformatteringUtilsTest {
     // NORDRE LAND skal bli Nordre Land
     @Test
     public void storForbokstav_nordre_land() {
         Assertions.assertThat(
-                storForbokstavStedsnavn("NORDRE LAND")
+                storeForbokstaverStedsnavn("NORDRE LAND")
         ).isEqualTo("Nordre Land");
     }
 
@@ -18,7 +18,7 @@ public class DelingAvCvUtilsTest {
     @Test
     public void storForbokstav_aust_bindestrek_agder() {
         Assertions.assertThat(
-                storForbokstavStedsnavn("AUST-AGDER")
+                storeForbokstaverStedsnavn("AUST-AGDER")
         ).isEqualTo("Aust-Agder");
     }
 
@@ -26,7 +26,7 @@ public class DelingAvCvUtilsTest {
     @Test
     public void storForbokstav_parentes() {
         Assertions.assertThat(
-                storForbokstavStedsnavn("BØ (TELEMARK)")
+                storeForbokstaverStedsnavn("BØ (TELEMARK)")
         ).isEqualTo("Bø (Telemark)");
     }
 
@@ -34,7 +34,7 @@ public class DelingAvCvUtilsTest {
     @Test
     public void storForbokstav_i() {
         Assertions.assertThat(
-                storForbokstavStedsnavn("MO I RANA")
+                storeForbokstaverStedsnavn("MO I RANA")
         ).isEqualTo("Mo i Rana");
     }
 
@@ -42,7 +42,7 @@ public class DelingAvCvUtilsTest {
     @Test
     public void storForbokstav_liten_og() {
         Assertions.assertThat(
-                storForbokstavStedsnavn("MØRE OG ROMSDAL")
+                storeForbokstaverStedsnavn("MØRE OG ROMSDAL")
         ).isEqualTo("Møre og Romsdal");
     }
 }

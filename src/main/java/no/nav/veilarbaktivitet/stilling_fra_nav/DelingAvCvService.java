@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
+import no.nav.veilarbaktivitet.util.TekstformatteringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
@@ -120,7 +121,7 @@ public class DelingAvCvService {
 
         return arbeidssteder.stream()
                 .filter(harLand.or(harKommuneINorge).or(harFylkeINorge))
-                .map(velgKommuneFylkeEllerLand.andThen(DelingAvCvUtils::storForbokstavStedsnavn))
+                .map(velgKommuneFylkeEllerLand.andThen(TekstformatteringUtils::storeForbokstaverStedsnavn))
                 .collect(Collectors.joining(", "));
     }
 
