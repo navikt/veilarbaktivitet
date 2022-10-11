@@ -10,6 +10,10 @@ import java.io.IOException;
 
 import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ARENA_PREFIX;
 
+/*
+* This class wraps a single string-field to a more type-safe ArenaId
+* Will serialize to a single value, not a json-object with a field named "id"
+* */
 @EqualsAndHashCode
 public class ArenaId extends JsonSerializable.Base {
     private final String id;
