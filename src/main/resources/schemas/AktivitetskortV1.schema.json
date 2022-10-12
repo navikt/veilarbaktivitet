@@ -147,10 +147,23 @@
           "type": "string",
           "description": "Ved avbrudd i aktiviteten, kan det legges til en begrunnelse for avbrytelsen."
         },
-        "oppgave" : {
-          "$ref": "#/definitions/oppgave"
+        "oppgave": {
+          "type": "object",
+          "properties": {
+            "ekstern": {
+              "$ref": "#/definitions/oppgavelenke"
+            },
+            "intern": {
+              "$ref": "#/definitions/oppgavelenke"
+            }
+          }
         },
-
+        "handlinger": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/oppgavelenke"
+          }
+        },
         "detaljer": {
           "type": "object",
           "additionalProperties": { "type": "string" },
@@ -161,21 +174,57 @@
               "dagerPerUke": "5"
             }
           ]
+        },
+        "etiketter": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["A", "B", "C"]
+          },
+          "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
+      }
+    },
+    "oppgavelenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "path": {
+          "type": "string"
         }
       }
     },
-    "oppgave": {
+    "handlinglenke": {
       "type": "object",
       "properties": {
-        "ekstern" : {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
           "type": "object",
-          "properties": {
-
-          }
+          "additionalProperties": { "type": "string" }
+        },
+        "path": {
+          "type": "string"
+        },
+        "lenkeType": {
+          "type": "string",
+          "enum": [
+            "EKSTERN","INTERN","FELLES"
+          ]
         }
       }
-
-
     }
   },
   "examples": [
