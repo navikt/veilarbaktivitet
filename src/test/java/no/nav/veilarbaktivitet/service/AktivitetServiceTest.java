@@ -119,7 +119,7 @@ public class AktivitetServiceTest {
                 .build();
         aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
@@ -140,7 +140,7 @@ public class AktivitetServiceTest {
                 .build();
 
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
 
@@ -231,7 +231,7 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
@@ -255,11 +255,11 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
 
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }
 
@@ -279,7 +279,11 @@ public class AktivitetServiceTest {
     }
 
     public void captureOppdaterAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture());
+    }
+
+    public void captureOppdaterAktivitetWithDateArgument() {
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture(), any(LocalDateTime.class));
     }
 
     public void captureOpprettAktivitetArgument() {
