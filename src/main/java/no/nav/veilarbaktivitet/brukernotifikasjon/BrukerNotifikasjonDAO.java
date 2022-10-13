@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -13,8 +12,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.net.URL;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,10 +23,10 @@ public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public void aktivitetTilBrukernotifikasjon(//TODO refactor to object
-            long brukernotifikasjonDbId,
-            long aktivitetId,
-            long aktitetVersion
+    public void kobleAktivitetIdTilBrukernotifikasjon(//TODO refactor to object
+                                                      long brukernotifikasjonDbId,
+                                                      long aktivitetId,
+                                                      long aktitetVersion
     ) {
 
         SqlParameterSource params = new MapSqlParameterSource()
@@ -109,7 +106,7 @@ public class BrukerNotifikasjonDAO {
 
     }
 
-    void arenaAktivitetTilBrukernotifikasjon(long brukernotifikasjonDbId, ArenaId arenaAktivitetId) {
+    void kobleArenaAktivitetIdTilBrukernotifikasjon(long brukernotifikasjonDbId, ArenaId arenaAktivitetId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
                 .addValue("arena_aktivitet_id", arenaAktivitetId.id());
@@ -186,6 +183,7 @@ public class BrukerNotifikasjonDAO {
             log.error("Flere brukernotifikasjoner for arena-aktivitetid {}", arenaId.id());
 
         }
-        aktivitetTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon);
+        brukernotifikasjonIds
+            .forEach((brukernotifikasjonId) -> kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon));
     }
 }

@@ -116,7 +116,7 @@ public class BrukernotifikasjonService {
         URL aktivtetUrl = createAktivitetLink(aktivitetId + "");
 
         long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
-        dao.aktivitetTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktitetVersion);
+        dao.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktitetVersion);
 
         return uuid;
 
@@ -162,7 +162,7 @@ public class BrukernotifikasjonService {
         URL aktivtetUrl = createAktivitetLink(arenaAktivitetId.id());
 
         long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
-        dao.arenaAktivitetTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetId);
+        dao.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetId);
 
         return uuid;
 
