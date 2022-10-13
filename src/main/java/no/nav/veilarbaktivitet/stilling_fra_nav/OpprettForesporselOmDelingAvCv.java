@@ -15,7 +15,6 @@ import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeExc
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,8 +25,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
 
 @Slf4j
 @Service
@@ -111,11 +110,7 @@ public class OpprettForesporselOmDelingAvCv {
         String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
 
-        List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
-        String arbeidsted = arbeidssteder
-                .stream()
-                .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
-                .collect(Collectors.joining(", "));
+        String arbeidsted = utledArbeidstedtekst(melding.getArbeidssteder());
 
         KontaktpersonData kontaktpersonData = getKontaktInfo(melding.getKontaktInfo());
 
