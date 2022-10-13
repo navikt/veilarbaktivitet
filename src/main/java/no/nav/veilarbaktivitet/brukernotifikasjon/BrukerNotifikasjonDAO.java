@@ -164,4 +164,21 @@ public class BrukerNotifikasjonDAO {
                         """,
                 params);
     }
+
+    public int updateAktivitetId(long aktivitetId, ArenaId arenaId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("arenaId", arenaId.id())
+                .addValue("aktivitetId", aktivitetId);
+        return jdbcTemplate.update("""
+                UPDATE BRUKERNOTIFIKASJON BN
+                SET AKTIVITET_ID = :aktivitetId
+                WHERE EXISTS(
+                    SELECT 1
+                    FROM ARENA_AKTIVITET_BRUKERNOTIFIKASJON
+                    WHERE BN.BRUKERNOTIFIKASJON_ID = ARENA_AKTIVITET_BRUKERNOTIFIKASJON.BRUKERNOTIFIKASJON_ID
+                        AND ARENA_AKTIVITET_ID = :arenaId
+                )
+            """,
+            params);
+    }
 }

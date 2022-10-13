@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon;
 
-import lombok.Getter;
 import lombok.SneakyThrows;
 import no.nav.brukernotifikasjon.schemas.input.BeskjedInput;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
@@ -48,7 +47,7 @@ public class BrukernotifikasjonAsserts {
         this.config = config;
     }
 
-    public ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
+    public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
         config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
 
@@ -85,7 +84,7 @@ public class BrukernotifikasjonAsserts {
     }
 
 
-    public ConsumerRecord<NokkelInput, DoneInput> stoppet(NokkelInput eventNokkel) {
+    public ConsumerRecord<NokkelInput, DoneInput> assertDone(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 10000);

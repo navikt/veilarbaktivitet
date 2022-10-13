@@ -11,9 +11,9 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
 import no.nav.veilarbaktivitet.person.Person;
@@ -218,7 +218,7 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public ArenaAktivitetDTO opprettFHO(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
+    public ArenaAktivitetDTO opprettFHOForArenaAktivitet(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
         stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
         System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
 
@@ -270,5 +270,22 @@ public class AktivitetTestService {
                                   "utdanningsaktiviteter": []
                                 }
                                 """.formatted(arenaaktivitetId))));
+    }
+
+    public AktivitetDTO lesFHO(MockBruker mockBruker, long aktivitetsId, long versjon) {
+        Response response = mockBruker
+                .createRequest()
+                .and()
+                .body(JsonUtils.toJson(new LestDTO(
+                    aktivitetsId,
+                    versjon
+                )))
+                .when()
+                .put(mockBruker.getUrl("/veilarbaktivitet/api/avtaltMedNav/lest", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(AktivitetDTO.class);
     }
 }

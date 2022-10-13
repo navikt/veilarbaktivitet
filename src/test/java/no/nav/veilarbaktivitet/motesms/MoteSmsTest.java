@@ -219,7 +219,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
 
     private void harAvsluttetVarsel(ConsumerRecord<NokkelInput, BeskjedInput> varsel) {
-        brukernotifikasjonAsserts.stoppet(varsel.key());
+        brukernotifikasjonAsserts.assertDone(varsel.key());
     }
 
     private void moteSmsCronjobber() {

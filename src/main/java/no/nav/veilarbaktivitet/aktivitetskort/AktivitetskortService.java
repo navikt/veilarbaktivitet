@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
@@ -30,6 +31,7 @@ public class AktivitetskortService {
     private final AktivitetDAO aktivitetDAO;
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
     private final ForhaandsorienteringDAO forhaandsorienteringDAO;
+    private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
 
 
     private final PersonService personService;
@@ -60,6 +62,9 @@ public class AktivitetskortService {
                         );
                         log.debug("La til teknisk id på FHO med id={}, tekniskId={}", fho.getId(), opprettetAktivitet.getId());
                     });
+
+            // oppdater alle brukernotifikasjoner med aktivitet arena-ider
+            brukerNotifikasjonDAO.updateAktivitetId(aktivitetData.getId(), new ArenaId(tiltaksaktivitet.eksternReferanseId));
         }
     }
 

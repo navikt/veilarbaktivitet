@@ -9,6 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -65,11 +68,15 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Value("${topic.ut.aktivitetskort-feil}")
     String aktivitetskortFeilTopic;
 
+    @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
     Consumer<String, String> aktivitetskortFeilConsumer;
 
     @Before
     public void cleanupBetweenTests() {
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
     TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
@@ -370,7 +377,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
         String arenaaktivitetId = "ARENA123";
-        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHO(mockBruker, new ArenaId(arenaaktivitetId), veileder);
+        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, new ArenaId(arenaaktivitetId), veileder);
 
         UUID funksjonellId = UUID.randomUUID();
 
@@ -386,6 +393,28 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato())).isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS));
         assertThat(arenaAktivitetDTO.getForhaandsorientering().getId()).isEqualTo(aktivitet.getForhaandsorientering().getId());
         assertThat(aktivitet.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET);
+    }
+
+    @Autowired
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
+
+    @Test
+    public void new_aktivitet_() {
+        // Det finnes en arenaaktivtiet fra før
+        String arenaaktivitetId = "123";
+        // Opprett FHO på aktivitet
+        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, new ArenaId(arenaaktivitetId), veileder);
+        var record = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), null);
+        // Migrer arenaaktivitet via topic
+        UUID funksjonellId = UUID.randomUUID();
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+            .withEksternReferanseId(arenaaktivitetId);
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        // Bruker leser fho (POST på /lest)
+        var aktivitet = hentAktivitet(funksjonellId);
+        aktivitetTestService.lesFHO(mockBruker, Long.parseLong(aktivitet.getId()), Long.parseLong(aktivitet.getVersjon()));
+        // Skal dukke opp Done melding på brukernotifikasjons-topic
+        brukernotifikasjonAsserts.assertDone(record.key());
     }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
