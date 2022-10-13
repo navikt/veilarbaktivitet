@@ -36,7 +36,7 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
+    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet, boolean erArenaAktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
         Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(tiltaksaktivitet.personIdent));
 
@@ -50,22 +50,28 @@ public class AktivitetskortService {
         } else {
             var opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
 
-            Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
-                    .ifPresent(fho -> {
-                        int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
-                        if (updated == 0) return;
-                        aktivitetService.oppdaterAktivitet(
-                                opprettetAktivitet,
-                                opprettetAktivitet.withForhaandsorientering(fho),
-                                Person.navIdent(fho.getOpprettetAv()),
-                                DateUtils.dateToLocalDateTime(fho.getOpprettetDato())
-                        );
-                        log.debug("La til teknisk id på FHO med id={}, tekniskId={}", fho.getId(), opprettetAktivitet.getId());
-                    });
-
-            // oppdater alle brukernotifikasjoner med aktivitet arena-ider
-            brukerNotifikasjonDAO.updateAktivitetId(aktivitetData.getId(), new ArenaId(tiltaksaktivitet.eksternReferanseId));
+            if (erArenaAktivitet) {
+                arenaspesifikkMigrering(tiltaksaktivitet, opprettetAktivitet);
+            }
         }
+    }
+
+    private void arenaspesifikkMigrering(TiltaksaktivitetDTO tiltaksaktivitet, AktivitetData opprettetAktivitet) {
+        Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
+                .ifPresent(fho -> {
+                    int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
+                    if (updated == 0) return;
+                    aktivitetService.oppdaterAktivitet(
+                            opprettetAktivitet,
+                            opprettetAktivitet.withForhaandsorientering(fho),
+                            Person.navIdent(fho.getOpprettetAv()),
+                            DateUtils.dateToLocalDateTime(fho.getOpprettetDato())
+                    );
+                    log.debug("La til teknisk id på FHO med id={}, tekniskId={}", fho.getId(), opprettetAktivitet.getId());
+                });
+
+        // oppdater alle brukernotifikasjoner med aktivitet arena-ider
+        brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(opprettetAktivitet.getId(), opprettetAktivitet.getVersjon(), new ArenaId(tiltaksaktivitet.eksternReferanseId));
     }
 
     private Person toPerson(IdentDTO ident) {

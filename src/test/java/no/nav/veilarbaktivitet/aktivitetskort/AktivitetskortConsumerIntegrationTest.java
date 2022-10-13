@@ -399,7 +399,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     @Test
-    public void new_aktivitet_() {
+    public void skal_migrere_eksisterende_forhaandorientering() {
         // Det finnes en arenaaktivtiet fra før
         String arenaaktivitetId = "123";
         // Opprett FHO på aktivitet

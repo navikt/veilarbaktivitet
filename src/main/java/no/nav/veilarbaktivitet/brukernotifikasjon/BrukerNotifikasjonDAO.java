@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -12,6 +13,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,9 +60,9 @@ public class BrukerNotifikasjonDAO {
                 .addValue("aktivitet_id", aktivitetsId)
                 .addValue("type", varselType.name());
         String sql = """
-            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
-            WHERE AKTIVITET_ID = :aktivitet_id
-            AND TYPE = :type
+            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON BN JOIN AKTIVITET_BRUKERNOTIFIKASJON AB on BN.ID = AB.BRUKERNOTIFIKASJON_ID
+            WHERE AB.AKTIVITET_ID = :aktivitet_id
+            AND BN.TYPE = :type
         """;
         int antall = jdbcTemplate.queryForObject(sql, params, int.class);
         return antall > 0;
@@ -165,20 +169,23 @@ public class BrukerNotifikasjonDAO {
                 params);
     }
 
-    public int updateAktivitetId(long aktivitetId, ArenaId arenaId) {
+    public void updateAktivitetIdForArenaBrukernotifikasjon(long aktivitetId, long aktivitetVersjon, ArenaId arenaId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("arenaId", arenaId.id())
-                .addValue("aktivitetId", aktivitetId);
-        return jdbcTemplate.update("""
-                UPDATE BRUKERNOTIFIKASJON BN
-                SET AKTIVITET_ID = :aktivitetId
-                WHERE EXISTS(
-                    SELECT 1
-                    FROM ARENA_AKTIVITET_BRUKERNOTIFIKASJON
-                    WHERE BN.BRUKERNOTIFIKASJON_ID = ARENA_AKTIVITET_BRUKERNOTIFIKASJON.BRUKERNOTIFIKASJON_ID
-                        AND ARENA_AKTIVITET_ID = :arenaId
-                )
-            """,
-            params);
+                .addValue("arenaId", arenaId.id());
+        List<Long> brukernotifikasjonIds = jdbcTemplate.query("""
+                            SELECT BRUKERNOTIFIKASJON_ID FROM ARENA_AKTIVITET_BRUKERNOTIFIKASJON
+                            WHERE ARENA_AKTIVITET_ID = :arenaId
+                        """,
+                params, (rs, rowNum) -> rs.getLong("BRUKERNOTIFIKASJON_ID"));
+
+
+
+        if(brukernotifikasjonIds.size() == 0) {
+            return;
+        } else if (brukernotifikasjonIds.size() > 1) {
+            log.error("Flere brukernotifikasjoner for arena-aktivitetid {}", arenaId.id());
+
+        }
+        aktivitetTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon);
     }
 }

@@ -66,10 +66,10 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> record) throws AktivitetsKortFunksjonellException {
         var melding = deserialiser(record);
         ignorerHvisSettFør(melding);
-
+        boolean erArenaAktivitet = "ARENA_TILTAK_AKTIVITET_ACL".equals(melding.source);
         MDC.put(MetricService.SOURCE, melding.source);
         if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
-            aktivitetskortService.upsertAktivitetskort(aktivitet.payload);
+            aktivitetskortService.upsertAktivitetskort(aktivitet.payload, erArenaAktivitet);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
