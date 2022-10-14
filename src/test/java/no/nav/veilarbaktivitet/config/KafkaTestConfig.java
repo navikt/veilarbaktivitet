@@ -143,7 +143,7 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties aivenProducerProperties(@Value("app.kafka.producer-client-id") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
+    Properties aivenProducerProperties(@Value("${app.kafka.producer-client-id}") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
                 .withProducerId(producerClientId)

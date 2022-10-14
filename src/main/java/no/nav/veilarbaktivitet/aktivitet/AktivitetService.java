@@ -242,7 +242,7 @@ public class AktivitetService {
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
                 .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
-                .fhoId(originalAktivitet.getFhoId()) // Tilltater ikke å endre fhoId her
+                .fhoId(originalAktivitet.getFhoId() != null ? originalAktivitet.getFhoId() : aktivitet.getFhoId()) // Tilltater ikke å endre fhoId her
                 .build(),
                 endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());

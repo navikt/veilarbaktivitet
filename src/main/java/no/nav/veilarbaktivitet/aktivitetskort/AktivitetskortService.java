@@ -46,10 +46,11 @@ public class AktivitetskortService {
                 .orElse(AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, tiltaksaktivitet.endretDato, tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()));
 
         if (maybeAktivitet.isPresent()) {
-            oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
+            var oppdatertAktivitet = oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
+            log.info("Oppdaterte eksternt aktivitetskort {}", oppdatertAktivitet);
         } else {
             var opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
-
+            log.info("Opprettet eksternt aktivitetskort {}", opprettetAktivitet);
             if (erArenaAktivitet) {
                 arenaspesifikkMigrering(tiltaksaktivitet, opprettetAktivitet);
             }
@@ -63,7 +64,7 @@ public class AktivitetskortService {
                     if (updated == 0) return;
                     aktivitetService.oppdaterAktivitet(
                             opprettetAktivitet,
-                            opprettetAktivitet.withForhaandsorientering(fho),
+                            opprettetAktivitet.withFhoId(fho.getId()),
                             Person.navIdent(fho.getOpprettetAv()),
                             DateUtils.dateToLocalDateTime(fho.getOpprettetDato())
                     );
@@ -111,12 +112,12 @@ public class AktivitetskortService {
         }
     }
 
-    private void oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
+    private AktivitetData oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
         if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
-        Stream.of(gammelAktivitet)
-            .map((aktivitet) -> oppdaterDetaljer(aktivitet, nyAktivitet))
-            .map((aktivitet) -> oppdaterStatus(aktivitet, nyAktivitet))
-            .findFirst();
+        return Stream.of(gammelAktivitet)
+            .map( (aktivitet) -> oppdaterDetaljer(aktivitet, nyAktivitet))
+            .map( (aktivitet) -> oppdaterStatus(aktivitet, nyAktivitet))
+            .findFirst().get();
     }
 
     private AktivitetData opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
