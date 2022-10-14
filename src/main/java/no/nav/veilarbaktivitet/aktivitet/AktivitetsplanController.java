@@ -39,7 +39,7 @@ public class AktivitetsplanController {
                 .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                .collect(Collectors.toList());
+                .toList();
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);
     }
@@ -61,7 +61,7 @@ public class AktivitetsplanController {
                 .map(aktivitetList -> aktivitetList
                         .stream()
                         .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                        .collect(Collectors.toList())
+                        .toList()
                 ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
