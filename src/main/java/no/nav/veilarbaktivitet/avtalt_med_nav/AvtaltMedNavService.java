@@ -62,6 +62,7 @@ public class AvtaltMedNavService {
         return aktivitetDAO.hentAktivitet(aktivitetId);
     }
 
+    @Transactional
     public AktivitetDTO opprettFHO(AvtaltMedNavDTO avtaltDTO, long aktivitetId, Person.AktorId aktorId, NavIdent ident) {
         var fhoDTO = avtaltDTO.getForhaandsorientering();
         Date now = new Date();

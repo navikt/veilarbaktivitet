@@ -117,12 +117,10 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
     }
 
-    @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         return oppdaterAktivitet(aktivitet, LocalDateTime.now());
     }
 
-    @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, LocalDateTime endretDato) {
         long aktivitetId = aktivitet.getId();
 

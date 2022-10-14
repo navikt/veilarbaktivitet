@@ -63,6 +63,7 @@ public class AktivitetAppService {
                 .toList();
     }
 
+    @Transactional
     public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
         if (authService.erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
             AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());
