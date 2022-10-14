@@ -4,6 +4,9 @@ import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -11,7 +14,7 @@ import java.util.GregorianCalendar;
 import static java.util.Optional.ofNullable;
 
 public class DateUtils {
-
+    private DateUtils() {}
 
     private static final DatatypeFactory datatypeFactory = getDatatypeFactory();
 
@@ -70,6 +73,7 @@ public class DateUtils {
         if (date == null) return null;
         return date.toInstant().atOffset(ZoneOffset.UTC);
     }
+
     public static LocalDate toLocalDate(Date date) {
         if (date == null) return null;
         return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
@@ -84,5 +88,13 @@ public class DateUtils {
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-
+    public static Date toJavaUtilDate(String isoDato) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+        String datoMedKlokkeslett = isoDato+"T12:08:56.235+0200";
+        try {
+            return dateFormat.parse(datoMedKlokkeslett);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
 }

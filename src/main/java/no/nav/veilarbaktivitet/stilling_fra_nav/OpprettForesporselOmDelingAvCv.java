@@ -30,8 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
 
 @Slf4j
 @Service
@@ -117,11 +117,7 @@ public class OpprettForesporselOmDelingAvCv {
         String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
 
-        List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
-        String arbeidsted = arbeidssteder
-                .stream()
-                .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
-                .collect(Collectors.joining(", "));
+        String arbeidsted = utledArbeidstedtekst(melding.getArbeidssteder());
 
         KontaktpersonData kontaktpersonData = getKontaktInfo(melding.getKontaktInfo());
 

@@ -12,11 +12,20 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
+import no.nav.veilarbaktivitet.util.TekstformatteringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+import static java.util.function.Predicate.not;
 
 @Service
 @EnableScheduling
@@ -78,6 +87,46 @@ public class DelingAvCvService {
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
+    @NotNull
+    public static String utledArbeidstedtekst(List<Arbeidssted> arbeidssteder) {
+
+        Predicate<Arbeidssted> harKommune = arbeidssted ->
+                arbeidssted.getKommune() != null
+                && !arbeidssted.getKommune().isEmpty();
+
+        Predicate<Arbeidssted> harLand = arbeidssted ->
+                arbeidssted.getLand() != null
+                && !arbeidssted.getLand().isEmpty();
+
+        Predicate<Arbeidssted> harFylke = arbeidssted ->
+                arbeidssted.getFylke() != null
+                && !arbeidssted.getFylke().isEmpty();
+
+        Predicate<Arbeidssted> harLandSattTilNorge = arbeidssted ->
+                "Norge".equalsIgnoreCase(arbeidssted.getLand());
+
+        Predicate<Arbeidssted> harKommuneINorge = harKommune.and(
+                harLandSattTilNorge.or(not(harLand))
+        );
+
+        Predicate<Arbeidssted> harFylkeINorge = harFylke.and(
+                harLandSattTilNorge.or(not(harLand))
+        );
+
+        Function<Arbeidssted, String> velgKommuneFylkeEllerLand = arbeidssted -> {
+            if (harKommuneINorge.test(arbeidssted)) return arbeidssted.getKommune();
+            else if (harFylkeINorge.test(arbeidssted)) return arbeidssted.getFylke();
+            else return arbeidssted.getLand();
+        };
+
+        return arbeidssteder.stream()
+                .filter(harLand.or(harKommuneINorge).or(harFylkeINorge))
+                .map(velgKommuneFylkeEllerLand.andThen(TekstformatteringUtils::storeForbokstaverStedsnavn))
+                .collect(Collectors.joining(", "));
+    }
+
+
+
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
@@ -112,4 +161,7 @@ public class DelingAvCvService {
 
         return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker);
     }
+
+
+
 }
