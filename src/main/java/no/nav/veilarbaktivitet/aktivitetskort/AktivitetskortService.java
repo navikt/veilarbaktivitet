@@ -115,9 +115,9 @@ public class AktivitetskortService {
     private AktivitetData oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
         if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
         return Stream.of(gammelAktivitet)
-            .map( (aktivitet) -> oppdaterDetaljer(aktivitet, nyAktivitet))
-            .map( (aktivitet) -> oppdaterStatus(aktivitet, nyAktivitet))
-            .findFirst().get();
+            .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
+            .map( aktivitet -> oppdaterStatus(aktivitet, nyAktivitet))
+            .findFirst().orElse(null);
     }
 
     private AktivitetData opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
