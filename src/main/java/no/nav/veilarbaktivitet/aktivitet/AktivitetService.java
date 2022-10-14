@@ -50,7 +50,8 @@ public class AktivitetService {
         var fho = avtaltMedNavService.hentFHO(aktivitet.getFhoId());
 
         return aktivitet
-                .withForhaandsorientering(fho);
+                .withForhaandsorientering(fho)
+                .withFhoId(fho == null ? null : fho.getId());
     }
 
     public AktivitetData hentAktivitetMedFHOForVersion(long version) {
@@ -241,7 +242,7 @@ public class AktivitetService {
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
                 .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
-                .forhaandsorientering(aktivitet.getForhaandsorientering())
+                .fhoId(originalAktivitet.getFhoId()) // Tilltater ikke å endre fhoId her
                 .build(),
                 endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());

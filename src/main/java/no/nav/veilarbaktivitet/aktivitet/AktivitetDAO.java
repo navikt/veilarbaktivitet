@@ -150,9 +150,6 @@ public class AktivitetDAO {
     }
 
     private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon, LocalDateTime endretDato) {
-        final String fhoId = ofNullable(aktivitet.getForhaandsorientering())
-                .map(Forhaandsorientering::getId)
-                .orElse(null);
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon)
@@ -176,7 +173,7 @@ public class AktivitetDAO {
                 .addValue("kontorsperre_enhet_id", aktivitet.getKontorsperreEnhetId())
                 .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
                 .addValue("mal_id", aktivitet.getMalid())
-                .addValue("fho_id", fhoId)
+                .addValue("fho_id", aktivitet.getFhoId())
                 .addValue("funksjonell_id", aktivitet.getFunksjonellId())
                 .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
                         ? aktivitet.getOppfolgingsperiodeId().toString() : null);

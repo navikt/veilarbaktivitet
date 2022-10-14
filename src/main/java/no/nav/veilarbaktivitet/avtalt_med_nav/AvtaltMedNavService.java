@@ -80,6 +80,7 @@ public class AvtaltMedNavService {
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
                 .withForhaandsorientering(fho)
+                .withFhoId(fho.getId())
                 .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                 .withEndretAv(ident.get())
@@ -103,6 +104,7 @@ public class AvtaltMedNavService {
 
         AktivitetData nyAktivitet = aktivitet
                 .toBuilder()
+                .fhoId(fho.getId())
                 .forhaandsorientering(fho)
                 .endretDato(now)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
