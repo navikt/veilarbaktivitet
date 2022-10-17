@@ -143,7 +143,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .findFirst();
         Assertions.assertTrue(aktivitet.isPresent());
 
-        Assertions.assertEquals(aktivitet.get().getStatus(), AktivitetStatus.PLANLAGT);
+        Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.get().getStatus());
         Assertions.assertEquals(aktivitet.get().getTiltak(), new TiltakDTO(
                 tiltaksaktivitet.getTiltaksNavn(),
                 tiltaksaktivitet.getArrangoernavn(),
@@ -189,7 +189,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .aktiviteter.stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .toList();
-        Assertions.assertEquals(aktiviteter.size(), 1);
+        Assertions.assertEquals(1, aktiviteter.size());
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktiviteter.stream().findFirst().get().getTransaksjonsType() );
     }
 

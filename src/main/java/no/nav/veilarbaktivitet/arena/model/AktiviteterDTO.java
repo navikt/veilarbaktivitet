@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arena.model;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import lombok.Data;
 import lombok.experimental.Accessors;
 

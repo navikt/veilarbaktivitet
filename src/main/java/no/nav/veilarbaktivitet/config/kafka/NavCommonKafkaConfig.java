@@ -5,7 +5,6 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
-import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
@@ -45,9 +44,7 @@ public class NavCommonKafkaConfig {
                 .withProperties(onPremConsumerProperties)
                 .withToggle(() -> unleashClient.isEnabled(ONPREM_KAFKA_DISABLED));
 
-        topicConfigs.forEach(it -> {
-            clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
-        });
+        topicConfigs.forEach(it -> clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging()));
 
         var client = clientBuilder.build();
 
@@ -65,11 +62,9 @@ public class NavCommonKafkaConfig {
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
                 .withProperties(aivenConsumerProperties)
-                .withToggle(() -> unleashClient.isEnabled(AIVEN_KAFKA_DISABLED));;
+                .withToggle(() -> unleashClient.isEnabled(AIVEN_KAFKA_DISABLED));
 
-        topicConfigs.forEach(it -> {
-            clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
-        });
+        topicConfigs.forEach(it -> clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging()));
 
         var client = clientBuilder.build();
 

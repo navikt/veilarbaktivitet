@@ -56,12 +56,12 @@ public class PersonService {
         /* Fra loggen
         [{"message":"Fant ikke person","locations":[{"line":1,"column":25}],"path":["hentIdenter"],"extensions":{"code":"not_found","classification":"ExecutionAborted"}}]
          */
-        return e.getErrors().stream().filter(error -> error.getMessage().equals("Fant ikke person")).findFirst().isPresent();
+        return e.getErrors().stream().anyMatch(error -> error.getMessage().equals("Fant ikke person"));
     }
     private boolean isUgyldigIdentError(GraphqlErrorException e) {
         /* Fra loggen
         [GraphQLError(message=Ugyldig ident, locations=[Location(line=3, column=5)], path=[hentIdenter], extensions={code=bad_request, id=ugyldig_ident, classification=ValidationError})]         */
-        return e.getErrors().stream().filter(error -> error.getMessage().equals("Ugyldig ident")).findFirst().isPresent();
+        return e.getErrors().stream().anyMatch(error -> error.getMessage().equals("Ugyldig ident"));
     }
     private RuntimeException mapException(GraphqlErrorException e, Person person) {
         if (isFantIkkePersonError(e)) {

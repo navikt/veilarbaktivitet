@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.kvp;
 
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
-import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.veilarbaktivitet.config.kafka.OnpremConsumerConfig;
 import no.nav.veilarbaktivitet.person.Person;

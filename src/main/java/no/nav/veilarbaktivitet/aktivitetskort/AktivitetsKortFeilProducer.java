@@ -19,14 +19,14 @@ public class AktivitetsKortFeilProducer {
     String feiltopic;
 
     private void publishAktivitetsFeil(AktivitetskortFeilMelding melding) {
-        var record = new ProducerRecord<String, String>(feiltopic, melding.key(), JsonUtils.toJson(melding));
-        producer.sendSync(record);
+        var producerRecord = new ProducerRecord<String, String>(feiltopic, melding.key(), JsonUtils.toJson(melding));
+        producer.sendSync(producerRecord);
     }
 
-    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e, ConsumerRecord<String, String> record) {
+    public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e, ConsumerRecord<String, String> consumerRecord) {
         publishAktivitetsFeil(AktivitetskortFeilMelding.builder()
-                .key(record.key())
-                .failingMessage(record.value())
+                .key(consumerRecord.key())
+                .failingMessage(consumerRecord.value())
                 .errorMessage(String.format("%s %s", e.getClass(), e.getMessage()))
                 .timestamp(LocalDateTime.now())
                 .build()

@@ -177,13 +177,13 @@ public class BrukerNotifikasjonDAO {
 
 
 
-        if(brukernotifikasjonIds.size() == 0) {
+        if(brukernotifikasjonIds.isEmpty()) {
             return;
         } else if (brukernotifikasjonIds.size() > 1) {
             log.error("Flere brukernotifikasjoner for arena-aktivitetid {}", arenaId.id());
 
         }
         brukernotifikasjonIds
-            .forEach((brukernotifikasjonId) -> kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon));
+            .forEach(brukernotifikasjonId -> kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon));
     }
 }

@@ -37,34 +37,34 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
-    public KafkaAktivitetWrapperDTO deserialiser(ConsumerRecord<String, String> record) throws DeserialiseringsFeil {
+    public KafkaAktivitetWrapperDTO deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
         try {
-            return objectMapper.readValue(record.value(), KafkaAktivitetWrapperDTO.class);
-        } catch (Throwable throwable) {
+            return objectMapper.readValue(consumerRecord.value(), KafkaAktivitetWrapperDTO.class);
+        } catch (Exception e) {
             throw new DeserialiseringsFeil(
-                    new ErrorMessage(throwable.getMessage()),
-                    throwable
+                    new ErrorMessage(e.getMessage()),
+                    e
             );
         }
     }
 
     @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
-    public ConsumeStatus consume(ConsumerRecord<String, String> record) {
+    public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         try {
-            return consumeThrowing(record);
+            return consumeThrowing(consumerRecord);
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
-            feilProducer.publishAktivitetsFeil(e, record);
+            feilProducer.publishAktivitetsFeil(e, consumerRecord);
             return ConsumeStatus.OK;
         } finally {
             MDC.remove(MetricService.SOURCE);
         }
     }
 
-    ConsumeStatus consumeThrowing(ConsumerRecord<String, String> record) throws AktivitetsKortFunksjonellException {
-        var melding = deserialiser(record);
+    ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
+        var melding = deserialiser(consumerRecord);
         ignorerHvisSettFør(melding);
         boolean erArenaAktivitet = "ARENA_TILTAK_AKTIVITET_ACL".equals(melding.source);
         MDC.put(MetricService.SOURCE, melding.source);

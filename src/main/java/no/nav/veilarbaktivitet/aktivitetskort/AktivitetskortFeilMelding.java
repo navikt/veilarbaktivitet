@@ -3,8 +3,6 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 import lombok.Builder;
 
 import java.time.LocalDateTime;
-import java.lang.String;
-import java.util.UUID;
 
 @Builder
 public record AktivitetskortFeilMelding(

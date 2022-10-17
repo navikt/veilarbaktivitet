@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 
 @Slf4j
 public class AktivitetskortCompareUtil {
+    private AktivitetskortCompareUtil() {}
 
     public static boolean erFaktiskOppdatert(AktivitetData innkommende, AktivitetData eksisterende) {
         var mapper = JsonUtils.getMapper();

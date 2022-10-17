@@ -8,8 +8,6 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import java.util.Date;
 import java.util.List;
 
-import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ARENA_PREFIX;
-
 @Data
 @Accessors(chain = true)
 public class ArenaAktivitetDTO {

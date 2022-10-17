@@ -121,7 +121,8 @@ public class ArenaControllerTest {
 
     @Test
     public void sendForhaandsorienteringSkalFeileUtenForhaandsorientering() {
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, new ArenaId("ARENAAktivitetId")));
+        ArenaId arenaId = new ArenaId("ARENAAktivitetId");
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, arenaId));
         assertEquals("forhaandsorientering kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
@@ -129,7 +130,8 @@ public class ArenaControllerTest {
     @Test
     public void sendForhaandsorienteringSkalFeileUtenForhaandsorienteringsType() {
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, new ArenaId("ARENAAktivitetId")));
+        ArenaId arenaId = new ArenaId("ARENAAktivitetId");
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId)));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
@@ -146,7 +148,8 @@ public class ArenaControllerTest {
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, new ArenaId("ARENA123")));
+        ArenaId arenaId = new ArenaId("ARENA123");
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaId));
         assertEquals("Aktiviteten finnes ikke", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
@@ -269,7 +272,8 @@ public class ArenaControllerTest {
     public void tilgangskontrollPaaMarkerSomLestSkalFinnes() {
         when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.lest(new ArenaId("errorId")));
+        ArenaId arenaId = new ArenaId("errorId");
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.lest(arenaId));
 
         assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
     }

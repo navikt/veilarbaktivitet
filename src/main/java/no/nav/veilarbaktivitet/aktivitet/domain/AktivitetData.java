@@ -89,7 +89,6 @@ public class AktivitetData {
     TiltaksaktivitetData tiltaksaktivitetData;
 
     public boolean endringTillatt() {
-        AktivitetStatus status = this.getStatus();
         return !(AktivitetStatus.AVBRUTT.equals(status)
                 || AktivitetStatus.FULLFORT.equals(status)
                 || this.getHistoriskDato() != null);
