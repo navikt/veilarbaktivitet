@@ -48,7 +48,6 @@ public class AktivitetAppService {
         return filterKontorsperret(aktiviteter);
     }
 
-    @Transactional
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
