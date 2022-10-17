@@ -48,6 +48,7 @@ public class AktivitetAppService {
         return filterKontorsperret(aktiviteter);
     }
 
+    @Transactional
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
@@ -63,7 +64,6 @@ public class AktivitetAppService {
                 .toList();
     }
 
-    @Transactional
     public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
         if (authService.erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
             AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());

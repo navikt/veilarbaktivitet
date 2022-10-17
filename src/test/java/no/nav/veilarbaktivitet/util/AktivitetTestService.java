@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
@@ -241,6 +242,22 @@ public class AktivitetTestService {
                 .extract().response();
 
         return response.as(ArenaAktivitetDTO.class);
+    }
+
+    public AktivitetDTO opprettFHOForInternAktivitet(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+        return veileder
+                .createRequest(mockBruker)
+                .and()
+                .body(avtaltDTO)
+                .when()
+                .queryParam("aktivitetId", aktivitetId)
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/avtaltMedNav")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .as(AktivitetDTO.class);
     }
 
     private void stub_hent_arenaaktiviteter(Person.Fnr fnr, String arenaaktivitetId) {
