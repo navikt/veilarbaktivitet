@@ -6,22 +6,26 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
 
 public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     private static final MockBruker bruker= MockNavService.createHappyBruker();
-    private static final MockVeileder veileder = MockNavService.createVeileder();
+    private static final MockVeileder veileder = MockNavService.createVeileder(bruker);
 
     private static final Person.AktorId AKTOR_ID = bruker.getAktorIdAsAktorId();
     private static final NavIdent veilederIdent = veileder.getNavIdentAsNavident();
@@ -149,7 +153,37 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void duplikattet(){}
+    public void oppdateringer_på_samme_versjon_skal_feile(){
+        var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
+        var avtaltDTO = new AvtaltMedNavDTO()
+            .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
+            .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                .type(defaultType)
+                .tekst(defaultTekst).lestDato(null).build());
+        aktivitetTestService.opprettFHOForInternAktivitet(bruker, veileder, avtaltDTO, aktivitetId);
+        aktivitetTestService.opprettFHOForInternAktivitetRequest(bruker, veileder, avtaltDTO, aktivitetId)
+            .body("message", equalTo("Feil aktivitetversjon"))
+            .statusCode(HttpStatus.CONFLICT.value());
+    }
+
+    @Test
+    public void skal_ikke_kunne_opprette_FHO_pa_aktivitet_med_FHO() {
+        var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
+        var avtaltDTO = new AvtaltMedNavDTO()
+            .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
+            .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                .type(defaultType)
+                .tekst(defaultTekst).lestDato(null).build());
+        var oppdatertAktivitet = aktivitetTestService.opprettFHOForInternAktivitet(bruker, veileder, avtaltDTO, aktivitetId);
+        var oppdaterAvtaltDto = avtaltDTO.setAktivitetVersjon(Long.parseLong(oppdatertAktivitet.getVersjon()));
+        aktivitetTestService.opprettFHOForInternAktivitetRequest(bruker, veileder, oppdaterAvtaltDto, aktivitetId)
+            .body("message", equalTo("Aktiviteten har allerede en forhåndsorientering"))
+            .statusCode(HttpStatus.CONFLICT.value());
+    }
 
     private AktivitetDTO opprettAktivitetMedDefaultFHO(AktivitetData aktivitetData) {
 
