@@ -148,6 +148,9 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
         Assert.assertFalse(varselStoppet);
     }
 
+    @Test
+    public void duplikattet(){}
+
     private AktivitetDTO opprettAktivitetMedDefaultFHO(AktivitetData aktivitetData) {
 
         var fhoDTO = ForhaandsorienteringDTO.builder()

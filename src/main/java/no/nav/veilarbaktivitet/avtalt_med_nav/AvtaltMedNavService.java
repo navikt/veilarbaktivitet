@@ -80,6 +80,7 @@ public class AvtaltMedNavService {
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
+            //    .withVersjon(avtaltDTO.getAktivitetVersjon())
                 .withForhaandsorientering(fho)
                 .withFhoId(fho.getId())
                 .withEndretDato(now)
