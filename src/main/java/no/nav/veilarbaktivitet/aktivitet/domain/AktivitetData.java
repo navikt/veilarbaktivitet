@@ -14,13 +14,17 @@ import java.util.UUID;
 @Value
 @With
 @Builder(toBuilder = true)
-@ToString(of = {"id", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
+@ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId", "tiltaksaktivitetData"})
 public class AktivitetData {
 
     /**
      * Teknisk id for aktiviteten
      */
     Long id;
+    /**
+     * Funksjonell id for aktiviteten
+     */
+    UUID funksjonellId;
     /**
      * Versjon inkrementeres når det utføres en transasjon på aktiviteten.
      * Denne er en global sekvens for alle aktiviteter, men for en enkelt aktivitet, vil en sortering på versjon gi rekkefølgen på transaksjonene
@@ -82,5 +86,12 @@ public class AktivitetData {
     BehandlingAktivitetData behandlingAktivitetData;
     MoteData moteData;
     StillingFraNavData stillingFraNavData;
+    TiltaksaktivitetData tiltaksaktivitetData;
+
+    public boolean endringTillatt() {
+        return !(AktivitetStatus.AVBRUTT.equals(status)
+                || AktivitetStatus.FULLFORT.equals(status)
+                || this.getHistoriskDato() != null);
+    }
 }
 

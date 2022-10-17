@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -31,16 +32,20 @@ public class RekrutteringsbistandStatusoppdateringService {
             log.warn("Brukernotifikasjon er allerede sendt for {} på bestillingsid {}", varselType, aktivitetData.getStillingFraNavData().bestillingsId);
             return;
         }
-        brukernotifikasjonService.opprettVarselPaaAktivitet(
-                aktivitetData.getId(),
-                aktivitetData.getVersjon(),
-                Person.aktorId(aktivitetData.getAktorId()),
-                switch (varselType) {
-                    case CV_DELT -> CV_DELT_DITT_NAV_TEKST;
-                    case IKKE_FATT_JOBBEN -> IKKE_FATT_JOBBEN_TEKST;
-                    default -> "";
-                },
-                varselType);
+        try {
+            brukernotifikasjonService.opprettVarselPaaAktivitet(
+                    aktivitetData.getId(),
+                    aktivitetData.getVersjon(),
+                    Person.aktorId(aktivitetData.getAktorId()),
+                    switch (varselType) {
+                        case CV_DELT -> CV_DELT_DITT_NAV_TEKST;
+                        case IKKE_FATT_JOBBEN -> IKKE_FATT_JOBBEN_TEKST;
+                        default -> "";
+                    },
+                    varselType);
+        } catch (IkkeFunnetPersonException e) {
+            log.warn("Fikk ikke opprettet brukernotifikasjon pga ugyldig aktørId={}. Fortsetter behandling", aktivitetData.getAktorId());
+        }
     }
 
     public void behandleCvDelt(String bestillingsId, String navIdent, AktivitetData aktivitet) {
@@ -74,7 +79,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
         log.info("Oppdaterte søknadsstatus og aktivitetstatus på aktivitet {}", bestillingsId);
-        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, null, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
+        stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, "", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
         maybeBestillBrukernotifikasjon(aktivitet, VarselType.IKKE_FATT_JOBBEN);
     }
 

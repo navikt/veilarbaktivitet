@@ -20,6 +20,9 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
@@ -27,7 +30,6 @@ import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.person.InnsenderData.BRUKER;
 import static no.nav.veilarbaktivitet.person.InnsenderData.NAV;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
-import static no.nav.veilarbaktivitet.util.DateUtils.toJavaUtilDate;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -325,4 +327,14 @@ public class AktivitetAppServiceTest {
             .behandlingSted("Avtalt")
             .behandlingType("Avtalt")
             .build();
+
+    public static Date toJavaUtilDate(String isoDato) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String datoMedKlokkeslett = isoDato+"T00:00:00.000+0200";
+        try {
+            return dateFormat.parse(datoMedKlokkeslett);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
 }

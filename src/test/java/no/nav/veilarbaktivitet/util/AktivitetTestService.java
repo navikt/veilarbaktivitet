@@ -7,10 +7,17 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
@@ -24,6 +31,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.Assert.*;
 
 
@@ -208,5 +217,92 @@ public class AktivitetTestService {
         AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
 
         return aktivitet;
+    }
+
+    public ArenaAktivitetDTO opprettFHOForArenaAktivitet(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
+        stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
+
+        ForhaandsorienteringDTO forhaandsorienteringDTO = ForhaandsorienteringDTO.builder()
+                .id("id")
+                .type(Type.SEND_FORHAANDSORIENTERING)
+                .tekst("asd")
+                .lestDato(null)
+                .build();
+
+        Response response = veileder
+                .createRequest()
+                .and()
+                .param("arenaaktivitetId", arenaaktivitetId.id())
+                .body(forhaandsorienteringDTO)
+                .when()
+                .put(veileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(ArenaAktivitetDTO.class);
+    }
+
+    public AktivitetDTO opprettFHOForInternAktivitet(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+        return veileder
+                .createRequest(mockBruker)
+                .and()
+                .body(avtaltDTO)
+                .when()
+                .queryParam("aktivitetId", aktivitetId)
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/avtaltMedNav")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .as(AktivitetDTO.class);
+    }
+
+    private void stub_hent_arenaaktiviteter(Person.Fnr fnr, String arenaaktivitetId) {
+        stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
+                .willReturn(aResponse().withStatus(200)
+                        .withBody("""
+                                {
+                                  "tiltaksaktiviteter": [
+                                      {
+                                        "tiltaksnavn": "tiltaksnavn",
+                                        "aktivitetId": "%s",
+                                        "tiltakLokaltNavn": "lokaltnavn",
+                                        "arrangor": "arrangor",
+                                        "bedriftsnummer": "asd",
+                                        "deltakelsePeriode": {
+                                            "fom": "2021-11-18",
+                                            "tom": "2021-11-25"
+                                        },
+                                        "deltakelseProsent": 60,
+                                        "deltakerStatus": "GJENN",
+                                        "statusSistEndret": "2021-11-18",
+                                        "begrunnelseInnsoking": "asd",
+                                        "antallDagerPerUke": 3.0
+                                      }
+                                  ],
+                                  "gruppeaktiviteter": [],
+                                  "utdanningsaktiviteter": []
+                                }
+                                """.formatted(arenaaktivitetId))));
+    }
+
+    public AktivitetDTO lesFHO(MockBruker mockBruker, long aktivitetsId, long versjon) {
+        Response response = mockBruker
+                .createRequest()
+                .and()
+                .body(JsonUtils.toJson(new LestDTO(
+                    aktivitetsId,
+                    versjon
+                )))
+                .when()
+                .put(mockBruker.getUrl("/veilarbaktivitet/api/avtaltMedNav/lest", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(AktivitetDTO.class);
     }
 }

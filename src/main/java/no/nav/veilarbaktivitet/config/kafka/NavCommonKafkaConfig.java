@@ -5,7 +5,6 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
-import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
@@ -22,18 +21,21 @@ import java.util.List;
 import java.util.Properties;
 
 import static io.confluent.kafka.serializers.KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultConsumerProperties;
-import static no.nav.common.kafka.util.KafkaPropertiesPreset.onPremDefaultProducerProperties;
+import static no.nav.common.kafka.util.KafkaPropertiesPreset.*;
 
 
 @Configuration
-public class KafkaOnpremConfig {
+public class NavCommonKafkaConfig {
+
+    public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer-aiven";
+    public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
 
     private static final String ONPREM_KAFKA_DISABLED = "veilarbaktivitet.kafka.onprem.consumer.disabled";
+    private static final String AIVEN_KAFKA_DISABLED = "veilarbaktivitet.kafka.aiven.consumer.disabled";
 
     @Bean
-    public KafkaConsumerClient consumerClient(
-            List<TopicConsumerConfig<?, ?>> topicConfigs,
+    public KafkaConsumerClient onpremConsumerClient(
+            List<OnpremConsumerConfig<?, ?>> topicConfigs,
             MeterRegistry meterRegistry,
             Properties onPremConsumerProperties,
             UnleashClient unleashClient
@@ -42,9 +44,7 @@ public class KafkaOnpremConfig {
                 .withProperties(onPremConsumerProperties)
                 .withToggle(() -> unleashClient.isEnabled(ONPREM_KAFKA_DISABLED));
 
-        topicConfigs.forEach(it -> {
-            clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging());
-        });
+        topicConfigs.forEach(it -> clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging()));
 
         var client = clientBuilder.build();
 
@@ -54,6 +54,27 @@ public class KafkaOnpremConfig {
     }
 
     @Bean
+    public KafkaConsumerClient aivenConsumerClient(
+            List<AivenConsumerConfig<?, ?>> topicConfigs,
+            MeterRegistry meterRegistry,
+            Properties aivenConsumerProperties,
+            UnleashClient unleashClient
+    ) {
+        var clientBuilder = KafkaConsumerClientBuilder.builder()
+                .withProperties(aivenConsumerProperties)
+                .withToggle(() -> unleashClient.isEnabled(AIVEN_KAFKA_DISABLED));
+
+        topicConfigs.forEach(it -> clientBuilder.withTopicConfig(new TopicConfig().withConsumerConfig(it).withMetrics(meterRegistry).withLogging()));
+
+        var client = clientBuilder.build();
+
+        client.start();
+
+        return client;
+    }
+
+    @Bean
+    @Profile("!dev")
     public KafkaProducerClient<String, String> producerClient(Properties onPremProducerProperties, MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, String>builder()
                 .withMetrics(meterRegistry)
@@ -84,4 +105,15 @@ public class KafkaOnpremConfig {
         return onPremDefaultConsumerProperties(kafkaOnpremProperties.consumerGroupId, kafkaOnpremProperties.getBrokersUrl(), credentials);
     }
 
+    @Bean
+    @Profile("!dev")
+    Properties aivenConsumerProperties() {
+        return aivenDefaultConsumerProperties(CONSUMER_GROUP_ID);
+    }
+
+    @Bean
+    @Profile("!dev")
+    Properties aivenProducerProperties() {
+        return aivenDefaultProducerProperties(PRODUCER_CLIENT_ID);
+    }
 }

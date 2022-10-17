@@ -28,6 +28,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
@@ -51,7 +52,7 @@ public class ForhaandsorienteringDTOControllerTest {
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
 
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc));
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc), new NamedParameterJdbcTemplate(jdbc));
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc));
 
     @Mock

@@ -110,9 +110,12 @@ public class WireMockUtil {
                                 {
                                   "data": {
                                     "hentIdenter": {
-                                      "identer": []
+                                      "identer": null
                                     }
-                                  }
+                                  },
+                                  "errors": [{
+                                    "message": "Fant ikke person"
+                                  }]
                                 }
                                 """)));
 
@@ -124,9 +127,12 @@ public class WireMockUtil {
                                 {
                                   "data": {
                                     "hentIdenter": {
-                                      "identer": []
+                                      "identer": null
                                     }
-                                  }
+                                  },
+                                  "errors": [{
+                                    "message": "Fant ikke person"
+                                  }]
                                 }
                                 """)));
     }
@@ -171,4 +177,11 @@ public class WireMockUtil {
                                 }
                                 """.formatted(aktorId))));
     }
+
+    public static void tekniskFeilPåPDL() {
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+            .willReturn(serverError().withBody("Teknisk feil")));
+    }
+
+
 }

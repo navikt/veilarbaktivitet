@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy-dev:
+  deploy-topics-dev:
     name: Deploy kafka topics to dev
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'

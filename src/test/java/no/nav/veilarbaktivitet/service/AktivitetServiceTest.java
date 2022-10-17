@@ -27,6 +27,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -73,7 +74,7 @@ public class AktivitetServiceTest {
     public void opprettAktivitet() {
         val aktivitet = lagEnNyAktivitet();
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -95,7 +96,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -118,7 +119,7 @@ public class AktivitetServiceTest {
                 .build();
         aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
@@ -139,7 +140,7 @@ public class AktivitetServiceTest {
                 .build();
 
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
 
@@ -230,7 +231,7 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
@@ -254,11 +255,11 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
 
         aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }
 
@@ -278,11 +279,15 @@ public class AktivitetServiceTest {
     }
 
     public void captureOppdaterAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture());
+    }
+
+    public void captureOppdaterAktivitetWithDateArgument() {
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture(), any(LocalDateTime.class));
     }
 
     public void captureOpprettAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()), any(LocalDateTime.class));
     }
 
     public AktivitetData getCapturedAktivitet() {

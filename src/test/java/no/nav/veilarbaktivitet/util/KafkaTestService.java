@@ -14,10 +14,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -130,6 +127,13 @@ public class KafkaTestService {
     }
 
     @SneakyThrows
+    public Optional<Long> hentOffset(String topic, String groupId) {
+        var offsetAndMetadata = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get()
+                .get(new TopicPartition(topic, 0));
+        return Optional.ofNullable(offsetAndMetadata == null ? null : offsetAndMetadata.offset());
+    }
+
+    @SneakyThrows
     public boolean harKonsumertAlleMeldinger(String topic, Consumer consumer) {
         consumer.commitSync();
         String groupId = consumer.groupMetadata().groupId();
@@ -148,5 +152,9 @@ public class KafkaTestService {
         Long endOffset = map.get(collect.get(0));
 
         return offsetAndMetadata.offset() == endOffset;
+    }
+
+    public String getAivenConsumerGroup() {
+        return aivenGroupId;
     }
 }

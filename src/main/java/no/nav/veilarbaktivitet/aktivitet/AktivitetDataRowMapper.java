@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.springframework.data.relational.core.sql.SQL;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -26,6 +27,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
+                .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
                 .versjon(rs.getLong("versjon"))
                 .aktorId(rs.getString("aktor_id"))
                 .aktivitetType(type)
@@ -54,29 +56,15 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .oppfolgingsperiodeId(Database.hentMaybeUUID(rs, "oppfolgingsperiode_uuid"));
 
         switch (type) {
-            case EGENAKTIVITET:
-                aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
-                break;
-            case JOBBSOEKING:
-                aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
-                break;
-            case SOKEAVTALE:
-                aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
-                break;
-            case IJOBB:
-                aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
-                break;
-            case BEHANDLING:
-                aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
-                break;
-            case STILLING_FRA_NAV:
-                aktivitet.stillingFraNavData(mapStillingFraNav(rs));
-                break;
-            case MOTE, SAMTALEREFERAT:
-                aktivitet.moteData(mapMoteData(rs));
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + type);
+            case EGENAKTIVITET -> aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
+            case JOBBSOEKING -> aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
+            case SOKEAVTALE -> aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
+            case IJOBB -> aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
+            case BEHANDLING -> aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
+            case STILLING_FRA_NAV -> aktivitet.stillingFraNavData(mapStillingFraNav(rs));
+            case MOTE, SAMTALEREFERAT -> aktivitet.moteData(mapMoteData(rs));
+            case TILTAKSAKTIVITET -> aktivitet.tiltaksaktivitetData(mapTiltaksaktivitetData((rs)));
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
         return aktivitet.build();
@@ -164,6 +152,17 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
                 .ikkefattjobbendetaljer(rs.getString("ikkefattjobbendetaljer"))
+                .build();
+    }
+
+    private static TiltaksaktivitetData mapTiltaksaktivitetData(ResultSet rs) throws SQLException {
+        return TiltaksaktivitetData.builder()
+                .tiltakskode(rs.getString("TILTAK_KODE"))
+                .tiltaksnavn(rs.getString("TILTAK_NAVN"))
+                .arrangornavn(rs.getString("ARRANGOR_NAVN"))
+                .deltakelseStatus(rs.getString("DELTAKELSESTATUS"))
+                .dagerPerUke(rs.getInt("DAGER_PER_UKE"))
+                .deltakelsesprosent(rs.getInt("DELTAKELSEPROSENT"))
                 .build();
     }
 

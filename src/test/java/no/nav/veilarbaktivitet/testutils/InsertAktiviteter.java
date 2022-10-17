@@ -4,12 +4,13 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.config.database.Database;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 public class InsertAktiviteter {
 
 
     public static void insertAktiviteter(JdbcTemplate jdbcTemplate) {
-        AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbcTemplate));
+        AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbcTemplate), new NamedParameterJdbcTemplate(jdbcTemplate));
         for (int i = 0; i < 10; i++) {
             insertEnAvHver(i + "auto", aktivitetDAO);
         }

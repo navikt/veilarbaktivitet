@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -11,6 +12,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.net.URL;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,10 +23,10 @@ public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
 
-    public void aktivitetTilBrukernotifikasjon(//TODO refactor to object
-            long brukernotifikasjonDbId,
-            long aktivitetId,
-            long aktitetVersion
+    public void kobleAktivitetIdTilBrukernotifikasjon(//TODO refactor to object
+                                                      long brukernotifikasjonDbId,
+                                                      long aktivitetId,
+                                                      long aktitetVersion
     ) {
 
         SqlParameterSource params = new MapSqlParameterSource()
@@ -55,9 +57,9 @@ public class BrukerNotifikasjonDAO {
                 .addValue("aktivitet_id", aktivitetsId)
                 .addValue("type", varselType.name());
         String sql = """
-            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
-            WHERE AKTIVITET_ID = :aktivitet_id
-            AND TYPE = :type
+            SELECT COUNT(*) FROM BRUKERNOTIFIKASJON BN JOIN AKTIVITET_BRUKERNOTIFIKASJON AB on BN.ID = AB.BRUKERNOTIFIKASJON_ID
+            WHERE AB.AKTIVITET_ID = :aktivitet_id
+            AND BN.TYPE = :type
         """;
         int antall = jdbcTemplate.queryForObject(sql, params, int.class);
         return antall > 0;
@@ -104,10 +106,10 @@ public class BrukerNotifikasjonDAO {
 
     }
 
-    void arenaAktivitetTilBrukernotifikasjon(long brukernotifikasjonDbId, String arenaAktivitetId) {
+    void kobleArenaAktivitetIdTilBrukernotifikasjon(long brukernotifikasjonDbId, ArenaId arenaAktivitetId) {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
-                .addValue("arena_aktivitet_id", arenaAktivitetId);
+                .addValue("arena_aktivitet_id", arenaAktivitetId.id());
 
         jdbcTemplate.update("""
                 insert into ARENA_AKTIVITET_BRUKERNOTIFIKASJON
@@ -133,9 +135,9 @@ public class BrukerNotifikasjonDAO {
             """, params);
     }
 
-    long setDone(String arenaAktivitetId, VarselType varseltype) {
+    long setDone(ArenaId arenaAktivitetId, VarselType varseltype) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("arenaAktivitetId", arenaAktivitetId)
+                .addValue("arenaAktivitetId", arenaAktivitetId.id())
                 .addValue("type", varseltype.name());
         //TODO implement avsluttet aktivitesversion?
 
@@ -162,5 +164,26 @@ public class BrukerNotifikasjonDAO {
                         and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
                         """,
                 params);
+    }
+
+    public void updateAktivitetIdForArenaBrukernotifikasjon(long aktivitetId, long aktivitetVersjon, ArenaId arenaId) {
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("arenaId", arenaId.id());
+        List<Long> brukernotifikasjonIds = jdbcTemplate.query("""
+                            SELECT BRUKERNOTIFIKASJON_ID FROM ARENA_AKTIVITET_BRUKERNOTIFIKASJON
+                            WHERE ARENA_AKTIVITET_ID = :arenaId
+                        """,
+                params, (rs, rowNum) -> rs.getLong("BRUKERNOTIFIKASJON_ID"));
+
+
+
+        if(brukernotifikasjonIds.isEmpty()) {
+            return;
+        } else if (brukernotifikasjonIds.size() > 1) {
+            log.error("Flere brukernotifikasjoner for arena-aktivitetid {}", arenaId.id());
+
+        }
+        brukernotifikasjonIds
+            .forEach(brukernotifikasjonId -> kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktivitetVersjon));
     }
 }

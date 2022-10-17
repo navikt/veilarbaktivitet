@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
@@ -24,7 +25,7 @@ public class ArenaController {
     private final ArenaService arenaService;
 
     @PutMapping("/forhaandsorientering")
-    public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam String arenaaktivitetId) {
+    public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam ArenaId arenaaktivitetId) {
         if (!authService.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
         }
@@ -60,15 +61,15 @@ public class ArenaController {
     }
 
     @PutMapping("/forhaandsorientering/lest")
-    ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
+    ArenaAktivitetDTO lest(@RequestParam ArenaId aktivitetId) {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
 
         return arenaService.markerSomLest(fnr, aktivitetId);
     }
 
-    private Optional<String> getInputFeilmelding(ForhaandsorienteringDTO forhaandsorientering, String arenaaktivitetId) {
-        if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
+    private Optional<String> getInputFeilmelding(ForhaandsorienteringDTO forhaandsorientering, ArenaId arenaaktivitetId) {
+        if(arenaaktivitetId == null || arenaaktivitetId.id() == null || arenaaktivitetId.id().isBlank()) {
             return Optional.of("arenaaktivitetId kan ikke være null eller tom");
         }
 

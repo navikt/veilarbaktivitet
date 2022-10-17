@@ -4,9 +4,6 @@ import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -77,16 +74,15 @@ public class DateUtils {
     public static LocalDate toLocalDate(Date date) {
         if (date == null) return null;
         return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
-
+    }
+    public static Date localDateTimeToDate(LocalDateTime localDateTime) {
+        if (localDateTime == null) return null;
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
-    public static Date toJavaUtilDate(String isoDato) {
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-        String datoMedKlokkeslett = isoDato+"T12:08:56.235+0200";
-        try {
-            return dateFormat.parse(datoMedKlokkeslett);
-        } catch (ParseException e) {
-            return null;
-        }
+    public static LocalDateTime dateToLocalDateTime(Date date) {
+        if (date == null) return null;
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
+
 }

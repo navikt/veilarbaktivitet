@@ -12,7 +12,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class ArenaAktivitetDTO {
     //Felles
-    String id;
+    ArenaId id;
     AktivitetStatus status;
     ArenaAktivitetTypeDTO type;
     String tittel;

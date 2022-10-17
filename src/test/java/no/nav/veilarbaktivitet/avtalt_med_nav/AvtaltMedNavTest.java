@@ -139,7 +139,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
 
         AktivitetDTO medFHO = oppretFHO(fho, veileder, happyBruker);
 
-        brukernotifikasjonAsserts.oppgaveSendt(happyBruker.getFnrAsFnr(), medFHO);
+        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr(), medFHO);
     }
 
     @Test
@@ -155,7 +155,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
 
         AktivitetDTO medFHO = oppretFHO(fho, veileder, happyBruker);
 
-        brukernotifikasjonAsserts.oppgaveSendt(happyBruker.getFnrAsFnr(), medFHO);
+        brukernotifikasjonAsserts.assertOppgaveSendt(happyBruker.getFnrAsFnr(), medFHO);
     }
 
     @Test

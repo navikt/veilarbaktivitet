@@ -1,9 +1,11 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import no.nav.common.log.MDCConstants;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.InnsenderData;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -15,9 +17,17 @@ public class MetricService {
     private static final String MALID = "malId";
     private static final String AUTOMATISKOPPRETTET = "automatiskOpprettet";
     private static final String TYPE = "type";
+    public static final String SOURCE = "source";
 
     public MetricService(MetricsClient metricsClient) {
         this.metricsClient = metricsClient;
+    }
+
+
+    private String getSource() {
+        var mainSource = MDC.get(SOURCE);
+        var logFilterSource = MDC.get(MDCConstants.MDC_CONSUMER_ID);
+        return Optional.ofNullable(mainSource != null ? mainSource : logFilterSource).orElse("unknown");
     }
 
     public void opprettNyAktivitetMetrikk(AktivitetData aktivitetData) {
@@ -26,7 +36,8 @@ public class MetricService {
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
                 .addFieldToReport(AUTOMATISKOPPRETTET, aktivitetData.isAutomatiskOpprettet())
-                .addFieldToReport(MALID, malId);
+                .addFieldToReport(MALID, malId)
+                .addFieldToReport(SOURCE, getSource());
 
         metricsClient.report(ev);
     }
@@ -37,7 +48,8 @@ public class MetricService {
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
                 .addFieldToReport("blittAvtalt", blittAvtalt)
                 .addFieldToReport(AUTOMATISKOPPRETTET, erAutomatiskOpprettet)
-                .addFieldToReport(MALID, malId);
+                .addFieldToReport(MALID, malId)
+                .addFieldToReport(SOURCE, getSource());
         metricsClient.report(ev);
     }
 
@@ -62,7 +74,8 @@ public class MetricService {
                 .addFieldToReport("oppdatertAvNAV", oppdatertAvNAV)
                 .addFieldToReport("tidSidenOpprettet", tidMellomOpprettetOgOppdatert(aktivitetData))
                 .addFieldToReport(AUTOMATISKOPPRETTET, aktivitetData.isAutomatiskOpprettet())
-                .addFieldToReport(MALID, malId);
+                .addFieldToReport(MALID, malId)
+                .addFieldToReport(SOURCE, getSource());
         metricsClient.report(ev);
     }
 
