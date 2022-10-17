@@ -131,7 +131,7 @@ public class ArenaControllerTest {
     public void sendForhaandsorienteringSkalFeileUtenForhaandsorienteringsType() {
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
         ArenaId arenaId = new ArenaId("ARENAAktivitetId");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId)));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
