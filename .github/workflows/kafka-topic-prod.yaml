@@ -1,4 +1,4 @@
-name: Deploy kafka topics to dev
+name: Deploy kafka topics to prod
 on:
   push:
     paths:

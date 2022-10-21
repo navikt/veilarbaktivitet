@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -244,7 +245,8 @@ public class AktivitetTestService {
         return response.as(ArenaAktivitetDTO.class);
     }
 
-    public AktivitetDTO opprettFHOForInternAktivitet(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+
+    public ValidatableResponse opprettFHOForInternAktivitetRequest(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
         return veileder
                 .createRequest(mockBruker)
                 .and()
@@ -252,7 +254,10 @@ public class AktivitetTestService {
                 .when()
                 .queryParam("aktivitetId", aktivitetId)
                 .put("http://localhost:" + port + "/veilarbaktivitet/api/avtaltMedNav")
-                .then()
+                .then();
+    }
+    public AktivitetDTO opprettFHOForInternAktivitet(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+        return opprettFHOForInternAktivitetRequest(mockBruker, veileder, avtaltDTO, aktivitetId)
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
