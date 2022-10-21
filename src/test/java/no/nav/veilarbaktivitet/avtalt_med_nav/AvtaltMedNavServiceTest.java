@@ -152,32 +152,6 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void service_should_reject_old_versions_of_aktivitet() {
-        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
-
-        var opprettetAktivitetMedFHO = opprettAktivitetMedDefaultFHO(aktivitetData);
-        // Oppretter forhåndorientering på nytt dirkte i servicen
-        assertThrows(
-            DataIntegrityViolationException.class,
-                () -> transactionTemplate.executeWithoutResult((transactionStatus) -> avtaltMedNavService.opprettFHO(
-                new AvtaltMedNavDTO()
-                    .setAktivitetVersjon(aktivitetData.getVersjon())
-                    .setForhaandsorientering(ForhaandsorienteringDTO.builder()
-                        .type(defaultType)
-                        .tekst(defaultTekst)
-                        .lestDato(null)
-                        .build())
-                ,
-                aktivitetData.getId(),
-                AKTOR_ID,
-                veilederIdent
-            ))
-        );
-        assertNotNull(avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId()));
-
-    }
-
-    @Test
     public void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
         var varselStoppet = avtaltMedNavService.settVarselFerdig(null);
 

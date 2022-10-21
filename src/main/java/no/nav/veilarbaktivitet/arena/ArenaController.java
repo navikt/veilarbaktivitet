@@ -51,7 +51,7 @@ public class ArenaController {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
-        var ideer = arenaAktiviteter.stream().map(aktivitet -> aktivitet.getId()).toList();
+        var ideer = arenaAktiviteter.stream().map(ArenaAktivitetDTO::getId).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
         return arenaAktiviteter
             .stream().map(arenaAktivitet -> {
