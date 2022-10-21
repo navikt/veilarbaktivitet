@@ -26,7 +26,7 @@ class DeserialiseringsFeil extends AktivitetsKortFunksjonellException {
 }
 class UlovligEndringFeil extends AktivitetsKortFunksjonellException {
     public UlovligEndringFeil() {
-        super(new ErrorMessage("Ulovlig statusoppdatering"), null);
+        super(new ErrorMessage("Kan ikke endre aktiviteter som er avbrutt, fullført eller historiske (avsluttet oppfølgingsperiode)"), null);
     }
 }
 
