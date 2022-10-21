@@ -31,7 +31,8 @@ public class IdMappingDAO {
     }
 
     public Map<ArenaId, IdMapping> getMappings(List<ArenaId> ids) {
-        var stringIds = ids.stream().map(it -> it.id()).toList();
+        if (ids.isEmpty()) return new HashMap<>();
+        var stringIds = ids.stream().map(ArenaId::id).toList();
         var params = new MapSqlParameterSource()
                 .addValue("arenaIds", String.join(",", stringIds));
         var idList = template.query("""
