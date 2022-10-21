@@ -10,6 +10,8 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -23,16 +25,22 @@ public class KafkaAktivitetDAO {
 
     @Timed
     public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
-        // language=sql
-        return database.query(""" 
+        SqlParameterSource unntaEksternaAktiviteter = new MapSqlParameterSource()
+                .addValue("unntaAktivitetsType", AktivitetTypeData.TILTAKSAKTIVITET.name());
+
+        return database.getNamedJdbcTemplate().query(
+                """ 
                         SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES, A.* FROM AKTIVITET A
                         LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                         WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                        AND AKTIVITET_TYPE_KODE != :unntaAktivitetsType
                         ORDER BY A.VERSJON
                         FETCH NEXT 5000 ROWS ONLY
                         """,
+                unntaEksternaAktiviteter,
                 KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
         );
+        // language=sql
     }
 
     @Timed
@@ -46,7 +54,7 @@ public class KafkaAktivitetDAO {
                 kafkaOffset, versjon);
     }
 
-    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs) throws SQLException {
+    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs, int i) throws SQLException {
         AktivitetTypeDTO typeDTO = Helpers.Type.getDTO(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")));
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
         InnsenderData lagtInnAv = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
