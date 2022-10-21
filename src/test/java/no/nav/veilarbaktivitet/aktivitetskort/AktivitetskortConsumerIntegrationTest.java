@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -67,6 +68,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Value("${topic.ut.aktivitetskort-feil}")
     String aktivitetskortFeilTopic;
+    @Value("${topic.inn.oppfolgingsperiode}")
+    String oppfolgingperiodeTopic;
+    @Value("${spring.kafka.consumer.group-id}")
+    String springKafkaConsumerGroupId;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -126,8 +131,15 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
             .skip(meldinger.size() - 1)
             .findFirst().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(1000))
+        Awaitility.await().atMost(Duration.ofSeconds(5))
             .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastrecord.offset()));
+    }
+
+    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
+        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
+        assertThat(payload.errorMessage()).contains(errorClass.getName());
     }
 
     @Test
@@ -293,8 +305,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
 
-        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
-        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class
+        );
     }
 
     @Test
@@ -342,10 +356,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
-        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
-        var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
-        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
-        assertThat(payload.errorMessage()).isEqualTo(String.format("class no.nav.veilarbaktivitet.aktivitetskort.UgyldigIdentFeil AktørId ikke funnet for fnr :%s", mockBruker.getFnr()));
+        assertFeilmeldingPublished(
+            funksjonellId,
+            UgyldigIdentFeil.class
+        );
     }
 
     @Test
@@ -434,6 +448,40 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(arenaAktiviteter).hasSize(1);
         assertThat(arenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
         assertThat(arenaAktiviteter.get(0).getAktivitetId()).isNotNull();
+    }
+
+    @Test
+    public void skal_ikke_kunne_endre_historisk_aktivitet() {
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        avsluttOppfolgingsPeriode();
+        sendOgVentPåTiltak(List.of(
+            tiltaksaktivitet.withSluttDato(LocalDate.now())
+        ));
+        assertFeilmeldingPublished(
+            tiltaksaktivitet.id,
+            UlovligEndringFeil.class
+        );
+    }
+
+    private void avsluttOppfolgingsPeriode() {
+        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
+        var start = now.withYear(2020);
+        var key = mockBruker.getAktorId();
+        var payload = JsonUtils.toJson(
+            SisteOppfolgingsperiodeV1.builder()
+                .aktorId(mockBruker.getAktorId())
+                .uuid(mockBruker.getOppfolgingsperiode())
+                .startDato(start)
+                .sluttDato(now)
+        );
+        var recordMetatdata = producerClient.sendSync(new ProducerRecord<>(
+            oppfolgingperiodeTopic,
+            key,
+            payload
+        ));
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+            .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, recordMetatdata.offset()));
     }
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
