@@ -221,7 +221,7 @@ public class AktivitetTestService {
     }
 
     public ArenaAktivitetDTO opprettFHOForArenaAktivitet(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
-        stub_hent_arenaaktiviteter(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
+        stub_hent_arenaaktiviteter_fra_veilarbarena(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
         System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
 
         ForhaandsorienteringDTO forhaandsorienteringDTO = ForhaandsorienteringDTO.builder()
@@ -265,7 +265,7 @@ public class AktivitetTestService {
                 .as(AktivitetDTO.class);
     }
 
-    private void stub_hent_arenaaktiviteter(Person.Fnr fnr, String arenaaktivitetId) {
+    private void stub_hent_arenaaktiviteter_fra_veilarbarena(Person.Fnr fnr, String arenaaktivitetId) {
         stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
                 .willReturn(aResponse().withStatus(200)
                         .withBody("""
@@ -309,5 +309,18 @@ public class AktivitetTestService {
                 .extract().response();
 
         return response.as(AktivitetDTO.class);
+    }
+
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(MockBruker bruker, ArenaId arenaId) {
+        stub_hent_arenaaktiviteter_fra_veilarbarena(bruker.getFnrAsFnr(), arenaId.id());
+        return bruker
+                .createRequest()
+                .get(bruker.getUrl("/veilarbaktivitet/api/arena/tiltak", bruker))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", ArenaAktivitetDTO.class);
     }
 }
