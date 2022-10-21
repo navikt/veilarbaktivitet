@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 
 public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
@@ -78,7 +79,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
         var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData, fhoDTO);
         var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
 
-        Assert.assertEquals(null, aktivitetDTOFHO.getTekst());
+        Assert.assertNull( aktivitetDTOFHO.getTekst());
 
     }
 
@@ -146,14 +147,14 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
+    public void settVarselFerdig_ForhaandsorienteringsIdErNULL_returnererFalse() {
         var varselStoppet = avtaltMedNavService.settVarselFerdig(null);
 
         Assert.assertFalse(varselStoppet);
     }
 
     @Test
-    public void oppdateringer_på_samme_versjon_skal_feile(){
+    public void oppdateringer_paa_samme_versjon_skal_feile(){
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
         var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
@@ -167,6 +168,29 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
             .body("message", equalTo("Feil aktivitetversjon"))
             .statusCode(HttpStatus.CONFLICT.value());
     }
+
+    @Test
+    public void oppdateringer_paa_samme_versjon_skal_feile_innenfor_controller_for_aa_hindre_race_conditions(){
+        var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
+        var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
+        var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
+
+
+        var avtaltDTO = new AvtaltMedNavDTO()
+                .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
+                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                        .type(defaultType)
+                        .tekst(defaultTekst).lestDato(null).build());
+        Person.AktorId aktorIdAsAktorId = bruker.getAktorIdAsAktorId();
+        NavIdent navIdentAsNavident = veileder.getNavIdentAsNavident();
+        avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident);
+        assertThrows(
+                "java.lang.IllegalStateException: Forsøker å oppdatere en utdatert aktivitetsversjon.",
+                IllegalStateException.class, () -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident)
+                );
+
+    }
+
 
     @Test
     public void skal_ikke_kunne_opprette_FHO_pa_aktivitet_med_FHO() {

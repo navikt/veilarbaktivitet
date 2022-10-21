@@ -19,7 +19,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
 
@@ -80,7 +79,7 @@ public class AvtaltMedNavService {
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
-            //    .withVersjon(avtaltDTO.getAktivitetVersjon())
+                .withVersjon(avtaltDTO.getAktivitetVersjon())
                 .withForhaandsorientering(fho)
                 .withFhoId(fho.getId())
                 .withEndretDato(now)
@@ -132,7 +131,7 @@ public class AvtaltMedNavService {
     }
 
     public List<Forhaandsorientering> hentFHO(List<String> fhoIder){
-        var fhoIderUtenTomme = fhoIder.stream().filter(x-> x != null && !x.isEmpty()).collect(Collectors.toList());
+        var fhoIderUtenTomme = fhoIder.stream().filter(x-> x != null && !x.isEmpty()).toList();
         return fhoDAO.getById(fhoIderUtenTomme);
     }
 
