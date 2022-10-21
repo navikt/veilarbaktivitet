@@ -417,6 +417,25 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         brukernotifikasjonAsserts.assertDone(record.key());
     }
 
+    @Test
+    public void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
+        ArenaId arenaaktivitetId =  new ArenaId("123");
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEksternReferanseId(arenaaktivitetId.id());
+
+        var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(preMigreringArenaAktiviteter).hasSize(1);
+        assertThat(preMigreringArenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
+        assertThat(preMigreringArenaAktiviteter.get(0).getAktivitetId()).isNull();
+
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+
+        var arenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(arenaAktiviteter).hasSize(1);
+        assertThat(arenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
+        assertThat(arenaAktiviteter.get(0).getAktivitetId()).isNotNull();
+    }
+
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
     private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);

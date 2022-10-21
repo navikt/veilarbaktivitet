@@ -18,8 +18,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
@@ -30,6 +32,9 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     private static final Person.AktorId AKTOR_ID = bruker.getAktorIdAsAktorId();
     private static final NavIdent veilederIdent = veileder.getNavIdentAsNavident();
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @Autowired
     private AktivitetDAO aktivitetDAO;
@@ -147,7 +152,33 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void settVarselFerdig_ForhaandsorienteringsIdErNULL_returnererFalse() {
+    public void service_should_reject_old_versions_of_aktivitet() {
+        var aktivitetData =  AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
+
+        var opprettetAktivitetMedFHO = opprettAktivitetMedDefaultFHO(aktivitetData);
+        // Oppretter forhåndorientering på nytt dirkte i servicen
+        assertThrows(
+            DataIntegrityViolationException.class,
+                () -> transactionTemplate.executeWithoutResult((transactionStatus) -> avtaltMedNavService.opprettFHO(
+                new AvtaltMedNavDTO()
+                    .setAktivitetVersjon(aktivitetData.getVersjon())
+                    .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                        .type(defaultType)
+                        .tekst(defaultTekst)
+                        .lestDato(null)
+                        .build())
+                ,
+                aktivitetData.getId(),
+                AKTOR_ID,
+                veilederIdent
+            ))
+        );
+        assertNotNull(avtaltMedNavService.hentFhoForAktivitet(aktivitetData.getId()));
+
+    }
+
+    @Test
+    public void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
         var varselStoppet = avtaltMedNavService.settVarselFerdig(null);
 
         Assert.assertFalse(varselStoppet);
@@ -183,7 +214,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
                         .tekst(defaultTekst).lestDato(null).build());
         Person.AktorId aktorIdAsAktorId = bruker.getAktorIdAsAktorId();
         NavIdent navIdentAsNavident = veileder.getNavIdentAsNavident();
-        avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident);
+        transactionTemplate.executeWithoutResult((transactionStatus) -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident));
         assertThrows(
                 "java.lang.IllegalStateException: Forsøker å oppdatere en utdatert aktivitetsversjon.",
                 IllegalStateException.class, () -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident)

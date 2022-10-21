@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
@@ -29,6 +31,7 @@ public class AktivitetskortService {
 
     private final AktivitetService aktivitetService;
     private final AktivitetDAO aktivitetDAO;
+    private final IdMappingDAO idMappingDAO;
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
     private final ForhaandsorienteringDAO forhaandsorienteringDAO;
     private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
@@ -58,6 +61,12 @@ public class AktivitetskortService {
     }
 
     private void arenaspesifikkMigrering(TiltaksaktivitetDTO tiltaksaktivitet, AktivitetData opprettetAktivitet) {
+        idMappingDAO.insert(new IdMapping(
+                new ArenaId(tiltaksaktivitet.eksternReferanseId),
+                opprettetAktivitet.getId(),
+                tiltaksaktivitet.id
+        ));
+
         Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
                 .ifPresent(fho -> {
                     int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
