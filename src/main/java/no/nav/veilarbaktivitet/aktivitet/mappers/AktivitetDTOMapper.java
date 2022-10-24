@@ -111,7 +111,8 @@ public class AktivitetDTOMapper {
     }
 
     public static void mapTiltak(AktivitetDTO aktivitetDTO, TiltaksaktivitetData tiltak) {
-        aktivitetDTO.setTiltak(new TiltakDTO(
+        aktivitetDTO.
+                setTiltak(new TiltakDTO(
                 tiltak.tiltaksnavn(),
                 tiltak.arrangornavn(),
                 tiltak.deltakelseStatus(),
