@@ -224,13 +224,6 @@ paths:
           schema:
             type: string
           description: AktørID til personen man ønsker å hente ut aktivitetsplanen til
-        - name: oppfolgingsperiodeId
-          in: query
-          required: false
-          schema:
-            type: string
-            format: uuid
-          description: Uuid til oppfolgingsperioden
       responses:
         '200':
           description: OK
@@ -241,32 +234,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/aktivitet'
         '204':
-          description: Ingen aktiviteter for aktorId/oppfolgingsperiodeId
+          description: Ingen aktiviteter for aktorId
         '400':
-          description: Trenger aktorId eller/og oppfolgingsperiodeId
+          description: Trenger aktorId
         '401':
           description: Ikke logget inn
         '403':
           description: Ingen tilgang
         '404':
-          description: Finner ikke aktorId/oppfolgingsperiodeId
-  /internal/api/v1/aktivitet/{aktivitetId}:
-    get:
-      operationId: hentAktivitet
-      tags:
-        - Aktiviteter
-      description: ''
-      parameters:
-        - name: aktivitetId
-          in: path
-          required: true
-          schema:
-            type: integer
-          description: Numerisk id til aktiviteten
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/aktivitet'
+          description: Finner ikke aktorId

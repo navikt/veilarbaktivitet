@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
+import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
@@ -322,5 +323,17 @@ public class AktivitetTestService {
                 .extract()
                 .response()
                 .jsonPath().getList(".", ArenaAktivitetDTO.class);
+    }
+
+    public List<Aktivitet> hentAktiviteterInternApi(MockVeileder veileder, Person.AktorId aktorId) {
+        return veileder
+                .createRequest()
+                .get("/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}", aktorId.get())
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
     }
 }

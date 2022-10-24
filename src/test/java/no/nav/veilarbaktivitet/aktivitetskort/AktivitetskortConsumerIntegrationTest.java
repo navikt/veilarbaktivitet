@@ -484,6 +484,14 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
             .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, recordMetatdata.offset()));
     }
 
+    @Test
+    public void skal_ikke_gi_ut_tiltakaktiviteter_pa_intern_api() {
+        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        var aktiviteter = aktivitetTestService.hentAktiviteterInternApi(veileder, mockBruker.getAktorIdAsAktorId());
+        assertThat(aktiviteter).isEmpty();
+    }
+
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
     private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);
