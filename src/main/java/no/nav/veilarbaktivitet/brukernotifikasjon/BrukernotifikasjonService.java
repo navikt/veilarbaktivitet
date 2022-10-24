@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
@@ -52,7 +53,7 @@ public class BrukernotifikasjonService {
     }
 
     public void setDone(
-            String aktivitetId,
+            ArenaId aktivitetId,
             VarselType varseltype
     ) {
         dao.setDone(aktivitetId, varseltype);
@@ -115,7 +116,7 @@ public class BrukernotifikasjonService {
         URL aktivtetUrl = createAktivitetLink(aktivitetId + "");
 
         long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
-        dao.aktivitetTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktitetVersion);
+        dao.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitetId, aktitetVersion);
 
         return uuid;
 
@@ -127,7 +128,7 @@ public class BrukernotifikasjonService {
 
     @Transactional
     public UUID opprettVarselPaaArenaAktivitet(
-            String arenaAktivitetId,
+            ArenaId arenaAktivitetId,
             Person.Fnr fnr,
             String ditNavTekst,
             VarselType varseltype
@@ -143,7 +144,7 @@ public class BrukernotifikasjonService {
 
     @Transactional
     public UUID opprettVarselPaaArenaAktivitet(
-            String arenaAktivitetId,
+            ArenaId arenaAktivitetId,
             Person.Fnr fnr,
             String ditNavTekst,
             VarselType varseltype,
@@ -158,10 +159,10 @@ public class BrukernotifikasjonService {
                 .orElseThrow();
 
         UUID gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-        URL aktivtetUrl = createAktivitetLink(arenaAktivitetId);
+        URL aktivtetUrl = createAktivitetLink(arenaAktivitetId.id());
 
         long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
-        dao.arenaAktivitetTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetId);
+        dao.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetId);
 
         return uuid;
 

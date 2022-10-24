@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -12,6 +13,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.util.Collections;
 import java.util.Date;
@@ -29,7 +31,7 @@ public class ForhaandsorienteringDAOTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database, new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @After
     public void cleanup() {
@@ -63,7 +65,7 @@ public class ForhaandsorienteringDAOTest {
     @Test
     public void insertForArenaAktivitet_oppdatererAlleFelter() {
         ArenaAktivitetDTO aktivitetData = new ArenaAktivitetDTO();
-        aktivitetData.setId("arenaId");
+        aktivitetData.setId(new ArenaId("arenaId"));
         aktivitetData.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         String veileder = "V123";
 
@@ -78,7 +80,7 @@ public class ForhaandsorienteringDAOTest {
         assertEquals(fho.getTekst(), fhoResultat.getTekst());
         assertNull(fhoResultat.getAktivitetId());
         assertNull(fhoResultat.getAktivitetVersjon());
-        assertEquals(aktivitetData.getId(), fhoResultat.getArenaAktivitetId());
+        assertEquals(aktivitetData.getId().id(), fhoResultat.getArenaAktivitetId());
         assertEquals(veileder, fhoResultat.getOpprettetAv());
         assertNull(fhoResultat.getLestDato());
 

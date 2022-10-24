@@ -1,7 +1,13 @@
 package no.nav.veilarbaktivitet.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortService;
 import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
@@ -35,7 +41,8 @@ import java.util.stream.Collectors;
 @SpyBeans({
         @SpyBean(KafkaStringTemplate.class),
         @SpyBean(KafkaStringAvroTemplate.class),
-        @SpyBean(KafkaJsonTemplate.class)
+        @SpyBean(KafkaJsonTemplate.class),
+        @SpyBean(AktivitetskortService.class)
 })
 public class KafkaTestConfig {
     @Bean
@@ -47,7 +54,8 @@ public class KafkaTestConfig {
             @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
-            @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode) {
+            @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode,
+            @Value("${topic.inn.aktivitetskort}") String aktivitetskortTopic) {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
@@ -60,7 +68,8 @@ public class KafkaTestConfig {
                 eksternVarselKvittering,
                 aktivitetRawJson,
                 portefoljeTopic,
-                oppfolgingsperiode);
+                oppfolgingsperiode,
+                aktivitetskortTopic);
     }
 
     @Bean
@@ -98,10 +107,12 @@ public class KafkaTestConfig {
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, no.nav.common.kafka.producer.serializer.JsonSerializer.class);
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
+
     @Bean
     KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate(ProducerFactory<String, RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory) {
         return new KafkaJsonTemplate<>(navCommonJsonProducerFactory);
     }
+
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
         Map<String, Object> config = properties.buildAdminProperties();
@@ -117,6 +128,35 @@ public class KafkaTestConfig {
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .withPollProperties(1, 1000)
+                .build();
+    }
+
+    @Bean
+    Properties aivenConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+        return KafkaPropertiesBuilder.consumerBuilder()
+                .withBaseProperties()
+                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
+                .withBrokerUrl(embeddedKafka.getBrokersAsString())
+                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
+                .withPollProperties(10, 30_000)
+                .build();
+    }
+
+    @Bean
+    Properties aivenProducerProperties(@Value("${app.kafka.producer-client-id}") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
+        return KafkaPropertiesBuilder.producerBuilder()
+                .withBaseProperties()
+                .withProducerId(producerClientId)
+                .withBrokerUrl(embeddedKafkaBroker.getBrokersAsString())
+                .withSerializers(StringSerializer.class, StringSerializer.class)
+                .build();
+    }
+
+    @Bean
+    public KafkaProducerClient<String, String> producerClient(Properties aivenProducerProperties, MeterRegistry meterRegistry) {
+        return KafkaProducerClientBuilder.<String, String>builder()
+                .withMetrics(meterRegistry)
+                .withProperties(aivenProducerProperties)
                 .build();
     }
 }

@@ -1,13 +1,13 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 import static java.util.Calendar.SECOND;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData.AktivitetDataBuilder;
@@ -56,6 +56,8 @@ public class AktivitetDataTestBuilder {
                 return nySamtaleReferat();
             case STILLING_FRA_NAV:
                 return nyStillingFraNavMedCVKanDeles();
+            case TILTAKSAKTIVITET:
+                return nyTiltaksaktivitet();
             default: throw new IllegalArgumentException("ukjent type");
         }
     }
@@ -124,6 +126,26 @@ public class AktivitetDataTestBuilder {
                 .aktivitetType(AktivitetTypeData.SAMTALEREFERAT)
                 .moteData(AktivitetTypeDataTestBuilder.moteData())
                 .tilDato(null)
+                .build();
+    }
+
+
+    public static AktivitetData nyTiltaksaktivitet() {
+        return AktivitetDataTestBuilder.nyAktivitet()
+                .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
+                .funksjonellId(UUID.randomUUID())
+                .tiltaksaktivitetData(AktivitetTypeDataTestBuilder.tiltaksaktivitetData())
+                .build();
+    }
+
+    public static Forhaandsorientering nyForhaandorientering() {
+        return Forhaandsorientering.builder()
+                .id(UUID.randomUUID().toString())
+                .tekst("Lol")
+                .aktivitetId("abc")
+                .type(Type.SEND_PARAGRAF_11_9)
+                .opprettetAv("meg")
+                .opprettetDato(new Date())
                 .build();
     }
 

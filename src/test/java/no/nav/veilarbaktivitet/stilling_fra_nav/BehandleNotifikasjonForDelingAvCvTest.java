@@ -78,9 +78,9 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
         // Opprett stilling fra nav og send varsel
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var utenSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
         AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
@@ -121,9 +121,9 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
         // Opprett stilling fra nav
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var utenSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
         AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
 
         // trigger utsendelse av oppgave-notifikasjoner
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();

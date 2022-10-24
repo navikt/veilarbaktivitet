@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
 
 @Service
 @Transactional
@@ -60,6 +61,7 @@ public class AvtaltMedNavService {
         return aktivitetDAO.hentAktivitet(aktivitetId);
     }
 
+    @Transactional
     public AktivitetDTO opprettFHO(AvtaltMedNavDTO avtaltDTO, long aktivitetId, Person.AktorId aktorId, NavIdent ident) {
         var fhoDTO = avtaltDTO.getForhaandsorientering();
         Date now = new Date();
@@ -77,14 +79,16 @@ public class AvtaltMedNavService {
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)
+                .withVersjon(avtaltDTO.getAktivitetVersjon())
                 .withForhaandsorientering(fho)
+                .withFhoId(fho.getId())
                 .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                 .withEndretAv(ident.get())
                 .withLagtInnAv(InnsenderData.NAV) // alltid NAV
                 .withAvtalt(true);
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet, now);
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet, dateToLocalDateTime(now));
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();
@@ -101,6 +105,7 @@ public class AvtaltMedNavService {
 
         AktivitetData nyAktivitet = aktivitet
                 .toBuilder()
+                .fhoId(fho.getId())
                 .forhaandsorientering(fho)
                 .endretDato(now)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
@@ -126,7 +131,7 @@ public class AvtaltMedNavService {
     }
 
     public List<Forhaandsorientering> hentFHO(List<String> fhoIder){
-        var fhoIderUtenTomme = fhoIder.stream().filter(x-> x != null && !x.isEmpty()).collect(Collectors.toList());
+        var fhoIderUtenTomme = fhoIder.stream().filter(x-> x != null && !x.isEmpty()).toList();
         return fhoDAO.getById(fhoIderUtenTomme);
     }
 

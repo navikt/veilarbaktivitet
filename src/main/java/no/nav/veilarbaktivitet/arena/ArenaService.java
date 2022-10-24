@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -83,14 +84,16 @@ public class ArenaService {
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
-    public Optional<ArenaAktivitetDTO> hentAktivitet(Person.Fnr ident, String aktivitetId) {
-        return hentAktiviteter(ident).stream().filter(arenaAktivitetDTO -> aktivitetId.equals(arenaAktivitetDTO.getId())).findAny();
+    public Optional<ArenaAktivitetDTO> hentAktivitet(Person.Fnr ident, ArenaId aktivitetId) {
+        return hentAktiviteter(ident).stream()
+                .filter(arenaAktivitetDTO -> aktivitetId.equals(arenaAktivitetDTO.getId()))
+                .findAny();
     }
 
     private Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
         return arenaAktivitetDTO -> arenaAktivitetDTO.setForhaandsorientering(forhaandsorienteringData
                 .stream()
-                .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId()))
+                .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId().id()))
                 .findAny()
                 .map(AktivitetDTOMapper::mapForhaandsorientering)
                 .orElse(null)
@@ -98,7 +101,7 @@ public class ArenaService {
     }
 
     @Transactional
-    public ArenaAktivitetDTO opprettFHO(String arenaaktivitetId, Person.Fnr fnr, ForhaandsorienteringDTO forhaandsorientering, String opprettetAv) throws ResponseStatusException {
+    public ArenaAktivitetDTO opprettFHO(ArenaId arenaaktivitetId, Person.Fnr fnr, ForhaandsorienteringDTO forhaandsorientering, String opprettetAv) throws ResponseStatusException {
         ArenaAktivitetDTO arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten finnes ikke"));
 
@@ -123,7 +126,7 @@ public class ArenaService {
     }
 
     @Transactional
-    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, String aktivitetId) {
+    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, ArenaId aktivitetId) {
         var fho = fhoDAO.getFhoForArenaAktivitet(aktivitetId);
 
         if(fho == null) {

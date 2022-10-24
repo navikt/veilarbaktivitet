@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
+import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -13,12 +14,15 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +30,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
+
+import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
 
 @Slf4j
 @Service
@@ -64,7 +68,7 @@ public class OpprettForesporselOmDelingAvCv {
         try {
             sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
             underOppfolging = true;
-        } catch (IngenGjeldendeIdentException exception) {
+        } catch (IkkeFunnetPersonException | UgyldigIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
@@ -85,7 +89,9 @@ public class OpprettForesporselOmDelingAvCv {
 
         AktivitetData aktivitetData = map(melding, kanVarsle);
 
+        MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
+        MDC.clear();
 
         if (kanVarsle) {
             brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
@@ -111,11 +117,7 @@ public class OpprettForesporselOmDelingAvCv {
         String bestillingsId = melding.getBestillingsId();
         String stillingsId = melding.getStillingsId();
 
-        List<Arbeidssted> arbeidssteder = melding.getArbeidssteder();
-        String arbeidsted = arbeidssteder
-                .stream()
-                .map(it -> "Norge".equalsIgnoreCase(it.getLand()) ? it.getKommune() : it.getLand())
-                .collect(Collectors.joining(", "));
+        String arbeidsted = utledArbeidstedtekst(melding.getArbeidssteder());
 
         KontaktpersonData kontaktpersonData = getKontaktInfo(melding.getKontaktInfo());
 

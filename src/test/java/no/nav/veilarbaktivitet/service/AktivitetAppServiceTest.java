@@ -6,56 +6,187 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
+import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
 import static junit.framework.TestCase.fail;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyMoteAktivitet;
-import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok;
+import static no.nav.veilarbaktivitet.person.InnsenderData.BRUKER;
+import static no.nav.veilarbaktivitet.person.InnsenderData.NAV;
+import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
 @RunWith(MockitoJUnitRunner.class)
 public class AktivitetAppServiceTest {
-    private static final long AKTIVITET_ID = 666L;
-    public static final String KONTORSPERRE_ENHET_ID = "1224";
 
+    private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
     @Mock
     private AuthService authService;
 
     @Mock
-    private AktivitetService aktivitetService;
-
-    @Mock
-    private MetricService metricService;
-
-    @Mock
-    private AvtaltMedNavService avtaltMedNavService;
+    AktivitetService aktivitetService;
 
     @InjectMocks
     private AktivitetAppService appService;
 
+    @Mock @SuppressWarnings("unused") // Blir faktisk brukt
+    private MetricService metricService;
+
+    @Test
+    public void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
+        AktivitetData gammelAktivitet = nyBehandlingAktivitet().withId(AKTIVITET_ID).withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
+
+        loggetInnSom(BRUKER);
+        mockHentAktivitet(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(1))
+                .oppdaterAktivitetFrist(any(), captureAktivitet.capture(), capturePerson.capture());
+
+        SoftAssertions.assertSoftly(s -> {
+            AktivitetData aktivitet = captureAktivitet.getValue();
+            s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
+            s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
+            Person endretAv = capturePerson.getValue();
+            s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
+            s.assertThat(endretAv.tilBrukerType()).isSameAs(BRUKER);
+            s.assertAll();
+        });
+
+    }
+
+    @Test
+    public void eksternbruker_skal_kunne_endre_flere_ting_nar_ikke_avtalt_medisinsk_behandling() {
+        AktivitetData gammelAktivitet = nyBehandlingAktivitet()
+                .withAvtalt(false)
+                .withBeskrivelse(AVTALT_BESKRIVELSE)
+                .withBehandlingAktivitetData(avtaltBehandlingsdata)
+                .withTilDato(toJavaUtilDate("2022-12-10"));
+        AktivitetData endretAktivitet = gammelAktivitet
+                .withBeskrivelse("Endret beskrivelse")
+                .withBehandlingAktivitetData(endretBehandlingsdata)
+                .withTilDato(toJavaUtilDate("2022-12-12"));
+
+        loggetInnSom(BRUKER);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(endretAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(endretAktivitet);
+
+        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
+        verify(aktivitetService, times(1))
+                .oppdaterAktivitet(any(), captureAktivitet.capture(), capturePerson.capture());
+
+        SoftAssertions.assertSoftly(s -> {
+            AktivitetData aktivitet = captureAktivitet.getValue();
+            s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
+            s.assertThat(aktivitet.getTilDato()).isEqualTo(endretAktivitet.getTilDato());
+            s.assertThat(aktivitet.getBeskrivelse()).isNotEqualTo(AVTALT_BESKRIVELSE);
+            s.assertThat(aktivitet.getBeskrivelse()).isEqualTo(endretAktivitet.getBeskrivelse());
+            s.assertThat(aktivitet.getBehandlingAktivitetData()).isNotEqualTo(avtaltBehandlingsdata);
+            s.assertThat(aktivitet.getBehandlingAktivitetData()).isEqualTo(endretBehandlingsdata);
+            Person endretAv = capturePerson.getValue();
+            s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
+            s.assertThat(endretAv.tilBrukerType()).isSameAs(BRUKER);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void nav_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
+        AktivitetData gammelAktivitet = nyBehandlingAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(1))
+                .oppdaterAktivitetFrist(any(), captureAktivitet.capture(), capturePerson.capture());
+
+        SoftAssertions.assertSoftly(s -> {
+            AktivitetData aktivitet = captureAktivitet.getValue();
+            s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
+            s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
+            Person endretAv = capturePerson.getValue();
+            s.assertThat(endretAv.get()).isEqualTo(TESTNAVIDENT);
+            s.assertThat(endretAv.tilBrukerType()).isSameAs(NAV);
+            s.assertAll();
+        });
+    }
+
+    @Test
+    public void nav_skal_kunne_endre_noen_ting_selv_om_avtalt_mote() {
+        AktivitetData gammelAktivitet = nyMoteAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2000-01-01"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-01-01"));
+
+        loggetInnSom(NAV);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
+
+        appService.oppdaterAktivitet(oppdatertAktivitet);
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any(), any());
+    }
+
+    @Test
+    public void eksternbruker_skal_ikke_kunne_endre_andre_aktivitetstyper() {
+        AktivitetData annenAktivitetstype = nyIJobbAktivitet().withAvtalt(true);
+        AktivitetData endretAktivitet = annenAktivitetstype.withBeskrivelse("Endret beskrivelse");
+
+        loggetInnSom(BRUKER);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(annenAktivitetstype.getId())).thenReturn(annenAktivitetstype);
+
+        Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(endretAktivitet))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasStackTraceContaining("400 BAD_REQUEST");
+    }
+
+    @Test
+    public void ikke_innlogget_skal_ikke_kunne_endre_noe() {
+        when(authService.erEksternBruker()).thenReturn(false);
+        when(authService.erInternBruker()).thenReturn(false);
+        AktivitetData aktivitet = nyBehandlingAktivitet();
+        AktivitetData endretAktivitet = aktivitet
+                .withBeskrivelse("Endret beskrivelse")
+                .withBehandlingAktivitetData(endretBehandlingsdata);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(anyLong())).thenReturn(aktivitet);
+
+        Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(endretAktivitet))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasStackTraceContaining("403 FORBIDDEN");
+    }
+
     @Test(expected = ResponseStatusException.class)
-    public void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException(){
+    public void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException() {
         var aktivitet = nyMoteAktivitet();
-        when(authService.erEksternBruker()).thenReturn(true);
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
+        loggetInnSom(BRUKER);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId())).thenReturn(aktivitet);
 
         appService.oppdaterAktivitet(aktivitet);
     }
+
 
     @Test
     public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
@@ -171,4 +302,39 @@ public class AktivitetAppServiceTest {
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitetData);
     }
 
+
+    private void loggetInnSom(InnsenderData innsenderData) {
+        when(authService.erEksternBruker()).thenReturn(innsenderData == BRUKER);
+        when(authService.erInternBruker()).thenReturn(innsenderData == NAV);
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(innsenderData == BRUKER ? Person.aktorId(TESTPERSONNUMMER) : Person.navIdent(TESTNAVIDENT)));
+    }
+
+    private static final long AKTIVITET_ID = 666L;
+    private static final String KONTORSPERRE_ENHET_ID = "1224";
+    private final String TESTPERSONNUMMER = "01010012345";
+    private final ArgumentCaptor<AktivitetData> captureAktivitet = ArgumentCaptor.forClass(AktivitetData.class);
+    private final ArgumentCaptor<Person> capturePerson = ArgumentCaptor.forClass(Person.class);
+    private final String TESTNAVIDENT = "S314159";
+    private final BehandlingAktivitetData endretBehandlingsdata = BehandlingAktivitetData.builder()
+            .effekt("Endret effekt")
+            .behandlingOppfolging("Endret behandlingOppfolging")
+            .behandlingSted("Endret behandlingSted")
+            .behandlingType("Endret behandlingType")
+            .build();
+    private final BehandlingAktivitetData avtaltBehandlingsdata = BehandlingAktivitetData.builder()
+            .effekt("Avtalt")
+            .behandlingOppfolging("Avtalt")
+            .behandlingSted("Avtalt")
+            .behandlingType("Avtalt")
+            .build();
+
+    public static Date toJavaUtilDate(String isoDato) {
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String datoMedKlokkeslett = isoDato+"T00:00:00.000+0200";
+        try {
+            return dateFormat.parse(datoMedKlokkeslett);
+        } catch (ParseException e) {
+            return null;
+        }
+    }
 }
