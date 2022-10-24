@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.AktorId;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -43,41 +44,49 @@ public class InternApiService {
         }
 
         if (oppfolgingsperiodeId != null) {
-            return hentAktiviteter(oppfolgingsperiodeId);
-        }
-
-        if (aktorId != null) {
+            return hentAktiviteter(oppfolgingsperiodeId, Person.aktorId(aktorId));
+        } else {
             return hentAktiviteter(aktorId);
         }
-
-        throw new IllegalArgumentException();
     }
 
     private List<AktivitetData> hentAktiviteterFiltrert(String aktorId, UUID oppfolgingsperiodeId) {
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
-        List<AktivitetData> aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
+        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
                 .stream()
                 .filter(a -> a.getOppfolgingsperiodeId().toString().equals(oppfolgingsperiodeId.toString()))
+                .filter(this::erIkkeKontorsperret)
+                .filter(this::erIkkeEksternAktivitet)
                 .toList();
-        return filtrerKontorsperret(aktiviteter);
+        if (!aktivitetData.isEmpty() ) {
+            authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.get(0).getAktorId()));
+        }
+        return aktivitetData;
     }
 
     private List<AktivitetData> hentAktiviteter(String aktorId) {
+
         authService.sjekkTilgangTilPerson(Person.aktorId(aktorId));
-        return filtrerKontorsperret(aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId)));
-    }
-
-    private List<AktivitetData> hentAktiviteter(UUID oppfolgingsperiodeId) {
-        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId);
-        if (aktivitetData.isEmpty()) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitetData.get(0).getAktorId()));
-        return filtrerKontorsperret(aktivitetData);
-    }
-
-    private List<AktivitetData> filtrerKontorsperret(List<AktivitetData> aktiviteter) {
-        return aktiviteter
+        return aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
                 .stream()
-                .filter( a -> authService.sjekKvpTilgang(a.getKontorsperreEnhetId()))
+                .filter(this::erIkkeKontorsperret)
+                .filter(this::erIkkeEksternAktivitet)
                 .toList();
+    }
+
+    private List<AktivitetData> hentAktiviteter(UUID oppfolgingsperiodeId, Person.AktorId aktorId) {
+        authService.sjekkTilgangTilPerson(aktorId);
+        return aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId)
+                .stream()
+                .filter(this::erIkkeKontorsperret)
+                .filter(this::erIkkeEksternAktivitet)
+                .toList();
+    }
+
+    private boolean erIkkeEksternAktivitet(AktivitetData aktivitetData) {
+        return aktivitetData.getAktivitetType() != AktivitetTypeData.TILTAKSAKTIVITET;
+    }
+    private boolean erIkkeKontorsperret(AktivitetData aktivitet) {
+        return authService.sjekKvpTilgang(aktivitet.getKontorsperreEnhetId());
+
     }
 }
