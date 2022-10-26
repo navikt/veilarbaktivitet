@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
@@ -427,10 +428,10 @@ public class AktivitetDAO {
                             .addValue("source", eksternAktivitetData.getSource())
                             .addValue("tiltak_kode", eksternAktivitetData.getTiltaksKode())
                             .addValue("type", eksternAktivitetData.getType().name())
-                            .addValue("oppgave", eksternAktivitetData.getOppgave())
-                            .addValue("handlinger", eksternAktivitetData.getHandlinger())
-                            .addValue("detaljer", eksternAktivitetData.getDetaljer())
-                            .addValue("etiketter", eksternAktivitetData.getEtiketter());
+                            .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
+                            .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
+                            .addValue("detaljer", JsonUtils.toJson(eksternAktivitetData.getDetaljer()))
+                            .addValue("etiketter", JsonUtils.toJson(eksternAktivitetData.getEtiketter()));
                     // language=sql
                     database.getNamedJdbcTemplate().update(
                     """

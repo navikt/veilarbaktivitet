@@ -49,7 +49,7 @@ public class AktivitetskortProducerUtil {
     }
 
     private static KafkaAktivitetskortWrapperDTO kafkaAktivitetWrapper() {
-        AktivitetskortDTO aktivitetskortDTO = AktivitetskortDTO.builder()
+        Aktivitetskort aktivitetskort = Aktivitetskort.builder()
                 .id(UUID.randomUUID())
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
@@ -72,7 +72,7 @@ public class AktivitetskortProducerUtil {
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
                 .sendt(LocalDateTime.now())
                 .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(aktivitetskortDTO)
+                .payload(aktivitetskort)
                 .build();
     }
 }

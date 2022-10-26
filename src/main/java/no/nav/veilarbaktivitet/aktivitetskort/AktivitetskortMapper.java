@@ -14,30 +14,30 @@ public class AktivitetskortMapper {
     private AktivitetskortMapper() {
     }
 
-    static AktivitetData mapTilAktivitetData(AktivitetskortDTO aktivitetskortDTO, LocalDateTime opprettetDato, String aktorId) {
+    static AktivitetData mapTilAktivitetData(Aktivitetskort aktivitetskort, MeldingContext meldingContext, LocalDateTime opprettetDato, String aktorId) {
         EksternAktivitetData eksternAktivitetData = EksternAktivitetData.builder()
-                .source(null)
-                .type(null)
-                .tiltaksKode(null)
-                .detaljer(aktivitetskortDTO.detaljer)
-                .oppgave(aktivitetskortDTO.oppgave)
-                .handlinger(aktivitetskortDTO.handlinger)
-                .etiketter(aktivitetskortDTO.etiketter)
+                .source(meldingContext.source())
+                .type(meldingContext.aktivitetskortType())
+                .tiltaksKode(meldingContext.arenaTiltakskode())
+                .detaljer(aktivitetskort.detaljer)
+                .oppgave(aktivitetskort.oppgave)
+                .handlinger(aktivitetskort.handlinger)
+                .etiketter(aktivitetskort.etiketter)
                 .build();
 
         return AktivitetData.builder()
-                .funksjonellId(aktivitetskortDTO.id)
+                .funksjonellId(aktivitetskort.id)
                 .aktorId(aktorId)
-                .tittel(aktivitetskortDTO.tittel)
-                .fraDato(toDate(aktivitetskortDTO.startDato))
-                .tilDato(toDate(aktivitetskortDTO.sluttDato))
-                .beskrivelse(aktivitetskortDTO.beskrivelse)
-                .status(aktivitetskortDTO.aktivitetStatus)
+                .tittel(aktivitetskort.tittel)
+                .fraDato(toDate(aktivitetskort.startDato))
+                .tilDato(toDate(aktivitetskort.sluttDato))
+                .beskrivelse(aktivitetskort.beskrivelse)
+                .status(aktivitetskort.aktivitetStatus)
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
-                .lagtInnAv(aktivitetskortDTO.endretAv.identType().mapToInnsenderType())
+                .lagtInnAv(aktivitetskort.endretAv.identType().mapToInnsenderType())
                 .opprettetDato(localDateTimeToDate(opprettetDato))
-                .endretDato(localDateTimeToDate(aktivitetskortDTO.endretTidspunkt))
-                .endretAv(aktivitetskortDTO.endretAv.ident())
+                .endretDato(localDateTimeToDate(aktivitetskort.endretTidspunkt))
+                .endretAv(aktivitetskort.endretAv.ident())
                 .eksternAktivitetData(eksternAktivitetData)
                 .build();
     }

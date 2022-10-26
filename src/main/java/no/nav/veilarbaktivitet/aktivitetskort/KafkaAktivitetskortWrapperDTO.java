@@ -9,5 +9,5 @@ public class KafkaAktivitetskortWrapperDTO {
     LocalDateTime sendt;
     ActionType actionType;
     AktivitetskortType aktivitetskortType;
-    AktivitetskortDTO aktivitetskort;
+    Aktivitetskort aktivitetskort;
 }

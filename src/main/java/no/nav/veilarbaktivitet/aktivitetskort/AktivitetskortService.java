@@ -39,14 +39,18 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(AktivitetskortDTO aktivitetskort, boolean erArenaAktivitet, ArenaId eksternReferanseId) throws UlovligEndringFeil, UgyldigIdentFeil {
+    public void upsertAktivitetskort(Aktivitetskort aktivitetskort, MeldingContext meldingContext, boolean erArenaAktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
         Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.id);
         Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(aktivitetskort.personIdent));
 
         Person endretAvIdent = toPerson(aktivitetskort.getEndretAv());
         var aktivitetData = maybeAktivitet
-                .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(aktivitetskort, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), aktorIdForPersonBruker.get()))
-                .orElse(AktivitetskortMapper.mapTilAktivitetData(aktivitetskort, aktivitetskort.endretTidspunkt, aktorIdForPersonBruker.get()));
+                .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(
+                        aktivitetskort,
+                        meldingContext,
+                        dateToLocalDateTime(gammelaktivitet.getOpprettetDato()),
+                        aktorIdForPersonBruker.get()))
+                .orElse(AktivitetskortMapper.mapTilAktivitetData(aktivitetskort, meldingContext, aktivitetskort.endretTidspunkt, aktorIdForPersonBruker.get()));
 
         if (maybeAktivitet.isPresent()) {
             var oppdatertAktivitet = oppdaterEksternAktivitet(maybeAktivitet.get(), aktivitetData);
@@ -55,12 +59,12 @@ public class AktivitetskortService {
             var opprettetAktivitet = opprettEksternAktivitet(aktivitetData, endretAvIdent, aktivitetskort.endretTidspunkt);
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             if (erArenaAktivitet) {
-                arenaspesifikkMigrering(aktivitetskort, opprettetAktivitet, eksternReferanseId);
+                arenaspesifikkMigrering(aktivitetskort, opprettetAktivitet, meldingContext.eksternReferanseId());
             }
         }
     }
 
-    private void arenaspesifikkMigrering(AktivitetskortDTO tiltaksaktivitet, AktivitetData opprettetAktivitet, ArenaId eksternReferanseId) {
+    private void arenaspesifikkMigrering(Aktivitetskort tiltaksaktivitet, AktivitetData opprettetAktivitet, ArenaId eksternReferanseId) {
         idMappingDAO.insert(new IdMapping(
                 eksternReferanseId,
                 opprettetAktivitet.getId(),

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Slf4j
@@ -67,28 +68,34 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var melding = deserialiser(consumerRecord);
-        ignorerHvisSettFør(melding);
+        log.info("Konsumerer aktivitetskortmelding: messageId={}, sendt={}, funksjonellId={}", melding.messageId, melding.sendt, melding.aktivitetskort.id);
+        ignorerHvisSettFør(melding.messageId, melding.aktivitetskort.id);
+
+        MeldingContext meldingContext = new MeldingContext(
+                getEksternReferanseId(consumerRecord),
+                getArenaTiltakskode(consumerRecord),
+                melding.source,
+                melding.aktivitetskortType
+        );
+
         boolean erArenaAktivitet = "ARENA_TILTAK_AKTIVITET_ACL".equals(melding.source);
         MDC.put(MetricService.SOURCE, melding.source);
         if (melding.actionType == ActionType.UPSERT_AKTIVITETSKORT_V1) {
-            ArenaId eksternReferanseId = getEksternReferanseId(consumerRecord);
-            String arenaTiltakskode = getArenaTiltakskode(consumerRecord);
-
-            aktivitetskortService.upsertAktivitetskort(melding.aktivitetskort, erArenaAktivitet, eksternReferanseId);
+            aktivitetskortService.upsertAktivitetskort(melding.aktivitetskort, meldingContext, erArenaAktivitet);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
         return ConsumeStatus.OK;
     }
 
-    private void ignorerHvisSettFør(KafkaAktivitetskortWrapperDTO message) throws DuplikatMeldingFeil {
-        if (aktivitetskortService.harSettMelding(message.messageId)) {
-            log.warn("Previously handled message seen {} , ignoring", message.messageId);
+    private void ignorerHvisSettFør(UUID messageId, UUID funksjonellId) throws DuplikatMeldingFeil {
+        if (aktivitetskortService.harSettMelding(messageId)) {
+            log.warn("Previously handled message seen {} , ignoring", messageId);
             throw new DuplikatMeldingFeil();
         } else {
             aktivitetskortService.lagreMeldingsId(
-                message.messageId,
-                message.aktivitetskort.getId()
+                messageId,
+                funksjonellId
             );
         }
     }

@@ -4,6 +4,8 @@ import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.OppgaveLenke;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
@@ -160,10 +162,10 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .source(rs.getString("SOURCE"))
                 .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("TYPE")))
                 .tiltaksKode(rs.getString("TILTAK_KODE"))
-                .oppgave()
-                .handlinger()
-                .etiketter()
-                .detaljer()
+                .oppgave(rs.getObject("OPPGAVE", OppgaveLenke.class))
+                .handlinger(null) // TODO
+                .etiketter(null)
+                .detaljer(null)
                 .build();
     }
 

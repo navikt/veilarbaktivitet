@@ -14,7 +14,7 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 @With
-public class AktivitetskortDTO {
+public class Aktivitetskort {
     UUID id;
     String personIdent;
     String tittel;
