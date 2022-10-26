@@ -1,0 +1,265 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema",
+  "$id": "https://aktivitetskort.nav.no/aktivitetskort_v1.json",
+  "title": "AktivitetskortV1 Schema",
+  "description": "Kommando-basert grensesnitt for å opprette og endre aktivitetskort i aktivitetsplanen. \nLøsningen er beregnet på team som har data i sine systemer som skal representeres som en aktivitet i aktivitetsplan, for eksempel tiltaksgjennomføringer. ",
+  "type": "object",
+  "required": [
+    "messageId",
+    "source",
+    "sendt",
+    "actionType",
+    "payload"
+  ],
+  "properties": {
+    "messageId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unik meldingsid på UUID format for kafka meldingen."
+    },
+    "source": {
+      "type": "string",
+      "examples": [
+        "ARENA_TILTAK_AKTIVITET_ACL", "TOI"
+      ],
+      "description": "Opprinnelses kildesystem for meldingen."
+    },
+    "sendt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Dato og tidspunkt da meldingen ble produsert."
+    },
+    "actionType": {
+      "type": "string",
+      "enum": ["UPSERT_AKTIVITETSKORT_V1"],
+      "description": "Actiontype gir en instruksjon om hvordan meldingen skal behandles. En aktionType vil typisk være knyttet til hvilken aktivitetstype som skal opprettes eller endres."
+    },
+    "aktivitetskortType": {
+      "type": "string",
+      "enum": ["MIDL_LONNSTILSK", "MANGE_ANDRE"]
+    },
+    "aktivitetskort": {
+      "$ref": "#/definitions/aktivitetskort",
+      "description": "Payload inneholder selve aktivitetsdataene, og kan være av ulik type avhengig av hvilken aktivitetstype som skal opprettes. Alle aktivitetstyper må inneholde basisfeltene som er felles for alle aktivitetstyper, slik som id, personIdent, tittel, aktivitetStatus, etc. "
+    }
+  },
+  "definitions": {
+    "aktivitetskort": {
+      "type": "object",
+      "required": [
+        "id",
+        "personIdent",
+        "tittel",
+        "aktivitetStatus",
+        "startDato",
+        "beskrivelse",
+        "endretAv",
+        "endretTidspunkt",
+        "avtaltMedNav"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Funksjonell ID for aktiviteten er en globalt unik UUID for aktiviteten. Ved vellykket opprettelse av aktiviteten, vil aktiviteten kunne gjenfinnnes ved hjelp av denne iden. Senere modifisering av samme aktivitet vil også bruke denne iden for å identifisere korrekt aktivitet."
+        },
+        "personIdent": {
+          "type": "string",
+          "examples": [
+            "10068831950"
+          ],
+          "description": "Norsk identitetsnummer (d-nr eller f-nr) for personen som eier aktivitetskortet"
+        },
+        "aktivitetStatus": {
+          "type": "string",
+          "enum": [
+            "FORSLAG","PLANLAGT", "GJENNOMFORES", "FULLFORT", "AVBRUTT"
+          ],
+          "description": "Dette feltet forteller hvilken status aktiviteten har, og dermed hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant, da dette er en endelig status."
+        },
+        "tittel": {
+          "type": "string",
+          "description": "Tittelen på aktivitetskortet"
+        },
+        "beskrivelse": {
+          "type": "string",
+          "description": "Beskrivende tekst for aktiviteten"
+        },
+        "startDato": {
+          "type": "string",
+          "format": "date",
+          "examples": [
+            "2022-03-01"
+          ],
+          "description": "Planlagt startdato for aktiviteten"
+        },
+        "sluttDato": {
+          "type": "string",
+          "format": "date",
+          "examples": [
+            "2022-05-15"
+          ],
+          "description": "Planlagt sluttdato for aktiviteten"
+        },
+        "endretAv": {
+          "type": "object",
+          "required": [
+            "ident",
+            "identType"
+          ],
+          "description": "Sporingsfelt som identifiserer hvem som oppretter eller endrer aktiviteten",
+          "properties": {
+            "ident": {
+              "type": "string",
+              "examples": [
+                "Z999999"
+              ],
+              "description": "Id til bruker som oppretter eller endrer aktiviteten"
+            },
+            "identType": {
+              "type": "string",
+              "enum": [
+                "ARENAIDENT","NAVIDENT","PERSONBRUKER"
+              ],
+              "description": "Type ident. Kan være navIdent, arenaIdent, på sikt kanskje tiltaksarrangør, arbeidsgiver eller eksternBruker"
+            }
+          },
+          "examples": [
+            {
+              "ident": "AAA123",
+              "identType": "ARENAIDENT"
+            }
+          ]
+        },
+        "endretTidspunkt": {
+          "type": "string",
+          "format": "date-time",
+          "examples": [
+            "2022-09-17T21:00:14"
+          ],
+          "description": "Dato-tid for opprettelse eller endring i kildesystemet"
+        },
+        "avtaltMedNav": {
+          "type": "boolean",
+          "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette gjelder typisk aktiviteter med aktivitetsplikt."
+        },
+        "avsluttetBegrunnelse": {
+          "type": "string",
+          "description": "Ved avbrudd i aktiviteten, kan det legges til en begrunnelse for avbrytelsen."
+        },
+        "oppgave": {
+          "type": "object",
+          "properties": {
+            "ekstern": {
+              "$ref": "#/definitions/oppgavelenke"
+            },
+            "intern": {
+              "$ref": "#/definitions/oppgavelenke"
+            }
+          }
+        },
+        "handlinger": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/oppgavelenke"
+          }
+        },
+        "detaljer": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet",
+          "examples": [
+            {
+              "deltakelseProsent": "100",
+              "dagerPerUke": "5"
+            }
+          ]
+        },
+        "etiketter": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["A", "B", "C"]
+          },
+          "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
+      }
+    },
+    "oppgavelenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "handlinglenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "path": {
+          "type": "string"
+        },
+        "lenkeType": {
+          "type": "string",
+          "enum": [
+            "EKSTERN","INTERN","FELLES"
+          ]
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "messageId": "329102a1-6253-4324-8b2b-c2da379055c0",
+      "source": "DAB",
+      "sendt": "2022-09-24T00:00:00.55555555",
+      "actionType": "UPSERT_TILTAK_AKTIVITET_V1",
+      "payload": {
+        "id": "f9820d83-0674-4df6-8d25-4322af86fbe0",
+        "eksternReferanseId": 1234567,
+        "personIdent": "12345678999",
+        "tittel": "Tiltak hos NAV Bærum",
+        "aktivitetStatus": "FULLFORT",
+        "startDato": "2022-04-01",
+        "sluttDato": "2022-06-30",
+        "beskrivelse": "beskrivelse",
+        "endretAv": {
+          "identType": "arenaIdent",
+          "ident": "AAA0000"
+        },
+        "endretTidspunkt": "2022-09-17T21:00:00",
+        "avtaltMedNav": true,
+        "tiltaksKode": "MIDLONTIL",
+        "tiltaksNavn": "Midlertidig lønnstilskudd",
+        "deltakelseStatus": "FATT_PLASS",
+        "arrangorNavn": "NAV BÆRUM",
+        "detaljer": {
+          "deltakelseProsent": "80",
+          "dagerPerUke": "4"
+        }
+      }
+    }
+  ]
+}
+
+
+
