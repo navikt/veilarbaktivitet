@@ -39,35 +39,35 @@ public class AktivitetskortService {
 
     private final PersonService personService;
 
-    public void upsertAktivitetskort(TiltaksaktivitetDTO tiltaksaktivitet, boolean erArenaAktivitet) throws UlovligEndringFeil, UgyldigIdentFeil {
-        Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(tiltaksaktivitet.id);
-        Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(tiltaksaktivitet.personIdent));
+    public void upsertAktivitetskort(AktivitetskortDTO aktivitetskort, boolean erArenaAktivitet, ArenaId eksternReferanseId) throws UlovligEndringFeil, UgyldigIdentFeil {
+        Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.id);
+        Person.AktorId aktorIdForPersonBruker = hentAktorId(Person.fnr(aktivitetskort.personIdent));
 
-        Person endretAvIdent = toPerson(tiltaksaktivitet.getEndretAv());
+        Person endretAvIdent = toPerson(aktivitetskort.getEndretAv());
         var aktivitetData = maybeAktivitet
-                .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()))
-                .orElse(AktivitetskortMapper.mapTilAktivitetData(tiltaksaktivitet, tiltaksaktivitet.endretDato, tiltaksaktivitet.endretDato, aktorIdForPersonBruker.get()));
+                .map(gammelaktivitet -> AktivitetskortMapper.mapTilAktivitetData(aktivitetskort, dateToLocalDateTime(gammelaktivitet.getOpprettetDato()), aktorIdForPersonBruker.get()))
+                .orElse(AktivitetskortMapper.mapTilAktivitetData(aktivitetskort, aktivitetskort.endretTidspunkt, aktorIdForPersonBruker.get()));
 
         if (maybeAktivitet.isPresent()) {
-            var oppdatertAktivitet = oppdaterTiltaksAktivitet(maybeAktivitet.get(), aktivitetData);
-            log.info("Oppdaterte eksternt aktivitetskort {}", oppdatertAktivitet);
+            var oppdatertAktivitet = oppdaterEksternAktivitet(maybeAktivitet.get(), aktivitetData);
+            log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
         } else {
-            var opprettetAktivitet = opprettTiltaksAktivitet(aktivitetData, endretAvIdent, tiltaksaktivitet.endretDato);
-            log.info("Opprettet eksternt aktivitetskort {}", opprettetAktivitet);
+            var opprettetAktivitet = opprettEksternAktivitet(aktivitetData, endretAvIdent, aktivitetskort.endretTidspunkt);
+            log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             if (erArenaAktivitet) {
-                arenaspesifikkMigrering(tiltaksaktivitet, opprettetAktivitet);
+                arenaspesifikkMigrering(aktivitetskort, opprettetAktivitet, eksternReferanseId);
             }
         }
     }
 
-    private void arenaspesifikkMigrering(TiltaksaktivitetDTO tiltaksaktivitet, AktivitetData opprettetAktivitet) {
+    private void arenaspesifikkMigrering(AktivitetskortDTO tiltaksaktivitet, AktivitetData opprettetAktivitet, ArenaId eksternReferanseId) {
         idMappingDAO.insert(new IdMapping(
-                new ArenaId(tiltaksaktivitet.eksternReferanseId),
+                eksternReferanseId,
                 opprettetAktivitet.getId(),
                 tiltaksaktivitet.id
         ));
 
-        Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(new ArenaId(tiltaksaktivitet.getEksternReferanseId())))
+        Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(eksternReferanseId))
                 .ifPresent(fho -> {
                     int updated = forhaandsorienteringDAO.leggTilTekniskId(fho.getId(), opprettetAktivitet.getId());
                     if (updated == 0) return;
@@ -81,7 +81,7 @@ public class AktivitetskortService {
                 });
 
         // oppdater alle brukernotifikasjoner med aktivitet arena-ider
-        brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(opprettetAktivitet.getId(), opprettetAktivitet.getVersjon(), new ArenaId(tiltaksaktivitet.eksternReferanseId));
+        brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(opprettetAktivitet.getId(), opprettetAktivitet.getVersjon(), eksternReferanseId);
     }
 
     private Person toPerson(IdentDTO ident) {
@@ -121,7 +121,7 @@ public class AktivitetskortService {
         }
     }
 
-    private AktivitetData oppdaterTiltaksAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
+    private AktivitetData oppdaterEksternAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
         if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
         return Stream.of(gammelAktivitet)
             .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
@@ -129,7 +129,7 @@ public class AktivitetskortService {
             .findFirst().orElse(null);
     }
 
-    private AktivitetData opprettTiltaksAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
+    private AktivitetData opprettEksternAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
         return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
     }
 

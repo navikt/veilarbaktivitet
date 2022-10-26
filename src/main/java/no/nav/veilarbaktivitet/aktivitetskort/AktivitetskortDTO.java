@@ -14,25 +14,21 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 @With
-public class TiltaksaktivitetDTO {
-    // aktivitetdata
+public class AktivitetskortDTO {
     UUID id;
-    String eksternReferanseId;
     String personIdent;
-    LocalDate startDato;
-    LocalDate sluttDato;
     String tittel;
     String beskrivelse;
     AktivitetStatus aktivitetStatus;
+    LocalDate startDato;
+    LocalDate sluttDato;
     IdentDTO endretAv;
-    LocalDateTime endretDato;
+    LocalDateTime endretTidspunkt;
+    Boolean avtaltMedNav;
+    // String avsluttetBegrunnelse;
 
-    // tiltaksaktivitetdata spesifikt
-    String arrangoernavn;
-    String tiltaksNavn;
-    String tiltaksKode;
-    String deltakelseStatus;
-
-    @Singular("detalj")
-    Map<String, String> detaljer;
+    OppgaveLenke oppgave;
+    LenkeSeksjon[] handlinger;
+    Attributt[] detaljer;
+    Etikett[] etiketter;
 }

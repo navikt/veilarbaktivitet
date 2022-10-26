@@ -91,8 +91,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
-    TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
-        return TiltaksaktivitetDTO.builder()
+    AktivitetskortDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
+        return AktivitetskortDTO.builder()
                 .id(funksjonellId)
                 .eksternReferanseId(new Random().nextLong() + "")
                 .personIdent(mockBruker.getFnr())
@@ -112,12 +112,12 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .build();
     }
 
-    KafkaAktivitetWrapperDTO aktivitetskortMelding(TiltaksaktivitetDTO payload) {
+    KafkaAktivitetskortWrapperDTO aktivitetskortMelding(AktivitetskortDTO payload) {
         return aktivitetskortMelding(payload, UUID.randomUUID());
     }
 
-    KafkaAktivitetWrapperDTO aktivitetskortMelding(TiltaksaktivitetDTO payload, UUID messageId) {
-        return KafkaTiltaksAktivitet.builder()
+    KafkaAktivitetskortWrapperDTO aktivitetskortMelding(AktivitetskortDTO payload, UUID messageId) {
+        return KafkaTiltaksAktivitetskort.builder()
                 .messageId(messageId)
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
                 .sendt(LocalDateTime.now())
@@ -126,12 +126,12 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .build();
     }
 
-    void sendOgVentPåTiltak(List<TiltaksaktivitetDTO> meldinger) {
+    void sendOgVentPåTiltak(List<AktivitetskortDTO> meldinger) {
         var aktivitetskorter = meldinger.stream().map(this::aktivitetskortMelding).toList();
         sendOgVentPåMeldinger(aktivitetskorter);
     }
 
-    void sendOgVentPåMeldinger(List<KafkaAktivitetWrapperDTO> meldinger) {
+    void sendOgVentPåMeldinger(List<KafkaAktivitetskortWrapperDTO> meldinger) {
         var lastrecord = Streams.mapWithIndex(meldinger.stream(),
                 (aktivitetskort, index) -> new ProducerRecord<>(topic, aktivitetskort.funksjonellId().toString(), JsonUtils.toJson(aktivitetskort)))
             .map((record) -> producerClient.sendSync(record))
@@ -153,7 +153,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void happy_case_upsert_ny_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
         var aktivitet = hentAktivitet(funksjonellId);
@@ -175,8 +175,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void happy_case_upsert_status_existing_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetUpdate = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES);
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitetUpdate = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES);
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate));
 
@@ -184,7 +184,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.TILTAKSAKTIVITET);
         Assertions.assertNotNull(aktivitet);
-        assertThat(tiltaksaktivitet.endretDato).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
+        assertThat(tiltaksaktivitet.endretTidspunkt).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
         Assertions.assertEquals(tiltaksaktivitet.endretAv.ident(), aktivitet.getEndretAv());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
@@ -194,11 +194,11 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void duplikat_melding_bare_1_opprettet_transaksjon() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO aktivitetskortDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
 
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskortMelding(tiltaksaktivitetDTO);
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO =  aktivitetskortMelding(aktivitetskortDTO);
 
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
+        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetskortWrapperDTO));
         RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
         RecordMetadata recordMetadataDuplicate = producerClient.sendSync(producerRecord);
         Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataDuplicate.offset()));
@@ -215,8 +215,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void oppdatering_av_detaljer_gir_riktig_transaksjon() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
                 .withTiltaksNavn("Nytt navn");
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
@@ -229,8 +229,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void oppdatering_status_og_detaljer_gir_2_transaksjoner() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES)
                 .withDeltakelseStatus("FÅTT_PLASS");
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
@@ -249,10 +249,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void endretTidspunkt_skal_settes_fra_melding() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withEndretDato(endretDato);
+        AktivitetskortDTO aktivitetskortDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withEndretTidspunkt(endretDato);
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitetDTO));
+        sendOgVentPåTiltak(List.of(aktivitetskortDTO));
 
         var aktivitet = hentAktivitet(funksjonellId);
         Instant endretDatoInstant = endretDato.atZone(ZoneId.systemDefault()).toInstant();
@@ -359,7 +359,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
         assertFeilmeldingPublished(
@@ -371,8 +371,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void should_not_commit_database_transaction_if_runtimeException_is_thrown2() {
         UUID funksjonellId = UUID.randomUUID();
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetOppdatert = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitetOppdatert = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT)
             .withTiltaksNavn("Nytt navn");
         var aktivitetskort = aktivitetskortMelding(tiltaksaktivitet);
         var aktivitetskortOppdatert = aktivitetskortMelding(tiltaksaktivitetOppdatert);
@@ -401,7 +401,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
                 .withEksternReferanseId("123");
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
@@ -427,7 +427,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var record = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), null);
         // Migrer arenaaktivitet via topic
         UUID funksjonellId = UUID.randomUUID();
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
             .withEksternReferanseId(arenaaktivitetId);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
         // Bruker leser fho (POST på /lest)
@@ -440,7 +440,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
         ArenaId arenaaktivitetId =  new ArenaId("123");
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
                 .withEksternReferanseId(arenaaktivitetId.id());
 
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(false);
@@ -460,7 +460,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     public void skal_ikke_kunne_endre_historisk_aktivitet() {
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
         avsluttOppfolgingsPeriode();
         sendOgVentPåTiltak(List.of(
@@ -494,7 +494,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     public void skal_ikke_gi_ut_tiltakaktiviteter_pa_intern_api() {
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        AktivitetskortDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
         var aktiviteter = aktivitetTestService.hentAktiviteterInternApi(veileder, mockBruker.getAktorIdAsAktorId());
         assertThat(aktiviteter).isEmpty();

@@ -20,36 +20,36 @@ public class AktivitetskortProducerUtil {
 
     public record Pair(String json, UUID messageId) {}
 
-    private static JsonNode aktivitetMessageNode(KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO) {
-        return JsonUtils.getMapper().valueToTree(kafkaAktivitetWrapperDTO);
+    private static JsonNode aktivitetMessageNode(KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO) {
+        return JsonUtils.getMapper().valueToTree(kafkaAktivitetskortWrapperDTO);
     }
 
     public static Pair missingFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("payload");
         payload.remove("tittel");
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
     public static Pair extraFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("payload");
         payload.put("kake", "123");
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
     public static Pair invalidDateFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("payload");
         payload.set("startDato", new TextNode("2022/-1/04T12:00:00+02:00"));
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
-    private static KafkaAktivitetWrapperDTO kafkaAktivitetWrapper() {
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = TiltaksaktivitetDTO.builder()
+    private static KafkaAktivitetskortWrapperDTO kafkaAktivitetWrapper() {
+        AktivitetskortDTO aktivitetskortDTO = AktivitetskortDTO.builder()
                 .id(UUID.randomUUID())
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
@@ -58,7 +58,7 @@ public class AktivitetskortProducerUtil {
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretDato(LocalDateTime.now().minusDays(100))
+                .endretTidspunkt(LocalDateTime.now().minusDays(100))
                 .tiltaksNavn("Arendal")
                 .tiltaksKode("Arenatiltakskode")
                 .arrangoernavn("Arenaarrangørnavn")
@@ -67,12 +67,12 @@ public class AktivitetskortProducerUtil {
                 .detalj("dagerPerUke", "2")
                 .build();
 
-        return KafkaTiltaksAktivitet.builder()
+        return KafkaTiltaksAktivitetskort.builder()
                 .messageId(UUID.randomUUID())
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
                 .sendt(LocalDateTime.now())
                 .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(tiltaksaktivitetDTO)
+                .payload(aktivitetskortDTO)
                 .build();
     }
 }

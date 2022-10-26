@@ -11,8 +11,8 @@ public class AktivitetsCompareUtilTest {
     public void deltakelsestatusendring_skal_være_faktisk_endring() {
         var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
         var nyAktivitet = gammelAktivitet
-                .withTiltaksaktivitetData(gammelAktivitet
-                    .getTiltaksaktivitetData()
+                .withEksternAktivitetData(gammelAktivitet
+                    .getEksternAktivitetData()
                         .withDeltakelseStatus("MOETE")
                 );
         Assertions.assertThat(
@@ -60,7 +60,7 @@ public class AktivitetsCompareUtilTest {
     public void tiltaksnavn_endring_er_faktisk_endring() {
         var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
         var nyAktivitet = gammelAktivitet
-            .withTiltaksaktivitetData(gammelAktivitet.getTiltaksaktivitetData()
+            .withEksternAktivitetData(gammelAktivitet.getEksternAktivitetData()
                 .withTiltaksnavn("Nytt navn")
             );
         Assertions.assertThat(

@@ -46,7 +46,7 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData(), erEkstern);
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData(), erEkstern);
-        FunctionUtils.nullSafe(AktivitetDTOMapper::mapTiltak).accept(aktivitetDTO, aktivitet.getTiltaksaktivitetData());
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapTiltak).accept(aktivitetDTO, aktivitet.getEksternAktivitetData());
         return aktivitetDTO;
     }
 
@@ -110,7 +110,7 @@ public class AktivitetDTOMapper {
                 .orElse(null);
     }
 
-    public static void mapTiltak(AktivitetDTO aktivitetDTO, TiltaksaktivitetData tiltak) {
+    public static void mapTiltak(AktivitetDTO aktivitetDTO, EksternAktivitetData tiltak) {
         aktivitetDTO.
                 setTiltak(new TiltakDTO(
                 tiltak.tiltaksnavn(),

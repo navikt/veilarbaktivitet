@@ -79,5 +79,5 @@ public class AktivitetDTO {
 
     private StillingFraNavData stillingFraNavData;
 
-    private TiltakDTO tiltak;
+    private
 }

@@ -241,7 +241,7 @@ public class AktivitetService {
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
                 .transaksjonsType(transType)
-                .tiltaksaktivitetData(merger.map(AktivitetData::getTiltaksaktivitetData).merge(this::mergeTiltaksAktivitet))
+                .eksternAktivitetData(merger.map(AktivitetData::getEksternAktivitetData).merge(this::mergeEksternAktivitet))
                 .fhoId(originalAktivitet.getFhoId() != null ? originalAktivitet.getFhoId() : aktivitet.getFhoId()) // Tilltater ikke å endre fhoId her
                 .build(),
                 endretDato);
@@ -297,14 +297,15 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    private TiltaksaktivitetData mergeTiltaksAktivitet(TiltaksaktivitetData left, TiltaksaktivitetData right) {
+    private EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData left, EksternAktivitetData right) {
         return left
-            .withTiltaksnavn(right.tiltaksnavn())
-            .withTiltakskode(right.tiltakskode())
-            .withArrangornavn(right.arrangornavn())
-            .withDagerPerUke(right.dagerPerUke())
-            .withDeltakelseStatus(right.deltakelseStatus())
-            .withDeltakelsesprosent(right.deltakelsesprosent());
+                .withDetaljer(right.getDetaljer())
+                .withEtiketter(right.getEtiketter())
+                .withHandlinger(right.getHandlinger())
+                .withOppgave(right.getOppgave())
+                .withSource(right.getSource())
+                .withTiltaksKode(right.getTiltaksKode())
+                .withType(right.getType());
     }
 
     @Transactional

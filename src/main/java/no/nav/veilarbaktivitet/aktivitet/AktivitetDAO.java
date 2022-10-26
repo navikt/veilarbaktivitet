@@ -4,15 +4,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
-import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
-import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
-import org.apache.tomcat.jni.Local;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -198,7 +195,7 @@ public class AktivitetDAO {
         insertBehandling(aktivitetId, versjon, aktivitet.getBehandlingAktivitetData());
         insertMote(aktivitetId, versjon, aktivitet.getMoteData());
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
-        insertTiltak(aktivitetId, versjon, aktivitet.getTiltaksaktivitetData());
+        insertEksternAktivitet(aktivitetId, versjon, aktivitet.getEksternAktivitetData());
 
         AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(Date.from(endretDato.atZone(ZoneId.systemDefault()).toInstant()));
 
@@ -421,27 +418,27 @@ public class AktivitetDAO {
                 );
     }
 
-    private void insertTiltak(long aktivitetId, long versjon, TiltaksaktivitetData tiltaksaktivitetData) {
-        Optional.ofNullable(tiltaksaktivitetData)
+    private void insertEksternAktivitet(long aktivitetId, long versjon, EksternAktivitetData eksternAktivitetData) {
+        Optional.ofNullable(eksternAktivitetData)
                 .ifPresent(tiltak -> {
                     SqlParameterSource params = new MapSqlParameterSource()
                             .addValue(AKTIVITETID, aktivitetId)
                             .addValue(VERSJON, versjon)
-                            .addValue("tiltak_kode", tiltaksaktivitetData.tiltakskode())
-                            .addValue("tiltak_navn", tiltaksaktivitetData.tiltaksnavn())
-                            .addValue("arrangor_navn", tiltaksaktivitetData.arrangornavn())
-                            .addValue("deltakelsestatus", tiltaksaktivitetData.deltakelseStatus())
-                            .addValue("dager_per_uke", tiltaksaktivitetData.dagerPerUke())
-                            .addValue("deltakelseprosent", tiltaksaktivitetData.deltakelsesprosent());
+                            .addValue("source", eksternAktivitetData.getSource())
+                            .addValue("tiltak_kode", eksternAktivitetData.getTiltaksKode())
+                            .addValue("type", eksternAktivitetData.getType().name())
+                            .addValue("oppgave", eksternAktivitetData.getOppgave())
+                            .addValue("handlinger", eksternAktivitetData.getHandlinger())
+                            .addValue("detaljer", eksternAktivitetData.getDetaljer())
+                            .addValue("etiketter", eksternAktivitetData.getEtiketter());
                     // language=sql
                     database.getNamedJdbcTemplate().update(
-                            """
-                                       INSERT INTO TILTAKSAKTIVITET
-                                       (aktivitet_id, versjon, tiltak_kode, tiltak_navn, ARRANGOR_NAVN, deltakelsestatus, dager_per_uke, deltakelseprosent ) VALUES
-                                       (:aktivitet_id, :versjon, :tiltak_kode, :tiltak_navn, :arrangor_navn, :deltakelsestatus, :dager_per_uke, :deltakelseprosent)
-                                       """,
-                            // TODO 2 flytte dager_per_uke og deltakelseprosent ut i tiltakdetalj tabell
-                            params
+                    """
+                        INSERT INTO TILTAKSAKTIVITET
+                        (aktivitet_id, versjon, source, tiltak_kode, type, oppgave, handlinger, detaljer, etiketter) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        """,
+                    params
                     );
                 });
     }

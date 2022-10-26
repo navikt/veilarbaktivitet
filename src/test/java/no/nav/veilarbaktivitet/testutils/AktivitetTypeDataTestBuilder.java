@@ -105,8 +105,8 @@ public class AktivitetTypeDataTestBuilder {
                 .build();
     }
 
-    public static TiltaksaktivitetData tiltaksaktivitetData() {
-        return TiltaksaktivitetData.builder()
+    public static EksternAktivitetData tiltaksaktivitetData() {
+        return EksternAktivitetData.builder()
                 .arrangornavn("NAV")
                 .dagerPerUke(5)
                 .deltakelseStatus("GJENN")
