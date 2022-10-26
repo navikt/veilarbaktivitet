@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -27,6 +27,9 @@ public class ArenaController {
     private final ArenaService arenaService;
     private final IdMappingDAO idMappingDAO;
 
+    private final MigreringService migreringService;
+
+
     @PutMapping("/forhaandsorientering")
     public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam ArenaId arenaaktivitetId) {
         if (!authService.erInternBruker()) {
@@ -46,6 +49,8 @@ public class ArenaController {
         return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident);
     }
 
+
+
     @GetMapping("/tiltak")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
@@ -59,7 +64,9 @@ public class ArenaController {
                 if (aktivtetId != null && aktivtetId.aktivitetId() != null)
                     return arenaAktivitet.withAktivitetId(aktivtetId.aktivitetId());
                 return arenaAktivitet;
-            }).toList();
+            })
+                .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv())
+                .toList();
     }
 
 

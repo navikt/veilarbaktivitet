@@ -1,11 +1,13 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -45,11 +47,15 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
 public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
+
+    @Autowired
+    UnleashClient unleashClient;
 
     @Autowired
     KafkaProducerClient<String, String> producerClient;
@@ -80,6 +86,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Before
     public void cleanupBetweenTests() {
+        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
@@ -149,14 +156,12 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
         sendOgVentPåTiltak(List.of(tiltaksaktivitet));
 
-        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-                .aktiviteter.stream()
-                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-                .findFirst();
-        Assertions.assertTrue(aktivitet.isPresent());
+        var aktivitet = hentAktivitet(funksjonellId);
 
-        Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.get().getStatus());
-        Assertions.assertEquals(aktivitet.get().getTiltak(), new TiltakDTO(
+        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.TILTAKSAKTIVITET);
+
+        Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
+        Assertions.assertEquals(aktivitet.getTiltak(), new TiltakDTO(
                 tiltaksaktivitet.getTiltaksNavn(),
                 tiltaksaktivitet.getArrangoernavn(),
                 tiltaksaktivitet.getDeltakelseStatus(),
@@ -177,6 +182,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
 
+        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.TILTAKSAKTIVITET);
         Assertions.assertNotNull(aktivitet);
         assertThat(tiltaksaktivitet.endretDato).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
         Assertions.assertEquals(tiltaksaktivitet.endretAv.ident(), aktivitet.getEndretAv());
@@ -436,6 +442,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ArenaId arenaaktivitetId =  new ArenaId("123");
         TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
                 .withEksternReferanseId(arenaaktivitetId.id());
+
+        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(false);
 
         var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(preMigreringArenaAktiviteter).hasSize(1);

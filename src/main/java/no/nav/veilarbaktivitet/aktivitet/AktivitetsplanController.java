@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -18,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
 
@@ -32,6 +32,8 @@ public class AktivitetsplanController {
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
 
+    private final MigreringService migreringService;
+
     @GetMapping
     public AktivitetsplanDTO hentAktivitetsplan() {
         boolean erEksternBruker = authService.erEksternBruker();
@@ -39,6 +41,7 @@ public class AktivitetsplanController {
                 .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
+                .filter(migreringService.ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv())
                 .toList();
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);

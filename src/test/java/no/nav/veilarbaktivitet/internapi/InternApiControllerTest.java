@@ -80,6 +80,8 @@ public class InternApiControllerTest extends SpringBootTestBase {
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
             if (type.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) {
                 aktivitetTestService.opprettStillingFraNav(mockBruker);
+            } else if (type == AktivitetTypeDTO.TILTAKSAKTIVITET) {
+                // TODO aktivitetTestService.opprettEksternAktivitet(mockBruker);
             } else {
                 AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(type);
                 aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, aktivitetDTO);
@@ -94,7 +96,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
 
-        assertThat(AktivitetTypeDTO.values()).hasSize(aktiviteter.size());
+        assertThat(AktivitetTypeDTO.values()).hasSize(aktiviteter.size() + 1);
     }
 
     @Test

@@ -29,6 +29,7 @@ public class Helpers {
             typeMap.put(AktivitetTypeData.MOTE, AktivitetTypeDTO.MOTE);
             typeMap.put(AktivitetTypeData.SAMTALEREFERAT, AktivitetTypeDTO.SAMTALEREFERAT);
             typeMap.put(AktivitetTypeData.STILLING_FRA_NAV, AktivitetTypeDTO.STILLING_FRA_NAV);
+            typeMap.put(AktivitetTypeData.TILTAKSAKTIVITET, AktivitetTypeDTO.TILTAKSAKTIVITET);
         }
 
         public static AktivitetTypeData getData(AktivitetTypeDTO dto) {

@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.arena;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
@@ -60,9 +62,13 @@ public class ArenaControllerTest {
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db);
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
 
+    private final UnleashClient unleashClient = mock(UnleashClient.class);
+
+    private final MigreringService migreringService = new MigreringService(unleashClient);
+
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient);
-    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, migreringService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
