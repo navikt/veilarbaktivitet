@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import shaded.com.google.common.collect.Streams;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -130,20 +131,19 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     void sendOgVentPåMeldinger(List<KafkaAktivitetskortWrapperDTO> meldinger, List<MeldingContext> contexts) {
+        Assertions.assertEquals(meldinger.size(), contexts.size());
 
-        Stream<MeldingContext> contextStream = contexts.stream();
-
-
-
-        var lastrecord = meldinger.stream()
-                .flatMap(melding -> contextStream.flatMap( context -> Stream.of(makeProducerRecord(melding, context)) ) )
+        var lastRecord = Streams.mapWithIndex(meldinger.stream(),
+                (melding, index) -> makeProducerRecord(melding, contexts.get((int) index)))
                 .map((record) -> producerClient.sendSync(record))
                 .skip(meldinger.size() - 1)
                 .findFirst().get();
 
         Awaitility.await().atMost(Duration.ofSeconds(5))
-            .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastrecord.offset()));
+            .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.offset()));
     }
+
+
 
     private ProducerRecord makeProducerRecord(KafkaAktivitetskortWrapperDTO melding, MeldingContext context) {
         List<Header> headers = List.of(
