@@ -59,20 +59,18 @@ public class AktivitetskortProducerUtil {
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
                 .endretTidspunkt(LocalDateTime.now().minusDays(100))
-                .tiltaksNavn("Arendal")
-                .tiltaksKode("Arenatiltakskode")
-                .arrangoernavn("Arenaarrangørnavn")
-                .deltakelseStatus("SOKT_INN")
-                .detalj("deltakelsesprosent", "40")
-                .detalj("dagerPerUke", "2")
+                .detalj(new Attributt("deltakelsesprosent", "40"))
+                .detalj(new Attributt("dagerPerUke", "2"))
                 .build();
 
-        return KafkaTiltaksAktivitetskort.builder()
+        return KafkaAktivitetskortWrapperDTO
+                .builder()
                 .messageId(UUID.randomUUID())
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
                 .sendt(LocalDateTime.now())
-                .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(aktivitetskort)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(aktivitetskort)
+                .aktivitetskortType(AktivitetskortType.ARENA_TILTAK)
                 .build();
     }
 }

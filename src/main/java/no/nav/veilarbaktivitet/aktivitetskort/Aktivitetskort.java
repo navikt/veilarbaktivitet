@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -28,7 +29,10 @@ public class Aktivitetskort {
     // String avsluttetBegrunnelse;
 
     OppgaveLenke oppgave;
-    LenkeSeksjon[] handlinger;
-    Attributt[] detaljer;
-    Etikett[] etiketter;
+    @Singular("handling")
+    List<LenkeSeksjon> handlinger;
+    @Singular("detalj")
+    List<Attributt> detaljer;
+    @Singular("etikett")
+    List<Etikett> etiketter;
 }

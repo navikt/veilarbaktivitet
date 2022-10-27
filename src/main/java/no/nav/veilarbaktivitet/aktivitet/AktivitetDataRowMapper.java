@@ -1,15 +1,19 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.Oppgave;
 import no.nav.veilarbaktivitet.aktivitetskort.OppgaveLenke;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import oracle.sql.json.OracleJsonObject;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -158,11 +162,31 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
+
+        OracleJsonObject oppgaveLenkeJsonObject = rs.getObject("OPPGAVE", OracleJsonObject.class);
+        JsonObject jsonObject = oppgaveLenkeJsonObject.wrap(JsonObject.class);
+        JsonObject eksternJsonObject = jsonObject.getAsJsonObject("ekstern");
+        JsonObject internJsonObject = jsonObject.getAsJsonObject("intern");
+
+        Oppgave eksternOppgave = new Oppgave(
+                eksternJsonObject.get("tekst").getAsString(),
+                eksternJsonObject.get("subtekst").getAsString(),
+                eksternJsonObject.get("url").getAsString(),
+                eksternJsonObject.get("knapptekst").getAsString()
+        );
+
+        Oppgave internOppgave = new Oppgave(
+                internJsonObject.get("tekst").getAsString(),
+                internJsonObject.get("subtekst").getAsString(),
+                internJsonObject.get("url").getAsString(),
+                internJsonObject.get("knapptekst").getAsString()
+        );
+
         return EksternAktivitetData.builder()
                 .source(rs.getString("SOURCE"))
                 .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("TYPE")))
                 .tiltaksKode(rs.getString("TILTAK_KODE"))
-                .oppgave(rs.getObject("OPPGAVE", OppgaveLenke.class))
+                .oppgave(new OppgaveLenke(eksternOppgave, internOppgave))
                 .handlinger(null) // TODO
                 .etiketter(null)
                 .detaljer(null)

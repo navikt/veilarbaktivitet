@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+import java.util.List;
+
 public class AktivitetsCompareUtilTest {
 
     @Test
@@ -13,7 +15,7 @@ public class AktivitetsCompareUtilTest {
         var nyAktivitet = gammelAktivitet
                 .withEksternAktivitetData(gammelAktivitet
                     .getEksternAktivitetData()
-                        .withDeltakelseStatus("MOETE")
+                        .withEtiketter(List.of(new Etikett("DELTAR")))
                 );
         Assertions.assertThat(
             AktivitetskortCompareUtil
@@ -61,7 +63,7 @@ public class AktivitetsCompareUtilTest {
         var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
         var nyAktivitet = gammelAktivitet
             .withEksternAktivitetData(gammelAktivitet.getEksternAktivitetData()
-                .withTiltaksnavn("Nytt navn")
+                    .withDetaljer(List.of(new Attributt("tiltaksnavn", "Hurra AS")))
             );
         Assertions.assertThat(
             AktivitetskortCompareUtil

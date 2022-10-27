@@ -2,8 +2,11 @@ package no.nav.veilarbaktivitet.aktivitet.domain;
 
 import lombok.Builder;
 import lombok.Data;
+import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
+
+import java.util.List;
 
 @Data
 @Builder(toBuilder = true)
@@ -13,7 +16,10 @@ public class EksternAktivitetData {
     String tiltaksKode;
     AktivitetskortType type;
     OppgaveLenke oppgave;
-    LenkeSeksjon[] handlinger;
-    Attributt[] detaljer;
-    Etikett[] etiketter;
+    @Singular("handling")
+    List<LenkeSeksjon> handlinger;
+    @Singular("detalj")
+    List<Attributt> detaljer;
+    @Singular("etikett")
+    List<Etikett> etiketter;
 }

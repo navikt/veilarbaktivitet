@@ -2,6 +2,9 @@ package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
@@ -107,11 +110,10 @@ public class AktivitetTypeDataTestBuilder {
 
     public static EksternAktivitetData tiltaksaktivitetData() {
         return EksternAktivitetData.builder()
-                .arrangornavn("NAV")
-                .dagerPerUke(5)
-                .deltakelseStatus("GJENN")
-                .tiltaksnavn("Kakebaking")
-                .tiltakskode("KODE123")
+                .type(AktivitetskortType.ARENA_TILTAK)
+                .detalj(new Attributt("Arrangør", "NAV"))
+                .detalj(new Attributt("Dager per uke", "5"))
+                .etikett(new Etikett("GJENN"))
                 .build();
     }
 }
