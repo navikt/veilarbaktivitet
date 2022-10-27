@@ -57,7 +57,7 @@ public class AktivitetDataTestBuilder {
             case STILLING_FRA_NAV:
                 return nyStillingFraNavMedCVKanDeles();
             case EKSTERNAKTIVITET:
-                return nyTiltaksaktivitet();
+                return nyEksternAktivitet();
             default: throw new IllegalArgumentException("ukjent type");
         }
     }
@@ -130,11 +130,11 @@ public class AktivitetDataTestBuilder {
     }
 
 
-    public static AktivitetData nyTiltaksaktivitet() {
+    public static AktivitetData nyEksternAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
                 .funksjonellId(UUID.randomUUID())
-                .eksternAktivitetData(AktivitetTypeDataTestBuilder.tiltaksaktivitetData())
+                .eksternAktivitetData(AktivitetTypeDataTestBuilder.eksternAktivitetData())
                 .build();
     }
 

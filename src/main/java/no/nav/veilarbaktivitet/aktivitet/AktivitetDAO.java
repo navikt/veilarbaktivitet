@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -43,7 +44,7 @@ public class AktivitetDAO {
             LEFT JOIN MOTE M ON A.aktivitet_id = M.aktivitet_id AND A.versjon = M.versjon
             LEFT JOIN BEHANDLING B ON A.aktivitet_id = B.aktivitet_id AND A.versjon = B.versjon
             LEFT JOIN STILLING_FRA_NAV SFN on A.aktivitet_id = SFN.aktivitet_id and A.versjon = SFN.versjon
-            LEFT JOIN TILTAKSAKTIVITET T on A.AKTIVITET_ID = T.AKTIVITET_ID and A.VERSJON = T.VERSJON
+            LEFT JOIN EKSTERNAKTIVITET T on A.AKTIVITET_ID = T.AKTIVITET_ID and A.VERSJON = T.VERSJON
             """;
 
     private final Database database;
@@ -427,7 +428,7 @@ public class AktivitetDAO {
                             .addValue(VERSJON, versjon)
                             .addValue("source", eksternAktivitetData.getSource())
                             .addValue("tiltak_kode", eksternAktivitetData.getTiltaksKode())
-                            .addValue("type", eksternAktivitetData.getType().name())
+                            .addValue("aktivitetkort_type", eksternAktivitetData.getType().name())
                             .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
                             .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
                             .addValue("detaljer", JsonUtils.toJson(eksternAktivitetData.getDetaljer()))
@@ -435,9 +436,9 @@ public class AktivitetDAO {
                     // language=sql
                     database.getNamedJdbcTemplate().update(
                     """
-                        INSERT INTO TILTAKSAKTIVITET
-                        (aktivitet_id, versjon, source, tiltak_kode, type, oppgave, handlinger, detaljer, etiketter) VALUES
-                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        INSERT INTO EKSTERNAKTIVITET
+                        (aktivitet_id, versjon, source, tiltak_kode, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
                         """,
                     params
                     );

@@ -515,6 +515,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktiviteter).isEmpty();
     }
 
+
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
     private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);

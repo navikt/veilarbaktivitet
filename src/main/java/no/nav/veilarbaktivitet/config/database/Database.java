@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.config.database;
 
 import lombok.Getter;
+import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitetskort.OppgaveLenke;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -85,6 +87,20 @@ public class Database {
        } catch (IllegalArgumentException e) {
            return  null;
        }
+    }
+
+    public static <T> T hentObjectFromJsonString(ResultSet rs, String kolonneNavn, Class<T> valueClass) throws SQLException {
+        String json = rs.getString(kolonneNavn);
+        if (json == null) return null;
+
+       return JsonUtils.fromJson(json, valueClass);
+    }
+
+    public static <T> List<T>  hentListObjectFromJsonString(ResultSet rs, String kolonneNavn, Class<T> valueClass) throws SQLException {
+        String json = rs.getString(kolonneNavn);
+        if (json == null) return null;
+
+        return JsonUtils.fromJsonArray(json, valueClass);
     }
 
     @FunctionalInterface
