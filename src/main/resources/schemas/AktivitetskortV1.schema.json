@@ -179,7 +179,7 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": ["A", "B", "C"]
+            "enum": ["A", "B", "C", "D"]
           },
           "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
       }
