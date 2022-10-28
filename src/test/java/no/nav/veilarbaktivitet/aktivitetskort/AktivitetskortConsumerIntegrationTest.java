@@ -92,6 +92,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
+    MeldingContext kontekst(ArenaId eksternRefanseId, String arenaTiltakskode, String source, AktivitetskortType aktivitetskortType) {
+        return new MeldingContext(eksternRefanseId, arenaTiltakskode, source, aktivitetskortType);
+    }
     Aktivitetskort aktivitetskort(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
         return Aktivitetskort.builder()
                 .id(funksjonellId)
@@ -139,7 +142,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .skip(meldinger.size() - 1)
                 .findFirst().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(5))
+        Awaitility.await().atMost(Duration.ofSeconds(500))
             .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.offset()));
     }
 
@@ -165,7 +168,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
-        sendOgVentPåTiltak(List.of(actual), List.of());
+        MeldingContext kontekst = kontekst(new ArenaId("123"), "MIDL", "ARENA_AKTIVITET_ACL", AktivitetskortType.ARENA_TILTAK);
+        sendOgVentPåTiltak(List.of(actual), List.of(kontekst));
 
         var aktivitet = hentAktivitet(funksjonellId);
 
@@ -187,7 +191,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        MeldingContext meldingContext = kontekst(new ArenaId("123"), "MIDL", "ARENA_AKTIVITET_ACL", AktivitetskortType.ARENA_TILTAK);
         Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES);
+        MeldingContext updatemeldingContext = kontekst(new ArenaId("123"), "MIDL", "ARENA_AKTIVITET_ACL", AktivitetskortType.ARENA_TILTAK);
+
 
         sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate), List.of());
 
