@@ -15,14 +15,17 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
 import java.util.UUID;
+
+import static no.nav.veilarbaktivitet.aktivitetskort.MeldingContext.HEADER_EKSTERN_ARENA_TILTAKSKODE;
+import static no.nav.veilarbaktivitet.aktivitetskort.MeldingContext.HEADER_EKSTERN_REFERANSE_ID;
 
 @Service
 @Slf4j
 @ToString(of = {"aktivitetskortService"})
 public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
+    public static final String ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL";
     private final AktivitetskortService aktivitetskortService;
 
     public final AktivitetsKortFeilProducer feilProducer;
@@ -69,16 +72,16 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var melding = deserialiser(consumerRecord);
         log.info("Konsumerer aktivitetskortmelding: messageId={}, sendt={}, funksjonellId={}", melding.messageId, melding.sendt, melding.aktivitetskort.id);
-        ignorerHvisSettFør(melding.messageId, melding.aktivitetskort.id);
+        ignorerHvisSettFor(melding.messageId, melding.aktivitetskort.id);
 
+        boolean erArenaAktivitet = ARENA_TILTAK_AKTIVITET_ACL.equals(melding.source);
         MeldingContext meldingContext = new MeldingContext(
-                getEksternReferanseId(consumerRecord),
-                getArenaTiltakskode(consumerRecord),
+                erArenaAktivitet ? getEksternReferanseId(consumerRecord) : null,
+                erArenaAktivitet ? getArenaTiltakskode(consumerRecord) : null,
                 melding.source,
                 melding.aktivitetskortType
         );
 
-        boolean erArenaAktivitet = "ARENA_TILTAK_AKTIVITET_ACL".equals(melding.source);
         MDC.put(MetricService.SOURCE, melding.source);
         if (melding.actionType == ActionType.UPSERT_AKTIVITETSKORT_V1) {
             aktivitetskortService.upsertAktivitetskort(melding.aktivitetskort, meldingContext, erArenaAktivitet);
@@ -88,7 +91,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         return ConsumeStatus.OK;
     }
 
-    private void ignorerHvisSettFør(UUID messageId, UUID funksjonellId) throws DuplikatMeldingFeil {
+    private void ignorerHvisSettFor(UUID messageId, UUID funksjonellId) throws DuplikatMeldingFeil {
         if (aktivitetskortService.harSettMelding(messageId)) {
             log.warn("Previously handled message seen {} , ignoring", messageId);
             throw new DuplikatMeldingFeil();
@@ -101,12 +104,12 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     }
 
     private ArenaId getEksternReferanseId(ConsumerRecord<String, String> consumerRecord) {
-        byte[] eksternReferanseIdBytes = consumerRecord.headers().lastHeader("eksternReferanseId").value();
+        byte[] eksternReferanseIdBytes = consumerRecord.headers().lastHeader(HEADER_EKSTERN_REFERANSE_ID).value();
         return new ArenaId(new String(eksternReferanseIdBytes));
     }
 
     private String getArenaTiltakskode(ConsumerRecord<String, String> consumerRecord) {
-        byte[] arenaTiltakskode = consumerRecord.headers().lastHeader("arenaTiltakskode").value();
+        byte[] arenaTiltakskode = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE).value();
         return new String(arenaTiltakskode);
     }
 

@@ -27,7 +27,7 @@ public class AktivitetskortProducerUtil {
     public static Pair missingFieldRecord() {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.remove("tittel");
         return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
@@ -35,7 +35,7 @@ public class AktivitetskortProducerUtil {
     public static Pair extraFieldRecord() {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.put("kake", "123");
         return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
@@ -43,7 +43,7 @@ public class AktivitetskortProducerUtil {
     public static Pair invalidDateFieldRecord() {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.set("startDato", new TextNode("2022/-1/04T12:00:00+02:00"));
         return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }

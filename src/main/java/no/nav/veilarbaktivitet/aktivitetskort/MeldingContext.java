@@ -8,4 +8,6 @@ public record MeldingContext(
         String source,
         AktivitetskortType aktivitetskortType
 ) {
+    public static final String HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId";
+    public static final String HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode";
 }
