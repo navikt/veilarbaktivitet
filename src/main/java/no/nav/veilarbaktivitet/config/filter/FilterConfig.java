@@ -6,7 +6,7 @@ import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
 import no.nav.common.auth.utils.ServiceUserTokenFinder;
 import no.nav.common.auth.utils.UserTokenFinder;
-import no.nav.common.log.LogFilter;
+import no.nav.common.rest.filter.LogRequestFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarbaktivitet.config.EnvironmentProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -93,8 +93,8 @@ public class FilterConfig {
 
     @Bean
     public FilterRegistrationBean logFilterRegistrationBean() {
-        FilterRegistrationBean<LogFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(new LogFilter(requireApplicationName(), isDevelopment().orElse(false)));
+        FilterRegistrationBean<LogRequestFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new LogRequestFilter(requireApplicationName(), isDevelopment().orElse(false)));
         registration.setOrder(2);
         registration.addUrlPatterns("/*");
         return registration;
