@@ -9,7 +9,9 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -236,7 +238,7 @@ public class AktivitetService {
                 .lenke(aktivitet.getLenke())
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
-                .stillingFraNavData(aktivitet.getStillingFraNavData()) // TODO: Use merger
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNav))
                 .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
@@ -333,6 +335,32 @@ public class AktivitetService {
                 .findAny()
                 .orElse(null)
         );
+    }
+
+
+    private CvKanDelesData mergeCVKanDelesData(CvKanDelesData existing, CvKanDelesData updated) {
+        return existing
+                .withKanDeles(updated.getKanDeles())
+                .withEndretAv(updated.getEndretAv())
+                .withAvtaltDato(updated.getAvtaltDato())
+                .withEndretAvType(updated.getEndretAvType())
+                .withEndretTidspunkt(new Date());
+    }
+    private StillingFraNavData mergeStillingFraNav(StillingFraNavData existing, StillingFraNavData updated) {
+        return existing
+            .withArbeidssted(updated.getArbeidssted())
+            .withArbeidsgiver(updated.getArbeidsgiver())
+            .withCvKanDelesData(
+                MappingUtils.merge(existing.getCvKanDelesData(), updated.getCvKanDelesData())
+                    .merge(this::mergeCVKanDelesData)
+            )
+            .withLivslopsStatus(updated.getLivslopsStatus())
+            .withSoknadsstatus(updated.getSoknadsstatus())
+            .withBestillingsId(updated.getBestillingsId())
+            .withSvarfrist(updated.getSvarfrist())
+            .withKontaktpersonData(updated.getKontaktpersonData())
+            .withIkkefattjobbendetaljer(updated.getIkkefattjobbendetaljer())
+            .withVarselId(updated.getVarselId());
     }
 
 }
