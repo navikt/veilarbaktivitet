@@ -42,7 +42,7 @@ public class SecureLogsfilterFilter implements Filter {
             httpRequest.getMethod(),
             httpRequest.getServerName(),
             httpRequest.getRequestURI(),
-            authService.erEksternBruker(),
+            authService.erInternBruker(),
             innloggetBrukerIdent.orElse(null),
             httpRequest.getQueryString(),
             userInContext.getFnr().map(Person::get).orElse(null)
