@@ -443,7 +443,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         /* Assert successful rollback */
         assertThat(messageDAO.exist(aktivitetskortOppdatert.messageId)).isFalse();
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getEksternAktivitet().detaljer().get(0).value()).isEqualTo(tiltaksaktivitet.detaljer.get(0).value());
+        assertThat(aktivitet.getEksternAktivitet().detaljer().get(0).verdi()).isEqualTo(tiltaksaktivitet.detaljer.get(0).verdi());
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 

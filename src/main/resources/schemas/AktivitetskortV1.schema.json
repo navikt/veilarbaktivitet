@@ -52,8 +52,6 @@
         "personIdent",
         "tittel",
         "aktivitetStatus",
-        "startDato",
-        "beskrivelse",
         "endretAv",
         "endretTidspunkt",
         "avtaltMedNav"

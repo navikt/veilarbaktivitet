@@ -39,7 +39,6 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         super();
         this.aktivitetskortService = aktivitetskortService;
         this.feilProducer = feilProducer;
-        objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
     }
 
