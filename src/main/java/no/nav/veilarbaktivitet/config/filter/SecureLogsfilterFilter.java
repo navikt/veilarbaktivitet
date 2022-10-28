@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.config.filter;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.log.MarkerBuilder;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.UserInContext;
@@ -15,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+
+import static java.lang.String.format;
 
 @Profile("!dev")
 @Service
@@ -36,17 +37,17 @@ public class SecureLogsfilterFilter implements Filter {
 
         Optional<String> innloggetBrukerIdent = authService.getInnloggetBrukerIdent();
 
-        new MarkerBuilder()
-                .field("status", httpResponse.getStatus())
-                .field("method", httpRequest.getMethod())
-                .field("host", httpRequest.getServerName())
-                .field("path", httpRequest.getRequestURI())
-                .field("erInternBruker", ""+ authService.erInternBruker())
-                .field("innloggetIdent", innloggetBrukerIdent.orElse(null))
-                .field("queryString", httpRequest.getQueryString())
-                .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
-                .log(log::info);
-
+        String msg = format("status=%s, method=%s, host=%s, path=%s, erInternBruker=%b, innloggetIdent=%s, queryString=%s, userContext=%s",
+            httpResponse.getStatus(),
+            httpRequest.getMethod(),
+            httpRequest.getServerName(),
+            httpRequest.getRequestURI(),
+            authService.erEksternBruker(),
+            innloggetBrukerIdent.orElse(null),
+            httpRequest.getQueryString(),
+            userInContext.getFnr().map(Person::get).orElse(null)
+        );
+        log.info(msg);
     }
 
 }

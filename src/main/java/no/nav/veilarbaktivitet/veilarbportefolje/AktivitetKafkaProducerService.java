@@ -18,7 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import static no.nav.common.kafka.producer.util.ProducerUtils.toJsonProducerRecord;
-import static no.nav.common.log.LogFilter.PREFERRED_NAV_CALL_ID_HEADER_NAME;
+import static no.nav.common.rest.filter.LogRequestFilter.NAV_CALL_ID_HEADER_NAME;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,7 +41,7 @@ public class AktivitetKafkaProducerService {
     public void sendAktivitetMelding(KafkaAktivitetMeldingV4 melding) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedFHOForVersion(melding.getVersion());
         ProducerRecord<String, String> portefoljeMelding = toJsonProducerRecord(portefoljeTopic, melding.getAktorId(), melding);
-        portefoljeMelding.headers().add(new RecordHeader(PREFERRED_NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
+        portefoljeMelding.headers().add(new RecordHeader(NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
         ListenableFuture<SendResult<String, AktivitetData>> send = aktivitetProducer.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData);
         long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
@@ -51,7 +51,7 @@ public class AktivitetKafkaProducerService {
     }
 
     static String getCorrelationId() {
-        String correlationId = MDC.get(PREFERRED_NAV_CALL_ID_HEADER_NAME);
+        String correlationId = MDC.get(NAV_CALL_ID_HEADER_NAME);
 
         if (correlationId == null) {
             correlationId = MDC.get("jobId");
