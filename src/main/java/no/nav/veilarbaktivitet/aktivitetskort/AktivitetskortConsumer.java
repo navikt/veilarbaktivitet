@@ -62,6 +62,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
+            log.error("Funksjonell feil i aktivitetkortConumer", e);
             feilProducer.publishAktivitetsFeil(e, consumerRecord);
             return ConsumeStatus.OK;
         } finally {
