@@ -11,8 +11,6 @@ public class KafkaAktivitetskortWrapperDTO {
     UUID messageId;
     @JsonProperty(required = true)
     String source;
-    @JsonProperty(required = true)
-    LocalDateTime sendt;
 
     @JsonProperty(required = true)
     ActionType actionType;

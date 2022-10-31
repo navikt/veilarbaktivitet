@@ -3,6 +3,9 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 
 import java.time.LocalDateTime;
 
@@ -14,11 +17,20 @@ public class AktivitetskortMapper {
     private AktivitetskortMapper() {
     }
 
-    static AktivitetData mapTilAktivitetData(Aktivitetskort aktivitetskort, MeldingContext meldingContext, LocalDateTime opprettetDato, String aktorId) {
+    private static String getTiltakskode(AktivitetskortBestilling bestilling) {
+        return switch (bestilling) {
+            case ArenaAktivitetskortBestilling b -> b.getArenaTiltakskode();
+            case EksternAktivitetskortBestilling ignore -> null;
+            default -> throw new IllegalStateException("Unexpected value: " + bestilling);
+        };
+    }
+
+    public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, LocalDateTime opprettetDato) {
+        var aktivitetskort = bestilling.getAktivitetskort();
         EksternAktivitetData eksternAktivitetData = EksternAktivitetData.builder()
-                .source(meldingContext.source())
-                .type(meldingContext.aktivitetskortType())
-                .tiltaksKode(meldingContext.arenaTiltakskode())
+                .source(bestilling.getSource())
+                .type(bestilling.getAktivitetskortType())
+                .tiltaksKode(getTiltakskode(bestilling))
                 .detaljer(aktivitetskort.detaljer)
                 .oppgave(aktivitetskort.oppgave)
                 .handlinger(aktivitetskort.handlinger)
@@ -27,7 +39,7 @@ public class AktivitetskortMapper {
 
         return AktivitetData.builder()
                 .funksjonellId(aktivitetskort.id)
-                .aktorId(aktorId)
+                .aktorId(bestilling.getAktorId().get())
                 .tittel(aktivitetskort.tittel)
                 .fraDato(toDate(aktivitetskort.startDato))
                 .tilDato(toDate(aktivitetskort.sluttDato))

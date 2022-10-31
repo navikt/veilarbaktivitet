@@ -7,7 +7,6 @@
   "required": [
     "messageId",
     "source",
-    "sendt",
     "actionType",
     "aktivitetskortType",
     "aktivitetskort"
@@ -24,11 +23,6 @@
         "ARENA_TILTAK_AKTIVITET_ACL", "TOI"
       ],
       "description": "Opprinnelses kildesystem for meldingen."
-    },
-    "sendt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Dato og tidspunkt da meldingen ble produsert."
     },
     "actionType": {
       "type": "string",

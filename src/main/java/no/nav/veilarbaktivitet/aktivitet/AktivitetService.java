@@ -73,6 +73,10 @@ public class AktivitetService {
 
     public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet) {
         UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, opprettet, oppfolgingsperiode);
+    }
+
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet, UUID oppfolgingsperiode) {
 
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()

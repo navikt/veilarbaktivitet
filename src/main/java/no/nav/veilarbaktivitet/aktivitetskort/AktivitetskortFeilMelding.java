@@ -24,7 +24,7 @@ class DeserialiseringsFeil extends AktivitetsKortFunksjonellException {
         super(errorMessage, cause);
     }
 }
-class UlovligEndringFeil extends AktivitetsKortFunksjonellException {
+public class UlovligEndringFeil extends AktivitetsKortFunksjonellException {
     public UlovligEndringFeil() {
         super(new ErrorMessage("Kan ikke endre aktiviteter som er avbrutt, fullført eller historiske (avsluttet oppfølgingsperiode)"), null);
     }
@@ -36,7 +36,7 @@ class DuplikatMeldingFeil extends AktivitetsKortFunksjonellException {
     }
 }
 
-class UgyldigIdentFeil extends AktivitetsKortFunksjonellException {
+public class UgyldigIdentFeil extends AktivitetsKortFunksjonellException {
     public UgyldigIdentFeil(String errorMessage, Throwable cause) {
         super(new ErrorMessage(errorMessage), cause);
     }
