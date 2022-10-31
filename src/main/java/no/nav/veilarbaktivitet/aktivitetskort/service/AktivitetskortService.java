@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +43,7 @@ public class AktivitetskortService {
         if (maybeAktivitet.isPresent()) {
             var aktivitetData = AktivitetskortMapper.mapTilAktivitetData(
                     enrichedBestilling,
-                    dateToLocalDateTime(maybeAktivitet.get().getOpprettetDato()));
+                    null);
             var oppdatertAktivitet = oppdaterEksternAktivitet(maybeAktivitet.get(), aktivitetData);
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
         } else {
