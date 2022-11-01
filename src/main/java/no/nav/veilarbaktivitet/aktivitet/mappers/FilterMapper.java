@@ -9,9 +9,9 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 public class FilterMapper {
+    private FilterMapper(){}
     public static Optional<FilterTag> getStilllingStatusFilter(AktivitetData aktivitet) {
         if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             return Filters.of("stillingStatus", aktivitet
@@ -29,37 +29,20 @@ public class FilterMapper {
     }
 
     public static List<FilterTag> getFilterTags(AktivitetData aktivitet) {
-        try {
-            return Stream.of(
-                            Filters.of("status", aktivitet.getStatus().toString()),
-                            Filters.of("aktivitetsType", aktivitet.getAktivitetType().toString()),
-                            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
-                            getStilllingStatusFilter(aktivitet)
-                    )
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
-        } catch (Exception e) {
-            System.out.println(e);
-            return List.of();
-        }
-
+        return Filters.listOf(
+            Filters.of("status", aktivitet.getStatus().toString()),
+            Filters.of("aktivitetsType", aktivitet.getAktivitetType().toString()),
+            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
+            getStilllingStatusFilter(aktivitet)
+        );
     }
 
     public static List<FilterTag> getFilterTags(ArenaAktivitetDTO aktivitet) {
-        try {
-            return Stream.of(
-                            Filters.of("status", aktivitet.getStatus().toString()),
-                            Filters.of("aktivitetsType", aktivitet.getType().toString()),
-                            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
-                            Filters.of("tiltakstatus", aktivitet.getEtikett().toString())
-                    )
-                    .filter(Optional::isPresent)
-                    .map(Optional::get)
-                    .toList();
-        } catch (Exception e) {
-            System.out.println(e);
-            return List.of();
-        }
+        return Filters.listOf(
+            Filters.of("status", aktivitet.getStatus().toString()),
+            Filters.of("aktivitetsType", aktivitet.getType().toString()),
+            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
+            Filters.of("tiltakstatus", aktivitet.getEtikett().toString())
+        );
     }
 }

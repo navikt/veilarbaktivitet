@@ -19,6 +19,7 @@ public class AktivitetAssertUtils {
                 .lagtInnAv(actual.getLagtInnAv())
                 .transaksjonsType(actual.getTransaksjonsType())
                 .oppfolgingsperiodeId(actual.getOppfolgingsperiodeId())
+                .filterTags(actual.getFilterTags())
                 .build();
         // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);
@@ -32,6 +33,7 @@ public class AktivitetAssertUtils {
                 .endretAv(actual.getEndretAv())
                 .lagtInnAv(actual.getLagtInnAv())
                 .transaksjonsType(actual.getTransaksjonsType())
+                .filterTags(actual.getFilterTags())
                 .build();
         // sammenlign resten - forutsetter implementert equals
         assertEquals(aktivitetDTO, actual);

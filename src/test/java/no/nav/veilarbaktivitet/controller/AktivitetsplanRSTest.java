@@ -386,6 +386,7 @@ public class AktivitetsplanRSTest {
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(AuthContextHolderThreadLocal.instance().getSubject().orElseThrow())
                 .setOppfolgingsperiodeId(aktivitet.getOppfolgingsperiodeId())
+                .setFilterTags(aktivitet.getFilterTags())
         ));
     }
 
