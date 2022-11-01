@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.FilterTag;
 import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.Filters;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
@@ -10,13 +11,15 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import java.util.List;
 import java.util.Optional;
 
-public class FilterMapper {
-    private FilterMapper(){}
+public class FilterTagExtractor {
+
+    private FilterTagExtractor(){}
+
     public static Optional<FilterTag> getStilllingStatusFilter(AktivitetData aktivitet) {
         if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
-            return Filters.of("stillingStatus", aktivitet
-                    .getStillingsSoekAktivitetData()
-                    .getStillingsoekEtikett().toString()
+            return Filters.of("stillingStatus", Optional.ofNullable(aktivitet.getStillingsSoekAktivitetData())
+                    .map(StillingsoekAktivitetData::getStillingsoekEtikett)
+                    .map(Enum::toString)
             );
         } else if (aktivitet.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             return Filters.of("stillingStatus", Optional.ofNullable(aktivitet

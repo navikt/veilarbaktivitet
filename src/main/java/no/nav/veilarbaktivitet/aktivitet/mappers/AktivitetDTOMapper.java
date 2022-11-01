@@ -2,19 +2,14 @@ package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.*;
-import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.FilterTag;
-import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.Filters;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.FunctionUtils;
 
-import java.util.List;
-import java.util.Objects;
-
 import static java.util.Optional.ofNullable;
-import static no.nav.veilarbaktivitet.aktivitet.mappers.FilterMapper.getFilterTags;
+import static no.nav.veilarbaktivitet.aktivitet.mappers.FilterTagExtractor.getFilterTags;
 
 public class AktivitetDTOMapper {
 
