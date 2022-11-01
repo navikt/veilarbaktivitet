@@ -5,48 +5,61 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.FilterTag;
 import no.nav.veilarbaktivitet.aktivitet.dto.filterTags.Filters;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public class FilterMapper {
-    public static FilterTag getStilllingStatusFilter(AktivitetData aktivitet) {
+    public static Optional<FilterTag> getStilllingStatusFilter(AktivitetData aktivitet) {
         if (aktivitet.getAktivitetType() == AktivitetTypeData.JOBBSOEKING) {
             return Filters.of("stillingStatus", aktivitet
                     .getStillingsSoekAktivitetData()
                     .getStillingsoekEtikett().toString()
             );
         } else if (aktivitet.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
-            return Filters.of("stillingStatus", aktivitet
-                    .getStillingFraNavData()
-                    .getSoknadsstatus()
-                    .toString()
+            return Filters.of("stillingStatus", Optional.ofNullable(aktivitet
+                    .getStillingFraNavData())
+                    .map(StillingFraNavData::getSoknadsstatus)
+                    .map(Enum::toString)
             );
         }
-        return null;
+        return Optional.empty();
     }
 
     public static List<FilterTag> getFilterTags(AktivitetData aktivitet) {
-        return List.of(
-                Filters.of("status", aktivitet.getStatus().toString()),
-                Filters.of("aktivitetsType", aktivitet.getAktivitetType().toString()),
-                Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
-                getStilllingStatusFilter(aktivitet)
-            )
-            .stream()
-            .filter(Objects::nonNull)
-            .toList();
+        try {
+            return Stream.of(
+                            Filters.of("status", aktivitet.getStatus().toString()),
+                            Filters.of("aktivitetsType", aktivitet.getAktivitetType().toString()),
+                            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
+                            getStilllingStatusFilter(aktivitet)
+                    )
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
+        } catch (Exception e) {
+            System.out.println(e);
+            return List.of();
+        }
+
     }
 
     public static List<FilterTag> getFilterTags(ArenaAktivitetDTO aktivitet) {
-        return List.of(
-                Filters.of("status", aktivitet.getStatus().toString()),
-                Filters.of("aktivitetsType", aktivitet.getType().toString()),
-                Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
-                Filters.of("tiltakstatus", aktivitet.getEtikett().toString())
-            )
-            .stream()
-            .filter(Objects::nonNull)
-            .toList();
+        try {
+            return Stream.of(
+                            Filters.of("status", aktivitet.getStatus().toString()),
+                            Filters.of("aktivitetsType", aktivitet.getType().toString()),
+                            Filters.of("avtaltAktivitet", aktivitet.isAvtalt()),
+                            Filters.of("tiltakstatus", aktivitet.getEtikett().toString())
+                    )
+                    .filter(Optional::isPresent)
+                    .map(Optional::get)
+                    .toList();
+        } catch (Exception e) {
+            System.out.println(e);
+            return List.of();
+        }
     }
 }

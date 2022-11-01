@@ -1,9 +1,11 @@
 package no.nav.veilarbaktivitet.aktivitet.dto.filterTags;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class FilterTagBool implements FilterTag {
+@Getter
+public class FilterTagBool extends FilterTag {
     public final String kategori;
     public final Boolean verdi;
 }
