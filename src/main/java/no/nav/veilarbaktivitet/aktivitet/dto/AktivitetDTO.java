@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -42,6 +43,7 @@ public class AktivitetDTO {
     private AktivitetTransaksjonsType transaksjonsType;
     private String malid;
     private UUID oppfolgingsperiodeId;
+    private List<FilterTag> filterTags;
 
     // stillingaktivitet
     private EtikettTypeDTO etikett;
