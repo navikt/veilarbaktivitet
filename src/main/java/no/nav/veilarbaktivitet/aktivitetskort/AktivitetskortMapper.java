@@ -6,8 +6,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.LocalDateTime;
+import java.time.Period;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 import static no.nav.veilarbaktivitet.util.DateUtils.toDate;

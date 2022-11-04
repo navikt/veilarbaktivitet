@@ -66,8 +66,7 @@ public class AktivitetskortProducerUtil {
         return KafkaAktivitetskortWrapperDTO
                 .builder()
                 .messageId(UUID.randomUUID())
-                .source("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDateTime.now())
+                .source(AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL)
                 .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
                 .aktivitetskort(aktivitetskort)
                 .aktivitetskortType(AktivitetskortType.ARENA_TILTAK)

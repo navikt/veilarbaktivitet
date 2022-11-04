@@ -9,6 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -96,13 +99,13 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     MeldingContext meldingContext() {
-        return new MeldingContext(new ArenaId("123"), "MIDL", AktivitetskortConsumer.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+        return new MeldingContext(new ArenaId("123"), "MIDL", AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
     }
     MeldingContext meldingContext(ArenaId eksternRefanseId) {
-        return new MeldingContext(eksternRefanseId, "MIDL", AktivitetskortConsumer.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+        return new MeldingContext(eksternRefanseId, "MIDL", AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
     }
     MeldingContext meldingContext(ArenaId eksternRefanseId, String arenaTiltakskode) {
-        return new MeldingContext(eksternRefanseId, arenaTiltakskode, AktivitetskortConsumer.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+        return new MeldingContext(eksternRefanseId, arenaTiltakskode, AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
     }
 
     private MeldingContext defaultcontext = meldingContext();
@@ -132,7 +135,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         return KafkaAktivitetskortWrapperDTO.builder()
                 .messageId(messageId)
                 .source("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDateTime.now())
                 .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
                 .aktivitetskort(payload)
                 .aktivitetskortType(AktivitetskortType.ARENA_TILTAK)

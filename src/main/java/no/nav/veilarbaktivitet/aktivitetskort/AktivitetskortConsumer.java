@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.DuplikatMeldingFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

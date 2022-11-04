@@ -9,15 +9,14 @@ import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.IkkeUnderOppfolgingsFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.PersonService;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
-import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -33,31 +32,21 @@ public class AktivitetskortService {
     private final ArenaAktivitetskortService arenaAktivitetskortService;
 
 
-    private final PersonService personService;
-
-    public void upsertAktivitetskort(EksternAktivitetskortBestilling bestilling) throws UlovligEndringFeil, UgyldigIdentFeil {
+    public void upsertAktivitetskort(AktivitetskortBestilling bestilling) throws AktivitetsKortFunksjonellException {
         var aktivitetskort = bestilling.getAktivitetskort();
-        var enrichedBestilling = bestilling.withAktorId(hentAktorId(Person.fnr(aktivitetskort.getPersonIdent())));
-        Optional<AktivitetData> maybeAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
+        var gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
 
-        if (maybeAktivitet.isPresent()) {
-            var aktivitetData = AktivitetskortMapper.mapTilAktivitetData(
-                    enrichedBestilling,
-                    null);
-            var oppdatertAktivitet = oppdaterEksternAktivitet(maybeAktivitet.get(), aktivitetData);
+        if (gammelAktivitetVersjon.isPresent()) {
+            // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
+            var oppdatertAktivitet = oppdaterEksternAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
         } else {
-            var opprettetAktivitet = opprettAktivitet(enrichedBestilling);
+            var opprettetAktivitet = opprettAktivitet(bestilling);
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
-            /*
-            var opprettetAktivitet = opprettEksternAktivitet(aktivitetData, endretAvIdent, aktivitetskort.endretTidspunkt);
-            if (erArenaAktivitet) {
-                arenaspesifikkMigrering(aktivitetskort, opprettetAktivitet, meldingContext.eksternReferanseId());
-            }*/
         }
     }
 
-    private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) {
+    private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
         return switch (bestilling) {
             case ArenaAktivitetskortBestilling a -> opprettArenaAktivitet(a);
             case EksternAktivitetskortBestilling a -> opprettEksternAktivitet(a);
@@ -67,21 +56,16 @@ public class AktivitetskortService {
     private AktivitetData opprettArenaAktivitet(ArenaAktivitetskortBestilling bestilling) {
         return arenaAktivitetskortService.opprettAktivitet(bestilling);
     }
-    private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) {
+    private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
         Person endretAvIdent = bestilling.getAktivitetskort().getEndretAv().toPerson();
+        var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt();
         var aktivitetData = AktivitetskortMapper
                 .mapTilAktivitetData(bestilling, bestilling.getAktivitetskort().getEndretTidspunkt());
-        return opprettEksternAktivitet(aktivitetData, endretAvIdent, bestilling.getAktivitetskort().getEndretTidspunkt());
-    }
-
-    private Person.AktorId hentAktorId(Person.Fnr fnr) throws UgyldigIdentFeil {
-          try {
-              return personService.getAktorIdForPersonBruker(fnr).orElseThrow(() -> new UgyldigIdentFeil("Ugyldig identtype for " + fnr.get(), null));
-          } catch (UgyldigIdentException e) {
-              throw new UgyldigIdentFeil("Ugyldig ident for fnr :" + fnr.get(), e);
-          } catch (IkkeFunnetPersonException e) {
-              throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
-          }
+        try {
+            return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
+        } catch (IngenGjeldendePeriodeException e) {
+            throw new IkkeUnderOppfolgingsFeil(e);
+        }
     }
 
     private AktivitetData oppdaterDetaljer(AktivitetData aktivitet, AktivitetData nyAktivitet) {
@@ -90,7 +74,7 @@ public class AktivitetskortService {
         }
         return aktivitet;
     }
-    AktivitetData oppdaterStatus(AktivitetData aktivitet, AktivitetData nyAktivitet) {
+    public AktivitetData oppdaterStatus(AktivitetData aktivitet, AktivitetData nyAktivitet) {
         if (aktivitet.getStatus() != nyAktivitet.getStatus()) {
             return aktivitetService.oppdaterStatus(
                 aktivitet,
@@ -109,10 +93,6 @@ public class AktivitetskortService {
             .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
             .map( aktivitet -> oppdaterStatus(aktivitet, nyAktivitet))
             .findFirst().orElse(null);
-    }
-
-    private AktivitetData opprettEksternAktivitet(AktivitetData aktivitetData, Person endretAvIdent, LocalDateTime opprettet) {
-        return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
     }
 
     public boolean harSettMelding(UUID messageId) {
