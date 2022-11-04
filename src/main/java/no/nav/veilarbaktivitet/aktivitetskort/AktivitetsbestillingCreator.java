@@ -19,12 +19,12 @@ import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Component;
 
-import static no.nav.veilarbaktivitet.aktivitetskort.MeldingContext.HEADER_EKSTERN_ARENA_TILTAKSKODE;
-import static no.nav.veilarbaktivitet.aktivitetskort.MeldingContext.HEADER_EKSTERN_REFERANSE_ID;
 
 @Component
 @RequiredArgsConstructor
 public class AktivitetsbestillingCreator {
+    public static final String HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId";
+    public static final String HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode";
     private final PersonService personService;
     public static final String ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL";
     private static ObjectMapper objectMapper = null; //JsonMapper.defaultObjectMapper();
