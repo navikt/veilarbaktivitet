@@ -11,7 +11,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "app.kafka")
 public class KafkaOnpremProperties {
     String brokersUrl;
-    String endringPaaAktivitetTopic;
     String producerClientId;
     String consumerGroupId;
 }

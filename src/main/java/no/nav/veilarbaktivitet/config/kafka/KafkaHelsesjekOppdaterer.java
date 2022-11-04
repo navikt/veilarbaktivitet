@@ -1,16 +1,20 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
 public class KafkaHelsesjekOppdaterer {
-    private final KafkaProducerClient<String, String> producerClient;
-    private final KafkaOnpremProperties kafkaOnpremProperties;
+    private final KafkaStringTemplate kafkaTemplate;
+
     private final KafkaHelsesjekk helsesjekk;
+
+    @Value("${topic.ut.portefolje}")
+    private final String portefolgeTopic;
 
     @Scheduled(
             initialDelay = 1000,
@@ -18,7 +22,7 @@ public class KafkaHelsesjekOppdaterer {
     )
     public void uppdateKafkaHelsesjek() {
         try {
-            producerClient.getProducer().partitionsFor(kafkaOnpremProperties.getEndringPaaAktivitetTopic());
+            kafkaTemplate.partitionsFor(portefolgeTopic);
             helsesjekk.setIsHealty(true, "");
         } catch (Throwable t) {
             helsesjekk.setIsHealty(false, t.getMessage());

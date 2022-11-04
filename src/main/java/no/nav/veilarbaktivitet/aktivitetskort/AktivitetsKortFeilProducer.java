@@ -14,14 +14,14 @@ import java.time.LocalDateTime;
 public class AktivitetsKortFeilProducer {
 
     @Autowired
-    KafkaProducerClient<String, String> producer;
+    KafkaProducerClient<String, String> aivenProducerClient;
 
     @Value("${topic.ut.aktivitetskort-feil}")
     String feiltopic;
 
     private void publishAktivitetsFeil(AktivitetskortFeilMelding melding) {
         var producerRecord = new ProducerRecord<String, String>(feiltopic, melding.key(), JsonUtils.toJson(melding));
-        producer.sendSync(producerRecord);
+        aivenProducerClient.sendSync(producerRecord);
     }
 
     public void publishAktivitetsFeil(AktivitetsKortFunksjonellException e, ConsumerRecord<String, String> consumerRecord) {

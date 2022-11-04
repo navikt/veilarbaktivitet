@@ -74,11 +74,18 @@ public class NavCommonKafkaConfig {
     }
 
     @Bean
-    @Profile("!dev")
-    public KafkaProducerClient<String, String> producerClient(Properties onPremProducerProperties, MeterRegistry meterRegistry) {
+    public KafkaProducerClient<String, String> onPremProducerClient(Properties onPremProducerProperties, MeterRegistry meterRegistry) {
         return KafkaProducerClientBuilder.<String, String>builder()
                 .withMetrics(meterRegistry)
                 .withProperties(onPremProducerProperties)
+                .build();
+    }
+
+    @Bean
+    public KafkaProducerClient<String, String> aivenProducerClient(Properties aivenProducerProperties, MeterRegistry meterRegistry) {
+        return KafkaProducerClientBuilder.<String, String>builder()
+                .withMetrics(meterRegistry)
+                .withProperties(aivenProducerProperties)
                 .build();
     }
 
