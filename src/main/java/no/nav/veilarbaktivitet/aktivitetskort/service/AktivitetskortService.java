@@ -47,11 +47,13 @@ public class AktivitetskortService {
     }
 
     private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
-        return switch (bestilling) {
-            case ArenaAktivitetskortBestilling a -> opprettArenaAktivitet(a);
-            case EksternAktivitetskortBestilling a -> opprettEksternAktivitet(a);
-            default -> throw new IllegalStateException("Unexpected value: " + bestilling);
-        };
+        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
+            return opprettArenaAktivitet(arenaAktivitetskortBestilling);
+        } else if (bestilling instanceof EksternAktivitetskortBestilling eksternAktivitetskortBestilling) {
+            return opprettEksternAktivitet(eksternAktivitetskortBestilling);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + bestilling);
+        }
     }
     private AktivitetData opprettArenaAktivitet(ArenaAktivitetskortBestilling bestilling) {
         return arenaAktivitetskortService.opprettAktivitet(bestilling);

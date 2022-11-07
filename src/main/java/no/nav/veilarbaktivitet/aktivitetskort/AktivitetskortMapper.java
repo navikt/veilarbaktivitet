@@ -6,10 +6,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.LocalDateTime;
-import java.time.Period;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
@@ -20,11 +18,13 @@ public class AktivitetskortMapper {
     }
 
     private static String getTiltakskode(AktivitetskortBestilling bestilling) {
-        return switch (bestilling) {
-            case ArenaAktivitetskortBestilling b -> b.getArenaTiltakskode();
-            case EksternAktivitetskortBestilling ignore -> null;
-            default -> throw new IllegalStateException("Unexpected value: " + bestilling);
-        };
+        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
+            return arenaAktivitetskortBestilling.getArenaTiltakskode();
+        } else if (bestilling instanceof EksternAktivitetskortBestilling) {
+            return null;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + bestilling);
+        }
     }
 
     public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, LocalDateTime opprettetDato) {
