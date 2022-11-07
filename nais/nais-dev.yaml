@@ -7,7 +7,7 @@ metadata:
   labels:
     team: pto
 spec:
-  image: docker.pkg.github.com/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
   ingresses:
     - https://veilarbaktivitet-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarbaktivitet
