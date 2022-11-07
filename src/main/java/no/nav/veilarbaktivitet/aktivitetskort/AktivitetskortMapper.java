@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBest
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
@@ -29,14 +31,14 @@ public class AktivitetskortMapper {
 
     public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, LocalDateTime opprettetDato) {
         var aktivitetskort = bestilling.getAktivitetskort();
-        EksternAktivitetData eksternAktivitetData = EksternAktivitetData.builder()
+        var eksternAktivitetData = EksternAktivitetData.builder()
                 .source(bestilling.getSource())
                 .type(bestilling.getAktivitetskortType())
                 .tiltaksKode(getTiltakskode(bestilling))
-                .detaljer(aktivitetskort.detaljer)
+                .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
                 .oppgave(aktivitetskort.oppgave)
-                .handlinger(aktivitetskort.handlinger)
-                .etiketter(aktivitetskort.etiketter)
+                .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
+                .etiketter(Optional.ofNullable(aktivitetskort.etiketter).orElse(List.of()))
                 .build();
 
         return AktivitetData.builder()
