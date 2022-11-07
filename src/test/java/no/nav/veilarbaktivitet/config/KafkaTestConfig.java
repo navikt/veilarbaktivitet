@@ -48,7 +48,6 @@ public class KafkaTestConfig {
     public EmbeddedKafkaBroker embeddedKafka(
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
-            @Value("${app.kafka.endringPaaAktivitetTopic}") String endringPaaAktivitetTopic,
             @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
             @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
@@ -62,7 +61,6 @@ public class KafkaTestConfig {
                 1,
                 innStillingFraNav,
                 utStillingFraNav,
-                endringPaaAktivitetTopic,
                 kvpAvsluttetTopic,
                 eksternVarselKvittering,
                 aktivitetRawJson,
