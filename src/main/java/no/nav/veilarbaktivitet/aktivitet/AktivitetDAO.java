@@ -86,7 +86,7 @@ public class AktivitetDAO {
         AktivitetData aktivitetData;
         try {
             MapSqlParameterSource params = new MapSqlParameterSource()
-                    .addValue("funksjonellId", funksjonellId);
+                    .addValue("funksjonellId", funksjonellId.toString());
             aktivitetData = jdbcTemplate.queryForObject(SELECT_AKTIVITET +
                                                         " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
                     params,
