@@ -171,7 +171,7 @@ public class AktivitetDAO {
                 .addValue("automatisk_opprettet", aktivitet.isAutomatiskOpprettet())
                 .addValue("mal_id", aktivitet.getMalid())
                 .addValue("fho_id", aktivitet.getFhoId())
-                .addValue("funksjonell_id", aktivitet.getFunksjonellId().toString())
+                .addValue("funksjonell_id", Optional.ofNullable(aktivitet.getFunksjonellId()).map(UUID::toString).orElse(null))
                 .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
                         ? aktivitet.getOppfolgingsperiodeId().toString() : null);
         //language=SQL
