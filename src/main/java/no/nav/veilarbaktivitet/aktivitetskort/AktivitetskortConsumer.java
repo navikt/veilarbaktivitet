@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Service
@@ -38,7 +39,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
-            log.error("Funksjonell feil i aktivitetkortConumer", e);
+            log.error("Funksjonell feil i aktivitetkortConumer for aktivitetskort_v1 offset={} partition={}", e, consumerRecord.offset(), consumerRecord.partition());
             feilProducer.publishAktivitetsFeil(e, consumerRecord);
             return ConsumeStatus.OK;
         } finally {
@@ -50,7 +51,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
         var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
-        log.info("Konsumerer aktivitetskortmelding: messageId={}, sendt={}, funksjonellId={}", bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
+        log.info("Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}", consumerRecord.offset(), consumerRecord.partition(), bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
         ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
 
         MDC.put(MetricService.SOURCE, bestilling.getSource());
