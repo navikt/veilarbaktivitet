@@ -619,6 +619,19 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktiviteter).isEmpty();
     }
 
+    @Test
+    public void skal_sette_nullable_felt_til_null() {
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+            .withSluttDato(null)
+            .withStartDato(null)
+            .withBeskrivelse(null);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(defaultcontext));
+        var aktivitet = hentAktivitet(tiltaksaktivitet.getId());
+        assertThat(aktivitet.getFraDato()).isNull();
+        assertThat(aktivitet.getTilDato()).isNull();
+        assertThat(aktivitet.getBeskrivelse()).isNull();
+    }
+
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);

@@ -15,6 +15,9 @@ import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 @Service
@@ -46,7 +49,8 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     private final AktivitetsbestillingCreator bestillingsCreator;
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
-        log.info("Konsumerer aktivitetskortmelding: messageId={}, sendt={}, funksjonellId={}", bestilling.getMessageId(), consumerRecord.timestampType(), bestilling.getAktivitetskort().id);
+        var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
+        log.info("Konsumerer aktivitetskortmelding: messageId={}, sendt={}, funksjonellId={}", bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
         ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
 
         MDC.put(MetricService.SOURCE, bestilling.getSource());

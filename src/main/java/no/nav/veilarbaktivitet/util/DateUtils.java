@@ -29,14 +29,8 @@ public class DateUtils {
     }
 
     public static Date toDate(LocalDate localDate) {
+        if (localDate == null) return null;
         return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
-    }
-
-    public static Date getDate(XMLGregorianCalendar xmlGregorianCalendar){
-        return ofNullable(xmlGregorianCalendar)
-                .map(XMLGregorianCalendar::toGregorianCalendar)
-                .map(GregorianCalendar::getTime)
-                .orElse(null);
     }
 
     public static Date dateFromISO8601(String date) {
@@ -44,26 +38,8 @@ public class DateUtils {
         return Date.from(instant);
     }
 
-    public static String ISO8601FromDate(Date date) {
-        return ISO8601FromDate(date, ZoneId.systemDefault());
-    }
-
     public static String ISO8601FromDate(Date date, ZoneId zoneId) {
         return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
-    }
-
-    public static XMLGregorianCalendar mergeDateTime(XMLGregorianCalendar date, XMLGregorianCalendar time) {
-        if (date != null && time != null) {
-            date.setHour(time.getHour());
-            date.setMinute(time.getMinute());
-            date.setSecond(time.getSecond());
-        }
-        return date;
-    }
-
-    public static Date omTimer(int timer) {
-        long time = new Date().getTime();
-        return new Date(time + timer * 1000 * 60 * 60);
     }
 
     public static OffsetDateTime toOffsetDateTime(Date date) {
