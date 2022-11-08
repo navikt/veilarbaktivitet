@@ -257,7 +257,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
         ArenaMeldingHeaders meldingContext = meldingContext(new ArenaId("123"), "MIDL");
-        Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES);
+        var annenVeileder = new IdentDTO("ANNEN_NAV_IDENT", ARENAIDENT);
+        Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withEndretAv(annenVeileder);
         ArenaMeldingHeaders updatemeldingContext = meldingContext(new ArenaId("123"), "MIDL");
 
 
@@ -268,7 +270,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
         Assertions.assertNotNull(aktivitet);
         assertThat(tiltaksaktivitet.endretTidspunkt).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
-        Assertions.assertEquals(tiltaksaktivitet.endretAv.ident(), aktivitet.getEndretAv());
+        assertThat(aktivitet.getEndretAv()).isEqualTo(annenVeileder.ident());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
     }
