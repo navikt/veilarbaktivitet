@@ -50,16 +50,14 @@ public class AktivitetskortService {
 
     private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
         if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
-            return opprettArenaAktivitet(arenaAktivitetskortBestilling);
+            return arenaAktivitetskortService.opprettAktivitet(arenaAktivitetskortBestilling);
         } else if (bestilling instanceof EksternAktivitetskortBestilling eksternAktivitetskortBestilling) {
             return opprettEksternAktivitet(eksternAktivitetskortBestilling);
         } else {
             throw new IllegalStateException("Unexpected value: " + bestilling);
         }
     }
-    private AktivitetData opprettArenaAktivitet(ArenaAktivitetskortBestilling bestilling) {
-        return arenaAktivitetskortService.opprettAktivitet(bestilling);
-    }
+
     private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
         Person endretAvIdent = bestilling.getAktivitetskort().getEndretAv().toPerson();
         var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt();

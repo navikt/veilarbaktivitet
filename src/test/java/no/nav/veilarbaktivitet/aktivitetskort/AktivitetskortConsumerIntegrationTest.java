@@ -23,6 +23,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -116,6 +117,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .tittel("The Elder Scrolls: Arena")
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(aktivitetStatus)
+                .avtaltMedNav(true)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
                 .endretTidspunkt(endretDato)
                 .etikett(new Etikett("SOKT_INN"))
@@ -200,7 +202,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
 
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
+        Assertions.assertTrue(aktivitet.isAvtalt());
+        Assertions.assertEquals(InnsenderData.NAV.name(), aktivitet.getLagtInnAv());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -208,6 +213,22 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 actual.detaljer,
                 actual.etiketter
         ));
+    }
+
+    @Test
+    public void aktiviteter_opprettet_av_bruker_skal_ha_riktig_endretAv_verdi() {
+        var brukerIdent = "12129312122";
+        var aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEndretAv(new IdentDTO(
+                    brukerIdent,
+                        IdentType.PERSONBRUKERIDENT
+                ));
+        var kafkaAktivitetskortWrapperDTO = aktivitetskortMelding(
+                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDL_LONNSTILSK);
+        sendOgVentPåMeldinger(List.of(kafkaAktivitetskortWrapperDTO));
+        var resultat = hentAktivitet(aktivitetskort.getId());
+        assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
+        assertThat(resultat.getLagtInnAv()).isEqualTo(InnsenderData.BRUKER.toString());
     }
 
 
@@ -508,7 +529,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         // Det finnes en arenaaktivtiet fra før
         var arenaaktivitetId = new ArenaId("123");
         // Opprett FHO på aktivitet
-        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder);
+        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder);
         var record = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), null);
         // Migrer arenaaktivitet via topic
         UUID funksjonellId = UUID.randomUUID();
