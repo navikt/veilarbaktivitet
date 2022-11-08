@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 @Data
@@ -42,7 +41,7 @@ public class Aktivitetskort {
     IdentDTO endretAv;
     LocalDateTime endretTidspunkt;
     @JsonProperty(required = true)
-    Boolean avtaltMedNav;
+    boolean avtaltMedNav;
     // String avsluttetBegrunnelse;
 
     OppgaveLenke oppgave;

@@ -75,6 +75,7 @@ public class DateUtils {
         if (date == null) return null;
         return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
     }
+
     public static Date localDateTimeToDate(LocalDateTime localDateTime) {
         if (localDateTime == null) return null;
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());

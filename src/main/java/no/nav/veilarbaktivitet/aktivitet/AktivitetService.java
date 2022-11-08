@@ -81,6 +81,7 @@ public class AktivitetService {
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .aktorId(aktorId.get())
+                .avtalt(aktivitet.isAvtalt())
                 .lagtInnAv(endretAvPerson.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(localDateTimeToDate(opprettet))
@@ -225,13 +226,14 @@ public class AktivitetService {
     // TODO i fremtiden: hvis endretDato ligger i "aktivitet", bruk det, hvis ikke, LocalDateTime.now() i DAO
     public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv, LocalDateTime endretDato) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
-        val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
-
+        if (blittAvtalt) {
+            throw new IllegalArgumentException(String.format("Kan ikke sette avtalt for aktivitetsid: %s gjennom oppdaterAktivitet", originalAktivitet.getId()));
+        }
+        val transType = AktivitetTransaksjonsType.DETALJER_ENDRET;
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
         val result = aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .toBuilder()
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
-                .avtalt(aktivitet.isAvtalt())
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .beskrivelse(aktivitet.getBeskrivelse())
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
@@ -253,6 +255,18 @@ public class AktivitetService {
                 endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
         return result;
+    }
+
+    public AktivitetData settAvtalt(AktivitetData originalAktivitet, Person endretAv, LocalDateTime endretTidspunkt) {
+        return aktivitetDAO.oppdaterAktivitet(
+                originalAktivitet
+                        .withAvtalt(true)
+                        .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                        .withEndretAv(endretAv.get())
+                        .withLagtInnAv(endretAv.tilBrukerType())
+                        ,
+                endretTidspunkt
+                );
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {

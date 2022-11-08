@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -115,7 +116,7 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         AktivitetData original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(original, aktivitet);
+        kanEndreAktivitetGuard(original, aktivitet.getVersjon());
         if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -135,6 +136,13 @@ public class AktivitetAppService {
 
         // not a valid user
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
+    @Transactional
+    public AktivitetData settAvtalt(long aktivitetsId, long versjon, Person endretAv, LocalDateTime endretTidspunkt) {
+        AktivitetData original = hentAktivitet(aktivitetsId);
+        kanEndreAktivitetGuard(original, versjon);
+        return aktivitetService.settAvtalt(original, endretAv, endretTidspunkt);
     }
 
     private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
@@ -171,8 +179,8 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon) {
+        if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
             throw new IllegalArgumentException(
@@ -197,7 +205,7 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         Person endretAv = authService
                 .getLoggedInnUser()
@@ -233,7 +241,7 @@ public class AktivitetAppService {
         }
 
         val originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         aktivitetService.oppdaterReferat(
                 originalAktivitet,

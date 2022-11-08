@@ -44,6 +44,7 @@ public class AktivitetskortMapper {
         return AktivitetData.builder()
                 .funksjonellId(aktivitetskort.id)
                 .aktorId(bestilling.getAktorId().get())
+                .avtalt(aktivitetskort.avtaltMedNav)
                 .tittel(aktivitetskort.tittel)
                 .fraDato(toDate(aktivitetskort.startDato))
                 .tilDato(toDate(aktivitetskort.sluttDato))

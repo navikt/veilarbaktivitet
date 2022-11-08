@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 public class AktivitetskortService {
 
     private final AktivitetService aktivitetService;
+    private final AktivitetAppService aktivitetAppService;
     private final AktivitetDAO aktivitetDAO;
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
     private final ArenaAktivitetskortService arenaAktivitetskortService;
@@ -38,7 +40,7 @@ public class AktivitetskortService {
 
         if (gammelAktivitetVersjon.isPresent()) {
             // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-            var oppdatertAktivitet = oppdaterEksternAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
+            var oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
         } else {
             var opprettetAktivitet = opprettAktivitet(bestilling);
@@ -81,7 +83,7 @@ public class AktivitetskortService {
             return aktivitetService.oppdaterStatus(
                 aktivitet,
                 nyAktivitet, // TODO: Populer avbrutt-tekstfelt
-                Person.arenaIdent(nyAktivitet.getEndretAv()),
+                Person.arenaIdent(nyAktivitet.getEndretAv()), // TODO håndtere rikere identType
                 DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato())
             );
         } else {
@@ -89,12 +91,25 @@ public class AktivitetskortService {
         }
     }
 
-    private AktivitetData oppdaterEksternAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
+    private AktivitetData oppdaterAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
         if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
         return Stream.of(gammelAktivitet)
-            .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
-            .map( aktivitet -> oppdaterStatus(aktivitet, nyAktivitet))
-            .findFirst().orElse(null);
+                .map( aktivitet -> settAvtaltHvisAvtalt( aktivitet, nyAktivitet))
+                .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
+                .map( aktivitet -> oppdaterStatus(aktivitet, nyAktivitet))
+                .findFirst().orElse(null);
+    }
+
+    private AktivitetData settAvtaltHvisAvtalt(AktivitetData originalAktivitet, AktivitetData nyAktivitet) {
+        if (nyAktivitet.isAvtalt() && !originalAktivitet.isAvtalt()) {
+            return aktivitetAppService.settAvtalt(
+                    originalAktivitet.getId(),
+                    originalAktivitet.getVersjon(),
+                    Person.arenaIdent(nyAktivitet.getEndretAv()), // TODO fix identtype på aktivitet
+                    DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato()));
+        } else {
+            return originalAktivitet;
+        }
     }
 
     public boolean harSettMelding(UUID messageId) {
