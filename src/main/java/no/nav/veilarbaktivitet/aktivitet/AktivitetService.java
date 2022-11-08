@@ -258,6 +258,7 @@ public class AktivitetService {
     }
 
     public AktivitetData settAvtalt(AktivitetData originalAktivitet, Person endretAv, LocalDateTime endretTidspunkt) {
+        if (!originalAktivitet.endringTillatt()) throw new IllegalStateException(String.format("Ikke lov å endre aktivtet med id %s", originalAktivitet.getId()));
         return aktivitetDAO.oppdaterAktivitet(
                 originalAktivitet
                         .withAvtalt(true)

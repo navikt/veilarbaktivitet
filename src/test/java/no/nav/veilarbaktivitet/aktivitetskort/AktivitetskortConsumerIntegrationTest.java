@@ -310,25 +310,33 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    public void oppdatering_status_og_detaljer_gir_2_transaksjoner() {
+    public void oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         UUID funksjonellId = UUID.randomUUID();
 
         var context = meldingContext();
-        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withAvtaltMedNav(false);
+        var etikett = new Etikett("FÅTT_PLASS");
         Aktivitetskort tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES).toBuilder()
-                .etikett(new Etikett("FÅTT_PLASS"))
+                .avtaltMedNav(true)
+                .etikett(etikett)
                 .build();
 
         sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitetId = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
                 .findFirst().get().getId();
-        var aktivitet = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
+        var aktivitetVersjoner = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
 
-        Assertions.assertEquals(3, aktivitet.size());
-        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.get(0).getTransaksjonsType());
-        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get(1).getTransaksjonsType());
-        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.get(2).getTransaksjonsType());
+        Assertions.assertEquals(4, aktivitetVersjoner.size());
+        var sisteVersjon = aktivitetVersjoner.get(0);
+        assertThat(sisteVersjon.isAvtalt()).isTrue();
+        assertThat(sisteVersjon.getEksternAktivitet().etiketter()).isEqualTo(tiltaksaktivitetEndret.etiketter);
+        assertThat(sisteVersjon.getStatus()).isEqualTo(AktivitetStatus.GJENNOMFORES);
+        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitetVersjoner.get(0).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitetVersjoner.get(1).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.AVTALT, aktivitetVersjoner.get(2).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitetVersjoner.get(3).getTransaksjonsType());
     }
 
     @Test

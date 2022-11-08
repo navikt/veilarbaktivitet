@@ -100,9 +100,8 @@ public class AktivitetskortService {
 
     private AktivitetData settAvtaltHvisAvtalt(AktivitetData originalAktivitet, AktivitetData nyAktivitet) {
         if (nyAktivitet.isAvtalt() && !originalAktivitet.isAvtalt()) {
-            return aktivitetAppService.settAvtalt(
-                    originalAktivitet.getId(),
-                    originalAktivitet.getVersjon(),
+            return aktivitetService.settAvtalt(
+                    originalAktivitet,
                     Person.arenaIdent(nyAktivitet.getEndretAv()), // TODO fix identtype på aktivitet
                     DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato()));
         } else {

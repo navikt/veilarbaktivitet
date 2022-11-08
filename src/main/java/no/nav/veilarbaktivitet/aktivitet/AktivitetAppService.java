@@ -138,13 +138,6 @@ public class AktivitetAppService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    @Transactional
-    public AktivitetData settAvtalt(long aktivitetsId, long versjon, Person endretAv, LocalDateTime endretTidspunkt) {
-        AktivitetData original = hentAktivitet(aktivitetsId);
-        kanEndreAktivitetGuard(original, versjon);
-        return aktivitetService.settAvtalt(original, endretAv, endretTidspunkt);
-    }
-
     private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
         if (original.isAvtalt()) {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
