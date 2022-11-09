@@ -7,9 +7,9 @@
   "required": [
     "messageId",
     "source",
-    "sendt",
     "actionType",
-    "payload"
+    "aktivitetskortType",
+    "aktivitetskort"
   ],
   "properties": {
     "messageId": {
@@ -20,30 +20,90 @@
     "source": {
       "type": "string",
       "examples": [
-        "ARENA_TILTAK_AKTIVITET_ACL", "TOI"
+        "ARENA_TILTAK_AKTIVITET_ACL",
+        "TEAM_TILTAK"
       ],
       "description": "Opprinnelses kildesystem for meldingen."
     },
-    "sendt": {
-      "type": "string",
-      "format": "date-time",
-      "description": "Dato og tidspunkt da meldingen ble produsert."
-    },
     "actionType": {
       "type": "string",
-      "enum": ["UPSERT_AKTIVITETSKORT_V1"],
+      "enum": [
+        "UPSERT_AKTIVITETSKORT_V1"
+      ],
       "description": "Actiontype gir en instruksjon om hvordan meldingen skal behandles. En aktionType vil typisk være knyttet til hvilken aktivitetstype som skal opprettes eller endres."
     },
     "aktivitetskortType": {
       "type": "string",
-      "enum": ["MIDL_LONNSTILSK", "MANGE_ANDRE"]
+      "enum": [
+        "MIDL_LONNSTILSK",
+        "ARENA_TILTAK"
+      ]
     },
     "aktivitetskort": {
       "$ref": "#/definitions/aktivitetskort",
-      "description": "Payload inneholder selve aktivitetsdataene, og kan være av ulik type avhengig av hvilken aktivitetstype som skal opprettes. Alle aktivitetstyper må inneholde basisfeltene som er felles for alle aktivitetstyper, slik som id, personIdent, tittel, aktivitetStatus, etc. "
+      "description": "Aktivitetskort inneholder selve aktivitetsdataene, Alle aktiviteter må inneholde basisfeltene som er felles for alle aktivitetstyper, slik som id, personIdent, tittel, aktivitetStatus, etc. "
     }
   },
   "definitions": {
+    "oppgavelenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "handlinglenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "lenkeType": {
+          "type": "string",
+          "enum": [
+            "EKSTERN",
+            "INTERN",
+            "FELLES"
+          ]
+        }
+      }
+    },
+    "attributt": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "verdi": {
+          "type": "string"
+        }
+      }
+    },
     "aktivitetskort": {
       "type": "object",
       "required": [
@@ -51,8 +111,6 @@
         "personIdent",
         "tittel",
         "aktivitetStatus",
-        "startDato",
-        "beskrivelse",
         "endretAv",
         "endretTidspunkt",
         "avtaltMedNav"
@@ -70,23 +128,28 @@
           ],
           "description": "Norsk identitetsnummer (d-nr eller f-nr) for personen som eier aktivitetskortet"
         },
-        "aktivitetStatus": {
-          "type": "string",
-          "enum": [
-            "FORSLAG","PLANLAGT", "GJENNOMFORES", "FULLFORT", "AVBRUTT"
-          ],
-          "description": "Dette feltet forteller hvilken status aktiviteten har, og dermed hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant, da dette er en endelig status."
-        },
         "tittel": {
           "type": "string",
           "description": "Tittelen på aktivitetskortet"
         },
-        "beskrivelse": {
+        "aktivitetStatus": {
           "type": "string",
-          "description": "Beskrivende tekst for aktiviteten"
+          "enum": [
+            "FORSLAG",
+            "PLANLAGT",
+            "GJENNOMFORES",
+            "FULLFORT",
+            "AVBRUTT"
+          ],
+          "description": "Dette feltet forteller hvilken status aktiviteten har, og dermed hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant, da dette er en endelig status."
+        },
+        "etiketter": {
         },
         "startDato": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date",
           "examples": [
             "2022-03-01"
@@ -94,12 +157,22 @@
           "description": "Planlagt startdato for aktiviteten"
         },
         "sluttDato": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date",
           "examples": [
             "2022-05-15"
           ],
           "description": "Planlagt sluttdato for aktiviteten"
+        },
+        "beskrivelse": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Beskrivende tekst for aktiviteten"
         },
         "endretAv": {
           "type": "object",
@@ -119,7 +192,9 @@
             "identType": {
               "type": "string",
               "enum": [
-                "ARENAIDENT","NAVIDENT","PERSONBRUKER"
+                "ARENAIDENT",
+                "NAVIDENT",
+                "PERSONBRUKER"
               ],
               "description": "Type ident. Kan være navIdent, arenaIdent, på sikt kanskje tiltaksarrangør, arbeidsgiver eller eksternBruker"
             }
@@ -144,11 +219,17 @@
           "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette gjelder typisk aktiviteter med aktivitetsplikt."
         },
         "avsluttetBegrunnelse": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Ved avbrudd i aktiviteten, kan det legges til en begrunnelse for avbrytelsen."
         },
         "oppgave": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "ekstern": {
               "$ref": "#/definitions/oppgavelenke"
@@ -159,103 +240,63 @@
           }
         },
         "handlinger": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "$ref": "#/definitions/oppgavelenke"
           }
         },
         "detaljer": {
-          "type": "object",
-          "additionalProperties": { "type": "string" },
-          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet",
-          "examples": [
-            {
-              "deltakelseProsent": "100",
-              "dagerPerUke": "5"
-            }
-          ]
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/attributt"
+          },
+          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet"
         },
         "etiketter": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": ["A", "B", "C"]
+            "type": "string"
           },
           "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
-      }
-    },
-    "oppgavelenke": {
-      "type": "object",
-      "properties": {
-        "tekst": {
-          "type": "string"
-        },
-        "subtekst": {
-          "type": "string"
-        },
-        "params": {
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        },
-        "path": {
-          "type": "string"
-        }
-      }
-    },
-    "handlinglenke": {
-      "type": "object",
-      "properties": {
-        "tekst": {
-          "type": "string"
-        },
-        "subtekst": {
-          "type": "string"
-        },
-        "params": {
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        },
-        "path": {
-          "type": "string"
-        },
-        "lenkeType": {
-          "type": "string",
-          "enum": [
-            "EKSTERN","INTERN","FELLES"
-          ]
         }
       }
     }
   },
   "examples": [
     {
-      "messageId": "329102a1-6253-4324-8b2b-c2da379055c0",
-      "source": "DAB",
-      "sendt": "2022-09-24T00:00:00.55555555",
-      "actionType": "UPSERT_TILTAK_AKTIVITET_V1",
-      "payload": {
-        "id": "f9820d83-0674-4df6-8d25-4322af86fbe0",
-        "eksternReferanseId": 1234567,
-        "personIdent": "12345678999",
-        "tittel": "Tiltak hos NAV Bærum",
+      "messageId": "9ed905a8-c044-4924-bc25-8d61fe20f131",
+      "source": "ARENA_TILTAK_AKTIVITET_ACL",
+      "actionType": "UPSERT_AKTIVITETSKORT_V1",
+      "aktivitetskortType": "ARENA_TILTAK",
+      "aktivitetskort": {
+        "id": "f8c77f37-ec05-46a7-a172-e3e66b5978c2",
+        "personIdent": "18925698284",
+        "tittel": "Tiltak hos Helse Midt-Norge RHF",
         "aktivitetStatus": "FULLFORT",
-        "startDato": "2022-04-01",
-        "sluttDato": "2022-06-30",
-        "beskrivelse": "beskrivelse",
+        "etiketter": [],
+        "startDato": "2022-08-30",
+        "sluttDato": "2022-09-30",
+        "beskrivelse": "cc",
         "endretAv": {
-          "identType": "arenaIdent",
-          "ident": "AAA0000"
+          "identType": "ARENAIDENT",
+          "ident": "LVA1620"
         },
-        "endretTidspunkt": "2022-09-17T21:00:00",
+        "endretTidspunkt": "2022-10-18T18:00:25",
         "avtaltMedNav": true,
-        "tiltaksKode": "MIDLONTIL",
-        "tiltaksNavn": "Midlertidig lønnstilskudd",
-        "deltakelseStatus": "FATT_PLASS",
-        "arrangorNavn": "NAV BÆRUM",
-        "detaljer": {
-          "deltakelseProsent": "80",
-          "dagerPerUke": "4"
-        }
+        "detaljer": [
+          {
+            "label": "Arrangør",
+            "verdi": "HELSE MIDT-NORGE RHF STJØRDAL"
+          },
+          {
+            "label": "Deltakelse",
+            "verdi": "100.0%"
+          }
+        ],
+        "handlinger": null
       }
     }
   ]
