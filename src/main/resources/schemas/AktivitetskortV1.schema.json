@@ -20,7 +20,7 @@
     "source": {
       "type": "string",
       "examples": [
-        "ARENA_TILTAK_AKTIVITET_ACL", "TOI"
+        "ARENA_TILTAK_AKTIVITET_ACL", "TEAM_TILTAK"
       ],
       "description": "Opprinnelses kildesystem for meldingen."
     },
