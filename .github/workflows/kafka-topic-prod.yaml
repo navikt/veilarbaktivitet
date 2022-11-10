@@ -1,6 +1,8 @@
 name: Deploy kafka topics to prod
 on:
   push:
+    branches:
+      - main
     paths:
       - "kafka-topic/prod/*.yaml"
   workflow_dispatch:

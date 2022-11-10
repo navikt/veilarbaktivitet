@@ -1,6 +1,8 @@
 name: Deploy kafka topics to dev
 on:
   push:
+    branches:
+      - main
     paths:
       - "kafka-topic/dev/*.yaml"
   workflow_dispatch:
@@ -9,7 +11,6 @@ jobs:
   deploy-topics-dev:
     name: Deploy kafka topics to dev
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v1
