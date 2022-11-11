@@ -20,18 +20,24 @@
     "source": {
       "type": "string",
       "examples": [
-        "ARENA_TILTAK_AKTIVITET_ACL", "TEAM_TILTAK"
+        "ARENA_TILTAK_AKTIVITET_ACL",
+        "TEAM_TILTAK"
       ],
       "description": "Opprinnelses kildesystem for meldingen."
     },
     "actionType": {
       "type": "string",
-      "enum": ["UPSERT_AKTIVITETSKORT_V1"],
+      "enum": [
+        "UPSERT_AKTIVITETSKORT_V1"
+      ],
       "description": "Actiontype gir en instruksjon om hvordan meldingen skal behandles. En aktionType vil typisk være knyttet til hvilken aktivitetstype som skal opprettes eller endres."
     },
     "aktivitetskortType": {
       "type": "string",
-      "enum": ["MIDL_LONNSTILSK", "ARENA_TILTAK"]
+      "enum": [
+        "MIDL_LONNSTILSK",
+        "ARENA_TILTAK"
+      ]
     },
     "aktivitetskort": {
       "$ref": "#/definitions/aktivitetskort",
@@ -39,6 +45,65 @@
     }
   },
   "definitions": {
+    "oppgavelenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "handlinglenke": {
+      "type": "object",
+      "properties": {
+        "tekst": {
+          "type": "string"
+        },
+        "subtekst": {
+          "type": "string"
+        },
+        "params": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "path": {
+          "type": "string"
+        },
+        "lenkeType": {
+          "type": "string",
+          "enum": [
+            "EKSTERN",
+            "INTERN",
+            "FELLES"
+          ]
+        }
+      }
+    },
+    "attributt": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "verdi": {
+          "type": "string"
+        }
+      }
+    },
     "aktivitetskort": {
       "type": "object",
       "required": [
@@ -70,14 +135,21 @@
         "aktivitetStatus": {
           "type": "string",
           "enum": [
-            "FORSLAG","PLANLAGT", "GJENNOMFORES", "FULLFORT", "AVBRUTT"
+            "FORSLAG",
+            "PLANLAGT",
+            "GJENNOMFORES",
+            "FULLFORT",
+            "AVBRUTT"
           ],
           "description": "Dette feltet forteller hvilken status aktiviteten har, og dermed hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant, da dette er en endelig status."
         },
         "etiketter": {
         },
         "startDato": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date",
           "examples": [
             "2022-03-01"
@@ -85,7 +157,10 @@
           "description": "Planlagt startdato for aktiviteten"
         },
         "sluttDato": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date",
           "examples": [
             "2022-05-15"
@@ -93,7 +168,10 @@
           "description": "Planlagt sluttdato for aktiviteten"
         },
         "beskrivelse": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Beskrivende tekst for aktiviteten"
         },
         "endretAv": {
@@ -114,7 +192,9 @@
             "identType": {
               "type": "string",
               "enum": [
-                "ARENAIDENT","NAVIDENT","PERSONBRUKER"
+                "ARENAIDENT",
+                "NAVIDENT",
+                "PERSONBRUKER"
               ],
               "description": "Type ident. Kan være navIdent, arenaIdent, på sikt kanskje tiltaksarrangør, arbeidsgiver eller eksternBruker"
             }
@@ -139,11 +219,17 @@
           "description": "Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette gjelder typisk aktiviteter med aktivitetsplikt."
         },
         "avsluttetBegrunnelse": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Ved avbrudd i aktiviteten, kan det legges til en begrunnelse for avbrytelsen."
         },
         "oppgave": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "ekstern": {
               "$ref": "#/definitions/oppgavelenke"
@@ -154,7 +240,10 @@
           }
         },
         "handlinger": {
-          "type": "array",
+          "type": [
+            "array",
+            "null"
+          ],
           "items": {
             "$ref": "#/definitions/oppgavelenke"
           }
@@ -162,72 +251,52 @@
         "detaljer": {
           "type": "array",
           "items": {
-            "$ref" : "#/definitions/attributt"
+            "$ref": "#/definitions/attributt"
           },
-
-          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet",
+          "description": "For å vise selvdefinerte informasjonsfelter på aktivitetskortet"
         },
         "etiketter": {
           "type": "array",
           "items": {
-            "type": "string",
-            "enum": ["A", "B", "C", "D"]
+            "type": "string"
           },
           "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
-      }
-    },
-    "oppgavelenke": {
-      "type": "object",
-      "properties": {
-        "tekst": {
-          "type": "string"
-        },
-        "subtekst": {
-          "type": "string"
-        },
-        "params": {
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        },
-        "path": {
-          "type": "string"
         }
       }
-    },
-    "handlinglenke": {
-      "type": "object",
-      "properties": {
-        "tekst": {
-          "type": "string"
+    }
+  },
+  "examples": [
+    {
+      "messageId": "9ed905a8-c044-4924-bc25-8d61fe20f131",
+      "source": "ARENA_TILTAK_AKTIVITET_ACL",
+      "actionType": "UPSERT_AKTIVITETSKORT_V1",
+      "aktivitetskortType": "ARENA_TILTAK",
+      "aktivitetskort": {
+        "id": "f8c77f37-ec05-46a7-a172-e3e66b5978c2",
+        "personIdent": "18925698284",
+        "tittel": "Tiltak hos Helse Midt-Norge RHF",
+        "aktivitetStatus": "FULLFORT",
+        "etiketter": [],
+        "startDato": "2022-08-30",
+        "sluttDato": "2022-09-30",
+        "beskrivelse": "cc",
+        "endretAv": {
+          "identType": "ARENAIDENT",
+          "ident": "LVA1620"
         },
-        "subtekst": {
-          "type": "string"
-        },
-        "params": {
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        },
-        "path": {
-          "type": "string"
-        },
-        "lenkeType": {
-          "type": "string",
-          "enum": [
-            "EKSTERN","INTERN","FELLES"
-          ]
-        }
-      }
-    },
-      "attributt" : {
-        "type": "object",
-        "properties": {
-          "label": {
-            "type": "string"
+        "endretTidspunkt": "2022-10-18T18:00:25",
+        "avtaltMedNav": true,
+        "detaljer": [
+          {
+            "label": "Arrangør",
+            "verdi": "HELSE MIDT-NORGE RHF STJØRDAL"
           },
-          "verdi": {
-            "type": "string"
+          {
+            "label": "Deltakelse",
+            "verdi": "100.0%"
           }
-        }
+        ],
+        "handlinger": null
       }
     }
 
