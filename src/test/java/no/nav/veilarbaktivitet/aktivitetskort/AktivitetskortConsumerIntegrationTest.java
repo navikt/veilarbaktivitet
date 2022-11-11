@@ -354,7 +354,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
         Instant endretDatoInstant = endretDato.atZone(ZoneId.systemDefault()).toInstant();
         assertThat(aktivitet.getEndretDato()).isEqualTo(endretDatoInstant);
-
     }
 
     @Test

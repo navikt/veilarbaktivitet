@@ -16,39 +16,41 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @With
 public class Aktivitetskort {
-    /*
-    "id",
-        "personIdent",
-        "tittel",
-        "aktivitetStatus",
 
-        "endretAv",
-        "endretTidspunkt",
-        "avtaltMedNav"
-     */
     @JsonProperty(required = true)
     UUID id;
+
     @JsonProperty(required = true)
     String personIdent;
+
     @JsonProperty(required = true)
     String tittel;
+
     String beskrivelse;
+
     @JsonProperty(required = true)
     AktivitetStatus aktivitetStatus;
+
     LocalDate startDato;
     LocalDate sluttDato;
+
     @JsonProperty(required = true)
     IdentDTO endretAv;
+
+    @JsonProperty(required = true)
     LocalDateTime endretTidspunkt;
+
     @JsonProperty(required = true)
     boolean avtaltMedNav;
-    // String avsluttetBegrunnelse;
 
     OppgaveLenke oppgave;
+
     @Singular("handling")
     List<LenkeSeksjon> handlinger;
+
     @Singular("detalj")
     List<Attributt> detaljer;
+
     @Singular("etikett")
     List<Etikett> etiketter;
 }
