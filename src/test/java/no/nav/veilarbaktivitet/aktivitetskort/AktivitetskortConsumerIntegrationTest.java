@@ -22,7 +22,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -570,44 +569,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(arenaAktiviteter).hasSize(1);
         assertThat(arenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
         assertThat(arenaAktiviteter.get(0).getAktivitetId()).isNotNull();
-    }
-
-    @Test
-    public void skal_ikke_kunne_endre_historisk_aktivitet() {
-        Aktivitetskort aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
-        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = aktivitetskortMelding(aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDL_LONNSTILSK);
-
-        sendOgVentPåMeldinger(List.of(kafkaAktivitetskortWrapperDTO));
-
-        avsluttOppfolgingsperiode();
-
-        Aktivitetskort oppdatertAktivitetkort = kafkaAktivitetskortWrapperDTO.aktivitetskort.withSluttDato(LocalDate.now());
-        sendOgVentPåMeldinger(List.of(kafkaAktivitetskortWrapperDTO.withAktivitetskort(oppdatertAktivitetkort).withMessageId(UUID.randomUUID())));
-
-        assertFeilmeldingPublished(
-            aktivitetskort.id,
-            UlovligEndringFeil.class
-        );
-    }
-
-    private void avsluttOppfolgingsperiode() {
-        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
-        var start = now.withYear(2020);
-        var key = mockBruker.getAktorId();
-        var payload = JsonUtils.toJson(
-            SisteOppfolgingsperiodeV1.builder()
-                .aktorId(mockBruker.getAktorId())
-                .uuid(mockBruker.getOppfolgingsperiode())
-                .startDato(start)
-                .sluttDato(now)
-        );
-        var recordMetatdata = producerClient.sendSync(new ProducerRecord<>(
-            oppfolgingperiodeTopic,
-            key,
-            payload
-        ));
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-            .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, recordMetatdata.offset()));
     }
 
     @Test

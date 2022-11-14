@@ -19,6 +19,7 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
@@ -26,12 +27,24 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDeling
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
@@ -42,6 +55,18 @@ import static org.junit.Assert.*;
 public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
+
+    @Value("${topic.inn.oppfolgingsperiode}")
+    private String oppfolgingperiodeTopic;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    private String springKafkaConsumerGroupId;
+
+    @Autowired
+    KafkaTestService kafkaTestService;
+
+    @Autowired
+    KafkaTemplate<String, String> stringStringKafkaTemplate;
 
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
@@ -335,5 +360,25 @@ public class AktivitetTestService {
                 .extract()
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
+    }
+
+    public void avsluttOppfolgingsperiode(UUID oppfolgingsperiode, Person.AktorId aktorId) throws ExecutionException, InterruptedException, TimeoutException {
+        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
+        var start = now.withYear(2020);
+        var key = aktorId.get();
+        var payload = JsonUtils.toJson(
+                SisteOppfolgingsperiodeV1.builder()
+                        .aktorId(aktorId.get())
+                        .uuid(oppfolgingsperiode)
+                        .startDato(start)
+                        .sluttDato(now)
+        );
+        var sendResult = stringStringKafkaTemplate.send(new ProducerRecord<>(
+                oppfolgingperiodeTopic,
+                key,
+                payload
+        )).get(3, TimeUnit.SECONDS);
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+                .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
     }
 }
