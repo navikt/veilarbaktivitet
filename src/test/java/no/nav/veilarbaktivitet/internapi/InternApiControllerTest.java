@@ -80,7 +80,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
             if (type.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) {
                 aktivitetTestService.opprettStillingFraNav(mockBruker);
-            } else if (type == AktivitetTypeDTO.TILTAKSAKTIVITET) {
+            } else if (type == AktivitetTypeDTO.EKSTERNAKTIVITET) {
                 // TODO aktivitetTestService.opprettEksternAktivitet(mockBruker);
             } else {
                 AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(type);

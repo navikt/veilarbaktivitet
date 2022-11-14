@@ -14,7 +14,7 @@ import java.util.UUID;
 @Value
 @With
 @Builder(toBuilder = true)
-@ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId", "tiltaksaktivitetData"})
+@ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
 public class AktivitetData {
 
     /**
@@ -86,7 +86,7 @@ public class AktivitetData {
     BehandlingAktivitetData behandlingAktivitetData;
     MoteData moteData;
     StillingFraNavData stillingFraNavData;
-    TiltaksaktivitetData tiltaksaktivitetData;
+    EksternAktivitetData eksternAktivitetData;
 
     public boolean endringTillatt() {
         return !(AktivitetStatus.AVBRUTT.equals(status)

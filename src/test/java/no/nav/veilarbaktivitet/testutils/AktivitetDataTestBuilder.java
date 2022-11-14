@@ -56,8 +56,8 @@ public class AktivitetDataTestBuilder {
                 return nySamtaleReferat();
             case STILLING_FRA_NAV:
                 return nyStillingFraNavMedCVKanDeles();
-            case TILTAKSAKTIVITET:
-                return nyTiltaksaktivitet();
+            case EKSTERNAKTIVITET:
+                return nyEksternAktivitet();
             default: throw new IllegalArgumentException("ukjent type");
         }
     }
@@ -130,11 +130,11 @@ public class AktivitetDataTestBuilder {
     }
 
 
-    public static AktivitetData nyTiltaksaktivitet() {
+    public static AktivitetData nyEksternAktivitet() {
         return AktivitetDataTestBuilder.nyAktivitet()
-                .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
+                .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
                 .funksjonellId(UUID.randomUUID())
-                .tiltaksaktivitetData(AktivitetTypeDataTestBuilder.tiltaksaktivitetData())
+                .eksternAktivitetData(AktivitetTypeDataTestBuilder.eksternAktivitetData())
                 .build();
     }
 

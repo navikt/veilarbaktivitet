@@ -1,20 +1,28 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.json.JsonMapper;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.DuplikatMeldingFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Service
+@RequiredArgsConstructor
 @Slf4j
 @ToString(of = {"aktivitetskortService"})
 public class AktivitetskortConsumer implements TopicConsumer<String, String> {
@@ -22,31 +30,6 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
     private final AktivitetskortService aktivitetskortService;
 
     public final AktivitetsKortFeilProducer feilProducer;
-
-    private static final ObjectMapper objectMapper = JsonMapper.defaultObjectMapper();
-
-    public AktivitetskortConsumer(
-        AktivitetskortService aktivitetskortService,
-        AktivitetsKortFeilProducer feilProducer
-    ) {
-        super();
-        this.aktivitetskortService = aktivitetskortService;
-        this.feilProducer = feilProducer;
-        objectMapper.registerSubtypes(TiltaksaktivitetDTO.class, KafkaAktivitetWrapperDTO.class);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_MISSING_CREATOR_PROPERTIES, true);
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
-    }
-
-    public KafkaAktivitetWrapperDTO deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
-        try {
-            return objectMapper.readValue(consumerRecord.value(), KafkaAktivitetWrapperDTO.class);
-        } catch (Exception e) {
-            throw new DeserialiseringsFeil(
-                    new ErrorMessage(e.getMessage()),
-                    e
-            );
-        }
-    }
 
     @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
@@ -56,6 +39,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         } catch (DuplikatMeldingFeil e) {
             return ConsumeStatus.OK;
         } catch (AktivitetsKortFunksjonellException e) {
+            log.error("Funksjonell feil i aktivitetkortConumer for aktivitetskort_v1 offset={} partition={}", e, consumerRecord.offset(), consumerRecord.partition());
             feilProducer.publishAktivitetsFeil(e, consumerRecord);
             return ConsumeStatus.OK;
         } finally {
@@ -63,27 +47,30 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         }
     }
 
+    private final AktivitetsbestillingCreator bestillingsCreator;
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
-        var melding = deserialiser(consumerRecord);
-        ignorerHvisSettFør(melding);
-        boolean erArenaAktivitet = "ARENA_TILTAK_AKTIVITET_ACL".equals(melding.source);
-        MDC.put(MetricService.SOURCE, melding.source);
-        if (melding instanceof KafkaTiltaksAktivitet aktivitet) {
-            aktivitetskortService.upsertAktivitetskort(aktivitet.payload, erArenaAktivitet);
+        var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
+        var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
+        log.info("Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}", consumerRecord.offset(), consumerRecord.partition(), bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
+        ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
+
+        MDC.put(MetricService.SOURCE, bestilling.getSource());
+        if (bestilling.getActionType() == ActionType.UPSERT_AKTIVITETSKORT_V1) {
+            aktivitetskortService.upsertAktivitetskort(bestilling);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
         return ConsumeStatus.OK;
     }
 
-    private void ignorerHvisSettFør(KafkaAktivitetWrapperDTO message) throws DuplikatMeldingFeil {
-        if (aktivitetskortService.harSettMelding(message.messageId)) {
-            log.warn("Previously handled message seen {} , ignoring", message.messageId);
+    private void ignorerHvisSettFor(UUID messageId, UUID funksjonellId) throws DuplikatMeldingFeil {
+        if (aktivitetskortService.harSettMelding(messageId)) {
+            log.warn("Previously handled message seen {} , ignoring", messageId);
             throw new DuplikatMeldingFeil();
         } else {
             aktivitetskortService.lagreMeldingsId(
-                message.messageId,
-                message.funksjonellId()
+                messageId,
+                funksjonellId
             );
         }
     }

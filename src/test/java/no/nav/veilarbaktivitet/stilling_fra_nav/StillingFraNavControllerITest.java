@@ -186,7 +186,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     }
 
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
-        if(typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.TILTAKSAKTIVITET)) return;
+        if(typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET)) return;
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);

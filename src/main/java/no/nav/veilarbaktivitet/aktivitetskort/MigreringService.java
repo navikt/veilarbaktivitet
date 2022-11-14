@@ -29,7 +29,7 @@ public class MigreringService {
         }
     }
 
-    private Predicate<AktivitetDTO> ikkeEksterneAktiviteter = a -> AktivitetTypeDTO.TILTAKSAKTIVITET != a.getType();
+    private Predicate<AktivitetDTO> ikkeEksterneAktiviteter = a -> AktivitetTypeDTO.EKSTERNAKTIVITET != a.getType();
     private Predicate<AktivitetDTO> alleLokaleAktiviteter = a -> true;
 
     public Predicate<AktivitetDTO> ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv() {

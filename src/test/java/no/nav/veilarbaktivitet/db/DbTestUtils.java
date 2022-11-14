@@ -25,10 +25,11 @@ public class DbTestUtils {
             "IJOBB",
             "MOTE",
             "BEHANDLING",
-            "TILTAKSAKTIVITET",
+            "EKSTERNAKTIVITET",
             "AKTIVITET",
             "FORHAANDSORIENTERING",
-            "SHEDLOCK"
+            "SHEDLOCK",
+            "ID_MAPPINGER"
     );
 
     public static void cleanupTestDb(JdbcTemplate db) {

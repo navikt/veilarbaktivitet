@@ -1,7 +1,7 @@
 apiVersion: kafka.nais.io/v1
 kind: Topic
 metadata:
-  name: aktivitetskort-test-v2
+  name: aktivitetskort-test-v3
   namespace: dab
   labels:
     team: dab

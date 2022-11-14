@@ -26,7 +26,7 @@ public class KafkaAktivitetDAO {
     @Timed
     public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
         SqlParameterSource unntaEksternaAktiviteter = new MapSqlParameterSource()
-                .addValue("unntaAktivitetsType", AktivitetTypeData.TILTAKSAKTIVITET.name());
+                .addValue("unntaAktivitetsType", AktivitetTypeData.EKSTERNAKTIVITET.name());
 
         return database.getNamedJdbcTemplate().query(
                 """ 

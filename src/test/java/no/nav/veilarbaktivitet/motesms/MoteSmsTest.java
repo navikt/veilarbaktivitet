@@ -134,7 +134,7 @@ public class MoteSmsTest extends SpringBootTestBase {
                 AktivitetTypeDTO.values()) {
             if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
                 aktivitetTestService.opprettStillingFraNav(happyBruker);
-            } else if (type == AktivitetTypeDTO.TILTAKSAKTIVITET) {
+            } else if (type == AktivitetTypeDTO.EKSTERNAKTIVITET) {
                 // TODO aktivitetTestService.opprettEksternAktivitet(happyBruker)
             } else {
                 AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);

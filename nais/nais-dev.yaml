@@ -7,7 +7,7 @@ metadata:
   labels:
     team: pto
 spec:
-  image: docker.pkg.github.com/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
   ingresses:
     - https://veilarbaktivitet-q1.nais.preprod.local
     - https://app-q1.adeo.no/veilarbaktivitet
@@ -77,9 +77,5 @@ spec:
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
-    - name: ENDRING_PA_AKTIVITET_TOPIC
-      value: aapen-fo-endringPaaAktivitet-v4-q1
-    - name: OPPFOLGING_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-oppfolgingAvsluttet-v1-q1
     - name: KVP_AVSLUTTET_TOPIC
       value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-q1

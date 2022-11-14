@@ -36,7 +36,7 @@ public class InternApiService {
     }
 
     private boolean erIkkeEksternAktivitet(AktivitetData aktivitetData) {
-        return aktivitetData.getAktivitetType() != AktivitetTypeData.TILTAKSAKTIVITET;
+        return aktivitetData.getAktivitetType() != AktivitetTypeData.EKSTERNAKTIVITET;
     }
     private boolean erIkkeKontorsperret(AktivitetData aktivitet) {
         return authService.sjekKvpTilgang(aktivitet.getKontorsperreEnhetId());

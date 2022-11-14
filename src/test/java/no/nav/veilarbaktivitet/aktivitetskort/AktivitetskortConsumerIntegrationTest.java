@@ -8,7 +8,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
-import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
@@ -19,33 +22,35 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
+import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import static org.assertj.core.api.Assertions.within;
-import static org.mockito.ArgumentMatchers.any;
 import shaded.com.google.common.collect.Streams;
 
 import java.time.*;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
@@ -91,55 +96,90 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
-    TiltaksaktivitetDTO tiltaksaktivitetDTO(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
-        return TiltaksaktivitetDTO.builder()
+    ArenaMeldingHeaders meldingContext() {
+        return new ArenaMeldingHeaders(new ArenaId("123"), "MIDL");
+    }
+    ArenaMeldingHeaders meldingContext(ArenaId eksternRefanseId) {
+        return new ArenaMeldingHeaders(eksternRefanseId, "MIDL");
+    }
+    ArenaMeldingHeaders meldingContext(ArenaId eksternRefanseId, String arenaTiltakskode) {
+        return new ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode);
+    }
+
+    private ArenaMeldingHeaders defaultcontext = meldingContext();
+    Aktivitetskort aktivitetskort(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
+        return Aktivitetskort.builder()
                 .id(funksjonellId)
-                .eksternReferanseId(new Random().nextLong() + "")
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
                 .sluttDato(LocalDate.now().minusDays(30))
                 .tittel("The Elder Scrolls: Arena")
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(aktivitetStatus)
+                .avtaltMedNav(true)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretDato(endretDato)
-                .tiltaksNavn("Arendal")
-                .tiltaksKode("Arenatiltakskode")
-                .arrangoernavn("Arenaarrangørnavn")
-                .deltakelseStatus("SOKT_INN")
-                .detalj("deltakelsesprosent", "40")
-                .detalj("dagerPerUke", "2")
+                .endretTidspunkt(endretDato)
+                .etikett(new Etikett("SOKT_INN"))
+                .detalj(new Attributt("arrangørnavn", "Arendal"))
+                .detalj(new Attributt("deltakelsesprosent", "40%"))
+                .detalj(new Attributt("dager per uke", "2"))
                 .build();
     }
 
-    KafkaAktivitetWrapperDTO aktivitetskortMelding(TiltaksaktivitetDTO payload) {
-        return aktivitetskortMelding(payload, UUID.randomUUID());
+    KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload) {
+        return aktivitetskortMelding(payload, UUID.randomUUID(), ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
     }
 
-    KafkaAktivitetWrapperDTO aktivitetskortMelding(TiltaksaktivitetDTO payload, UUID messageId) {
-        return KafkaTiltaksAktivitet.builder()
+    KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload, UUID messageId, String source, AktivitetskortType aktivitetskortType) {
+        return KafkaAktivitetskortWrapperDTO.builder()
                 .messageId(messageId)
-                .source("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDateTime.now())
-                .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(payload)
+                .source(source)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(payload)
+                .aktivitetskortType(aktivitetskortType)
                 .build();
     }
 
-    void sendOgVentPåTiltak(List<TiltaksaktivitetDTO> meldinger) {
+    void sendOgVentPaaAktivitetskort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {
         var aktivitetskorter = meldinger.stream().map(this::aktivitetskortMelding).toList();
-        sendOgVentPåMeldinger(aktivitetskorter);
+        sendOgVentPåArenaMeldinger(aktivitetskorter, meldingContextList);
     }
 
-    void sendOgVentPåMeldinger(List<KafkaAktivitetWrapperDTO> meldinger) {
-        var lastrecord = Streams.mapWithIndex(meldinger.stream(),
-                (aktivitetskort, index) -> new ProducerRecord<>(topic, aktivitetskort.funksjonellId().toString(), JsonUtils.toJson(aktivitetskort)))
-            .map((record) -> producerClient.sendSync(record))
-            .skip(meldinger.size() - 1)
-            .findFirst().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-            .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastrecord.offset()));
+    void sendOgVentPåMeldinger(List<KafkaAktivitetskortWrapperDTO> meldinger) {
+        var lastRecord = meldinger.stream()
+        .map(melding -> makeProducerRecord(melding, null))
+                .map((record) -> producerClient.sendSync(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.offset()));
+    }
+
+    void sendOgVentPåArenaMeldinger(List<KafkaAktivitetskortWrapperDTO> meldinger, List<ArenaMeldingHeaders> contexts) {
+        Assertions.assertEquals(meldinger.size(), contexts.size());
+
+        var lastRecord = Streams.mapWithIndex(meldinger.stream(),
+                (melding, index) -> makeProducerRecord(melding, contexts.get((int) index)))
+                .map((record) -> producerClient.sendSync(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+            .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.offset()));
+    }
+
+    private ProducerRecord makeProducerRecord(KafkaAktivitetskortWrapperDTO melding, ArenaMeldingHeaders arenaMeldingHeaders) {
+        if (arenaMeldingHeaders == null) {
+            return new ProducerRecord<>(topic, melding.aktivitetskort.getId().toString(), JsonUtils.toJson(melding));
+        }
+
+        List<Header> headers = List.of(
+                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
+                new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
+        );
+        return new ProducerRecord<>(topic, null, melding.aktivitetskort.getId().toString(), JsonUtils.toJson(melding), headers);
     }
 
     private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
@@ -150,42 +190,86 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_upsert_ny_tiltaksaktivitet() {
+    public void happy_case_upsert_ny_arenatiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        ArenaMeldingHeaders kontekst = meldingContext(new ArenaId("123"), "MIDL");
+        sendOgVentPaaAktivitetskort(List.of(actual), List.of(kontekst));
 
         var aktivitet = hentAktivitet(funksjonellId);
 
-        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.TILTAKSAKTIVITET);
+        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
 
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
-        Assertions.assertEquals(aktivitet.getTiltak(), new TiltakDTO(
-                tiltaksaktivitet.getTiltaksNavn(),
-                tiltaksaktivitet.getArrangoernavn(),
-                tiltaksaktivitet.getDeltakelseStatus(),
-                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("dagerPerUke")),
-                Integer.parseInt(tiltaksaktivitet.getDetaljer().get("deltakelsesprosent"))
+        Assertions.assertTrue(aktivitet.isAvtalt());
+        Assertions.assertEquals(InnsenderData.NAV.name(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
+                AktivitetskortType.ARENA_TILTAK,
+                null,
+                Collections.emptyList(),
+                actual.detaljer,
+                actual.etiketter
         ));
+    }
 
+    @Test
+    public void aktiviteter_opprettet_av_bruker_skal_ha_riktig_endretAv_verdi() {
+        var brukerIdent = "12129312122";
+        var aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEndretAv(new IdentDTO(
+                    brukerIdent,
+                        IdentType.PERSONBRUKERIDENT
+                ));
+        var kafkaAktivitetskortWrapperDTO = aktivitetskortMelding(
+                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDL_LONNSTILSK);
+        sendOgVentPåMeldinger(List.of(kafkaAktivitetskortWrapperDTO));
+        var resultat = hentAktivitet(aktivitetskort.getId());
+        assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
+        assertThat(resultat.getLagtInnAv()).isEqualTo(InnsenderData.BRUKER.toString());
+    }
+
+
+    @Test
+    public void ekstern_aktivitet_skal_ha_oppfolgingsperiode() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
+                .aktivitetskortType(AktivitetskortType.MIDL_LONNSTILSK)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(actual)
+                .messageId(UUID.randomUUID())
+                .build();
+
+        sendOgVentPåMeldinger(List.of(wrapperDTO));
+
+        var aktivitet = hentAktivitet(funksjonellId);
+
+        Assertions.assertEquals(mockBruker.getOppfolgingsperiode(), aktivitet.getOppfolgingsperiodeId());
     }
 
     @Test
     public void happy_case_upsert_status_existing_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetUpdate = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES);
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        ArenaMeldingHeaders meldingContext = meldingContext(new ArenaId("123"), "MIDL");
+        var annenVeileder = new IdentDTO("ANNEN_NAV_IDENT", ARENAIDENT);
+        Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withEndretAv(annenVeileder);
+        ArenaMeldingHeaders updatemeldingContext = meldingContext(new ArenaId("123"), "MIDL");
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate));
+
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate), List.of(meldingContext, updatemeldingContext));
 
         AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
 
-        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.TILTAKSAKTIVITET);
+        assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
         Assertions.assertNotNull(aktivitet);
-        assertThat(tiltaksaktivitet.endretDato).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
-        Assertions.assertEquals(tiltaksaktivitet.endretAv.ident(), aktivitet.getEndretAv());
+        assertThat(tiltaksaktivitet.endretTidspunkt).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
+        assertThat(aktivitet.getEndretAv()).isEqualTo(annenVeileder.ident());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
     }
@@ -194,12 +278,12 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void duplikat_melding_bare_1_opprettet_transaksjon() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        Aktivitetskort aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO =  aktivitetskortMelding(aktivitetskort);
+        var context = meldingContext();
 
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO =  aktivitetskortMelding(tiltaksaktivitetDTO);
-
-        ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, "1", JsonUtils.toJson(kafkaAktivitetWrapperDTO));
-        RecordMetadata recordMetadata = producerClient.sendSync(producerRecord);
+        ProducerRecord<String, String> producerRecord = makeProducerRecord(kafkaAktivitetskortWrapperDTO, context);
+        producerClient.sendSync(producerRecord);
         RecordMetadata recordMetadataDuplicate = producerClient.sendSync(producerRecord);
         Awaitility.await().atMost(Duration.ofSeconds(10)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataDuplicate.offset()));
 
@@ -215,68 +299,85 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void oppdatering_av_detaljer_gir_riktig_transaksjon() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withTiltaksNavn("Nytt navn");
+        var context = meldingContext();
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        Aktivitetskort tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT).toBuilder()
+                .detalj(new Attributt("Tiltaksnavn", "Nytt navn")).build();
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
         Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.getTransaksjonsType());
     }
 
     @Test
-    public void oppdatering_status_og_detaljer_gir_2_transaksjoner() {
+    public void oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.GJENNOMFORES)
-                .withDeltakelseStatus("FÅTT_PLASS");
+        var context = meldingContext();
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withAvtaltMedNav(false);
+        var etikett = new Etikett("FÅTT_PLASS");
+        Aktivitetskort tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES).toBuilder()
+                .avtaltMedNav(true)
+                .etikett(etikett)
+                .build();
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitetId = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
                 .findFirst().get().getId();
-        var aktivitet = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
+        var aktivitetVersjoner = aktivitetTestService.hentVersjoner(aktivitetId, mockBruker, mockBruker);
 
-        Assertions.assertEquals(3, aktivitet.size());
-        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.get(0).getTransaksjonsType());
-        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitet.get(1).getTransaksjonsType());
-        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.get(2).getTransaksjonsType());
+        Assertions.assertEquals(4, aktivitetVersjoner.size());
+        var sisteVersjon = aktivitetVersjoner.get(0);
+        assertThat(sisteVersjon.isAvtalt()).isTrue();
+        assertThat(sisteVersjon.getEksternAktivitet().etiketter()).isEqualTo(tiltaksaktivitetEndret.etiketter);
+        assertThat(sisteVersjon.getStatus()).isEqualTo(AktivitetStatus.GJENNOMFORES);
+        Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitetVersjoner.get(0).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.DETALJER_ENDRET, aktivitetVersjoner.get(1).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.AVTALT, aktivitetVersjoner.get(2).getTransaksjonsType());
+        Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitetVersjoner.get(3).getTransaksjonsType());
     }
 
     @Test
     public void endretTidspunkt_skal_settes_fra_melding() {
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withEndretDato(endretDato);
+        var context = meldingContext();
+        Aktivitetskort aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+                .withEndretTidspunkt(endretDato);
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitetDTO));
+        sendOgVentPaaAktivitetskort(List.of(aktivitetskort), List.of(context));
 
         var aktivitet = hentAktivitet(funksjonellId);
         Instant endretDatoInstant = endretDato.atZone(ZoneId.systemDefault()).toInstant();
         assertThat(aktivitet.getEndretDato()).isEqualTo(endretDatoInstant);
-
     }
 
     @Test
-    public void skal_handtere_gamle_meldinger_etter_ny_melding() {
+    public void skal_skippe_gamle_meldinger_etter_ny_melding() {
         var funksjonellId = UUID.randomUUID();
         var nyesteNavn = "Nytt navn";
 
-        var tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withTiltaksNavn("Gammelt navn");
+        var context = meldingContext();
+        var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+                .toBuilder()
+                .detalj(new Attributt("Tiltaksnavn", "Gammelt navn"))
+                .build();
         var tiltaksMelding = aktivitetskortMelding(tiltaksaktivitet);
-        var tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withTiltaksNavn(nyesteNavn);
+        var tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+                .toBuilder()
+                .detalj(new Attributt("Tiltaksnavn", nyesteNavn))
+                .build();
         var tiltaksMeldingEndret = aktivitetskortMelding(tiltaksaktivitetEndret);
 
-        sendOgVentPåMeldinger(List.of(tiltaksMelding, tiltaksMeldingEndret, tiltaksMelding));
+        sendOgVentPåArenaMeldinger(List.of(tiltaksMelding, tiltaksMeldingEndret, tiltaksMelding), List.of(context, context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getTiltak().tiltaksnavn()).isEqualTo(nyesteNavn);
-
+        var detaljer = aktivitet.getEksternAktivitet().detaljer();
+        assertThat(detaljer.stream().filter(it -> it.label().equals("Tiltaksnavn"))).hasSize(1);
+        assertThat(detaljer).containsOnlyOnceElementsOf(List.of(new Attributt("Tiltaksnavn", nyesteNavn)));
     }
 
     private AktivitetDTO hentAktivitet(UUID funksjonellId) {
@@ -290,10 +391,11 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void avbrutt_aktivitet_kan_ikke_endres() {
         var funksjonellId = UUID.randomUUID();
 
-        var tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT);
-        var tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT);
+        var tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+        var context = meldingContext();
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
@@ -303,10 +405,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void fullført_aktivitet_kan_ikke_endres() {
         var funksjonellId = UUID.randomUUID();
 
-        var tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.FULLFORT);
-        var tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
+        var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.FULLFORT);
+        var tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
@@ -321,10 +423,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void aktivitet_kan_settes_til_avbrutt() {
         var funksjonellId = UUID.randomUUID();
 
-        var tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        var tiltaksaktivitetEndret = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT);
+        var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        var tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT);
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet, tiltaksaktivitetEndret));
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
@@ -339,8 +441,12 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 AktivitetskortProducerUtil.invalidDateFieldRecord()
         );
 
+        Iterable<Header> headers = List.of(
+                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("123").id().getBytes()),
+                new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".getBytes())
+        );
         RecordMetadata lastRecordMetadata = messages.stream()
-                .map(pair -> new ProducerRecord<>(topic, pair.messageId().toString(), pair.json()))
+                .map(pair -> new ProducerRecord<>(topic, null, pair.messageId().toString(), pair.json(), headers))
                 .map(record -> producerClient.sendSync(record))
                 .reduce((first, second) -> second)
                 .get();
@@ -359,8 +465,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(defaultcontext));
 
         assertFeilmeldingPublished(
             funksjonellId,
@@ -371,14 +477,23 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void should_not_commit_database_transaction_if_runtimeException_is_thrown2() {
         UUID funksjonellId = UUID.randomUUID();
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT);
-        TiltaksaktivitetDTO tiltaksaktivitetOppdatert = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.AVBRUTT)
-            .withTiltaksNavn("Nytt navn");
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        Aktivitetskort tiltaksaktivitetOppdatert = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)
+                .toBuilder()
+                .detalj(new Attributt("Tiltaksnavn", "Nytt navn"))
+                .build();
         var aktivitetskort = aktivitetskortMelding(tiltaksaktivitet);
         var aktivitetskortOppdatert = aktivitetskortMelding(tiltaksaktivitetOppdatert);
 
+        var h1 = new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("123").id().getBytes());
+        var h2 = new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".getBytes());
+
         var record = new ConsumerRecord<>(topic, 0, 0, funksjonellId.toString(), JsonUtils.toJson(aktivitetskort));
+        record.headers().add(h1);
+        record.headers().add(h2);
         var recordOppdatert = new ConsumerRecord<>(topic, 0, 1, funksjonellId.toString(), JsonUtils.toJson(aktivitetskortOppdatert));
+        recordOppdatert.headers().add(h1);
+        recordOppdatert.headers().add(h2);
 
         /* Call consume directly to avoid retry / waiting for message to be consumed */
         aktivitetskortConsumer.consume(record);
@@ -390,7 +505,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         /* Assert successful rollback */
         assertThat(messageDAO.exist(aktivitetskortOppdatert.messageId)).isFalse();
         var aktivitet = hentAktivitet(funksjonellId);
-         assertThat(aktivitet.getTiltak().tiltaksnavn()).isEqualTo(tiltaksaktivitet.getTiltaksNavn());
+        assertThat(aktivitet.getEksternAktivitet().detaljer().get(0).verdi()).isEqualTo(tiltaksaktivitet.detaljer.get(0).verdi());
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 
@@ -401,9 +516,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         UUID funksjonellId = UUID.randomUUID();
 
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-                .withEksternReferanseId("123");
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
 
@@ -421,15 +535,14 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void skal_migrere_eksisterende_forhaandorientering() {
         // Det finnes en arenaaktivtiet fra før
-        String arenaaktivitetId = "123";
+        var arenaaktivitetId = new ArenaId("123");
         // Opprett FHO på aktivitet
-        ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, new ArenaId(arenaaktivitetId), veileder);
+        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder);
         var record = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), null);
         // Migrer arenaaktivitet via topic
         UUID funksjonellId = UUID.randomUUID();
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(funksjonellId, AktivitetStatus.PLANLAGT)
-            .withEksternReferanseId(arenaaktivitetId);
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(meldingContext(arenaaktivitetId)));
         // Bruker leser fho (POST på /lest)
         var aktivitet = hentAktivitet(funksjonellId);
         aktivitetTestService.lesFHO(mockBruker, Long.parseLong(aktivitet.getId()), Long.parseLong(aktivitet.getVersjon()));
@@ -440,8 +553,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
         ArenaId arenaaktivitetId =  new ArenaId("123");
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
-                .withEksternReferanseId(arenaaktivitetId.id());
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
 
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(false);
 
@@ -450,7 +562,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(preMigreringArenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
         assertThat(preMigreringArenaAktiviteter.get(0).getAktivitetId()).isNull();
 
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        var context = meldingContext(arenaaktivitetId);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(context));
 
         var arenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(arenaAktiviteter).hasSize(1);
@@ -459,46 +572,26 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_ikke_kunne_endre_historisk_aktivitet() {
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
-        avsluttOppfolgingsPeriode();
-        sendOgVentPåTiltak(List.of(
-            tiltaksaktivitet.withSluttDato(LocalDate.now())
-        ));
-        assertFeilmeldingPublished(
-            tiltaksaktivitet.id,
-            UlovligEndringFeil.class
-        );
-    }
-
-    private void avsluttOppfolgingsPeriode() {
-        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
-        var start = now.withYear(2020);
-        var key = mockBruker.getAktorId();
-        var payload = JsonUtils.toJson(
-            SisteOppfolgingsperiodeV1.builder()
-                .aktorId(mockBruker.getAktorId())
-                .uuid(mockBruker.getOppfolgingsperiode())
-                .startDato(start)
-                .sluttDato(now)
-        );
-        var recordMetatdata = producerClient.sendSync(new ProducerRecord<>(
-            oppfolgingperiodeTopic,
-            key,
-            payload
-        ));
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-            .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, recordMetatdata.offset()));
-    }
-
-    @Test
     public void skal_ikke_gi_ut_tiltakaktiviteter_pa_intern_api() {
-        TiltaksaktivitetDTO tiltaksaktivitet = tiltaksaktivitetDTO(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
-        sendOgVentPåTiltak(List.of(tiltaksaktivitet));
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(defaultcontext));
         var aktiviteter = aktivitetTestService.hentAktiviteterInternApi(veileder, mockBruker.getAktorIdAsAktorId());
         assertThat(aktiviteter).isEmpty();
     }
+
+    @Test
+    public void skal_sette_nullable_felt_til_null() {
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+            .withSluttDato(null)
+            .withStartDato(null)
+            .withBeskrivelse(null);
+        sendOgVentPaaAktivitetskort(List.of(tiltaksaktivitet), List.of(defaultcontext));
+        var aktivitet = hentAktivitet(tiltaksaktivitet.getId());
+        assertThat(aktivitet.getFraDato()).isNull();
+        assertThat(aktivitet.getTilDato()).isNull();
+        assertThat(aktivitet.getBeskrivelse()).isNull();
+    }
+
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);

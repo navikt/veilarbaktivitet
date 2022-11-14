@@ -20,36 +20,36 @@ public class AktivitetskortProducerUtil {
 
     public record Pair(String json, UUID messageId) {}
 
-    private static JsonNode aktivitetMessageNode(KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO) {
-        return JsonUtils.getMapper().valueToTree(kafkaAktivitetWrapperDTO);
+    private static JsonNode aktivitetMessageNode(KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO) {
+        return JsonUtils.getMapper().valueToTree(kafkaAktivitetskortWrapperDTO);
     }
 
     public static Pair missingFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.remove("tittel");
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
     public static Pair extraFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.put("kake", "123");
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
     public static Pair invalidDateFieldRecord() {
-        KafkaAktivitetWrapperDTO kafkaAktivitetWrapperDTO = kafkaAktivitetWrapper();
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetWrapperDTO);
-        var payload = (ObjectNode)jsonNode.path("payload");
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper();
+        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
+        var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.set("startDato", new TextNode("2022/-1/04T12:00:00+02:00"));
-        return new Pair(jsonNode.toString(), kafkaAktivitetWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
     }
 
-    private static KafkaAktivitetWrapperDTO kafkaAktivitetWrapper() {
-        TiltaksaktivitetDTO tiltaksaktivitetDTO = TiltaksaktivitetDTO.builder()
+    private static KafkaAktivitetskortWrapperDTO kafkaAktivitetWrapper() {
+        Aktivitetskort aktivitetskort = Aktivitetskort.builder()
                 .id(UUID.randomUUID())
                 .personIdent(mockBruker.getFnr())
                 .startDato(LocalDate.now().minusDays(30))
@@ -58,21 +58,18 @@ public class AktivitetskortProducerUtil {
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretDato(LocalDateTime.now().minusDays(100))
-                .tiltaksNavn("Arendal")
-                .tiltaksKode("Arenatiltakskode")
-                .arrangoernavn("Arenaarrangørnavn")
-                .deltakelseStatus("SOKT_INN")
-                .detalj("deltakelsesprosent", "40")
-                .detalj("dagerPerUke", "2")
+                .endretTidspunkt(LocalDateTime.now().minusDays(100))
+                .detalj(new Attributt("deltakelsesprosent", "40"))
+                .detalj(new Attributt("dagerPerUke", "2"))
                 .build();
 
-        return KafkaTiltaksAktivitet.builder()
+        return KafkaAktivitetskortWrapperDTO
+                .builder()
                 .messageId(UUID.randomUUID())
-                .source("ARENA_TILTAK_AKTIVITET_ACL")
-                .sendt(LocalDateTime.now())
-                .actionType(ActionType.UPSERT_TILTAK_AKTIVITET_V1)
-                .payload(tiltaksaktivitetDTO)
+                .source(AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(aktivitetskort)
+                .aktivitetskortType(AktivitetskortType.ARENA_TILTAK)
                 .build();
     }
 }

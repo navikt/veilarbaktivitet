@@ -1,17 +1,22 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import lombok.val;
+import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
-import org.springframework.data.relational.core.sql.SQL;
+import oracle.sql.json.OracleJsonObject;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 
 public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
@@ -63,7 +68,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
             case BEHANDLING -> aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
             case STILLING_FRA_NAV -> aktivitet.stillingFraNavData(mapStillingFraNav(rs));
             case MOTE, SAMTALEREFERAT -> aktivitet.moteData(mapMoteData(rs));
-            case TILTAKSAKTIVITET -> aktivitet.tiltaksaktivitetData(mapTiltaksaktivitetData((rs)));
+            case EKSTERNAKTIVITET -> aktivitet.eksternAktivitetData(mapEksternAktivitetData((rs)));
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
@@ -155,15 +160,15 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .build();
     }
 
-    private static TiltaksaktivitetData mapTiltaksaktivitetData(ResultSet rs) throws SQLException {
-        return TiltaksaktivitetData.builder()
-                .tiltakskode(rs.getString("TILTAK_KODE"))
-                .tiltaksnavn(rs.getString("TILTAK_NAVN"))
-                .arrangornavn(rs.getString("ARRANGOR_NAVN"))
-                .deltakelseStatus(rs.getString("DELTAKELSESTATUS"))
-                .dagerPerUke(rs.getInt("DAGER_PER_UKE"))
-                .deltakelsesprosent(rs.getInt("DELTAKELSEPROSENT"))
+    private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
+        return EksternAktivitetData.builder()
+                .source(rs.getString("SOURCE"))
+                .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
+                .tiltaksKode(rs.getString("TILTAK_KODE"))
+                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", OppgaveLenke.class))
+                .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
+                .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
+                .detaljer(Database.hentListObjectFromJsonString(rs, "DETALJER", Attributt.class))
                 .build();
     }
-
 }

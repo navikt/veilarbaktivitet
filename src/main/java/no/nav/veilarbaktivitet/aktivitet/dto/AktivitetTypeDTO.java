@@ -9,5 +9,5 @@ public enum AktivitetTypeDTO {
     MOTE,
     SAMTALEREFERAT,
     STILLING_FRA_NAV,
-    TILTAKSAKTIVITET
+    EKSTERNAKTIVITET
 }

@@ -29,7 +29,7 @@ public class InternAktivitetMapper {
             case MOTE -> mapTilMote(aktivitetData);
             case SAMTALEREFERAT -> mapTilSamtalereferat(aktivitetData);
             case STILLING_FRA_NAV -> mapTilStillingFraNav(aktivitetData);
-            case TILTAKSAKTIVITET -> mapTilTiltak(aktivitetData);
+            case EKSTERNAKTIVITET -> mapTilTiltak(aktivitetData);
         };
 
         return builder

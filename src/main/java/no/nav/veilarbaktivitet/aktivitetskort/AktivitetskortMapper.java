@@ -1,13 +1,15 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.aktivitet.domain.TiltaksaktivitetData;
-import org.apache.commons.lang3.NotImplementedException;
+import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
@@ -17,33 +19,44 @@ public class AktivitetskortMapper {
     private AktivitetskortMapper() {
     }
 
-    static AktivitetData mapTilAktivitetData(TiltaksaktivitetDTO tiltaksaktivitetDTO, LocalDateTime opprettetDato, LocalDateTime endretDato, String aktorId) {
+    private static String getTiltakskode(AktivitetskortBestilling bestilling) {
+        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
+            return arenaAktivitetskortBestilling.getArenaTiltakskode();
+        } else if (bestilling instanceof EksternAktivitetskortBestilling) {
+            return null;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + bestilling);
+        }
+    }
+
+    public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, LocalDateTime opprettetDato) {
+        var aktivitetskort = bestilling.getAktivitetskort();
+        var eksternAktivitetData = EksternAktivitetData.builder()
+                .source(bestilling.getSource())
+                .type(bestilling.getAktivitetskortType())
+                .tiltaksKode(getTiltakskode(bestilling))
+                .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
+                .oppgave(aktivitetskort.oppgave)
+                .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
+                .etiketter(Optional.ofNullable(aktivitetskort.etiketter).orElse(List.of()))
+                .build();
+
         return AktivitetData.builder()
-                .funksjonellId(tiltaksaktivitetDTO.id)
-                .aktorId(aktorId)
-                .tittel(tiltaksaktivitetDTO.tittel)
-                .fraDato(toDate(tiltaksaktivitetDTO.startDato))
-                .tilDato(toDate(tiltaksaktivitetDTO.sluttDato))
-                .beskrivelse(tiltaksaktivitetDTO.beskrivelse)
-                .status(tiltaksaktivitetDTO.aktivitetStatus)
-                .tiltaksaktivitetData(mapTiltaksaktivitet(tiltaksaktivitetDTO))
-                .aktivitetType(AktivitetTypeData.TILTAKSAKTIVITET)
-                .lagtInnAv(tiltaksaktivitetDTO.endretAv.identType().mapToInnsenderType())
+                .funksjonellId(aktivitetskort.id)
+                .aktorId(bestilling.getAktorId().get())
+                .avtalt(aktivitetskort.avtaltMedNav)
+                .tittel(aktivitetskort.tittel)
+                .fraDato(toDate(aktivitetskort.startDato))
+                .tilDato(toDate(aktivitetskort.sluttDato))
+                .beskrivelse(aktivitetskort.beskrivelse)
+                .status(aktivitetskort.aktivitetStatus)
+                .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
+                .lagtInnAv(aktivitetskort.endretAv.identType().mapToInnsenderType())
                 .opprettetDato(localDateTimeToDate(opprettetDato))
-                .endretDato(localDateTimeToDate(endretDato))
-                .endretAv(tiltaksaktivitetDTO.endretAv.ident())
+                .endretDato(localDateTimeToDate(aktivitetskort.endretTidspunkt))
+                .endretAv(aktivitetskort.endretAv.ident())
+                .eksternAktivitetData(eksternAktivitetData)
                 .build();
     }
 
-
-    private static TiltaksaktivitetData mapTiltaksaktivitet(TiltaksaktivitetDTO tiltaksaktivitetDTO) {
-        return TiltaksaktivitetData.builder()
-                .tiltakskode(tiltaksaktivitetDTO.tiltaksKode)
-                .tiltaksnavn(tiltaksaktivitetDTO.tiltaksNavn)
-                .arrangornavn(tiltaksaktivitetDTO.arrangoernavn)
-                .deltakelseStatus(tiltaksaktivitetDTO.deltakelseStatus)
-                .dagerPerUke(Integer.parseInt(tiltaksaktivitetDTO.getDetaljer().get("dagerPerUke")))
-                .deltakelsesprosent(Integer.parseInt(tiltaksaktivitetDTO.getDetaljer().get("deltakelsesprosent")))
-                .build();
-    }
 }

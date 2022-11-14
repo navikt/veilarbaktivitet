@@ -1,10 +1,14 @@
 package no.nav.veilarbaktivitet.testutils;
 
+import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -105,13 +109,16 @@ public class AktivitetTypeDataTestBuilder {
                 .build();
     }
 
-    public static TiltaksaktivitetData tiltaksaktivitetData() {
-        return TiltaksaktivitetData.builder()
-                .arrangornavn("NAV")
-                .dagerPerUke(5)
-                .deltakelseStatus("GJENN")
-                .tiltaksnavn("Kakebaking")
-                .tiltakskode("KODE123")
+    @SneakyThrows
+    public static EksternAktivitetData eksternAktivitetData() {
+        return EksternAktivitetData.builder()
+                .type(AktivitetskortType.ARENA_TILTAK)
+                .source("AKTIVITET_ARENA_ACL")
+                .tiltaksKode("ABIST")
+                .oppgave(new OppgaveLenke(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no"), "knapp"), null))
+                .detalj(new Attributt("Arrangør", "NAV"))
+                .detalj(new Attributt("Dager per uke", "5"))
+                .etikett(new Etikett("GJENN"))
                 .build();
     }
 }

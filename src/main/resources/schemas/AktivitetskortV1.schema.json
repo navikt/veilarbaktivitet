@@ -143,8 +143,6 @@
           ],
           "description": "Dette feltet forteller hvilken status aktiviteten har, og dermed hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant, da dette er en endelig status."
         },
-        "etiketter": {
-        },
         "startDato": {
           "type": [
             "string",
@@ -299,7 +297,7 @@
         "handlinger": null
       }
     }
-  ]
+    ]
 }
 
 

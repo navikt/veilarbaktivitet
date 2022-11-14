@@ -5,15 +5,17 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
+import java.util.List;
+
 public class AktivitetsCompareUtilTest {
 
     @Test
     public void deltakelsestatusendring_skal_være_faktisk_endring() {
-        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
+        var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet();
         var nyAktivitet = gammelAktivitet
-                .withTiltaksaktivitetData(gammelAktivitet
-                    .getTiltaksaktivitetData()
-                        .withDeltakelseStatus("MOETE")
+                .withEksternAktivitetData(gammelAktivitet
+                    .getEksternAktivitetData()
+                        .withEtiketter(List.of(new Etikett("DELTAR")))
                 );
         Assertions.assertThat(
             AktivitetskortCompareUtil
@@ -23,7 +25,7 @@ public class AktivitetsCompareUtilTest {
 
     @Test
     public void ider_er_ikke_faktisk_endring() {
-        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
+        var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet();
         var nyAktivitet = gammelAktivitet
                 .withVersjon(10l)
                 .withId(12l);
@@ -35,7 +37,7 @@ public class AktivitetsCompareUtilTest {
 
     @Test
     public void forhåndsorientering_er_ikke_faktisk_endring() {
-        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
+        var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet();
         var nyAktivitet = gammelAktivitet
                 .withForhaandsorientering(AktivitetDataTestBuilder.nyForhaandorientering());
         Assertions.assertThat(
@@ -46,7 +48,7 @@ public class AktivitetsCompareUtilTest {
 
     @Test
     public void aktivitetsstatus_endring_er_ikke_faktisk_endring() {
-        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet()
+        var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet()
                 .withStatus(AktivitetStatus.GJENNOMFORES);
         var nyAktivitet = gammelAktivitet
                 .withStatus(AktivitetStatus.FULLFORT);
@@ -58,10 +60,10 @@ public class AktivitetsCompareUtilTest {
 
     @Test
     public void tiltaksnavn_endring_er_faktisk_endring() {
-        var gammelAktivitet = AktivitetDataTestBuilder.nyTiltaksaktivitet();
+        var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet();
         var nyAktivitet = gammelAktivitet
-            .withTiltaksaktivitetData(gammelAktivitet.getTiltaksaktivitetData()
-                .withTiltaksnavn("Nytt navn")
+            .withEksternAktivitetData(gammelAktivitet.getEksternAktivitetData()
+                    .withDetaljer(List.of(new Attributt("tiltaksnavn", "Hurra AS")))
             );
         Assertions.assertThat(
             AktivitetskortCompareUtil

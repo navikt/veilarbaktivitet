@@ -250,20 +250,6 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterAktivitet_skal_sette_rett_transaksjonstype() {
-        val aktivitet = lagEnNyAktivitet();
-
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
-
-        captureOppdaterAktivitetWithDateArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
-
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), SAKSBEHANDLER);
-        captureOppdaterAktivitetWithDateArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
-    }
-
-    @Test
     public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
         gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
