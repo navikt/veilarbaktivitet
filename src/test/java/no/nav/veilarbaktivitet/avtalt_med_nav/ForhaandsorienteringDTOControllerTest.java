@@ -53,7 +53,7 @@ public class ForhaandsorienteringDTOControllerTest {
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
 
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbc), new NamedParameterJdbcTemplate(jdbc));
-    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc));
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc), new Database(jdbc).getNamedJdbcTemplate());
 
     @Mock
     private AuthService authService;

@@ -7,10 +7,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,6 +25,15 @@ public class IdMappingDAO {
                 INSERT INTO ID_MAPPINGER (EKSTERN_REFERANSE_ID, AKTIVITET_ID, FUNKSJONELL_ID) 
                 VALUES (:arenaId, :aktivitetId, :funksjonellId)
                 """, params);
+    }
+
+    public Optional<Long> getAktivitetId(ArenaId arenaId) {
+        var params = new MapSqlParameterSource().addValue("arenaId", arenaId.id());
+        return template.queryForList("""
+                SELECT AKTIVITET_ID FROM ID_MAPPINGER WHERE EKSTERN_REFERANSE_ID = :arenaId
+                """, params, Long.class)
+                .stream()
+                .findFirst();
     }
 
     public Map<ArenaId, IdMapping> getMappings(List<ArenaId> ids) {
