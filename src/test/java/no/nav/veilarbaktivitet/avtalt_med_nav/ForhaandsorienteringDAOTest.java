@@ -15,10 +15,7 @@ import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -30,7 +27,7 @@ public class ForhaandsorienteringDAOTest {
 
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
-    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database);
+    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database, database.getNamedJdbcTemplate());
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database, new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @After
@@ -74,7 +71,7 @@ public class ForhaandsorienteringDAOTest {
                 .tekst("tralala")
                 .build();
 
-        Forhaandsorientering fhoResultat = fhoDAO.insertForArenaAktivitet(fho, aktivitetData.getId(), AKTOR_ID, veileder, new Date());
+        Forhaandsorientering fhoResultat = fhoDAO.insertForArenaAktivitet(fho, aktivitetData.getId(), AKTOR_ID, veileder, new Date(), Optional.empty());
 
         assertEquals(fho.getType(), fhoResultat.getType());
         assertEquals(fho.getTekst(), fhoResultat.getTekst());
