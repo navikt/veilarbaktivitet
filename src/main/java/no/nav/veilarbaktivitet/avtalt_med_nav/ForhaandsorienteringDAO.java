@@ -10,15 +10,13 @@ import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -26,6 +24,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 @RequiredArgsConstructor
 public class ForhaandsorienteringDAO {
     private final Database database;
+    private final NamedParameterJdbcTemplate template;
 
     private static final String SELECT_FORHAANDSORIENTERING = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_SKAL_STOPPES, VARSEL_STOPPET " +
             "FROM FORHAANDSORIENTERING ";
@@ -55,22 +54,42 @@ public class ForhaandsorienteringDAO {
         return getById(id.toString());
     }
 
-    public Forhaandsorientering insertForArenaAktivitet(ForhaandsorienteringDTO fho, ArenaId arenaAktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
+    public Forhaandsorientering insertForArenaAktivitet(
+            ForhaandsorienteringDTO fho,
+            ArenaId arenaAktivitetId,
+            Person.AktorId aktorId,
+            String opprettetAv,
+            Date opprettetDato,
+            Optional<Long> tekniskId) {
         var id = UUID.randomUUID();
+
+        var params = new MapSqlParameterSource()
+                .addValue("id", id.toString())
+                .addValue("aktivitetId", tekniskId.orElse(null))
+                .addValue("aktorId", aktorId.get())
+                .addValue("arenaAktivitetId", arenaAktivitetId.id())
+                .addValue("type", fho.getType().name())
+                .addValue("tekst", fho.getTekst())
+                .addValue("opprettetDato", opprettetDato)
+                .addValue("opprettetAv", opprettetAv);
         // language=sql
-        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)" +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?,1)",
-                id.toString(),
-                aktorId.get(),
-                null,
-                null,
-                arenaAktivitetId.id(),
-                fho.getType().name(),
-                fho.getTekst(),
-                opprettetDato,
-                opprettetAv,
-                null
-        );
+        var sql = """
+                INSERT INTO FORHAANDSORIENTERING (ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)
+                VALUES (
+                    :id,
+                    :aktorId,
+                    :aktivitetId,
+                    null,
+                    :arenaAktivitetId,
+                    :type,
+                    :tekst,
+                    :opprettetDato,
+                    :opprettetAv,
+                    null,
+                    1
+                )
+        """;
+        template.update(sql, params);
 
         LOG.info("opprettet forhåndsorientering: {} med id: {}", fho, id);
 
