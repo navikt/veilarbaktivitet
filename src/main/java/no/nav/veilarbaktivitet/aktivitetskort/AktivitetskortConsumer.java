@@ -29,7 +29,9 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     private final AktivitetskortService aktivitetskortService;
 
-    public final AktivitetsKortFeilProducer feilProducer;
+    private final AktivitetsKortFeilProducer feilProducer;
+
+    private final AktivitetskortMetrikker aktivitetskortMetrikker;
 
     @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
@@ -42,6 +44,9 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
             log.error("Funksjonell feil i aktivitetkortConumer for aktivitetskort_v1 offset={} partition={}", e, consumerRecord.offset(), consumerRecord.partition());
             feilProducer.publishAktivitetsFeil(e, consumerRecord);
             return ConsumeStatus.OK;
+        } catch (Exception e) {
+            aktivitetskortMetrikker.countAktivitetskortTekniskFeil();
+            throw e;
         } finally {
             MDC.remove(MetricService.SOURCE);
         }
@@ -60,6 +65,9 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
+
+        aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling);
+
         return ConsumeStatus.OK;
     }
 
