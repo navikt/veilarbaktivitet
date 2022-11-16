@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
@@ -47,6 +48,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
 import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -74,6 +76,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Autowired
     AktivitetskortService aktivitetskortService;
 
+    @Autowired
+    MeterRegistry meterRegistry;
+
     @Value("${topic.inn.aktivitetskort}")
     String topic;
 
@@ -91,6 +96,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Before
     public void cleanupBetweenTests() {
+        meterRegistry.clear();
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
@@ -197,6 +203,10 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ArenaMeldingHeaders kontekst = meldingContext(new ArenaId("123"), "MIDL");
         sendOgVentPaaAktivitetskort(List.of(actual), List.of(kontekst));
 
+        var count = meterRegistry.find(AKTIVITETSKORT_UPSERT).counter().count();
+
+        assertThat(count).isEqualTo(1.0);
+
         var aktivitet = hentAktivitet(funksjonellId);
 
         assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
@@ -240,6 +250,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .aktivitetskortType(AktivitetskortType.MIDL_LONNSTILSK)
                 .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
                 .aktivitetskort(actual)
+                .source("source")
                 .messageId(UUID.randomUUID())
                 .build();
 
