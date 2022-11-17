@@ -59,7 +59,7 @@ public class ArenaControllerTest {
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath);
-    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db);
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db, db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
 
     private final UnleashClient unleashClient = mock(UnleashClient.class);
@@ -67,7 +67,7 @@ public class ArenaControllerTest {
     private final MigreringService migreringService = new MigreringService(unleashClient);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient);
+    private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO);
     private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, migreringService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");

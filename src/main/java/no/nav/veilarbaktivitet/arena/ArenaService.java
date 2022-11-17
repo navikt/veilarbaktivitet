@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -32,6 +33,7 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 @Component
 public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
+    private final IdMappingDAO idMappingDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
@@ -46,13 +48,15 @@ public class ArenaService {
             AuthService authService,
             MeterRegistry meterRegistry,
             BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
-            VeilarbarenaClient veilarbarenaClient
+            VeilarbarenaClient veilarbarenaClient,
+            IdMappingDAO idMappingDAO
     ) {
         this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
         this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
         this.veilarbarenaClient = veilarbarenaClient;
+        this.idMappingDAO = idMappingDAO;
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall arena aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
@@ -120,7 +124,8 @@ public class ArenaService {
 
         brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
 
-        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
+        var aktivitetId = idMappingDAO.getAktivitetId(arenaaktivitetId);
+        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date(), aktivitetId);
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO());
     }

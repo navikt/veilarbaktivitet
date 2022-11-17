@@ -19,6 +19,9 @@ public class AktivitetsKortFeilProducer {
     @Value("${topic.ut.aktivitetskort-feil}")
     String feiltopic;
 
+    @Autowired
+    AktivitetskortMetrikker aktivitetskortMetrikker;
+
     private void publishAktivitetsFeil(AktivitetskortFeilMelding melding) {
         var producerRecord = new ProducerRecord<String, String>(feiltopic, melding.key(), JsonUtils.toJson(melding));
         aivenProducerClient.sendSync(producerRecord);
@@ -32,5 +35,7 @@ public class AktivitetsKortFeilProducer {
                 .timestamp(LocalDateTime.now())
                 .build()
         );
+
+        aktivitetskortMetrikker.countAktivitetskortFunksjonellFeil(e.getClass().getName());
     }
 }
