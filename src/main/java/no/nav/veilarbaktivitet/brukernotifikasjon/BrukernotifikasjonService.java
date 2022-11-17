@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
@@ -34,14 +36,16 @@ public class BrukernotifikasjonService {
     private final Nivaa4Client nivaa4Client;
     private final ManuellStatusV2Client manuellStatusClient;
     private final String aktivitetsplanBasepath;
+    private final AktivitetDAO aktivitetDAO;
 
-    public BrukernotifikasjonService(PersonService personService, SistePeriodeService sistePeriodeService, BrukerNotifikasjonDAO dao, Nivaa4Client nivaa4Client, ManuellStatusV2Client manuellStatusClient, @Value("${app.env.aktivitetsplan.basepath}") String aktivitetsplanBasepath) {
+    public BrukernotifikasjonService(PersonService personService, SistePeriodeService sistePeriodeService, BrukerNotifikasjonDAO dao, Nivaa4Client nivaa4Client, ManuellStatusV2Client manuellStatusClient, @Value("${app.env.aktivitetsplan.basepath}") String aktivitetsplanBasepath,AktivitetDAO aktivitetDAO) {
         this.personService = personService;
         this.sistePeriodeService = sistePeriodeService;
         this.dao = dao;
         this.nivaa4Client = nivaa4Client;
         this.manuellStatusClient = manuellStatusClient;
         this.aktivitetsplanBasepath = aktivitetsplanBasepath;
+        this.aktivitetDAO = aktivitetDAO;
     }
 
 
@@ -129,28 +133,10 @@ public class BrukernotifikasjonService {
     @Transactional
     public UUID opprettVarselPaaArenaAktivitet(
             ArenaId arenaAktivitetId,
+            Optional<Long> aktivitetId,
             Person.Fnr fnr,
             String ditNavTekst,
             VarselType varseltype
-    ) {
-        return opprettVarselPaaArenaAktivitet(
-                arenaAktivitetId,
-                fnr,
-                ditNavTekst,
-                varseltype,
-                null, null, null //Disse settes til standartekst av brukernotifiaksjoenr hvis ikke satt
-        );
-    }
-
-    @Transactional
-    public UUID opprettVarselPaaArenaAktivitet(
-            ArenaId arenaAktivitetId,
-            Person.Fnr fnr,
-            String ditNavTekst,
-            VarselType varseltype,
-            String epostTitel,
-            String epostBody,
-            String smsTekst
     ) {
         UUID uuid = UUID.randomUUID();
 
@@ -159,10 +145,15 @@ public class BrukernotifikasjonService {
                 .orElseThrow();
 
         UUID gjeldendeOppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-        URL aktivtetUrl = createAktivitetLink(arenaAktivitetId.id());
+        URL aktivtetUrl = createAktivitetLink(aktivitetId.map(Object::toString).orElseGet(arenaAktivitetId::id));
 
-        long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, epostTitel, epostBody, smsTekst);
+        // epostTittel, epostBody og smsTekst settes til standartekst av brukernotifiaksjoenr hvis ikke satt
+        long brukernotifikasjonId = dao.opprettBrukernotifikasjon(uuid, fnr, ditNavTekst, gjeldendeOppfolgingsperiode, varseltype, VarselStatus.PENDING, aktivtetUrl, null, null, null);
         dao.kobleArenaAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, arenaAktivitetId);
+        // Populer brukernotifikasjon koblingstabell til vanlig aktivitet også
+        aktivitetId
+            .flatMap(aktivitetDAO::hentMaybeAktivitet)
+            .ifPresent(aktivitet -> dao.kobleAktivitetIdTilBrukernotifikasjon(brukernotifikasjonId, aktivitet.getId(), aktivitet.getVersjon()));
 
         return uuid;
 

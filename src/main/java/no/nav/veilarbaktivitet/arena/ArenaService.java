@@ -122,9 +122,9 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bruker kan ikke varsles");
         }
 
-        brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
-
         var aktivitetId = idMappingDAO.getAktivitetId(arenaaktivitetId);
+        brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, aktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+
         var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date(), aktivitetId);
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO());

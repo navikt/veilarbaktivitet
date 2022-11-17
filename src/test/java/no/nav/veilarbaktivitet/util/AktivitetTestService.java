@@ -381,4 +381,8 @@ public class AktivitetTestService {
         Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
     }
+
+    public void opprettEksterntAktivitetsKort() {
+
+    }
 }

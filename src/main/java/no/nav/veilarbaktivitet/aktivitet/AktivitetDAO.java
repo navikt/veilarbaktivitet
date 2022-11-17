@@ -81,6 +81,14 @@ public class AktivitetDAO {
         );
     }
 
+    public Optional<AktivitetData> hentMaybeAktivitet(long id) {
+        try {
+            return Optional.of(hentAktivitet(id));
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
     public Optional<AktivitetData> hentAktivitetByFunksjonellId(@NonNull UUID funksjonellId) {
 
         AktivitetData aktivitetData;
