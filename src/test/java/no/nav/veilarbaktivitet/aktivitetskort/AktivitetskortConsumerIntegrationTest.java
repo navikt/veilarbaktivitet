@@ -24,8 +24,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.person.InnsenderData;
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -116,12 +114,22 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     private ArenaMeldingHeaders defaultcontext = meldingContext();
     Aktivitetskort aktivitetskort(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
-        return AktivitetskortTestBuilder.ny(
-                funksjonellId,
-                aktivitetStatus,
-                endretDato,
-                mockBruker
-        );
+        return Aktivitetskort.builder()
+                .id(funksjonellId)
+                .personIdent(mockBruker.getFnr())
+                .startDato(LocalDate.now().minusDays(30))
+                .sluttDato(LocalDate.now().minusDays(30))
+                .tittel("The Elder Scrolls: Arena")
+                .beskrivelse("arenabeskrivelse")
+                .aktivitetStatus(aktivitetStatus)
+                .avtaltMedNav(true)
+                .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
+                .endretTidspunkt(endretDato)
+                .etikett(new Etikett("SOKT_INN"))
+                .detalj(new Attributt("arrangørnavn", "Arendal"))
+                .detalj(new Attributt("deltakelsesprosent", "40%"))
+                .detalj(new Attributt("dager per uke", "2"))
+                .build();
     }
 
     KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload) {
