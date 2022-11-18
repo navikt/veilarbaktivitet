@@ -27,14 +27,14 @@ public class AktivitetsbestillingCreator {
     public static final String HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode";
     private final PersonService personService;
     public static final String ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL";
-    private static ObjectMapper objectMapper = null; //JsonMapper.defaultObjectMapper();
+    private static ObjectMapper objectMapper = null;
     private static ObjectMapper getMapper() {
         if (objectMapper != null) return objectMapper;
         objectMapper = JsonMapper.defaultObjectMapper();
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         return objectMapper;
     }
-    private static KafkaAktivitetskortWrapperDTO deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
+    static KafkaAktivitetskortWrapperDTO deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
         try {
             return getMapper().readValue(consumerRecord.value(), KafkaAktivitetskortWrapperDTO.class);
         } catch (Exception e) {

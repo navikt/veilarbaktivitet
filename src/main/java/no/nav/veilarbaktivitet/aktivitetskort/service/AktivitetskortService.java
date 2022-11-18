@@ -60,7 +60,7 @@ public class AktivitetskortService {
 
     private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
         Person endretAvIdent = bestilling.getAktivitetskort().getEndretAv().toPerson();
-        var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt();
+        var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
         var aktivitetData = AktivitetskortMapper
                 .mapTilAktivitetData(bestilling, bestilling.getAktivitetskort().getEndretTidspunkt());
         try {

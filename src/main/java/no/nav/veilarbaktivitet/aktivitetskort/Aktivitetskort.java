@@ -8,7 +8,7 @@ import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -38,7 +38,7 @@ public class Aktivitetskort {
     IdentDTO endretAv;
 
     @JsonProperty(required = true)
-    LocalDateTime endretTidspunkt;
+    ZonedDateTime endretTidspunkt;
 
     @JsonProperty(required = true)
     boolean avtaltMedNav;

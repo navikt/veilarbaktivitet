@@ -24,6 +24,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -279,7 +280,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         assertThat(aktivitet.getType()).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET);
         Assertions.assertNotNull(aktivitet);
-        assertThat(tiltaksaktivitet.endretTidspunkt).isCloseTo(DateUtils.dateToLocalDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
+        assertThat(tiltaksaktivitet.endretTidspunkt).isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.getEndretDato()), within(1, ChronoUnit.MILLIS));
         assertThat(aktivitet.getEndretAv()).isEqualTo(annenVeileder.ident());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
@@ -362,7 +363,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         sendOgVentPaaAktivitetskort(List.of(aktivitetskort), List.of(context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        Instant endretDatoInstant = endretDato.atZone(ZoneId.systemDefault()).toInstant();
+        Instant endretDatoInstant = endretDato.toInstant();
         assertThat(aktivitet.getEndretDato()).isEqualTo(endretDatoInstant);
     }
 
@@ -447,11 +448,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void invalid_messages_should_catch_deserializer_error() {
         List<AktivitetskortProducerUtil.Pair> messages = List.of(
-                AktivitetskortProducerUtil.missingFieldRecord(),
-                AktivitetskortProducerUtil.extraFieldRecord(),
-                AktivitetskortProducerUtil.invalidDateFieldRecord(),
-                AktivitetskortProducerUtil.validExampleRecord(),
-                AktivitetskortProducerUtil.validExampleFromFile()
+                AktivitetskortProducerUtil.missingFieldRecord(mockBruker.getFnrAsFnr()),
+                AktivitetskortProducerUtil.extraFieldRecord(mockBruker.getFnrAsFnr()),
+                AktivitetskortProducerUtil.invalidDateFieldRecord(mockBruker.getFnrAsFnr())
         );
 
         Iterable<Header> headers = List.of(
@@ -469,7 +468,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 1000, messages.size());
 
-        assertThat(records.count()).isEqualTo(3);
+        assertThat(records.count()).isEqualTo(messages.size());
     }
 
     @Test
@@ -608,5 +607,5 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-    private final LocalDateTime endretDato = LocalDateTime.now().minusDays(100);
+    private final ZonedDateTime endretDato = ZonedDateTime.now().minusDays(100);
 }
