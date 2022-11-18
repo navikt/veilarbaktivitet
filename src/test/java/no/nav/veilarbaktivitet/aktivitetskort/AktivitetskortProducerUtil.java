@@ -25,10 +25,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -106,7 +103,7 @@ public class AktivitetskortProducerUtil {
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretTidspunkt(ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneId.systemDefault()))
+                .endretTidspunkt(ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneOffset.ofHours(1)))
                 .detalj(new Attributt("deltakelsesprosent", "40"))
                 .detalj(new Attributt("dagerPerUke", "2"))
                 .oppgaver(

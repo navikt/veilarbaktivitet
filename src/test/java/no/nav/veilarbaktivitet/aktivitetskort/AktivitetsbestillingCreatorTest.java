@@ -18,10 +18,7 @@ public class AktivitetsbestillingCreatorTest {
         JsonSchema jsonSchema = factory.getSchema(
                 AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.schema.json"));
 
-        var lol = ZonedDateTime.parse("2022-10-19T12:00:00+02:00");
-
-        // var jsonNode = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
-        var jsonNode = AktivitetskortProducerUtil.validExampleFromFile();
+        var jsonNode = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
         var validationMessages = jsonSchema.validate(jsonNode);
         assertEquals(0, validationMessages.size());
     }
