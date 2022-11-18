@@ -46,7 +46,7 @@
   },
   "definitions": {
     "oppgave": {
-      "type": "object",
+      "type": ["object","null"],
       "properties": {
         "tekst": {
           "type": "string"
@@ -246,7 +246,12 @@
         "etiketter": {
           "type": "array",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties" : {
+              "kode" : {
+                "type": "string"
+              }
+            }
           },
           "description": "Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen"
         }
@@ -255,40 +260,66 @@
   },
   "examples": [
     {
-      "messageId": "9ed905a8-c044-4924-bc25-8d61fe20f131",
+      "messageId": "2edf9ba0-b195-49ff-a5cd-939c7f26826f",
       "source": "ARENA_TILTAK_AKTIVITET_ACL",
       "actionType": "UPSERT_AKTIVITETSKORT_V1",
       "aktivitetskortType": "ARENA_TILTAK",
       "aktivitetskort": {
-        "id": "f8c77f37-ec05-46a7-a172-e3e66b5978c2",
-        "personIdent": "18925698284",
-        "tittel": "Tiltak hos Helse Midt-Norge RHF",
-        "aktivitetStatus": "FULLFORT",
-        "etiketter": [],
-        "startDato": "2022-08-30",
-        "sluttDato": "2022-09-30",
-        "beskrivelse": "cc",
+        "id": "56155242-6481-43b5-9eac-4d7af695bf9d",
+        "personIdent": "48507582368",
+        "tittel": "The Elder Scrolls: Arena",
+        "beskrivelse": "arenabeskrivelse",
+        "aktivitetStatus": "PLANLAGT",
+        "startDato": "2022-10-19",
+        "sluttDato": "2022-10-19",
         "endretAv": {
-          "identType": "ARENAIDENT",
-          "ident": "LVA1620"
+          "ident": "arenaEndretav",
+          "identType": "ARENAIDENT"
         },
-        "endretTidspunkt": "2022-10-18T18:00:25",
-        "avtaltMedNav": true,
-        "detaljer": [
+        "endretTidspunkt": "2022-08-10T11:01:39.560123",
+        "avtaltMedNav": false,
+        "oppgaver": {
+          "ekstern": {
+            "tekst": "tekst",
+            "subtekst": "subtekst",
+            "url": "http://localhost:8080/ekstern",
+            "knapptekst": "knappetekst"
+          },
+          "intern": null
+        },
+        "handlinger": [
           {
-            "label": "Arrangør",
-            "verdi": "HELSE MIDT-NORGE RHF STJØRDAL"
+            "tekst": "tekst",
+            "subtekst": "subtekst",
+            "url": "http://localhost:8080/ekstern",
+            "type": "EKSTERN"
           },
           {
-            "label": "Deltakelse",
-            "verdi": "100.0%"
+            "tekst": "tekst",
+            "subtekst": "subtekst",
+            "url": "http://localhost:8080/intern",
+            "type": "INTERN"
           }
         ],
-        "handlinger": null
+        "detaljer": [
+          {
+            "label": "deltakelsesprosent",
+            "verdi": "40"
+          },
+          {
+            "label": "dagerPerUke",
+            "verdi": "2"
+          }
+        ],
+        "etiketter": [
+          {
+            "kode": "INNSOKT"
+          },
+          {
+            "kode": "UTSOKT"
+          }
+        ]
       }
     }
   ]
 }
-
-
-
