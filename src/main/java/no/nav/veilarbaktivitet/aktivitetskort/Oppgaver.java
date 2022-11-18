@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-public record OppgaveLenke(
+public record Oppgaver(
     Oppgave ekstern,
     Oppgave intern
 ) {}

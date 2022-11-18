@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.config.database;
 
 import lombok.Getter;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.aktivitetskort.OppgaveLenke;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -12,8 +11,6 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;

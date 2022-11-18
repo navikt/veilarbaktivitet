@@ -6,7 +6,7 @@ import java.util.List;
 
 public record EksternAktivitetDTO(
     AktivitetskortType type,
-    OppgaveLenke oppgave,
+    Oppgaver oppgave,
     List<LenkeSeksjon> handlinger,
     List<Attributt> detaljer,
     List<Etikett> etiketter

@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import lombok.val;
-import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
@@ -11,12 +8,10 @@ import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
-import oracle.sql.json.OracleJsonObject;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 
 public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
@@ -165,7 +160,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .source(rs.getString("SOURCE"))
                 .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
                 .tiltaksKode(rs.getString("TILTAK_KODE"))
-                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", OppgaveLenke.class))
+                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
                 .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
                 .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
                 .detaljer(Database.hentListObjectFromJsonString(rs, "DETALJER", Attributt.class))

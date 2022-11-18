@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTilAktivitetData;
@@ -25,7 +26,7 @@ public class AktivitetskortMapperTest {
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.GJENNOMFORES)
                 .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
-                .endretTidspunkt(LocalDateTime.now())
+                .endretTidspunkt(ZonedDateTime.now())
                 .build();
     }
 
@@ -46,7 +47,7 @@ public class AktivitetskortMapperTest {
                     ActionType.UPSERT_AKTIVITETSKORT_V1,
                     Person.aktorId("1234567890")
             ),
-            LocalDateTime.now()
+            ZonedDateTime.now()
         );
         assertThat(result.getEksternAktivitetData().getDetaljer()).isEmpty();
         assertThat(result.getEksternAktivitetData().getEtiketter()).isEmpty();

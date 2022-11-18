@@ -57,9 +57,19 @@ public class DateUtils {
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
+    public static Date zonedDateTimeToDate(ZonedDateTime zonedDateTime) {
+        if (zonedDateTime == null) return null;
+        return localDateTimeToDate(zonedDateTime.toLocalDateTime());
+    }
+
     public static LocalDateTime dateToLocalDateTime(Date date) {
         if (date == null) return null;
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    public static ZonedDateTime dateToZonedDateTime(Date date) {
+        if (date == null) return null;
+        return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
 
 }

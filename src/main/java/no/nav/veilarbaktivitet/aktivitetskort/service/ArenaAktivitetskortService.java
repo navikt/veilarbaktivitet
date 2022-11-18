@@ -40,7 +40,7 @@ public class ArenaAktivitetskortService {
             bestilling.getAktorId(),
             aktivitetsData,
             bestilling.getAktivitetskort().getEndretAv().toPerson(),
-            bestilling.getAktivitetskort().getEndretTidspunkt(),
+            bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime(),
             null // Ikke sett oppfølgingsperiode på arena-aktiviteter
         );
         // Gjør arena-spesifikk migrering
