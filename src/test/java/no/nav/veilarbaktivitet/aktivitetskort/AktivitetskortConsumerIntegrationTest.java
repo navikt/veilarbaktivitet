@@ -449,7 +449,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         List<AktivitetskortProducerUtil.Pair> messages = List.of(
                 AktivitetskortProducerUtil.missingFieldRecord(),
                 AktivitetskortProducerUtil.extraFieldRecord(),
-                AktivitetskortProducerUtil.invalidDateFieldRecord()
+                AktivitetskortProducerUtil.invalidDateFieldRecord(),
+                AktivitetskortProducerUtil.validExampleRecord(),
+                AktivitetskortProducerUtil.validExampleFromFile()
         );
 
         Iterable<Header> headers = List.of(
@@ -465,9 +467,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Awaitility.await().atMost(Duration.ofSeconds(1000))
                 .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset()));
 
-        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 10000, messages.size());
+        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 1000, messages.size());
 
-        assertThat(records.count()).isEqualTo(messages.size());
+        assertThat(records.count()).isEqualTo(3);
     }
 
     @Test

@@ -1,0 +1,62 @@
+{
+  "messageId": "2edf9ba0-b195-49ff-a5cd-939c7f26826f",
+  "source": "ARENA_TILTAK_AKTIVITET_ACL",
+  "actionType": "UPSERT_AKTIVITETSKORT_V1",
+  "aktivitetskortType": "ARENA_TILTAK",
+  "aktivitetskort": {
+    "id": "56155242-6481-43b5-9eac-4d7af695bf9d",
+    "personIdent": "48507582368",
+    "tittel": "The Elder Scrolls: Arena",
+    "beskrivelse": "arenabeskrivelse",
+    "aktivitetStatus": "PLANLAGT",
+    "startDato": "2022-10-19",
+    "sluttDato": "2022-10-19",
+    "endretAv": {
+      "ident": "arenaEndretav",
+      "identType": "ARENAIDENT"
+    },
+    "endretTidspunkt": "2022-08-10T11:01:39.560123",
+    "avtaltMedNav": false,
+    "oppgaver": {
+      "ekstern": {
+        "tekst": "tekst",
+        "subtekst": "subtekst",
+        "url": "http://localhost:8080/ekstern",
+        "knapptekst": "knappetekst"
+      },
+      "intern": null
+    },
+    "handlinger": [
+      {
+        "tekst": "tekst",
+        "subtekst": "subtekst",
+        "url": "http://localhost:8080/ekstern",
+        "type": "EKSTERN"
+      },
+      {
+        "tekst": "tekst",
+        "subtekst": "subtekst",
+        "url": "http://localhost:8080/intern",
+        "type": "INTERN"
+      }
+    ],
+    "detaljer": [
+      {
+        "label": "deltakelsesprosent",
+        "verdi": "40"
+      },
+      {
+        "label": "dagerPerUke",
+        "verdi": "2"
+      }
+    ],
+    "etiketter": [
+      {
+        "kode": "INNSOKT"
+      },
+      {
+        "kode": "UTSOKT"
+      }
+    ]
+  }
+}

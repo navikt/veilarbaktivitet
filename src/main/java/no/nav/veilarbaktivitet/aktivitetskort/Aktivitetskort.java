@@ -43,7 +43,7 @@ public class Aktivitetskort {
     @JsonProperty(required = true)
     boolean avtaltMedNav;
 
-    Oppgaver oppgave;
+    Oppgaver oppgaver;
 
     @Singular("handling")
     List<LenkeSeksjon> handlinger;
