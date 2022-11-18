@@ -15,7 +15,7 @@ public class EksternAktivitetData {
     String source;
     String tiltaksKode;
     AktivitetskortType type;
-    OppgaveLenke oppgave;
+    Oppgaver oppgave;
     @Singular("handling")
     List<LenkeSeksjon> handlinger;
     @Singular("detalj")

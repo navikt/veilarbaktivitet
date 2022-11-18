@@ -45,7 +45,7 @@
     }
   },
   "definitions": {
-    "oppgavelenke": {
+    "oppgave": {
       "type": "object",
       "properties": {
         "tekst": {
@@ -54,18 +54,13 @@
         "subtekst": {
           "type": "string"
         },
-        "params": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "path": {
-          "type": "string"
+        "url": {
+          "type": "string",
+          "format": "url"
         }
       }
     },
-    "handlinglenke": {
+    "lenkeseksjon": {
       "type": "object",
       "properties": {
         "tekst": {
@@ -74,14 +69,9 @@
         "subtekst": {
           "type": "string"
         },
-        "params": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "path": {
-          "type": "string"
+        "url": {
+          "type": "string",
+          "format": "url"
         },
         "lenkeType": {
           "type": "string",
@@ -223,17 +213,17 @@
           ],
           "description": "Ved avbrudd i aktiviteten, kan det legges til en begrunnelse for avbrytelsen."
         },
-        "oppgave": {
+        "oppgaver": {
           "type": [
             "object",
             "null"
           ],
           "properties": {
             "ekstern": {
-              "$ref": "#/definitions/oppgavelenke"
+              "$ref": "#/definitions/oppgave"
             },
             "intern": {
-              "$ref": "#/definitions/oppgavelenke"
+              "$ref": "#/definitions/oppgave"
             }
           }
         },
@@ -243,7 +233,7 @@
             "null"
           ],
           "items": {
-            "$ref": "#/definitions/oppgavelenke"
+            "$ref": "#/definitions/lenkeseksjon"
           }
         },
         "detaljer": {
@@ -297,7 +287,7 @@
         "handlinger": null
       }
     }
-    ]
+  ]
 }
 
 
