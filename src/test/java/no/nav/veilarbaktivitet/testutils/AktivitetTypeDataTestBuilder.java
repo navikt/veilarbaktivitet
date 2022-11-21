@@ -4,6 +4,10 @@ import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgave;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
@@ -66,15 +70,6 @@ public class AktivitetTypeDataTestBuilder {
                 .build();
     }
 
-    public static MoteData nyMote() {
-        return MoteData.builder()
-                .adresse("123")
-                .kanal(KanalDTO.INTERNETT)
-                .forberedelser("blee")
-                .referat("temp")
-                .referatPublisert(false)
-                .build();
-    }
 
     public static StillingFraNavData nyStillingFraNav(boolean setCVKanDelesData) {
         CvKanDelesData cvKanDelesData = null;

@@ -5,15 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.datatype.jsr310.JSR310Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import kafka.utils.Json;
 import lombok.SneakyThrows;
-import no.nav.common.json.JsonMapper;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -29,7 +25,7 @@ import java.time.*;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
+import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 
 public class AktivitetskortProducerUtil {
     private static final ObjectMapper objectMapper = JsonUtils.getMapper().copy()
@@ -59,8 +55,7 @@ public class AktivitetskortProducerUtil {
 
     public static JsonNode validExampleRecord(Person.Fnr fnr) {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);
-        JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
-        return jsonNode;
+        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
     }
 
     @SneakyThrows

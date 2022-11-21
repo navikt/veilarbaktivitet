@@ -5,6 +5,10 @@ import lombok.Data;
 import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 
 import java.util.List;
 

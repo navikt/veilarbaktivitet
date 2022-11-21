@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.util.ZonedOrNorwegianDateTimeDeserializer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.util;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -12,9 +12,9 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 
-public class ZonedOrNorwegianDateTimeDeserializer extends JsonDeserializer {
-    private ZonedDateTimeKeyDeserializer zonedDateTimeKeyDeserializer = ZonedDateTimeKeyDeserializer.INSTANCE;
-    private LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+public class ZonedOrNorwegianDateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
+    private static final ZonedDateTimeKeyDeserializer zonedDateTimeKeyDeserializer = ZonedDateTimeKeyDeserializer.INSTANCE;
+    private static final LocalDateTimeDeserializer localDateTimeDeserializer = new LocalDateTimeDeserializer(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
     @Override
     public ZonedDateTime deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         String dateText = jsonParser.getText();

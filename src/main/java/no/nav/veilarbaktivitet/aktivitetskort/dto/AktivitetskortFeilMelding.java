@@ -1,7 +1,6 @@
-package no.nav.veilarbaktivitet.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto;
 
 import lombok.Builder;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 
 import java.time.LocalDateTime;
 
