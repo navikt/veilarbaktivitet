@@ -1,11 +1,14 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.util.ZonedOrNorwegianDateTimeDeserializer;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -38,6 +41,7 @@ public class Aktivitetskort {
     IdentDTO endretAv;
 
     @JsonProperty(required = true)
+    @JsonDeserialize(using = ZonedOrNorwegianDateTimeDeserializer.class)
     ZonedDateTime endretTidspunkt;
 
     @JsonProperty(required = true)

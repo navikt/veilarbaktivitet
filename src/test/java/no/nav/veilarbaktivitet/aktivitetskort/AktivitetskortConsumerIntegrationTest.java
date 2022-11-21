@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
@@ -24,7 +25,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.person.InnsenderData;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -50,7 +50,7 @@ import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
-import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
+import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
@@ -113,7 +113,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         return new ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode);
     }
 
-    private ArenaMeldingHeaders defaultcontext = meldingContext();
+    private final ArenaMeldingHeaders defaultcontext = meldingContext();
     Aktivitetskort aktivitetskort(UUID funksjonellId, AktivitetStatus aktivitetStatus) {
         return Aktivitetskort.builder()
                 .id(funksjonellId)

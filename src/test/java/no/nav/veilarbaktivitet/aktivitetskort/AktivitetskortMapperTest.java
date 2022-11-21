@@ -2,16 +2,16 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTilAktivitetData;
-import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
+import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AktivitetskortMapperTest {

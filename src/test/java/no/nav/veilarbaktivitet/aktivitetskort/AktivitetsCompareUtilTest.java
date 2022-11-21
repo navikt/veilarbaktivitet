@@ -1,6 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;

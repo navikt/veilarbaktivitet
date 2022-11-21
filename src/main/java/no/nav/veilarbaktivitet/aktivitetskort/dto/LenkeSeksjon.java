@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto;
 
 import java.net.URL;
 
