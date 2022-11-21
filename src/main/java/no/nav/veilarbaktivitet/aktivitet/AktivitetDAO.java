@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -84,7 +85,7 @@ public class AktivitetDAO {
     public Optional<AktivitetData> hentMaybeAktivitet(long id) {
         try {
             return Optional.of(hentAktivitet(id));
-        } catch (Exception e) {
+        } catch (DataAccessException e) {
             return Optional.empty();
         }
     }
