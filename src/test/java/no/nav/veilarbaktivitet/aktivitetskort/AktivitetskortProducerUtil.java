@@ -64,9 +64,8 @@ public class AktivitetskortProducerUtil {
     }
 
     @SneakyThrows
-    public static JsonNode validExampleFromFile() {
-        String json = readFileToString("__files/aktivitetskort/validaktivitetskort.json");
-        return objectMapper.readTree(json);
+    public static String validExampleFromFile(String filename) {
+        return readFileToString("__files/aktivitetskort/%s".formatted(filename));
     }
     public static Pair missingFieldRecord(Person.Fnr fnr) {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);

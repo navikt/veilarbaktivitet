@@ -1,11 +1,14 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -38,6 +41,7 @@ public class Aktivitetskort {
     IdentDTO endretAv;
 
     @JsonProperty(required = true)
+    @JsonDeserialize(using = DualDateTimeDeserializer.class)
     ZonedDateTime endretTidspunkt;
 
     @JsonProperty(required = true)
