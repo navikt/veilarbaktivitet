@@ -15,6 +15,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
@@ -25,6 +27,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -39,7 +42,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import static org.junit.Assert.*;
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 public class BrukernotifikasjonTest extends SpringBootTestBase {
@@ -347,9 +356,6 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
-        var arenaaktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaId)
-            .stream().filter(aktivitet -> aktivitet.getId().id().equals(arenaId.id())).findFirst().get();
-        assertNotNull(arenaaktivitet.getForhaandsorientering());
 
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
@@ -359,17 +365,56 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     public void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
-        // Opprett ekstern aktivitet
-        // aktivitetTestService.opprettEksterntAktivitetsKort();
-        // Opprett fho når toggle er av
+        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("123");
+        // Opprett ekstern aktivitet
+        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        UUID.randomUUID(),
+                        AktivitetStatus.GJENNOMFORES,
+                        ZonedDateTime.now(),
+                        mockBruker
+                )
+        );
+        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
+        // Opprett fho når toggle er av
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
         // Assert url bruker teknisk id og ikke arenaId
+        var funksjonellId = aktivitetskortMelding.getAktivitetskort().getId();
+        var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, funksjonellId);
+        var tekniskId = aktivitet.getId();
+
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        var lenke = oppgaveRecord.value().getLink();
+        assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", tekniskId));
     }
     public void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_aktiviteter_blir_avbrutt() {
+        var mockBruker = MockNavService.createHappyBruker();
+        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var arenaId = new ArenaId("123");
+        // Opprett FHO
+        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
+        // Opprett ekstern aktivitet og avbruter den
+        var funksjonellId = UUID.randomUUID();
+        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        funksjonellId,
+                        AktivitetStatus.GJENNOMFORES,
+                        ZonedDateTime.now(),
+                        mockBruker
+                )
+        );
+        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
+        var avbruttAktivitet = aktivitetskortMelding.withAktivitetskort(
+                aktivitetskortMelding.getAktivitetskort().withAktivitetStatus(AktivitetStatus.AVBRUTT)
+        );
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding, avbruttAktivitet), List.of(headers, headers));
 
+        var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        brukernotifikasjonAsserts.assertDone(oppgave.key());
     }
 
     private DoknotifikasjonStatus okStatus(String bestillingsId) {

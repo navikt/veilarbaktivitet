@@ -5,7 +5,6 @@ import io.restassured.response.ValidatableResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
-import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
@@ -37,18 +36,12 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.apache.kafka.common.protocol.types.Field;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.internal.Futures;
 import org.awaitility.Awaitility;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-import org.springframework.util.concurrent.ListenableFuture;
 import shaded.com.google.common.collect.Streams;
 
 import java.time.Duration;
@@ -57,9 +50,9 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -71,7 +64,6 @@ import static org.junit.Assert.*;
 
 
 @RequiredArgsConstructor
-@Service
 public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
@@ -82,13 +74,11 @@ public class AktivitetTestService {
     @Value("${spring.kafka.consumer.group-id}")
     private String springKafkaConsumerGroupId;
 
-    @Autowired
-    KafkaTestService kafkaTestService;
+    private final KafkaTestService kafkaTestService;
 
-    @Autowired
-    KafkaTemplate<String, String> stringStringKafkaTemplate;
-    @Value("${topic.inn.aktivitetskort}")
-    private String aktivitetsKortV1Topic;
+    private final KafkaTemplate<String, String> stringStringKafkaTemplate;
+
+    private final String aktivitetsKortV1Topic;
 
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
@@ -446,5 +436,12 @@ public class AktivitetTestService {
 
         Awaitility.await().atMost(Duration.ofSeconds(500))
                 .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+    }
+
+    public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {
+        return hentAktiviteterForFnr(mockBruker, veileder)
+                .aktiviteter.stream()
+                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
+                .findFirst().get();
     }
 }
