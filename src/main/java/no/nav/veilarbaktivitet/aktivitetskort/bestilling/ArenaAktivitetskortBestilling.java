@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.bestilling;
 
 import lombok.Getter;
-import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
