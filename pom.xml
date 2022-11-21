@@ -433,6 +433,12 @@
             <version>3.0.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.networknt</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>1.0.73</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 </project>

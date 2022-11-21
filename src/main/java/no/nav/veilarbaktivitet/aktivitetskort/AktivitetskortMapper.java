@@ -7,12 +7,11 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestillin
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
-import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
+import static no.nav.veilarbaktivitet.util.DateUtils.*;
 
 public class AktivitetskortMapper {
 
@@ -29,14 +28,14 @@ public class AktivitetskortMapper {
         }
     }
 
-    public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, LocalDateTime opprettetDato) {
+    public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, ZonedDateTime opprettetDato) {
         var aktivitetskort = bestilling.getAktivitetskort();
         var eksternAktivitetData = EksternAktivitetData.builder()
                 .source(bestilling.getSource())
                 .type(bestilling.getAktivitetskortType())
                 .tiltaksKode(getTiltakskode(bestilling))
                 .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
-                .oppgave(aktivitetskort.oppgave)
+                .oppgave(aktivitetskort.oppgaver)
                 .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
                 .etiketter(Optional.ofNullable(aktivitetskort.etiketter).orElse(List.of()))
                 .build();
@@ -52,8 +51,8 @@ public class AktivitetskortMapper {
                 .status(aktivitetskort.aktivitetStatus)
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
                 .lagtInnAv(aktivitetskort.endretAv.identType().mapToInnsenderType())
-                .opprettetDato(localDateTimeToDate(opprettetDato))
-                .endretDato(localDateTimeToDate(aktivitetskort.endretTidspunkt))
+                .opprettetDato(zonedDateTimeToDate(opprettetDato))
+                .endretDato(zonedDateTimeToDate(aktivitetskort.endretTidspunkt))
                 .endretAv(aktivitetskort.endretAv.ident())
                 .eksternAktivitetData(eksternAktivitetData)
                 .build();
