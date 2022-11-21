@@ -25,3 +25,6 @@ spec:
     - team: pto
       application: pto-kafka-manager
       access: read
+    - team: team-tiltak
+      application: tiltak-hendelse-aktivitetsplan
+      access: write
