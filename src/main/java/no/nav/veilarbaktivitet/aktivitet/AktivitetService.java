@@ -69,14 +69,6 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
-    public Optional<AktivitetData> hentAktivitet(long aktivitetId) {
-        try {
-            return Optional.of(aktivitetDAO.hentAktivitet(aktivitetId));
-        } catch (IncorrectResultSizeDataAccessException e) {
-            return Optional.empty();
-        }
-    }
-
     public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
         return opprettAktivitet(aktorId, aktivitet, endretAvPerson, LocalDateTime.now());
     }
