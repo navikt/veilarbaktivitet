@@ -3,11 +3,16 @@ package no.nav.veilarbaktivitet.util;
 import io.restassured.response.Response;
 import io.restassured.response.ValidatableResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
+import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -15,6 +20,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -26,14 +32,24 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
+import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
+import org.apache.kafka.common.protocol.types.Field;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.internal.Futures;
 import org.awaitility.Awaitility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import org.springframework.util.concurrent.ListenableFuture;
+import shaded.com.google.common.collect.Streams;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -43,15 +59,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.Assert.*;
 
 
 @RequiredArgsConstructor
+@Service
 public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
@@ -67,6 +87,8 @@ public class AktivitetTestService {
 
     @Autowired
     KafkaTemplate<String, String> stringStringKafkaTemplate;
+    @Value("${topic.inn.aktivitetskort}")
+    private String aktivitetsKortV1Topic;
 
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
@@ -380,5 +402,49 @@ public class AktivitetTestService {
         )).get(3, TimeUnit.SECONDS);
         Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
+    }
+
+
+    public ProducerRecord makeAktivitetskortProducerRecord(KafkaAktivitetskortWrapperDTO melding, ArenaMeldingHeaders arenaMeldingHeaders) {
+        if (arenaMeldingHeaders == null) {
+            return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding));
+        }
+
+        List<Header> headers = List.of(
+                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
+                new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
+        );
+        return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding), headers);
+    }
+
+    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {
+        var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
+        opprettEksterntAktivitetsKort(aktivitetskorter, meldingContextList);
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger, List<ArenaMeldingHeaders> contexts) {
+        var lastRecord = (SendResult<String, String>) Streams.mapWithIndex(meldinger.stream(),
+                    (melding, index) -> makeAktivitetskortProducerRecord(melding, contexts.get((int) index)))
+                .map((record) -> stringStringKafkaTemplate.send(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger) {
+        var lastRecord = (SendResult<String, String>) meldinger.stream()
+                .map((melding) -> makeAktivitetskortProducerRecord(melding, null))
+                .map((record) -> stringStringKafkaTemplate.send(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
     }
 }
