@@ -36,6 +36,8 @@
       "type": "string",
       "enum": [
         "MIDL_LONNSTILSK",
+        "VARIG_LONNSTILSK",
+        "SOMMERJOBB",
         "ARENA_TILTAK"
       ]
     },
@@ -182,7 +184,8 @@
               "enum": [
                 "ARENAIDENT",
                 "NAVIDENT",
-                "PERSONBRUKER"
+                "PERSONBRUKER",
+                "ORGNR"
               ],
               "description": "Type ident. Kan være navIdent, arenaIdent, på sikt kanskje tiltaksarrangør, arbeidsgiver eller eksternBruker"
             }

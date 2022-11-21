@@ -15,6 +15,7 @@ public record IdentDTO (
             case NAVIDENT -> Person.navIdent(this.ident());
             case PERSONBRUKERIDENT -> Person.fnr(this.ident());
             case ARENAIDENT -> Person.arenaIdent(this.ident());
+            case ORGNR -> Person.organisasjon(this.ident());
         };
     }
 

@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.person;
 
+import org.aspectj.weaver.ast.Or;
+
 import java.util.Objects;
 
 public abstract class Person {
@@ -27,6 +29,9 @@ public abstract class Person {
 
     public static ArenaIdent arenaIdent(String arenaIdent) {
         return new ArenaIdent(arenaIdent);
+    }
+    public static Organisasjon organisasjon(String orgNr) {
+        return new Organisasjon(orgNr);
     }
 
     public boolean erEkstern() {
@@ -71,5 +76,9 @@ public abstract class Person {
 
     public static class ArenaIdent extends Person {
         private ArenaIdent(String id) { super(id); }
+    }
+
+    public static class Organisasjon extends Person {
+        private Organisasjon(String orgNr) { super(orgNr); }
     }
 }

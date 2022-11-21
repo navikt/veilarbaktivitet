@@ -51,6 +51,7 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
 import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
+import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ORGNR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
