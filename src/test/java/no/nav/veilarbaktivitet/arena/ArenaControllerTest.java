@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
@@ -48,6 +49,7 @@ public class ArenaControllerTest {
     private final UserInContext context = mock(UserInContext.class);
     private final AuthService authService = mock(AuthService.class);
     private final PersonService personService = mock(PersonService.class);
+    private final AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
     private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
     private final Nivaa4Client nivaa4Client = mock(Nivaa4Client.class);
     private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
@@ -58,7 +60,7 @@ public class ArenaControllerTest {
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath);
+    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db, db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
 

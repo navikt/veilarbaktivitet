@@ -1,54 +1,35 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
-import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
-@DirtiesContext
-public class DelingAvCvManueltAvbruttServiceTest {
+public class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
-    @Autowired
-    KafkaTestService testService;
-
-    AktivitetTestService aktivitetTestService;
     @Autowired
     StillingFraNavTestService stillingFraNavTestService;
-
-    @Autowired
-    JdbcTemplate jdbc;
 
     @LocalServerPort
     private int port;
@@ -81,8 +62,6 @@ public class DelingAvCvManueltAvbruttServiceTest {
 
     @Before
     public void cleanupBetweenTests() {
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
-        DbTestUtils.cleanupTestDb(jdbc);
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(Integer.MAX_VALUE);
     }
 
@@ -92,7 +71,7 @@ public class DelingAvCvManueltAvbruttServiceTest {
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
-        consumer = testService.createStringAvroConsumer(utTopic);
+        consumer = kafkaTestService.createStringAvroConsumer(utTopic);
 
         mockBruker
                 .createRequest()

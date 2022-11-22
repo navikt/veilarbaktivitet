@@ -86,7 +86,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        val brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        val brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = kafkaTestService.createStringAvroConsumer(utTopic);
