@@ -1,16 +1,22 @@
 package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
+import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentDTO;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
-import static no.nav.veilarbaktivitet.aktivitetskort.IdentType.ARENAIDENT;
+import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
+
 
 public class AktivitetskortTestBuilder {
 
