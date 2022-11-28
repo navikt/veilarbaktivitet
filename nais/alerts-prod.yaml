@@ -79,3 +79,19 @@ spec:
       severity: danger
       expr: |
         sum(rate(kafka_consume_rekrutteringsbistand_statusoppdatering_seconds_count{exception!='none'}[3m])) > 0.0
+    - alert: Funksjonell feil i konsumering av aktivitetskort
+      for: 3m
+      description: Funksjonell feil i konsumering av aktivitetskort
+      sla: se på denne når du kan (innenfor arbeidstid)
+      action: https://logs.adeo.no/goto/06fca5c0-6f24-11ed-95b0-83aabf5238d7
+      severity: warning
+      expr: |
+        sum(increase(aktivitetskort_funksjonell_feil_total[1d])) > 0.0
+    - alert: Teknisk feil i konsumering av aktivitetskort
+      for: 3m
+      description: Teknisk feil i konsumering av aktivitetskort
+      sla: se på denne så fort som mulig (innenfor arbeidstid)
+      action: https://logs.adeo.no/goto/06fca5c0-6f24-11ed-95b0-83aabf5238d7
+      severity: danger
+      expr: |
+        sum(increase(aktivitetskort_teknisk_feil_total[1m])) > 10.0

@@ -4,6 +4,7 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
@@ -13,7 +14,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -21,37 +21,17 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.api.Assertions;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.web.server.LocalServerPort;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
-@AutoConfigureWireMock(port = 0)
-public class AktiviteterTilKafkaAivenServiceTest {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    JdbcTemplate jdbc;
+public class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Autowired
     StillingFraNavTestService stillingFraNavTestService;
-    AktivitetTestService aktivitetTestService;
-    @Before
-    public void setupAktivitetTestService() {
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port);
-    }
 
     @Autowired
     AktiviteterTilKafkaService cronService;
@@ -80,7 +60,7 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
     @Before
     public void cleanupBetweenTests() {
-        DbTestUtils.cleanupTestDb(jdbc);
+        DbTestUtils.cleanupTestDb(jdbcTemplate);
 
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
@@ -138,8 +118,8 @@ public class AktiviteterTilKafkaAivenServiceTest {
 
         assertThrows(IllegalStateException.class, () -> cronService.sendOppTil5000AktiviterTilPortefolje());
 
-        Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NOT NULL", Long.class)).isEqualTo(1);
-        Assertions.assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL", Long.class)).isEqualTo(1);
+        Assertions.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NOT NULL", Long.class)).isEqualTo(1);
+        Assertions.assertThat(jdbcTemplate.queryForObject("SELECT COUNT(*) FROM AKTIVITET WHERE AKTIVITET.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL", Long.class)).isEqualTo(1);
 
     }
 }

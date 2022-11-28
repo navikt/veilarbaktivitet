@@ -34,7 +34,7 @@ public class AktivitetskortService {
     private final ArenaAktivitetskortService arenaAktivitetskortService;
 
 
-    public void upsertAktivitetskort(AktivitetskortBestilling bestilling) throws AktivitetsKortFunksjonellException {
+    public UpsertActionResult upsertAktivitetskort(AktivitetskortBestilling bestilling) throws AktivitetsKortFunksjonellException {
         var aktivitetskort = bestilling.getAktivitetskort();
         var gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
 
@@ -42,9 +42,11 @@ public class AktivitetskortService {
             // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
             var oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
+            return UpsertActionResult.OPPDATER;
         } else {
             var opprettetAktivitet = opprettAktivitet(bestilling);
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
+            return UpsertActionResult.OPPRETT;
         }
     }
 

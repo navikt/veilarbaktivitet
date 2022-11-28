@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DuplikatMeldingFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.MDC;
@@ -60,12 +61,13 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
         MDC.put(MetricService.SOURCE, bestilling.getSource());
         if (bestilling.getActionType() == ActionType.UPSERT_AKTIVITETSKORT_V1) {
-            aktivitetskortService.upsertAktivitetskort(bestilling);
+            UpsertActionResult upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling);
+
+            aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }
 
-        aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling);
 
         return ConsumeStatus.OK;
     }

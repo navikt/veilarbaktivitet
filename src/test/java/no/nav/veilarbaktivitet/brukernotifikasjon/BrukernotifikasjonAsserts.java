@@ -6,7 +6,6 @@ import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -47,7 +46,7 @@ public class BrukernotifikasjonAsserts {
         this.config = config;
     }
 
-    public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
+    public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr) {
         config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
 
@@ -55,13 +54,7 @@ public class BrukernotifikasjonAsserts {
         assertEquals(fnr.get(), key.getFodselsnummer());
         assertEquals(config.getAppname(), key.getAppnavn());
         assertEquals(config.getNamespace(), key.getNamespace());
-        //TODO assert aktivitetdto
         return singleRecord;
-    }
-
-    public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        return assertBeskjedSendt(fnr);
-        //TODO assert aktivitetdto
     }
 
     public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {

@@ -2,11 +2,13 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.With;
 
 import java.util.UUID;
 @Builder
 @With
+@Getter
 public class KafkaAktivitetskortWrapperDTO {
     @JsonProperty(required = true)
     UUID messageId;
