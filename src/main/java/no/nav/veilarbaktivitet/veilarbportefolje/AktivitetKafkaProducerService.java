@@ -26,7 +26,7 @@ import static no.nav.common.rest.filter.LogRequestFilter.NAV_CALL_ID_HEADER_NAME
 public class AktivitetKafkaProducerService {
 
     private final KafkaStringTemplate portefoljeProducer;
-    private final KafkaJsonTemplate<AktivitetData> aktivitetProducer;
+    private final KafkaJsonTemplate<AktivitetData> kafkaJsonTemplate;
     private final AktivitetService aktivitetService;
     private final KafkaAktivitetDAO dao;
 
@@ -43,7 +43,7 @@ public class AktivitetKafkaProducerService {
         ProducerRecord<String, String> portefoljeMelding = toJsonProducerRecord(portefoljeTopic, melding.getAktorId(), melding);
         portefoljeMelding.headers().add(new RecordHeader(NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
-        ListenableFuture<SendResult<String, AktivitetData>> send = aktivitetProducer.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData);
+        ListenableFuture<SendResult<String, AktivitetData>> send = kafkaJsonTemplate.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData);
         long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
         send.get();
 

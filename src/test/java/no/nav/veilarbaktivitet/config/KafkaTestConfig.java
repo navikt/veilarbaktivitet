@@ -5,12 +5,13 @@ import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
-import no.nav.veilarbaktivitet.config.kafka.KafkaOnpremProperties;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
+import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
+import no.nav.veilarbaktivitet.util.NavCommonKafkaSerialized;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -48,7 +49,7 @@ public class KafkaTestConfig {
     public EmbeddedKafkaBroker embeddedKafka(
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
-            @Value("${app.kafka.kvpAvsluttetTopic}") String kvpAvsluttetTopic,
+            @Value("${topic.inn.kvpAvsluttet}") String kvpAvsluttetTopic,
             @Value("${topic.inn.eksternVarselKvittering}") String eksternVarselKvittering,
             @Value("${topic.ut.aktivitetdata.rawjson}") String aktivitetRawJson,
             @Value("${topic.ut.portefolje}") String portefoljeTopic,
@@ -86,16 +87,7 @@ public class KafkaTestConfig {
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
-    @Bean
-    Properties onPremProducerProperties(KafkaOnpremProperties kafkaOnpremProperties, EmbeddedKafkaBroker embeddedKafka) {
-        return KafkaPropertiesBuilder.producerBuilder()
-                .withBaseProperties()
-                .withProducerId(kafkaOnpremProperties.getProducerClientId())
-                .withBrokerUrl(embeddedKafka.getBrokersAsString())
-                .withSerializers(StringSerializer.class, StringSerializer.class)
-                .build();
-    }
-
+ // Denne er opprettet spesifikt for å støtte JsonSerialiseren fra nav.common.kafka
     @Bean
     <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
@@ -105,8 +97,12 @@ public class KafkaTestConfig {
         return new DefaultKafkaProducerFactory<>(producerProperties);
     }
 
+    /*
+    Kafka template som bruker nav.common.kafka sin json serializer.
+    Brukt for å teste RekrutteringsbistandStatusoppdatering og KvpAvsluttetKafkaDTO.
+     */
     @Bean
-    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate(ProducerFactory<String, RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory) {
+    <T extends NavCommonKafkaSerialized> KafkaJsonTemplate<T> navCommonKafkaJsonTemplate(ProducerFactory<String, T> navCommonJsonProducerFactory) {
         return new KafkaJsonTemplate<>(navCommonJsonProducerFactory);
     }
 
@@ -115,17 +111,6 @@ public class KafkaTestConfig {
         Map<String, Object> config = properties.buildAdminProperties();
         config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
         return Admin.create(config);
-    }
-
-    @Bean
-    Properties onPremConsumerProperties(KafkaOnpremProperties kafkaOnpremProperties, EmbeddedKafkaBroker embeddedKafka) {
-        return KafkaPropertiesBuilder.consumerBuilder()
-                .withBaseProperties()
-                .withConsumerGroupId(kafkaOnpremProperties.getConsumerGroupId())
-                .withBrokerUrl(embeddedKafka.getBrokersAsString())
-                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
-                .withPollProperties(1, 1000)
-                .build();
     }
 
     @Bean
