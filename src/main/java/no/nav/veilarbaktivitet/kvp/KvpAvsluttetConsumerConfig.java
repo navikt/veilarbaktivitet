@@ -1,15 +1,15 @@
 package no.nav.veilarbaktivitet.kvp;
 
+import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.veilarbaktivitet.config.kafka.AivenConsumerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 
 @Service
-public class KvpAvsluttetKafkaConfig extends AivenConsumerConfig<String, KvpAvsluttetKafkaDTO> {
+public class KvpAvsluttetConsumerConfig extends TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> {
 
-    public KvpAvsluttetKafkaConfig(
+    public KvpAvsluttetConsumerConfig(
             KvpAvsluttetKafkaConsumer consumer,
             @Value("${topic.inn.kvpAvsluttet}")
                     String topic
