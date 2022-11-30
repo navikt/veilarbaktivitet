@@ -33,7 +33,7 @@ public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util
     }
 
     @Override
-    @Timed
+    @Timed(value="kvp_avsluttet_consumer")
     public ConsumeStatus consume(ConsumerRecord<String, KvpAvsluttetKafkaDTO> consumerRecord) {
         KvpAvsluttetKafkaDTO kvpAvsluttetDto = consumerRecord.value();
 
