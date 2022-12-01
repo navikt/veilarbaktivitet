@@ -1,9 +1,10 @@
 package no.nav.veilarbaktivitet.kvp;
 
+import io.micrometer.core.annotation.Timed;
+import lombok.EqualsAndHashCode;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
-import no.nav.veilarbaktivitet.config.kafka.OnpremConsumerConfig;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,26 +14,28 @@ import java.util.Date;
 
 
 @Service
-public class KvpAvsluttetKafkaKonsumer extends OnpremConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
+@EqualsAndHashCode
+public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util.TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
     private final KVPAvsluttetService kvpService;
 
-    public KvpAvsluttetKafkaKonsumer(
+    public KvpAvsluttetKafkaConsumer(
             KVPAvsluttetService kvpService,
-            @Value("${app.kafka.kvpAvsluttetTopic}")
-                    String toppic
+            @Value("${topic.inn.kvpAvsluttet}")
+                    String topic
     ) {
         super();
         this.kvpService = kvpService;
 
-        this.setTopic(toppic);
+        this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
         this.setValueDeserializer(Deserializers.jsonDeserializer(KvpAvsluttetKafkaDTO.class));
         this.setConsumer(this);
     }
 
     @Override
-    public ConsumeStatus consume(ConsumerRecord<String, KvpAvsluttetKafkaDTO> record) {
-        KvpAvsluttetKafkaDTO kvpAvsluttetDto = record.value();
+    @Timed(value="kvp_avsluttet_consumer")
+    public ConsumeStatus consume(ConsumerRecord<String, KvpAvsluttetKafkaDTO> consumerRecord) {
+        KvpAvsluttetKafkaDTO kvpAvsluttetDto = consumerRecord.value();
 
         Person.AktorId aktorId = Person.aktorId(kvpAvsluttetDto.getAktorId());
         String begrunnelse = kvpAvsluttetDto.getAvsluttetBegrunnelse();

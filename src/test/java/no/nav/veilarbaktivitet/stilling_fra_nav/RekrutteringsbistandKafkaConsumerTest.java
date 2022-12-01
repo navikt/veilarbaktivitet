@@ -51,7 +51,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     private String rekrutteringsbistandstatusoppdateringtopic;
 
     @Autowired
-    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonJsonProducerFactory;
+    KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate;
 
     @Autowired
     KafkaStringTemplate kafkaStringTemplate;
@@ -94,7 +94,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
@@ -133,7 +133,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
@@ -155,7 +155,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 """;
         RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
@@ -187,7 +187,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
@@ -204,7 +204,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 """;
         RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
@@ -240,7 +240,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
@@ -254,7 +254,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                 """;
         RekrutteringsbistandStatusoppdatering sendtStatusoppdateringIkkeFattJobben =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN, ikkeFattJobbenDetaljer, navIdent, tidspunkt);
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResultIkkeFattJobben = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdateringIkkeFattJobben).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResultIkkeFattJobben.getRecordMetadata().offset(), 10);
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         ConsumerRecord<NokkelInput, BeskjedInput> etterIkkeFattJobben = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
@@ -290,7 +290,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
@@ -309,7 +309,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
         AktivitetDTO aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
@@ -330,7 +330,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         ));
         brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult2 = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult2 = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult2.getRecordMetadata().offset(), 10);
 
         Assertions.assertThat(antallAvHverArsak()).containsExactlyInAnyOrderEntriesOf(Map.of(
@@ -365,7 +365,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                                 """
                         , RekrutteringsbistandStatusoppdatering.class);
 
-        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonJsonProducerFactory.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
+        SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult = navCommonKafkaJsonTemplate.send(innRekrutteringsbistandStatusoppdatering, bestillingsId, sendtStatusoppdatering).get(5, TimeUnit.SECONDS);
 
         kafkaTestService.assertErKonsumertAiven(innRekrutteringsbistandStatusoppdatering, sendResult.getRecordMetadata().offset(), 10);
 
@@ -420,7 +420,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
-                navCommonJsonProducerFactory.send(
+                navCommonKafkaJsonTemplate.send(
                         rekrutteringsbistandstatusoppdateringtopic,
                         bestillingsId,
                         sendtStatusoppdatering
@@ -440,7 +440,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     public void cvdelt_hvis_aktivitet_ikke_finnes() throws ExecutionException, InterruptedException, TimeoutException {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
-                navCommonJsonProducerFactory.send(
+                navCommonKafkaJsonTemplate.send(
                         rekrutteringsbistandstatusoppdateringtopic,
                         "666",
                         sendtStatusoppdatering
@@ -462,7 +462,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
-                navCommonJsonProducerFactory.send(
+                navCommonKafkaJsonTemplate.send(
                         rekrutteringsbistandstatusoppdateringtopic,
                         aktivitetDTO.getStillingFraNavData().bestillingsId,
                         sendtStatusoppdatering
@@ -485,7 +485,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
-                navCommonJsonProducerFactory.send(
+                navCommonKafkaJsonTemplate.send(
                         rekrutteringsbistandstatusoppdateringtopic,
                         aktivitetDTO.getStillingFraNavData().bestillingsId,
                         sendtStatusoppdatering
@@ -524,7 +524,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
 
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
-                navCommonJsonProducerFactory.send(
+                navCommonKafkaJsonTemplate.send(
                         rekrutteringsbistandstatusoppdateringtopic,
                         aktivitetDTO.getStillingFraNavData().bestillingsId,
                         sendtStatusoppdatering
