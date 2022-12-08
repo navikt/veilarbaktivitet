@@ -226,8 +226,8 @@ public class ArenaControllerTest {
 
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
-                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
-                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getAktivitetId()));
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getAktivitetId().id()));
     }
 
     @Test
@@ -267,7 +267,7 @@ public class ArenaControllerTest {
 
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
 
-        ArenaAktivitetDTO lestAktivitet = controller.lest(sendtAktivitet.getId());
+        ArenaAktivitetDTO lestAktivitet = controller.lest(new ArenaId(sendtAktivitet.getId()));
 
         Date stopp = new Date();
         Date lest = lestAktivitet.getForhaandsorientering().getLestDato();

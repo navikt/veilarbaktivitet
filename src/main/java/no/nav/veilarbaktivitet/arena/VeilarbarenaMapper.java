@@ -93,8 +93,7 @@ public class VeilarbarenaMapper {
 
     private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet) {
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
-                .setId(tiltaksaktivitet.getAktivitetId())
-                .setAktivitetId(null)
+                .setId(tiltaksaktivitet.getAktivitetId().id())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))
@@ -148,7 +147,7 @@ public class VeilarbarenaMapper {
         AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
-                .setId(gruppeaktivitet.getAktivitetId())
+                .setId(gruppeaktivitet.getAktivitetId().id())
                 .setStatus(status)
                 .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
                 .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
@@ -165,7 +164,7 @@ public class VeilarbarenaMapper {
         Date sluttDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
 
         return new ArenaAktivitetDTO()
-                .setId(utdanningsaktivitet.getAktivitetId())
+                .setId(utdanningsaktivitet.getAktivitetId().id())
                 .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())

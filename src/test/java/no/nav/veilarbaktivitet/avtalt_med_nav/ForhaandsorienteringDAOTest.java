@@ -62,7 +62,8 @@ public class ForhaandsorienteringDAOTest {
     @Test
     public void insertForArenaAktivitet_oppdatererAlleFelter() {
         ArenaAktivitetDTO aktivitetData = new ArenaAktivitetDTO();
-        aktivitetData.setId(new ArenaId("arenaId"));
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        aktivitetData.setId(arenaId.id());
         aktivitetData.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
         String veileder = "V123";
 
@@ -71,13 +72,13 @@ public class ForhaandsorienteringDAOTest {
                 .tekst("tralala")
                 .build();
 
-        Forhaandsorientering fhoResultat = fhoDAO.insertForArenaAktivitet(fho, aktivitetData.getId(), AKTOR_ID, veileder, new Date(), Optional.empty());
+        Forhaandsorientering fhoResultat = fhoDAO.insertForArenaAktivitet(fho, arenaId, AKTOR_ID, veileder, new Date(), Optional.empty());
 
         assertEquals(fho.getType(), fhoResultat.getType());
         assertEquals(fho.getTekst(), fhoResultat.getTekst());
         assertNull(fhoResultat.getAktivitetId());
         assertNull(fhoResultat.getAktivitetVersjon());
-        assertEquals(aktivitetData.getId().id(), fhoResultat.getArenaAktivitetId());
+        assertEquals(aktivitetData.getId(), fhoResultat.getArenaAktivitetId());
         assertEquals(veileder, fhoResultat.getOpprettetAv());
         assertNull(fhoResultat.getLestDato());
 

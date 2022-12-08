@@ -56,13 +56,13 @@ public class ArenaController {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
-        var ideer = arenaAktiviteter.stream().map(ArenaAktivitetDTO::getId).toList();
+        var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
         return arenaAktiviteter
             .stream().map(arenaAktivitet -> {
-                var aktivtetId = idMappings.get(arenaAktivitet.getId());
-                if (aktivtetId != null && aktivtetId.aktivitetId() != null)
-                    return arenaAktivitet.withAktivitetId(aktivtetId.aktivitetId());
+                var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
+                if (idMapping != null && idMapping.aktivitetId() != null)
+                    return arenaAktivitet.withId(idMapping.aktivitetId().toString());
                 return arenaAktivitet;
             })
                 .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv())

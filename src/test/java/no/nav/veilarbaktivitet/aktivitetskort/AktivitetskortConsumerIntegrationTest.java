@@ -509,16 +509,14 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(preMigreringArenaAktiviteter).hasSize(1);
-        assertThat(preMigreringArenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
-        assertThat(preMigreringArenaAktiviteter.get(0).getAktivitetId()).isNull();
+        assertThat(preMigreringArenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId.id()); // Skal være arenaid
 
         var context = meldingContext(arenaaktivitetId);
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(context));
 
         var arenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(arenaAktiviteter).hasSize(1);
-        assertThat(arenaAktiviteter.get(0).getId()).isEqualTo(arenaaktivitetId);
-        assertThat(arenaAktiviteter.get(0).getAktivitetId()).isNotNull();
+        assertThat(arenaAktiviteter.get(0).getId()).doesNotStartWith("ARENA"); // Skal ikke være arenaId
     }
 
     @Test
