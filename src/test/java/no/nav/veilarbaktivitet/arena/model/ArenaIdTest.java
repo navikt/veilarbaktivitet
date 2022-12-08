@@ -14,7 +14,7 @@ public class ArenaIdTest {
         var json = """
                 {
             "tiltaksnavn": "tiltaksnavn",
-            "aktivitetId": "123123",
+            "aktivitetId": "ARENATA1234",
             "tiltakLokaltNavn": "lokaltnavn",
             "arrangor": "arrangor",
             "bedriftsnummer": "asd",
@@ -30,7 +30,7 @@ public class ArenaIdTest {
           }
         """;
         var tiltak = JsonUtils.fromJson(json, AktiviteterDTO.Tiltaksaktivitet.class);
-        Assertions.assertThat(tiltak.getAktivitetId().id()).isEqualTo("ARENA123123");
+        Assertions.assertThat(tiltak.getAktivitetId().id()).isEqualTo("ARENATA1234");
     }
 
     @Test
@@ -67,7 +67,7 @@ public class ArenaIdTest {
                 .setAktivitetId(new ArenaId("asd"));
         var json = JsonUtils.toJson(akt);
         Assertions.assertThat(json).isEqualTo("""
-                {"tiltaksnavn":"asdas","aktivitetId":"ARENAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
+                {"tiltaksnavn":"asdas","aktivitetId":"ARENATAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
         """.trim());
     }
 

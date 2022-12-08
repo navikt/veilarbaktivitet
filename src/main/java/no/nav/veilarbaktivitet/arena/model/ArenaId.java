@@ -20,10 +20,11 @@ public class ArenaId extends JsonSerializable.Base {
 
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ArenaId(String id) {
+        super();
         if (id.startsWith(ARENA_PREFIX)) {
-            this.id = id;
+            this.id = id.trim();
         } else {
-            this.id = ARENA_PREFIX + id;
+            this.id = ARENA_PREFIX + id.trim();
         }
     }
 
@@ -37,7 +38,7 @@ public class ArenaId extends JsonSerializable.Base {
     }
 
     @Override
-    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) throws IOException {
+    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) {
         throw new UnsupportedOperationException("Not supported.");
     }
 }

@@ -461,7 +461,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     public void new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
-        String arenaaktivitetId = "ARENA123";
+        String arenaaktivitetId = "ARENATA123";
         ArenaAktivitetDTO arenaAktivitetDTO = aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, new ArenaId(arenaaktivitetId), veileder);
 
         UUID funksjonellId = UUID.randomUUID();
