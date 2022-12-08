@@ -108,7 +108,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     ArenaMeldingHeaders meldingContext() {
-        return new ArenaMeldingHeaders(new ArenaId("123"), "MIDL");
+        return new ArenaMeldingHeaders(new ArenaId("ARENATA123"), "MIDL");
     }
     ArenaMeldingHeaders meldingContext(ArenaId eksternRefanseId) {
         return new ArenaMeldingHeaders(eksternRefanseId, "MIDL");

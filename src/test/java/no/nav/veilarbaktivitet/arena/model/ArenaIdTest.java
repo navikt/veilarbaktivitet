@@ -67,7 +67,7 @@ public class ArenaIdTest {
                 .setAktivitetId(new ArenaId("asd"));
         var json = JsonUtils.toJson(akt);
         Assertions.assertThat(json).isEqualTo("""
-                {"tiltaksnavn":"asdas","aktivitetId":"ARENATAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
+                {"tiltaksnavn":"asdas","aktivitetId":"ARENAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
         """.trim());
     }
 
