@@ -22,7 +22,7 @@ public class IdMappingDAO {
                 .addValue("funksjonellId", idMapping.funksjonellId().toString());
 
         template.update("""
-                INSERT INTO ID_MAPPINGER (EKSTERN_REFERANSE_ID, AKTIVITET_ID, FUNKSJONELL_ID) 
+                INSERT INTO ID_MAPPINGER (EKSTERN_REFERANSE_ID, AKTIVITET_ID, FUNKSJONELL_ID)
                 VALUES (:arenaId, :aktivitetId, :funksjonellId)
                 """, params);
     }
@@ -40,13 +40,13 @@ public class IdMappingDAO {
         if (ids.isEmpty()) return new HashMap<>();
         var stringIds = ids.stream().map(ArenaId::id).toList();
         var params = new MapSqlParameterSource()
-                .addValue("arenaIds", String.join(",", stringIds));
+                .addValue("arenaIds",  stringIds);
         var idList = template.query("""
                 SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.EKSTERN_REFERANSE_ID in (:arenaIds)
                 """, params, rowmapper);
 
         return idList.stream()
-            .reduce(new HashMap<ArenaId, IdMapping>(), (mapping, singleIdMapping) -> {
+            .reduce(new HashMap<>(), (mapping, singleIdMapping) -> {
                 mapping.put(singleIdMapping.areanaId(), singleIdMapping);
                 return mapping;
             }, (accumulatedMappings, nextSingleMapping) -> {
