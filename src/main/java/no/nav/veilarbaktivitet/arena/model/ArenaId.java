@@ -16,10 +16,17 @@ import java.util.List;
  * */
 @EqualsAndHashCode
 public class ArenaId extends JsonSerializable.Base {
-    public static final String PREFIX_TILTAK = "ARENATA";
-    public static final String PREFIX_GRUPPE = "ARENAGA";
-    public static final String PREFIX_UTDANNING = "ARENAUA";
-    public static final List<String> validPrefixes = List.of(
+    public static final String PREFIX_TILTAK = "TA";
+    public static final String PREFIX_GRUPPE = "GA";
+    public static final String PREFIX_UTDANNING = "UA";
+
+    public static final String ARENA_PREFIX = "ARENA";
+    public static final List<String> validCompletePrefixes = List.of(
+            ARENA_PREFIX + PREFIX_TILTAK,
+            ARENA_PREFIX + PREFIX_GRUPPE,
+            ARENA_PREFIX + PREFIX_UTDANNING
+    );
+    public static final List<String> validPartialPrefixes = List.of(
             PREFIX_TILTAK,
             PREFIX_GRUPPE,
             PREFIX_UTDANNING
@@ -29,9 +36,13 @@ public class ArenaId extends JsonSerializable.Base {
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ArenaId(String id) {
         super();
-        if (validPrefixes.stream().anyMatch(id::startsWith)) {
+        if (validCompletePrefixes.stream().anyMatch(id::startsWith)) {
             this.id = id.trim();
-        } else {
+        } else if (validPartialPrefixes.stream().anyMatch(id::startsWith))
+        {
+            this.id = ARENA_PREFIX + id.trim();
+        }
+        else {
             throw new  IllegalArgumentException(String.format("Argument: %s is not a valid ArenaId", id));
         }
     }
