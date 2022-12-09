@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import lombok.EqualsAndHashCode;
-import java.io.IOException;
 
-import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ARENA_PREFIX;
+import java.io.IOException;
+import java.util.List;
 
 /*
  * This class wraps a single string-field to a more type-safe ArenaId
@@ -16,15 +16,23 @@ import static no.nav.veilarbaktivitet.arena.VeilarbarenaMapper.ARENA_PREFIX;
  * */
 @EqualsAndHashCode
 public class ArenaId extends JsonSerializable.Base {
+    public static final String PREFIX_TILTAK = "ARENATA";
+    public static final String PREFIX_GRUPPE = "ARENAGA";
+    public static final String PREFIX_UTDANNING = "ARENAUA";
+    public static final List<String> validPrefixes = List.of(
+            PREFIX_TILTAK,
+            PREFIX_GRUPPE,
+            PREFIX_UTDANNING
+    );
     private final String id;
 
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public ArenaId(String id) {
         super();
-        if (id.startsWith(ARENA_PREFIX)) {
+        if (validPrefixes.stream().anyMatch(id::startsWith)) {
             this.id = id.trim();
         } else {
-            this.id = ARENA_PREFIX + id.trim();
+            throw new  IllegalArgumentException(String.format("Argument: %s is not a valid ArenaId", id));
         }
     }
 

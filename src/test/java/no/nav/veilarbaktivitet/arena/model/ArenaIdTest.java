@@ -64,10 +64,10 @@ public class ArenaIdTest {
         var akt=  new AktiviteterDTO.Tiltaksaktivitet()
                 .setDeltakerStatus("GJENN")
                 .setTiltaksnavn("asdas")
-                .setAktivitetId(new ArenaId("asd"));
+                .setAktivitetId(new ArenaId("ARENATA321"));
         var json = JsonUtils.toJson(akt);
         Assertions.assertThat(json).isEqualTo("""
-                {"tiltaksnavn":"asdas","aktivitetId":"ARENAasd","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
+                {"tiltaksnavn":"asdas","aktivitetId":"ARENATA321","tiltakLokaltNavn":null,"arrangor":null,"bedriftsnummer":null,"deltakelsePeriode":null,"deltakelseProsent":null,"deltakerStatus":"GJENN","statusSistEndret":null,"begrunnelseInnsoking":null,"antallDagerPerUke":null}
         """.trim());
     }
 

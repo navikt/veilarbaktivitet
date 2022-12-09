@@ -29,7 +29,6 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_
 public class VeilarbarenaMapper {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
-    public static final String ARENA_PREFIX = "ARENA";
 
     static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
     static final String JOBBKLUBB_NAVN = "Jobbklubb";

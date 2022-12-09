@@ -354,7 +354,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     public void skal_kunne_opprette_brukernotifikasjon_pa_fho_pa_arena_aktiviteter_som_ikke_er_migrert_og_ha_lenke_med_riktig_id() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        var arenaId = new ArenaId("123");
+        var arenaId = new ArenaId("ARENATA123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
 
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
@@ -368,7 +368,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        var arenaId = new ArenaId("123");
+        var arenaId = new ArenaId("ARENATA123");
         // Opprett ekstern aktivitet
         var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
                 AktivitetskortTestBuilder.ny(
@@ -394,7 +394,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     public void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_aktiviteter_blir_avbrutt() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        var arenaId = new ArenaId("123");
+        var arenaId = new ArenaId("ARENATA123");
         // Opprett FHO
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
         // Opprett ekstern aktivitet og avbruter den

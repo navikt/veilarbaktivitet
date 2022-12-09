@@ -139,7 +139,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
-        ArenaMeldingHeaders kontekst = meldingContext(new ArenaId("123"), "MIDL");
+        ArenaMeldingHeaders kontekst = meldingContext(new ArenaId("ARENATA123"), "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
 
         var count = meterRegistry.find(AKTIVITETSKORT_UPSERT).counter().count();
@@ -205,11 +205,11 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
-        ArenaMeldingHeaders meldingContext = meldingContext(new ArenaId("123"), "MIDL");
+        ArenaMeldingHeaders meldingContext = meldingContext(new ArenaId("ARENATA123"), "MIDL");
         var annenVeileder = new IdentDTO("ANNEN_NAV_IDENT", ARENAIDENT);
         Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
                 .withEndretAv(annenVeileder);
-        ArenaMeldingHeaders updatemeldingContext = meldingContext(new ArenaId("123"), "MIDL");
+        ArenaMeldingHeaders updatemeldingContext = meldingContext(new ArenaId("ARENATA123"), "MIDL");
 
 
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetUpdate), List.of(meldingContext, updatemeldingContext));
@@ -392,7 +392,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         );
 
         Iterable<Header> headers = List.of(
-                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("123").id().getBytes()),
+                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("ARENATA123").id().getBytes()),
                 new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".getBytes())
         );
         RecordMetadata lastRecordMetadata = messages.stream()
@@ -435,7 +435,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitetskort = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet);
         var aktivitetskortOppdatert = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetOppdatert);
 
-        var h1 = new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("123").id().getBytes());
+        var h1 = new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, new ArenaId("ARENATA123").id().getBytes());
         var h2 = new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".getBytes());
 
         var record = new ConsumerRecord<>(topic, 0, 0, funksjonellId.toString(), JsonUtils.toJson(aktivitetskort));
@@ -485,7 +485,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Test
     public void skal_migrere_eksisterende_forhaandorientering() {
         // Det finnes en arenaaktivtiet fra før
-        var arenaaktivitetId = new ArenaId("123");
+        var arenaaktivitetId = new ArenaId("ARENATA123");
         // Opprett FHO på aktivitet
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder);
         var record = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
@@ -502,7 +502,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     public void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
-        ArenaId arenaaktivitetId =  new ArenaId("123");
+        ArenaId arenaaktivitetId =  new ArenaId("ARENATA123");
         Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
 
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(false);
