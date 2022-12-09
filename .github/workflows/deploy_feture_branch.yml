@@ -1,4 +1,5 @@
-name: deploy feture branch ${{ github.head_ref }}
+name: deploy feture branch
+run-name: deploy feture branch ${{ github.ref_name }} by @${{ github.actor }}
 on:
   workflow_dispatch:
 
