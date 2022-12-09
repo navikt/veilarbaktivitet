@@ -62,6 +62,8 @@ public class VeilarbarenaClient {
                 .url(uri)
                 .build();
         try (Response response = veilarbarenaHttpClient.newCall(request).execute()) {
+
+            log.info("Veilarbarena respons: {}", response);
             RestUtils.throwIfNotSuccessful(response);
 
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
