@@ -16,8 +16,7 @@ import java.util.List;
 @Accessors(chain = true)
 public class ArenaAktivitetDTO {
     //Felles
-    ArenaId id;
-    Long aktivitetId;
+    String id; // hvis migrert: teknisk id, hvis ikke: arenaid
     AktivitetStatus status;
     ArenaAktivitetTypeDTO type;
     String tittel;

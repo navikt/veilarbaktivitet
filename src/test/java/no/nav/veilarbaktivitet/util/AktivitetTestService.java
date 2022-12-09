@@ -329,9 +329,12 @@ public class AktivitetTestService {
                                   "gruppeaktiviteter": [],
                                   "utdanningsaktiviteter": []
                                 }
-                                """.formatted(arenaaktivitetId))));
+                                """.formatted(removeArenaPrefix(arenaaktivitetId)))));
     }
 
+    private String removeArenaPrefix(String arenaId) {
+        return arenaId.replace("ARENA", "");
+    }
     public AktivitetDTO lesFHO(MockBruker mockBruker, long aktivitetsId, long versjon) {
         Response response = mockBruker
                 .createRequest()
