@@ -46,7 +46,7 @@ public class ArenaId extends JsonSerializable.Base {
     }
 
     @Override
-    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) {
+    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) throws IOException {
         throw new UnsupportedOperationException("Not supported.");
     }
 }
