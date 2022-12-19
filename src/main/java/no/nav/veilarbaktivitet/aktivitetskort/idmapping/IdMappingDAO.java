@@ -17,7 +17,7 @@ public class IdMappingDAO {
 
     public void insert(IdMapping idMapping) {
         var params = new MapSqlParameterSource()
-                .addValue("arenaId", idMapping.aranaId().id())
+                .addValue("arenaId", idMapping.arenaId().id())
                 .addValue("aktivitetId", idMapping.aktivitetId())
                 .addValue("funksjonellId", idMapping.funksjonellId().toString());
 
@@ -47,7 +47,7 @@ public class IdMappingDAO {
 
         return idList.stream()
             .reduce(new HashMap<>(), (mapping, singleIdMapping) -> {
-                mapping.put(singleIdMapping.aranaId(), singleIdMapping);
+                mapping.put(singleIdMapping.arenaId(), singleIdMapping);
                 return mapping;
             }, (accumulatedMappings, nextSingleMapping) -> {
                 accumulatedMappings.putAll(nextSingleMapping);

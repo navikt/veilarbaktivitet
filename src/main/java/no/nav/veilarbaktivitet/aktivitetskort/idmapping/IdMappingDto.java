@@ -12,6 +12,6 @@ public record IdMappingDto(
 ) {
 
     public static IdMappingDto map(IdMapping idMapping) {
-        return new IdMappingDto(idMapping.aranaId(), idMapping.aktivitetId(), idMapping.funksjonellId());
+        return new IdMappingDto(idMapping.arenaId(), idMapping.aktivitetId(), idMapping.funksjonellId());
     }
 }
