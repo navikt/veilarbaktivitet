@@ -29,7 +29,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    @Value("${VEILARBOPPFOLGINGAPI_SCOPE}")
+    @Value("${app.env.veilarboppfolging.api.scope}")
     private String tokenScope;
 
     public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {

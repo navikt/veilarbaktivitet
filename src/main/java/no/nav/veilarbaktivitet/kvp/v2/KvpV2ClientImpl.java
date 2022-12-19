@@ -25,7 +25,7 @@ class KvpV2ClientImpl implements KvpV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    @Value("${VEILARBOPPFOLGINGAPI_SCOPE}")
+    @Value("${app.env.veilarboppfolging.api.scope}")
     private String tokenScope;
 
 
