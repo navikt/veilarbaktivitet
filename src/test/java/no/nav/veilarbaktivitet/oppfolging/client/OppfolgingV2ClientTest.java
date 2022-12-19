@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.client;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -19,6 +20,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class OppfolgingV2ClientTest {
@@ -34,10 +37,14 @@ public class OppfolgingV2ClientTest {
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
+        AzureAdMachineToMachineTokenClient tokenClient = mock(AzureAdMachineToMachineTokenClient.class);
+        Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
+
         PersonService personService = Mockito.mock(PersonService.class);
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
-        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService, gjeldendePeriodeMetrikk);
+
+        oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService, gjeldendePeriodeMetrikk, tokenClient);
         oppfolgingV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 

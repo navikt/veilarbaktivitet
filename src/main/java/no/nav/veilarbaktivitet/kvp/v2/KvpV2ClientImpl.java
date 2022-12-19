@@ -20,12 +20,14 @@ import java.util.Optional;
 class KvpV2ClientImpl implements KvpV2Client {
     private final AzureAdMachineToMachineTokenClient tokenClient;
 
+    private final OkHttpClient veilarboppfolgingHttpClient;
+
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
     @Value("${VEILARBOPPFOLGINGAPI_SCOPE}")
     private String tokenScope;
-    private final OkHttpClient veilarboppfolgingHttpClient;
+
 
     public Optional<KvpV2DTO> get(Person.AktorId aktorId) {
         String accessToken = tokenClient.createMachineToMachineToken(tokenScope);

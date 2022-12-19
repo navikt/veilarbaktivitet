@@ -1,12 +1,14 @@
 package no.nav.veilarbaktivitet.kvp.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.person.Person;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
@@ -15,6 +17,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 
 public class KvpV2ClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
@@ -28,7 +32,9 @@ public class KvpV2ClientTest {
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        kvpV2Client = new KvpV2ClientImpl(okHttpClient);
+        AzureAdMachineToMachineTokenClient tokenClient = mock(AzureAdMachineToMachineTokenClient.class);
+        Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
+        kvpV2Client = new KvpV2ClientImpl(tokenClient, okHttpClient);
         kvpV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 

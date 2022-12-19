@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
@@ -17,6 +18,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ManuellStatusV2ClientTest {
@@ -32,9 +35,13 @@ public class ManuellStatusV2ClientTest {
     @Before
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
-        PersonService authService = Mockito.mock(PersonService.class);
-        when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
-        manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, authService);
+        AzureAdMachineToMachineTokenClient tokenClient = mock(AzureAdMachineToMachineTokenClient.class);
+        Mockito.when(tokenClient.createMachineToMachineToken(anyString())).thenReturn("mockMachineToMachineToken");
+
+        PersonService personService = mock(PersonService.class);
+        when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
+
+        manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, personService, tokenClient);
         manuellStatusV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
     }
 
