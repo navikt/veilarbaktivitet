@@ -35,6 +35,12 @@ public class OkHttpClientConfig {
     }
 
     @Bean
+    public OkHttpClient veilarboppfolgingHttpClient() {
+        var builder = RestClient.baseClientBuilder();
+        return builder.build();
+    }
+
+    @Bean
     @Profile("!dev")
     public AzureAdMachineToMachineTokenClient tokenClient() {
         return AzureAdTokenClientBuilder.builder()

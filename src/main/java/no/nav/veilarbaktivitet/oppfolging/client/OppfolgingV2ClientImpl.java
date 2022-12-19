@@ -4,6 +4,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -11,6 +12,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,25 +20,36 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
-    private final OkHttpClient client;
+    private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
+
+    private final AzureAdMachineToMachineTokenClient tokenClient;
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
+    @Value("${VEILARBOPPFOLGINGAPI_SCOPE}")
+    private String tokenScope;
+
+
     public Optional<OppfolgingV2UnderOppfolgingDTO> fetchUnderoppfolging(Person.AktorId aktorId) {
+        String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
+
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
         String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, OppfolgingV2UnderOppfolgingDTO.class);
         } catch (Exception e) {
@@ -48,12 +61,14 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     @Timed
     public Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
+        String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
 
         String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(false);
@@ -70,12 +85,14 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     @Override
     public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsperioder(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
+        String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
 
         String uri = String.format("%s/v2/oppfolging/perioder?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 return Optional.empty();
