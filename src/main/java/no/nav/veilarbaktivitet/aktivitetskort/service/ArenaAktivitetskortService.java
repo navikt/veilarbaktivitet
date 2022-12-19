@@ -4,23 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -31,7 +27,8 @@ public class ArenaAktivitetskortService {
     private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
     private final IdMappingDAO idMappingDAO;
     private final AktivitetService aktivitetService;
-    private final OppfolgingV2Client oppfolgingV2Client;
+
+    private final AktivitetIdMappingProducer aktivitetIdMappingProducer;
 
     public AktivitetData opprettAktivitet(ArenaAktivitetskortBestilling bestilling) {
         // Opprett via AktivitetService
@@ -49,11 +46,12 @@ public class ArenaAktivitetskortService {
     }
 
     private void arenaspesifikkMigrering(Aktivitetskort aktivitetskort, AktivitetData opprettetAktivitet, ArenaId eksternReferanseId) {
-        idMappingDAO.insert(new IdMapping(
-            eksternReferanseId,
-            opprettetAktivitet.getId(),
-            aktivitetskort.getId()
-        ));
+        IdMapping idMapping = new IdMapping(
+                eksternReferanseId,
+                opprettetAktivitet.getId(),
+                aktivitetskort.getId()
+        );
+        idMappingDAO.insert(idMapping);
 
         Optional.ofNullable(forhaandsorienteringDAO.getFhoForArenaAktivitet(eksternReferanseId))
             .ifPresent(fho -> {
@@ -70,5 +68,7 @@ public class ArenaAktivitetskortService {
 
         // oppdater alle brukernotifikasjoner med aktivitet arena-ider
         brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(opprettetAktivitet.getId(), opprettetAktivitet.getVersjon(), eksternReferanseId);
+        // Send idmapping til dialog
+        aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping);
     }
 }

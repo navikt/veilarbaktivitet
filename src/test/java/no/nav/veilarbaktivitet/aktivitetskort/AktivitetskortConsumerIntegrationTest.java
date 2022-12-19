@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -91,19 +92,26 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     String aktivitetskortFeilTopic;
     @Value("${topic.inn.oppfolgingsperiode}")
     String oppfolgingperiodeTopic;
+
+    @Value("${topic.ut.aktivitetskort-idmapping}")
+    String aktivitetskortIdMappingTopic;
+
     @Value("${spring.kafka.consumer.group-id}")
     String springKafkaConsumerGroupId;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
     Consumer<String, String> aktivitetskortFeilConsumer;
+    Consumer<String, String> aktivitetskortIdMappingConsumer;
 
     @Before
     public void cleanupBetweenTests() {
         meterRegistry.clear();
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
+        aktivitetskortIdMappingConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortIdMappingTopic);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
@@ -134,12 +142,20 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(payload.errorMessage()).contains(errorClass.getName());
     }
 
+    private void assertIdMappingPublished(UUID funksjonellId, ArenaId arenaId) {
+        var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, 10000);
+        var payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto.class);
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
+        assertThat(payload.areanaId()).isEqualTo(arenaId);
+    }
+
     @Test
     public void happy_case_upsert_ny_arenatiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
-        ArenaMeldingHeaders kontekst = meldingContext(new ArenaId("ARENATA123"), "MIDL");
+        ArenaId arenata123 = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenata123, "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
 
         var count = meterRegistry.find(AKTIVITETSKORT_UPSERT).counter().count();
@@ -161,6 +177,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 actual.detaljer,
                 actual.etiketter
         ));
+        assertIdMappingPublished(funksjonellId, arenata123);
     }
 
     @Test
