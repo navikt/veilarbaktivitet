@@ -6,12 +6,12 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import java.util.UUID;
 
 public record IdMappingDto(
-    ArenaId areanaId,
+    ArenaId arenaId,
     Long aktivitetId,
     UUID funksjonellId
 ) {
 
     public static IdMappingDto map(IdMapping idMapping) {
-        return new IdMappingDto(idMapping.areanaId(), idMapping.aktivitetId(), idMapping.funksjonellId());
+        return new IdMappingDto(idMapping.aranaId(), idMapping.aktivitetId(), idMapping.funksjonellId());
     }
 }

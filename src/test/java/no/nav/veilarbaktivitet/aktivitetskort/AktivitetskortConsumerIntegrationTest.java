@@ -146,7 +146,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, 10000);
         var payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
-        assertThat(payload.areanaId()).isEqualTo(arenaId);
+        assertThat(payload.arenaId()).isEqualTo(arenaId);
     }
 
     @Test
