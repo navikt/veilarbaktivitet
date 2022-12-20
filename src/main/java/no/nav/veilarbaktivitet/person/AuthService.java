@@ -37,6 +37,7 @@ public class AuthService {
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
 
         if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
+            log.warn("Har ikke tilgang til bruker, aktorId={}", aktorId); // husk å fjerne den
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
     }

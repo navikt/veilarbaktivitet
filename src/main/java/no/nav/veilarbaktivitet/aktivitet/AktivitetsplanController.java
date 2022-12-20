@@ -127,6 +127,7 @@ public class AktivitetsplanController {
 
     private Person getContextUserIdent() {
         if (authService.erEksternBruker()) {
+            log.warn("Har ikke tilgang til bruker (getContextUserIdent)"); // husk å fjerne den
             return authService.getInnloggetBrukerIdent()
                     .map(Person::fnr)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke ident for innlogget bruker"));
