@@ -75,6 +75,9 @@ spec:
         - application: veilarbdirigent
           namespace: pto
           cluster: prod-fss
+          permissions:
+            roles:
+              - "service-opprett-aktivitet"
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
