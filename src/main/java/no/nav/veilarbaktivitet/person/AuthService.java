@@ -13,9 +13,6 @@ import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.text.ParseException;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -26,10 +23,9 @@ public class AuthService {
     private final AuthContextHolder authContextHolder;
 
     private final Pep veilarbPep;
+    private final IMachineUserAuthorizer machineUserAuthorizer;
 
     private final PersonService personService;
-
-    private final String dirigentRole = "service-opprett-aktivitet";
 
     public void sjekkTilgangTilPerson(Person ident) {
         String aktorId = personService
@@ -40,29 +36,12 @@ public class AuthService {
                 .getIdTokenString()
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
 
-
-        if (sjekkHarM2Mtilgang()) {
+        if (machineUserAuthorizer.sjekkHarM2Mtilgang(authContextHolder)) {
             return;
         }
 
         if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-    }
-
-    public boolean sjekkHarM2Mtilgang() {
-        try {
-            var clais = authContextHolder.getIdTokenClaims();
-            if (clais.isPresent()) {
-                List<String> roles = clais.get().getStringListClaim("roles");
-                return roles.stream().anyMatch(role -> role.equals(dirigentRole));
-            } else {
-                return false;
-            }
-        } catch (ParseException e) {
-            log.warn("Kunne ikke hente IdTokenClaims");
-            e.printStackTrace();
-            return false;
         }
     }
 
