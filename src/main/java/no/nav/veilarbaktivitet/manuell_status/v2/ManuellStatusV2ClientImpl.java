@@ -17,6 +17,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+import static no.nav.veilarbaktivitet.util.EnvironmentUtils.isDev;
+import static no.nav.veilarbaktivitet.util.EnvironmentUtils.scope;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,8 +32,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    @Value("${app.env.veilarboppfolging.api.scope}")
-    private String tokenScope;
+    private final String tokenScope = scope("veilarboppfolging", "pto", isDev() ? "dev-fss" : "prod-fss");
 
     public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);

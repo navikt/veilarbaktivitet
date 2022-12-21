@@ -20,7 +20,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 
-import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
+import static no.nav.veilarbaktivitet.util.EnvironmentUtils.isDev;
+import static no.nav.veilarbaktivitet.util.EnvironmentUtils.scope;
 
 @Slf4j
 @Service
@@ -35,9 +36,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
 
-    @Value("${app.env.veilarboppfolging.api.scope}")
-    private String tokenScope;
-
+    private final String tokenScope = scope("veilarboppfolging", "pto", isDev() ? "dev-fss" : "prod-fss");
 
     public Optional<OppfolgingV2UnderOppfolgingDTO> fetchUnderoppfolging(Person.AktorId aktorId) {
         String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
