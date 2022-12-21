@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
@@ -18,8 +20,9 @@ public class OkHttpClientConfig {
     }
 
     @Bean
-    public OkHttpClient veilarboppfolgingHttpClient() {
+    public OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry) {
         var builder = RestClient.baseClientBuilder();
+        builder.eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build());
         return builder.build();
     }
 
