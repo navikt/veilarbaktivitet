@@ -74,6 +74,9 @@ spec:
         - application: veilarbpersonflate
           namespace: poao
           cluster: dev-gcp
+        - application: veilarbdirigent
+          namespace: pto
+          cluster: dev-fss
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1

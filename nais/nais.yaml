@@ -72,6 +72,9 @@ spec:
         - application: veilarbpersonflate
           namespace: poao
           cluster: prod-gcp
+        - application: veilarbdirigent
+          namespace: pto
+          cluster: prod-fss
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p

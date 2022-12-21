@@ -18,10 +18,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
@@ -78,5 +74,4 @@ public class ApplicationTestConfig {
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
     }
-
 }
