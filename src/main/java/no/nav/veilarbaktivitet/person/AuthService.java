@@ -9,6 +9,7 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.veilarbaktivitet.util.AuthUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,6 @@ public class AuthService {
     private final AuthContextHolder authContextHolder;
 
     private final Pep veilarbPep;
-    private final IMachineUserAuthorizer machineUserAuthorizer;
 
     private final PersonService personService;
 
@@ -36,7 +36,7 @@ public class AuthService {
                 .getIdTokenString()
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
 
-        if (machineUserAuthorizer.sjekkHarM2Mtilgang(authContextHolder)) {
+        if (AuthUtils.erSystemkallFraAzureAd(authContextHolder)) {
             return;
         }
 

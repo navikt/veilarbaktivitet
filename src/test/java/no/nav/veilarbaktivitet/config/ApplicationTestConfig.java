@@ -10,7 +10,6 @@ import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
-import no.nav.veilarbaktivitet.person.IMachineUserAuthorizer;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -74,10 +73,5 @@ public class ApplicationTestConfig {
     @Bean
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
-    }
-
-    @Bean
-    public IMachineUserAuthorizer machineUserAuthorizer() {
-        return authContextHolder -> false;
     }
 }

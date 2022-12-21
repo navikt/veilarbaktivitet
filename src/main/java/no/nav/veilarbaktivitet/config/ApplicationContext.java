@@ -12,8 +12,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.veilarbaktivitet.person.IMachineUserAuthorizer;
-import no.nav.veilarbaktivitet.person.MachineTokenValidator;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -64,9 +62,5 @@ public class ApplicationContext {
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
-    }
-    @Bean
-    public IMachineUserAuthorizer machineUserAuthorizer() {
-        return MachineTokenValidator::sjekkHarSystemRolle;
     }
 }

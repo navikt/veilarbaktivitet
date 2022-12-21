@@ -7,7 +7,6 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.person.AuthService;
-import no.nav.veilarbaktivitet.person.IMachineUserAuthorizer;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.junit.jupiter.api.Test;
@@ -31,10 +30,8 @@ class AuthServiceTest {
 
     private final PersonService personService = new PersonService(aktorOppslagClient);
 
-    private final IMachineUserAuthorizer machineAuthorizer = authContextHolder -> false;
-
     @InjectMocks
-    private AuthService authService = new AuthService(authContextHolder, veilarbPep, machineAuthorizer, personService);
+    private AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);
 
 
     private static final String NAVIDENT = "Z999999";
