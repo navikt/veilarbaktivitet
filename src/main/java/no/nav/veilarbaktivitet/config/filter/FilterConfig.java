@@ -4,8 +4,6 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.auth.oidc.filter.AzureAdUserRoleResolver;
 import no.nav.common.auth.oidc.filter.OidcAuthenticationFilter;
 import no.nav.common.auth.oidc.filter.OidcAuthenticatorConfig;
-import no.nav.common.auth.utils.ServiceUserTokenFinder;
-import no.nav.common.auth.utils.UserTokenFinder;
 import no.nav.common.rest.filter.LogRequestFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.veilarbaktivitet.config.EnvironmentProperties;
@@ -16,7 +14,8 @@ import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
-import static no.nav.common.auth.Constants.*;
+import static no.nav.common.auth.Constants.AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME;
+import static no.nav.common.auth.Constants.AZURE_AD_ID_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
@@ -29,14 +28,6 @@ public class FilterConfig {
             "srvveilarbportefolje", "srvveilarbdirigent", "srvveilarboppfolging"
     );
 
-    private OidcAuthenticatorConfig openAmStsAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getOpenAmClientId())
-                .withIdTokenFinder(new ServiceUserTokenFinder())
-                .withUserRole(UserRole.SYSTEM);
-    }
-
     private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
@@ -44,16 +35,6 @@ public class FilterConfig {
                 .withUserRole(UserRole.SYSTEM);
     }
 
-    private OidcAuthenticatorConfig openAmAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getOpenAmDiscoveryUrl())
-                .withClientId(properties.getOpenAmClientId())
-                .withIdTokenCookieName(OPEN_AM_ID_TOKEN_COOKIE_NAME)
-                .withRefreshTokenCookieName(REFRESH_TOKEN_COOKIE_NAME)
-                .withIdTokenFinder(new UserTokenFinder())
-                .withRefreshUrl(properties.getOpenAmRefreshUrl())
-                .withUserRole(UserRole.INTERN);
-    }
 
     private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
@@ -114,10 +95,8 @@ public class FilterConfig {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
-                        openAmAuthConfig(properties),
                         azureAdAuthConfig(properties),
                         loginserviceIdportenConfig(properties),
-                        openAmStsAuthConfig(properties),
                         naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties)
                 )
