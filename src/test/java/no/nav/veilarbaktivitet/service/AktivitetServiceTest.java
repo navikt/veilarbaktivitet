@@ -14,15 +14,15 @@ import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
@@ -65,7 +65,7 @@ public class AktivitetServiceTest {
 
     private AktivitetService aktivitetService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, new KvpService(kvpClient), metricService, sistePeriodeService);
     }
@@ -236,7 +236,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
 
-    @Ignore("Må fikses")
+    @Disabled("Må fikses")
     @Test
     public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();

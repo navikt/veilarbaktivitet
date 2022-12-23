@@ -13,20 +13,20 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDeling
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
+class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Autowired
     StillingFraNavTestService stillingFraNavTestService;
@@ -52,21 +52,21 @@ public class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
     @Autowired
     DelingAvCvCronService delingAvCvCronService;
 
-    @After
-    public void verify_no_unmatched() {
+    @AfterEach
+    void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
 
         consumer.unsubscribe();
         consumer.close();
     }
 
-    @Before
-    public void cleanupBetweenTests() {
+    @BeforeEach
+    void cleanupBetweenTests() {
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(Integer.MAX_VALUE);
     }
 
     @Test
-    public void happy_case() {
+    void happy_case() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);

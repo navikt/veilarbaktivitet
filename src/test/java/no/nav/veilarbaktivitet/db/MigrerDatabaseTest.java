@@ -1,15 +1,14 @@
 package no.nav.veilarbaktivitet.db;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.collection.IsEmptyCollection.empty;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class MigrerDatabaseTest extends IsolatedDatabaseTest {
 
     @Test
     public void kanQueryeDatabasen() {
-        assertThat(db.queryForList("SELECT * FROM AKTIVITET"), empty());
+        assertThat(db.queryForList("SELECT * FROM AKTIVITET")).isEmpty();
     }
 
 }

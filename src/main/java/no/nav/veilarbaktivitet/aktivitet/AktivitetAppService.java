@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.person.AuthService;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Supplier;
 

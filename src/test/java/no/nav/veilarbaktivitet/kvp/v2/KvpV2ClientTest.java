@@ -6,7 +6,7 @@ import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;

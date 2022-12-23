@@ -32,9 +32,10 @@ import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -51,7 +52,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class BrukernotifikasjonTest extends SpringBootTestBase {
+class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Value("${app.env.appname}")
     private String appname;
@@ -110,8 +111,8 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
@@ -120,8 +121,8 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
     }
 
-    @After
-    public void assertNoUnkowns() {
+    @AfterEach
+    void assertNoUnkowns() {
         oppgaveConsumer.unsubscribe();
         doneConsumer.unsubscribe();
 
@@ -130,7 +131,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void happy_case_oppgave() {
+    void happy_case_oppgave() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -143,7 +144,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void skalSendeOppgaveMedEgentTekst() {
+    void skalSendeOppgaveMedEgentTekst() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -184,7 +185,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void skalSendeBeskjedMedEgentTekst() {
+    void skalSendeBeskjedMedEgentTekst() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -219,7 +220,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void skal_sendeBeskjed() {
+    void skal_sendeBeskjed() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -245,7 +246,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_ikke_produsere_meldinger_for_avsluttet_oppgave() {
+    void skal_ikke_produsere_meldinger_for_avsluttet_oppgave() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -262,7 +263,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_ikke_sende_meldinger_for_avbrutte_aktiviteter() {
+    void skal_ikke_sende_meldinger_for_avbrutte_aktiviteter() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -301,7 +302,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_lukke_brukernotifikasjonsOppgave_nar_aktivitet_blir_avbrutt()  {
+    void skal_lukke_brukernotifikasjonsOppgave_nar_aktivitet_blir_avbrutt() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -351,7 +352,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
 
 
     @Test
-    public void skal_kunne_opprette_brukernotifikasjon_pa_fho_pa_arena_aktiviteter_som_ikke_er_migrert_og_ha_lenke_med_riktig_id() {
+    void skal_kunne_opprette_brukernotifikasjon_pa_fho_pa_arena_aktiviteter_som_ikke_er_migrert_og_ha_lenke_med_riktig_id() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
@@ -364,7 +365,7 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
+    void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
@@ -391,7 +392,10 @@ public class BrukernotifikasjonTest extends SpringBootTestBase {
         var lenke = oppgaveRecord.value().getLink();
         assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", tekniskId));
     }
-    public void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_aktiviteter_blir_avbrutt() {
+
+    @Disabled
+    @Test
+    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_aktiviteter_blir_avbrutt() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");

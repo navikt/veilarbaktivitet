@@ -12,12 +12,12 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.text.DateFormat;
@@ -26,15 +26,15 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
-import static junit.framework.TestCase.fail;
 import static no.nav.veilarbaktivitet.person.InnsenderData.BRUKER;
 import static no.nav.veilarbaktivitet.person.InnsenderData.NAV;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AktivitetAppServiceTest {
 
     private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
@@ -47,7 +47,8 @@ public class AktivitetAppServiceTest {
     @InjectMocks
     private AktivitetAppService appService;
 
-    @Mock @SuppressWarnings("unused") // Blir faktisk brukt
+    @Mock
+    @SuppressWarnings("unused") // Blir faktisk brukt
     private MetricService metricService;
 
     @Test
@@ -56,7 +57,7 @@ public class AktivitetAppServiceTest {
         AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
 
         loggetInnSom(BRUKER);
-        mockHentAktivitet(gammelAktivitet);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(gammelAktivitet);
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
@@ -178,35 +179,36 @@ public class AktivitetAppServiceTest {
                 .hasStackTraceContaining("403 FORBIDDEN");
     }
 
-    @Test(expected = ResponseStatusException.class)
-    public void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException() {
+    @Test
+    void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException() {
         var aktivitet = nyMoteAktivitet();
         loggetInnSom(BRUKER);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId())).thenReturn(aktivitet);
 
-        appService.oppdaterAktivitet(aktivitet);
+        Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(aktivitet))
+                .isInstanceOf(ResponseStatusException.class);
     }
 
 
     @Test
-    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
+    void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
-        mockHentAktivitet(aktivitet);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
 
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
     }
 
     @Test
-    public void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
+    void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
-        mockHentAktivitet(aktivitet);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
         Assertions.assertThat(aktivitetData).isNotNull();
     }
 
     @Test
-    public void opprett_skal_ikke_returnere_kontorsperreEnhet_naar_systembruker() {
+    void opprett_skal_ikke_returnere_kontorsperreEnhet_naar_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("systembruker")));
@@ -214,13 +216,12 @@ public class AktivitetAppServiceTest {
         when(authService.erSystemBruker()).thenReturn(Boolean.TRUE);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
 
-        mockHentAktivitet(aktivitet);
         AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isNull();
     }
 
     @Test
-    public void opprett_skal_returnere_kontorsperreEnhet_naar_ikke_systembruker() {
+    void opprett_skal_returnere_kontorsperreEnhet_naar_ikke_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
         when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("saksbehandler")));
@@ -228,15 +229,14 @@ public class AktivitetAppServiceTest {
         when(authService.erSystemBruker()).thenReturn(Boolean.FALSE);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
 
-        mockHentAktivitet(aktivitet);
         AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isEqualTo(KONTORSPERRE_ENHET_ID);
     }
 
     @Test
-    public void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
+    void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
-        mockHentAktivitet(aktivitet);
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
 
         testAlleOppdateringsmetoder(aktivitet);
     }
@@ -298,10 +298,6 @@ public class AktivitetAppServiceTest {
 
     }
 
-    public void mockHentAktivitet(AktivitetData aktivitetData) {
-        when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitetData);
-    }
-
 
     private void loggetInnSom(InnsenderData innsenderData) {
         when(authService.erEksternBruker()).thenReturn(innsenderData == BRUKER);
@@ -330,7 +326,7 @@ public class AktivitetAppServiceTest {
 
     public static Date toJavaUtilDate(String isoDato) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String datoMedKlokkeslett = isoDato+"T00:00:00.000+0200";
+        String datoMedKlokkeslett = isoDato + "T00:00:00.000+0200";
         try {
             return dateFormat.parse(datoMedKlokkeslett);
         } catch (ParseException e) {

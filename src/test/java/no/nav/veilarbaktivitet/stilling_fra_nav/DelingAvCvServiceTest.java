@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import org.assertj.core.api.Assertions;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 

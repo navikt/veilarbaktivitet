@@ -9,8 +9,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,7 +21,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
 public abstract class SpringBootTestBase {
     @Autowired
@@ -53,7 +51,7 @@ public abstract class SpringBootTestBase {
     @LocalServerPort
     protected int port;
 
-    @Before
+    @BeforeEach
     public void setup() {
         RestAssured.port = port;
         DbTestUtils.cleanupTestDb(jdbcTemplate);

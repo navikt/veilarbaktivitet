@@ -20,8 +20,9 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -31,9 +32,8 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoteSmsTest extends SpringBootTestBase {
 
@@ -66,7 +66,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     @LocalServerPort
     protected int port;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
@@ -235,12 +235,12 @@ public class MoteSmsTest extends SpringBootTestBase {
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
         assertEquals(melding + " fnr", happyBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
-        assertTrue(melding + " eksternvarsling", value.getEksternVarsling());
+        assertTrue(value.getEksternVarsling(), melding + " eksternvarsling");
         assertEquals(melding + " sms tekst", expected.getSmsTekst(), value.getSmsVarslingstekst());
         assertEquals(melding + " ditnav tekst", expected.getDitNavTekst(), value.getTekst());
         assertEquals(melding + " epost tittel tekst", expected.getEpostTitel(), value.getEpostVarslingstittel());
         assertEquals(melding + " epost body tekst", expected.getEpostBody(), value.getEpostVarslingstekst());
-        assertTrue(melding + " mote link tekst", value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
+        assertTrue(value.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker
         return oppgaveRecord;
     }
 }

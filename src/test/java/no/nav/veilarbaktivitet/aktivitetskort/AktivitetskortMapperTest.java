@@ -4,7 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentDTO;
 import no.nav.veilarbaktivitet.person.Person;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -14,9 +14,9 @@ import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTil
 import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AktivitetskortMapperTest {
+class AktivitetskortMapperTest {
 
-    public Aktivitetskort aktivitetskort() {
+    Aktivitetskort aktivitetskort() {
         return Aktivitetskort.builder()
                 .id(UUID.randomUUID())
                 .personIdent("1234567890")
@@ -39,15 +39,15 @@ public class AktivitetskortMapperTest {
                 .withDetaljer(null);
 
         var result = mapTilAktivitetData(
-            new EksternAktivitetskortBestilling(
-                    aktivitetskortWithNullFields,
-                "test-source",
-                    AktivitetskortType.ARENA_TILTAK,
-                    UUID.randomUUID(),
-                    ActionType.UPSERT_AKTIVITETSKORT_V1,
-                    Person.aktorId("1234567890")
-            ),
-            ZonedDateTime.now()
+                new EksternAktivitetskortBestilling(
+                        aktivitetskortWithNullFields,
+                        "test-source",
+                        AktivitetskortType.ARENA_TILTAK,
+                        UUID.randomUUID(),
+                        ActionType.UPSERT_AKTIVITETSKORT_V1,
+                        Person.aktorId("1234567890")
+                ),
+                ZonedDateTime.now()
         );
         assertThat(result.getEksternAktivitetData().getDetaljer()).isEmpty();
         assertThat(result.getEksternAktivitetData().getEtiketter()).isEmpty();

@@ -12,12 +12,11 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
-import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,12 +29,10 @@ import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.finnAktivitet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
-
-
+class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
     @Autowired
     JdbcTemplate jdbc;
 
@@ -65,8 +62,8 @@ public class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
     @Autowired
     DelingAvCvCronService delingAvCvCronService;
 
-    @After
-    public void verify_no_unmatched() {
+    @AfterEach
+    void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
         Mockito.reset(responsKafkaTemplate);
 
@@ -74,15 +71,15 @@ public class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
         consumer.close();
     }
 
-    @Before
-    public void cleanupBetweenTests() {
+    @BeforeEach
+    void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
         delingAvCvFristUtloptService.avsluttUtlopedeAktiviteter(Integer.MAX_VALUE);
         consumer = kafkaTestService.createStringAvroConsumer(utTopic);
     }
 
     @Test
-    public void utlopte_aktiviteter_skal_avsluttes_automatisk() {
+    void utlopte_aktiviteter_skal_avsluttes_automatisk() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
@@ -108,7 +105,7 @@ public class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
+    void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
