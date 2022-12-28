@@ -8,14 +8,14 @@ import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-public class EksternaktivitetDAOTest {
+class EksternaktivitetDAOTest {
 
     @Test
     @SneakyThrows
-    public void test_json_serialisering() {
+    void test_json_serialisering() {
         JdbcTemplate jdbcTemplate = LocalH2Database.getPresistentDb();
         Database database = new Database(jdbcTemplate);
         AktivitetDAO aktivitetDAO = new AktivitetDAO(database, database.getNamedJdbcTemplate());

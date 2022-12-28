@@ -21,9 +21,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.jetbrains.annotations.NotNull;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
@@ -71,7 +71,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
 
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
-    @Before
+    @BeforeEach
     public void setUp() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         // meterRegistry.clear gjør at man ikke kan gjenbruke springcontext dersom man skal teste på metrikker
@@ -79,11 +79,6 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktivitetTestService.opprettStillingFraNav(mockBruker);
         bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
-    }
-
-    @After
-    public void tearDown() {
-
     }
 
     @Test

@@ -22,9 +22,9 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
@@ -34,11 +34,11 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @Slf4j
-public class DelingAvCvITest extends SpringBootTestBase {
+class DelingAvCvITest extends SpringBootTestBase {
 
     @Value("${topic.inn.stillingFraNav}")
     private String stillingFraNavForespurt;
@@ -64,22 +64,22 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @After
-    public void verify_no_unmatched() {
+    @AfterEach
+    void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
         delingAvCvResponsConsumer.unsubscribe();
         delingAvCvResponsConsumer.close();
     }
 
-    @Before
-    public void cleanupBetweenTests() {
+    @BeforeEach
+    void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         delingAvCvResponsConsumer = kafkaTestService.createStringAvroConsumer(stillingFraNavOppdatert);
 
     }
 
     @Test
-    public void happy_case() {
+    void happy_case() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
@@ -97,7 +97,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
 
     @Test
-    public void happy_case_tomme_strenger() {
+    void happy_case_tomme_strenger() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
@@ -117,7 +117,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
+    void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
@@ -137,7 +137,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void ugyldig_aktorid() {
+    void ugyldig_aktorid() {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
 
         //TODO se på om vi burde unngå bruker her
@@ -165,7 +165,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void ikke_under_oppfolging() {
+    void ikke_under_oppfolging() {
 
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
@@ -189,7 +189,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void under_oppfolging_kvp() {
+    void under_oppfolging_kvp() {
         BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
         MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
@@ -213,7 +213,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void under_manuell_oppfolging() {
+    void under_manuell_oppfolging() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
@@ -237,7 +237,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void reservert_i_krr() {
+    void reservert_i_krr() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
@@ -262,7 +262,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void mangler_nivaa4() {
+    void mangler_nivaa4() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
@@ -286,7 +286,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     @SneakyThrows
-    public void duplikat_bestillingsId_ignoreres() {
+    void duplikat_bestillingsId_ignoreres() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();

@@ -36,9 +36,9 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -106,7 +106,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     Consumer<String, String> aktivitetskortFeilConsumer;
     Consumer<String, String> aktivitetskortIdMappingConsumer;
 
-    @Before
+    @BeforeEach
     public void cleanupBetweenTests() {
         meterRegistry.clear();
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);

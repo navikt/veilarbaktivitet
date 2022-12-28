@@ -19,8 +19,8 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -58,7 +58,7 @@ public class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     @Autowired
     LockProvider lockProvider;
 
-    @Before
+    @BeforeEach
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
 

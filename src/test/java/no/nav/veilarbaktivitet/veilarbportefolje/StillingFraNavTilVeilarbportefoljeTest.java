@@ -14,9 +14,9 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDeling
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -44,7 +44,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     @Autowired
     AktiviteterTilKafkaService aktiviteterTilKafkaService;
 
-    @Before
+    @BeforeEach
     public void startConsumer() {
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljetopic);
     }

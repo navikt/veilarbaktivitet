@@ -148,16 +148,6 @@
         </profile>
     </profiles>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit.vintage</groupId>
-                <artifactId>junit-vintage-engine</artifactId>
-                <version>5.7.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <repositories>
         <!-- For io.confluent Jars not in maven central -->
         <repository>
@@ -437,6 +427,12 @@
             <groupId>com.networknt</groupId>
             <artifactId>json-schema-validator</artifactId>
             <version>1.0.73</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.mkammerer.wiremock-junit5</groupId>
+            <artifactId>wiremock-junit5</artifactId>
+            <version>1.1.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

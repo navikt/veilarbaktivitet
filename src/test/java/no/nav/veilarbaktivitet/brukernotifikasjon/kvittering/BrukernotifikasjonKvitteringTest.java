@@ -28,11 +28,10 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -40,8 +39,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
@@ -94,7 +92,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
     private final static String OPPGAVE_KVITERINGS_PREFIX = "O-veilarbaktivitet-";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
@@ -102,7 +100,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
     }
 
-    @After
+    @AfterEach
     public void assertNoUnkowns() {
         oppgaveConsumer.unsubscribe();
         doneConsumer.unsubscribe();
@@ -145,12 +143,12 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
         sendBrukernotifikasjonCron.countForsinkedeVarslerSisteDognet();
         Gauge gauge = meterRegistry.find("brukernotifikasjon_mangler_kvittering").gauge();
-        Assertions.assertEquals(0, gauge.value());
+        assertEquals(0, gauge.value());
 
 
         String brukernotifikasjonId = OPPGAVE_KVITERINGS_PREFIX + eventId;
         val ugyldigstatus = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, brukernotifikasjonId, status(eventId, "ugyldig_status"));
-        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(ugyldigstatus));
+        assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(ugyldigstatus));
 
         String feilprefixId = "feilprefix-" + eventId;
 
@@ -163,7 +161,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
                 .setDistribusjonId(1L)
                 .build();
         val feilPrefix = new ConsumerRecord<>("VarselKviteringToppic", 1, 1, feilprefixId, melding );
-        Assert.assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(feilPrefix));
+        assertThrows(IllegalArgumentException.class, () -> eksternVarslingKvitteringConsumer.consume(feilPrefix));
 
         assertVarselStatusErSendt(eventId);//SKAl ikke ha endret seg
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.FEILET); //SKAl ikke ha endret seg
@@ -286,7 +284,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue("Skal ikke produsert done meldinger", kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer));
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
         final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
         NokkelInput nokkel = oppgaveRecord.key();
         OppgaveInput oppgave = oppgaveRecord.value();

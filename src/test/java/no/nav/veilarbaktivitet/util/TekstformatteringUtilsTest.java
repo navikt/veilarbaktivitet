@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.util;
 
 import org.assertj.core.api.Assertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static no.nav.veilarbaktivitet.util.TekstformatteringUtils.storeForbokstaverStedsnavn;
 
@@ -32,7 +32,7 @@ public class TekstformatteringUtilsTest {
 
     // MO I RANA skal bli Mo i Rana
     @Test
-    public void storForbokstav_i() {
+    public void storForbokstav_i_skal_fortsatt_vere_liten() {
         Assertions.assertThat(
                 storeForbokstaverStedsnavn("MO I RANA")
         ).isEqualTo("Mo i Rana");
@@ -40,7 +40,7 @@ public class TekstformatteringUtilsTest {
 
     // MØRE OG ROMSDAL skal bli Møre og Romsdal
     @Test
-    public void storForbokstav_liten_og() {
+    public void storForbokstav_og_skal_fortsatt_vere_liten() {
         Assertions.assertThat(
                 storeForbokstaverStedsnavn("MØRE OG ROMSDAL")
         ).isEqualTo("Møre og Romsdal");

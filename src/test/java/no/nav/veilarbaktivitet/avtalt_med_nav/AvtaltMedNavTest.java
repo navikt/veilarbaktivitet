@@ -10,19 +10,18 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 
-public class AvtaltMedNavTest extends SpringBootTestBase {
-
+class AvtaltMedNavTest extends SpringBootTestBase {
     @Autowired
     BrukernotifikasjonAssertsConfig config;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @Before
-    public void before() {
+    @BeforeEach
+    void before() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(config);
     }
 
@@ -82,7 +81,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void IkkeOppretteFHOFEilAktivitetVersion() {
+    void IkkeOppretteFHOFEilAktivitetVersion() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
@@ -95,7 +94,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
 
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO();
-        avtaltDTO.setAktivitetVersjon(Long.parseLong(utenFHO.getVersjon()) +1);
+        avtaltDTO.setAktivitetVersjon(Long.parseLong(utenFHO.getVersjon()) + 1);
         avtaltDTO.setForhaandsorientering(fho);
 
         veileder
@@ -111,7 +110,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void setteAvtaltUtenFHOForBrukerSomIkkeKanVarsles() {
+    void setteAvtaltUtenFHOForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = BrukernotifikasjonAsserts.getBrukerSomIkkeKanVarsles();
         MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
 
@@ -127,7 +126,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void sendeForhondsorentering() {
+    void sendeForhondsorentering() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
@@ -143,7 +142,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void sendeForhondsorenteringFor11_9() {
+    void sendeForhondsorenteringFor11_9() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
@@ -159,7 +158,7 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalIkkeSendeVarselForIkkeSend() {
+    void skalIkkeSendeVarselForIkkeSend() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
@@ -198,6 +197,6 @@ public class AvtaltMedNavTest extends SpringBootTestBase {
                 .setForhaandsorientering(fho)
                 .setAvtalt(true);
         AktivitetAssertUtils.assertOppdatertAktivitet(utenFHO, medFHO);
-        return  medFHO;
+        return medFHO;
     }
 }

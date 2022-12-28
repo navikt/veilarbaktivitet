@@ -13,17 +13,16 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InternApiControllerTest extends SpringBootTestBase {
-
+class InternApiControllerTest extends SpringBootTestBase {
     @Test
-    public void hentAktiviteterTest() {
+    void hentAktiviteterTest() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
@@ -73,7 +72,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalFunkeForAlleAktivitettyper() {
+    void skalFunkeForAlleAktivitettyper() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
@@ -100,7 +99,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalFeileNaarManglerTilgang() {
+    void skalFeileNaarManglerTilgang() {
         // Forbidden (403)
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
@@ -111,7 +110,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalFeilNaarManglerParameter() {
+    void skalFeilNaarManglerParameter() {
         // Bad request (400) - ingen query parameter
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
@@ -122,7 +121,7 @@ public class InternApiControllerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalFeilNaarEksternBruker() {
+    void skalFeilNaarEksternBruker() {
         // Forbidden (403)
         MockBruker mockBruker = MockNavService.createHappyBruker();
         mockBruker.createRequest()

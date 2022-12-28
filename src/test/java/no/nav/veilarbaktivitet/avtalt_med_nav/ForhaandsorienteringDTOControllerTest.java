@@ -19,13 +19,12 @@ import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -37,13 +36,14 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.lang.Long.parseLong;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 
-@RunWith(MockitoJUnitRunner.class)
-public class ForhaandsorienteringDTOControllerTest {
+@ExtendWith(MockitoExtension.class)
+class ForhaandsorienteringDTOControllerTest {
     private final String aktorid = "12345678";
     private final String ident = "V12345678";
     @Mock
@@ -66,31 +66,22 @@ public class ForhaandsorienteringDTOControllerTest {
 
     private AvtaltMedNavController avtaltMedNavController;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonService);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
 
         DbTestUtils.cleanupTestDb(jdbc);
-
-        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
-                .when(authService)
-                .sjekkTilgangOgInternBruker(any(), any());
-
-        doNothing()
-                .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
-
-        doReturn(Optional.of(Person.navIdent(ident)))
-                .when(authService).getLoggedInnUser();
-
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
-
-        when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
     }
 
     @Test
-    public void opprettFHO_opprettesPaaRiktigAktivitet() {
+    void opprettFHO_opprettesPaaRiktigAktivitet() {
+        doNothing()
+                .when(authService)
+                .sjekkTilgangOgInternBruker(aktorid, null);
+        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
+
         String tekst = "fho tekst";
         Type type = Type.SEND_FORHAANDSORIENTERING;
         var aktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorid);
@@ -102,27 +93,36 @@ public class ForhaandsorienteringDTOControllerTest {
                 .setAktivitetVersjon(sisteAktivitet.getVersjon())
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder().tekst(tekst).type(type).build());
 
-       // when(authService.sjekkTilgangOgInternBruker(ak))
+        // when(authService.sjekkTilgangOgInternBruker(ak))
         var opprettetAktivitet = avtaltMedNavController.opprettFHO(avtaltDTO, aktivitet.getId());
         var opprettetFHO = opprettetAktivitet.getForhaandsorientering();
-        long forventetVersjon = sisteAktivitet.getVersjon()+1;
+        long forventetVersjon = sisteAktivitet.getVersjon() + 1;
 
-        Assert.assertEquals(tekst, opprettetFHO.getTekst());
-        Assert.assertEquals(type, opprettetFHO.getType());
-        Assert.assertNull(opprettetFHO.getLestDato());
-        Assert.assertEquals(forventetVersjon, parseLong(opprettetAktivitet.getVersjon()));
+        Assertions.assertEquals(tekst, opprettetFHO.getTekst());
+        Assertions.assertEquals(type, opprettetFHO.getType());
+        Assertions.assertNull(opprettetFHO.getLestDato());
+        Assertions.assertEquals(forventetVersjon, parseLong(opprettetAktivitet.getVersjon()));
 
     }
 
-    @Test(expected = ResponseStatusException.class)
-    public void skalSjekkeTilgangTilBruker() {
+    @Test
+    void skalSjekkeTilgangTilBruker() {
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangOgInternBruker(any(), any());
+
         AktivitetData aktivitetData = opprettAktivitet("0987654");
 
-        avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId());
+        Assertions.assertThrows(ResponseStatusException.class, () ->
+                avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId()));
     }
 
-    @Test(expected = ResponseStatusException.class)
-    public void skalSjekkeKVP() {
+    @Test
+    void skalSjekkeKVP() {
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangOgInternBruker(any(), any());
+
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
                 .toBuilder()
                 .aktorId(aktorid)
@@ -130,29 +130,43 @@ public class ForhaandsorienteringDTOControllerTest {
                 .kontorsperreEnhetId("1234")
                 .build();
 
-        aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitetData);
+        final AktivitetData aktivitetDataMedAktivitet = aktivitetDAO.opprettNyAktivitet(aktivitetData);
 
-        avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId());
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    public void forhandsorenteringSkallIkkeVereNull() {
-        AktivitetData aktivitetData = opprettAktivitet(aktorid);
-        AvtaltMedNavDTO fho = new AvtaltMedNavDTO();
-        fho.setAktivitetVersjon(aktivitetData.getVersjon());
-        avtaltMedNavController.opprettFHO(fho, aktivitetData.getId());
-    }
-
-    @Test(expected = ResponseStatusException.class)
-    public void versjonskonfliktSkalGiException() {
-        AktivitetData aktivitetData = opprettAktivitet(aktorid);
-        AvtaltMedNavDTO fho = lagForhaandsorentering(aktivitetData);
-        fho.setAktivitetVersjon(fho.getAktivitetVersjon() -1);
-        avtaltMedNavController.opprettFHO(fho, aktivitetData.getId());
+        AvtaltMedNavDTO avtaltMedNavDTO = lagForhaandsorentering(aktivitetDataMedAktivitet);
+        Long id = aktivitetDataMedAktivitet.getId();
+        Assertions.assertThrows(ResponseStatusException.class, () ->
+                avtaltMedNavController.opprettFHO(avtaltMedNavDTO, id));
     }
 
     @Test
-    public void skalTaVarePaaForhaandsorienteringsTekst() {
+    void forhandsorenteringSkallIkkeVereNull() {
+
+        AktivitetData aktivitetData = opprettAktivitet(aktorid);
+        AvtaltMedNavDTO fho = new AvtaltMedNavDTO();
+        fho.setAktivitetVersjon(aktivitetData.getVersjon());
+
+        Long id = aktivitetData.getId();
+        Assertions.assertThrows(ResponseStatusException.class, () ->
+                avtaltMedNavController.opprettFHO(fho, id));
+    }
+
+    @Test
+    void versjonskonfliktSkalGiException() {
+        AktivitetData aktivitetData = opprettAktivitet(aktorid);
+        AvtaltMedNavDTO fho = lagForhaandsorentering(aktivitetData);
+        fho.setAktivitetVersjon(fho.getAktivitetVersjon() - 1);
+        Long id = aktivitetData.getId();
+        Assertions.assertThrows(ResponseStatusException.class, () ->
+                avtaltMedNavController.opprettFHO(fho, id));
+    }
+
+    @Test
+    void skalTaVarePaaForhaandsorienteringsTekst() {
+        doNothing()
+                .when(authService)
+                .sjekkTilgangOgInternBruker(aktorid, null);
+        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         String tekst = "tekst";
         AktivitetData orginal = opprettAktivitet(aktorid);
         AvtaltMedNavDTO avtaltMedNavDTO = new AvtaltMedNavDTO();
@@ -202,7 +216,15 @@ public class ForhaandsorienteringDTOControllerTest {
     }
 
     @Test
-    public void markerForhaandsorienteringSomLest_skalVirke() {
+    void markerForhaandsorienteringSomLest_skalVirke() {
+        doNothing()
+                .when(authService)
+                .sjekkTilgangOgInternBruker(aktorid, null);
+        doReturn(Optional.of(Person.navIdent(ident)))
+                .when(authService).getLoggedInnUser();
+        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
+
         Date start = new Date();
         AktivitetData aktivitet = opprettAktivitet(aktorid);
         AvtaltMedNavDTO fho = new AvtaltMedNavDTO();
@@ -216,7 +238,7 @@ public class ForhaandsorienteringDTOControllerTest {
 
         AktivitetDTO aktivitetDTO = avtaltMedNavController.lest(lestDTO);
 
-        Assertions.assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST);
+        assertThat(aktivitetDTO.getTransaksjonsType()).isEqualTo(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST);
 
         Date stopp = new Date();
         Date lest = aktivitetDTO.getForhaandsorientering().getLestDato();
@@ -228,7 +250,13 @@ public class ForhaandsorienteringDTOControllerTest {
     }
 
     @Test
-    public void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
+    void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
+
+        doNothing()
+                .when(authService)
+                .sjekkTilgangOgInternBruker(aktorid, null);
+        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         Arrays.stream(AktivitetTypeData.values())
                 .map(AktivitetDataTestBuilder::nyAktivitet)
                 .map(a -> a.toBuilder().aktorId(aktorid).build())

@@ -9,9 +9,7 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 import java.util.Optional;
 
 public class AktivitetDataMapper {
-
     private AktivitetDataMapper() {}
-
     public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
 
         val id = Optional.ofNullable(aktivitetDTO.getId())

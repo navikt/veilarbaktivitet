@@ -17,8 +17,8 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
@@ -47,7 +47,7 @@ public class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @Value("${topic.inn.kvpAvsluttet}")
     String kvpAvsluttetTopic;
 
-    @Before
+    @BeforeEach
     public void before() {
         var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).kontorsperreEnhet("123").build();
         mockBruker = MockNavService.createBruker(medKvp);

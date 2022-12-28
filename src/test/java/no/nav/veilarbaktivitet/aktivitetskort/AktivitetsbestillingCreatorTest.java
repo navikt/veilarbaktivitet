@@ -10,8 +10,8 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
@@ -20,15 +20,14 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
-
-public class AktivitetsbestillingCreatorTest {
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
+class AktivitetsbestillingCreatorTest {
     AktivitetsbestillingCreator aktivitetsbestillingCreator;
 
-    @Before
-    public void setup(){
+    @BeforeEach
+    public void setup() {
         PersonService personService = Mockito.mock(PersonService.class);
         Mockito.when(personService.getAktorIdForPersonBruker(ArgumentMatchers.any(Person.class))).thenReturn(Optional.of(Person.aktorId("12345678901")));
         aktivitetsbestillingCreator = new AktivitetsbestillingCreator(personService);

@@ -17,8 +17,8 @@ import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -58,7 +58,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @Before
+    @BeforeEach
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc);
@@ -109,8 +109,9 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500)).isZero();
     }
 
-    @Test //TODO rydd denne testen
-    public void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
+    @Test
+        //TODO rydd denne testen
+    void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
