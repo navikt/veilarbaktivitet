@@ -26,10 +26,8 @@ public class SecureLogsfilterFilter implements Filter {
     private final AuthService authService;
     private final UserInContext userInContext;
 
-
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-
         filterChain.doFilter(servletRequest, servletResponse);
 
         HttpServletRequest httpRequest = (HttpServletRequest) servletRequest;
