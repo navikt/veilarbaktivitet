@@ -8,18 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 public class PingFilter implements Filter {
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) {
         HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
         httpServletResponse.setStatus(HttpStatus.OK.value());
-    }
-
-    @Override
-    public void destroy() {
-
     }
 }
