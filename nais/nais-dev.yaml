@@ -80,7 +80,5 @@ spec:
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
-    - name: KVP_AVSLUTTET_TOPIC
-      value: aapen-arbeidsrettetOppfolging-kvpAvsluttet-v1-q1
     - name: APPD_ENABLED
       value: "false"
