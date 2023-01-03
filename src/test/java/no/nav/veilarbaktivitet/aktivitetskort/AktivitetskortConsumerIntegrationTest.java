@@ -65,7 +65,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-@DirtiesContext
 public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
@@ -109,7 +108,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @BeforeEach
     public void cleanupBetweenTests() {
-        meterRegistry.clear();
         when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
         aktivitetskortIdMappingConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortIdMappingTopic);
@@ -152,6 +150,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     public void happy_case_upsert_ny_arenatiltaksaktivitet() {
+        //trenges for og teste med count hvis ikke må man også matche på tags for å få testet counten
+        //burde man endre på metrikkene her? kan man vite en fulstendig liste av aktiviteskort og skilde?
+        meterRegistry.find(AKTIVITETSKORT_UPSERT).meters().forEach(it -> meterRegistry.remove(it));
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);

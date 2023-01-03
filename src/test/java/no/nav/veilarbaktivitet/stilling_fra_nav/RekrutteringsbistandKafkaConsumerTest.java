@@ -43,7 +43,6 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
-@DirtiesContext
 public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
 
@@ -71,14 +70,19 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
 
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+
     @BeforeEach
     public void setUp() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
-        // meterRegistry.clear gjør at man ikke kan gjenbruke springcontext dersom man skal teste på metrikker
-        meterRegistry.clear();
+        meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters().forEach(it -> meterRegistry.remove(it));
         aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktivitetTestService.opprettStillingFraNav(mockBruker);
         bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
+    }
+
+    @AfterEach //må kjøres etter hver test for å ikke være static
+    public void teardown() {
+        new StillingFraNavMetrikker(meterRegistry); //for og genskape metrikkene som blir slettet
     }
 
     @Test
@@ -384,6 +388,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
         Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
     }
+
     @Test
     public void hvis_feil_i_json_skal_vi_ikke_endre_aktivitet_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
@@ -409,6 +414,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
 
     }
+
     @Test
     public void cvdelt_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
@@ -511,6 +517,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         ConsumerRecord<NokkelInput, BeskjedInput> etterCvDelt = brukernotifikasjonAsserts.assertBeskjedSendt(mockBruker.getFnrAsFnr());
         Assertions.assertThat(etterCvDelt.value().getTekst()).isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST);
     }
+
     @Test
     public void cvdelt_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
@@ -535,11 +542,13 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         Assertions.assertThat(aktivitetData_etter).isEqualTo(aktivitetData_for);
         brukernotifikasjonAsserts.assertIngenNyeBeskjeder();
     }
+
     @NotNull
     private Map<String, Double> antallAvHverArsak() {
         return meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).counters().stream()
                 .collect(Collectors.toMap(c -> c.getId().getTag("reason"), Counter::count, Double::sum));
     }
+
     private final String DETALJER_TEKST = "";
     private final boolean JA = Boolean.TRUE;
     private final boolean NEI = Boolean.FALSE;
