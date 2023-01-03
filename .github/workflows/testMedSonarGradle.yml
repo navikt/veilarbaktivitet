@@ -1,5 +1,9 @@
 name: Run Gradle on PRs
 on: push
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref }}
+  cancel-in-progress: true
 jobs:
   gradle:
     runs-on: ubuntu-latest
@@ -8,7 +12,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: temurin
-          java-version: 11
+          java-version: 17
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
