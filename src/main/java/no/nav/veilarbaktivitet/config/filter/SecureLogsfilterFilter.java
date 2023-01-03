@@ -1,21 +1,21 @@
 package no.nav.veilarbaktivitet.config.filter;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.common.log.MarkerBuilder;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.FilterConfig;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Optional;
+
+import static java.lang.String.format;
 
 @Profile("!dev")
 @Service
@@ -28,11 +28,6 @@ public class SecureLogsfilterFilter implements Filter {
 
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
-
-    }
-
-    @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
 
         filterChain.doFilter(servletRequest, servletResponse);
@@ -42,22 +37,17 @@ public class SecureLogsfilterFilter implements Filter {
 
         Optional<String> innloggetBrukerIdent = authService.getInnloggetBrukerIdent();
 
-        new MarkerBuilder()
-                .field("status", httpResponse.getStatus())
-                .field("method", httpRequest.getMethod())
-                .field("host", httpRequest.getServerName())
-                .field("path", httpRequest.getRequestURI())
-                .field("erInternBruker", ""+ authService.erInternBruker())
-                .field("innloggetIdent", innloggetBrukerIdent.orElse(null))
-                .field("queryString", httpRequest.getQueryString())
-                .field("userContext", userInContext.getFnr().map(Person::get).orElse(null))
-                .log(log::info);
-
-    }
-
-    @Override
-    public void destroy() {
-
+        String msg = format("status=%s, method=%s, host=%s, path=%s, erInternBruker=%b, innloggetIdent=%s, queryString=%s, userContext=%s",
+            httpResponse.getStatus(),
+            httpRequest.getMethod(),
+            httpRequest.getServerName(),
+            httpRequest.getRequestURI(),
+            authService.erInternBruker(),
+            innloggetBrukerIdent.orElse(null),
+            httpRequest.getQueryString(),
+            userInContext.getFnr().map(Person::get).orElse(null)
+        );
+        log.info(msg);
     }
 
 }

@@ -9,19 +9,25 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.MappingUtils;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
+import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 
 @Service
 @AllArgsConstructor
@@ -48,7 +54,8 @@ public class AktivitetService {
         var fho = avtaltMedNavService.hentFHO(aktivitet.getFhoId());
 
         return aktivitet
-                .withForhaandsorientering(fho);
+                .withForhaandsorientering(fho)
+                .withFhoId(fho == null ? null : fho.getId());
     }
 
     public AktivitetData hentAktivitetMedFHOForVersion(long version) {
@@ -63,14 +70,23 @@ public class AktivitetService {
     }
 
     public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
+        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, LocalDateTime.now());
+    }
+
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet) {
         UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, opprettet, oppfolgingsperiode);
+    }
+
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet, UUID oppfolgingsperiode) {
 
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .aktorId(aktorId.get())
+                .avtalt(aktivitet.isAvtalt())
                 .lagtInnAv(endretAvPerson.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .opprettetDato(new Date())
+                .opprettetDato(localDateTimeToDate(opprettet))
                 .endretAv(endretAvPerson.get())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .oppfolgingsperiodeId(oppfolgingsperiode)
@@ -78,7 +94,7 @@ public class AktivitetService {
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
 
-        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
+        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet, opprettet);
 
         metricService.opprettNyAktivitetMetrikk(aktivitet);
         return nyAktivivitet;
@@ -86,6 +102,11 @@ public class AktivitetService {
 
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+        return oppdaterStatus(originalAktivitet, aktivitet, endretAv, LocalDateTime.now());
+    }
+
+    @Transactional
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv, LocalDateTime endretDato) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
@@ -99,7 +120,7 @@ public class AktivitetService {
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
         }
-        return aktivitetDAO.oppdaterAktivitet(nyAktivitet);
+        return aktivitetDAO.oppdaterAktivitet(nyAktivitet, endretDato);
     }
 
     public AktivitetData avsluttStillingFraNav(AktivitetData originalAktivitet, Person endretAv) {
@@ -204,34 +225,55 @@ public class AktivitetService {
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
 
-    public void oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+    // TODO i fremtiden: hvis endretDato ligger i "aktivitet", bruk det, hvis ikke, LocalDateTime.now() i DAO
+    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv, LocalDateTime endretDato) {
         val blittAvtalt = originalAktivitet.isAvtalt() != aktivitet.isAvtalt();
-        val transType = blittAvtalt ? AktivitetTransaksjonsType.AVTALT : AktivitetTransaksjonsType.DETALJER_ENDRET;
-
+        if (blittAvtalt) {
+            throw new IllegalArgumentException(String.format("Kan ikke sette avtalt for aktivitetsid: %s gjennom oppdaterAktivitet", originalAktivitet.getId()));
+        }
+        val transType = AktivitetTransaksjonsType.DETALJER_ENDRET;
         val merger = MappingUtils.merge(originalAktivitet, aktivitet);
-        aktivitetDAO.oppdaterAktivitet(originalAktivitet
+        val result = aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .toBuilder()
+                .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
+                .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
+                .beskrivelse(aktivitet.getBeskrivelse())
+                .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
+                .endretAv(endretAv.get())
                 .fraDato(aktivitet.getFraDato())
+                .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
+                .lagtInnAv(endretAv.tilBrukerType())
+                .lenke(aktivitet.getLenke())
+                .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
+                .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
+                .stillingFraNavData(merger.map(AktivitetData::getStillingFraNavData).merge(this::mergeStillingFraNav))
+                .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
                 .tilDato(aktivitet.getTilDato())
                 .tittel(aktivitet.getTittel())
-                .beskrivelse(aktivitet.getBeskrivelse())
-                .lagtInnAv(endretAv.tilBrukerType())
-                .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
-                .lenke(aktivitet.getLenke())
                 .transaksjonsType(transType)
-                .versjon(aktivitet.getVersjon())
-                .endretAv(endretAv.get())
-                .avtalt(aktivitet.isAvtalt())
-                .stillingsSoekAktivitetData(merger.map(AktivitetData::getStillingsSoekAktivitetData).merge(this::mergeStillingSok))
-                .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
-                .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
-                .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
-                .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
-                .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
-                .stillingFraNavData(aktivitet.getStillingFraNavData())
-                .build()
-        );
+                .eksternAktivitetData(merger.map(AktivitetData::getEksternAktivitetData).merge(this::mergeEksternAktivitet))
+                .fhoId(originalAktivitet.getFhoId() != null ? originalAktivitet.getFhoId() : aktivitet.getFhoId()) // Tilltater ikke å endre fhoId her
+                .build(),
+                endretDato);
         metricService.oppdaterAktivitetMetrikk(aktivitet, blittAvtalt, originalAktivitet.isAutomatiskOpprettet());
+        return result;
+    }
+
+    public AktivitetData settAvtalt(AktivitetData originalAktivitet, Person endretAv, LocalDateTime endretTidspunkt) {
+        if (!originalAktivitet.endringTillatt()) throw new IllegalStateException(String.format("Ikke lov å endre aktivtet med id %s", originalAktivitet.getId()));
+        return aktivitetDAO.oppdaterAktivitet(
+                originalAktivitet
+                        .withAvtalt(true)
+                        .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
+                        .withEndretAv(endretAv.get())
+                        .withLagtInnAv(endretAv.tilBrukerType())
+                        ,
+                endretTidspunkt
+                );
+    }
+
+    public AktivitetData oppdaterAktivitet(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
+        return oppdaterAktivitet(originalAktivitet, aktivitet, endretAv, LocalDateTime.now());
     }
 
     private BehandlingAktivitetData mergeBehandlingAktivitetData(BehandlingAktivitetData originalBehandlingAktivitetData, BehandlingAktivitetData behandlingAktivitetData) {
@@ -278,11 +320,23 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
+    private EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData left, EksternAktivitetData right) {
+        return left
+                .withDetaljer(right.getDetaljer())
+                .withEtiketter(right.getEtiketter())
+                .withHandlinger(right.getHandlinger())
+                .withOppgave(right.getOppgave())
+                .withSource(right.getSource())
+                .withTiltaksKode(right.getTiltaksKode())
+                .withType(right.getType());
+    }
+
     @Transactional
     public void settAktiviteterTilHistoriske(UUID oppfolingsperiode, ZonedDateTime sluttDato) {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
         aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
+                .filter(a -> a.getAktivitetType() != AktivitetTypeData.EKSTERNAKTIVITET)
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());
@@ -303,6 +357,32 @@ public class AktivitetService {
                 .findAny()
                 .orElse(null)
         );
+    }
+
+
+    private CvKanDelesData mergeCVKanDelesData(CvKanDelesData existing, CvKanDelesData updated) {
+        return existing
+                .withKanDeles(updated.getKanDeles())
+                .withEndretAv(updated.getEndretAv())
+                .withAvtaltDato(updated.getAvtaltDato())
+                .withEndretAvType(updated.getEndretAvType())
+                .withEndretTidspunkt(new Date());
+    }
+    private StillingFraNavData mergeStillingFraNav(StillingFraNavData existing, StillingFraNavData updated) {
+        return existing
+            .withArbeidssted(updated.getArbeidssted())
+            .withArbeidsgiver(updated.getArbeidsgiver())
+            .withCvKanDelesData(
+                MappingUtils.merge(existing.getCvKanDelesData(), updated.getCvKanDelesData())
+                    .merge(this::mergeCVKanDelesData)
+            )
+            .withLivslopsStatus(updated.getLivslopsStatus())
+            .withSoknadsstatus(updated.getSoknadsstatus())
+            .withBestillingsId(updated.getBestillingsId())
+            .withSvarfrist(updated.getSvarfrist())
+            .withKontaktpersonData(updated.getKontaktpersonData())
+            .withIkkefattjobbendetaljer(updated.getIkkefattjobbendetaljer())
+            .withVarselId(updated.getVarselId());
     }
 
 }

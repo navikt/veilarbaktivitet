@@ -1,13 +1,13 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import de.mkammerer.wiremock.WireMockExtension;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -19,17 +19,18 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.when;
 
-public class ManuellStatusV2ClientTest {
+class ManuellStatusV2ClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("10108000398");
     private static final String MANUELL_STATUS_RESPONS = "manuell_status/v2/manuellStatusRespons.json";
 
     private ManuellStatusV2Client manuellStatusV2Client;
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(8089);
+    @RegisterExtension
+    WireMockExtension wireMock = new WireMockExtension(8089);
 
-    @Before
+
+    @BeforeEach
     public void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         PersonService authService = Mockito.mock(PersonService.class);
@@ -39,9 +40,9 @@ public class ManuellStatusV2ClientTest {
     }
 
     @Test
-    public void test_manuell_status_ok_response() {
+    void test_manuell_status_ok_response() {
 
-        stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBodyFile(MANUELL_STATUS_RESPONS)));
@@ -54,8 +55,8 @@ public class ManuellStatusV2ClientTest {
     }
 
     @Test
-    public void test_manuell_status_kall_feiler() {
-        stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
+    void test_manuell_status_kall_feiler() {
+        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/v2/manuell/status\\?fnr=([0-9]*)"))
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "text/json")));

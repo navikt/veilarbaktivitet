@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetBuilder;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet.AktivitetTypeEnum;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ public class InternAktivitetMapper {
             case MOTE -> mapTilMote(aktivitetData);
             case SAMTALEREFERAT -> mapTilSamtalereferat(aktivitetData);
             case STILLING_FRA_NAV -> mapTilStillingFraNav(aktivitetData);
+            case EKSTERNAKTIVITET -> mapTilTiltak(aktivitetData);
         };
 
         return builder
@@ -43,6 +45,10 @@ public class InternAktivitetMapper {
                 .opprettetDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
                 .endretDato(toOffsetDateTime(aktivitetData.getOpprettetDato()))
                 .build();
+    }
+
+    private static AktivitetBuilder<?,?> mapTilTiltak(AktivitetData aktivitetData) {
+        throw new NotImplementedException("TODO");
     }
 
     private static AktivitetBuilder<?, ?> mapTilEgenaktivitet(AktivitetData aktivitetData) {

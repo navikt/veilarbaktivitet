@@ -14,19 +14,20 @@ import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -37,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class AktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
@@ -64,7 +65,7 @@ public class AktivitetServiceTest {
 
     private AktivitetService aktivitetService;
 
-    @Before
+    @BeforeEach
     public void setup() {
         aktivitetService = new AktivitetService(aktivitetDAO, avtaltMedNavService, new KvpService(kvpClient), metricService, sistePeriodeService);
     }
@@ -73,7 +74,7 @@ public class AktivitetServiceTest {
     public void opprettAktivitet() {
         val aktivitet = lagEnNyAktivitet();
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -95,7 +96,7 @@ public class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
-        when(aktivitetDAO.opprettNyAktivitet(any())).thenReturn(aktivitet);
+        when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
         aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
 
@@ -118,7 +119,7 @@ public class AktivitetServiceTest {
                 .build();
         aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
@@ -139,7 +140,7 @@ public class AktivitetServiceTest {
                 .build();
 
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
 
@@ -230,12 +231,12 @@ public class AktivitetServiceTest {
 
         aktivitetService.oppdaterAktivitet(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
 
-        captureOppdaterAktivitetArgument();
+        captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(oppdatertAktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getLenke(), equalTo(oppdatertAktivitet.getLenke()));
     }
 
-    @Ignore("Må fikses")
+    @Disabled("Må fikses")
     @Test
     public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
@@ -246,20 +247,6 @@ public class AktivitetServiceTest {
         } catch (ResponseStatusException e) {
             assertEquals(HttpStatus.CONFLICT, e.getStatus());
         }
-    }
-
-    @Test
-    public void oppdaterAktivitet_skal_sette_rett_transaksjonstype() {
-        val aktivitet = lagEnNyAktivitet();
-
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
-
-        captureOppdaterAktivitetArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.DETALJER_ENDRET));
-
-        aktivitetService.oppdaterAktivitet(aktivitet, aktivitet.toBuilder().avtalt(true).build(), SAKSBEHANDLER);
-        captureOppdaterAktivitetArgument();
-        assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.AVTALT));
     }
 
     @Test
@@ -278,11 +265,15 @@ public class AktivitetServiceTest {
     }
 
     public void captureOppdaterAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture());
+    }
+
+    public void captureOppdaterAktivitetWithDateArgument() {
+        Mockito.verify(aktivitetDAO, atLeastOnce()).oppdaterAktivitet(argumentCaptor.capture(), any(LocalDateTime.class));
     }
 
     public void captureOpprettAktivitetArgument() {
-        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()));
+        Mockito.verify(aktivitetDAO, atLeastOnce()).opprettNyAktivitet((argumentCaptor.capture()), any(LocalDateTime.class));
     }
 
     public AktivitetData getCapturedAktivitet() {

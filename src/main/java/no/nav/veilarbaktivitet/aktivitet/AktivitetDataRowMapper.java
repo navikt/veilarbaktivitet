@@ -3,6 +3,11 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
@@ -26,6 +31,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
         val aktivitet = AktivitetData
                 .builder()
                 .id(rs.getLong("aktivitet_id"))
+                .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
                 .versjon(rs.getLong("versjon"))
                 .aktorId(rs.getString("aktor_id"))
                 .aktivitetType(type)
@@ -54,30 +60,15 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .oppfolgingsperiodeId(Database.hentMaybeUUID(rs, "oppfolgingsperiode_uuid"));
 
         switch (type) {
-            case EGENAKTIVITET:
-                aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
-                break;
-            case JOBBSOEKING:
-                aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
-                break;
-            case SOKEAVTALE:
-                aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
-                break;
-            case IJOBB:
-                aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
-                break;
-            case BEHANDLING:
-                aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
-                break;
-            case STILLING_FRA_NAV:
-                aktivitet.stillingFraNavData(mapStillingFraNav(rs));
-                break;
-            case MOTE:
-            case SAMTALEREFERAT:
-                aktivitet.moteData(mapMoteData(rs));
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + type);
+            case EGENAKTIVITET -> aktivitet.egenAktivitetData(mapEgenAktivitet(rs));
+            case JOBBSOEKING -> aktivitet.stillingsSoekAktivitetData(mapStillingsAktivitet(rs));
+            case SOKEAVTALE -> aktivitet.sokeAvtaleAktivitetData(mapSokeAvtaleAktivitet(rs));
+            case IJOBB -> aktivitet.iJobbAktivitetData(mapIJobbAktivitet(rs));
+            case BEHANDLING -> aktivitet.behandlingAktivitetData(mapBehandlingAktivitet(rs));
+            case STILLING_FRA_NAV -> aktivitet.stillingFraNavData(mapStillingFraNav(rs));
+            case MOTE, SAMTALEREFERAT -> aktivitet.moteData(mapMoteData(rs));
+            case EKSTERNAKTIVITET -> aktivitet.eksternAktivitetData(mapEksternAktivitetData((rs)));
+            default -> throw new IllegalStateException("Unexpected value: " + type);
         }
 
         return aktivitet.build();
@@ -164,7 +155,19 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
+                .ikkefattjobbendetaljer(rs.getString("ikkefattjobbendetaljer"))
                 .build();
     }
 
+    private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
+        return EksternAktivitetData.builder()
+                .source(rs.getString("SOURCE"))
+                .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
+                .tiltaksKode(rs.getString("TILTAK_KODE"))
+                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
+                .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
+                .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
+                .detaljer(Database.hentListObjectFromJsonString(rs, "DETALJER", Attributt.class))
+                .build();
+    }
 }

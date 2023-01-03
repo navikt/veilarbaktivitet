@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.aktivitet.mappers;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
@@ -18,6 +20,7 @@ public class AktivitetDTOMapper {
 
         var aktivitetDTO = new AktivitetDTO()
                 .setId(Long.toString(aktivitet.getId()))
+                .setFunksjonellId(aktivitet.getFunksjonellId())
                 .setVersjon(Long.toString(aktivitet.getVersjon()))
                 .setTittel(aktivitet.getTittel())
                 .setTilDato(aktivitet.getTilDato())
@@ -44,6 +47,7 @@ public class AktivitetDTOMapper {
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapBehandleAktivitetData).accept(aktivitetDTO, aktivitet.getBehandlingAktivitetData());
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapMoteData).accept(aktivitetDTO, aktivitet.getMoteData(), erEkstern);
         FunctionUtils.nullSafe(AktivitetDTOMapper::mapStillingFraNavData).accept(aktivitetDTO, aktivitet.getStillingFraNavData(), erEkstern);
+        FunctionUtils.nullSafe(AktivitetDTOMapper::mapEksternAktivitetData).accept(aktivitetDTO, aktivitet.getEksternAktivitetData());
         return aktivitetDTO;
     }
 
@@ -105,6 +109,19 @@ public class AktivitetDTOMapper {
         return ofNullable(forhaandsorientering)
                 .map(Forhaandsorientering::toDTO)
                 .orElse(null);
+    }
+
+    public static void mapEksternAktivitetData(AktivitetDTO aktivitetDTO, EksternAktivitetData eksternAktivitetData) {
+        aktivitetDTO.
+                setEksternAktivitet(
+                        new EksternAktivitetDTO(
+                                eksternAktivitetData.getType(),
+                                eksternAktivitetData.getOppgave(),
+                                eksternAktivitetData.getHandlinger(),
+                                eksternAktivitetData.getDetaljer(),
+                                eksternAktivitetData.getEtiketter()
+                        )
+                );
     }
 
 }

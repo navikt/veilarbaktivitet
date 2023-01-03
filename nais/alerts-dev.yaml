@@ -35,14 +35,14 @@ spec:
       description: fått feilmelding fra dokument om burekrnotifikasjon
       sla: se på denne i løpet av de neste dagene.
       severity: warning
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      action: https://logs.adeo.no/goto/b0ce8890-6f22-11ed-95b0-83aabf5238d7
       expr: |
         sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
     - alert: Feil mot brukernotifikasjon
       for: 1s
       description: fått feilmelding fra dokument om burekrnotifikasjon
       sla: se på denne i løpet av de neste dagene.
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      action: https://logs.adeo.no/goto/b0ce8890-6f22-11ed-95b0-83aabf5238d7
       severity: warning
       expr: |
         sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 0.5
@@ -50,7 +50,7 @@ spec:
       for: 1s
       description: fått feilmelding fra dokument om burekrnotifikasjon
       sla: se på denne så fort som mulig (innefor arbeidstid)
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      action: https://logs.adeo.no/goto/b0ce8890-6f22-11ed-95b0-83aabf5238d7
       severity: danger
       expr: |
         sum(increase(brukernotifikasjon_kvittering_mottatt_total{status="FEILET", app="veilarbaktivitet"}[5m])) > 10
@@ -58,7 +58,7 @@ spec:
       for: 1s
       description: Ikke fåt kvitering fra brukernotifikasjon
       sla: se på denne i løpet av de neste dagene.
-      action: https://logs.adeo.no/goto/e3aeb611c66c132e09a5d40c964014cc
+      action: https://logs.adeo.no/goto/b0ce8890-6f22-11ed-95b0-83aabf5238d7
       severity: warning
       expr: |
         avg(brukernotifikasjon_mangler_kvittering{application="veilarbaktivitet"}) > 0.5
@@ -68,3 +68,27 @@ spec:
       action: https://logs.adeo.no/goto/6fc98f8662b9893c80c103ba3a30fbfa
       description: feilet deploy?
       severity: warning
+    - alert: Teknisk feil i konsumering av rekrutteringsbistand-statusoppdatering-v1
+      for: 3m
+      description: Teknisk feil i kafka consumer
+      sla: se på denne så fort som mulig (innefor arbeidstid)
+      action: https://logs.adeo.no/goto/b0ce8890-6f22-11ed-95b0-83aabf5238d7
+      severity: danger
+      expr: |
+        sum(rate(kafka_consume_rekrutteringsbistand_statusoppdatering_seconds_count{exception!='none'}[3m])) > 0.0
+    - alert: Funksjonell feil i konsumering av aktivitetskort
+      for: 3m
+      description: Funksjonell feil i konsumering av aktivitetskort
+      sla: se på denne når du kan (innenfor arbeidstid)
+      action: https://logs.adeo.no/goto/ee029ac0-6f23-11ed-95b0-83aabf5238d7
+      severity: warning
+      expr: |
+        sum(increase(aktivitetskort_funksjonell_feil_total[1d])) > 0.0
+    - alert: Teknisk feil i konsumering av aktivitetskort
+      for: 3m
+      description: Teknisk feil i konsumering av aktivitetskort
+      sla: se på denne så fort som mulig (innenfor arbeidstid)
+      action: https://logs.adeo.no/goto/ee029ac0-6f23-11ed-95b0-83aabf5238d7
+      severity: danger
+      expr: |
+        sum(increase(aktivitetskort_teknisk_feil_total[1m])) > 10.0

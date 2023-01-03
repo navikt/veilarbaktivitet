@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -21,14 +21,13 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
-import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -44,13 +43,13 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class StillingFraNavControllerITest extends SpringBootTestBase {
+class StillingFraNavControllerITest extends SpringBootTestBase {
 
-    public static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
+    static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -61,7 +60,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     @Autowired
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
     @Autowired
-    SendOppgaveCron sendOppgaveCron;
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
     @LocalServerPort
@@ -69,25 +68,25 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
 
-    @After
-    public void verify_no_unmatched() {
+    @AfterEach
+    void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
 
-    @Before
-    public void cleanupBetweenTests() {
+    @BeforeEach
+    void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
     @Test
-    public void happy_case_svar_ja() {
+    void happy_case_svar_ja() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
-        val brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        val brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
         final Consumer<String, DelingAvCvRespons> consumer = kafkaTestService.createStringAvroConsumer(utTopic);
@@ -96,13 +95,13 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
-        brukernotifikasjonAsserts.stoppet(brukernotifikajonOppgave.key());
+        brukernotifikasjonAsserts.assertDone(brukernotifikajonOppgave.key());
 
         skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }
 
     @Test
-    public void happy_case_svar_nei() {
+    void happy_case_svar_nei() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
@@ -139,7 +138,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     }
 
     @Test
-    public void svar_naar_frist_utlopt_feiler() {
+    void svar_naar_frist_utlopt_feiler() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
@@ -164,7 +163,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     }
 
     @Test
-    public void historikk_del_cv_transaksjoner() {
+    void historikk_del_cv_transaksjoner() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
@@ -180,14 +179,15 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
     }
 
     @Test
-    public void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
+    void oppdaterKanCvDeles_feilAktivitetstype_feiler() {
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
             oppdaterKanCvDeles_feilAktivitetstype_feiler(type);
         }
     }
 
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
-        if(typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) return;
+        if (typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET))
+            return;
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
@@ -211,12 +211,12 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
                 .extract()
                 .statusCode();
 
-        assertEquals(typeDTO.name() + " skal ikke kunne bli svart på", HttpStatus.BAD_REQUEST.value(), statusCode);
+        assertEquals(HttpStatus.BAD_REQUEST.value(), statusCode, typeDTO.name() + " skal ikke kunne bli svart på");
 
     }
 
     @Test
-    public void oppdaterKanCvDeles_feilVersjon_feiler() {
+    void oppdaterKanCvDeles_feilVersjon_feiler() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
@@ -239,7 +239,7 @@ public class StillingFraNavControllerITest extends SpringBootTestBase {
                 .extract()
                 .statusCode();
 
-        assertEquals("skal ikke kunne oppdatere aktivitet med feil version", HttpStatus.CONFLICT.value(), statusCode);
+        assertEquals(statusCode, HttpStatus.CONFLICT.value(), "skal ikke kunne oppdatere aktivitet med feil version");
     }
 
     private AktivitetDTO skalKunneOppdatereSoknadStatus(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO) {

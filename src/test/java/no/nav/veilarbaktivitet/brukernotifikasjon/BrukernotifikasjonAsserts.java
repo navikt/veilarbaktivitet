@@ -6,7 +6,6 @@ import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -17,10 +16,11 @@ import org.apache.avro.specific.SpecificRecord;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.assertj.core.api.Assertions;
 import org.springframework.kafka.support.SendResult;
 
-import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.FEILET;
-import static no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FEILET;
+import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -29,6 +29,7 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
     private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
 
@@ -45,25 +46,19 @@ public class BrukernotifikasjonAsserts {
         this.config = config;
     }
 
-    public ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+    public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr) {
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
         assertEquals(fnr.get(), key.getFodselsnummer());
         assertEquals(config.getAppname(), key.getAppnavn());
         assertEquals(config.getNamespace(), key.getNamespace());
-        //TODO assert aktivitetdto
         return singleRecord;
     }
 
-    public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr, AktivitetDTO aktivitetDTO) {
-        return assertBeskjedSendt(fnr);
-        //TODO assert aktivitetdto
-    }
-
     public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 10000);
 
         NokkelInput key = singleRecord.key();
@@ -74,8 +69,15 @@ public class BrukernotifikasjonAsserts {
         return singleRecord;
     }
 
+    public void assertIngenNyeBeskjeder() {
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
+        Assertions.assertThat(kafkaTestService.harKonsumertAlleMeldinger(config.getBeskjedTopic(), beskjedConsumer))
+                .as("Skal ikke sendes melding")
+                .isTrue();
+    }
 
-    public ConsumerRecord<NokkelInput, DoneInput> stoppet(NokkelInput eventNokkel) {
+
+    public ConsumerRecord<NokkelInput, DoneInput> assertDone(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 10000);
@@ -107,7 +109,7 @@ public class BrukernotifikasjonAsserts {
 
     public void assertSkalIkkeHaProdusertFlereMeldinger() {
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
-        config.getSendOppgaveCron().sendBrukernotifikasjoner();
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
 
         kafkaTestService.harKonsumertAlleMeldinger(config.getOppgaveTopic(), oppgaveConsumer);
         kafkaTestService.harKonsumertAlleMeldinger(config.getBrukernotifkasjonFerdigTopic(), doneInputConsumer);

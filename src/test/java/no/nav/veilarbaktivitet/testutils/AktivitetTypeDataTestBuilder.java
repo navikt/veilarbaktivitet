@@ -1,10 +1,17 @@
 package no.nav.veilarbaktivitet.testutils;
 
+import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgave;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
+import java.net.URL;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -63,15 +70,6 @@ public class AktivitetTypeDataTestBuilder {
                 .build();
     }
 
-    public static MoteData nyMote() {
-        return MoteData.builder()
-                .adresse("123")
-                .kanal(KanalDTO.INTERNETT)
-                .forberedelser("blee")
-                .referat("temp")
-                .referatPublisert(false)
-                .build();
-    }
 
     public static StillingFraNavData nyStillingFraNav(boolean setCVKanDelesData) {
         CvKanDelesData cvKanDelesData = null;
@@ -102,6 +100,19 @@ public class AktivitetTypeDataTestBuilder {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(Soknadsstatus.VENTER)
                 .livslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)
+                .build();
+    }
+
+    @SneakyThrows
+    public static EksternAktivitetData eksternAktivitetData() {
+        return EksternAktivitetData.builder()
+                .type(AktivitetskortType.ARENA_TILTAK)
+                .source("AKTIVITET_ARENA_ACL")
+                .tiltaksKode("ABIST")
+                .oppgave(new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no"), "knapp"), null))
+                .detalj(new Attributt("Arrangør", "NAV"))
+                .detalj(new Attributt("Dager per uke", "5"))
+                .etikett(new Etikett("GJENN"))
                 .build();
     }
 }

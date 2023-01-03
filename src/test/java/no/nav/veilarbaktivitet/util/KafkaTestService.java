@@ -14,10 +14,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -74,12 +71,12 @@ public class KafkaTestService {
         return newConsumer;
     }
 
-    public Consumer createStringStringConsumer(String topic) {
+    public Consumer<String, String> createStringStringConsumer(String topic) {
         String randomGroup = UUID.randomUUID().toString();
         Properties modifisertConfig = new Properties();
         modifisertConfig.setProperty(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
-        Consumer newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
+        Consumer<String, String> newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, modifisertConfig);
         seekToEnd(topic, newConsumer);
 
         return newConsumer;
@@ -116,6 +113,10 @@ public class KafkaTestService {
         await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
     }
 
+    public void assertErKonsumertAiven(String topic, String groupId, long producerOffset, int timeOutSeconds) {
+        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, groupId, producerOffset));
+    }
+
     @SneakyThrows
     public boolean erKonsumert(String topic, String groupId, long producerOffset) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
@@ -127,6 +128,13 @@ public class KafkaTestService {
 
         long commitedOffset = offsetAndMetadata.offset();
         return commitedOffset >= producerOffset;
+    }
+
+    @SneakyThrows
+    public Optional<Long> hentOffset(String topic, String groupId) {
+        var offsetAndMetadata = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get()
+                .get(new TopicPartition(topic, 0));
+        return Optional.ofNullable(offsetAndMetadata == null ? null : offsetAndMetadata.offset());
     }
 
     @SneakyThrows
@@ -148,5 +156,9 @@ public class KafkaTestService {
         Long endOffset = map.get(collect.get(0));
 
         return offsetAndMetadata.offset() == endOffset;
+    }
+
+    public String getAivenConsumerGroup() {
+        return aivenGroupId;
     }
 }

@@ -22,9 +22,9 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
@@ -33,19 +33,18 @@ import org.springframework.util.concurrent.ListenableFuture;
 import java.time.Duration;
 import java.util.UUID;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 @Slf4j
-public class DelingAvCvITest extends SpringBootTestBase {
+class DelingAvCvITest extends SpringBootTestBase {
 
     @Value("${topic.inn.stillingFraNav}")
-    private String innTopic;
+    private String stillingFraNavForespurt;
 
     @Value("${topic.ut.stillingFraNav}")
-    private String utTopic;
+    private String stillingFraNavOppdatert;
 
 
     @Value("${spring.kafka.consumer.group-id}")
@@ -55,33 +54,36 @@ public class DelingAvCvITest extends SpringBootTestBase {
     private String aktivitetsplanBasepath;
 
     @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
+    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> foresporselOmDelingAvCvProducer;
 
-    Consumer<String, DelingAvCvRespons> consumer;
+
+    Consumer<String, DelingAvCvRespons> delingAvCvResponsConsumer;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @After
-    public void verify_no_unmatched() {
+    @AfterEach
+    void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
-        consumer.unsubscribe();
-        consumer.close();
+        delingAvCvResponsConsumer.unsubscribe();
+        delingAvCvResponsConsumer.close();
     }
 
-    @Before
-    public void cleanupBetweenTests() {
+    @BeforeEach
+    void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
-        consumer = kafkaTestService.createStringAvroConsumer(utTopic);
+        delingAvCvResponsConsumer = kafkaTestService.createStringAvroConsumer(stillingFraNavOppdatert);
+
     }
 
     @Test
-    public void happy_case() {
+    void happy_case() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
-        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -95,14 +97,14 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
 
     @Test
-    public void happy_case_tomme_strenger() {
+    void happy_case_tomme_strenger() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
-        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -115,14 +117,14 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
+    void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
         melding.setSoknadsfrist(null);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
-        var brukernotifikajonOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), aktivitetDTO);
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> { //todo tenkpå cpy paste fra testen over
@@ -135,7 +137,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void ugyldig_aktorid() {
+    void ugyldig_aktorid() {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
 
         //TODO se på om vi burde unngå bruker her
@@ -146,8 +148,8 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = producer.send(innTopic, melding.getBestillingsId(), melding);
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -163,17 +165,17 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void ikke_under_oppfolging() {
+    void ikke_under_oppfolging() {
 
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -187,16 +189,16 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void under_oppfolging_kvp() {
+    void under_oppfolging_kvp() {
         BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
         MockBruker mockBruker = MockNavService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -211,16 +213,16 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void under_manuell_oppfolging() {
+    void under_manuell_oppfolging() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -235,7 +237,7 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void reservert_i_krr() {
+    void reservert_i_krr() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
@@ -243,9 +245,9 @@ public class DelingAvCvITest extends SpringBootTestBase {
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
 
 
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -260,15 +262,15 @@ public class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    public void mangler_nivaa4() {
+    void mangler_nivaa4() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -284,15 +286,15 @@ public class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     @SneakyThrows
-    public void duplikat_bestillingsId_ignoreres() {
+    void duplikat_bestillingsId_ignoreres() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        producer.send(innTopic, melding.getBestillingsId(), melding);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
@@ -304,10 +306,11 @@ public class DelingAvCvITest extends SpringBootTestBase {
         });
 
         ForesporselOmDelingAvCv duplikatMelding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        SendResult<String, ForesporselOmDelingAvCv> result = producer.send(innTopic, duplikatMelding.getBestillingsId(), duplikatMelding).get();
-        kafkaTestService.assertErKonsumertAiven(innTopic, result.getRecordMetadata().offset(), 5);
+        SendResult<String, ForesporselOmDelingAvCv> result = foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, duplikatMelding.getBestillingsId(), duplikatMelding).get();
+        kafkaTestService.assertErKonsumertAiven(stillingFraNavForespurt, result.getRecordMetadata().offset(), 5);
 
-        ConsumerRecords<String, DelingAvCvRespons> poll = consumer.poll(Duration.ofMillis(100));
+        ConsumerRecords<String, DelingAvCvRespons> poll = delingAvCvResponsConsumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());
     }
+
 }

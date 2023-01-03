@@ -1,27 +1,43 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
-import lombok.RequiredArgsConstructor;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
+import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.function.Supplier;
+
+import static no.nav.common.utils.EnvironmentUtils.isProduction;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 
 @Service
-@RequiredArgsConstructor
 public class Nivaa4ClientImpl implements Nivaa4Client {
     private final OkHttpClient client;
     private final PersonService personService;
+    private final Supplier<String> machineToMachineTokenProvider;
+    private final String baseUrl;
 
-    @Value("${VEILARBPERSONAPI_URL}")
-    private String baseUrl;
+    @Autowired
+    public Nivaa4ClientImpl(@Value("${VEILARBPERSONAPI_URL}") String baseUrl, PersonService personService, AzureAdMachineToMachineTokenClient tokenClient) {
+        String tokenScop = String.format("api://%s-fss.pto.veilarbperson/.default",
+                isProduction().orElse(false) ? "prod" : "dev"
+        );
+        this.baseUrl = baseUrl;
+        this.personService = personService;
+        this.machineToMachineTokenProvider = () -> tokenClient.createMachineToMachineToken(tokenScop);
+        this.client = RestClient.baseClient();
+    }
+
 
     @Override
     public Optional<Nivaa4DTO> get(Person.AktorId aktorId) {
@@ -30,6 +46,7 @@ public class Nivaa4ClientImpl implements Nivaa4Client {
         String uri = String.format("%s/person/%s/harNivaa4", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
+                .header(AUTHORIZATION, "Bearer " + machineToMachineTokenProvider.get())
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
@@ -41,8 +58,4 @@ public class Nivaa4ClientImpl implements Nivaa4Client {
         }
     }
 
-    @Override
-    public void setBaseUrl(String baseUrl) {
-        this.baseUrl = baseUrl;
-    }
 }

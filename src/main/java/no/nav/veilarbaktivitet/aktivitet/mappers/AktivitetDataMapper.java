@@ -9,10 +9,11 @@ import no.nav.veilarbaktivitet.person.InnsenderData;
 import java.util.Optional;
 
 public class AktivitetDataMapper {
+    private AktivitetDataMapper() {}
     public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
 
         val id = Optional.ofNullable(aktivitetDTO.getId())
-                .filter((s) -> !s.isEmpty())
+                .filter(s -> !s.isEmpty())
                 .map(Long::parseLong)
                 .orElse(null);
         val versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
@@ -36,32 +37,16 @@ public class AktivitetDataMapper {
                 .malid(aktivitetDTO.getMalid())
                 .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());
 
-        switch (aktivitetType){
-            case EGENAKTIVITET:
-                aktivitetData.egenAktivitetData(egenAktivitetData(aktivitetDTO));
-                break;
-            case JOBBSOEKING:
-                aktivitetData.stillingsSoekAktivitetData(stillingsoekAktivitetData(aktivitetDTO));
-                break;
-            case SOKEAVTALE:
-                aktivitetData.sokeAvtaleAktivitetData(sokeAvtaleAktivitetData(aktivitetDTO)
-                );
-                break;
-            case IJOBB:
-                aktivitetData.iJobbAktivitetData(iJobbAktivitetData(aktivitetDTO));
-                break;
-            case BEHANDLING:
-                aktivitetData.behandlingAktivitetData(behandlingAktivitetData(aktivitetDTO));
-                break;
-            case MOTE:
-            case SAMTALEREFERAT:
-                aktivitetData.moteData(moteData(aktivitetDTO));
-                break;
-            case STILLING_FRA_NAV:
-                aktivitetData.stillingFraNavData(aktivitetDTO.getStillingFraNavData());
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + aktivitetType);
+        switch (aktivitetType) {
+            case EGENAKTIVITET -> aktivitetData.egenAktivitetData(egenAktivitetData(aktivitetDTO));
+            case JOBBSOEKING -> aktivitetData.stillingsSoekAktivitetData(stillingsoekAktivitetData(aktivitetDTO));
+            case SOKEAVTALE -> aktivitetData.sokeAvtaleAktivitetData(sokeAvtaleAktivitetData(aktivitetDTO)
+            );
+            case IJOBB -> aktivitetData.iJobbAktivitetData(iJobbAktivitetData(aktivitetDTO));
+            case BEHANDLING -> aktivitetData.behandlingAktivitetData(behandlingAktivitetData(aktivitetDTO));
+            case MOTE, SAMTALEREFERAT -> aktivitetData.moteData(moteData(aktivitetDTO));
+            case STILLING_FRA_NAV -> aktivitetData.stillingFraNavData(aktivitetDTO.getStillingFraNavData());
+            default -> throw new IllegalStateException("Unexpected value: " + aktivitetType);
         }
 
         return aktivitetData.build();

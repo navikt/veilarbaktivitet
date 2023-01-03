@@ -9,4 +9,5 @@ public enum AktivitetTypeData {
     MOTE,
     SAMTALEREFERAT,
     STILLING_FRA_NAV,
+    EKSTERNAKTIVITET
 }

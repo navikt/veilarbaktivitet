@@ -9,11 +9,11 @@ import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.veilarbaktivitet.util.AuthUtils;
 import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.util.Optional;
 
 @Service
@@ -35,6 +35,10 @@ public class AuthService {
         String innloggetBrukerToken = authContextHolder
                 .getIdTokenString()
                 .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
+
+        if (AuthUtils.erSystemkallFraAzureAd(authContextHolder)) {
+            return;
+        }
 
         if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);

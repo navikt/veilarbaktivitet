@@ -6,7 +6,6 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
-import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
@@ -15,15 +14,11 @@ import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
-
-import static no.nav.common.utils.EnvironmentUtils.isProduction;
-import static no.nav.common.utils.UrlUtils.createDevInternalIngressUrl;
-import static no.nav.common.utils.UrlUtils.createProdInternalIngressUrl;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 
 
@@ -40,7 +35,9 @@ public class ApplicationTestConfig {
 
     @Bean
     public AzureAdMachineToMachineTokenClient tokenClient() {
-        return mock(AzureAdMachineToMachineTokenClient.class);
+        AzureAdMachineToMachineTokenClient tokenClient = mock(AzureAdMachineToMachineTokenClient.class);
+        Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
+        return tokenClient;
     }
 
     @Bean
@@ -77,5 +74,4 @@ public class ApplicationTestConfig {
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
     }
-
 }

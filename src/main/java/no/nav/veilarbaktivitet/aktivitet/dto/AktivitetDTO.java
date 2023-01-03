@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class AktivitetDTO {
 
     private String id;
+    private UUID funksjonellId;
     private String versjon;
 
     private String tittel;
@@ -77,4 +79,6 @@ public class AktivitetDTO {
     private boolean erReferatPublisert;
 
     private StillingFraNavData stillingFraNavData;
+
+    private EksternAktivitetDTO eksternAktivitet;
 }

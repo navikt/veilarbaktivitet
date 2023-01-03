@@ -8,15 +8,14 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -38,10 +37,9 @@ import static org.junit.Assert.fail;
 
 @Slf4j
 @SpringBootTest
-@RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
 @Transactional
-public class AktivitetDAOTest {
+class AktivitetDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 
@@ -53,14 +51,14 @@ public class AktivitetDAOTest {
     private TransactionTemplate transactionTemplate;
 
 
-    @After
-    @Before
-    public void cleanUp(){
+    @AfterEach
+    @BeforeEach
+    void cleanUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
     }
 
     @Test
-    public void opprette_og_hente_egenaktivitet() {
+    void opprette_og_hente_egenaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
@@ -69,7 +67,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_stillingaktivitet() {
+    void opprette_og_hente_stillingaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
@@ -78,7 +76,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_sokeavtaleaktivitet() {
+    void opprette_og_hente_sokeavtaleaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_sokeavtale();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
@@ -87,7 +85,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_ijobbaktivitet() {
+    void opprette_og_hente_ijobbaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_ijobb();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
@@ -96,7 +94,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_behandlingaktivitet() {
+    void opprette_og_hente_behandlingaktivitet() {
         val aktivitet = gitt_at_det_finnes_en_behandling();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
@@ -105,7 +103,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_mote() {
+    void opprette_og_hente_mote() {
         val aktivitet = gitt_at_det_finnes_et_mote();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
@@ -114,7 +112,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_samtalereferat() {
+    void opprette_og_hente_samtalereferat() {
         val aktivitet = gitt_at_det_finnes_et_samtalereferat();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
@@ -123,7 +121,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void opprette_og_hente_stillingFraNAV() {
+    void opprette_og_hente_stillingFraNAV() {
         var aktivitet = gitt_at_det_finnes_en_stillingFraNav();
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
@@ -132,7 +130,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void hent_aktivitet() {
+    void hent_aktivitet() {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
         val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
@@ -140,12 +138,11 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void transaksjonsTypene_er_rett_satt_opp() {
+    void transaksjonsTypene_er_rett_satt_opp() {
         Arrays.asList(AktivitetTransaksjonsType.values()).forEach(t -> {
                     val aktivitetData = AktivitetDataTestBuilder
                             .nyEgenaktivitet()
-                            .withTransaksjonsType(t)
-                            ;
+                            .withTransaksjonsType(t);
                     try {
                         addAktivitet(aktivitetData);
                     } catch (Exception e) {
@@ -156,7 +153,7 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skal_legge_til_lest_av_bruker_forste_gang() {
+    void skal_legge_til_lest_av_bruker_forste_gang() {
         val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitet.getId());
 
@@ -165,33 +162,34 @@ public class AktivitetDAOTest {
     }
 
     @Test
-    public void skal_hente_alle_aktivitets_versjoner() {
+    void skal_hente_alle_aktivitets_versjoner() {
         val aktivitet = gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(3);
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
         assertThat(aktivitetData, hasSize(3));
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void kan_ikke_oppdatere_gammel_versjon() {
+    @Test
+    void kan_ikke_oppdatere_gammel_versjon() {
         AktivitetData originalAktivitetVersjon = gitt_at_det_finnes_en_egen_aktivitet();
         AktivitetData nyAktivitetVersjon = naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
         assertThat(nyAktivitetVersjon.getVersjon(), is(greaterThan(originalAktivitetVersjon.getVersjon())));
         // Kan jeg ikke oppdatere den originale aktivitetVersjonen lenger
-        naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
+        Assertions.assertThrows(IllegalStateException.class,
+                () -> naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon));
     }
 
 
     @Test
-    public void versjonering_skal_vaere_traadsikker() throws InterruptedException {
+    void versjonering_skal_vaere_traadsikker() throws InterruptedException {
         // Opprett initiell versjon
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-        final AktivitetData aktivitet  = transactionTemplate.execute(transactionStatus -> gitt_at_det_finnes_en_egen_aktivitet());
-        int antallOppdateringer= 10;
+        final AktivitetData aktivitet = transactionTemplate.execute(transactionStatus -> gitt_at_det_finnes_en_egen_aktivitet());
+        int antallOppdateringer = 10;
         ExecutorService bakgrunnService = Executors.newFixedThreadPool(3);
         CountDownLatch latch = new CountDownLatch(antallOppdateringer);
         for (int i = 0; i < antallOppdateringer; i++) {
             bakgrunnService.submit(() -> {
-                transactionTemplate.executeWithoutResult( action -> {
+                transactionTemplate.executeWithoutResult(action -> {
                     try {
                         aktivitetDAO.oppdaterAktivitet(aktivitet.withBeskrivelse("nyBeskrivelse "));
                     } catch (Exception e) {

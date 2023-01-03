@@ -43,8 +43,8 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
         }
 
-        if (aktivitet.isAvtalt()) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten er allerede avtalt med NAV");
+        if (aktivitet.getFhoId() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten har allerede en forhåndsorientering");
         }
 
         return avtaltMedNavService.opprettFHO(avtaltMedNavDTO, aktivitetId, Person.aktorId(aktivitet.getAktorId()), authService.getInnloggetVeilederIdent());

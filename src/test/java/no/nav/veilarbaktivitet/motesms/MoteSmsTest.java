@@ -12,7 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -20,8 +20,8 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -31,11 +31,10 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-
-public class MoteSmsTest extends SpringBootTestBase {
+class MoteSmsTest extends SpringBootTestBase {
 
     @Autowired
     MoteSMSService moteSMSService;
@@ -55,7 +54,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
 
     @Autowired
-    SendOppgaveCron sendOppgaveCron;
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     @Autowired
     AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
@@ -66,14 +65,14 @@ public class MoteSmsTest extends SpringBootTestBase {
     @LocalServerPort
     protected int port;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
     @Test
-    public void skalSendeServiceMelding() {
+    void skalSendeServiceMelding() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -109,7 +108,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalSendeForAlleMoteTyper() {
+    void skalSendeForAlleMoteTyper() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -127,13 +126,15 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void bareSendeForMote() {
+    void bareSendeForMote() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
             if (type == AktivitetTypeDTO.STILLING_FRA_NAV) {
                 aktivitetTestService.opprettStillingFraNav(happyBruker);
+            } else if (type == AktivitetTypeDTO.EKSTERNAKTIVITET) {
+                // TODO aktivitetTestService.opprettEksternAktivitet(happyBruker)
             } else {
                 AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(type);
                 aktivitet.setFraDato(new Date(ZonedDateTime.now().plusHours(4).toInstant().toEpochMilli()));
@@ -147,7 +148,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalFjereneGamleMoter() {
+    void skalFjereneGamleMoter() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -156,7 +157,7 @@ public class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO response = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitet);
 
         moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         ConsumerRecord<NokkelInput, BeskjedInput> varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
         moteSmsCronjobber();
@@ -166,7 +167,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalIkkeOppreteVarsleHistorisk() {
+    void skalIkkeOppreteVarsleHistorisk() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -185,7 +186,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalIkkeOppreteVarsleFulfort() {
+    void skalIkkeOppreteVarsleFulfort() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -202,7 +203,7 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skalIkkeOppreteVarsleAvbrutt() {
+    void skalIkkeOppreteVarsleAvbrutt() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
@@ -219,7 +220,7 @@ public class MoteSmsTest extends SpringBootTestBase {
 
 
     private void harAvsluttetVarsel(ConsumerRecord<NokkelInput, BeskjedInput> varsel) {
-        brukernotifikasjonAsserts.stoppet(varsel.key());
+        brukernotifikasjonAsserts.assertDone(varsel.key());
     }
 
     private void moteSmsCronjobber() {
@@ -228,17 +229,17 @@ public class MoteSmsTest extends SpringBootTestBase {
     }
 
     private ConsumerRecord<NokkelInput, BeskjedInput> assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
-        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr(), mote);
+        ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
         BeskjedInput value = oppgaveRecord.value();
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
-        assertEquals(melding + " fnr", happyBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
-        assertTrue(melding + " eksternvarsling", value.getEksternVarsling());
-        assertEquals(melding + " sms tekst", expected.getSmsTekst(), value.getSmsVarslingstekst());
-        assertEquals(melding + " ditnav tekst", expected.getDitNavTekst(), value.getTekst());
-        assertEquals(melding + " epost tittel tekst", expected.getEpostTitel(), value.getEpostVarslingstittel());
-        assertEquals(melding + " epost body tekst", expected.getEpostBody(), value.getEpostVarslingstekst());
-        assertTrue(melding + " mote link tekst", value.getLink().contains(mote.getId())); //TODO burde lage en test metode for aktivitets linker
+        assertEquals(happyBruker.getFnr(), oppgaveRecord.key().getFodselsnummer(), melding + " fnr");
+        assertTrue(value.getEksternVarsling(), melding + " eksternvarsling");
+        assertEquals(expected.getSmsTekst(), value.getSmsVarslingstekst(), melding + " sms tekst");
+        assertEquals(expected.getDitNavTekst(), value.getTekst(), melding + " ditnav tekst");
+        assertEquals(expected.getEpostTitel(), value.getEpostVarslingstittel(), melding + " epost tittel tekst");
+        assertEquals(expected.getEpostBody(), value.getEpostVarslingstekst(), melding + " epost body tekst");
+        assertTrue(value.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker
         return oppgaveRecord;
     }
 }

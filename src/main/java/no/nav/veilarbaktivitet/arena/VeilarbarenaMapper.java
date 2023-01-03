@@ -21,7 +21,6 @@ import java.util.function.Function;
 
 import static java.time.ZoneId.systemDefault;
 import static java.time.ZonedDateTime.ofInstant;
-import static java.util.stream.Collectors.toList;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
@@ -30,11 +29,11 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_
 public class VeilarbarenaMapper {
 
     private static final String DATO_FORMAT = "yyyy-MM-dd";
-    private static final String ARENA_PREFIX = "ARENA";
 
     static final String VANLIG_AMO_NAVN = "Arbeidsmarkedsopplæring (AMO)";
     static final String JOBBKLUBB_NAVN = "Jobbklubb";
     static final String GRUPPE_AMO_NAVN = "Gruppe AMO";
+    static final String ENKELTPLASS_AMO_NAVN = "Enkeltplass AMO";
 
     private static final Date arenaAktivitetFilterDato = parseDato(getOptionalProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY).orElse(null));
 
@@ -78,8 +77,14 @@ public class VeilarbarenaMapper {
 
         val erGruppeAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(GRUPPE_AMO_NAVN);
-        if (erGruppeAmo){
+        if (erGruppeAmo) {
             return "Gruppe AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
+        }
+
+        val erEnkeltplassAmo = tiltaksaktivitet.getTiltaksnavn().trim()
+                .equalsIgnoreCase(ENKELTPLASS_AMO_NAVN);
+        if (erEnkeltplassAmo) {
+            return "Enkeltplass AMO: " + tiltaksaktivitet.getTiltakLokaltNavn();
         }
 
         return tiltaksaktivitet.getTiltaksnavn();
@@ -87,7 +92,7 @@ public class VeilarbarenaMapper {
 
     private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet) {
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
-                .setId(prefixArenaId(tiltaksaktivitet.getAktivitetId()))
+                .setId(tiltaksaktivitet.getAktivitetId().id())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))
@@ -141,7 +146,7 @@ public class VeilarbarenaMapper {
         AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
         return new ArenaAktivitetDTO()
-                .setId(prefixArenaId(gruppeaktivitet.getAktivitetId()))
+                .setId(gruppeaktivitet.getAktivitetId().id())
                 .setStatus(status)
                 .setTittel(StringUtils.capitalize(gruppeaktivitet.getAktivitetstype()))
                 .setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)
@@ -158,7 +163,7 @@ public class VeilarbarenaMapper {
         Date sluttDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
 
         return new ArenaAktivitetDTO()
-                .setId(prefixArenaId(utdanningsaktivitet.getAktivitetId()))
+                .setId(utdanningsaktivitet.getAktivitetId().id())
                 .setStatus(mapTilAktivitetsStatus(startDato, sluttDato))
                 .setType(ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET)
                 .setTittel(utdanningsaktivitet.getAktivitetstype())
@@ -169,9 +174,6 @@ public class VeilarbarenaMapper {
                 .setAvtalt(true);
     }
 
-    public static String prefixArenaId(String arenaId) {
-        return ARENA_PREFIX + arenaId;
-    }
 
     private static AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         LocalDateTime now = LocalDateTime.now();

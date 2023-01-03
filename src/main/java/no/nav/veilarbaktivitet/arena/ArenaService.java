@@ -4,8 +4,10 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -31,6 +33,7 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 @Component
 public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
+    private final IdMappingDAO idMappingDAO;
     private final AuthService authService;
     private final MeterRegistry meterRegistry;
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
@@ -45,13 +48,15 @@ public class ArenaService {
             AuthService authService,
             MeterRegistry meterRegistry,
             BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
-            VeilarbarenaClient veilarbarenaClient
+            VeilarbarenaClient veilarbarenaClient,
+            IdMappingDAO idMappingDAO
     ) {
         this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
         this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
         this.veilarbarenaClient = veilarbarenaClient;
+        this.idMappingDAO = idMappingDAO;
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall arena aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
@@ -83,8 +88,10 @@ public class ArenaService {
                 .anyMatch(status -> status != AVBRUTT && status != FULLFORT);
     }
 
-    public Optional<ArenaAktivitetDTO> hentAktivitet(Person.Fnr ident, String aktivitetId) {
-        return hentAktiviteter(ident).stream().filter(arenaAktivitetDTO -> aktivitetId.equals(arenaAktivitetDTO.getId())).findAny();
+    public Optional<ArenaAktivitetDTO> hentAktivitet(Person.Fnr ident, ArenaId aktivitetId) {
+        return hentAktiviteter(ident).stream()
+                .filter(arenaAktivitetDTO -> aktivitetId.id().equals(arenaAktivitetDTO.getId()))
+                .findAny();
     }
 
     private Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
@@ -98,7 +105,7 @@ public class ArenaService {
     }
 
     @Transactional
-    public ArenaAktivitetDTO opprettFHO(String arenaaktivitetId, Person.Fnr fnr, ForhaandsorienteringDTO forhaandsorientering, String opprettetAv) throws ResponseStatusException {
+    public ArenaAktivitetDTO opprettFHO(ArenaId arenaaktivitetId, Person.Fnr fnr, ForhaandsorienteringDTO forhaandsorientering, String opprettetAv) throws ResponseStatusException {
         ArenaAktivitetDTO arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten finnes ikke"));
 
@@ -115,15 +122,16 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bruker kan ikke varsles");
         }
 
-        brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+        var aktivitetId = idMappingDAO.getAktivitetId(arenaaktivitetId);
+        brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, aktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
 
-        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date());
+        var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date(), aktivitetId);
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, forhaandsorientering.getType().name(), AKTIVITET_TYPE_LABEL, arenaAktivitetDTO.getType().name()).increment();
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO());
     }
 
     @Transactional
-    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, String aktivitetId) {
+    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, ArenaId aktivitetId) {
         var fho = fhoDAO.getFhoForArenaAktivitet(aktivitetId);
 
         if(fho == null) {

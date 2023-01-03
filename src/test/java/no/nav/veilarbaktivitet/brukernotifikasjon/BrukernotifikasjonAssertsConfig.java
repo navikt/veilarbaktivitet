@@ -7,7 +7,7 @@ import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -45,7 +45,7 @@ public class BrukernotifikasjonAssertsConfig {
     private AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @Autowired
-    private SendOppgaveCron sendOppgaveCron;
+    private SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     Consumer<NokkelInput, OppgaveInput> createOppgaveConsumer() {
          return testService.createAvroAvroConsumer(oppgaveTopic);

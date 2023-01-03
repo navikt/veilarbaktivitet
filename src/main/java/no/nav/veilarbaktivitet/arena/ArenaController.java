@@ -1,7 +1,10 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
@@ -22,9 +25,13 @@ public class ArenaController {
     private final UserInContext userInContext;
     private final AuthService authService;
     private final ArenaService arenaService;
+    private final IdMappingDAO idMappingDAO;
+
+    private final MigreringService migreringService;
+
 
     @PutMapping("/forhaandsorientering")
-    public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam String arenaaktivitetId) {
+    public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam ArenaId arenaaktivitetId) {
         if (!authService.erInternBruker()) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker");
         }
@@ -42,12 +49,24 @@ public class ArenaController {
         return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident);
     }
 
+
+
     @GetMapping("/tiltak")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
-
-        return arenaService.hentAktiviteter(fnr);
+        var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
+        var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
+        var idMappings = idMappingDAO.getMappings(ideer);
+        return arenaAktiviteter
+            .stream().map(arenaAktivitet -> {
+                var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
+                if (idMapping != null && idMapping.aktivitetId() != null)
+                    return arenaAktivitet.withId(idMapping.aktivitetId().toString());
+                return arenaAktivitet;
+            })
+                .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv())
+                .toList();
     }
 
 
@@ -60,15 +79,15 @@ public class ArenaController {
     }
 
     @PutMapping("/forhaandsorientering/lest")
-    ArenaAktivitetDTO lest(@RequestParam String aktivitetId) {
+    ArenaAktivitetDTO lest(@RequestParam ArenaId aktivitetId) {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
         authService.sjekkTilgangTilPerson(fnr);
 
         return arenaService.markerSomLest(fnr, aktivitetId);
     }
 
-    private Optional<String> getInputFeilmelding(ForhaandsorienteringDTO forhaandsorientering, String arenaaktivitetId) {
-        if(arenaaktivitetId == null || arenaaktivitetId.isBlank()) {
+    private Optional<String> getInputFeilmelding(ForhaandsorienteringDTO forhaandsorientering, ArenaId arenaaktivitetId) {
+        if(arenaaktivitetId == null || arenaaktivitetId.id() == null || arenaaktivitetId.id().isBlank()) {
             return Optional.of("arenaaktivitetId kan ikke være null eller tom");
         }
 

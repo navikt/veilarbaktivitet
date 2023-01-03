@@ -1,0 +1,27 @@
+apiVersion: kafka.nais.io/v1
+kind: Topic
+metadata:
+  name: aktivitetskort-feil-v1
+  namespace: dab
+  labels:
+    team: dab
+  annotations:
+    kafka.nais.io/removeDataWhenResourceIsDeleted: "true"
+spec:
+  pool: nav-dev
+  config:
+    cleanupPolicy: delete # delete = ingen compaction
+    retentionHours: 336 # 14 dager
+    minimumInSyncReplicas: 2
+    partitions: 1
+    replication: 2
+  acl:
+    - team: pto
+      application: veilarbaktivitet
+      access: readwrite
+    - team: pto
+      application: pto-kafka-manager
+      access: read
+    - team: team-tiltak
+      application: tiltak-hendelse-aktivitetsplan
+      access: read

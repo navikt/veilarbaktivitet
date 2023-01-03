@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.database;
 
 import lombok.Getter;
+import no.nav.common.json.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -10,8 +11,6 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -85,6 +84,20 @@ public class Database {
        } catch (IllegalArgumentException e) {
            return  null;
        }
+    }
+
+    public static <T> T hentObjectFromJsonString(ResultSet rs, String kolonneNavn, Class<T> valueClass) throws SQLException {
+        String json = rs.getString(kolonneNavn);
+        if (json == null) return null;
+
+       return JsonUtils.fromJson(json, valueClass);
+    }
+
+    public static <T> List<T>  hentListObjectFromJsonString(ResultSet rs, String kolonneNavn, Class<T> valueClass) throws SQLException {
+        String json = rs.getString(kolonneNavn);
+        if (json == null) return null;
+
+        return JsonUtils.fromJsonArray(json, valueClass);
     }
 
     @FunctionalInterface

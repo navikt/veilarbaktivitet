@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,7 @@ public class KVPAvsluttetService {
         aktivitetDAO.hentAktiviteterForAktorId(aktoerId)
                 .stream()
                 .filter(this::filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort)
+                .filter(this::filtrerEksterneAktiviteter)
                 .filter(aktitet -> aktitet.getOpprettetDato().before(avsluttetDato))
                 .map(aktivitetData -> settKVPAktivitetTilAvbrutt(aktivitetData, avsluttetBegrunnelse, avsluttetDato))
                 .forEach(aktivitetDAO::oppdaterAktivitet);
@@ -27,6 +29,10 @@ public class KVPAvsluttetService {
     private boolean filtrerKontorSperretOgStatusErIkkeAvBruttEllerFullfort(AktivitetData aktivitetData) {
         var aktivitetStatus = aktivitetData.getStatus();
         return aktivitetData.getKontorsperreEnhetId() != null && !(aktivitetStatus.equals(AktivitetStatus.AVBRUTT) || aktivitetStatus.equals(AktivitetStatus.FULLFORT));
+    }
+
+    private boolean filtrerEksterneAktiviteter(AktivitetData aktivitetData) {
+        return AktivitetTypeData.EKSTERNAKTIVITET != aktivitetData.getAktivitetType();
     }
 
     private AktivitetData settKVPAktivitetTilAvbrutt(AktivitetData aktivitetData, String avsluttetBegrunnelse, Date avsluttetDato) {

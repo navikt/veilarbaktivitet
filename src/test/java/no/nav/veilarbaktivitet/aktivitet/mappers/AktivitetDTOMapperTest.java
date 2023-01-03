@@ -10,13 +10,12 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.assertj.core.api.SoftAssertions;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
-public class AktivitetDTOMapperTest {
-
+class AktivitetDTOMapperTest {
     @Test
-    public void skalMappeAktivitetsFelter() {
+    void skalMappeAktivitetsFelter() {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.MOTE)
                 .build();
@@ -50,7 +49,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeForhaandsorientering() {
+    void skalMappeForhaandsorientering() {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.MOTE)
                 .forhaandsorientering(Forhaandsorientering
@@ -78,7 +77,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeStillingSokData() {
+    void skalMappeStillingSokData() {
         AktivitetData nyttStillingssok = AktivitetDataTestBuilder.nyttStillingssok();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyttStillingssok, false);
         SoftAssertions.assertSoftly( s -> {
@@ -94,7 +93,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeEgenAktivitetData() {
+    void skalMappeEgenAktivitetData() {
         AktivitetData nyEgenaktivitet = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyEgenaktivitet, false);
         SoftAssertions.assertSoftly( s -> {
@@ -107,7 +106,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeSokeAvtaleData() {
+    void skalMappeSokeAvtaleData() {
         AktivitetData nySokeAvtaleAktivitet = AktivitetDataTestBuilder.nySokeAvtaleAktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nySokeAvtaleAktivitet, false);
         SoftAssertions.assertSoftly( s -> {
@@ -120,7 +119,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeIJobbData() {
+    void skalMappeIJobbData() {
         AktivitetData nyIJobbAktivitet = AktivitetDataTestBuilder.nyIJobbAktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyIJobbAktivitet, false);
         SoftAssertions.assertSoftly( s -> {
@@ -133,7 +132,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeBehandleAktivitetData() {
+    void skalMappeBehandleAktivitetData() {
         AktivitetData nyBehandlingAktivitet = AktivitetDataTestBuilder.nyBehandlingAktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyBehandlingAktivitet, false);
         SoftAssertions.assertSoftly( s -> {
@@ -147,7 +146,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeMoteData() {
+    void skalMappeMoteData() {
         AktivitetData nyMoteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyMoteAktivitet, false);
         SoftAssertions.assertSoftly( s -> {
@@ -162,7 +161,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalIkkeViseReferatNaarEksternOgIkkePublisert() {
+    void skalIkkeViseReferatNaarEksternOgIkkePublisert() {
         AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
         MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
         AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
@@ -176,7 +175,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalViseReferatNaarInternOgIkkePublisert() {
+    void skalViseReferatNaarInternOgIkkePublisert() {
         AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
         MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(false);
         AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
@@ -190,7 +189,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalViseReferatNaarReferatErPublisert() {
+    void skalViseReferatNaarReferatErPublisert() {
         AktivitetData moteAktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
         MoteData moteData = moteAktivitet.getMoteData().withReferat("Referat").withReferatPublisert(true);
         AktivitetData nyMoteAktivitet = moteAktivitet.withMoteData(moteData);
@@ -211,7 +210,7 @@ public class AktivitetDTOMapperTest {
     }
 
     @Test
-    public void skalMappeStillingFraNavData() {
+    void skalMappeStillingFraNavData() {
         AktivitetData nyStillingFraNav = AktivitetDataTestBuilder.nyStillingFraNavMedCVKanDeles();
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(nyStillingFraNav, false);
 

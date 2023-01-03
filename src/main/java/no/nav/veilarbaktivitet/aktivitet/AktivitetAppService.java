@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.person.AuthService;
@@ -14,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -60,7 +59,7 @@ public class AktivitetAppService {
         return aktivitetService.hentAktivitetVersjoner(id)
                 .stream()
                 .filter(this::erEksternBrukerOgEndringenSkalVereSynnelig)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
@@ -115,32 +114,21 @@ public class AktivitetAppService {
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         AktivitetData original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(original, aktivitet);
+        kanEndreAktivitetGuard(original, aktivitet.getVersjon());
         if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        Person loggedInnUser = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        Supplier<Person> loggedInnUser = () -> authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
         if (authService.erInternBruker()) {
-            if (original.isAvtalt()) {
-                if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                    aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet, loggedInnUser);
-                } else {
-                    aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
-                }
-            } else {
-                aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
-            }
+            oppdaterSomNav(aktivitet, original, loggedInnUser.get());
 
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
 
         } else if (authService.erEksternBruker()) {
-            if (original.isAvtalt() || !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType())) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Feil aktivitetstype " + original.getAktivitetType());
-            }
+            oppdaterSomEksternBruker(aktivitet, original, loggedInnUser.get());
 
-            aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
         }
 
@@ -148,10 +136,44 @@ public class AktivitetAppService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
-        if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
+    private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
+        if (original.isAvtalt()) {
+            if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
+                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet, loggedInnUser);
+            } else {
+                aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
+            }
+        } else {
+            aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
+        }
+    }
+
+    private void oppdaterSomEksternBruker(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
+        boolean denneAktivitetstypenKanIkkeEndresEksternt = !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType());
+
+        // Når behandling er avtalt må vi begrense hva som kan oppdateres til kun sluttdato for behandlingen.
+        // Når behandling ikke er avtalt, skal ekstern bruker ha mulighet til å endre flere ting.
+        boolean skalOppdatereTilDatoForAvtaltMedisinskBehandling = original.isAvtalt() && original.getAktivitetType() == AktivitetTypeData.BEHANDLING;
+
+        if (denneAktivitetstypenKanIkkeEndresEksternt) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Feil aktivitetstype " + original.getAktivitetType());
+        }
+
+        if (original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.BEHANDLING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet er avtalt " + original.getAktivitetType());
+        }
+
+        if (skalOppdatereTilDatoForAvtaltMedisinskBehandling) {
+            aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
+        } else {
+            aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
+        }
+    }
+
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon) {
+        if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
-        } else if (skalIkkeKunneEndreAktivitet(orginalAktivitet)) {
+        } else if (!orginalAktivitet.endringTillatt()) {
             throw new IllegalArgumentException(
                     String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
                             orginalAktivitet.getId())
@@ -171,18 +193,10 @@ public class AktivitetAppService {
         }
     }
 
-
-    private boolean skalIkkeKunneEndreAktivitet(AktivitetData aktivitetData) {
-        AktivitetStatus status = aktivitetData.getStatus();
-        return AktivitetStatus.AVBRUTT.equals(status)
-                || AktivitetStatus.FULLFORT.equals(status)
-                || aktivitetData.getHistoriskDato() != null;
-    }
-
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         Person endretAv = authService
                 .getLoggedInnUser()
@@ -218,7 +232,7 @@ public class AktivitetAppService {
         }
 
         val originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet);
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
         aktivitetService.oppdaterReferat(
                 originalAktivitet,
@@ -236,7 +250,7 @@ public class AktivitetAppService {
     private List<AktivitetData> filterKontorsperret(List<AktivitetData> list) {
         return list.stream().sequential()
                 .filter(this::canAccessKvpActivity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
 

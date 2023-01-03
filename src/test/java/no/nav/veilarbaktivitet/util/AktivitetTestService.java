@@ -1,29 +1,65 @@
 package no.nav.veilarbaktivitet.util;
 
 import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
+import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
+import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
+import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import shaded.com.google.common.collect.Streams;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
+import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.Assert.*;
 
 
@@ -31,6 +67,18 @@ import static org.junit.Assert.*;
 public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
+
+    @Value("${topic.inn.oppfolgingsperiode}")
+    private String oppfolgingperiodeTopic;
+
+    @Value("${spring.kafka.consumer.group-id}")
+    private String springKafkaConsumerGroupId;
+
+    private final KafkaTestService kafkaTestService;
+
+    private final KafkaTemplate<String, String> stringStringKafkaTemplate;
+
+    private final String aktivitetsKortV1Topic;
 
     /**
      * Henter alle aktiviteter for et fnr via aktivitet-apiet.
@@ -208,5 +256,195 @@ public class AktivitetTestService {
         AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
 
         return aktivitet;
+    }
+
+    public ArenaAktivitetDTO opprettFHOForArenaAktivitet(MockBruker mockBruker, ArenaId arenaaktivitetId, MockVeileder veileder) {
+        stub_hent_arenaaktiviteter_fra_veilarbarena(mockBruker.getFnrAsFnr(), arenaaktivitetId.id());
+        System.setProperty(ARENA_AKTIVITET_DATOFILTER_PROPERTY, "2018-01-01");
+
+        ForhaandsorienteringDTO forhaandsorienteringDTO = ForhaandsorienteringDTO.builder()
+                .id("id")
+                .type(Type.SEND_FORHAANDSORIENTERING)
+                .tekst("asd")
+                .lestDato(null)
+                .build();
+
+        Response response = veileder
+                .createRequest()
+                .and()
+                .param("arenaaktivitetId", arenaaktivitetId.id())
+                .body(forhaandsorienteringDTO)
+                .when()
+                .put(veileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(ArenaAktivitetDTO.class);
+    }
+
+
+    public ValidatableResponse opprettFHOForInternAktivitetRequest(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+        return veileder
+                .createRequest(mockBruker)
+                .and()
+                .body(avtaltDTO)
+                .when()
+                .queryParam("aktivitetId", aktivitetId)
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/avtaltMedNav")
+                .then();
+    }
+    public AktivitetDTO opprettFHOForInternAktivitet(MockBruker mockBruker, MockVeileder veileder, AvtaltMedNavDTO avtaltDTO, long aktivitetId) {
+        return opprettFHOForInternAktivitetRequest(mockBruker, veileder, avtaltDTO, aktivitetId)
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .as(AktivitetDTO.class);
+    }
+
+    private void stub_hent_arenaaktiviteter_fra_veilarbarena(Person.Fnr fnr, String arenaaktivitetId) {
+        stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
+                .willReturn(aResponse().withStatus(200)
+                        .withBody("""
+                                {
+                                  "tiltaksaktiviteter": [
+                                      {
+                                        "tiltaksnavn": "tiltaksnavn",
+                                        "aktivitetId": "%s",
+                                        "tiltakLokaltNavn": "lokaltnavn",
+                                        "arrangor": "arrangor",
+                                        "bedriftsnummer": "asd",
+                                        "deltakelsePeriode": {
+                                            "fom": "2021-11-18",
+                                            "tom": "2021-11-25"
+                                        },
+                                        "deltakelseProsent": 60,
+                                        "deltakerStatus": "GJENN",
+                                        "statusSistEndret": "2021-11-18",
+                                        "begrunnelseInnsoking": "asd",
+                                        "antallDagerPerUke": 3.0
+                                      }
+                                  ],
+                                  "gruppeaktiviteter": [],
+                                  "utdanningsaktiviteter": []
+                                }
+                                """.formatted(removeArenaPrefix(arenaaktivitetId)))));
+    }
+
+    private String removeArenaPrefix(String arenaId) {
+        return arenaId.replace("ARENA", "");
+    }
+    public AktivitetDTO lesFHO(MockBruker mockBruker, long aktivitetsId, long versjon) {
+        Response response = mockBruker
+                .createRequest()
+                .and()
+                .body(JsonUtils.toJson(new LestDTO(
+                    aktivitetsId,
+                    versjon
+                )))
+                .when()
+                .put(mockBruker.getUrl("/veilarbaktivitet/api/avtaltMedNav/lest", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        return response.as(AktivitetDTO.class);
+    }
+
+    public List<ArenaAktivitetDTO> hentArenaAktiviteter(MockBruker bruker, ArenaId arenaId) {
+        stub_hent_arenaaktiviteter_fra_veilarbarena(bruker.getFnrAsFnr(), arenaId.id());
+        return bruker
+                .createRequest()
+                .get(bruker.getUrl("/veilarbaktivitet/api/arena/tiltak", bruker))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", ArenaAktivitetDTO.class);
+    }
+
+    public List<Aktivitet> hentAktiviteterInternApi(MockVeileder veileder, Person.AktorId aktorId) {
+        return veileder
+                .createRequest()
+                .get("/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}", aktorId.get())
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", Aktivitet.class);
+    }
+
+    public void avsluttOppfolgingsperiode(UUID oppfolgingsperiode, Person.AktorId aktorId) throws ExecutionException, InterruptedException, TimeoutException {
+        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
+        var start = now.withYear(2020);
+        var key = aktorId.get();
+        var payload = JsonUtils.toJson(
+                SisteOppfolgingsperiodeV1.builder()
+                        .aktorId(aktorId.get())
+                        .uuid(oppfolgingsperiode)
+                        .startDato(start)
+                        .sluttDato(now)
+        );
+        var sendResult = stringStringKafkaTemplate.send(new ProducerRecord<>(
+                oppfolgingperiodeTopic,
+                key,
+                payload
+        )).get(3, TimeUnit.SECONDS);
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+                .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
+    }
+
+
+    public ProducerRecord makeAktivitetskortProducerRecord(KafkaAktivitetskortWrapperDTO melding, ArenaMeldingHeaders arenaMeldingHeaders) {
+        if (arenaMeldingHeaders == null) {
+            return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding));
+        }
+
+        List<Header> headers = List.of(
+                new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
+                new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
+        );
+        return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding), headers);
+    }
+
+    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {
+        var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
+        opprettEksterntAktivitetsKort(aktivitetskorter, meldingContextList);
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger, List<ArenaMeldingHeaders> contexts) {
+        var lastRecord = (SendResult<String, String>) Streams.mapWithIndex(meldinger.stream(),
+                    (melding, index) -> makeAktivitetskortProducerRecord(melding, contexts.get((int) index)))
+                .map((record) -> stringStringKafkaTemplate.send(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+    }
+
+    @SuppressWarnings("unchecked")
+    @SneakyThrows
+    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger) {
+        var lastRecord = (SendResult<String, String>) meldinger.stream()
+                .map((melding) -> makeAktivitetskortProducerRecord(melding, null))
+                .map((record) -> stringStringKafkaTemplate.send(record))
+                .skip(meldinger.size() - 1)
+                .findFirst().get().get();
+
+        Awaitility.await().atMost(Duration.ofSeconds(500))
+                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+    }
+
+    public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {
+        return hentAktiviteterForFnr(mockBruker, veileder)
+                .aktiviteter.stream()
+                .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
+                .findFirst().get();
     }
 }

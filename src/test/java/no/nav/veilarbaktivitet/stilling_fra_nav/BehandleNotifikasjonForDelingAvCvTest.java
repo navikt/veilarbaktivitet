@@ -7,8 +7,8 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvitering.EksternVarslingKvitteringConsumer;
-import no.nav.veilarbaktivitet.brukernotifikasjon.oppgave.SendOppgaveCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -17,11 +17,10 @@ import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
@@ -39,7 +38,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
 
     @Autowired
-    SendOppgaveCron sendOppgaveCron;
+    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     @Autowired
     KafkaTestService kafkaTestService;
@@ -59,10 +58,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
-    @LocalServerPort
-    private int port;
-
-    @Before
+    @BeforeEach
     public void cleanupBetweenTests() {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc);
@@ -78,9 +74,9 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
         // Opprett stilling fra nav og send varsel
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var utenSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
@@ -113,20 +109,21 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500)).isZero();
     }
 
-    @Test //TODO rydd denne testen
-    public void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
+    @Test
+        //TODO rydd denne testen
+    void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var utenSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var utenSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         AktivitetDTO skalFaaSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        var medSvarOppgave = brukernotifikasjonAsserts.oppgaveSendt(mockBruker.getFnrAsFnr(), utenSvar);
+        var medSvarOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         // trigger utsendelse av oppgave-notifikasjoner
-        sendOppgaveCron.sendBrukernotifikasjoner();
+        sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
 
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
