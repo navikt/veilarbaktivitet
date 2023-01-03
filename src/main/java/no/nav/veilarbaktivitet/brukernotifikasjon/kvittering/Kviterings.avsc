@@ -1,3 +1,4 @@
+[
 {
   "type": "record",
   "namespace": "no.nav.doknotifikasjon.schemas",
@@ -26,3 +27,4 @@
     }
   ]
 }
+]

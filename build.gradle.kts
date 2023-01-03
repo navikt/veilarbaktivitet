@@ -16,6 +16,10 @@ dependencyLocking {
     lockAllConfigurations()
 }
 
+tasks.test {
+    useJUnitPlatform()
+}
+
 sonarqube {
     properties {
         property("sonar.projectKey", "navikt_veilarbaktivitet")
@@ -52,7 +56,8 @@ repositories {
 }
 
 tasks.generateAvroJava {
-    source("src/main/java/no/nav/veilarbaktivitet/brukernotifikasjon/kvitering/", "src/main/java/no/nav/veilarbaktivitet/stilling_fra_nav")
+    source("src/main/java/no/nav/veilarbaktivitet/brukernotifikasjon/kvittering", "src/main/java/no/nav/veilarbaktivitet/stilling_fra_nav")
+
 }
 
 tasks.compileJava {
