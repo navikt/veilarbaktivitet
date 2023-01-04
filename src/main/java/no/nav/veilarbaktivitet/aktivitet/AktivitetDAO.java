@@ -13,7 +13,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -49,7 +48,7 @@ public class AktivitetDAO {
             """;
 
     private final Database database;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static final String AKTIVITETID = "aktivitet_id";
     private static final String VERSJON = "versjon";
 
@@ -96,7 +95,7 @@ public class AktivitetDAO {
         try {
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("funksjonellId", funksjonellId.toString());
-            aktivitetData = jdbcTemplate.queryForObject(SELECT_AKTIVITET +
+            aktivitetData = namedParameterJdbcTemplate.queryForObject(SELECT_AKTIVITET +
                                                         " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
                     params,
                     aktivitetsDataRowMapper
@@ -236,7 +235,7 @@ public class AktivitetDAO {
                     .addValue("referat", moteData.getReferat())
                     .addValue("referat_publisert", moteData.isReferatPublisert());
             // language=sql
-            database.getNamedJdbcTemplate().update("""
+            String sql = """
                     INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
                     :aktivitet_id,
                     :versjon,
@@ -245,7 +244,8 @@ public class AktivitetDAO {
                     :kanal,
                     :referat,
                     :referat_publisert)
-                    """, params);
+                    """;
+            namedParameterJdbcTemplate.update(sql, params);
         });
     }
 
@@ -261,12 +261,13 @@ public class AktivitetDAO {
                             .addValue("kontaktperson", stillingsoek.getKontaktPerson())
                             .addValue("etikett", EnumUtils.getName(stillingsoek.getStillingsoekEtikett()));
                     // language=sql
-                    database.getNamedJdbcTemplate().update("""
+                    String sql = """
                             INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel,
                             arbeidsgiver, arbeidssted, kontaktperson, etikett)
                             VALUES(:aktivitet_id, :versjon, :stillingstittel,
                             :arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)
-                            """, params);
+                            """;
+                    namedParameterJdbcTemplate.update(sql, params);
                 });
     }
 
@@ -279,7 +280,7 @@ public class AktivitetDAO {
                             .addValue("hensikt", egen.getHensikt())
                             .addValue("oppfolging", egen.getOppfolging());
                     // language=sql
-                    database.getNamedJdbcTemplate().update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
+                    namedParameterJdbcTemplate.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
                                                            "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
                             params
                     );
@@ -296,7 +297,7 @@ public class AktivitetDAO {
                             .addValue("antall_stillinger_i_uken", sokeAvtale.getAntallStillingerIUken())
                             .addValue("avtale_oppfolging", sokeAvtale.getAvtaleOppfolging());
                     // language=sql
-                    database.getNamedJdbcTemplate().update(
+                    namedParameterJdbcTemplate.update(
                             """
                                     INSERT INTO SOKEAVTALE(aktivitet_id, versjon, antall_stillinger_sokes, antall_stillinger_i_uken, avtale_oppfolging)
                                     VALUES(:aktivitet_id, :versjon, :antall_stillinger_sokes, :antall_stillinger_i_uken, :avtale_oppfolging)
@@ -316,7 +317,7 @@ public class AktivitetDAO {
                             .addValue("ansettelsesforhold", iJobb.getAnsettelsesforhold())
                             .addValue("arbeidstid", iJobb.getArbeidstid());
                     // language=sql
-                    database.getNamedJdbcTemplate().update(
+                    namedParameterJdbcTemplate.update(
                             """
                                     INSERT INTO IJOBB(aktivitet_id, versjon, jobb_status,
                                     ansettelsesforhold, arbeidstid) VALUES(:aktivitet_id, :versjon, :jobb_status,
@@ -338,13 +339,14 @@ public class AktivitetDAO {
                             .addValue("effekt", behandling.getEffekt())
                             .addValue("behandling_oppfolging", behandling.getBehandlingOppfolging());
                     // language=sql
-                    database.getNamedJdbcTemplate().update(
-                            """
-                                    INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type,
-                                    behandling_sted, effekt, behandling_oppfolging)
-                                    VALUES(:aktivitet_id, :versjon, :behandling_type,
-                                    :behandling_sted, :effekt, :behandling_oppfolging)
-                                    """,
+                    String sql = """
+                            INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type,
+                            behandling_sted, effekt, behandling_oppfolging)
+                            VALUES(:aktivitet_id, :versjon, :behandling_type,
+                            :behandling_sted, :effekt, :behandling_oppfolging)
+                            """;
+                    namedParameterJdbcTemplate.update(
+                            sql,
                             params);
                 });
     }
@@ -378,51 +380,52 @@ public class AktivitetDAO {
                                     .addValue("ikkefattjobbendetaljer", stilling.getIkkefattjobbendetaljer());
 
                             // language=sql
-                            database.getNamedJdbcTemplate().update(
-                                    """ 
-                                            insert into STILLING_FRA_NAV (
-                                            AKTIVITET_ID,
-                                            VERSJON,
-                                            CV_KAN_DELES,
-                                            CV_KAN_DELES_TIDSPUNKT,
-                                            CV_KAN_DELES_AV,
-                                            CV_KAN_DELES_AV_TYPE,
-                                            CV_KAN_DELES_AVTALT_DATO,
-                                            soknadsfrist,
-                                            svarfrist,
-                                            arbeidsgiver,
-                                            bestillingsId,
-                                            stillingsId,
-                                            arbeidssted,
-                                            varselid,
-                                            kontaktperson_navn,
-                                            kontaktperson_tittel,
-                                            kontaktperson_mobil,
-                                            soknadsstatus,
-                                            livslopsstatus,
-                                            ikkefattjobbendetaljer
-                                            ) VALUES (
-                                            :aktivitet_id,
-                                            :versjon,
-                                            :cv_kan_deles,
-                                            :cv_kan_deles_tidspunkt,
-                                            :cv_kan_deles_av,
-                                            :cv_kan_deles_av_type,
-                                            :cv_kan_deles_avtalt_dato,
-                                            :soknadsfrist ,
-                                            :svarfrist ,
-                                            :arbeidsgiver ,
-                                            :bestillingsId ,
-                                            :stillingsId ,
-                                            :arbeidssted ,
-                                            :varselid ,
-                                            :kontaktperson_navn ,
-                                            :kontaktperson_tittel ,
-                                            :kontaktperson_mobil ,
-                                            :soknadsstatus,
-                                            :livslopsstatus,
-                                            :ikkefattjobbendetaljer)
-                                            """,
+                    String sql = """ 
+                            insert into STILLING_FRA_NAV (
+                            AKTIVITET_ID,
+                            VERSJON,
+                            CV_KAN_DELES,
+                            CV_KAN_DELES_TIDSPUNKT,
+                            CV_KAN_DELES_AV,
+                            CV_KAN_DELES_AV_TYPE,
+                            CV_KAN_DELES_AVTALT_DATO,
+                            soknadsfrist,
+                            svarfrist,
+                            arbeidsgiver,
+                            bestillingsId,
+                            stillingsId,
+                            arbeidssted,
+                            varselid,
+                            kontaktperson_navn,
+                            kontaktperson_tittel,
+                            kontaktperson_mobil,
+                            soknadsstatus,
+                            livslopsstatus,
+                            ikkefattjobbendetaljer
+                            ) VALUES (
+                            :aktivitet_id,
+                            :versjon,
+                            :cv_kan_deles,
+                            :cv_kan_deles_tidspunkt,
+                            :cv_kan_deles_av,
+                            :cv_kan_deles_av_type,
+                            :cv_kan_deles_avtalt_dato,
+                            :soknadsfrist ,
+                            :svarfrist ,
+                            :arbeidsgiver ,
+                            :bestillingsId ,
+                            :stillingsId ,
+                            :arbeidssted ,
+                            :varselid ,
+                            :kontaktperson_navn ,
+                            :kontaktperson_tittel ,
+                            :kontaktperson_mobil ,
+                            :soknadsstatus,
+                            :livslopsstatus,
+                            :ikkefattjobbendetaljer)
+                            """;
+                    namedParameterJdbcTemplate.update(
+                            sql,
                                     parms
                             );
                         }
@@ -443,7 +446,7 @@ public class AktivitetDAO {
                             .addValue("detaljer", JsonUtils.toJson(eksternAktivitetData.getDetaljer()))
                             .addValue("etiketter", JsonUtils.toJson(eksternAktivitetData.getEtiketter()));
                     // language=sql
-                    database.getNamedJdbcTemplate().update(
+                    namedParameterJdbcTemplate.update(
                     """
                         INSERT INTO EKSTERNAKTIVITET
                         (aktivitet_id, versjon, source, tiltak_kode, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
@@ -469,31 +472,33 @@ public class AktivitetDAO {
 
     @Transactional
     public boolean kasserAktivitet(long aktivitetId) {
+        var params = new MapSqlParameterSource().addValue("aktivitetId", aktivitetId);
         // language=sql
-        String whereClause = "WHERE aktivitet_id = ?";
+        String whereClause = "aktivitet_id = :aktivitetId";
         // language=sql
         int oppdaterteRader = Stream.of(
-                        "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV'",
-                        "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV'",
-                        "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV'",
-                        "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV'",
-                        "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV'",
-                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV'",
-                        "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null",
-                        "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV'"
+                        "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV' WHERE",
+                        "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV' WHERE",
+                        "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV' WHERE",
+                        "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV' WHERE",
+                        "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV' WHERE",
+                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND",
+                        "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null WHERE",
+                        "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV' WHERE"
                 )
                 .map(sql -> sql + " " + whereClause)
-                .mapToInt(sql -> database.update(sql, aktivitetId))
+                .mapToInt(sql -> namedParameterJdbcTemplate.update(sql, params))
                 .sum();
 
         return oppdaterteRader > 0;
     }
 
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
+        var params = new MapSqlParameterSource().addValue("aktivitetId", aktivitetId);
         // language=sql
-        database.update("""
+        namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET SET LEST_AV_BRUKER_FORSTE_GANG = CURRENT_TIMESTAMP
-                WHERE aktivitet_id = ?
-                """, aktivitetId);
+                WHERE aktivitet_id = :aktivitetId
+                """, params);
     }
 }
