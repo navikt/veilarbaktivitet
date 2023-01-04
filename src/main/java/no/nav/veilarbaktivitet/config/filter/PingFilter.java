@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.config.filter;
 
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.FilterConfig;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 
