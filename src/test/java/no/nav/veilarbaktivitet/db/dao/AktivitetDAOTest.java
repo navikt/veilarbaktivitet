@@ -5,6 +5,8 @@ import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
+import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -26,14 +28,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 
 @Slf4j
 @SpringBootTest
@@ -42,6 +38,7 @@ import static org.junit.Assert.fail;
 class AktivitetDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
+    private static final String KASSERT_AV_NAV = "Kassert av NAV";
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -62,8 +59,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_egen_aktivitet();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -71,8 +68,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -80,8 +77,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_sokeavtale();
 
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -89,8 +86,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_ijobb();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -98,8 +95,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_behandling();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -107,8 +104,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_et_mote();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -116,8 +113,8 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_et_samtalereferat();
         val aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
-        assertThat(aktiviteter, hasSize(1));
-        assertThat(aktivitet, equalTo(aktiviteter.get(0)));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -125,8 +122,8 @@ class AktivitetDAOTest {
         var aktivitet = gitt_at_det_finnes_en_stillingFraNav();
         var aktiviteter = aktivitetDAO.hentAktiviteterForAktorId(AKTOR_ID);
 
-        assertEquals(1, aktiviteter.size());
-        assertEquals(aktivitet, aktiviteter.get(0));
+        assertThat(aktiviteter).hasSize(1);
+        assertThat(aktivitet).isEqualTo(aktiviteter.get(0));
     }
 
     @Test
@@ -134,7 +131,7 @@ class AktivitetDAOTest {
         val aktivitet = gitt_at_det_finnes_en_stillings_aktivitet();
 
         val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        assertThat(aktivitet, equalTo(hentetAktivitet));
+        assertThat(aktivitet).isEqualTo(hentetAktivitet);
     }
 
     @Test
@@ -158,21 +155,21 @@ class AktivitetDAOTest {
         aktivitetDAO.insertLestAvBrukerTidspunkt(aktivitet.getId());
 
         val hentetAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        assertThat(hentetAktivitet.getLestAvBrukerForsteGang(), is(notNullValue()));
+        assertThat(hentetAktivitet.getLestAvBrukerForsteGang()).isNotNull();
     }
 
     @Test
     void skal_hente_alle_aktivitets_versjoner() {
         val aktivitet = gitt_at_det_finnes_en_aktivitet_med_flere_versjoner(3);
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
-        assertThat(aktivitetData, hasSize(3));
+        assertThat(aktivitetData).hasSize(3);
     }
 
     @Test
     void kan_ikke_oppdatere_gammel_versjon() {
         AktivitetData originalAktivitetVersjon = gitt_at_det_finnes_en_egen_aktivitet();
         AktivitetData nyAktivitetVersjon = naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
-        assertThat(nyAktivitetVersjon.getVersjon(), is(greaterThan(originalAktivitetVersjon.getVersjon())));
+        assertThat(nyAktivitetVersjon.getVersjon()).isGreaterThan(originalAktivitetVersjon.getVersjon());
         // Kan jeg ikke oppdatere den originale aktivitetVersjonen lenger
         Assertions.assertThrows(IllegalStateException.class,
                 () -> naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon));
@@ -203,10 +200,46 @@ class AktivitetDAOTest {
         latch.await();
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
         // Kun originalversjonen pluss første oppdatering. Resten feiler
-        assertThat(aktivitetData, hasSize(2));
+        assertThat(aktivitetData).hasSize(2);
         // Denne vil feile hvis det er mer enn én gjeldende
         AktivitetData nyesteAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
-        assertThat(nyesteAktivitet, notNullValue());
+        assertThat(nyesteAktivitet).isNotNull();
+    }
+
+    @Test
+    void kassering_skal_overskrive_mange_felter() {
+        var aktivitet = gitt_at_det_finnes_et_mote();
+        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        assertThat(kassert).isTrue();
+        var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+
+        assertThat(kassertAktivitet.getTittel()).isEqualTo("Det var skrevet noe feil, og det er nå slettet");
+        assertThat(kassertAktivitet.getBeskrivelse()).isEqualTo(KASSERT_AV_NAV);
+        assertThat(kassertAktivitet.getLenke()).isEqualTo(KASSERT_AV_NAV);
+        assertThat(kassertAktivitet.getAvsluttetKommentar()).isEqualTo(KASSERT_AV_NAV);
+
+        assertThat(kassertAktivitet.getMoteData().getReferat()).isEqualTo(KASSERT_AV_NAV);
+        assertThat(kassertAktivitet.getMoteData().getAdresse()).isEqualTo(KASSERT_AV_NAV);
+        assertThat(kassertAktivitet.getMoteData().getForberedelser()).isEqualTo(KASSERT_AV_NAV);
+    }
+
+    @Test
+    void referat_skal_kasseres_dersom_utfylt() {
+        var aktivitet = gitt_at_det_finnes_et_samtalereferat();
+        assertThat(aktivitet.getMoteData().getReferat()).isNotNull();
+        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        assertTrue(kassert);
+        var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        assertThat(kassertAktivitet.getMoteData().getReferat()).isEqualTo(KASSERT_AV_NAV);
+    }
+
+    @Test
+    void referat_skal_ikke_kasseres_dersom_tomt() {
+        var aktivitet = gitt_at_det_finnes_et_samtalereferat_uten_innhold();
+        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        assertTrue(kassert);
+        var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
+        assertThat(kassertAktivitet.getMoteData().getReferat()).isNull();
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillings_aktivitet() {
@@ -241,6 +274,20 @@ class AktivitetDAOTest {
 
     private AktivitetData gitt_at_det_finnes_et_samtalereferat() {
         return addAktivitet(AktivitetDataTestBuilder.nySamtaleReferat());
+    }
+
+    private AktivitetData gitt_at_det_finnes_et_samtalereferat_uten_innhold() {
+        MoteData tomtReferat = MoteData.builder()
+                .adresse("en adresse")
+                .forberedelser("en forbedredelse")
+                .kanal(KanalDTO.values()[0])
+                .referatPublisert(false)
+                .build();
+        var samtaleReferatMedTomtReferat = AktivitetDataTestBuilder.nySamtaleReferat()
+                .toBuilder()
+                .moteData(tomtReferat)
+                .build();
+        return addAktivitet(samtaleReferatMedTomtReferat);
     }
 
     private AktivitetData gitt_at_det_finnes_en_stillingFraNav() {
