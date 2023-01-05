@@ -482,7 +482,8 @@ public class AktivitetDAO {
                         "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV' WHERE",
                         "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV' WHERE",
                         "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV' WHERE",
-                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV', REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND",
+                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV' WHERE",
+                        "UPDATE MOTE SET REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND",
                         "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null WHERE",
                         "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV' WHERE"
                 )
