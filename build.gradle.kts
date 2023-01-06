@@ -17,10 +17,11 @@ plugins {
     id("project-report")
     id ("jacoco")
     id("org.sonarqube") version "3.4.0.2513"
+    id("org.springframework.boot") version "2.6.6"
 }
 
-dependencyLocking {
-    lockAllConfigurations()
+configurations.all {
+    resolutionStrategy.failOnNonReproducibleResolution()
 }
 
 tasks.test {
