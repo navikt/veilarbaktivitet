@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class FilterTestConfig {
 
     @Bean
-    public FilterRegistrationBean testSubjectFilterRegistrationBean() {
+    public FilterRegistrationBean<TestAuthContextFilter> testSubjectFilterRegistrationBean() {
         FilterRegistrationBean<TestAuthContextFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new TestAuthContextFilter());
         registration.setOrder(1);

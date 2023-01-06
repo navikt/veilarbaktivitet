@@ -61,7 +61,7 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean pingFilter() {
+    public FilterRegistrationBean<PingFilter> pingFilter() {
         // Veilarbproxy trenger dette endepunktet for å sjekke at tjenesten lever
         // /internal kan ikke brukes siden det blir stoppet før det kommer frem
 
@@ -73,7 +73,7 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean logFilterRegistrationBean() {
+    public FilterRegistrationBean<LogRequestFilter> logFilterRegistrationBean() {
         FilterRegistrationBean<LogRequestFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new LogRequestFilter(requireApplicationName(), isDevelopment().orElse(false)));
         registration.setOrder(2);
@@ -82,16 +82,16 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<SecureLogsfilterFilter> secureLogsfilterFilterRegistrationBean(SecureLogsfilterFilter secureLogsfilterFilter) {
-        FilterRegistrationBean<SecureLogsfilterFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(secureLogsfilterFilter);
+    public FilterRegistrationBean<SecureLogsFilter> secureLogsFilterRegistrationBean() {
+        FilterRegistrationBean<SecureLogsFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new SecureLogsFilter());
         registration.addUrlPatterns("/api/*");
         registration.setOrder(3);
         return registration;
     }
 
     @Bean
-    public FilterRegistrationBean authenticationFilterRegistrationBean(EnvironmentProperties properties) {
+    public FilterRegistrationBean<OidcAuthenticationFilter> authenticationFilterRegistrationBean(EnvironmentProperties properties) {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
@@ -110,10 +110,19 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean setStandardHeadersFilterRegistrationBean() {
+    public FilterRegistrationBean<EnhanceSecureLogsFilter> enhanceSecureLogsFilterRegistrationBean(EnhanceSecureLogsFilter enhanceSecureLogsFilter) {
+        FilterRegistrationBean<EnhanceSecureLogsFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(enhanceSecureLogsFilter);
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(5);
+        return registration;
+    }
+
+    @Bean
+    public FilterRegistrationBean<SetStandardHttpHeadersFilter> setStandardHeadersFilterRegistrationBean() {
         FilterRegistrationBean<SetStandardHttpHeadersFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new SetStandardHttpHeadersFilter());
-        registration.setOrder(5);
+        registration.setOrder(6);
         registration.addUrlPatterns("/*");
         return registration;
     }

@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: List resource files
-        run: echo "RESOURCE_FILES=$(find kafka-topic/dev -type f | tr '\n' ',' | sed 's/,$/\n/')" >> $GITHUB_ENV
+        run: echo "RESOURCE_FILES=$(find kafka-topic/prod -type f | tr '\n' ',' | sed 's/,$/\n/')" >> $GITHUB_ENV
       - name: Deploy kafka topics
         uses: nais/deploy/actions/deploy@v1
         env:
