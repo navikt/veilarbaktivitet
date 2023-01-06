@@ -1,10 +1,11 @@
 package no.nav.veilarbaktivitet.config;
 
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.*;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import okhttp3.EventListener;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -16,25 +17,31 @@ import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
 @Configuration
 public class OkHttpClientConfig {
-    @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean OkHttpClient veilarboppfolgingHttpClient(EventListener metricListener, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarboppfolgingScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(metricListener)
             .build();
     }
 
-    @Bean OkHttpClient veilarbpersonHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean OkHttpClient veilarbpersonHttpClient(EventListener metricListener, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarbpersonScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(metricListener)
             .build();
     }
 
-    @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean OkHttpClient veilarbarenaHttpClient(EventListener metricListener, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarbarenaScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(metricListener)
             .build();
+    }
+
+    @Bean
+    @Profile("!dev")
+    EventListener metricListener(MeterRegistry meterRegistry) {
+        return OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build();
     }
 
     private final String veilarboppfolgingScope = String.format("api://%s-fss.pto.veilarboppfolging/.default", isProduction().orElse(false) ? "prod" : "dev");
