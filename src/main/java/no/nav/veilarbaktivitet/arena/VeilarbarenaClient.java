@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.arena.VeilarbarenaHelsesjekk.HealthStatus;
@@ -27,22 +28,17 @@ import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 public class VeilarbarenaClient {
     private final OkHttpClient veilarbarenaHttpClient;
 
-    private final AzureAdMachineToMachineTokenClient tokenClient;
-
-    private final String cluster = getOptionalProperty("NAIS_CLUSTER_NAME").orElse("");
-
-    private final String tokenScope = String.format("api://%s.%s.%s/.default", cluster, "pto", "veilarbarena");
-
     @Value("${app.env.veilarena.serviceurl}")
     private String veilarbarenaServiceUrl;
 
-
     public HealthStatus  ping() {
         String uri = String.format("%s/internal/selftest", veilarbarenaServiceUrl);
+        // This endpoint this not need auth and therfore uses baseClient
+        var basicHttpClient = RestClient.baseClientBuilder().build();
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = veilarbarenaHttpClient.newCall(request).execute()) {
+        try (Response response = basicHttpClient.newCall(request).execute()) {
             if (response.code() != HttpStatus.OK.value()) {
                 return HealthStatus.ERROR;
             }
@@ -54,15 +50,11 @@ public class VeilarbarenaClient {
 
     @Timed
     public Optional<AktiviteterDTO> hentAktiviteter(Person.Fnr fnr) {
-        String accessToken = tokenClient.createMachineToMachineToken(tokenScope);
-
         String uri = String.format("%s/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, fnr.get());
         Request request = new Request.Builder()
-                .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
                 .url(uri)
                 .build();
         try (Response response = veilarbarenaHttpClient.newCall(request).execute()) {
-
             log.info("Veilarbarena respons: {}", response);
             RestUtils.throwIfNotSuccessful(response);
 

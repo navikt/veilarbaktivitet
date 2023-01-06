@@ -19,14 +19,14 @@ class KvpV2ClientImpl implements KvpV2Client {
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
     private String baseUrl;
-    private final OkHttpClient client;
+    private final OkHttpClient veilarboppfolgingHttpClient;
 
     public Optional<KvpV2DTO> get(Person.AktorId aktorId) {
         String uri = String.format("%s/v2/kvp?aktorId=%s", baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == 204) {
                 return Optional.empty();
