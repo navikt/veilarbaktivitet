@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 val spring_version: String by project
 val common_version: String by project
 val lombok_version: String by project
@@ -11,6 +13,7 @@ val _version: String by project
 
 plugins {
     java
+    application
     `maven-publish`
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
@@ -26,6 +29,10 @@ configurations.all {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+application {
+    mainClass.set("no.nav.veilarbaktivitet.VeilarbaktivitetApp")
 }
 
 sonarqube {
@@ -91,7 +98,6 @@ openApiGenerate {
 java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
 
 group = "no.nav"
-version = "1"
 description = "veilarbaktivitet"
 java.sourceCompatibility = JavaVersion.VERSION_17
 
