@@ -16,6 +16,7 @@ plugins {
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id ("jacoco")
+    id("org.springframework.boot") version "2.6.6"
     id("org.sonarqube") version "3.4.0.2513"
 }
 
@@ -26,6 +27,7 @@ dependencyLocking {
 tasks.test {
     useJUnitPlatform()
 }
+
 
 sonarqube {
     properties {
