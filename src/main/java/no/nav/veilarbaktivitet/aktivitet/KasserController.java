@@ -41,6 +41,8 @@ public class KasserController {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
 
+        log.info("kake");
+
         kjorHvisTilgang(aktivitetData.getAktorId(), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
     }
 
