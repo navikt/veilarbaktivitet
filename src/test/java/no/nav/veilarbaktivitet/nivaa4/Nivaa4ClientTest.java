@@ -4,6 +4,7 @@ import de.mkammerer.wiremock.WireMockExtension;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -33,7 +34,7 @@ class Nivaa4ClientTest {
         Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
         PersonService personService = mock(PersonService.class);
         Mockito.when(personService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Person.fnr(FNR));
-        nivaa4Client = new Nivaa4ClientImpl("http://localhost:8089/veilarbperson/api", personService, tokenClient);
+        nivaa4Client = new Nivaa4ClientImpl("http://localhost:8089/veilarbperson/api", personService, new OkHttpClient());
     }
 
     @RegisterExtension
