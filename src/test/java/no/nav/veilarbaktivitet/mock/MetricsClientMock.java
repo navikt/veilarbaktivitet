@@ -14,6 +14,7 @@ public class MetricsClientMock implements MetricsClient {
 
     @Override
     public void report(String name, Map<String, Object> fields, Map<String, String> tags, long l) {
+        log.info("kake");
         log.info(String.format("sender event %s Fields: %s Tags: %s", name, fields.toString(), tags.toString()));
     }
 
