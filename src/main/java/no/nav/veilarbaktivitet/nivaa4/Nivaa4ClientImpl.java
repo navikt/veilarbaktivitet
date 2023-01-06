@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.nivaa4;
 
-import no.nav.common.rest.client.RestClient;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
