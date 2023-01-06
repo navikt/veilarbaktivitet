@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.db;
 
+import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.json.JSONArray;
@@ -79,6 +80,7 @@ class ViewTest extends DatabaseTest {
         );
     }
 
+    @SneakyThrows
     private static String jsonFormatter(String jsonArray) {
         return new JSONArray(jsonArray).toString();
     }
