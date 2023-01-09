@@ -35,7 +35,8 @@
     "aktivitetskortType": {
       "type": "string",
       "enum": [
-        "MIDL_LONNSTILSK",
+        "MIDLERTIDIG_LONNSTILSKUDD",
+        "VARIG_LONNSTILSKUDD",
         "ARENA_TILTAK"
       ]
     },

@@ -191,7 +191,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                         IdentType.PERSONBRUKERIDENT
                 ));
         var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
-                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDL_LONNSTILSK);
+                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
         var resultat = hentAktivitet(aktivitetskort.getId());
         assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
@@ -205,7 +205,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
         KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-                .aktivitetskortType(AktivitetskortType.MIDL_LONNSTILSK)
+                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
                 .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
                 .aktivitetskort(actual)
                 .source("source")

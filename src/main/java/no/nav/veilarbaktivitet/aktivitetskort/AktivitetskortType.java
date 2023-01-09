@@ -1,5 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 public enum AktivitetskortType {
-    MIDL_LONNSTILSK, ARENA_TILTAK
+    MIDLERTIDIG_LONNSTILSKUDD, VARIG_LONNSTILSKUDD, ARENA_TILTAK
 }
