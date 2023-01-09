@@ -19,7 +19,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
-    private final OkHttpClient client;
+    private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
 
     @Value("${VEILARBOPPFOLGINGAPI_URL}")
@@ -32,7 +32,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, ManuellStatusV2DTO.class);
         } catch (Exception e) {

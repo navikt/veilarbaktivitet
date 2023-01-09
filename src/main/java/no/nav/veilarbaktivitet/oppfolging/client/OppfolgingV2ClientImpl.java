@@ -22,7 +22,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
-    private final OkHttpClient client;
+    private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
 
@@ -36,7 +36,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, OppfolgingV2UnderOppfolgingDTO.class);
         } catch (Exception e) {
@@ -53,7 +53,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(false);
@@ -75,7 +75,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
-        try (Response response = client.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 return Optional.empty();

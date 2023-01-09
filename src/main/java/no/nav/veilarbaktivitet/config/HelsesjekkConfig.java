@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.config;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.abac.Pep;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -25,7 +26,8 @@ public class HelsesjekkConfig {
             Pep pep,
             DatabaseHelsesjekk databaseHelsesjekk,
             UnleashClient unleashClient,
-            KafkaHelsesjekk kafkaHelsesjekk
+            KafkaHelsesjekk kafkaHelsesjekk,
+            MeterRegistry meterRegistry
     ) {
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Veilarbarena", false, veilarbarenaHelsesjekk),
@@ -35,12 +37,8 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("Unleash", false, unleashClient),
                 new SelfTestCheck("Kafka", false, kafkaHelsesjekk)
         );
-
-        return new SelfTestChecks(selfTestChecks);
-    }
-
-    @Bean
-    public SelfTestMeterBinder selfTestMeterBinder(SelfTestChecks selfTestChecks) {
-        return new SelfTestMeterBinder(selfTestChecks);
+        var checks = new SelfTestChecks(selfTestChecks);
+        new SelfTestMeterBinder(checks).bindTo(meterRegistry);
+        return checks;
     }
 }
