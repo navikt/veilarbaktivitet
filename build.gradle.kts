@@ -20,7 +20,7 @@ plugins {
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "3.4.0.2513"
-    id("org.springframework.boot") version "2.6.6"
+    id("org.springframework.boot") version "2.7.7"
 }
 
 configurations.all {
