@@ -29,7 +29,7 @@ public class KafkaAktivitetDAO {
         return database.getJdbcTemplate().query(
                 """ 
                         SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
-                        EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.AKTIVITETKORT_TYPE,
+                        EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE,
                         A.* FROM AKTIVITET A
                         LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                         LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON
@@ -59,6 +59,7 @@ public class KafkaAktivitetDAO {
         AktivitetskortType aktivitetskortType = EnumUtils.valueOf(AktivitetskortType.class, rs.getString("aktivitetkort_type"));
         var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.fromDomainAktivitetType(domainAktivitetType,aktivitetskortType);
         var tiltakskode = rs.getString("TILTAK_KODE");
+        var arenaId = rs.getString("ARENA_ID");
         // Eksterne aktiviteter SLUTT
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
         InnsenderData lagtInnAv = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
@@ -70,8 +71,11 @@ public class KafkaAktivitetDAO {
                         rs.getDate("SVARFRIST")
                 );
 
+
+        var aktivitetsId = arenaId != null ? arenaId : String.valueOf(rs.getLong("aktivitet_id"));
+
         return KafkaAktivitetMeldingV4.builder()
-                .aktivitetId(String.valueOf(rs.getLong("aktivitet_id")))
+                .aktivitetId(aktivitetsId)
                 .version(rs.getLong("versjon"))
                 .aktorId(rs.getString("aktor_id"))
                 .fraDato(Database.hentDato(rs, "fra_dato"))
