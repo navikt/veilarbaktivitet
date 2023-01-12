@@ -45,7 +45,7 @@ class MigreringServiceTest {
      */
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
-    private static final ZonedDateTime DATE_TIME = ZonedDateTime.of(2022, 10, 20, 12, 30, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime DATE_TIME = ZonedDateTime.now();
     private static final LocalDateTime LOCAL_DATE_TIME = DATE_TIME.toLocalDateTime();
 
     @Test
@@ -88,16 +88,25 @@ class MigreringServiceTest {
     }
 
     @Test
-    void opprettetTidspunkt_asd() {
+    void opprettetTidspunkt_er_like_langt_unna_to_startdatoer() {
         var riktigPeriode = oppfPeriodeDTO(DATE_TIME.minusDays(10), DATE_TIME.minusDays(0));
-        var perioder = List.of(
+        var perioder1 = List.of(
                 oppfPeriodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18)),
                 riktigPeriode
         );
 
-        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(15));
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode1 = stubOgFinnOppgolgingsperiode(perioder1, LOCAL_DATE_TIME.minusDays(15));
 
-        assertThat(oppfolgingsperiode.getUuid()).isEqualTo(riktigPeriode.getUuid());
+        assertThat(oppfolgingsperiode1.getUuid()).isEqualTo(riktigPeriode.getUuid());
+
+        // skal være kommutativ
+        var perioder2 = List.of(
+                riktigPeriode,
+                oppfPeriodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18))
+        );
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode2 = stubOgFinnOppgolgingsperiode(perioder2, LOCAL_DATE_TIME.minusDays(15));
+
+        assertThat(oppfolgingsperiode2.getUuid()).isEqualTo(riktigPeriode.getUuid());
     }
 
     private OppfolgingPeriodeMinimalDTO stubOgFinnOppgolgingsperiode(List<OppfolgingPeriodeMinimalDTO> perioder, LocalDateTime opprettetTidspunkt) {
