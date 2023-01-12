@@ -1,10 +1,11 @@
-package no.nav.veilarbaktivitet.veilarbportefolje;
+package no.nav.veilarbaktivitet.veilarbportefolje.dto;
 
 import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.veilarbportefolje.EndringsType;
+import no.nav.veilarbaktivitet.veilarbportefolje.StillingFraNavPortefoljeData;
 
 import java.util.Date;
 
@@ -24,4 +25,5 @@ public class KafkaAktivitetMeldingV4 {
     StillingFraNavPortefoljeData stillingFraNavData;
     boolean avtalt;
     boolean historisk;
+    String tiltakskode;
 }

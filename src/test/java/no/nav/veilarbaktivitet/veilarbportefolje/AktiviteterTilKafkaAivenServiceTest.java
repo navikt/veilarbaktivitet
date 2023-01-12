@@ -6,15 +6,22 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
+import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
+import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -24,6 +31,10 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+
+import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -95,6 +106,32 @@ public class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, protefoljeConsumer));
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(aktivitetRawJson, aktivterKafkaConsumer));
+    }
+
+    @Test
+    public void skal_sende_tiltak_til_portefolje() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+
+        UUID funksjonellId = UUID.randomUUID();
+
+        String arenaTiltakskode = "MIDL";
+        ArenaId arenaId = new ArenaId("ARENATA123");
+
+        Aktivitetskort actual = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
+
+        ArenaMeldingHeaders kontekst = new ArenaMeldingHeaders(arenaId, arenaTiltakskode);
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+
+
+        cronService.sendOppTil5000AktiviterTilPortefolje();
+
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(protefoljeConsumer, portefoljeTopic, 10000);
+        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
+
+        Assertions.assertThat(melding.getTiltakskode()).isEqualTo(arenaTiltakskode);
+        Assertions.assertThat(melding.getAktivitetId()).isEqualTo(arenaId.id());
+
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, protefoljeConsumer));
     }
 
     @Test
