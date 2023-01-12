@@ -7,7 +7,7 @@ info:
     Eksisterende aktiviteter kan oppdateres ved å sende en ny versjon av aktivitetskortet med samme funksjonelle id.  
     Tjenesten har støtte for en rekke dynamiske innholdskomponenter i aktivitetskortet, slik at produsentene på tjenesten har stor grad av kontroll på hvordan aktivitetskortet skal se ut.  
     Dynamiske komponenter inkluderer 'oppgave', 'handlinger', 'detaljer' og 'etiketter'. Disse er beskrevet i skjemaet.  
-    [Lenke til Aktivitetskort-as-a-Service i Mural](https://app.mural.co/t/navdesign3580/m/navdesign3580/1663573695869/1a7a897ac6b2af3fccc11aa65371a83d840e2020?wid=0-1665572511683&outline=open)
+    [Lenke til Mural](https://app.mural.co/t/navdesign3580/m/navdesign3580/1663573695869/1a7a897ac6b2af3fccc11aa65371a83d840e2020?wid=0-1665572511683&outline=open)
   
 
   version: '0.0.1'
@@ -100,7 +100,7 @@ components:
         url:
           type: string
           format: url
-      description: Abe
+      description: En oppgave vil bli rendret som et alert-panel med en lenke i aktivitetskortet. Dette signaliserer at det er en oppgave bruker eller veileder trenger å gjøre (f.eks. signere en avtale). Selve handlingen vil utføres i et annet system enn aktivitetsplan, og vil typisk resultere i en ny versjon av aktiviteten med oppdatert status sendes inn på denne tjenesten.
     lenkeseksjon:
       type: object
       properties:
@@ -239,11 +239,12 @@ components:
             - 'null'
           items:
             "$ref": "#/components/schemas/lenkeseksjon"
+          description: Handlinger vil rendres som lenkeseksjoner i aktivitetskortet. Dette kan brukes for å tilby tilleggsfunksjonalitet i kildesystemet, f.eks. Les avtalen, Evaluer deltakelsen på tiltaket, o.l.
         detaljer:
           type: array
           items:
             "$ref": "#/components/schemas/attributt"
-          description: For å vise selvdefinerte informasjonsfelter på aktivitetskortet
+          description: For å vise selvdefinerte informasjonsfelter på aktivitetskortet. Disse rendres som enkle label/tekst komponenter i samme rekkefølge som de ligger i meldingen.
         etiketter:
           type: array
           items:
@@ -251,7 +252,7 @@ components:
             properties:
               kode:
                 type: string
-          description: Enum/koder som mappes om til noe tekst basert på aktivitetskorttypen
+          description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Koden som sendes inn må mappes om til tekst + korrekt styling i aktivitetsplanen, så DAB trenger å vite hvilke koder som er aktuelle på forhånd.
 
   operationTraits:
     kafka:
@@ -260,4 +261,4 @@ components:
           key:
             type: string
             format: uuid
-            description: aktiviteskorts id. Også kalt funksjonell id
+            description: Aktiviteskorts id. Også kalt funksjonell id
