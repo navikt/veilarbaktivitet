@@ -42,13 +42,13 @@ components:
     commonHeaders:
       headers:
         required:
-          - call-id
+          - Nav-Call-Id
         type: object
         properties:
-          call-id:
+          Nav-Call-Id:
             type: string
             minLength: 10
-            description: brukes for logging
+            description: brukes for logging og sporing på tvers av applikasjoner
 
   schemas:
     aktivitetskort-bestilling:
