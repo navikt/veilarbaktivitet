@@ -3,6 +3,8 @@ name: AsyncAPI documents processing
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     paths:
       - '.github/workflows/asyncApiDoc.yml'
       - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
