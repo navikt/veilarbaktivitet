@@ -1,10 +1,14 @@
 name: AsyncAPI documents processing
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - '.github/workflows/asyncApiDoc.yml'
       - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
+
+concurrency:
+  group: AktivitetskortV1.asyncapi
 
 jobs:
   generate:
