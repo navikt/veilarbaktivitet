@@ -56,6 +56,7 @@ components:
         messageId:
           type: string
           format: uuid
+          description: Unik id for denne meldingen brukes til deduplisering
         source:
           type: string
           description: Aplikasjonen som bestiller sin tildelte id.
