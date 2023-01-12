@@ -9,6 +9,7 @@ on:
 
 concurrency:
   group: AktivitetskortV1.asyncapi
+  cancel-in-progress: true
 
 jobs:
   generate:
