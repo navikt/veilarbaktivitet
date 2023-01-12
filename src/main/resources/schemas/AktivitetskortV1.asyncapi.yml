@@ -17,9 +17,13 @@ defaultContentType: application/json
 channels:
   aktivitetskort-v1:
     description: Topic for å bestille eller oppdatere aktiviteter i aktivitetsplan
+    bindings:
+      kafka:
+        key:
+          type: string
+          format: uuid
+          description: aktiviteskorts id. Også kalt funksjonell id
     publish:
-      traits:
-        - $ref: '#/components/operationTraits/kafka'
       message:
         $ref: '#/components/messages/aktivitetskort'
 
@@ -30,7 +34,6 @@ components:
       name: aktivitetskortBestilling
       title: Aktivitetskort bestilling
       summary: Bestilling for oppretting eller endring av et aktivitetskort
-      contentType: application/json
       traits:
         - $ref: '#/components/messageTraits/commonHeaders'
       payload:
@@ -253,12 +256,3 @@ components:
               kode:
                 type: string
           description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Koden som sendes inn må mappes om til tekst + korrekt styling i aktivitetsplanen, så DAB trenger å vite hvilke koder som er aktuelle på forhånd.
-
-  operationTraits:
-    kafka:
-      bindings:
-        kafka:
-          key:
-            type: string
-            format: uuid
-            description: Aktiviteskorts id. Også kalt funksjonell id
