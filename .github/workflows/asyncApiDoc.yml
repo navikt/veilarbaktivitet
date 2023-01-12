@@ -32,3 +32,4 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           folder: aktivitetskortV1-doc
+          target-folder: aktivitetskortV1
