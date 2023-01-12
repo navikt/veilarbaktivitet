@@ -12,14 +12,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-
       - name: Generating HTML from my AsyncAPI document
+        working-directory: ./src/main/resources/schemas/
         uses: docker://asyncapi/github-action-for-generator:2.1.8
-        with:
-          filepath: src/main/resources/schemas/AktivitetskortV1.asyncapi.yml
-          output: generated-html
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
+        working-directory: ./src/main/resources/schemas/
         with:
           folder: generated-html
