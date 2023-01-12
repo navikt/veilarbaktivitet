@@ -2,6 +2,9 @@ name: AsyncAPI documents processing
 
 on:
   push:
+    paths:
+      - '.github/workflows/asyncApiDoc.yml'
+      - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
 
 jobs:
   generate:
@@ -23,6 +26,6 @@ jobs:
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          access_token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: aktivitetskortV1-doc
