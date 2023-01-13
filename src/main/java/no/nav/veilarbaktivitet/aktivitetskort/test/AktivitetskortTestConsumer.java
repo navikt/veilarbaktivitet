@@ -2,18 +2,25 @@ package no.nav.veilarbaktivitet.aktivitetskort.test;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AktivitetskortTestConsumer implements TopicConsumer<String, String> {
 
     private final MigreringService migreringService;
@@ -21,6 +28,8 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
     private final AktivitetsbestillingCreator bestillingsCreator;
 
     private final AktivitetskortTestDAO aktivitetskortTestDAO;
+
+    private final AktivitetskortTestMetrikker aktivitetskortTestMetrikker;
 
     @SneakyThrows
     @Override
@@ -41,12 +50,34 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
         }
 
         LocalDateTime opprettetTidspunkt = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
+        LocalDate startDato = bestilling.getAktivitetskort().getStartDato();
+        LocalDate sluttDato = bestilling.getAktivitetskort().getSluttDato();
+        Person.AktorId aktorId = bestilling.getAktorId();
 
-        var oppfolgingsperiode = migreringService.finnOppfolgingsperiode(bestilling.getAktorId(), opprettetTidspunkt);
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = Optional.empty();
+        try {
+            oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
+        } catch (IllegalStateException e) {
+            // skal aldri skje forhåpentligvis
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(6);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 6 - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    List.of());
+        }
 
         if (oppfolgingsperiode.isEmpty()) {
-            // metrikk? aktorId, opprettetTidspunkt
-            // finn ut hvorfor brukeren ikke har oppfølgingsperioder, hvis få - ignorer i prod?
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(5);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    List.of());
         }
 
         return ConsumeStatus.OK;

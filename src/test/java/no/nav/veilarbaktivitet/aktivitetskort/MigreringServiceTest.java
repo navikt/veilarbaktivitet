@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import lombok.val;
 import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -31,18 +30,8 @@ class MigreringServiceTest {
     public void setup() {
         oppfolgingV2Client = mock(OppfolgingV2Client.class);
 
-        migreringService = new MigreringService(mock(UnleashClient.class), oppfolgingV2Client);
+        migreringService = new MigreringService(mock(UnleashClient.class), oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
     }
-
-    /* note
-        case: opprettetTidspunkt I en gammel periode
-        case: opprettetTidspunkt I en gjeldende periode
-        case: opprettetTidspunkt PÅ en startdato
-        case: opprettetTidspunkt der abs(opprettetTidspunkt - periode1.startDato) == abs(opprettetTidspunkt - periode2.startDato). nb: skal velge den som har startDato ETTER opprettetTidspunkt
-        case: opprettetTidspunkt I to gamle perioder
-        case: opprettetTidspunkt I to perioder - en gammel og en gjeldende
-        case: opprettetTidspunkt mot en bruker som IKKE har noen oppfolgingsperioder
-     */
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private static final ZonedDateTime DATE_TIME = ZonedDateTime.now();
@@ -50,10 +39,10 @@ class MigreringServiceTest {
 
     @Test
     void opprettetTidspunkt_passer_i_gammel_periode() {
-        var riktigPeriode = oppfPeriodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20));
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20));
         var perioder = List.of(
                 riktigPeriode,
-                oppfPeriodeDTO(DATE_TIME.minusDays(10), null)
+                oppfperiodeDTO(DATE_TIME.minusDays(10), null)
         );
 
         OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(25));
@@ -63,9 +52,9 @@ class MigreringServiceTest {
 
     @Test
     void opprettetTidspunkt_passer_i_gjeldende_periode() {
-        var riktigPeriode = oppfPeriodeDTO(DATE_TIME.minusDays(10), null);
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10), null);
         var perioder = List.of(
-                oppfPeriodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
+                oppfperiodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
                 riktigPeriode
         );
 
@@ -76,9 +65,9 @@ class MigreringServiceTest {
 
     @Test
     void opprettetTidspunkt_passer_paa_startDato() {
-        var riktigPeriode = oppfPeriodeDTO(DATE_TIME.minusDays(10), null);
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10), null);
         var perioder = List.of(
-                oppfPeriodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
+                oppfperiodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
                 riktigPeriode
         );
 
@@ -89,9 +78,9 @@ class MigreringServiceTest {
 
     @Test
     void opprettetTidspunkt_er_like_langt_unna_to_startdatoer() {
-        var riktigPeriode = oppfPeriodeDTO(DATE_TIME.minusDays(10), DATE_TIME.minusDays(0));
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10), DATE_TIME.minusDays(0));
         var perioder1 = List.of(
-                oppfPeriodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18)),
+                oppfperiodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18)),
                 riktigPeriode
         );
 
@@ -102,21 +91,57 @@ class MigreringServiceTest {
         // skal være kommutativ
         var perioder2 = List.of(
                 riktigPeriode,
-                oppfPeriodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18))
+                oppfperiodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(18))
         );
         OppfolgingPeriodeMinimalDTO oppfolgingsperiode2 = stubOgFinnOppgolgingsperiode(perioder2, LOCAL_DATE_TIME.minusDays(15));
 
         assertThat(oppfolgingsperiode2.getUuid()).isEqualTo(riktigPeriode.getUuid());
     }
 
+    @Test
+    void opprettetTidspunkt_i_to_gamle_perioder() {
+        // Er riktig fordi den er "nyere" enn den andre perioden
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(16), DATE_TIME.minusDays(5));
+        var perioder = List.of(
+                oppfperiodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(10)),
+                riktigPeriode
+        );
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(15));
+
+        assertThat(oppfolgingsperiode.getUuid()).isEqualTo(riktigPeriode.getUuid());
+    }
+
+    @Test
+    void opprettetTidspunkt_i_en_gammel_og_en_gjeldende_periode() {
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(16), DATE_TIME);
+        var perioder = List.of(
+                oppfperiodeDTO(DATE_TIME.minusDays(20), DATE_TIME.minusDays(10)),
+                riktigPeriode
+        );
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(15));
+
+        assertThat(oppfolgingsperiode.getUuid()).isEqualTo(riktigPeriode.getUuid());
+    }
+
+    @Test
+    void opprettetTidspunkt_mot_en_bruker_som_ikke_har_oppfolgingsperioder() {
+        List<OppfolgingPeriodeMinimalDTO> perioder = List.of();
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(15));
+
+        assertThat(oppfolgingsperiode).isNull();
+    }
+
     private OppfolgingPeriodeMinimalDTO stubOgFinnOppgolgingsperiode(List<OppfolgingPeriodeMinimalDTO> perioder, LocalDateTime opprettetTidspunkt) {
         when(oppfolgingV2Client.hentOppfolgingsperioder(ArgumentMatchers.any())).thenReturn(Optional.of(perioder));
-        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt);
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt, null, null);
 
         return oppfolgingsperiode.orElse(null);
     }
 
-    private OppfolgingPeriodeMinimalDTO oppfPeriodeDTO(ZonedDateTime startDato, ZonedDateTime sluttDato) {
+    private OppfolgingPeriodeMinimalDTO oppfperiodeDTO(ZonedDateTime startDato, ZonedDateTime sluttDato) {
         return OppfolgingPeriodeMinimalDTO.builder()
                 .uuid(UUID.randomUUID())
                 .startDato(startDato)

@@ -1,15 +1,18 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.chrono.ChronoZonedDateTime;
@@ -26,12 +29,15 @@ import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.UTDANNIN
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MigreringService {
     public static final String EKSTERN_AKTIVITET_TOGGLE = "veilarbaktivitet.vis_eksterne_aktiviteter";
 
     private final UnleashClient unleashClient;
 
     private final OppfolgingV2Client oppfolgingV2Client;
+
+    private final AktivitetskortTestMetrikker aktivitetskortTestMetrikker;
 
     private Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
     private Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
@@ -54,25 +60,59 @@ public class MigreringService {
         }
     }
 
-    public Optional<OppfolgingPeriodeMinimalDTO> finnOppfolgingsperiode(Person.AktorId aktorId, LocalDateTime opprettetTidspunkt) {
+    public Optional<OppfolgingPeriodeMinimalDTO> finnOppfolgingsperiode(Person.AktorId aktorId, LocalDateTime opprettetTidspunkt, LocalDate startDato, LocalDate sluttDato) {
         var oppfolgingsperioderDTO = oppfolgingV2Client.hentOppfolgingsperioder(aktorId);
-
-        if (oppfolgingsperioderDTO.isEmpty()) {
-            return Optional.empty();
-        }
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioder = oppfolgingsperioderDTO.get();
 
+        if (oppfolgingsperioder.isEmpty()) {
+            return Optional.empty();
+        }
+
         List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioderCopy = new ArrayList<>(oppfolgingsperioder);
-        oppfolgingsperioderCopy.sort(comparing(OppfolgingPeriodeMinimalDTO::getStartDato).reversed());
+        oppfolgingsperioderCopy.sort(comparing(OppfolgingPeriodeMinimalDTO::getStartDato).reversed()); // nyeste først
 
         var opprettetTidspunktCZDT = ChronoZonedDateTime.from(opprettetTidspunkt.atZone(ZoneId.systemDefault()));
-        Optional<OppfolgingPeriodeMinimalDTO> maybePeriode = oppfolgingsperioderCopy
+        var maybePerioder = oppfolgingsperioderCopy
                 .stream()
-                .filter(o -> (o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato() == null) ||
-                        (o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato().isAfter(opprettetTidspunktCZDT))
-                )
-                .findFirst();
+                .filter(o -> {
+                    var gjeldendePeriodePredikat = o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato() == null;
+                    if (gjeldendePeriodePredikat) {
+                        aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(1);
+                        return true;
+                    }
+                    var gammelPeriodePredikat = o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato().isAfter(opprettetTidspunktCZDT);
+                    if (gammelPeriodePredikat) {
+                        aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(2);
+                        return true;
+                    }
+                    return false;
+                })
+                .toList();
+
+        if (maybePerioder.size() > 1) {
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(3);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 3 (flere matchende perioder) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    oppfolgingsperioder);
+        }
+
+        var maybePeriode = maybePerioder.stream().findFirst();
+
+        if (maybePeriode.isEmpty()) {
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(4);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 4 (opprettetTidspunkt har ingen perfekt match) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    oppfolgingsperioder);
+        }
 
         return Optional.of(maybePeriode.orElseGet(() -> oppfolgingsperioderCopy
                 .stream()
