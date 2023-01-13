@@ -424,8 +424,10 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(500))
+        Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+        Awaitility.await().atMost(Duration.ofSeconds(5))
+                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, "veilarbaktivitet-test-consumer-aiven", lastRecord.getRecordMetadata().offset()));
     }
 
     @SuppressWarnings("unchecked")
@@ -437,7 +439,7 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(500))
+        Awaitility.await().atMost(Duration.ofSeconds(5))
                 .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
     }
 

@@ -16,6 +16,7 @@ import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,8 +51,6 @@ public class AktivitetskortTestConsumerTest extends SpringBootTestBase {
     @BeforeEach
     public void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
-        meterRegistry.find(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE).meters().forEach(it -> meterRegistry.remove(it));
-        new AktivitetskortTestMetrikker(meterRegistry); //for og genskape metrikkene som blir slettet
     }
 
     @Test
@@ -65,13 +64,14 @@ public class AktivitetskortTestConsumerTest extends SpringBootTestBase {
 
         Aktivitetskort actual = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
 
-        var case1counter = meterRegistry.find(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE).tag("case", "1"::equals).counter();
-        Assertions.assertThat(case1counter.count()).isEqualTo(0.0);
+        var case1Counter = meterRegistry.find(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE).tag("case", "1"::equals).counter();
+        double before = case1Counter.count();
 
         ArenaMeldingHeaders kontekst = new ArenaMeldingHeaders(arenaId, arenaTiltakskode);
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
 
-        Assertions.assertThat(case1counter.count()).isEqualTo(1.0);
+        double after = case1Counter.count();
+        Assertions.assertThat(after).isEqualTo(before + 1.0);
     }
 
 }

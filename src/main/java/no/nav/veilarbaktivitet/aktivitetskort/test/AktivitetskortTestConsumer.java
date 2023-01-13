@@ -8,6 +8,7 @@ import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -34,7 +35,14 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
     @SneakyThrows
     @Override
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
-        var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
+        AktivitetskortBestilling bestilling;
+
+        try {
+            bestilling = bestillingsCreator.lagBestilling(consumerRecord);
+        } catch (Exception e) {
+            log.warn("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE - feil i behandling av innkommende melding. Ignorerer", e);
+            return ConsumeStatus.OK;
+        }
 
         if (!bestilling.getAktivitetskortType().equals(AktivitetskortType.ARENA_TILTAK)) {
             return ConsumeStatus.OK;
