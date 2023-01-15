@@ -38,7 +38,6 @@ import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -57,7 +56,6 @@ import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
 import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
-import static no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker.AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
@@ -431,7 +429,6 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    @Disabled
     public void should_catch_ugyldigident_error() {
         WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
 
