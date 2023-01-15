@@ -1,0 +1,11 @@
+"$schema": https://json-schema.org/draft-07/schema
+type: object
+required:
+    - Nav-Call-Id
+
+properties:
+  Nav-Call-Id:
+    type: string
+    minLength: 10
+    description: brukes for logging
+
