@@ -22,4 +22,4 @@ jobs:
 
       - name: generate documentaion (denne tar litt tid)
         working-directory: src/main/resources/schemas/
-        run: asyncapi validate ./src/main/resources/schemas/AktivitetskortV1.asyncapi.yml
+        run: asyncapi validate AktivitetskortV1.asyncapi.yml
