@@ -125,6 +125,17 @@ public class KafkaTestConfig {
     }
 
     @Bean
+    Properties testAivenConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+        return KafkaPropertiesBuilder.consumerBuilder()
+                .withBaseProperties()
+                .withConsumerGroupId("veilarbaktivitet-test-consumer-aiven")
+                .withBrokerUrl(embeddedKafka.getBrokersAsString())
+                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
+                .withPollProperties(10, 30_000)
+                .build();
+    }
+
+    @Bean
     Properties aivenProducerProperties(@Value("${app.kafka.producer-client-id}") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()

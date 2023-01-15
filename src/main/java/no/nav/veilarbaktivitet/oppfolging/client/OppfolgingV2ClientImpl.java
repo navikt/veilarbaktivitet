@@ -77,9 +77,6 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
                 .build();
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            if (response.code() == HttpStatus.NO_CONTENT.value()) {
-                return Optional.empty();
-            }
             return RestUtils.parseJsonArrayResponse(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());

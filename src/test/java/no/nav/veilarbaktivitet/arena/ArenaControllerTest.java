@@ -6,6 +6,7 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
@@ -22,12 +23,12 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
-import okhttp3.OkHttpClient;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,7 +68,8 @@ class ArenaControllerTest {
 
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
-    private final MigreringService migreringService = new MigreringService(unleashClient);
+    private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
+    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO);
