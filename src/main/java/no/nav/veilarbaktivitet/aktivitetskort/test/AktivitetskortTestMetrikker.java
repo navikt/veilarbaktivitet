@@ -11,6 +11,7 @@ public class AktivitetskortTestMetrikker {
 
     public static final String AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE = "aktivitetskort_test_oppfolgingsperiode";
     public static final String AKTIVITETSKORT_TEST_CASE = "case";
+    public static final String AKTIVITETSKORT_TEST_EXCEPTION = "exception";
 
     public AktivitetskortTestMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
@@ -20,7 +21,7 @@ public class AktivitetskortTestMetrikker {
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "3");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "4");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "5");
-        meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "6");
+        meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_EXCEPTION, "");
     }
 
     /*
@@ -29,12 +30,18 @@ public class AktivitetskortTestMetrikker {
       Case #3: opprettetTidspunkt flere matchende perioder
       Case #4: opprettetTidspunkt har ingen perfekt match - det finnes oppfølgingsperiode(r)
       Case #5: bruker har ingen oppfølgingsperioder
-      Case #6: illegalstateexception, skal aldri skje forhåpentligvis
      */
 
     public void countFinnOppfolgingsperiode(int caseNr) {
         Counter.builder(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE)
                 .tag(AKTIVITETSKORT_TEST_CASE, "" + caseNr)
+                .register(meterRegistry)
+                .increment();
+    }
+
+    public void countError(Exception e) {
+        Counter.builder(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE)
+                .tag(AKTIVITETSKORT_TEST_EXCEPTION, e.getClass().getSimpleName())
                 .register(meterRegistry)
                 .increment();
     }

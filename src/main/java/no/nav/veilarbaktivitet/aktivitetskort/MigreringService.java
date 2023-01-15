@@ -39,8 +39,8 @@ public class MigreringService {
 
     private final AktivitetskortTestMetrikker aktivitetskortTestMetrikker;
 
-    private Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
-    private Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
+    private final Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
+    private static final Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
     public Predicate<ArenaAktivitetDTO> filtrerBortArenaTiltakHvisToggleAktiv() {
         if (unleashClient.isEnabled(EKSTERN_AKTIVITET_TOGGLE)) {
             return ikkeArenaTiltak;
@@ -49,8 +49,8 @@ public class MigreringService {
         }
     }
 
-    private Predicate<AktivitetDTO> ikkeEksterneAktiviteter = a -> AktivitetTypeDTO.EKSTERNAKTIVITET != a.getType();
-    private Predicate<AktivitetDTO> alleLokaleAktiviteter = a -> true;
+    private final Predicate<AktivitetDTO> ikkeEksterneAktiviteter = a -> AktivitetTypeDTO.EKSTERNAKTIVITET != a.getType();
+    private static final Predicate<AktivitetDTO> alleLokaleAktiviteter = a -> true;
 
     public Predicate<AktivitetDTO> ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv() {
         if (unleashClient.isEnabled(EKSTERN_AKTIVITET_TOGGLE)) {
@@ -62,6 +62,10 @@ public class MigreringService {
 
     public Optional<OppfolgingPeriodeMinimalDTO> finnOppfolgingsperiode(Person.AktorId aktorId, LocalDateTime opprettetTidspunkt, LocalDate startDato, LocalDate sluttDato) {
         var oppfolgingsperioderDTO = oppfolgingV2Client.hentOppfolgingsperioder(aktorId);
+
+        if (oppfolgingsperioderDTO.isEmpty()) {
+            return Optional.empty();
+        }
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioder = oppfolgingsperioderDTO.get();
 

@@ -40,6 +40,7 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
         try {
             bestilling = bestillingsCreator.lagBestilling(consumerRecord);
         } catch (Exception e) {
+            aktivitetskortTestMetrikker.countError(e);
             log.warn("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE - feil i behandling av innkommende melding. Ignorerer", e);
             return ConsumeStatus.OK;
         }
@@ -67,9 +68,9 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
             oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
         } catch (IllegalStateException e) {
             // skal aldri skje forhåpentligvis
-            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(6);
+            aktivitetskortTestMetrikker.countError(e);
 
-            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 6 - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE Illegalstate - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
                     aktorId.get(),
                     opprettetTidspunkt,
                     startDato,
