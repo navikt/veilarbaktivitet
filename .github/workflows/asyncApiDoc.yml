@@ -1,0 +1,38 @@
+name: AsyncAPI documents processing
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/asyncApiDoc.yml'
+      - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
+
+concurrency:
+  group: AktivitetskortV1.asyncapi
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 19
+
+      - name: install generator
+        run: npm install -g @asyncapi/generator
+
+      - name: generate documentaion (denne tar litt tid)
+        working-directory: src/main/resources/schemas/
+        run: ag AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          folder: aktivitetskortV1-doc
+          target-folder: aktivitetskortV1
