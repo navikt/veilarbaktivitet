@@ -37,7 +37,7 @@ class AktivitetsbestillingCreatorTest {
     public void schema_should_be_in_sync_with_classes() {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         JsonSchema jsonSchema = factory.getSchema(
-                AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.schema.json"));
+                AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.message.schema.yml"));
 
         var jsonNode = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
         var validationMessages = jsonSchema.validate(jsonNode);
