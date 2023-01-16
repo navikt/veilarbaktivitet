@@ -27,7 +27,8 @@ jobs:
         run: npm install -g @asyncapi/generator
 
       - name: generate documentaion (denne tar litt tid)
-        run: ag ./src/main/resources/schemas/AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
+        working-directory: src/main/resources/schemas/
+        run: ag AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
