@@ -104,14 +104,13 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
 
-        cronService.sendOppTil5000AktiviterTilPortefolje();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(aktivitetRawJson, aktiviteterKafkaConsumer));
     }
 
     @Test
-    void skal_sende_tiltak_til_portefolje() {
+    void skal_sende_tiltak_til_portefolje() throws InterruptedException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         UUID funksjonellId = UUID.randomUUID();
@@ -125,6 +124,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         ArenaMeldingHeaders kontekst = new ArenaMeldingHeaders(arenaId, arenaTiltakskode);
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
 
+        Thread.sleep(2000L);
 
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
