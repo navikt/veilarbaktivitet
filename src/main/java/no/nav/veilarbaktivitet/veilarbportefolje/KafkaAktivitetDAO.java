@@ -21,6 +21,8 @@ import java.util.List;
 @Repository
 @AllArgsConstructor
 public class KafkaAktivitetDAO {
+    public static final String TILTAKSKODE_VARIG_LONNSTILSKUDD = "VARLONTIL";
+    public static final String TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD = "MIDLONTIL";
     private final Database database;
 
     @Timed
@@ -58,7 +60,11 @@ public class KafkaAktivitetDAO {
         // Eksterne aktiviteter START
         AktivitetskortType aktivitetskortType = EnumUtils.valueOf(AktivitetskortType.class, rs.getString("aktivitetkort_type"));
         var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.fromDomainAktivitetType(domainAktivitetType,aktivitetskortType);
+
         var tiltakskode = rs.getString("TILTAK_KODE");
+        if (AktivitetTypeDTO.EKSTERNAKTIVITET.equals(domainAktivitetType)) {
+            tiltakskode = finnTiltakskode(aktivitetskortType, tiltakskode);
+        }
         var arenaId = rs.getString("ARENA_ID");
         // Eksterne aktiviteter SLUTT
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
@@ -90,5 +96,13 @@ public class KafkaAktivitetDAO {
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
                 .build();
+    }
+
+    private static String finnTiltakskode(AktivitetskortType aktivitetskortType, String tiltakskode)  {
+        return switch (aktivitetskortType) {
+            case MIDLERTIDIG_LONNSTILSKUDD -> TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD;
+            case VARIG_LONNSTILSKUDD -> TILTAKSKODE_VARIG_LONNSTILSKUDD;
+            case ARENA_TILTAK -> tiltakskode;
+        };
     }
 }
