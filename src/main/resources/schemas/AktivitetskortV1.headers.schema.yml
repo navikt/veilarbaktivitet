@@ -1,4 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
+$id: "https://aktivitetskort.nav.no/aktivitetskort_v1/headers"
 type: object
 required:
     - Nav-Call-Id

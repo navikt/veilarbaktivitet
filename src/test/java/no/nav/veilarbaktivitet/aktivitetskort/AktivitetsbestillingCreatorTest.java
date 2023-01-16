@@ -1,8 +1,9 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.networknt.schema.*;
+import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
@@ -15,10 +16,14 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -33,15 +38,39 @@ class AktivitetsbestillingCreatorTest {
         aktivitetsbestillingCreator = new AktivitetsbestillingCreator(personService);
     }
 
+    @SneakyThrows
+    String convertYamlToJson(InputStream yaml) {
+        ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
+        Object obj = yamlReader.readValue(yaml, Object.class);
+
+        ObjectMapper jsonWriter = new ObjectMapper();
+        return jsonWriter.writeValueAsString(obj);
+    }
+
+
+
     @Test
     public void schema_should_be_in_sync_with_classes() {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        JsonSchema jsonSchema = factory.getSchema(
-                AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.message.schema.yml"));
+        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.message.schema.yml");
+        String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
 
-        var jsonNode = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
-        var validationMessages = jsonSchema.validate(jsonNode);
-        assertEquals(0, validationMessages.size());
+        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
+
+
+        var valid = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
+        var validValidationMessages = jsonSchema.validate(valid);
+
+        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
+
+        var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
+        var invalidValidationMessages= jsonSchema.validate(invalid);
+        assertEquals(2, invalidValidationMessages.size());
+    }
+
+    private String errorMessage(Set<ValidationMessage> validValidationMessages) {
+        String[] strings = validValidationMessages.stream().map(it -> it.getMessage()).toArray(String[]::new);
+        return String.join("\n", strings);
     }
 
     @Test

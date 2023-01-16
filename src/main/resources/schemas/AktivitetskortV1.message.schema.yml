@@ -1,13 +1,13 @@
 "$schema": https://json-schema.org/draft-07/schema
-$id: aktivitetskortBestilling
+"$id": "https://aktivitetskort.nav.no/aktivitetskort_v1"
 required:
   - messageId
   - source
-  - sendt
   - aktivitetskortType
-  - aktiviteskort
+  - aktivitetskort
   - actionType
 type: object
+additionalProperties: false
 properties:
   messageId:
     type: string
@@ -23,7 +23,7 @@ properties:
     $ref: "#/definitions/aktivitetskortType"
   actionType:
     $ref: "#/definitions/actionType"
-  aktiviteskort:
+  aktivitetskort:
     $ref: "#/definitions/aktivitetskort"
 
 

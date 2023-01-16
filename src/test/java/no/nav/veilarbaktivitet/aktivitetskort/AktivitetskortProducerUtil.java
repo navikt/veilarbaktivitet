@@ -58,6 +58,11 @@ public class AktivitetskortProducerUtil {
         return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
     }
 
+    public static JsonNode invalidExampleRecord(Person.Fnr fnr) {
+        KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);
+        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.withActionType(null));
+    }
+
     @SneakyThrows
     public static String validExampleFromFile(String filename) {
         return readFileToString("__files/aktivitetskort/%s".formatted(filename));
