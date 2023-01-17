@@ -77,6 +77,9 @@ spec:
         - application: veilarbdirigent
           namespace: pto
           cluster: dev-fss
+        - application: aktivitetsplan
+          namespace: pto
+          cluster: dev-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
