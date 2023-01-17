@@ -65,17 +65,6 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
 
         Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
 
-        if (oppfolgingsperiode.isEmpty()) {
-            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(5);
-
-            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder / periode for langt unna opprettetTidspunkt) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
-                    aktorId.get(),
-                    opprettetTidspunkt,
-                    startDato,
-                    sluttDato,
-                    List.of());
-        }
-
         return ConsumeStatus.OK;
     }
 }
