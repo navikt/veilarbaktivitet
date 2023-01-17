@@ -86,7 +86,7 @@ class MigreringServiceTest {
 
         OppfolgingPeriodeMinimalDTO oppfolgingsperiode1 = stubOgFinnOppgolgingsperiode(perioder1, LOCAL_DATE_TIME.minusDays(15));
 
-        assertThat(oppfolgingsperiode1.getUuid()).isEqualTo(riktigPeriode.getUuid());
+        assertThat(oppfolgingsperiode1).isNull();
 
         // skal være kommutativ
         var perioder2 = List.of(
@@ -95,7 +95,7 @@ class MigreringServiceTest {
         );
         OppfolgingPeriodeMinimalDTO oppfolgingsperiode2 = stubOgFinnOppgolgingsperiode(perioder2, LOCAL_DATE_TIME.minusDays(15));
 
-        assertThat(oppfolgingsperiode2.getUuid()).isEqualTo(riktigPeriode.getUuid());
+        assertThat(oppfolgingsperiode2).isNull();
     }
 
     @Test
@@ -130,6 +130,31 @@ class MigreringServiceTest {
         List<OppfolgingPeriodeMinimalDTO> perioder = List.of();
 
         OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(15));
+
+        assertThat(oppfolgingsperiode).isNull();
+    }
+
+    @Test
+    void velg_naermeste_periode_etter_opprettetitdspunkt_OG_som_er_10_min_innen_opprettetTidspunkt() {
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10).plusMinutes(5), DATE_TIME);
+        var perioder = List.of(
+                oppfperiodeDTO(DATE_TIME.minusDays(10).minusMinutes(4), DATE_TIME.minusDays(10).minusMinutes(2)),
+                riktigPeriode
+        );
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(10));
+
+        assertThat(oppfolgingsperiode.getUuid()).isEqualTo(riktigPeriode.getUuid());
+    }
+
+    @Test
+    void ikke_velg_periode_hvis_perioden_slutter_foer_aktivitetens_opprettetTidspunkt() {
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10).minusMinutes(5), DATE_TIME.minusDays(10).minusMinutes(2));
+        var perioder = List.of(
+                riktigPeriode
+        );
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(10));
 
         assertThat(oppfolgingsperiode).isNull();
     }

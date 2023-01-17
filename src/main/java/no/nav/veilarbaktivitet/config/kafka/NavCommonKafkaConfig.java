@@ -113,7 +113,7 @@ public class NavCommonKafkaConfig {
     @Bean
     @Profile("!dev")
     Properties testAivenConsumerProperties() {
-        return aivenDefaultConsumerProperties("veilarbaktivitet-test-consumer-aiven");
+        return aivenDefaultConsumerProperties("veilarbaktivitet-test-consumer-aiven-2");
     }
 
     @Bean

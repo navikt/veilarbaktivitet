@@ -64,12 +64,30 @@ public class MigreringService {
         var oppfolgingsperioderDTO = oppfolgingV2Client.hentOppfolgingsperioder(aktorId);
 
         if (oppfolgingsperioderDTO.isEmpty()) {
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(5);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    List.of());
+
             return Optional.empty();
         }
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioder = oppfolgingsperioderDTO.get();
 
         if (oppfolgingsperioder.isEmpty()) {
+            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(5);
+
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    startDato,
+                    sluttDato,
+                    List.of());
+
             return Optional.empty();
         }
 
@@ -80,12 +98,12 @@ public class MigreringService {
         var maybePerioder = oppfolgingsperioderCopy
                 .stream()
                 .filter(o -> {
-                    var gjeldendePeriodePredikat = o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato() == null;
+                    var gjeldendePeriodePredikat = (o.getStartDato().isBefore(opprettetTidspunktCZDT) || o.getStartDato().isEqual(opprettetTidspunktCZDT)) && o.getSluttDato() == null;
                     if (gjeldendePeriodePredikat) {
                         aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(1);
                         return true;
                     }
-                    var gammelPeriodePredikat = o.getStartDato().isBefore(opprettetTidspunktCZDT) && o.getSluttDato().isAfter(opprettetTidspunktCZDT);
+                    var gammelPeriodePredikat = (o.getStartDato().isBefore(opprettetTidspunktCZDT) || o.getStartDato().isEqual(opprettetTidspunktCZDT)) && o.getSluttDato().isAfter(opprettetTidspunktCZDT);
                     if (gammelPeriodePredikat) {
                         aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(2);
                         return true;
@@ -107,21 +125,35 @@ public class MigreringService {
 
         var maybePeriode = maybePerioder.stream().findFirst();
 
-        if (maybePeriode.isEmpty()) {
-            aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(4);
-
-            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 4 (opprettetTidspunkt har ingen perfekt match) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
-                    aktorId.get(),
-                    opprettetTidspunkt,
-                    startDato,
-                    sluttDato,
-                    oppfolgingsperioder);
-        }
-
-        return Optional.of(maybePeriode.orElseGet(() -> oppfolgingsperioderCopy
+        return Optional.ofNullable(maybePeriode.orElseGet(() -> oppfolgingsperioderCopy
                 .stream()
-                .min(comparingLong(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato()))))
-                .orElseThrow(IllegalStateException::new)
+                .filter(o -> o.getSluttDato().isAfter(opprettetTidspunktCZDT))
+                .min(comparingLong(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())))) // filteret over kan returnere flere perioder, velg perioden som har startdato nærmest opprettettidspunkt
+                .filter(o -> {
+                    var innenTiMinutter = Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000;
+                    if (innenTiMinutter) {
+                        aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(7);
+
+                        log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 7 (startdato innen 10 minutter) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                                aktorId.get(),
+                                opprettetTidspunkt,
+                                startDato,
+                                sluttDato,
+                                oppfolgingsperioder);
+                    } else {
+                        aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(4);
+
+                        log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 4 (opprettetTidspunkt har ingen god match) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+                                aktorId.get(),
+                                opprettetTidspunkt,
+                                startDato,
+                                sluttDato,
+                                oppfolgingsperioder);
+                    }
+
+                    return innenTiMinutter;
+                })
+                .orElse(null)
         ));
     }
 }

@@ -16,11 +16,13 @@ public class AktivitetskortTestMetrikker {
     public AktivitetskortTestMetrikker(MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
 
+        meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "1");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "2");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "3");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "4");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "5");
+        meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_CASE, "7");
         meterRegistry.counter(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE, AKTIVITETSKORT_TEST_EXCEPTION, "");
     }
 
@@ -30,6 +32,7 @@ public class AktivitetskortTestMetrikker {
       Case #3: opprettetTidspunkt flere matchende perioder
       Case #4: opprettetTidspunkt har ingen perfekt match - det finnes oppfølgingsperiode(r)
       Case #5: bruker har ingen oppfølgingsperioder
+      Case #7: opprettettidspunkt 10 minutter innen startdato
      */
 
     public void countFinnOppfolgingsperiode(int caseNr) {
