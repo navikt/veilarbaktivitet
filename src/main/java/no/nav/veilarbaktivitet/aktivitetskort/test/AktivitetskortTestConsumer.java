@@ -63,25 +63,12 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
         LocalDate sluttDato = bestilling.getAktivitetskort().getSluttDato();
         Person.AktorId aktorId = bestilling.getAktorId();
 
-        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = Optional.empty();
-        try {
-            oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
-        } catch (IllegalStateException e) {
-            // skal aldri skje forhåpentligvis
-            aktivitetskortTestMetrikker.countError(e);
-
-            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE Illegalstate - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
-                    aktorId.get(),
-                    opprettetTidspunkt,
-                    startDato,
-                    sluttDato,
-                    List.of());
-        }
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
 
         if (oppfolgingsperiode.isEmpty()) {
             aktivitetskortTestMetrikker.countFinnOppfolgingsperiode(5);
 
-            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
+            log.info("MIGRERINGSERVICE.FINNOPPFOLGINGSPERIODE case 5 (bruker har ingen oppfølgingsperioder / periode for langt unna opprettetTidspunkt) - aktorId={}, opprettetTidspunkt={}, startDato={}, sluttDato={}, oppfolgingsperioder={}",
                     aktorId.get(),
                     opprettetTidspunkt,
                     startDato,
