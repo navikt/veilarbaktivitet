@@ -140,6 +140,8 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:$lombok_version")
     testAnnotationProcessor("org.projectlombok:lombok:$lombok_version")
 
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_version")
+
     implementation("org.apache.avro:avro:1.10.2")
     implementation("com.github.ben-manes.caffeine:caffeine:2.8.1")
     implementation("org.springframework.boot:spring-boot-starter-cache:$spring_version")
