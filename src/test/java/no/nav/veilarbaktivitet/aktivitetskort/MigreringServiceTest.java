@@ -159,6 +159,18 @@ class MigreringServiceTest {
         assertThat(oppfolgingsperiode).isNull();
     }
 
+    @Test
+    void ti_min_innen_en_gjeldende_periode() {
+        var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10).plusMinutes(5), null);
+        var perioder = List.of(
+                riktigPeriode
+        );
+
+        OppfolgingPeriodeMinimalDTO oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, LOCAL_DATE_TIME.minusDays(10));
+
+        assertThat(oppfolgingsperiode.getUuid()).isEqualTo(riktigPeriode.getUuid());
+    }
+
     private OppfolgingPeriodeMinimalDTO stubOgFinnOppgolgingsperiode(List<OppfolgingPeriodeMinimalDTO> perioder, LocalDateTime opprettetTidspunkt) {
         when(oppfolgingV2Client.hentOppfolgingsperioder(ArgumentMatchers.any())).thenReturn(Optional.of(perioder));
         Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt, null, null);
