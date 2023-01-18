@@ -11,7 +11,7 @@ additionalProperties: false
 properties:
   messageId:
     type: string
-    format: uuid'
+    format: uuid
     description: Unik id for denne meldingen brukes til deduplisering
   source:
     type: string
