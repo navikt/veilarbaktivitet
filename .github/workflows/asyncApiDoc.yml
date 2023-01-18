@@ -10,7 +10,7 @@ on:
       - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
 
 concurrency:
-  group: AktivitetskortV1.asyncapi
+  group: AktivitetskortV1.asyncapi.doc
   cancel-in-progress: true
 
 jobs:
