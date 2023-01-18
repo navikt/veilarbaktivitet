@@ -33,10 +33,12 @@ public class NavCommonKafkaConfig {
     public KafkaConsumerClient aktivitetskortTestConsumerClient(
             AktivitetsKortTestConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
-            Properties testAivenConsumerProperties
+            Properties testAivenConsumerProperties,
+            UnleashClient unleashClient
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
                 .withProperties(testAivenConsumerProperties)
+                .withToggle(() -> unleashClient.isEnabled("veilarbaktivitet.kafka.aktivitetskorttest.aiven.consumer.disabled"))
                 .withTopicConfig(
                         new TopicConfig<String, String>()
                                 .withConsumerConfig(topicConfig)
