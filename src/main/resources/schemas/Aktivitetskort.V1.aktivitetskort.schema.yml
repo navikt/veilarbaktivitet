@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://aktivitetskort.nav.no/aktivitetskort_v1"
+"$id": "https://navikt.github.io/veilarbaktivitet/schema/Aktivitetskort.V1.aktivitetskort.schema.yml"
 required:
   - messageId
   - source
@@ -11,7 +11,7 @@ additionalProperties: false
 properties:
   messageId:
     type: string
-    format: uuid
+    format: uuid'
     description: Unik id for denne meldingen brukes til deduplisering
   source:
     type: string

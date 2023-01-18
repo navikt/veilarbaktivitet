@@ -52,7 +52,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     public void schema_should_be_in_sync_with_classes() {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/AktivitetskortV1.message.schema.yml");
+        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.aktivitetskort.schema.yml");
         String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
 
         JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
