@@ -37,7 +37,7 @@ components:
       traits:
         - $ref: '#/components/messageTraits/commonHeaders'
       payload:
-        $ref: "AktivitetskortV1.message.schema.yml"
+        $ref: "Aktivitetskort.V1.aktivitetskort.schema.yml"
   messageTraits:
     commonHeaders:
       headers:

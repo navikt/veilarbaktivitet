@@ -1,0 +1,30 @@
+name: AsyncAPI documents processing
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/asyncApiSchemas.yml'
+      - 'src/main/resources/schemas/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: AktivitetskortV1.asyncapi
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: src/main/resources/schemas
+          target-folder: schemas

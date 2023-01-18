@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-$id: "https://aktivitetskort.nav.no/aktivitetskort_v1/headers"
+$id: "https://navikt.github.io/veilarbaktivitet/schema/Aktivitetskort.V1.headers.schema.yml"
 type: object
 required:
     - Nav-Call-Id
@@ -7,6 +7,6 @@ required:
 properties:
   Nav-Call-Id:
     type: string
-    minLength: 10
+    minLength: 1
     description: brukes for logging
 
