@@ -127,7 +127,7 @@ public class MigreringService {
 
         return Optional.ofNullable(maybePeriode.orElseGet(() -> oppfolgingsperioderCopy
                 .stream()
-                .filter(o -> o.getSluttDato().isAfter(opprettetTidspunktCZDT))
+                .filter(o -> o.getSluttDato() == null || (o.getSluttDato().isAfter(opprettetTidspunktCZDT)))
                 .min(comparingLong(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())))) // filteret over kan returnere flere perioder, velg perioden som har startdato nærmest opprettettidspunkt
                 .filter(o -> {
                     var innenTiMinutter = Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000;
