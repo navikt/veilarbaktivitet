@@ -8,7 +8,6 @@ import no.nav.common.rest.filter.LogRequestFilter;
 import no.nav.common.rest.filter.SetStandardHttpHeadersFilter;
 import no.nav.common.token_client.utils.env.TokenXEnvironmentvariables;
 import no.nav.veilarbaktivitet.config.EnvironmentProperties;
-import org.apache.catalina.User;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,8 +54,8 @@ public class FilterConfig {
 
     private OidcAuthenticatorConfig tokenxConfig() {
         return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(TokenXEnvironmentvariables.TOKEN_X_WELL_KNOWN_URL)
-                .withClientId(TokenXEnvironmentvariables.TOKEN_X_CLIENT_ID)
+                .withDiscoveryUrl(System.getenv(TokenXEnvironmentvariables.TOKEN_X_WELL_KNOWN_URL))
+                .withClientId(System.getenv(TokenXEnvironmentvariables.TOKEN_X_CLIENT_ID))
                 .withUserRole(UserRole.EKSTERN);
     }
 
