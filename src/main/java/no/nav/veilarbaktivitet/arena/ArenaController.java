@@ -29,6 +29,10 @@ public class ArenaController {
 
     private final MigreringService migreringService;
 
+    private Person.Fnr hentFnr() {
+        return userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+    }
+
 
     @PutMapping("/forhaandsorientering")
     public ArenaAktivitetDTO opprettFHO(@RequestBody ForhaandsorienteringDTO forhaandsorientering, @RequestParam ArenaId arenaaktivitetId) {
@@ -53,7 +57,7 @@ public class ArenaController {
 
     @GetMapping("/tiltak")
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+        var fnr = hentFnr();
         authService.sjekkTilgangTilPerson(fnr);
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
@@ -72,7 +76,7 @@ public class ArenaController {
 
     @GetMapping("/harTiltak")
     boolean hentHarTiltak() {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+        var fnr = hentFnr();
         authService.sjekkTilgangTilPerson(fnr);
 
         return arenaService.harAktiveTiltak(fnr);
@@ -80,7 +84,7 @@ public class ArenaController {
 
     @PutMapping("/forhaandsorientering/lest")
     ArenaAktivitetDTO lest(@RequestParam ArenaId aktivitetId) {
-        Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
+        var fnr = hentFnr();
         authService.sjekkTilgangTilPerson(fnr);
 
         return arenaService.markerSomLest(fnr, aktivitetId);
