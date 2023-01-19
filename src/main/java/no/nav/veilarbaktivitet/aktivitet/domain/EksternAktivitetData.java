@@ -19,6 +19,7 @@ import java.util.List;
 public class EksternAktivitetData {
     String source;
     String tiltaksKode;
+    Boolean opprettetSomHistorisk;
     ArenaId arenaId;
     AktivitetskortType type;
     Oppgaver oppgave;

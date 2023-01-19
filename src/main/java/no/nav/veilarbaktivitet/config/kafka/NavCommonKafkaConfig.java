@@ -29,29 +29,6 @@ public class NavCommonKafkaConfig {
     private static final String KVPAVSLUTTET_KAFKACONSUMER_DISABLED = "veilarbaktivitet.kafka.kvpavsluttet.aiven.consumer.disabled";
 
     @Bean
-    public KafkaConsumerClient aktivitetskortTestConsumerClient(
-            AktivitetsKortTestConsumerConfig topicConfig,
-            MeterRegistry meterRegistry,
-            Properties testAivenConsumerProperties,
-            UnleashClient unleashClient
-    ) {
-        var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(testAivenConsumerProperties)
-                .withToggle(() -> unleashClient.isEnabled("veilarbaktivitet.kafka.aktivitetskorttest.aiven.consumer.disabled"))
-                .withTopicConfig(
-                        new TopicConfig<String, String>()
-                                .withConsumerConfig(topicConfig)
-                                .withMetrics(meterRegistry)
-                                .withLogging());
-
-        var client = clientBuilder.build();
-
-        client.start();
-
-        return client;
-    }
-
-    @Bean
     public KafkaConsumerClient aktivitetskortConsumerClient(
             AktivitetsKortConsumerConfig topicConfig,
             MeterRegistry meterRegistry,

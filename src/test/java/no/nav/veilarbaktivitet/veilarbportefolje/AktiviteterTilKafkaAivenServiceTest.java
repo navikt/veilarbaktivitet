@@ -165,6 +165,29 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     }
 
     @Test
+    void skal_ikke_sende_tiltak_opprettet_som_historisk() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+
+        // Happy bruker har en gammel periode startDato nå-100 dager, sluttDato nå-50 dager
+
+        UUID funksjonellId = UUID.randomUUID();
+
+
+        Aktivitetskort aktivitetskort = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
+
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, funksjonellId, "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
+
+
+        cronService.sendOppTil5000AktiviterTilPortefolje();
+
+        // Ingen nye meldinger på porteføljetopic
+
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
+    }
+
+    @Test
     void skal_committe_hver_melding() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData1 = AktivitetDataTestBuilder.nyEgenaktivitet();

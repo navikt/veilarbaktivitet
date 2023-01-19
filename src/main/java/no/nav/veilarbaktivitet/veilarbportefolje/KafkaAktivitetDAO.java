@@ -36,6 +36,7 @@ public class KafkaAktivitetDAO {
                         LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                         LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON
                         WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                            AND EA.OPPRETTET_SOM_HISTORISK != 1
                         ORDER BY A.VERSJON
                         FETCH NEXT 5000 ROWS ONLY
                         """,

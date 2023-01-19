@@ -45,6 +45,11 @@ public class AktivitetskortService {
             return UpsertActionResult.OPPDATER;
         } else {
             var opprettetAktivitet = opprettAktivitet(bestilling);
+
+            if (opprettetAktivitet == null) {
+                log.info("Ignorert aktivitetskort som ikke har passende oppfølgingsperiode funksjonellId={}", bestilling.getAktivitetskort().getId());
+                return UpsertActionResult.IGNORE;
+            }
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }

@@ -441,6 +441,7 @@ public class AktivitetDAO {
                             .addValue("source", eksternAktivitetData.getSource())
                             .addValue("tiltak_kode", eksternAktivitetData.getTiltaksKode())
                             .addValue("arena_id", eksternAktivitetData.getArenaId() != null ? eksternAktivitetData.getArenaId().id() : null)
+                            .addValue("opprettet_som_historisk", eksternAktivitetData.getOpprettetSomHistorisk())
                             .addValue("aktivitetkort_type", eksternAktivitetData.getType().name())
                             .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
                             .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
@@ -450,8 +451,8 @@ public class AktivitetDAO {
                     namedParameterJdbcTemplate.update(
                     """
                         INSERT INTO EKSTERNAKTIVITET
-                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
-                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
                         """,
                     params
                     );

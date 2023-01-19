@@ -40,14 +40,15 @@ public class ArenaAktivitetskortService {
         Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt);
 
         if (oppfolgingsperiode.isEmpty()) {
-            // Antakeligvis tiltak fra syfo
-
-            // hopp over? lagre?
+            // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
             return null;
         }
 
         // Opprett via AktivitetService
         var aktivitetsData = bestilling.toAktivitet();
+        if (oppfolgingsperiode.get().getSluttDato() == null) {
+            aktivitetsData.getEksternAktivitetData().setOpprettetSomHistorisk(true);
+        }
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
             aktivitetsData,
@@ -57,9 +58,7 @@ public class ArenaAktivitetskortService {
         );
 
 
-        if (oppfolgingsperiode.get().getSluttDato() == null) {
-            dao.settTilHistorisk()
-        }
+
 
         // Gjør arena-spesifikk migrering
         arenaspesifikkMigrering(bestilling.getAktivitetskort(), opprettetAktivitetsData, bestilling.getEksternReferanseId());

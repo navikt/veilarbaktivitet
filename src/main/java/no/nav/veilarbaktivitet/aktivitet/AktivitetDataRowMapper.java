@@ -167,6 +167,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
                 .tiltaksKode(rs.getString("TILTAK_KODE"))
                 .arenaId(arenaId != null ? new ArenaId(arenaId) : null)
+                .opprettetSomHistorisk(rs.getBoolean("OPPRETTET_SOM_HISTORISK"))
                 .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
                 .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
                 .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))

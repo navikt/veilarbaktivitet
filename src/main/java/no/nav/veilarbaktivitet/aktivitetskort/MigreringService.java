@@ -60,12 +60,20 @@ public class MigreringService {
         var oppfolgingsperioderDTO = oppfolgingV2Client.hentOppfolgingsperioder(aktorId);
 
         if (oppfolgingsperioderDTO.isEmpty()) {
+            log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    List.of());
             return Optional.empty();
         }
 
         List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioder = oppfolgingsperioderDTO.get();
 
         if (oppfolgingsperioder.isEmpty()) {
+            log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
+                    aktorId.get(),
+                    opprettetTidspunkt,
+                    List.of());
             return Optional.empty();
         }
 
@@ -83,8 +91,23 @@ public class MigreringService {
                 .stream()
                 .filter(o -> o.getSluttDato() == null || (o.getSluttDato().isAfter(opprettetTidspunktCZDT)))
                 .min(comparingLong(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())))) // filteret over kan returnere flere perioder, velg perioden som har startdato nærmest opprettettidspunkt
-                .filter(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000)
-                .orElse(null)
+                .filter(o -> {
+                    var innenTiMinutter = Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000;
+                    if (innenTiMinutter) {
+
+                        log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 10 minutter oppfølging startdato) - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
+                                aktorId.get(),
+                                opprettetTidspunkt,
+                                oppfolgingsperioder);
+                    }
+                    return innenTiMinutter;
+                }).orElseGet(() -> {
+                    log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
+                            aktorId.get(),
+                            opprettetTidspunkt,
+                            oppfolgingsperioder);
+                    return null;
+                })
         ));
     }
 }
