@@ -26,7 +26,7 @@ public class AktivitetsplanITest {
     private int port;
 
     @Test
-    public void opprettAktivitet() {
+    void opprettAktivitet() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 

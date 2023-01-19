@@ -57,7 +57,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     }
 
     @Test
-    public void harIkkeSvart() {
+    void harIkkeSvart() {
         aktivitetTestService.opprettStillingFraNav(mockBruker);
         clearKafkaTopic();
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
@@ -69,7 +69,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     }
 
     @Test
-    public void harSvartNei() {
+    void harSvartNei() {
         var stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
         svarPaDelingAvCv(Boolean.FALSE, stillingFraNav);
@@ -82,7 +82,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     }
 
     @Test
-    public void harSvartJa() {
+    void harSvartJa() {
         var stillingFraNav = aktivitetTestService.opprettStillingFraNav(mockBruker);
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
         svarPaDelingAvCv(Boolean.TRUE, stillingFraNav);
@@ -95,7 +95,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     }
 
     @Test
-    public void annenAktivitet() {
+    void annenAktivitet() {
         AktivitetData annenAktivitet = AktivitetDataTestBuilder.nyEgenaktivitet().withId(1337L);
         AktivitetDTO aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(annenAktivitet, false);
         aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);

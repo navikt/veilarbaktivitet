@@ -32,7 +32,7 @@ class AktivitetskortMapperTest {
     }
 
     @Test
-    public void should_map_list_fields_to_empty_list_if_they_are_null() {
+    void should_map_list_fields_to_empty_list_if_they_are_null() {
         // These fields are set to null when deserializing, but are empty lists when using builder
         var aktivitetskortWithNullFields = aktivitetskort()
                 .withEtiketter(null)

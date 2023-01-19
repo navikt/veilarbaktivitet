@@ -54,7 +54,7 @@ public class AktivitetskortTestConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void aktivitetskorttestconsumer_skal_konsumere_og_finne_en_gjeldende_oppfolgingsperiode() {
+    void aktivitetskorttestconsumer_skal_konsumere_og_finne_en_gjeldende_oppfolgingsperiode() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         UUID funksjonellId = UUID.randomUUID();
