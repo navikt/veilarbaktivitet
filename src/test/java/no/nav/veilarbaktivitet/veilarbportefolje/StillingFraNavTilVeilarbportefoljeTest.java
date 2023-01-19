@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;

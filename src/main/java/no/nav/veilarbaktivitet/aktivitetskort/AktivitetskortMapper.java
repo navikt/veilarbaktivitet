@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -27,6 +28,15 @@ public class AktivitetskortMapper {
             throw new IllegalStateException("Unexpected value: " + bestilling);
         }
     }
+    private static ArenaId getArenaId(AktivitetskortBestilling bestilling) {
+        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
+            return arenaAktivitetskortBestilling.getEksternReferanseId();
+        } else if (bestilling instanceof EksternAktivitetskortBestilling) {
+            return null;
+        } else {
+            throw new IllegalStateException("Unexpected value: " + bestilling);
+        }
+    }
 
     public static AktivitetData mapTilAktivitetData(AktivitetskortBestilling bestilling, ZonedDateTime opprettetDato) {
         var aktivitetskort = bestilling.getAktivitetskort();
@@ -34,6 +44,7 @@ public class AktivitetskortMapper {
                 .source(bestilling.getSource())
                 .type(bestilling.getAktivitetskortType())
                 .tiltaksKode(getTiltakskode(bestilling))
+                .arenaId(getArenaId(bestilling))
                 .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
                 .oppgave(aktivitetskort.oppgaver)
                 .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
