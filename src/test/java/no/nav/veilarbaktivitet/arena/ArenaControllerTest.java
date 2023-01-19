@@ -145,7 +145,7 @@ class ArenaControllerTest {
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
         ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId));
-        assertEquals("forhaandsorientering.lenkeType kan ikke være null", exception.getReason());
+        assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
     }
 
