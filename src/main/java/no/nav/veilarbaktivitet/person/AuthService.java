@@ -14,6 +14,9 @@ import org.apache.cxf.common.util.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.text.ParseException;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -27,7 +30,37 @@ public class AuthService {
 
     private final PersonService personService;
 
+    public void sjekkEksternBrukerHarTilgang(Person ident) {
+        var loggedInUserFnr = getInnloggetBrukerIdent();
+        if (!loggedInUserFnr.equals(ident.get())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "ekstern bruker har ikke tilgang til andre brukere enn seg selv"
+            );
+        }
+        if (!eksternBrukerHasNiva4()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "ekstern bruker har ikke innloggingsnivå 4"
+            );
+        }
+    }
+
+    private boolean eksternBrukerHasNiva4() {
+        return authContextHolder.getIdTokenClaims()
+                .map(jwtClaimsSet -> {
+                    try {
+                        return Objects.equals(jwtClaimsSet.getStringClaim("acr"), "Level4");
+                    } catch (ParseException e) {
+                        return false;
+                    }
+                }).orElse(false);
+    }
+
     public void sjekkTilgangTilPerson(Person ident) {
+        if (erEksternBruker()) {
+            sjekkEksternBrukerHarTilgang(ident);
+            return;
+        }
+
         String aktorId = personService
                 .getAktorIdForPersonBruker(ident)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).get();
