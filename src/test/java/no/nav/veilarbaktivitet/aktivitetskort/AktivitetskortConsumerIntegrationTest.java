@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.TiltakMigreringCronService;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
@@ -81,6 +82,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     AktivitetskortService aktivitetskortService;
+
+    @Autowired
+    TiltakMigreringCronService tiltakMigreringCronService;
 
     @Autowired
     MeterRegistry meterRegistry;
@@ -217,6 +221,39 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
 
         Assertions.assertEquals(mockBruker.getOppfolgingsperiode(), aktivitet.getOppfolgingsperiodeId());
+    }
+
+    @Test
+    public void historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(75));
+        ArenaId arenata123 = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenata123, "MIDLONNTIL");
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst)); // Kjør to ganger for å sjekke at vi tar med oss OPPRETTET_SOM_HISTORISK når vi oppdaterer
+
+        var aktivitetFoer = hentAktivitet(funksjonellId);
+
+        assertThat(aktivitetFoer.getOppfolgingsperiodeId()).isNotNull();
+        assertThat(aktivitetFoer.isHistorisk()).isFalse();
+
+        var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
+                SELECT opprettet_som_historisk 
+                FROM EKSTERNAKTIVITET
+                WHERE AKTIVITET_ID = ? 
+                ORDER BY VERSJON desc
+                FETCH NEXT 1 ROW ONLY 
+                """, boolean.class, aktivitetFoer.getId());
+
+        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue();
+
+        tiltakMigreringCronService.settTiltakOpprettetSomHistoriskTilHistorisk();
+
+        var aktivitetEtter = hentAktivitet(funksjonellId);
+
+        assertThat(aktivitetEtter.isHistorisk()).isTrue();
     }
 
     @Test

@@ -46,8 +46,9 @@ public class ArenaAktivitetskortService {
 
         // Opprett via AktivitetService
         var aktivitetsData = bestilling.toAktivitet();
-        if (oppfolgingsperiode.get().getSluttDato() == null) {
+        if (oppfolgingsperiode.get().getSluttDato() != null) {
             aktivitetsData.getEksternAktivitetData().setOpprettetSomHistorisk(true);
+            aktivitetsData.getEksternAktivitetData().setOppfolgingsperiodeSlutt(oppfolgingsperiode.get().getSluttDato().toLocalDateTime());
         }
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
@@ -56,8 +57,6 @@ public class ArenaAktivitetskortService {
             opprettetTidspunkt,
             oppfolgingsperiode.get().getUuid()
         );
-
-
 
 
         // Gjør arena-spesifikk migrering

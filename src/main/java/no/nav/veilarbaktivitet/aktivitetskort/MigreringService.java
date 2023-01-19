@@ -94,7 +94,6 @@ public class MigreringService {
                 .filter(o -> {
                     var innenTiMinutter = Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000;
                     if (innenTiMinutter) {
-
                         log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 10 minutter oppfølging startdato) - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
                                 aktorId.get(),
                                 opprettetTidspunkt,

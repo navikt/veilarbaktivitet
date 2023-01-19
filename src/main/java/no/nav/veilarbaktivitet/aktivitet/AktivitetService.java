@@ -336,7 +336,6 @@ public class AktivitetService {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
         aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
-                .filter(a -> a.getAktivitetType() != AktivitetTypeData.EKSTERNAKTIVITET)
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());

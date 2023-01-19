@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -69,6 +70,13 @@ public class Database {
         return  ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(java.sql.Timestamp::toInstant)
                 .map(instant -> ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()))
+                .orElse(null);
+    }
+
+    public static LocalDateTime hentLocalDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
+        return  ofNullable(rs.getTimestamp(kolonneNavn))
+                .map(java.sql.Timestamp::toInstant)
+                .map(instant ->  LocalDateTime.ofInstant(instant, ZoneId.systemDefault()))
                 .orElse(null);
     }
 

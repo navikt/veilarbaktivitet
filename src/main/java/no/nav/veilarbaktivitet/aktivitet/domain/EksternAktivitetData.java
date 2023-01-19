@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -19,7 +20,8 @@ import java.util.List;
 public class EksternAktivitetData {
     String source;
     String tiltaksKode;
-    Boolean opprettetSomHistorisk;
+    boolean opprettetSomHistorisk;
+    LocalDateTime oppfolgingsperiodeSlutt;
     ArenaId arenaId;
     AktivitetskortType type;
     Oppgaver oppgave;
