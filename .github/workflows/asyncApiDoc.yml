@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - '.github/workflows/asyncApiDoc.yml'
-      - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
+      - 'src/main/resources/schemas/'
 
 concurrency:
   group: AktivitetskortV1.asyncapi.doc

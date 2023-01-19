@@ -15,7 +15,7 @@
       "ident": "arenaEndretav",
       "identType": "ARENAIDENT"
     },
-    "endretTidspunkt": "2022-10-19T12:00:00",
+    "endretTidspunkt": "2022-10-19T12:00:00.100+01:00",
     "avtaltMedNav": false,
     "oppgave": {
       "ekstern": {

@@ -46,7 +46,7 @@ public class AktivitetskortMapper {
                 .tiltaksKode(getTiltakskode(bestilling))
                 .arenaId(getArenaId(bestilling))
                 .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
-                .oppgave(aktivitetskort.oppgaver)
+                .oppgave(aktivitetskort.oppgave)
                 .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
                 .etiketter(Optional.ofNullable(aktivitetskort.etiketter).orElse(List.of()))
                 .build();

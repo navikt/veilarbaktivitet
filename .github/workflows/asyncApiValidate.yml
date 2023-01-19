@@ -5,7 +5,7 @@ on:
   push:
     paths:
       - '.github/workflows/asyncApiValidate.yml'
-      - 'src/main/resources/schemas/AktivitetskortV1.asyncapi.yml'
+      - 'src/main/resources/schemas/**'
 
 jobs:
   generate:
