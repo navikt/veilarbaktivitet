@@ -169,7 +169,7 @@ public class AktivitetDAO {
                 .addValue("opprettet_dato", aktivitet.getOpprettetDato())
                 .addValue("endret_dato", endretDato)
                 .addValue("endret_av", aktivitet.getEndretAv())
-                .addValue("lagt_inn_av", EnumUtils.getName(aktivitet.getLagtInnAv()))
+                .addValue("lagt_inn_av", EnumUtils.getName(aktivitet.getEndretAvType()))
                 .addValue("lenke", aktivitet.getLenke())
                 .addValue("avtalt", aktivitet.isAvtalt())
                 .addValue("gjeldende", true)

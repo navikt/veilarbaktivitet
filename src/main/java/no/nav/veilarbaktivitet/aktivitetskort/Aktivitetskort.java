@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Singular;
 import lombok.With;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
 import no.nav.veilarbaktivitet.aktivitetskort.util.ZonedOrNorwegianDateTimeDeserializer;
@@ -38,7 +39,7 @@ public class Aktivitetskort {
     LocalDate sluttDato;
 
     @JsonProperty(required = true)
-    IdentDTO endretAv;
+    Ident endretAv;
 
     @JsonProperty(required = true)
     @JsonDeserialize(using = ZonedOrNorwegianDateTimeDeserializer.class)
@@ -47,7 +48,7 @@ public class Aktivitetskort {
     @JsonProperty(required = true)
     boolean avtaltMedNav;
 
-    Oppgaver oppgaver;
+    Oppgaver oppgave;
 
     @Singular("handling")
     List<LenkeSeksjon> handlinger;

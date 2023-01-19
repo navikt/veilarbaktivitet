@@ -4,7 +4,7 @@ import lombok.val;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 
 import java.util.Optional;
 
@@ -32,7 +32,7 @@ public class AktivitetDataMapper {
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
                 // TODO: Ikke bruk statiske ting som dette inne i en mapper
-                .lagtInnAv(AuthContextHolderThreadLocal.instance().erEksternBruker() ? InnsenderData.BRUKER : InnsenderData.NAV)
+                .endretAvType(AuthContextHolderThreadLocal.instance().erEksternBruker() ? Innsender.BRUKER : Innsender.NAV)
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
                 .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());

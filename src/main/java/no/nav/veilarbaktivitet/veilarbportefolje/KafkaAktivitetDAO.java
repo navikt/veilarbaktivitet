@@ -9,7 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.config.database.Database;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.springframework.stereotype.Repository;
@@ -69,7 +69,7 @@ public class KafkaAktivitetDAO {
         var arenaId = rs.getString("ARENA_ID");
         // Eksterne aktiviteter SLUTT
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
-        InnsenderData lagtInnAv = EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av"));
+        Innsender lagtInnAv = EnumUtils.valueOf(Innsender.class, rs.getString("lagt_inn_av"));
         EndringsType transaksjonsType = EndringsType.get(EnumUtils.valueOf(AktivitetTransaksjonsType.class, rs.getString("transaksjons_type")));
         StillingFraNavPortefoljeData stillingFraNavData =
                 StillingFraNavPortefoljeData.hvisStillingFraNavDataFinnes(

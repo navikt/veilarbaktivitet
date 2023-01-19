@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.veilarbportefolje.dto;
 import lombok.Builder;
 import lombok.Value;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.veilarbportefolje.EndringsType;
 import no.nav.veilarbaktivitet.veilarbportefolje.StillingFraNavPortefoljeData;
 
@@ -21,7 +21,7 @@ public class KafkaAktivitetMeldingV4 {
     AktivitetTypeDTO aktivitetType;
     AktivitetStatus aktivitetStatus;
     EndringsType endringsType;
-    InnsenderData lagtInnAv;
+    Innsender lagtInnAv;
     StillingFraNavPortefoljeData stillingFraNavData;
     boolean avtalt;
     boolean historisk;

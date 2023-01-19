@@ -46,7 +46,7 @@ public class AktivitetskortMapper {
                 .tiltaksKode(getTiltakskode(bestilling))
                 .arenaId(getArenaId(bestilling))
                 .detaljer(Optional.ofNullable(aktivitetskort.detaljer).orElse(List.of()))
-                .oppgave(aktivitetskort.oppgaver)
+                .oppgave(aktivitetskort.oppgave)
                 .handlinger(Optional.ofNullable(aktivitetskort.handlinger).orElse(List.of()))
                 .etiketter(Optional.ofNullable(aktivitetskort.etiketter).orElse(List.of()))
                 .build();
@@ -61,10 +61,10 @@ public class AktivitetskortMapper {
                 .beskrivelse(aktivitetskort.beskrivelse)
                 .status(aktivitetskort.aktivitetStatus)
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
-                .lagtInnAv(aktivitetskort.endretAv.identType().mapToInnsenderType())
+                .endretAv(aktivitetskort.endretAv.ident())
+                .endretAvType(aktivitetskort.endretAv.identType())
                 .opprettetDato(zonedDateTimeToDate(opprettetDato))
                 .endretDato(zonedDateTimeToDate(aktivitetskort.endretTidspunkt))
-                .endretAv(aktivitetskort.endretAv.ident())
                 .eksternAktivitetData(eksternAktivitetData)
                 .build();
     }

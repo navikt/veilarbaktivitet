@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EndringsTypeTest {
     @Test
-    public void alleVerdierSkalBliMappetUtenError() {
+    void alleVerdierSkalBliMappetUtenError() {
         AktivitetTransaksjonsType[] values = AktivitetTransaksjonsType.values();
         for (AktivitetTransaksjonsType value : values) {
             EndringsType endringsType = EndringsType.get(value);

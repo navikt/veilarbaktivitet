@@ -15,6 +15,7 @@ properties:
     description: Unik id for denne meldingen brukes til deduplisering
   source:
     type: string
+    maxLength: 200
     description: Applikasjonen eller teamet som er avsender av meldingen.
   sendt:
     type: string
@@ -43,6 +44,7 @@ definitions:
       - ARENA_TILTAK
     description: Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
   oppgave:
+    additionalProperties: false
     type:
       - object
       - 'null'
@@ -57,6 +59,7 @@ definitions:
     description: En oppgave vil bli rendret som et alert-panel med en lenke i aktivitetskortet. Dette signaliserer at det er en oppgave bruker eller veileder trenger å gjøre (f.eks. signere en avtale). Selve handlingen vil utføres i et annet system enn aktivitetsplan, og vil typisk resultere i en ny versjon av aktiviteten med oppdatert status sendes inn på denne tjenesten.
   lenkeseksjon:
     type: object
+    additionalProperties: false
     properties:
       tekst:
         type: string
@@ -73,12 +76,14 @@ definitions:
           - FELLES
   attributt:
     type: object
+    additionalProperties: false
     properties:
       label:
         type: string
       verdi:
         type: string
   aktivitetskort:
+    additionalProperties: false
     type: object
     required:
       - id
@@ -140,6 +145,7 @@ definitions:
         description: Beskrivende tekst for aktiviteten
       endretAv:
         type: object
+        additionalProperties: false
         required:
           - ident
           - identType
@@ -157,8 +163,13 @@ definitions:
               - ARENAIDENT
               - NAVIDENT
               - PERSONBRUKER
-            description: Type ident. Kan være navIdent, arenaIdent, på sikt kanskje
-              tiltaksarrangør, arbeidsgiver eller eksternBruker
+              - TILTAKSARRAGOER
+              - ARBEIDSGIVER
+            description: |
+              Tiltaksarrangør og arbeidsgiver er orgNr.
+              Personbruker er norsk-ident (dnr eller fnr).
+              Navident er ident til navansatt: feks Z999999.
+              Arenaident: kun til intern bruk.
         examples:
           - ident: AAA123
             identType: ARENAIDENT
@@ -179,6 +190,7 @@ definitions:
         description: Ved avbrudd i aktiviteten, kan det legges til en begrunnelse
           for avbrytelsen.
       oppgave:
+        additionalProperties: false
         type:
           - object
           - 'null'
@@ -202,6 +214,7 @@ definitions:
       etiketter:
         type: array
         items:
+          additionalProperties: false
           type: object
           properties:
             kode:

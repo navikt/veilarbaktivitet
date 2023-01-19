@@ -16,7 +16,7 @@ import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.person.AuthService;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.Assertions;
@@ -183,7 +183,7 @@ class ForhaandsorienteringDTOControllerTest {
                 //endres altid ved oppdatering
                 .versjon(parseLong(markertSomAvtalt.getVersjon()))
                 .endretDato(markertSomAvtalt.getEndretDato())
-                .lagtInnAv(InnsenderData.NAV)
+                .endretAvType(Innsender.NAV)
                 .endretAv(ident)
                 .build();
 
@@ -285,7 +285,7 @@ class ForhaandsorienteringDTOControllerTest {
                     .stillingFraNavData(null)
                     //endres altid ved oppdatering
                     .versjon(Long.parseLong(resultatDTO.getVersjon()))
-                    .lagtInnAv(InnsenderData.NAV)
+                    .endretAvType(Innsender.NAV)
                     .endretAv(ident)
                     .endretDato(resultatDTO.getEndretDato())
                     .build();

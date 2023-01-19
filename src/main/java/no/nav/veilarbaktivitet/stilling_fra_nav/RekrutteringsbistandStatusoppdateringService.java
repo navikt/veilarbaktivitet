@@ -52,7 +52,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         Person endretAv = Person.navIdent(Optional.ofNullable(navIdent).orElse("SYSTEM"));
         var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.CV_DELT);
         var nyAktivitet = aktivitet.toBuilder()
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
                 .endretAv(endretAv.get())
@@ -71,7 +71,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         AktivitetStatus nyStatus = asList(AktivitetStatus.FULLFORT, AktivitetStatus.AVBRUTT).contains(aktivitet.getStatus()) ?
                 aktivitet.getStatus() : AktivitetStatus.FULLFORT;
         var nyAktivitet = aktivitet.toBuilder()
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.IKKE_FATT_JOBBEN)
                 .endretAv(endretAv.get())

@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -45,7 +45,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .opprettetDato(Database.hentDato(rs, "opprettet_dato"))
                 .endretDato(Database.hentDato(rs, "endret_dato"))
                 .endretAv(rs.getString("endret_av"))
-                .lagtInnAv(EnumUtils.valueOf(InnsenderData.class, rs.getString("lagt_inn_av")))
+                .endretAvType(EnumUtils.valueOf(Innsender.class, rs.getString("lagt_inn_av")))
                 .avtalt(rs.getBoolean("avtalt"))
                 .lenke(rs.getString("lenke"))
                 .transaksjonsType(
@@ -135,7 +135,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
                 .avtaltDato(Database.hentDatoDato(rs, "cv_kan_deles_avtalt_dato"))
-                .endretAvType(EnumUtils.valueOf(InnsenderData.class, rs.getString("cv_kan_deles_av_type")))
+                .endretAvType(EnumUtils.valueOf(Innsender.class, rs.getString("cv_kan_deles_av_type")))
                 .build();
 
         var kontaktpersonData = KontaktpersonData.builder()

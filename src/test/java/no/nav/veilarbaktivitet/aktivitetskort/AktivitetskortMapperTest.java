@@ -2,7 +2,8 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentDTO;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.Test;
 
@@ -25,13 +26,13 @@ class AktivitetskortMapperTest {
                 .tittel("The Elder Scrolls: Arena")
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.GJENNOMFORES)
-                .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
+                .endretAv(new Ident("arenaEndretav", Innsender.ARENAIDENT))
                 .endretTidspunkt(ZonedDateTime.now())
                 .build();
     }
 
     @Test
-    public void should_map_list_fields_to_empty_list_if_they_are_null() {
+    void should_map_list_fields_to_empty_list_if_they_are_null() {
         // These fields are set to null when deserializing, but are empty lists when using builder
         var aktivitetskortWithNullFields = aktivitetskort()
                 .withEtiketter(null)

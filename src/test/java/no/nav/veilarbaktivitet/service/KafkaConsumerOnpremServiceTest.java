@@ -8,7 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 public class KafkaConsumerOnpremServiceTest {
 
     @Test
-    public void skal_behandleKvpAvsluttet() {
+    void skal_behandleKvpAvsluttet() {
         AktivitetService aktivitetService = mock(AktivitetService.class);
         KVPAvsluttetService kvpAvsluttetService = mock(KVPAvsluttetService.class);
         KafkaConsumerOnpremService consumerService = new KafkaConsumerOnpremService(aktivitetService, kvpAvsluttetService);

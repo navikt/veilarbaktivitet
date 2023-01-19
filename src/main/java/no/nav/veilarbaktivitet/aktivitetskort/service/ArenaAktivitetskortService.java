@@ -36,6 +36,7 @@ public class ArenaAktivitetskortService {
     public AktivitetData opprettAktivitet(ArenaAktivitetskortBestilling bestilling) {
         var aktorId = bestilling.getAktorId();
         var opprettetTidspunkt = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
+        var endretAv = bestilling.getAktivitetskort().getEndretAv();
 
         Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt);
 
@@ -53,7 +54,7 @@ public class ArenaAktivitetskortService {
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
             aktivitetsData,
-            bestilling.getAktivitetskort().getEndretAv().toPerson(),
+            endretAv,
             opprettetTidspunkt,
             oppfolgingsperiode.get().getUuid()
         );

@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgave;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
 import java.net.URL;
@@ -76,7 +76,7 @@ public class AktivitetTypeDataTestBuilder {
 
         if(setCVKanDelesData){
             cvKanDelesData = CvKanDelesData.builder()
-                    .endretAvType(InnsenderData.NAV)
+                    .endretAvType(Innsender.NAV)
                     .endretAv("Z999999")
                     .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
                     .kanDeles(Boolean.TRUE)
@@ -109,7 +109,7 @@ public class AktivitetTypeDataTestBuilder {
                 .type(AktivitetskortType.ARENA_TILTAK)
                 .source("AKTIVITET_ARENA_ACL")
                 .tiltaksKode("ABIST")
-                .oppgave(new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no"), "knapp"), null))
+                .oppgave(new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no")), null))
                 .detalj(new Attributt("Arrangør", "NAV"))
                 .detalj(new Attributt("Dager per uke", "5"))
                 .etikett(new Etikett("GJENN"))

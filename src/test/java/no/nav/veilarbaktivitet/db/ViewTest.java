@@ -42,7 +42,7 @@ class ViewTest extends DatabaseTest {
     private static final long antallViews = views().count();
 
     @Test
-    public void database_skal_ha_riktig_antall_views() {
+    void database_skal_ha_riktig_antall_views() {
         long count = (long) jdbcTemplate.queryForList("" +
                                                       "SELECT " +
                                                       "COUNT(*) AS VIEW_COUNT " +

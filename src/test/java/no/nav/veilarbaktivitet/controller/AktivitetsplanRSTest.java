@@ -50,11 +50,12 @@ import static org.mockito.Mockito.when;
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
+// TODO: 19/01/2023 skriv om til nye test rammeverk (SpringBootTestBase)
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
 public class AktivitetsplanRSTest {
-
+    
     @Autowired
     MockHttpServletRequest mockHttpServletRequest;
 
@@ -109,7 +110,7 @@ public class AktivitetsplanRSTest {
     public void hentAktivitetVersjoner_returnererIkkeForhaandsorientering() {
         var aktivitet = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
         Long aktivitetId = aktivitet.getId();
-        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), Person.aktorId(mockBruker.getAktorId()));
+        aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES), Person.aktorId(mockBruker.getAktorId()).tilIdent());
         var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetId);
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), aktivitetId, Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
@@ -269,7 +270,7 @@ public class AktivitetsplanRSTest {
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
         lagredeAktivitetsIder = aktiviteter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(Person.aktorId(mockBruker.getAktorId()), aktivitet, Person.aktorId(mockBruker.getAktorId())).getId())
+                .map(aktivitet -> aktivitetService.opprettAktivitet(Person.aktorId(mockBruker.getAktorId()), aktivitet, Person.aktorId(mockBruker.getAktorId()).tilIdent()).getId())
                 .collect(Collectors.toList());
     }
 

@@ -8,13 +8,16 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.IkkeUnderOppfolgingsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
@@ -66,12 +69,12 @@ public class AktivitetskortService {
     }
 
     private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
-        Person endretAvIdent = bestilling.getAktivitetskort().getEndretAv().toPerson();
+        var endretAv = bestilling.getAktivitetskort().getEndretAv();
         var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
         var aktivitetData = AktivitetskortMapper
                 .mapTilAktivitetData(bestilling, bestilling.getAktivitetskort().getEndretTidspunkt());
         try {
-            return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAvIdent, opprettet);
+            return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAv, opprettet);
         } catch (IngenGjeldendePeriodeException e) {
             throw new IkkeUnderOppfolgingsFeil(e);
         }
@@ -88,7 +91,7 @@ public class AktivitetskortService {
             return aktivitetService.oppdaterStatus(
                 aktivitet,
                 nyAktivitet, // TODO: Populer avbrutt-tekstfelt
-                Person.arenaIdent(nyAktivitet.getEndretAv()), // TODO håndtere rikere identType
+                new Ident(nyAktivitet.getEndretAv(), nyAktivitet.getEndretAvType()),
                 DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato())
             );
         } else {
@@ -109,7 +112,7 @@ public class AktivitetskortService {
         if (nyAktivitet.isAvtalt() && !originalAktivitet.isAvtalt()) {
             return aktivitetService.settAvtalt(
                     originalAktivitet,
-                    Person.arenaIdent(nyAktivitet.getEndretAv()), // TODO fix identtype på aktivitet
+                    new Ident(nyAktivitet.getEndretAv(), nyAktivitet.getEndretAvType()),
                     DateUtils.dateToLocalDateTime(nyAktivitet.getEndretDato()));
         } else {
             return originalAktivitet;

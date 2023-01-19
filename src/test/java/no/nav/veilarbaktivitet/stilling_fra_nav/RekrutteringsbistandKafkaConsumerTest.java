@@ -16,7 +16,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.test.annotation.DirtiesContext;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -86,7 +85,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_CvDelt_Happy_Case_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws Exception {
+    void behandle_CvDelt_Happy_Case_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
@@ -105,7 +104,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -122,7 +121,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv() throws Exception {
+    void behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv() throws Exception {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         String ikkeFattJobbenDetaljer = """
@@ -144,7 +143,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_ikke_fatt_jobben_svart_men_cv_er_ikke_delt() throws Exception {
+    void behandle_ikke_fatt_jobben_svart_men_cv_er_ikke_delt() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
@@ -166,7 +165,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertAll();
@@ -182,7 +181,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_ikke_fatt_jobben_nar_aktivitet_er_avbrutt() throws Exception {
+    void behandle_ikke_fatt_jobben_nar_aktivitet_er_avbrutt() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
                 new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, INGEN_DETALJER, navIdent, tidspunkt);
@@ -234,7 +233,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_ikke_fatt_jobben_etter_cv_delt() throws Exception {
+    void behandle_ikke_fatt_jobben_etter_cv_delt() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
@@ -264,7 +263,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
@@ -283,7 +282,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void behandle_CvDelt_svart_nei_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws Exception {
+    void behandle_CvDelt_svart_nei_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(Boolean.FALSE, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
@@ -302,7 +301,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void duplikat_CvDelt_Skal_ikke_sende_duplikat_brukernotifikasjon() throws Exception {
+    void duplikat_CvDelt_Skal_ikke_sende_duplikat_brukernotifikasjon() throws Exception {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering =
@@ -316,7 +315,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -343,7 +342,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void happy_case_forste_gode_melding_vi_fikk_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
+    void happy_case_forste_gode_melding_vi_fikk_skal_oppdatere_soknadsstatus_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         Date date = Date.from(Instant.ofEpochSecond(1));
@@ -373,7 +372,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo("Z314159");
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -390,7 +389,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void hvis_feil_i_json_skal_vi_ikke_endre_aktivitet_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
+    void hvis_feil_i_json_skal_vi_ikke_endre_aktivitet_og_lage_metrikk() throws ExecutionException, InterruptedException, TimeoutException {
         aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, aktivitetDTO, date);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         String sendtStatusoppdatering = """
@@ -416,7 +415,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void cvdelt_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
+    void cvdelt_hvis_ikke_svart() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
 
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
@@ -438,7 +437,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void cvdelt_hvis_aktivitet_ikke_finnes() throws ExecutionException, InterruptedException, TimeoutException {
+    void cvdelt_hvis_aktivitet_ikke_finnes() throws ExecutionException, InterruptedException, TimeoutException {
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
         SendResult<String, RekrutteringsbistandStatusoppdatering> sendResult =
                 navCommonKafkaJsonTemplate.send(
@@ -457,7 +456,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void cvdelt_hvis_NEI_pa_deling_av_cv() throws ExecutionException, InterruptedException, TimeoutException {
+    void cvdelt_hvis_NEI_pa_deling_av_cv() throws ExecutionException, InterruptedException, TimeoutException {
         aktivitetTestService.svarPaaDelingAvCv(NEI, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
         RekrutteringsbistandStatusoppdatering sendtStatusoppdatering = new RekrutteringsbistandStatusoppdatering(RekrutteringsbistandStatusoppdateringEventType.CV_DELT, DETALJER_TEKST, navIdent, tidspunkt);
@@ -479,7 +478,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void cvdelt_aktivitet_er_i_status_FULLFORT() throws ExecutionException, InterruptedException, TimeoutException {
+    void cvdelt_aktivitet_er_i_status_FULLFORT() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetDTO_svartJA, FULLFORT);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());
@@ -501,7 +500,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(InnsenderData.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -519,7 +518,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void cvdelt_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
+    void cvdelt_aktivitet_er_i_status_AVBRUTT() throws ExecutionException, InterruptedException, TimeoutException {
         AktivitetDTO aktivitetDTO_svartJA = aktivitetTestService.svarPaaDelingAvCv(JA, mockBruker, veileder, aktivitetDTO, Date.from(Instant.ofEpochSecond(1)));
         aktivitetTestService.oppdatterAktivitetStatus(mockBruker, veileder, aktivitetDTO_svartJA, AktivitetStatus.AVBRUTT);
         AktivitetDTO aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO.getId());

@@ -17,12 +17,11 @@
     },
     "endretTidspunkt": "2022-10-19T12:00:00.100Z",
     "avtaltMedNav": false,
-    "oppgaver": {
+    "oppgave": {
       "ekstern": {
         "tekst": "tekst",
         "subtekst": "subtekst",
-        "url": "http://localhost:8080/ekstern",
-        "knapptekst": "knappetekst"
+        "url": "http://localhost:8080/ekstern"
       },
       "intern": null
     },
@@ -31,13 +30,13 @@
         "tekst": "tekst",
         "subtekst": "subtekst",
         "url": "http://localhost:8080/ekstern",
-        "type": "EKSTERN"
+        "lenkeType": "EKSTERN"
       },
       {
         "tekst": "tekst",
         "subtekst": "subtekst",
         "url": "http://localhost:8080/intern",
-        "type": "INTERN"
+        "lenkeType": "INTERN"
       }
     ],
     "detaljer": [

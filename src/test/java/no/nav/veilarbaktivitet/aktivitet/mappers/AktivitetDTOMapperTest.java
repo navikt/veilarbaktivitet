@@ -34,7 +34,7 @@ class AktivitetDTOMapperTest {
                     s.assertThat(aktivitetDTO.getLenke()).isEqualTo(aktivitetData.getLenke());
                     s.assertThat(aktivitetDTO.getAvsluttetKommentar()).isEqualTo(aktivitetData.getAvsluttetKommentar());
                     s.assertThat(aktivitetDTO.isAvtalt()).isEqualTo(aktivitetData.isAvtalt());
-                    s.assertThat(aktivitetDTO.getLagtInnAv()).isEqualTo(aktivitetData.getLagtInnAv().name());
+                    s.assertThat(aktivitetDTO.getLagtInnAv()).isEqualTo(aktivitetData.getEndretAvType().name());
                     s.assertThat(aktivitetDTO.getOpprettetDato()).isEqualTo(aktivitetData.getOpprettetDato());
                     s.assertThat(aktivitetDTO.getEndretDato()).isEqualTo(aktivitetData.getEndretDato());
                     s.assertThat(aktivitetDTO.getEndretAv()).isEqualTo(aktivitetData.getEndretAv());

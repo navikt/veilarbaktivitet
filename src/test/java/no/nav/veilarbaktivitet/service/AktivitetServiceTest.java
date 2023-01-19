@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,12 +71,12 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void opprettAktivitet() {
+    void opprettAktivitet() {
         val aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOpprettAktivitetArgument();
 
@@ -88,17 +88,17 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
-    public void opprettAktivitetMedKvp() {
+    void opprettAktivitetMedKvp() {
         val aktivitet = lagEnNyAktivitet();
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOpprettAktivitetArgument();
 
@@ -106,7 +106,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterStatus() {
+    void oppdaterStatus() {
         val aktivitet = lagEnNyAktivitet();
 
         val avsluttKommentar = "Alexander er best";
@@ -117,19 +117,19 @@ public class AktivitetServiceTest {
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
                 .build();
-        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @SneakyThrows
     @Test
-    public void oppdaterStatusMedKvpTilgang() {
+    void oppdaterStatusMedKvpTilgang() {
         val aktivitet = lagEnNyAktivitet();
         val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
@@ -139,13 +139,13 @@ public class AktivitetServiceTest {
                 .status(nyStatus)
                 .build();
 
-        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER.tilIdent());
         captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
 
     @Test
-    public void oppdaterEtikett() {
+    void oppdaterEtikett() {
         val aktivitet = lagEnNyAktivitet();
 
         val oppdatertAktivitet = aktivitet
@@ -160,13 +160,13 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(getCapturedAktivitet().getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
     }
 
     @Test
-    public void oppdaterReferat() {
+    void oppdaterReferat() {
         val aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         String REFERAT = "Referat";
@@ -183,14 +183,14 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(getCapturedAktivitet().getMoteData().getReferat(),
                 equalTo(REFERAT));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.REFERAT_ENDRET));
     }
 
     @Test
-    public void oppdaterAktivitetFrist() {
+    void oppdaterAktivitetFrist() {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
@@ -199,11 +199,11 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
-    public void oppdaterMoteTidOgSted() {
+    void oppdaterMoteTidOgSted() {
         AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         Date nyFrist = new Date();
@@ -217,11 +217,11 @@ public class AktivitetServiceTest {
         assertThat(capturedAktivitet.getTilDato(), equalTo(nyFrist));
         assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
-    public void oppdaterAktivitet() {
+    void oppdaterAktivitet() {
         val aktivitet = lagEnNyAktivitet();
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
@@ -238,7 +238,7 @@ public class AktivitetServiceTest {
 
     @Disabled("Må fikses")
     @Test
-    public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
+    void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).oppdaterAktivitet(any());
 
@@ -250,7 +250,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
+    void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
         gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
         verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);

@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -66,9 +66,9 @@ class StillingFraNavMetrikker {
                 .increment();
     }
 
-    void countManuletAvbrutt(InnsenderData brukerType) {
+    void countManuletAvbrutt(Innsender brukerType) {
         Counter.builder(STILLINGFRANAVMANUELTAVBRUTT)
-                .tag(EREKSTERNBRUKER, "" + brukerType.equals(InnsenderData.BRUKER))
+                .tag(EREKSTERNBRUKER, "" + brukerType.equals(Innsender.BRUKER))
                 .register(meterRegistry)
                 .increment();
     }

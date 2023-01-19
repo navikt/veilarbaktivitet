@@ -13,7 +13,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.MappingUtils;
-import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,7 +20,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -69,25 +67,25 @@ public class AktivitetService {
         return aktivitetDAO.hentAktivitetVersjoner(id);
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson) {
-        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, LocalDateTime.now());
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv) {
+        return opprettAktivitet(aktorId, aktivitet, endretAv, LocalDateTime.now());
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet) {
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) {
         UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-        return opprettAktivitet(aktorId, aktivitet, endretAvPerson, opprettet, oppfolgingsperiode);
+        return opprettAktivitet(aktorId, aktivitet, endretAv, opprettet, oppfolgingsperiode);
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Person endretAvPerson, LocalDateTime opprettet, UUID oppfolgingsperiode) {
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet, UUID oppfolgingsperiode) {
 
         AktivitetData nyAktivivitet = aktivitet
                 .toBuilder()
                 .aktorId(aktorId.get())
                 .avtalt(aktivitet.isAvtalt())
-                .lagtInnAv(endretAvPerson.tilBrukerType())
+                .endretAvType(endretAv.identType())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(localDateTimeToDate(opprettet))
-                .endretAv(endretAvPerson.get())
+                .endretAv(endretAv.ident())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .oppfolgingsperiodeId(oppfolgingsperiode)
                 .build();
@@ -101,19 +99,19 @@ public class AktivitetService {
     }
 
     @Transactional
-    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv) {
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Ident endretAv) {
         return oppdaterStatus(originalAktivitet, aktivitet, endretAv, LocalDateTime.now());
     }
 
     @Transactional
-    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Person endretAv, LocalDateTime endretDato) {
+    public AktivitetData oppdaterStatus(AktivitetData originalAktivitet, AktivitetData aktivitet, Ident endretAv, LocalDateTime endretDato) {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAv(endretAv.ident())
+                .endretAvType(endretAv.identType())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
-                .endretAv(endretAv.get())
                 .build();
 
 
@@ -130,7 +128,7 @@ public class AktivitetService {
         val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAv(endretAv.get())
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
@@ -148,7 +146,7 @@ public class AktivitetService {
 
         val nyAktivitet = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .endretAv(endretAv.get())
@@ -160,7 +158,7 @@ public class AktivitetService {
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv.get())
@@ -171,7 +169,7 @@ public class AktivitetService {
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -194,7 +192,7 @@ public class AktivitetService {
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
-                .withLagtInnAv(endretAv.tilBrukerType())
+                .withEndretAvType(endretAv.tilBrukerType())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -220,7 +218,7 @@ public class AktivitetService {
     public void svarPaaKanCvDeles(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
-                .withLagtInnAv(endretAv.tilBrukerType())
+                .withEndretAvType(endretAv.tilBrukerType())
                 .withTransaksjonsType(AktivitetTransaksjonsType.DEL_CV_SVART)
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
@@ -242,7 +240,7 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .fraDato(aktivitet.getFraDato())
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
-                .lagtInnAv(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilBrukerType())
                 .lenke(aktivitet.getLenke())
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
@@ -259,14 +257,14 @@ public class AktivitetService {
         return result;
     }
 
-    public AktivitetData settAvtalt(AktivitetData originalAktivitet, Person endretAv, LocalDateTime endretTidspunkt) {
+    public AktivitetData settAvtalt(AktivitetData originalAktivitet, Ident endretAv, LocalDateTime endretTidspunkt) {
         if (!originalAktivitet.endringTillatt()) throw new IllegalStateException(String.format("Ikke lov å endre aktivtet med id %s", originalAktivitet.getId()));
         return aktivitetDAO.oppdaterAktivitet(
                 originalAktivitet
                         .withAvtalt(true)
                         .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
-                        .withEndretAv(endretAv.get())
-                        .withLagtInnAv(endretAv.tilBrukerType())
+                        .withEndretAv(endretAv.ident())
+                        .withEndretAvType(endretAv.identType())
                         ,
                 endretTidspunkt
                 );
