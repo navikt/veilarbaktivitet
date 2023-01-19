@@ -5,13 +5,15 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
@@ -37,7 +39,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
-import org.hibernate.validator.constraints.ru.INN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -172,7 +173,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
         Assertions.assertTrue(aktivitet.isAvtalt());
-        Assertions.assertEquals(Innsender.ARENAIDENT.toString(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(Innsender.ARENAIDENT.toString(), aktivitet.getEndretAvType());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -196,7 +197,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
         var resultat = hentAktivitet(aktivitetskort.getId());
         assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
-        assertThat(resultat.getLagtInnAv()).isEqualTo(Innsender.BRUKER.toString());
+        assertThat(resultat.getEndretAvType()).isEqualTo(Innsender.BRUKER.toString());
     }
 
 
@@ -572,9 +573,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var arbeidsAktivitet = hentAktivitet(arbeidgiverAktivitet.getId());
         var tilatksarratgoerAktivitet = hentAktivitet(tiltaksarrangoerAktivitet.getId());
         assertThat(arbeidsAktivitet.getEndretAv()).isEqualTo(arbeidsgiverIdent.ident());
-        assertThat(arbeidsAktivitet.getLagtInnAv()).isEqualTo(arbeidsgiverIdent.identType().toString());
+        assertThat(arbeidsAktivitet.getEndretAvType()).isEqualTo(arbeidsgiverIdent.identType().toString());
         assertThat(tilatksarratgoerAktivitet.getEndretAv()).isEqualTo(tiltaksarragoerIdent.ident());
-        assertThat(tilatksarratgoerAktivitet.getLagtInnAv()).isEqualTo(tiltaksarragoerIdent.identType().toString());
+        assertThat(tilatksarratgoerAktivitet.getEndretAvType()).isEqualTo(tiltaksarragoerIdent.identType().toString());
     }
 
 
