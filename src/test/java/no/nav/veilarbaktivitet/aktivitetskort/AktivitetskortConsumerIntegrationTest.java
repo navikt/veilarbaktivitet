@@ -5,6 +5,7 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -25,7 +26,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -36,6 +37,7 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
+import org.hibernate.validator.constraints.ru.INN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +57,6 @@ import java.util.UUID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
-import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
@@ -171,7 +172,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
         Assertions.assertTrue(aktivitet.isAvtalt());
-        Assertions.assertEquals(InnsenderData.NAV.name(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(Innsender.ARENAIDENT.toString(), aktivitet.getLagtInnAv());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -186,16 +187,16 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     public void aktiviteter_opprettet_av_bruker_skal_ha_riktig_endretAv_verdi() {
         var brukerIdent = "12129312122";
         var aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
-                .withEndretAv(new IdentDTO(
+                .withEndretAv(new Ident(
                     brukerIdent,
-                        IdentType.PERSONBRUKERIDENT
+                        Innsender.BRUKER
                 ));
         var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
                 aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
         var resultat = hentAktivitet(aktivitetskort.getId());
         assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
-        assertThat(resultat.getLagtInnAv()).isEqualTo(InnsenderData.BRUKER.toString());
+        assertThat(resultat.getLagtInnAv()).isEqualTo(Innsender.BRUKER.toString());
     }
 
 
@@ -225,7 +226,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         Aktivitetskort tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
         ArenaMeldingHeaders meldingContext = meldingContext(new ArenaId("ARENATA123"), "MIDL");
-        var annenVeileder = new IdentDTO("ANNEN_NAV_IDENT", ARENAIDENT);
+        var annenVeileder = new Ident("ANNEN_NAV_IDENT", Innsender.ARENAIDENT);
         Aktivitetskort tiltaksaktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
                 .withEndretAv(annenVeileder);
         ArenaMeldingHeaders updatemeldingContext = meldingContext(new ArenaId("ARENATA123"), "MIDL");
@@ -557,6 +558,23 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getFraDato()).isNull();
         assertThat(aktivitet.getTilDato()).isNull();
         assertThat(aktivitet.getBeskrivelse()).isNull();
+    }
+
+    @Test
+    public void skal_lagre_riktig_identtype_pa_eksterne_aktiviteter() {
+        var arbeidsgiverIdent = new Ident("123456789", Innsender.ARBEIDSGIVER);
+        Aktivitetskort arbeidgiverAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEndretAv(arbeidsgiverIdent);
+        var tiltaksarragoerIdent = new Ident("123456780", Innsender.TILTAKSARRAGOER);
+        Aktivitetskort tiltaksarrangoerAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEndretAv(tiltaksarragoerIdent);
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(arbeidgiverAktivitet, tiltaksarrangoerAktivitet), List.of(defaultcontext, defaultcontext));
+        var arbeidsAktivitet = hentAktivitet(arbeidgiverAktivitet.getId());
+        var tilatksarratgoerAktivitet = hentAktivitet(tiltaksarrangoerAktivitet.getId());
+        assertThat(arbeidsAktivitet.getEndretAv()).isEqualTo(arbeidsgiverIdent.ident());
+        assertThat(arbeidsAktivitet.getLagtInnAv()).isEqualTo(arbeidsgiverIdent.identType().toString());
+        assertThat(tilatksarratgoerAktivitet.getEndretAv()).isEqualTo(tiltaksarragoerIdent.ident());
+        assertThat(tilatksarratgoerAktivitet.getLagtInnAv()).isEqualTo(tiltaksarragoerIdent.identType().toString());
     }
 
 

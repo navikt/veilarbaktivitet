@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.dto;
 
-import io.swagger.models.auth.In;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 
 public enum IdentType {
     ARENAIDENT,
@@ -10,11 +9,12 @@ public enum IdentType {
     ARBEIDSGIVER,
     PERSONBRUKERIDENT;
 
-    public InnsenderData mapToInnsenderType() {
+    public Innsender mapToInnsenderType() {
         return switch (this) {
-            case ARENAIDENT, NAVIDENT -> InnsenderData.NAV;
-            case PERSONBRUKERIDENT -> InnsenderData.BRUKER;
-            case ARBEIDSGIVER -> InnsenderData.ARBEIDSGIVER;
+            case ARENAIDENT, NAVIDENT -> Innsender.NAV;
+            case PERSONBRUKERIDENT -> Innsender.BRUKER;
+            case ARBEIDSGIVER -> Innsender.ARBEIDSGIVER;
+            case TILTAKSARRANGOER -> Innsender.TILTAKSARRAGOER;
         };
     }
 }

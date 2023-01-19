@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.BeforeEach;
@@ -76,7 +76,7 @@ public class AktivitetServiceTest {
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.empty());
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOpprettAktivitetArgument();
 
@@ -88,7 +88,7 @@ public class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
@@ -98,7 +98,7 @@ public class AktivitetServiceTest {
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
         when(kvpClient.get(KJENT_AKTOR_ID)).thenReturn(Optional.of(kvp));
-        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER);
+        aktivitetService.opprettAktivitet(KJENT_AKTOR_ID, aktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOpprettAktivitetArgument();
 
@@ -117,14 +117,14 @@ public class AktivitetServiceTest {
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
                 .build();
-        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+        aktivitetService.oppdaterStatus(aktivitet, oppdatertAktivitet, SAKSBEHANDLER.tilIdent());
 
         captureOppdaterAktivitetWithDateArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @SneakyThrows
@@ -139,7 +139,7 @@ public class AktivitetServiceTest {
                 .status(nyStatus)
                 .build();
 
-        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER);
+        aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet, SAKSBEHANDLER.tilIdent());
         captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
     }
@@ -160,7 +160,7 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(getCapturedAktivitet().getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
     }
@@ -183,7 +183,7 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(getCapturedAktivitet().getMoteData().getReferat(),
                 equalTo(REFERAT));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.REFERAT_ENDRET));
@@ -199,7 +199,7 @@ public class AktivitetServiceTest {
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test
@@ -217,7 +217,7 @@ public class AktivitetServiceTest {
         assertThat(capturedAktivitet.getTilDato(), equalTo(nyFrist));
         assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getLagtInnAv(), equalTo(InnsenderData.NAV));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
     }
 
     @Test

@@ -12,7 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,7 +85,7 @@ public class AvtaltMedNavService {
                 .withEndretDato(now)
                 .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                 .withEndretAv(ident.get())
-                .withLagtInnAv(InnsenderData.NAV) // alltid NAV
+                .withEndretAvType(Innsender.NAV) // alltid NAV
                 .withAvtalt(true);
 
         aktivitetDAO.oppdaterAktivitet(nyAktivitet, dateToLocalDateTime(now));
@@ -110,7 +110,7 @@ public class AvtaltMedNavService {
                 .endretDato(now)
                 .transaksjonsType(AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST)
                 .endretAv(innloggetBruker.get())
-                .lagtInnAv(InnsenderData.BRUKER) // alltid Bruker
+                .endretAvType(Innsender.BRUKER) // alltid Bruker
                 .build();
 
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);

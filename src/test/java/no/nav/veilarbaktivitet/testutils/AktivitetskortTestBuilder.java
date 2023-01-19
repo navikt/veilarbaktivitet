@@ -7,8 +7,9 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentDTO;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
+import no.nav.veilarbaktivitet.person.Innsender;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
@@ -30,7 +31,7 @@ public class AktivitetskortTestBuilder {
                     .beskrivelse("arenabeskrivelse")
                     .aktivitetStatus(aktivitetStatus)
                     .avtaltMedNav(true)
-                    .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
+                    .endretAv(new Ident("arenaEndretav", Innsender.ARENAIDENT))
                     .endretTidspunkt(endretTidspunkt)
                     .etikett(new Etikett("SOKT_INN"))
                     .detalj(new Attributt("arrangørnavn", "Arendal"))

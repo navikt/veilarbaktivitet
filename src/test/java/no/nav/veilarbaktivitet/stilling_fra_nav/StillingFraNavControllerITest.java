@@ -17,7 +17,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -114,7 +114,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(false)
                 .endretAv(veileder.getNavIdent())
-                .endretAvType(InnsenderData.NAV)
+                .endretAvType(Innsender.NAV)
                 .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)
@@ -297,7 +297,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
         CvKanDelesData expectedCvKanDelesData = CvKanDelesData.builder()
                 .kanDeles(true)
                 .endretAv(veileder.getNavIdent())
-                .endretAvType(InnsenderData.NAV)
+                .endretAvType(Innsender.NAV)
                 .avtaltDato(AVTALT_DATO)
                 // kopierer systemgenererte attributter
                 .endretTidspunkt(actualAktivitet.getStillingFraNavData().getCvKanDelesData().endretTidspunkt)

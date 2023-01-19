@@ -105,7 +105,7 @@ public class AktivitetAppService {
                 aktorId :
                 authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
 
-        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser);
+        AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser.tilIdent());
 
         // dette er gjort på grunn av KVP
         return authService.erSystemBruker() ? nyAktivitet.withKontorsperreEnhetId(null) : nyAktivitet;
@@ -206,7 +206,7 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv);
+        aktivitetService.oppdaterStatus(originalAktivitet, aktivitet, endretAv.tilIdent());
         var nyAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitet.getId());
         metricService.oppdatertStatus(nyAktivitet, authService.erInternBruker());
 

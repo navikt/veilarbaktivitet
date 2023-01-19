@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.domain;
 
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,9 +32,9 @@ class PersonTest {
 
     @Test
     void toInnsenderData() {
-        assertEquals(InnsenderData.BRUKER, fnr.tilBrukerType());
-        assertEquals(InnsenderData.BRUKER, aktorId.tilBrukerType());
-        assertEquals(InnsenderData.NAV, navIdent.tilBrukerType());
+        assertEquals(Innsender.BRUKER, fnr.tilBrukerType());
+        assertEquals(Innsender.BRUKER, aktorId.tilBrukerType());
+        assertEquals(Innsender.NAV, navIdent.tilBrukerType());
     }
 
 }

@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -15,10 +14,9 @@ import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.UgyldigIdentException;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -90,7 +88,7 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitetData = map(melding, kanVarsle);
 
         MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
-        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent);
+        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent.tilIdent());
         MDC.clear();
 
         if (kanVarsle) {
@@ -141,7 +139,7 @@ public class OpprettForesporselOmDelingAvCv {
                 .status(AktivitetStatus.BRUKER_ER_INTERESSERT)
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .fraDato(new Date(opprettet.toEpochMilli()))
-                .lagtInnAv(InnsenderData.NAV)
+                .endretAvType(Innsender.NAV)
                 .endretAv(navIdent.get())
                 .automatiskOpprettet(false)
                 .opprettetDato(new Date())

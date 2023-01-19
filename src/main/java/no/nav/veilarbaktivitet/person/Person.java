@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.person;
 
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
+
 import java.util.Objects;
 
 public abstract class Person {
@@ -25,22 +28,15 @@ public abstract class Person {
         return new NavIdent(navIdent);
     }
 
-    public static ArenaIdent arenaIdent(String arenaIdent) {
-        return new ArenaIdent(arenaIdent);
-    }
-    public static Arbeidsgiver arbeidsgiver(String orgnr) {
-        return new Arbeidsgiver(orgnr);
-    }
-    public static Tiltaksarragoer tiltaksarragoer(String orgnr) {
-        return new Tiltaksarragoer(orgnr);
-    }
-
     public boolean erEkstern() {
         return this instanceof AktorId || this instanceof Fnr;
     }
 
-    public InnsenderData tilBrukerType() {
-        return erEkstern() ? InnsenderData.BRUKER : InnsenderData.NAV;
+    public Innsender tilBrukerType() {
+        return erEkstern() ? Innsender.BRUKER : Innsender.NAV;
+    }
+    public Ident tilIdent() {
+        return new Ident(this.get(), this.tilBrukerType());
     }
 
     @Override
@@ -73,17 +69,5 @@ public abstract class Person {
         private NavIdent(String id) {
             super(id);
         }
-    }
-
-    public static class ArenaIdent extends Person {
-        private ArenaIdent(String id) { super(id); }
-    }
-
-    public static class Arbeidsgiver extends Person {
-        private Arbeidsgiver(String orgnr) { super(orgnr); }
-    }
-
-    public static class Tiltaksarragoer extends Person {
-        private Tiltaksarragoer(String orgnr) { super(orgnr); }
     }
 }

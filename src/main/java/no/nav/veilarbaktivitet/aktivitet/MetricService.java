@@ -4,7 +4,7 @@ import no.nav.common.log.MDCConstants;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +34,7 @@ public class MetricService {
         String malId = Optional.ofNullable(aktivitetData.getMalid()).orElse("");
         Event ev = new Event("aktivitet.ny")
                 .addTagToReport(TYPE, aktivitetData.getAktivitetType().toString())
-                .addFieldToReport("lagtInnAvNAV", aktivitetData.getLagtInnAv().equals(InnsenderData.NAV))
+                .addFieldToReport("lagtInnAvNAV", aktivitetData.getEndretAvType().equals(Innsender.NAV))
                 .addFieldToReport(AUTOMATISKOPPRETTET, aktivitetData.isAutomatiskOpprettet())
                 .addFieldToReport(MALID, malId)
                 .addFieldToReport(SOURCE, getSource());

@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitet.mappers;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.dto.TiltakDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
@@ -32,7 +31,7 @@ public class AktivitetDTOMapper {
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
                 .setForhaandsorientering(mapForhaandsorientering(aktivitet.getForhaandsorientering()))
-                .setLagtInnAv(aktivitet.getLagtInnAv().name())
+                .setLagtInnAv(aktivitet.getEndretAvType().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(erEkstern ? null : aktivitet.getEndretAv()) // null ut endretAv når bruker er ekstern
