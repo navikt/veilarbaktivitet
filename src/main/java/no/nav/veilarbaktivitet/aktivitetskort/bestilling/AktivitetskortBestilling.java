@@ -21,8 +21,6 @@ public abstract class AktivitetskortBestilling {
     private final ActionType actionType;
     private final Person.AktorId aktorId;
 
-    // public abstract String getTiltakskode();
-
     protected AktivitetskortBestilling(String source, AktivitetskortType aktivitetskortType, Aktivitetskort aktivitetskort, UUID messageId, ActionType actionType, Person.AktorId aktorId) {
         this.source = source;
         this.aktivitetskortType = aktivitetskortType;
