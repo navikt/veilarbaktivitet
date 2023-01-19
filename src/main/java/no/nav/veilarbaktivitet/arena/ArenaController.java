@@ -96,7 +96,7 @@ public class ArenaController {
         }
 
         if (forhaandsorientering.getType() == null) {
-            return Optional.of("forhaandsorientering.lenkeType kan ikke være null");
+            return Optional.of("forhaandsorientering.type kan ikke være null");
         }
 
         if (forhaandsorientering.getTekst() == null || forhaandsorientering.getTekst().isEmpty()) {

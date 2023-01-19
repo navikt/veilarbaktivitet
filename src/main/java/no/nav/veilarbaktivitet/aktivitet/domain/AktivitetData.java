@@ -67,7 +67,7 @@ public class AktivitetData {
     boolean avtalt;
     Forhaandsorientering forhaandsorientering;
     /**
-     * Alle lenkeType endringer på aktiviteten angis med en endringstype av lenkeType AktivitetTransaksjonsType.
+     * Alle type endringer på aktiviteten angis med en endringstype av type AktivitetTransaksjonsType.
      */
     AktivitetTransaksjonsType transaksjonsType;
     Date historiskDato;
