@@ -22,6 +22,7 @@ import java.util.UUID;
 public class BrukerNotifikasjonDAO {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private static final String BRUKERNOTIFIKASJON_ID = "brukernotifikasjon_id";
 
     public void kobleAktivitetIdTilBrukernotifikasjon(//TODO refactor to object
                                                       long brukernotifikasjonDbId,
@@ -30,7 +31,7 @@ public class BrukerNotifikasjonDAO {
     ) {
 
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
+                .addValue(BRUKERNOTIFIKASJON_ID, brukernotifikasjonDbId)
                 .addValue("aktivitet_id", aktivitetId)
                 .addValue("opprettet_paa_aktivitet_version", aktitetVersion);
 
@@ -43,7 +44,7 @@ public class BrukerNotifikasjonDAO {
 
     public boolean finnesBrukernotifikasjon(String bestillingsId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", bestillingsId);
+                .addValue(BRUKERNOTIFIKASJON_ID, bestillingsId);
         String sql = """
             SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
             WHERE BRUKERNOTIFIKASJON_ID=:brukernotifikasjon_id
@@ -78,7 +79,7 @@ public class BrukerNotifikasjonDAO {
             String smsTekst
     ) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", brukernotifikasjonId.toString())
+                .addValue(BRUKERNOTIFIKASJON_ID, brukernotifikasjonId.toString())
                 .addValue("foedselsnummer", foedselsnummer.get())
                 .addValue("oppfolgingsperiode", oppfolgingsperiode.toString())
                 .addValue("type", type.name())
@@ -108,7 +109,7 @@ public class BrukerNotifikasjonDAO {
 
     void kobleArenaAktivitetIdTilBrukernotifikasjon(long brukernotifikasjonDbId, ArenaId arenaAktivitetId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", brukernotifikasjonDbId)
+                .addValue(BRUKERNOTIFIKASJON_ID, brukernotifikasjonDbId)
                 .addValue("arena_aktivitet_id", arenaAktivitetId.id());
 
         jdbcTemplate.update("""
