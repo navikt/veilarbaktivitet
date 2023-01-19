@@ -8,7 +8,6 @@ import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig;
-import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetsKortTestConsumerConfig;
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig;
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
 import org.springframework.context.annotation.Bean;
@@ -110,12 +109,6 @@ public class NavCommonKafkaConfig {
     @Profile("!dev")
     Properties aivenConsumerProperties() {
         return aivenDefaultConsumerProperties(CONSUMER_GROUP_ID);
-    }
-
-    @Bean
-    @Profile("!dev")
-    Properties testAivenConsumerProperties() {
-        return aivenDefaultConsumerProperties("veilarbaktivitet-test-consumer-aiven-2");
     }
 
     @Bean

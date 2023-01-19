@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.person.Person;
@@ -30,7 +29,7 @@ class MigreringServiceTest {
     public void setup() {
         oppfolgingV2Client = mock(OppfolgingV2Client.class);
 
-        migreringService = new MigreringService(mock(UnleashClient.class), oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
+        migreringService = new MigreringService(mock(UnleashClient.class), oppfolgingV2Client);
     }
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
@@ -64,7 +63,7 @@ class MigreringServiceTest {
     }
 
     @Test
-    void opprettetTidspunkt_passer_paa_startDato() {
+    void opprettetTidspunkt_passer_paa_startDato() { // skal være inklusiv med andre ord
         var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10), null);
         var perioder = List.of(
                 oppfperiodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
@@ -173,7 +172,7 @@ class MigreringServiceTest {
 
     private OppfolgingPeriodeMinimalDTO stubOgFinnOppgolgingsperiode(List<OppfolgingPeriodeMinimalDTO> perioder, LocalDateTime opprettetTidspunkt) {
         when(oppfolgingV2Client.hentOppfolgingsperioder(ArgumentMatchers.any())).thenReturn(Optional.of(perioder));
-        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt, null, null);
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt);
 
         return oppfolgingsperiode.orElse(null);
     }

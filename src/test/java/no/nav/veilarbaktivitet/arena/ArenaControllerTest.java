@@ -6,7 +6,6 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
-import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
@@ -69,7 +68,7 @@ class ArenaControllerTest {
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
     private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
-    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
+    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO);
