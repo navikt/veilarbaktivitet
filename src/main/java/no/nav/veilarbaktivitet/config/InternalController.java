@@ -36,6 +36,7 @@ public class InternalController {
 
     @GetMapping("/isReady")
     public void isReady() {
+        // There have to be a comment here because of sonarlint
     }
 
     @GetMapping("/isAlive")
