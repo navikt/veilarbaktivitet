@@ -46,7 +46,7 @@ public class InternalController {
     }
 
     @GetMapping("/selftest")
-    public ResponseEntity selftest() {
+    public ResponseEntity<String> selftest() {
         List<SelftTestCheckResult> checkResults = checkAllParallel(selftestChecks.getSelfTestChecks());
         String html = SelftestHtmlGenerator.generate(checkResults);
         int status = SelfTestUtils.findHttpStatusCode(checkResults, true);
