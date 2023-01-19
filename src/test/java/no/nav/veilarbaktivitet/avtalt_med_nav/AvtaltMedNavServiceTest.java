@@ -42,7 +42,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
     @Test
-    public void opprettFHO_oppdatererInterneFHOVerdier() {
+    void opprettFHO_oppdatererInterneFHOVerdier() {
 
         AktivitetDTO aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
         var fho = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
@@ -57,7 +57,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void opprettFHO_oppdatererAktivitetDTO() {
+    void opprettFHO_oppdatererAktivitetDTO() {
         var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
         var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
         var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDTO.getId()));
@@ -71,7 +71,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void opprettFHO_medTomTekst_setterTekstenTilNull() {
+    void opprettFHO_medTomTekst_setterTekstenTilNull() {
         var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
 
         var fhoDTO = ForhaandsorienteringDTO.builder()
@@ -86,7 +86,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void opprettFHO_maaHaMatchendeAktivitet() {
+    void opprettFHO_maaHaMatchendeAktivitet() {
         var fhoDTO = ForhaandsorienteringDTO.builder()
                 .type(defaultType)
                 .tekst(defaultTekst).lestDato(null).build();
@@ -100,7 +100,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void hentFhoForAktivitet_henterRiktigFho() {
+    void hentFhoForAktivitet_henterRiktigFho() {
         var aktivitetData = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetData.getId()));
@@ -111,7 +111,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void markerSomLest_oppdatererAktivitetDTO() {
+    void markerSomLest_oppdatererAktivitetDTO() {
         var aktivitetDto = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDto.getId()));
@@ -125,7 +125,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void markerSomLest_setterVarselFerdig() {
+    void markerSomLest_setterVarselFerdig() {
         var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
@@ -138,7 +138,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void settVarselFerdig_stopperAktivtVarsel() {
+    void settVarselFerdig_stopperAktivtVarsel() {
         var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get());
         var opprettetAktivitetMedFHO = opprettAktivitetMedDefaultFHO(aktivitetData);
         boolean varselStoppet = avtaltMedNavService.settVarselFerdig(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
@@ -150,14 +150,14 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
+    void settVarselFerdig_ForhåndsorienteringsIdErNULL_returnererFalse() {
         var varselStoppet = avtaltMedNavService.settVarselFerdig(null);
 
         Assertions.assertFalse(varselStoppet);
     }
 
     @Test
-    public void oppdateringer_paa_samme_versjon_skal_feile() {
+    void oppdateringer_paa_samme_versjon_skal_feile() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
         var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
@@ -173,7 +173,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    public void oppdateringer_paa_samme_versjon_skal_feile_innenfor_controller_for_aa_hindre_race_conditions() {
+    void oppdateringer_paa_samme_versjon_skal_feile_innenfor_controller_for_aa_hindre_race_conditions() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
         var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
@@ -196,7 +196,7 @@ public class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
 
     @Test
-    public void skal_ikke_kunne_opprette_FHO_pa_aktivitet_med_FHO() {
+    void skal_ikke_kunne_opprette_FHO_pa_aktivitet_med_FHO() {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.BEHANDLING);
         var opprettetAktivitet = aktivitetTestService.opprettAktivitet(bruker, aktivitet);
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());

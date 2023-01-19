@@ -56,7 +56,7 @@ public class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_avbryte_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
+    void skal_avbryte_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
         var aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN);
         var opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, aktivitet);
         Assertions.assertThat(opprettetAktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
@@ -80,7 +80,7 @@ public class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_ikke_avbryte_eksterne_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
+    void skal_ikke_avbryte_eksterne_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
 
         var aktivitetskort = AktivitetskortTestBuilder.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(

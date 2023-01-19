@@ -110,7 +110,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void notifikasjonsstatus_tester() {
+    void notifikasjonsstatus_tester() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -169,7 +169,7 @@ public class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
     @SneakyThrows
     @Test
-    public void ekstern_done_event() {
+    void ekstern_done_event() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);

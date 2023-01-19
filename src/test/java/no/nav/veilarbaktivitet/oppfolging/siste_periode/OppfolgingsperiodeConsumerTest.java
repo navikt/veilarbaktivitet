@@ -39,7 +39,7 @@ public class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     private SistePeriodeDAO sistePeriodeDAO;
 
     @Test
-    public void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
+    void skal_opprette_siste_oppfolgingsperiode() throws InterruptedException, ExecutionException, TimeoutException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
 
         SisteOppfolgingsperiodeV1 startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
@@ -70,7 +70,7 @@ public class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
     }
 
     @Test
-    public void skal_avslutte_aktiviteter_for() throws ExecutionException, InterruptedException {
+    void skal_avslutte_aktiviteter_for() throws ExecutionException, InterruptedException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockBruker mockBruker2 = MockNavService.createHappyBruker();
 

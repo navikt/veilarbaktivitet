@@ -13,20 +13,20 @@ import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledAr
 
 public class DelingAvCvServiceTest {
     @Test
-    public void utledAdresser_tom_liste() {
+    void utledAdresser_tom_liste() {
         String result = utledArbeidstedtekst(Collections.emptyList());
         Assertions.assertThat(result).isEmpty();
     }
 
     @Test
-    public void utledAdresser_mangler_land_og_kommune() {
+    void utledAdresser_mangler_land_og_kommune() {
         Arbeidssted arbeidssted = etArbeidssted(null, null);
         String result = utledArbeidstedtekst(asList(arbeidssted, arbeidssted, arbeidssted));
         Assertions.assertThat(result).isEmpty();
     }
 
     @Test
-    public void utledAdresser_mangler_land_men_har_kommune() {
+    void utledAdresser_mangler_land_men_har_kommune() {
         String result = utledArbeidstedtekst(asList(
                 etArbeidssted(null, "Molde"),
                 etArbeidssted(null, "Stavanger")
@@ -35,7 +35,7 @@ public class DelingAvCvServiceTest {
     }
 
     @Test
-    public void utledAdresser_fylke_i_norge() {
+    void utledAdresser_fylke_i_norge() {
         Arbeidssted arbeidssted = etArbeidssted("norge", null);
         arbeidssted.setFylke("MØRE OG rOmSdAl");
         String result = utledArbeidstedtekst(singletonList(
@@ -45,21 +45,21 @@ public class DelingAvCvServiceTest {
     }
 
     @Test
-    public void utledAdresser_norge_men_mangler_kommune() {
+    void utledAdresser_norge_men_mangler_kommune() {
         Arbeidssted arbeidssted = etArbeidssted("Norge", null);
         String result = utledArbeidstedtekst(singletonList(arbeidssted));
         Assertions.assertThat(result).isEqualTo("Norge");
     }
 
     @Test
-    public void utledAdresser_er_i_utlandet_og_har_kommune() {
+    void utledAdresser_er_i_utlandet_og_har_kommune() {
         Arbeidssted arbeidssted = etArbeidssted("USA", "Bergen");
         String result = utledArbeidstedtekst(singletonList(arbeidssted));
         Assertions.assertThat(result).isEqualTo("Usa");
     }
 
     @Test
-    public void utledAdresser_eksempel() {
+    void utledAdresser_eksempel() {
 
         String result = utledArbeidstedtekst(asList(
                 etArbeidssted("Sverige", "Oslo"),

@@ -24,7 +24,7 @@ public class StartTest {
     private int port;
 
     @Test
-    public void kake() {
+    void kake() {
         int statusCode = RestAssured.get("http://localhost:" + port +"/veilarbaktivitet/internal").statusCode();
         assertEquals(HttpStatus.OK.value(), statusCode);
     }

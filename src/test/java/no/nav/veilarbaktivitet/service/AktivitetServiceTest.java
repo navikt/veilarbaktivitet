@@ -71,7 +71,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void opprettAktivitet() {
+    void opprettAktivitet() {
         val aktivitet = lagEnNyAktivitet();
 
         when(aktivitetDAO.opprettNyAktivitet(any(AktivitetData.class), any(LocalDateTime.class))).thenReturn(aktivitet);
@@ -92,7 +92,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void opprettAktivitetMedKvp() {
+    void opprettAktivitetMedKvp() {
         val aktivitet = lagEnNyAktivitet();
         KvpV2DTO kvp = new KvpV2DTO().setEnhet(KONTORSPERRE_ENHET_ID);
 
@@ -106,7 +106,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterStatus() {
+    void oppdaterStatus() {
         val aktivitet = lagEnNyAktivitet();
 
         val avsluttKommentar = "Alexander er best";
@@ -129,7 +129,7 @@ public class AktivitetServiceTest {
 
     @SneakyThrows
     @Test
-    public void oppdaterStatusMedKvpTilgang() {
+    void oppdaterStatusMedKvpTilgang() {
         val aktivitet = lagEnNyAktivitet();
         val kvpAktivitet = aktivitet.withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
@@ -145,7 +145,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterEtikett() {
+    void oppdaterEtikett() {
         val aktivitet = lagEnNyAktivitet();
 
         val oppdatertAktivitet = aktivitet
@@ -166,7 +166,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterReferat() {
+    void oppdaterReferat() {
         val aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         String REFERAT = "Referat";
@@ -190,7 +190,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterAktivitetFrist() {
+    void oppdaterAktivitetFrist() {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
@@ -203,7 +203,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterMoteTidOgSted() {
+    void oppdaterMoteTidOgSted() {
         AktivitetData aktivitet = AktivitetDataTestBuilder.nyMoteAktivitet();
 
         Date nyFrist = new Date();
@@ -221,7 +221,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void oppdaterAktivitet() {
+    void oppdaterAktivitet() {
         val aktivitet = lagEnNyAktivitet();
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
@@ -238,7 +238,7 @@ public class AktivitetServiceTest {
 
     @Disabled("Må fikses")
     @Test
-    public void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
+    void oppdaterAktivitet_skal_gi_versjonsKonflikt_hvis_to_oppdaterer_aktiviteten_samtidig() {
         val aktivitet = lagEnNyAktivitet();
         doThrow(new DuplicateKeyException("versjon fins")).when(aktivitetDAO).oppdaterAktivitet(any());
 
@@ -250,7 +250,7 @@ public class AktivitetServiceTest {
     }
 
     @Test
-    public void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
+    void settLestAvBrukerTidspunkt_kaller_insertLestAvBrukerTidspunkt() {
         gitt_aktivitet(lagEnNyAktivitet().withId(AKTIVITET_ID));
         aktivitetService.settLestAvBrukerTidspunkt(AKTIVITET_ID);
         verify(aktivitetDAO, times(1)).insertLestAvBrukerTidspunkt(AKTIVITET_ID);

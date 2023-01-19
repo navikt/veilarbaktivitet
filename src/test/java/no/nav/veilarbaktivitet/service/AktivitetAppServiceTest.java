@@ -52,7 +52,7 @@ public class AktivitetAppServiceTest {
     private MetricService metricService;
 
     @Test
-    public void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
+    void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withId(AKTIVITET_ID).withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
         AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
 
@@ -78,7 +78,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    public void eksternbruker_skal_kunne_endre_flere_ting_nar_ikke_avtalt_medisinsk_behandling() {
+    void eksternbruker_skal_kunne_endre_flere_ting_nar_ikke_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet()
                 .withAvtalt(false)
                 .withBeskrivelse(AVTALT_BESKRIVELSE)
@@ -114,7 +114,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    public void nav_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
+    void nav_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
         AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
 
@@ -138,7 +138,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    public void nav_skal_kunne_endre_noen_ting_selv_om_avtalt_mote() {
+    void nav_skal_kunne_endre_noen_ting_selv_om_avtalt_mote() {
         AktivitetData gammelAktivitet = nyMoteAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2000-01-01"));
         AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-01-01"));
 
@@ -152,7 +152,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    public void eksternbruker_skal_ikke_kunne_endre_andre_aktivitetstyper() {
+    void eksternbruker_skal_ikke_kunne_endre_andre_aktivitetstyper() {
         AktivitetData annenAktivitetstype = nyIJobbAktivitet().withAvtalt(true);
         AktivitetData endretAktivitet = annenAktivitetstype.withBeskrivelse("Endret beskrivelse");
 
@@ -165,7 +165,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    public void ikke_innlogget_skal_ikke_kunne_endre_noe() {
+    void ikke_innlogget_skal_ikke_kunne_endre_noe() {
         when(authService.erEksternBruker()).thenReturn(false);
         when(authService.erInternBruker()).thenReturn(false);
         AktivitetData aktivitet = nyBehandlingAktivitet();

@@ -50,11 +50,12 @@ import static org.mockito.Mockito.when;
 /**
  * Aktivitetsplan interaksjoner der pålogget bruker er saksbehandler
  */
+// TODO: 19/01/2023 skriv om til nye test rammeverk (SpringBootTestBase)
 @SpringBootTest
 @RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
 public class AktivitetsplanRSTest {
-
+    
     @Autowired
     MockHttpServletRequest mockHttpServletRequest;
 

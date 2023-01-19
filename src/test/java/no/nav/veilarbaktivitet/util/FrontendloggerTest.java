@@ -24,7 +24,7 @@ public class FrontendloggerTest {
     Frontendlogger frontendlogger = new Frontendlogger(metricsClient);
 
     @Test
-    public void loggerSkalLeggePaTagsOgFields() {
+    void loggerSkalLeggePaTagsOgFields() {
         HashMap<String, String> tags = new HashMap<>();
         tags.put("test", "test_value");
         HashMap<String, Object> fields = new HashMap<>();
@@ -44,7 +44,7 @@ public class FrontendloggerTest {
     }
 
     @Test
-    public void loggerSkalLeggeHandtereNull() {
+    void loggerSkalLeggeHandtereNull() {
         frontendlogger.skrivEventTilInflux(new Frontendlogger.FrontendEvent("test"));
 
         Event expected = new Event("test.event");

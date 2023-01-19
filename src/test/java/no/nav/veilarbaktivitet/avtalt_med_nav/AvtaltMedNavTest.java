@@ -26,7 +26,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
+    void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = BrukernotifikasjonAsserts.getBrukerSomIkkeKanVarsles();
         MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
 
@@ -53,7 +53,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     }
 
     @Test
-    public void IkkeOppretteFHOUtenAktivitet() {
+    void IkkeOppretteFHOUtenAktivitet() {
         MockBruker happyBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 

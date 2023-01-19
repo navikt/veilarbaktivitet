@@ -105,7 +105,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
 
     @SneakyThrows
     @Test
-    public void notifikasjonsstatus_tester() {
+    void notifikasjonsstatus_tester() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
