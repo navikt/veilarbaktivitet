@@ -4,7 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -111,7 +111,7 @@ public class StillingFraNavProducerClient {
             Ident ident = new Ident();
             ident.setIdent(cvKanDelesData.endretAv);
             svar.setSvarTidspunkt(cvKanDelesData.getEndretTidspunkt().toInstant());
-            if(cvKanDelesData.getEndretAvType() == InnsenderData.NAV) {
+            if(cvKanDelesData.getEndretAvType() == Innsender.NAV) {
                 ident.setIdentType(IdentTypeEnum.NAV_IDENT);
             } else {
                 ident.setIdentType(IdentTypeEnum.AKTOR_ID);

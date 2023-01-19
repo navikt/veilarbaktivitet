@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgave;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
 import java.net.URL;
@@ -76,7 +76,7 @@ public class AktivitetTypeDataTestBuilder {
 
         if(setCVKanDelesData){
             cvKanDelesData = CvKanDelesData.builder()
-                    .endretAvType(InnsenderData.NAV)
+                    .endretAvType(Innsender.NAV)
                     .endretAv("Z999999")
                     .endretTidspunkt(AktivitetDataTestBuilder.nyDato())
                     .kanDeles(Boolean.TRUE)

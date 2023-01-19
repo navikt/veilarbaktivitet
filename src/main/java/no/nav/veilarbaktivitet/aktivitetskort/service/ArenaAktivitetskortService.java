@@ -36,7 +36,7 @@ public class ArenaAktivitetskortService {
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             bestilling.getAktorId(),
             aktivitetsData,
-            bestilling.getAktivitetskort().getEndretAv().toPerson(),
+            bestilling.getAktivitetskort().getEndretAv(),
             bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime(),
             null // Ikke sett oppfølgingsperiode på arena-aktiviteter
         );

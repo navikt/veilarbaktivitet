@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.person.AuthService;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -26,8 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Optional;
 
-import static no.nav.veilarbaktivitet.person.InnsenderData.BRUKER;
-import static no.nav.veilarbaktivitet.person.InnsenderData.NAV;
+import static no.nav.veilarbaktivitet.person.Innsender.BRUKER;
+import static no.nav.veilarbaktivitet.person.Innsender.NAV;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -299,10 +299,10 @@ public class AktivitetAppServiceTest {
     }
 
 
-    private void loggetInnSom(InnsenderData innsenderData) {
-        when(authService.erEksternBruker()).thenReturn(innsenderData == BRUKER);
-        when(authService.erInternBruker()).thenReturn(innsenderData == NAV);
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(innsenderData == BRUKER ? Person.aktorId(TESTPERSONNUMMER) : Person.navIdent(TESTNAVIDENT)));
+    private void loggetInnSom(Innsender innsender) {
+        when(authService.erEksternBruker()).thenReturn(innsender == BRUKER);
+        when(authService.erInternBruker()).thenReturn(innsender == NAV);
+        when(authService.getLoggedInnUser()).thenReturn(Optional.of(innsender == BRUKER ? Person.aktorId(TESTPERSONNUMMER) : Person.navIdent(TESTNAVIDENT)));
     }
 
     private static final long AKTIVITET_ID = 666L;

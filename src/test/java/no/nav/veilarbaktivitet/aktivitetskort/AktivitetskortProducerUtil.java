@@ -8,8 +8,10 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -101,7 +103,7 @@ public class AktivitetskortProducerUtil {
                 .tittel("The Elder Scrolls: Arena")
                 .beskrivelse("arenabeskrivelse")
                 .aktivitetStatus(AktivitetStatus.PLANLAGT)
-                .endretAv(new IdentDTO("arenaEndretav", ARENAIDENT))
+                .endretAv(new Ident("arenaEndretav", Innsender.ARENAIDENT))
                 .endretTidspunkt(ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneOffset.ofHours(1)))
                 .detalj(new Attributt("deltakelsesprosent", "40"))
                 .detalj(new Attributt("dagerPerUke", "2"))

@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.testutils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 
 import java.util.Date;
 import java.util.Random;
@@ -27,7 +27,7 @@ public class AktivitetDataTestBuilder {
                 .versjon(new Random().nextLong())
                 .status(AktivitetStatus.PLANLAGT)
                 .avsluttetKommentar("avsluttetKommentar")
-                .lagtInnAv(InnsenderData.values()[0])
+                .endretAvType(Innsender.values()[0])
                 .opprettetDato(nyDato())
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)

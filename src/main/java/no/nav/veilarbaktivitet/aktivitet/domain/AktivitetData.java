@@ -5,7 +5,7 @@ import lombok.ToString;
 import lombok.Value;
 import lombok.With;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
-import no.nav.veilarbaktivitet.person.InnsenderData;
+import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
@@ -51,7 +51,7 @@ public class AktivitetData {
     /**
      * Gjelder for en AktivitetData versjon, og sier om det var NAV eller BRUKER som utførte en {@link AktivitetTransaksjonsType} på aktiviteten
      */
-    InnsenderData lagtInnAv;
+    Innsender endretAvType;
     Date fraDato;
     Date tilDato;
     String lenke;
