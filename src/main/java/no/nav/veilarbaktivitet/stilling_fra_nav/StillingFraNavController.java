@@ -30,7 +30,7 @@ public class StillingFraNavController {
                 .hentAktivitet(aktivitetId);
 
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med lenkeType %s", AktivitetTypeData.STILLING_FRA_NAV));
         }
 
         if (aktivitet.getStillingFraNavData().getSvarfrist().toInstant().isBefore(Instant.now())) {

@@ -28,7 +28,7 @@ public class AvtaltMedNavController {
         }
 
         if (forhaandsorientering.getType() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.type kan ikke være null");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "forhaandsorientering.lenkeType kan ikke være null");
         }
 
         AktivitetData aktivitet = avtaltMedNavService.hentAktivitet(aktivitetId);

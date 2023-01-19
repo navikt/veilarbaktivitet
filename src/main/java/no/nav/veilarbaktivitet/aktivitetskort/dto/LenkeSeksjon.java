@@ -6,6 +6,6 @@ public record LenkeSeksjon(
         String tekst,
         String subtekst,
         URL url,
-        LenkeType type
+        LenkeType lenkeType
 ) {
 }

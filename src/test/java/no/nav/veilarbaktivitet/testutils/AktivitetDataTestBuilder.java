@@ -58,7 +58,7 @@ public class AktivitetDataTestBuilder {
                 return nyStillingFraNavMedCVKanDeles();
             case EKSTERNAKTIVITET:
                 return nyEksternAktivitet();
-            default: throw new IllegalArgumentException("ukjent type");
+            default: throw new IllegalArgumentException("ukjent lenkeType");
         }
     }
 

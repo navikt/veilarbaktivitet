@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.util.List;
 
 /*
- * This class wraps a single string-field to a more type-safe ArenaId
+ * This class wraps a single string-field to a more lenkeType-safe ArenaId
  * Will serialize to a single value, not a json-object with a field named "id"
  * */
 @EqualsAndHashCode

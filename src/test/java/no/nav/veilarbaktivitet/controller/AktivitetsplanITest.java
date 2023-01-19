@@ -30,7 +30,7 @@ public class AktivitetsplanITest {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
-        String aktivitetPayload = "{\"status\":\"PLANLAGT\",\"type\":\"MOTE\",\"tittel\":\"Blabla\",\"dato\":\"2021-09-22T11:18:21.000+02:00\",\"klokkeslett\":\"10:00\",\"varighet\":\"00:45\",\"kanal\":\"OPPMOTE\",\"adresse\":\"Video\",\"beskrivelse\":\"Vi ønsker å snakke med deg om aktiviteter du har gjennomført og videre oppfølging.\",\"forberedelser\":null,\"fraDato\":\"2021-09-22T08:00:00.000Z\",\"tilDato\":\"2021-09-22T08:45:00.000Z\"}";
+        String aktivitetPayload = "{\"status\":\"PLANLAGT\",\"lenkeType\":\"MOTE\",\"tittel\":\"Blabla\",\"dato\":\"2021-09-22T11:18:21.000+02:00\",\"klokkeslett\":\"10:00\",\"varighet\":\"00:45\",\"kanal\":\"OPPMOTE\",\"adresse\":\"Video\",\"beskrivelse\":\"Vi ønsker å snakke med deg om aktiviteter du har gjennomført og videre oppfølging.\",\"forberedelser\":null,\"fraDato\":\"2021-09-22T08:00:00.000Z\",\"tilDato\":\"2021-09-22T08:45:00.000Z\"}";
         Response response = veileder
                 .createRequest()
                 .body(aktivitetPayload)

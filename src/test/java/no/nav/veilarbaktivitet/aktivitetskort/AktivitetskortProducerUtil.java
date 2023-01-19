@@ -105,9 +105,9 @@ public class AktivitetskortProducerUtil {
                 .endretTidspunkt(ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneOffset.ofHours(1)))
                 .detalj(new Attributt("deltakelsesprosent", "40"))
                 .detalj(new Attributt("dagerPerUke", "2"))
-                .oppgaver(
+                .oppgave(
                         new Oppgaver(
-                                new Oppgave("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), "knappetekst"),
+                                new Oppgave("tekst", "subtekst", new URL("http://localhost:8080/ekstern")),
                                 null)
                 )
                 .handling(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN))

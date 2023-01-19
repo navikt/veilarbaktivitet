@@ -15,6 +15,7 @@ properties:
     description: Unik id for denne meldingen brukes til deduplisering
   source:
     type: string
+    maxLength: 200
     description: Applikasjonen eller teamet som er avsender av meldingen.
   sendt:
     type: string

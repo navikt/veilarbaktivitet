@@ -35,7 +35,7 @@ class BrukerNotifkasjonProducerService {
             case BESKJED -> beskjedProducer.sendBeskjed(skalSendes);
         };
 
-        log.debug("Brukernotifikasjon {} med type {} publisert med offset {}", skalSendes.getBrukernotifikasjonId(), varselType.getBrukernotifikasjonType().name(), offset);
+        log.debug("Brukernotifikasjon {} med lenkeType {} publisert med offset {}", skalSendes.getBrukernotifikasjonId(), varselType.getBrukernotifikasjonType().name(), offset);
     }
 
     List<SkalSendes> hentVarselSomSkalSendes(int maxAntall) {
