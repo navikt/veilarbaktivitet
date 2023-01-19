@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class EksternAktivitetData {
     String source;
     String tiltaksKode;
+    ArenaId arenaId;
     AktivitetskortType type;
     Oppgaver oppgave;
     @Singular("handling")

@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.InnsenderData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
@@ -160,10 +161,12 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     }
 
     private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
+        var arenaId = rs.getString("ARENA_ID");
         return EksternAktivitetData.builder()
                 .source(rs.getString("SOURCE"))
                 .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
                 .tiltaksKode(rs.getString("TILTAK_KODE"))
+                .arenaId(arenaId != null ? new ArenaId(arenaId) : null)
                 .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
                 .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
                 .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
