@@ -28,20 +28,22 @@ public class AuthService {
     private final PersonService personService;
 
     public void sjekkTilgangTilPerson(Person ident) {
-        String aktorId = personService
-                .getAktorIdForPersonBruker(ident)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).get();
+        if (AuthUtils.erSystemkallFraAzureAd(authContextHolder)) return;
+        if (erEksternBruker()) {
+            getInnloggetBrukerIdent().map(tokenFnr -> tokenFnr == ident.get())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Ekstern bruker har bare tilgang til seg selv"));
+        } else {
+            String aktorId = personService
+                    .getAktorIdForPersonBruker(ident)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN)).get();
 
-        String innloggetBrukerToken = authContextHolder
-                .getIdTokenString()
-                .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
+            String innloggetBrukerToken = authContextHolder
+                    .getIdTokenString()
+                    .orElseThrow(() -> new IllegalStateException("Fant ikke token til innlogget bruker"));
 
-        if (AuthUtils.erSystemkallFraAzureAd(authContextHolder)) {
-            return;
-        }
-
-        if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            if (!veilarbPep.harTilgangTilPerson(innloggetBrukerToken, ActionId.READ, AktorId.of(aktorId))) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            }
         }
     }
 

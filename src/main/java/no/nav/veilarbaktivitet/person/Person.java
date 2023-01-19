@@ -28,6 +28,12 @@ public abstract class Person {
     public static ArenaIdent arenaIdent(String arenaIdent) {
         return new ArenaIdent(arenaIdent);
     }
+    public static Arbeidsgiver arbeidsgiver(String orgnr) {
+        return new Arbeidsgiver(orgnr);
+    }
+    public static Tiltaksarragoer tiltaksarragoer(String orgnr) {
+        return new Tiltaksarragoer(orgnr);
+    }
 
     public boolean erEkstern() {
         return this instanceof AktorId || this instanceof Fnr;
@@ -71,5 +77,13 @@ public abstract class Person {
 
     public static class ArenaIdent extends Person {
         private ArenaIdent(String id) { super(id); }
+    }
+
+    public static class Arbeidsgiver extends Person {
+        private Arbeidsgiver(String orgnr) { super(orgnr); }
+    }
+
+    public static class Tiltaksarragoer extends Person {
+        private Tiltaksarragoer(String orgnr) { super(orgnr); }
     }
 }
