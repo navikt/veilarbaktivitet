@@ -63,7 +63,7 @@ public class AktivitetskortTestConsumer implements TopicConsumer<String, String>
         LocalDate sluttDato = bestilling.getAktivitetskort().getSluttDato();
         Person.AktorId aktorId = bestilling.getAktorId();
 
-        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
+        migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt, startDato, sluttDato);
 
         return ConsumeStatus.OK;
     }

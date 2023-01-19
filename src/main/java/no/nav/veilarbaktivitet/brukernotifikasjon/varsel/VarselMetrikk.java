@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class VarselMetrikk {
-    private final MeterRegistry meterRegistry;
     /**
      * brukernotifikasjon_mangler_kvittering teller bestilte varsler der vi ikke har fått kvittering.
      * I prometheus, bruk max() for å finne riktigste verdi, siden de forskjellige nodene kan ha ulike verdier.
@@ -18,7 +17,6 @@ public class VarselMetrikk {
     private AtomicInteger forsinkedeBestillinger = new AtomicInteger();
 
     public VarselMetrikk(MeterRegistry meterRegistry) {
-        this.meterRegistry = meterRegistry;
         Gauge
                 .builder(BRUKERNOTIFIKASJON_MANGLER_KVITTERING, forsinkedeBestillinger, AtomicInteger::doubleValue)
                 .register(meterRegistry);
