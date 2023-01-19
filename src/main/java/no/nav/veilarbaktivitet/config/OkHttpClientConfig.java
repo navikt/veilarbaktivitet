@@ -16,24 +16,26 @@ import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
 @Configuration
 public class OkHttpClientConfig {
+    private static final String HTTP_METRIC_NAME = "okhttp.requests";
+
     @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarboppfolgingScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, HTTP_METRIC_NAME).build())
             .build();
     }
 
-    @Bean OkHttpClient veilarbpersonHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
+    @Bean OkHttpClient veilarbpergstsonHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarbpersonScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, HTTP_METRIC_NAME).build())
             .build();
     }
 
     @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureM2MInterceptor(veilarbarenaScope, azureAdMachineToMachineTokenClient))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, HTTP_METRIC_NAME).build())
             .build();
     }
 
