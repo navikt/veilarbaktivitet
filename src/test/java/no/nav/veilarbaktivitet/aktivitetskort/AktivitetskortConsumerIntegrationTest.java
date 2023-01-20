@@ -5,9 +5,9 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
@@ -16,6 +16,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.TiltakMigreringCronService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
@@ -66,7 +68,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
-public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
+class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     UnleashClient unleashClient;
@@ -82,6 +84,9 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     AktivitetskortService aktivitetskortService;
+
+    @Autowired
+    TiltakMigreringCronService tiltakMigreringCronService;
 
     @Autowired
     MeterRegistry meterRegistry;
@@ -172,7 +177,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
         Assertions.assertTrue(aktivitet.isAvtalt());
-        Assertions.assertEquals(Innsender.ARENAIDENT.toString(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(Innsender.ARENAIDENT.name(), aktivitet.getLagtInnAv());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -218,6 +223,62 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitet = hentAktivitet(funksjonellId);
 
         Assertions.assertEquals(mockBruker.getOppfolgingsperiode(), aktivitet.getOppfolgingsperiodeId());
+    }
+
+    @Test
+    void historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(75));
+        ArenaId arenata123 = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenata123, "MIDLONNTIL");
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst)); // Kjør to ganger for å sjekke at vi tar med oss OPPRETTET_SOM_HISTORISK når vi oppdaterer
+
+        var aktivitetFoer = hentAktivitet(funksjonellId);
+
+        assertThat(aktivitetFoer.getOppfolgingsperiodeId()).isNotNull();
+        assertThat(aktivitetFoer.isHistorisk()).isFalse();
+
+        var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
+                SELECT opprettet_som_historisk 
+                FROM EKSTERNAKTIVITET
+                WHERE AKTIVITET_ID = ? 
+                ORDER BY VERSJON desc
+                FETCH NEXT 1 ROW ONLY 
+                """, boolean.class, aktivitetFoer.getId());
+
+        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue();
+
+        tiltakMigreringCronService.settTiltakOpprettetSomHistoriskTilHistorisk();
+
+        var aktivitetEtter = hentAktivitet(funksjonellId);
+
+        assertThat(aktivitetEtter.isHistorisk()).isTrue();
+    }
+
+    @Test
+    void arenatiltak_uten_oppfolgingsperiode_skal_ignoreres() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(200));
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenaId, "MIDLONNTIL");
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+
+        // Aktivitet skal ikke bli opprettet
+        var aktivitet = hentAktivitet(funksjonellId);
+        assertThat(aktivitet).isNull();
+
+        var upsertActionResult = jdbcTemplate.queryForObject("""
+                SELECT ACTION_RESULT
+                FROM AKTIVITETSKORT_MSG_ID
+                WHERE FUNKSJONELL_ID = ?
+                """, String.class, funksjonellId.toString());
+
+        assertThat(upsertActionResult).isEqualTo(UpsertActionResult.IGNORE.name());
     }
 
     @Test
@@ -354,7 +415,8 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         return aktivitetTestService.hentAktiviteterForFnr(mockBruker, veileder)
             .aktiviteter.stream()
             .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-            .findFirst().get();
+            .findFirst()
+            .orElse(null);
     }
 
     @Test
@@ -372,7 +434,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    void fullført_aktivitet_kan_ikke_endres() {
+    void fullfort_aktivitet_kan_ikke_endres() {
         var funksjonellId = UUID.randomUUID();
 
         var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.FULLFORT);
