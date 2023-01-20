@@ -9,10 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
-import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -175,9 +172,11 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         Aktivitetskort aktivitetskort = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
 
-        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, funksjonellId, "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, funksjonellId, AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
 
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        String tiltakskode = "MIDLONNTIL";
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper),List.of(new ArenaMeldingHeaders(arenaId, tiltakskode)));
 
 
         cronService.sendOppTil5000AktiviterTilPortefolje();

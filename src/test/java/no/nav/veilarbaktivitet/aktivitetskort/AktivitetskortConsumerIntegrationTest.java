@@ -7,6 +7,7 @@ import no.nav.common.kafka.producer.KafkaProducerClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
@@ -66,7 +67,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 
-public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
+class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Autowired
     UnleashClient unleashClient;
@@ -175,7 +176,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
         Assertions.assertTrue(aktivitet.isAvtalt());
-        Assertions.assertEquals(InnsenderData.NAV.name(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(Innsender.ARENAIDENT.name(), aktivitet.getLagtInnAv());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -408,7 +409,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    void fullført_aktivitet_kan_ikke_endres() {
+    void fullfort_aktivitet_kan_ikke_endres() {
         var funksjonellId = UUID.randomUUID();
 
         var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.FULLFORT);
@@ -557,7 +558,7 @@ public class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    public void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
+    void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
         ArenaId arenaaktivitetId =  new ArenaId("ARENATA123");
         Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
 
