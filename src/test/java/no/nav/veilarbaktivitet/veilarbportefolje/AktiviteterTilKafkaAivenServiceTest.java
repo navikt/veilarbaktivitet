@@ -83,6 +83,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
+        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(false);
+
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
