@@ -35,6 +35,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilKafkaService.OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -48,9 +49,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Autowired
     KafkaTestService kafkaTestService;
-
-    @Autowired
-    UnleashClient unleashClient;
 
     @Value("${topic.ut.portefolje}")
     String portefoljeTopic;
@@ -74,6 +72,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
+
+        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(true);
 
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktiviteterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);

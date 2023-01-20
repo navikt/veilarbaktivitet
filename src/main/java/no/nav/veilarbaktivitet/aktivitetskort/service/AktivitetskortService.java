@@ -127,4 +127,8 @@ public class AktivitetskortService {
         aktivitetsMessageDAO.insert(messageId, funksjonellId);
     }
 
+    public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult) {
+        aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult);
+    }
+
 }

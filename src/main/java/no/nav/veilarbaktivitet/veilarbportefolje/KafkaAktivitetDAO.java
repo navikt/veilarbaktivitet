@@ -26,23 +26,36 @@ public class KafkaAktivitetDAO {
     private final Database database;
 
     @Timed
-    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
-
-        return database.getJdbcTemplate().query(
-                """ 
-                        SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
-                        EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE,
-                        A.* FROM AKTIVITET A
-                        LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
-                        LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
-                        WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
-                        AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
-                        ORDER BY A.VERSJON
-                        FETCH NEXT 5000 ROWS ONLY
-                        """,
-                KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
-        );
-        // language=sql
+    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven(boolean skalBehandleEksterneAktiviteter) {
+        if (skalBehandleEksterneAktiviteter) {
+            return database.getJdbcTemplate().query(
+                    """ 
+                            SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
+                            EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE,
+                            A.* FROM AKTIVITET A
+                            LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
+                            LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
+                            WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                            AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
+                            ORDER BY A.VERSJON
+                            FETCH NEXT 5000 ROWS ONLY
+                            """,
+                    KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
+            );
+        } else {
+            return database.getJdbcTemplate().query(
+                    """ 
+                            SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
+                            A.* FROM AKTIVITET A
+                            LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
+                            WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                            AND A.AKTIVITET_TYPE_KODE != 'EKSTERNAKTIVITET'
+                            ORDER BY A.VERSJON
+                            FETCH NEXT 5000 ROWS ONLY
+                            """,
+                    KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
+            );
+        }
     }
 
     @Timed

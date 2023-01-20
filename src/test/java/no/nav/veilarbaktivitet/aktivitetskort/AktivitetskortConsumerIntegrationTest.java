@@ -17,6 +17,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.aktivitetskort.service.TiltakMigreringCronService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
@@ -258,6 +259,29 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
+    void arenatiltak_uten_oppfolgingsperiode_skal_ignoreres() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(200));
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenaId, "MIDLONNTIL");
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+
+        // Aktivitet skal ikke bli opprettet
+        var aktivitet = hentAktivitet(funksjonellId);
+        assertThat(aktivitet).isNull();
+
+        var upsertActionResult = jdbcTemplate.queryForObject("""
+                SELECT ACTION_RESULT
+                FROM AKTIVITETSKORT_MSG_ID
+                WHERE FUNKSJONELL_ID = ?
+                """, String.class, funksjonellId.toString());
+
+        assertThat(upsertActionResult).isEqualTo(UpsertActionResult.IGNORE.name());
+    }
+
+    @Test
     void happy_case_upsert_status_existing_tiltaksaktivitet() {
         UUID funksjonellId = UUID.randomUUID();
 
@@ -391,7 +415,8 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         return aktivitetTestService.hentAktiviteterForFnr(mockBruker, veileder)
             .aktiviteter.stream()
             .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
-            .findFirst().get();
+            .findFirst()
+            .orElse(null);
     }
 
     @Test

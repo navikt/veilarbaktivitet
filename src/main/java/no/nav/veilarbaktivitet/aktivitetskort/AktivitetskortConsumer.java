@@ -63,6 +63,8 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         if (bestilling.getActionType() == ActionType.UPSERT_AKTIVITETSKORT_V1) {
             UpsertActionResult upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling);
 
+            aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult);
+
             aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult);
         } else {
             throw new NotImplementedException("Unknown kafka message");
