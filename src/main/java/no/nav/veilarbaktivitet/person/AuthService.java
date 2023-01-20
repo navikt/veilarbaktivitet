@@ -55,9 +55,15 @@ public class AuthService {
                 }).orElse(false);
     }
 
+    private Person.Fnr getFnrForEksternBruker(Person ident) {
+        if (ident instanceof Person.Fnr) return (Person.Fnr) ident;
+        if (ident instanceof Person.AktorId) return personService.getFnrForAktorId(Person.aktorId(ident.get()));
+        throw new IllegalArgumentException("Kan ikke hente fnr for NAV-ansatte");
+    }
+
     public void sjekkTilgangTilPerson(Person ident) {
         if (erEksternBruker()) {
-            sjekkEksternBrukerHarTilgang(ident);
+            sjekkEksternBrukerHarTilgang(getFnrForEksternBruker(ident));
             return;
         }
 
