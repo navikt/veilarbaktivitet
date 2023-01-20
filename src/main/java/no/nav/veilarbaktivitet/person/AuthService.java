@@ -32,7 +32,7 @@ public class AuthService {
 
     public void sjekkEksternBrukerHarTilgang(Person ident) {
         var loggedInUserFnr = getInnloggetBrukerIdent();
-        if (!loggedInUserFnr.equals(ident.get())) {
+        if (!loggedInUserFnr.map(fnr -> fnr.equals(ident.get())).orElse(false)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "ekstern bruker har ikke tilgang til andre brukere enn seg selv"
             );
