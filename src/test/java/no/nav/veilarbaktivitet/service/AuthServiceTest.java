@@ -102,4 +102,18 @@ class AuthServiceTest {
         });
     }
 
+    @Test
+    void skal_blokkere_ekstern_bruker_med_nivå3() {
+        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
+        when(authContextHolder.getIdTokenClaims()).thenReturn(
+                Optional.ofNullable(new JWTClaimsSet.Builder()
+                        .claim(ID_PORTEN_PID_CLAIM, FNR)
+                        .claim("acr", "Level3")
+                        .build())
+        );
+        Assertions.assertThrows(ResponseStatusException.class, () -> {
+            authService.sjekkEksternBrukerHarTilgang(Person.fnr(FNR));
+        });
+    }
+
 }
