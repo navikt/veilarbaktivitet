@@ -1,21 +1,27 @@
 package no.nav.veilarbaktivitet.service;
 
+import com.nimbusds.jwt.JWTClaimsSet;
 import no.nav.common.abac.Pep;
+import no.nav.common.auth.Constants;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+import static no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -66,6 +72,34 @@ class AuthServiceTest {
         when(authContextHolder.erSystemBruker()).thenReturn(Boolean.TRUE);
         boolean erSystemBruker = authService.erSystemBruker();
         assertEquals(Boolean.TRUE, erSystemBruker);
+    }
+
+
+    @Test
+    void skal_tillate_ekstern_bruker_med_riktig_fnr() {
+        Person eksternBruker = Person.fnr(FNR);
+        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
+        when(authContextHolder.getIdTokenClaims()).thenReturn(
+                Optional.ofNullable(new JWTClaimsSet.Builder()
+                        .claim(ID_PORTEN_PID_CLAIM, FNR)
+                        .claim("acr", "Level4")
+                        .build())
+        );
+        authService.sjekkEksternBrukerHarTilgang(eksternBruker);
+    }
+
+    @Test
+    void skal_blokkere_ekstern_bruker_med_feil_fnr() {
+        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
+        when(authContextHolder.getIdTokenClaims()).thenReturn(
+                Optional.ofNullable(new JWTClaimsSet.Builder()
+                        .claim(ID_PORTEN_PID_CLAIM, FNR)
+                        .claim("acr", "Level4")
+                        .build())
+        );
+        Assertions.assertThrows(ResponseStatusException.class, () -> {
+            authService.sjekkEksternBrukerHarTilgang(Person.fnr("12121212121"));
+        });
     }
 
 }
