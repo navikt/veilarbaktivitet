@@ -6,12 +6,14 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
@@ -27,19 +29,37 @@ public class ArenaAktivitetskortService {
     private final BrukerNotifikasjonDAO brukerNotifikasjonDAO;
     private final IdMappingDAO idMappingDAO;
     private final AktivitetService aktivitetService;
+    private final MigreringService migreringService;
 
     private final AktivitetIdMappingProducer aktivitetIdMappingProducer;
 
     public AktivitetData opprettAktivitet(ArenaAktivitetskortBestilling bestilling) {
+        var aktorId = bestilling.getAktorId();
+        var opprettetTidspunkt = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
+        var endretAv = bestilling.getAktivitetskort().getEndretAv();
+
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt);
+
+        if (oppfolgingsperiode.isEmpty()) {
+            // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
+            return null;
+        }
+
         // Opprett via AktivitetService
-        var aktivitetsData =  bestilling.toAktivitet();
+        var aktivitetsData = bestilling.toAktivitet();
+        if (oppfolgingsperiode.get().getSluttDato() != null) {
+            aktivitetsData.getEksternAktivitetData().setOpprettetSomHistorisk(true);
+            aktivitetsData.getEksternAktivitetData().setOppfolgingsperiodeSlutt(oppfolgingsperiode.get().getSluttDato().toLocalDateTime());
+        }
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            bestilling.getAktorId(),
+            aktorId,
             aktivitetsData,
-            bestilling.getAktivitetskort().getEndretAv(),
-            bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime(),
-            null // Ikke sett oppfølgingsperiode på arena-aktiviteter
+            endretAv,
+            opprettetTidspunkt,
+            oppfolgingsperiode.get().getUuid()
         );
+
+
         // Gjør arena-spesifikk migrering
         arenaspesifikkMigrering(bestilling.getAktivitetskort(), opprettetAktivitetsData, bestilling.getEksternReferanseId());
         return opprettetAktivitetsData;

@@ -64,7 +64,7 @@ class MigreringServiceTest {
     }
 
     @Test
-    void opprettetTidspunkt_passer_paa_startDato() {
+    void opprettetTidspunkt_passer_paa_startDato() { // skal være inklusiv med andre ord
         var riktigPeriode = oppfperiodeDTO(DATE_TIME.minusDays(10), null);
         var perioder = List.of(
                 oppfperiodeDTO(DATE_TIME.minusDays(30), DATE_TIME.minusDays(20)),
@@ -173,7 +173,7 @@ class MigreringServiceTest {
 
     private OppfolgingPeriodeMinimalDTO stubOgFinnOppgolgingsperiode(List<OppfolgingPeriodeMinimalDTO> perioder, LocalDateTime opprettetTidspunkt) {
         when(oppfolgingV2Client.hentOppfolgingsperioder(ArgumentMatchers.any())).thenReturn(Optional.of(perioder));
-        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt, null, null);
+        Optional<OppfolgingPeriodeMinimalDTO> oppfolgingsperiode = migreringService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt);
 
         return oppfolgingsperiode.orElse(null);
     }

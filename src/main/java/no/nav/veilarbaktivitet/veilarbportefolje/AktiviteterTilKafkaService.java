@@ -4,6 +4,7 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -18,6 +19,9 @@ import java.util.List;
 public class AktiviteterTilKafkaService {
     private final KafkaAktivitetDAO dao;
     private final AktivitetKafkaProducerService producerService;
+    private final UnleashClient unleashClient;
+
+    public static final String OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER = "veilarbaktivitet.oversikten.behandle.ekstern.aktiviteter";
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
@@ -28,7 +32,8 @@ public class AktiviteterTilKafkaService {
     public void sendOppTil5000AktiviterTilPortefolje() {
         MDC.put("running.job", "aktiviteter_kafka");
 
-        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtPaAiven();
+        boolean skalBehandleEksterneAktiviteter = unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER);
+        List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtPaAiven(skalBehandleEksterneAktiviteter);
         for (KafkaAktivitetMeldingV4 melding : meldinger) {
             producerService.sendAktivitetMelding(melding);
         }

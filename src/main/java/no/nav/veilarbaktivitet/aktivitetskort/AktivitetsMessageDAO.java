@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -33,5 +34,17 @@ public class AktivitetsMessageDAO {
                 int.class
         );
         return antall != null && antall > 0;
+    }
+
+    public void updateActionResult(UUID messageId, UpsertActionResult upsertActionResult) {
+        var params = new MapSqlParameterSource()
+                .addValue("messageId", messageId.toString())
+                .addValue("actionResult", upsertActionResult.name());
+
+        template.update("""
+                UPDATE AKTIVITETSKORT_MSG_ID
+                SET ACTION_RESULT = :actionResult 
+                WHERE MESSAGE_ID = :messageId
+                """, params);
     }
 }

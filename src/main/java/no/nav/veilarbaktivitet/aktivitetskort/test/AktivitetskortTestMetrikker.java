@@ -35,9 +35,10 @@ public class AktivitetskortTestMetrikker {
       Case #7: opprettettidspunkt 10 minutter innen startdato
      */
 
-    public void countFinnOppfolgingsperiode(int caseNr) {
+
+    public void countFinnOppfolgingsperiode(String asd) {
         Counter.builder(AKTIVITETSKORT_TEST_OPPFOLGINGSPERIODE)
-                .tag(AKTIVITETSKORT_TEST_CASE, "" + caseNr)
+                .tag(AKTIVITETSKORT_TEST_CASE, asd)
                 .register(meterRegistry)
                 .increment();
     }
