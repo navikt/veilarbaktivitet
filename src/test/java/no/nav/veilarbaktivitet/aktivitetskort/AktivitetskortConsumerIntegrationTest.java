@@ -39,7 +39,6 @@ import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.awaitility.Awaitility;
-import org.hibernate.validator.constraints.ru.INN;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -194,7 +193,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
                 .withEndretAv(new Ident(
                     brukerIdent,
-                        Innsender.BRUKER
+                    IdentType.PERSONBRUKERIDENT
                 ));
         var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
                 aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
@@ -624,19 +623,25 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Test
     void skal_lagre_riktig_identtype_pa_eksterne_aktiviteter() {
-        var arbeidsgiverIdent = new Ident("123456789", Innsender.ARBEIDSGIVER);
+        var arbeidsgiverIdent = new Ident("123456789", IdentType.ARBEIDSGIVER);
         Aktivitetskort arbeidgiverAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
                 .withEndretAv(arbeidsgiverIdent);
-        var tiltaksarragoerIdent = new Ident("123456780", Innsender.TILTAKSARRAGOER);
+        var tiltaksarragoerIdent = new Ident("123456780", IdentType.TILTAKSARRANGOER);
         Aktivitetskort tiltaksarrangoerAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
                 .withEndretAv(tiltaksarragoerIdent);
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(arbeidgiverAktivitet, tiltaksarrangoerAktivitet), List.of(defaultcontext, defaultcontext));
+        var systemIdent = new Ident("123456770", IdentType.SYSTEM);
+        Aktivitetskort systemAktivitetsKort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+                .withEndretAv(systemIdent);
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(arbeidgiverAktivitet, tiltaksarrangoerAktivitet, systemAktivitetsKort), List.of(defaultcontext, defaultcontext, defaultcontext));
         var arbeidsAktivitet = hentAktivitet(arbeidgiverAktivitet.getId());
         var tilatksarratgoerAktivitet = hentAktivitet(tiltaksarrangoerAktivitet.getId());
+        var systemAktivitet = hentAktivitet(systemAktivitetsKort.getId());
         assertThat(arbeidsAktivitet.getEndretAv()).isEqualTo(arbeidsgiverIdent.ident());
         assertThat(arbeidsAktivitet.getLagtInnAv()).isEqualTo(arbeidsgiverIdent.identType().toString());
         assertThat(tilatksarratgoerAktivitet.getEndretAv()).isEqualTo(tiltaksarragoerIdent.ident());
         assertThat(tilatksarratgoerAktivitet.getLagtInnAv()).isEqualTo(tiltaksarragoerIdent.identType().toString());
+        assertThat(systemAktivitet.getEndretAv()).isEqualTo(systemIdent.ident());
+        assertThat(systemAktivitet.getLagtInnAv()).isEqualTo(systemIdent.identType().toInnsender().toString());
     }
 
 
