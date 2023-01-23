@@ -32,11 +32,13 @@ public abstract class Person {
         return this instanceof AktorId || this instanceof Fnr;
     }
 
-    public Innsender tilBrukerType() {
+    public Innsender tilInnsenderType() {
         return erEkstern() ? Innsender.BRUKER : Innsender.NAV;
     }
+
     public Ident tilIdent() {
-        return new Ident(this.get(), this.tilBrukerType());
+        if (this instanceof Fnr || this instanceof AktorId) return new Ident(this.get(), IdentType.PERSONBRUKERIDENT);
+        return new Ident(this.get(), IdentType.NAVIDENT);
     }
 
     @Override

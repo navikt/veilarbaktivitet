@@ -10,12 +10,13 @@ public enum IdentType {
     SYSTEM,
     PERSONBRUKERIDENT;
 
-    public Innsender mapToInnsenderType() {
+    public Innsender toInnsender() {
         return switch (this) {
-            case ARENAIDENT, NAVIDENT, SYSTEM -> Innsender.NAV;
+            case ARENAIDENT -> Innsender.ARENAIDENT;
+            case NAVIDENT, SYSTEM -> Innsender.NAV;
             case PERSONBRUKERIDENT -> Innsender.BRUKER;
             case ARBEIDSGIVER -> Innsender.ARBEIDSGIVER;
-            case TILTAKSARRANGOER -> Innsender.TILTAKSARRAGOER;
+            case TILTAKSARRANGOER -> Innsender.TILTAKSARRANGOER;
         };
     }
 }

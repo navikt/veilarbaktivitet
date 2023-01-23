@@ -62,7 +62,7 @@ public class AktivitetskortMapper {
                 .status(aktivitetskort.aktivitetStatus)
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
                 .endretAv(aktivitetskort.endretAv.ident())
-                .endretAvType(aktivitetskort.endretAv.identType())
+                .endretAvType(aktivitetskort.endretAv.identType().toInnsender())
                 .opprettetDato(zonedDateTimeToDate(opprettetDato))
                 .endretDato(zonedDateTimeToDate(aktivitetskort.endretTidspunkt))
                 .eksternAktivitetData(eksternAktivitetData)
