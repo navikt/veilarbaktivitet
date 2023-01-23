@@ -1,4 +1,4 @@
-name: AsyncAPI documents processing
+name: AsyncAPI documents gh pages
 
 on:
   workflow_dispatch:
@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - '.github/workflows/asyncApiDoc.yml'
-      - 'src/main/resources/schemas/'
+      - 'src/main/resources/schemas/**'
 
 concurrency:
   group: AktivitetskortV1.asyncapi.doc

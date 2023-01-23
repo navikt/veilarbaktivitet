@@ -1,4 +1,4 @@
-name: AsyncAPI documents processing
+name: AsyncAPI schemas gh pages
 
 on:
   workflow_dispatch:
