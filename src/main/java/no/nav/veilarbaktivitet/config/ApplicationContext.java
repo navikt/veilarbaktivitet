@@ -12,6 +12,9 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
+import no.nav.poao.dab.spring_auth.AuthService;
+import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -62,5 +65,10 @@ public class ApplicationContext {
                 properties.getAbacUrl(), serviceUserCredentials.username,
                 serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
         );
+    }
+
+    @Bean
+    public IAuthService authService(AuthContextHolder authContextHolder, Pep pep, PersonService personService) {
+        return new AuthService(authContextHolder, pep, personService);
     }
 }

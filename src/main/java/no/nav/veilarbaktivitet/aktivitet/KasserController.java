@@ -1,8 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,19 +23,13 @@ import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERIN
 @Slf4j
 @Component
 @RequestMapping("/api/kassering")
+@RequiredArgsConstructor
 public class KasserController {
 
-    private final AuthService authService;
+    private final IAuthService authService;
     private final AktivitetDAO aktivitetDAO;
-    private final AuthService auth;
 
     private final String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
-
-    public KasserController(AuthService authService, AktivitetDAO aktivitetDAO, AuthService auth) {
-        this.authService = authService;
-        this.aktivitetDAO = aktivitetDAO;
-        this.auth = auth;
-    }
 
     @PutMapping("/{aktivitetId}")
     @ResponseStatus(value = HttpStatus.OK)
@@ -41,14 +37,13 @@ public class KasserController {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
 
-        kjorHvisTilgang(aktivitetData.getAktorId(), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
+        kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
     }
 
-    private boolean kjorHvisTilgang(String aktorId, String id, Supplier<Boolean> fn) {
+    private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, Supplier<Boolean> fn) {
+        authService.sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId.otherAktorId());
 
-        auth.sjekkVeilederHarSkriveTilgangTilPerson(aktorId);
-
-        String veilederIdent = authService.getInnloggetBrukerIdent().orElse(null);
+        String veilederIdent = authService.getInnloggetBrukerIdent();
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));
 
         if (!godkjente.contains(veilederIdent)) {

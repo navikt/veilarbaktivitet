@@ -9,9 +9,10 @@ import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import org.h2.engine.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,6 +22,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
+import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +36,7 @@ class AuthServiceTest {
     private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
     private final Pep veilarbPep = mock(Pep.class);
 
-    private final PersonService personService = new PersonService(aktorOppslagClient);
+    private final no.nav.poao.dab.spring_auth.PersonService personService = new PersonService(aktorOppslagClient);
 
     @InjectMocks
     private AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);
@@ -50,9 +52,14 @@ class AuthServiceTest {
         Person navPerson = Person.navIdent(NAVIDENT);
 
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.INTERN));
-        when(authContextHolder.getNavIdent()).thenReturn(Optional.of(navIdent));
-        Optional<Person> loggedInnUser = authService.getLoggedInnUser();
-        assertEquals(navPerson, loggedInnUser.get());
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(
+                new JWTClaimsSet.Builder()
+                    .subject("asdas")
+                    .claim(AAD_NAV_IDENT_CLAIM, navPerson.get())
+                    .build()
+        );
+        var loggedInnUser = authService.getLoggedInnUser();
+        assertEquals(navPerson.get(), loggedInnUser.get());
     }
 
     @Test
@@ -61,10 +68,15 @@ class AuthServiceTest {
 
         when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
         when(authContextHolder.erEksternBruker()).thenReturn(true);
-        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(
+                new JWTClaimsSet.Builder()
+                        .subject("asdas")
+                        .claim("pid", eksternBruker.get())
+                        .build()
+        );
         when(aktorOppslagClient.hentAktorId(any())).thenReturn(AktorId.of(AKTORID));
-        Optional<Person> loggedInnUser = authService.getLoggedInnUser();
-        assertEquals(eksternBruker, loggedInnUser.get());
+        var loggedInnUser = authService.getLoggedInnUser();
+        assertEquals(eksternBruker.get(), loggedInnUser.get());
     }
 
     @Test
@@ -78,41 +90,41 @@ class AuthServiceTest {
     @Test
     void skal_tillate_ekstern_bruker_med_riktig_fnr() {
         Person eksternBruker = Person.fnr(FNR);
-        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
-        when(authContextHolder.getIdTokenClaims()).thenReturn(
-                Optional.ofNullable(new JWTClaimsSet.Builder()
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(
+                new JWTClaimsSet.Builder()
                         .claim(ID_PORTEN_PID_CLAIM, FNR)
                         .claim("acr", "Level4")
-                        .build())
+                        .build()
         );
-        authService.sjekkEksternBrukerHarTilgang(eksternBruker);
+        authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
     }
 
     @Test
     void skal_blokkere_ekstern_bruker_med_feil_fnr() {
-        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
-        when(authContextHolder.getIdTokenClaims()).thenReturn(
-                Optional.ofNullable(new JWTClaimsSet.Builder()
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(
+                new JWTClaimsSet.Builder()
                         .claim(ID_PORTEN_PID_CLAIM, FNR)
                         .claim("acr", "Level4")
-                        .build())
+                        .build()
         );
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkEksternBrukerHarTilgang(Person.fnr("12121212121"));
+            authService.sjekkTilgangTilPerson(Person.fnr("12121212121").eksternBrukerId());
         });
     }
 
     @Test
     void skal_blokkere_ekstern_bruker_med_nivå3() {
-        when(authContextHolder.getUid()).thenReturn(Optional.of(FNR));
-        when(authContextHolder.getIdTokenClaims()).thenReturn(
-                Optional.ofNullable(new JWTClaimsSet.Builder()
+        when(authContextHolder.getRole()).thenReturn(Optional.of(UserRole.EKSTERN));
+        when(authContextHolder.requireIdTokenClaims()).thenReturn(
+                new JWTClaimsSet.Builder()
                         .claim(ID_PORTEN_PID_CLAIM, FNR)
                         .claim("acr", "Level3")
-                        .build())
+                        .build()
         );
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkEksternBrukerHarTilgang(Person.fnr(FNR));
+            authService.sjekkTilgangTilPerson(Person.fnr(FNR).eksternBrukerId());
         });
     }
 
