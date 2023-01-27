@@ -32,8 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.mockito.Mockito.when;
-
-public class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
+class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
     MockBruker mockBruker;
     MockVeileder mockVeileder;
@@ -52,7 +51,7 @@ public class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
         var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).kontorsperreEnhet("123").build();
         mockBruker = MockNavService.createBruker(medKvp);
         mockVeileder = MockNavService.createVeileder(mockBruker);
-        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 
     @Test
