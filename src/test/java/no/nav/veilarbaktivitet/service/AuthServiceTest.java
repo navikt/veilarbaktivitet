@@ -10,6 +10,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
+import no.nav.poao.dab.spring_auth.IPersonService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.h2.engine.User;
@@ -36,7 +37,7 @@ class AuthServiceTest {
     private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
     private final Pep veilarbPep = mock(Pep.class);
 
-    private final no.nav.poao.dab.spring_auth.PersonService personService = new PersonService(aktorOppslagClient);
+    private final IPersonService personService = new PersonService(aktorOppslagClient);
 
     @InjectMocks
     private AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);

@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
@@ -40,7 +41,7 @@ public class KasserController {
         kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
     }
 
-    private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, Supplier<Boolean> fn) {
+    private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, BooleanSupplier fn) {
         authService.sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId.otherAktorId());
 
         String veilederIdent = authService.getInnloggetBrukerIdent();

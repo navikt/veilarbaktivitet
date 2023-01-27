@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
@@ -35,7 +34,6 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
     private final IdMappingDAO idMappingDAO;
-    private final IAuthService authService;
     private final MeterRegistry meterRegistry;
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
     private final VeilarbarenaClient veilarbarenaClient;
@@ -47,14 +45,12 @@ public class ArenaService {
 
     public ArenaService(
             ForhaandsorienteringDAO fhoDAO,
-            IAuthService authService,
             MeterRegistry meterRegistry,
             BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
             VeilarbarenaClient veilarbarenaClient,
             IdMappingDAO idMappingDAO,
             PersonService personService
     ) {
-        this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
         this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
