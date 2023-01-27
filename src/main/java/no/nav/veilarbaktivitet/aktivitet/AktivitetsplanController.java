@@ -41,7 +41,7 @@ public class AktivitetsplanController {
                 .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                .filter(migreringService.ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv())
+                .filter(migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv())
                 .toList();
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);

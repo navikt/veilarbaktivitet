@@ -30,7 +30,7 @@ import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.UTDANNIN
 @RequiredArgsConstructor
 @Slf4j
 public class MigreringService {
-    public static final String EKSTERN_AKTIVITET_TOGGLE = "veilarbaktivitet.vis_eksterne_aktiviteter";
+    public static final String VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter";
 
     private final UnleashClient unleashClient;
 
@@ -41,21 +41,21 @@ public class MigreringService {
     private final Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
     private static final Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
     public Predicate<ArenaAktivitetDTO> filtrerBortArenaTiltakHvisToggleAktiv() {
-        if (unleashClient.isEnabled(EKSTERN_AKTIVITET_TOGGLE)) {
+        if (unleashClient.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             return ikkeArenaTiltak;
         } else {
             return alleArenaAktiviteter;
         }
     }
 
-    private final Predicate<AktivitetDTO> ikkeEksterneAktiviteter = a -> AktivitetTypeDTO.EKSTERNAKTIVITET != a.getType();
+    private final Predicate<AktivitetDTO> ikkeMigrerteArenaAktiviteter = a -> !(AktivitetTypeDTO.EKSTERNAKTIVITET == a.getType() && AktivitetskortType.ARENA_TILTAK == a.getEksternAktivitet().type());
     private static final Predicate<AktivitetDTO> alleLokaleAktiviteter = a -> true;
 
-    public Predicate<AktivitetDTO> ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv() {
-        if (unleashClient.isEnabled(EKSTERN_AKTIVITET_TOGGLE)) {
+    public Predicate<AktivitetDTO> visMigrerteArenaAktiviteterHvisToggleAktiv() {
+        if (unleashClient.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             return alleLokaleAktiviteter;
         } else {
-            return ikkeEksterneAktiviteter;
+            return ikkeMigrerteArenaAktiviteter;
         }
     }
 
