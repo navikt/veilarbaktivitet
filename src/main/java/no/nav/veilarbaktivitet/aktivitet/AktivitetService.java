@@ -82,7 +82,7 @@ public class AktivitetService {
                 .toBuilder()
                 .aktorId(aktorId.get())
                 .avtalt(aktivitet.isAvtalt())
-                .endretAvType(endretAv.identType())
+                .endretAvType(endretAv.identType().toInnsender())
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .opprettetDato(localDateTimeToDate(opprettet))
                 .endretAv(endretAv.ident())
@@ -109,7 +109,7 @@ public class AktivitetService {
                 .toBuilder()
                 .status(aktivitet.getStatus())
                 .endretAv(endretAv.ident())
-                .endretAvType(endretAv.identType())
+                .endretAvType(endretAv.identType().toInnsender())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
@@ -128,7 +128,7 @@ public class AktivitetService {
         val nyAktivitet = originalAktivitet
                 .toBuilder()
                 .endretAv(endretAv.get())
-                .endretAvType(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilInnsenderType())
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
@@ -146,7 +146,7 @@ public class AktivitetService {
 
         val nyAktivitet = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilInnsenderType())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .endretAv(endretAv.get())
@@ -158,7 +158,7 @@ public class AktivitetService {
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilInnsenderType())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
                 .endretAv(endretAv.get())
@@ -169,7 +169,7 @@ public class AktivitetService {
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData, @NonNull Person endretAv) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilInnsenderType())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -192,7 +192,7 @@ public class AktivitetService {
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
-                .withEndretAvType(endretAv.tilBrukerType())
+                .withEndretAvType(endretAv.tilInnsenderType())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -218,7 +218,7 @@ public class AktivitetService {
     public void svarPaaKanCvDeles(AktivitetData originalAktivitet, AktivitetData aktivitet, @NonNull Person endretAv) {
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(endretAv.get())
-                .withEndretAvType(endretAv.tilBrukerType())
+                .withEndretAvType(endretAv.tilInnsenderType())
                 .withTransaksjonsType(AktivitetTransaksjonsType.DEL_CV_SVART)
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
@@ -240,7 +240,7 @@ public class AktivitetService {
                 .endretAv(endretAv.get())
                 .fraDato(aktivitet.getFraDato())
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
-                .endretAvType(endretAv.tilBrukerType())
+                .endretAvType(endretAv.tilInnsenderType())
                 .lenke(aktivitet.getLenke())
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
@@ -264,7 +264,7 @@ public class AktivitetService {
                         .withAvtalt(true)
                         .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                         .withEndretAv(endretAv.ident())
-                        .withEndretAvType(endretAv.identType())
+                        .withEndretAvType(endretAv.identType().toInnsender())
                         ,
                 endretTidspunkt
                 );
@@ -334,7 +334,6 @@ public class AktivitetService {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
         aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
-                .filter(a -> a.getAktivitetType() != AktivitetTypeData.EKSTERNAKTIVITET)
                 .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
                 .forEach(a -> {
                     avtaltMedNavService.settVarselFerdig(a.getFhoId());

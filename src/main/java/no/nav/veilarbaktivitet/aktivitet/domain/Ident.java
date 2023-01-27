@@ -9,5 +9,9 @@ import no.nav.veilarbaktivitet.person.Innsender;
 @With
 public record Ident(
     String ident,
-    Innsender identType)
-{}
+    IdentType identType)
+{
+    public Ident(String ident, Innsender innsender) {
+        this(ident, innsender.toIdentType());
+    }
+}

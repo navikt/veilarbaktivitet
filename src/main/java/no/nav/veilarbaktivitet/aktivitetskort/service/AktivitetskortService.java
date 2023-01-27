@@ -2,12 +2,13 @@ package no.nav.veilarbaktivitet.aktivitetskort.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
@@ -31,7 +32,6 @@ import java.util.stream.Stream;
 public class AktivitetskortService {
 
     private final AktivitetService aktivitetService;
-    private final AktivitetAppService aktivitetAppService;
     private final AktivitetDAO aktivitetDAO;
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
     private final ArenaAktivitetskortService arenaAktivitetskortService;
@@ -48,6 +48,11 @@ public class AktivitetskortService {
             return UpsertActionResult.OPPDATER;
         } else {
             var opprettetAktivitet = opprettAktivitet(bestilling);
+
+            if (opprettetAktivitet == null) {
+                log.info("Ignorert aktivitetskort som ikke har passende oppfølgingsperiode funksjonellId={}", bestilling.getAktivitetskort().getId());
+                return UpsertActionResult.IGNORE;
+            }
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }
@@ -120,6 +125,10 @@ public class AktivitetskortService {
 
     public void lagreMeldingsId(UUID messageId, UUID funksjonellId) {
         aktivitetsMessageDAO.insert(messageId, funksjonellId);
+    }
+
+    public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult) {
+        aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult);
     }
 
 }

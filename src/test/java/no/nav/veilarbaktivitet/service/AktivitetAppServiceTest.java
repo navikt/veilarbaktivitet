@@ -71,7 +71,7 @@ public class AktivitetAppServiceTest {
             s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
             Person endretAv = capturePerson.getValue();
             s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
-            s.assertThat(endretAv.tilBrukerType()).isSameAs(BRUKER);
+            s.assertThat(endretAv.tilInnsenderType()).isSameAs(BRUKER);
             s.assertAll();
         });
 
@@ -108,7 +108,7 @@ public class AktivitetAppServiceTest {
             s.assertThat(aktivitet.getBehandlingAktivitetData()).isEqualTo(endretBehandlingsdata);
             Person endretAv = capturePerson.getValue();
             s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
-            s.assertThat(endretAv.tilBrukerType()).isSameAs(BRUKER);
+            s.assertThat(endretAv.tilInnsenderType()).isSameAs(BRUKER);
             s.assertAll();
         });
     }
@@ -132,7 +132,7 @@ public class AktivitetAppServiceTest {
             s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
             Person endretAv = capturePerson.getValue();
             s.assertThat(endretAv.get()).isEqualTo(TESTNAVIDENT);
-            s.assertThat(endretAv.tilBrukerType()).isSameAs(NAV);
+            s.assertThat(endretAv.tilInnsenderType()).isSameAs(NAV);
             s.assertAll();
         });
     }

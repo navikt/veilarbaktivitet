@@ -32,9 +32,9 @@ class PersonTest {
 
     @Test
     void toInnsenderData() {
-        assertEquals(Innsender.BRUKER, fnr.tilBrukerType());
-        assertEquals(Innsender.BRUKER, aktorId.tilBrukerType());
-        assertEquals(Innsender.NAV, navIdent.tilBrukerType());
+        assertEquals(Innsender.BRUKER, fnr.tilInnsenderType());
+        assertEquals(Innsender.BRUKER, aktorId.tilInnsenderType());
+        assertEquals(Innsender.NAV, navIdent.tilInnsenderType());
     }
 
 }

@@ -9,10 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
-import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -38,6 +35,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilKafkaService.OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER;
 import static org.junit.Assert.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -51,9 +49,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Autowired
     KafkaTestService kafkaTestService;
-
-    @Autowired
-    UnleashClient unleashClient;
 
     @Value("${topic.ut.portefolje}")
     String portefoljeTopic;
@@ -78,6 +73,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
 
+        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(true);
+
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktiviteterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
 
@@ -86,6 +83,8 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
+        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(false);
+
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -160,6 +159,31 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         Assertions.assertThat(melding.getTiltakskode()).isEqualTo(KafkaAktivitetDAO.TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD);
         Assertions.assertThat(melding.getAktivitetType()).isEqualTo(AktivitetTypeDTO.TILTAK);
 
+
+        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
+    }
+
+    @Test
+    void skal_ikke_sende_tiltak_opprettet_som_historisk() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+
+        // Happy bruker har en gammel periode startDato nå-100 dager, sluttDato nå-50 dager
+
+        UUID funksjonellId = UUID.randomUUID();
+
+
+        Aktivitetskort aktivitetskort = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
+
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, funksjonellId, AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        String tiltakskode = "MIDLONNTIL";
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper),List.of(new ArenaMeldingHeaders(arenaId, tiltakskode)));
+
+
+        cronService.sendOppTil5000AktiviterTilPortefolje();
+
+        // Ingen nye meldinger på porteføljetopic
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
     }
