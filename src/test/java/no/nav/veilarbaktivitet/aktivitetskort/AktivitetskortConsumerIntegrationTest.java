@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
