@@ -1,7 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet.dto;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -41,22 +39,6 @@ public class AktivitetDTO {
     private boolean avtalt;
     private ForhaandsorienteringDTO forhaandsorientering;
     private String endretAvType;
-
-    @JsonGetter("lagtInnAv")
-    public String getLagtInnAv() {
-        return endretAvType;
-    }
-
-    @JsonSetter("lagtInnAv")
-    private void setLagtInnAv(String todo) {
-        // TODO: 19/01/2023 Denne bør vere midlertidig til vi har migrert aktiviteslan og dialog
-        //dete trengs for ikke ødlege serialiseringen vår.
-        //bør ikke ødlegge noe da vi ikke leser denne atributten (eller endret av) untat ved json serialisering.
-        //og vi ikke gjenbruker aktivitetDTOene
-        //bør merges når vi er klare til i oppdatere arbeidsrettet-dialog og aktivitesplan
-        endretAvType = todo;
-    }
-
     private AktivitetTransaksjonsType transaksjonsType;
     private String malid;
     private UUID oppfolgingsperiodeId;
