@@ -568,7 +568,6 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
     @Test()
-    @Timeout(100000)
     void skal_migrere_eksisterende_forhaandorientering() {
         // Det finnes en arenaaktivtiet fra før
         var arenaaktivitetId = new ArenaId("ARENATA123");
