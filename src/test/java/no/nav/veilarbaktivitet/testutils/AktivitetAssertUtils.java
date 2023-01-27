@@ -16,7 +16,7 @@ public class AktivitetAssertUtils {
                 .opprettetDato(actual.getOpprettetDato())
                 .endretDato(actual.getEndretDato())
                 .endretAv(actual.getEndretAv())
-                .lagtInnAv(actual.getLagtInnAv())
+                .endretAvType(actual.getEndretAvType())
                 .transaksjonsType(actual.getTransaksjonsType())
                 .oppfolgingsperiodeId(actual.getOppfolgingsperiodeId())
                 .build();
@@ -30,7 +30,7 @@ public class AktivitetAssertUtils {
                 .versjon(actual.getVersjon())
                 .endretDato(actual.getEndretDato())
                 .endretAv(actual.getEndretAv())
-                .lagtInnAv(actual.getLagtInnAv())
+                .endretAvType(actual.getEndretAvType())
                 .transaksjonsType(actual.getTransaksjonsType())
                 .build();
         // sammenlign resten - forutsetter implementert equals

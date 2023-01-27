@@ -11,7 +11,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
@@ -176,7 +179,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.getTransaksjonsType());
         Assertions.assertEquals(AktivitetStatus.PLANLAGT, aktivitet.getStatus());
         Assertions.assertTrue(aktivitet.isAvtalt());
-        Assertions.assertEquals(Innsender.ARENAIDENT.name(), aktivitet.getLagtInnAv());
+        Assertions.assertEquals(Innsender.ARENAIDENT.name(), aktivitet.getEndretAvType());
         Assertions.assertEquals(aktivitet.getEksternAktivitet(), new EksternAktivitetDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 null,
@@ -200,7 +203,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
         var resultat = hentAktivitet(aktivitetskort.getId());
         assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
-        assertThat(resultat.getLagtInnAv()).isEqualTo(Innsender.BRUKER.toString());
+        assertThat(resultat.getEndretAvType()).isEqualTo(Innsender.BRUKER.toString());
     }
 
 
@@ -637,11 +640,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var tilatksarratgoerAktivitet = hentAktivitet(tiltaksarrangoerAktivitet.getId());
         var systemAktivitet = hentAktivitet(systemAktivitetsKort.getId());
         assertThat(arbeidsAktivitet.getEndretAv()).isEqualTo(arbeidsgiverIdent.ident());
-        assertThat(arbeidsAktivitet.getLagtInnAv()).isEqualTo(arbeidsgiverIdent.identType().toString());
+        assertThat(arbeidsAktivitet.getEndretAvType()).isEqualTo(arbeidsgiverIdent.identType().toString());
         assertThat(tilatksarratgoerAktivitet.getEndretAv()).isEqualTo(tiltaksarragoerIdent.ident());
-        assertThat(tilatksarratgoerAktivitet.getLagtInnAv()).isEqualTo(tiltaksarragoerIdent.identType().toString());
+        assertThat(tilatksarratgoerAktivitet.getEndretAvType()).isEqualTo(tiltaksarragoerIdent.identType().toString());
         assertThat(systemAktivitet.getEndretAv()).isEqualTo(systemIdent.ident());
-        assertThat(systemAktivitet.getLagtInnAv()).isEqualTo(systemIdent.identType().toInnsender().toString());
+        assertThat(systemAktivitet.getEndretAvType()).isEqualTo(systemIdent.identType().toInnsender().toString());
     }
 
 

@@ -382,7 +382,7 @@ public class AktivitetsplanRSTest {
         assertThat(aktivitet, equalTo(orignalAktivitet
                 .setTilDato(aktivitet.getTilDato())
                 .setVersjon(aktivitet.getVersjon()) //automatiske felter satt av systemet
-                .setLagtInnAv(aktivitet.getLagtInnAv())
+                .setEndretAvType(aktivitet.getEndretAvType())
                 .setTransaksjonsType(aktivitet.getTransaksjonsType())
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(AuthContextHolderThreadLocal.instance().getSubject().orElseThrow())

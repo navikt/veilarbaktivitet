@@ -31,7 +31,7 @@ public class AktivitetDTOMapper {
                 .setAvsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .setAvtalt(aktivitet.isAvtalt())
                 .setForhaandsorientering(mapForhaandsorientering(aktivitet.getForhaandsorientering()))
-                .setLagtInnAv(aktivitet.getEndretAvType().name())
+                .setEndretAvType(aktivitet.getEndretAvType().name())
                 .setOpprettetDato(aktivitet.getOpprettetDato())
                 .setEndretDato(aktivitet.getEndretDato())
                 .setEndretAv(erEkstern ? null : aktivitet.getEndretAv()) // null ut endretAv når bruker er ekstern

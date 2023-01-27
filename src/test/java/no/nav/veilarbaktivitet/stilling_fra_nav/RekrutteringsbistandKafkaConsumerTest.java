@@ -104,7 +104,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -165,7 +165,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertAll();
@@ -214,7 +214,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ikke ny versjon av aktivitet").isEqualTo(aktivitetData_etterAvbrutt.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(aktivitetData_etterAvbrutt.getEndretAv());
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(aktivitetData_etterAvbrutt.getLagtInnAv());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(aktivitetData_etterAvbrutt.getEndretAvType());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(AVBRUTT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(aktivitetData_etterAvbrutt.getStillingFraNavData().getSoknadsstatus());
@@ -263,7 +263,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).as("Forventer ny versjon av aktivitet").isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(FULLFORT);
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.IKKE_FATT_JOBBEN);
@@ -315,7 +315,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -372,7 +372,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo("Z314159");
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
@@ -500,7 +500,7 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
                     .isNotEqualTo(sendtStatusoppdatering.tidspunkt());
             assertions.assertThat(aktivitetData_etter.getVersjon()).isGreaterThan(aktivitetData_for.getVersjon());
             assertions.assertThat(aktivitetData_etter.getEndretAv()).isEqualTo(navIdent);
-            assertions.assertThat(aktivitetData_etter.getLagtInnAv()).isEqualTo(Innsender.NAV.name());
+            assertions.assertThat(aktivitetData_etter.getEndretAvType()).isEqualTo(Innsender.NAV.name());
             assertions.assertThat(aktivitetData_etter.getStatus()).isSameAs(aktivitetData_for.getStatus());
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData()).isNotNull();
             assertions.assertThat(aktivitetData_etter.getStillingFraNavData().getSoknadsstatus()).isSameAs(Soknadsstatus.CV_DELT);
