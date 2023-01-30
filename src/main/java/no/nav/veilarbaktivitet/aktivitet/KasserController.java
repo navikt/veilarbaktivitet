@@ -47,7 +47,7 @@ public class KasserController {
         var veilederIdent = authService.getInnloggetVeilederIdent();
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));
 
-        if (!godkjente.contains(veilederIdent)) {
+        if (!godkjente.contains(veilederIdent.get())) {
             log.error("[KASSERING] {} har ikke tilgang til kassering av {} aktivitet", veilederIdent, aktorId);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("[KASSERING] %s har ikke tilgang til kassinger av %s aktivitet", veilederIdent, aktorId));
         }
