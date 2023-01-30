@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.config.filter;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.slf4j.MDC;
@@ -16,7 +16,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class EnhanceSecureLogsFilter implements Filter {
 
-    private final AuthService authService;
+    private final IAuthService authService;
 
     private final UserInContext userInContext;
 
@@ -27,7 +27,7 @@ public class EnhanceSecureLogsFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String erInternBruker = Boolean.toString(authService.erInternBruker());
-        String innloggetBrukerIdent = authService.getInnloggetBrukerIdent().orElse(null);
+        String innloggetBrukerIdent = authService.getLoggedInnUser().get();
         String userContext = userInContext.getFnr().map(Person::get).orElse(null);
 
         MDC.put(SECURELOGS_ER_INTERN_BRUKER, erInternBruker);

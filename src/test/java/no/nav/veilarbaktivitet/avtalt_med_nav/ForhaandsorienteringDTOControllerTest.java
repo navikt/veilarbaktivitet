@@ -4,6 +4,7 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -15,7 +16,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -56,7 +56,7 @@ class ForhaandsorienteringDTOControllerTest {
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc), new Database(jdbc).getNamedJdbcTemplate());
 
     @Mock
-    private AuthService authService;
+    private IAuthService authService;
 
     @Mock
     private BrukernotifikasjonService brukernotifikasjonService;
@@ -70,15 +70,15 @@ class ForhaandsorienteringDTOControllerTest {
     void setup() {
         AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonService);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
-
         DbTestUtils.cleanupTestDb(jdbc);
     }
 
     @Test
     void opprettFHO_opprettesPaaRiktigAktivitet() {
+        when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
         when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
 
@@ -107,21 +107,21 @@ class ForhaandsorienteringDTOControllerTest {
 
     @Test
     void skalSjekkeTilgangTilBruker() {
+        when(authService.erInternBruker()).thenReturn(true);
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangOgInternBruker(any(), any());
-
+                .sjekkTilgangTilPerson(any());
         AktivitetData aktivitetData = opprettAktivitet("0987654");
-
         Assertions.assertThrows(ResponseStatusException.class, () ->
                 avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId()));
     }
 
     @Test
     void skalSjekkeKVP() {
+        when(authService.erInternBruker()).thenReturn(true);
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangOgInternBruker(any(), any());
+                .sjekkTilgangTilEnhet(any());
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
                 .toBuilder()
@@ -164,7 +164,8 @@ class ForhaandsorienteringDTOControllerTest {
     void skalTaVarePaaForhaandsorienteringsTekst() {
         doNothing()
                 .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
+        when(authService.erInternBruker()).thenReturn(true);
         when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         String tekst = "tekst";
@@ -217,10 +218,11 @@ class ForhaandsorienteringDTOControllerTest {
 
     @Test
     void markerForhaandsorienteringSomLest_skalVirke() {
+        when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
-        doReturn(Optional.of(Person.navIdent(ident)))
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
+        doReturn(Person.navIdent(ident).otherNavIdent())
                 .when(authService).getLoggedInnUser();
         when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
@@ -251,10 +253,10 @@ class ForhaandsorienteringDTOControllerTest {
 
     @Test
     void markerSomAvtaltMedNav_skalVirkeForAlleAktivitetTyper() {
-
+        when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid, null);
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
         when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         Arrays.stream(AktivitetTypeData.values())

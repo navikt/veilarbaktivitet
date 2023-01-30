@@ -181,6 +181,8 @@ dependencies {
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("org.quartz-scheduler:quartz:2.3.2")
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.1")
+    implementation("com.github.navikt.dab:spring-auth:2023.01.26-15.29.bdcfc1bfb316")
+    implementation("com.github.navikt.dab:spring-a2-annotations:2023.01.26-15.29.bdcfc1bfb316")
     runtimeOnly("org.springframework.boot:spring-boot-devtools:$spring_version")
     testImplementation("no.nav.common:test:$common_version")
     testImplementation("io.rest-assured:rest-assured:3.3.0")
@@ -193,4 +195,5 @@ dependencies {
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:3.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
+    testImplementation("org.mockito:mockito-core:5.0.0")
 }
