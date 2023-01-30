@@ -125,9 +125,11 @@ public class AktivitetsplanController {
         return oppdaterReferat(aktivitetDTO);
     }
 
+    // TODO: 30/01/2023  Bruk UserInContext istedet
+
     private Person getContextUserIdent() {
         if (authService.erEksternBruker()) {
-            return Person.fnr(authService.getInnloggetBrukerIdent());
+            return Person.fnr(authService.getLoggedInnUser().get());
         }
 
         Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);

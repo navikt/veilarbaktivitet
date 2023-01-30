@@ -44,7 +44,7 @@ public class KasserController {
     private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, BooleanSupplier fn) {
         authService.sjekkInternbrukerHarSkriveTilgangTilPerson(aktorId.otherAktorId());
 
-        String veilederIdent = authService.getInnloggetBrukerIdent();
+        var veilederIdent = authService.getInnloggetVeilederIdent();
         List<String> godkjente = Arrays.asList(godkjenteIdenter.split(","));
 
         if (!godkjente.contains(veilederIdent)) {

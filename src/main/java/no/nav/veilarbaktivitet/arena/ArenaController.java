@@ -43,9 +43,9 @@ public class ArenaController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr"));
         authService.sjekkTilgangTilPerson(fnr.eksternBrukerId());
 
-        String ident = authService.getInnloggetBrukerIdent();
+        var ident = authService.getInnloggetVeilederIdent();
 
-        return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident);
+        return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident.get());
     }
 
 

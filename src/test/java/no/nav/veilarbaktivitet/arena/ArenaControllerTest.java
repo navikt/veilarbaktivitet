@@ -109,9 +109,6 @@ class ArenaControllerTest {
                 .when(authService)
                 .sjekkTilgangTilPerson(fnr.eksternBrukerId());
 
-        when(authService.getInnloggetBrukerIdent())
-                .thenReturn("Z12345");
-
         when(authService.erInternBruker()).thenReturn(true);
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(personService.getAktorIdForPersonBruker(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));

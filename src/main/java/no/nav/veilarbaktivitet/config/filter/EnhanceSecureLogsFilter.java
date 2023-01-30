@@ -27,7 +27,7 @@ public class EnhanceSecureLogsFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         String erInternBruker = Boolean.toString(authService.erInternBruker());
-        String innloggetBrukerIdent = authService.getInnloggetBrukerIdent();
+        String innloggetBrukerIdent = authService.getLoggedInnUser().get();
         String userContext = userInContext.getFnr().map(Person::get).orElse(null);
 
         MDC.put(SECURELOGS_ER_INTERN_BRUKER, erInternBruker);
