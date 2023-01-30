@@ -74,7 +74,7 @@ class ArenaControllerTest {
     private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
+    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
     private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, migreringService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");

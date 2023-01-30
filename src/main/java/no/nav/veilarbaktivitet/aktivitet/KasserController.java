@@ -52,7 +52,7 @@ public class KasserController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, String.format("[KASSERING] %s har ikke tilgang til kassinger av %s aktivitet", veilederIdent, aktorId));
         }
 
-        boolean updated = fn.get();
+        boolean updated = fn.getAsBoolean();
 
         log.info("[KASSERING] {} kasserte en aktivitet. AktoerId: {} aktivitet_id: {}", veilederIdent, aktorId, id);
         return updated;
