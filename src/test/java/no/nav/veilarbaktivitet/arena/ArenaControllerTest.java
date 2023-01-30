@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.types.identer.EksternBrukerId;
+import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
@@ -82,6 +83,8 @@ class ArenaControllerTest {
     private final Person.Fnr ikkeTilgangFnr = Person.fnr("10108000");
     private final Person.AktorId ikkeTilgangAktorid = Person.aktorId("00080101");
 
+    private final NavIdent veilederIdent = NavIdent.of("Z123456");
+
     private final ForhaandsorienteringDTO forhaandsorientering = ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
 
     @BeforeEach
@@ -122,6 +125,7 @@ class ArenaControllerTest {
     @BeforeEach
     void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(veilederIdent);
 
     }
 
