@@ -65,8 +65,7 @@ import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKT
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -117,7 +116,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @BeforeEach
     public void cleanupBetweenTests() {
-        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(true);
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic);
         aktivitetskortIdMappingConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortIdMappingTopic);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
@@ -245,7 +244,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitetFoer.isHistorisk()).isFalse();
 
         var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
-                SELECT opprettet_som_historisk 
+                SELECT opprettet_som_historisk
                 FROM EKSTERNAKTIVITET
                 WHERE AKTIVITET_ID = ? 
                 ORDER BY VERSJON desc
@@ -590,7 +589,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ArenaId arenaaktivitetId =  new ArenaId("ARENATA123");
         Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
 
-        when(unleashClient.isEnabled(MigreringService.EKSTERN_AKTIVITET_TOGGLE)).thenReturn(false);
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
 
         var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(preMigreringArenaAktiviteter).hasSize(1);
@@ -646,6 +645,31 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(tilatksarratgoerAktivitet.getEndretAvType()).isEqualTo(tiltaksarragoerIdent.identType().toString());
         assertThat(systemAktivitet.getEndretAv()).isEqualTo(systemIdent.ident());
         assertThat(systemAktivitet.getEndretAvType()).isEqualTo(systemIdent.identType().toInnsender().toString());
+    }
+
+    @Test
+    void skal_vise_lonnstilskudd_men_ikke_migrerte_arena_aktiviteter_hvis_toggle_er_av() {
+
+        var arenaAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        ArenaId arenata123 = new ArenaId("ARENATA123");
+        ArenaMeldingHeaders kontekst = meldingContext(arenata123, "MIDLONNTIL");
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(arenaAktivitet), List.of(kontekst));
+
+        var midlertidigLonnstilskudd = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
+                midlertidigLonnstilskudd, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
+
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
+        var alleEksternAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
+        assertThat(alleEksternAktiviteter.aktiviteter).hasSize(2);
+
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
+        var eksterneAktiviteterUnntattMigrerteArenaAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
+        assertThat(eksterneAktiviteterUnntattMigrerteArenaAktiviteter.aktiviteter).hasSize(1);
+
+        AktivitetDTO aktivitet = eksterneAktiviteterUnntattMigrerteArenaAktiviteter.getAktiviteter().get(0);
+        assertThat(aktivitet.getEksternAktivitet().type()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
     }
 
 
