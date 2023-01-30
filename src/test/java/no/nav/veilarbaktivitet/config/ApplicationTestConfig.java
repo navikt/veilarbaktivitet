@@ -16,7 +16,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
-import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,12 +61,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getPresistentDb().getDataSource();
-    }
-
-    @Bean
-    public JdbcTemplate jdbcTemplate() {
-        return LocalH2Database.getPresistentDb();
+        return LocalH2Database.getDb().getDataSource();
     }
 
     @Bean
