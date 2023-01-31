@@ -28,7 +28,6 @@ channels:
         oneOf:
           - $ref: '#/components/messages/aktivitetskort'
           - $ref: '#/components/messages/kassering'
-
   aktivitetskort-feil-v1:
     description: Dead-letter kø for aktivitetskort meldinger som ikke kan behandles.
     bindings:
