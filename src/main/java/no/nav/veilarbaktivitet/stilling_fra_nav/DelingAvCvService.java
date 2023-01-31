@@ -2,16 +2,15 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import io.micrometer.core.annotation.Timed;
 import lombok.AllArgsConstructor;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.AuthService;
+
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
@@ -35,7 +34,7 @@ import static java.util.function.Predicate.not;
 public class DelingAvCvService {
     private final AktivitetDAO aktivitetDAO;
     private final DelingAvCvDAO delingAvCvDAO;
-    private final AuthService authService;
+    private final IAuthService authService;
     private final AktivitetService aktivitetService;
     private final StillingFraNavProducerClient stillingFraNavProducerClient;
     private final BrukernotifikasjonService brukernotifikasjonService;
@@ -130,7 +129,7 @@ public class DelingAvCvService {
 
 
     private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
-        Person innloggetBruker = authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        Person innloggetBruker = Person.of(authService.getLoggedInnUser());
 
         var deleCvDetaljer = CvKanDelesData.builder()
                 .kanDeles(kanDeles)

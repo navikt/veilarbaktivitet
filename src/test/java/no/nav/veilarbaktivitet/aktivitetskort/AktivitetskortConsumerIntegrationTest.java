@@ -45,6 +45,7 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -565,7 +566,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Autowired
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
 
-    @Test
+    @Test()
     void skal_migrere_eksisterende_forhaandorientering() {
         // Det finnes en arenaaktivtiet fra før
         var arenaaktivitetId = new ArenaId("ARENATA123");

@@ -4,14 +4,17 @@ import lombok.RequiredArgsConstructor;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.client.utils.graphql.GraphqlErrorException;
 import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Fnr;
+import no.nav.poao.dab.spring_auth.IPersonService;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PersonService {
+public class PersonService implements IPersonService {
     private final AktorOppslagClient aktorOppslagClient;
 
     public Optional<Person.AktorId> getAktorIdForPersonBruker(Person person) throws IkkeFunnetPersonException {
@@ -75,5 +78,21 @@ public class PersonService {
         } else {
                 return e;
         }
+    }
+
+    @NotNull
+    @Override
+    public AktorId getAktorIdForPersonBruker(@NotNull EksternBrukerId eksternBrukerId) {
+        return getAktorIdForPersonBruker(Person.of(eksternBrukerId))
+                .orElseThrow(IkkeFunnetPersonException::new)
+                .otherAktorId();
+    }
+
+    @NotNull
+    @Override
+    public Fnr getFnrForAktorId(@NotNull EksternBrukerId eksternBrukerId) {
+        return getFnrForPersonbruker(Person.of(eksternBrukerId))
+                .orElseThrow(IkkeFunnetPersonException::new)
+                .otherFnr();
     }
 }

@@ -1,6 +1,7 @@
 
 package no.nav.veilarbaktivitet.config;
 
+import no.nav.common.abac.Pep;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -8,9 +9,13 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
+import no.nav.poao.dab.spring_auth.AuthService;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
+import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.EventListener;
+import org.checkerframework.checker.units.qual.A;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -72,5 +77,10 @@ public class ApplicationTestConfig {
     @Bean
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
+    }
+  
+    @Bean
+    public IAuthService authService(AuthContextHolder authContextHolder, Pep pep, PersonService personService) {
+        return new AuthService(authContextHolder, pep, personService);
     }
 }
