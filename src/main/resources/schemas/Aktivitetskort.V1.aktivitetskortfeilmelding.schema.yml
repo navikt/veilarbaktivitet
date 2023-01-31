@@ -1,0 +1,26 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/Aktivitetskort.V1.aktivitetskortfeilmelding.schema.yml"
+required:
+  - key
+  - timestamp
+  - failingMessage
+  - errorMessage
+type: object
+additionalProperties: false
+properties:
+  key:
+    type: string
+    format: uuid
+    description: Samme key som aktivitetskort-bestillingen. I praksis funksjonell id for aktivitetskortet.
+  timestamp:
+    type: string
+    format: date-time
+  failingMessage:
+    type: string
+  errorMessage:
+    type: string
+
+definitions:
+  failingMessage:
+    type: string
+    description: Denne inneholder hele originalmeldingen som ble sendt på aktivitetskort-v1. Formatet er json.

@@ -26,6 +26,17 @@ channels:
     publish:
       message:
         $ref: '#/components/messages/aktivitetskort'
+  aktivitetskort-feil-v1:
+    description: Dead-letter kø for aktivitetskort meldinger som ikke kan behandles.
+    bindings:
+      kafka:
+        key:
+          type: string
+          format: uuid
+          description: aktiviteskorts id. Også kalt funksjonell id
+    subscribe:
+      message:
+        $ref: '#/components/messages/aktivitetskortfeilmelding'
 
 
 components:
@@ -38,6 +49,14 @@ components:
         - $ref: '#/components/messageTraits/commonHeaders'
       payload:
         $ref: "Aktivitetskort.V1.aktivitetskort.schema.yml"
+    aktivitetskortfeilmelding:
+      name: aktivitetskortFeilMelding
+      title: Aktivitetskort feilmelding
+      summary: Feilmelding for aktivitetskort som ikke kan behandles
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: "Aktivitetskort.V1.aktivitetskortfeilmelding.schema.yml"
   messageTraits:
     commonHeaders:
       headers:
