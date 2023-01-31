@@ -28,7 +28,7 @@ class OppfolgingV2ClientTest {
     private OppfolgingV2ClientImpl oppfolgingV2Client;
 
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(8089);
+    WireMockExtension wireMock = new WireMockExtension(0);
 
     @BeforeEach
     void setup() {
@@ -37,7 +37,8 @@ class OppfolgingV2ClientTest {
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingV2Client = new OppfolgingV2ClientImpl(okHttpClient, personService, gjeldendePeriodeMetrikk);
-        oppfolgingV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
+        wireMock.getBaseUri();
+        oppfolgingV2Client.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
     }
 
     @Test

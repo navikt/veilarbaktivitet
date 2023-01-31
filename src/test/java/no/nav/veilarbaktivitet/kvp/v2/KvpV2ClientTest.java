@@ -23,13 +23,13 @@ class KvpV2ClientTest {
     private KvpV2Client kvpV2Client;
 
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(8089);
+    WireMockExtension wireMock = new WireMockExtension(0);
 
     @BeforeEach
     void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         kvpV2Client = new KvpV2ClientImpl(okHttpClient);
-        kvpV2Client.setBaseUrl("http://localhost:8089/veilarboppfolging/api");
+        kvpV2Client.setBaseUrl( wireMock.baseUrl() + "/veilarboppfolging/api");
     }
 
     @Test
