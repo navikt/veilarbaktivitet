@@ -9,7 +9,6 @@ import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
-import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
@@ -60,7 +59,7 @@ class ArenaControllerTest {
     private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
 
     private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
-    private String aktivitetsplanBasepath = "http://localhost:3000";
+    private final String aktivitetsplanBasepath = "http://localhost:3000";
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
@@ -72,7 +71,7 @@ class ArenaControllerTest {
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
     private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
-    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
+    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
@@ -106,7 +105,7 @@ class ArenaControllerTest {
 
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangTilPerson((EksternBrukerId) any());
+                .sjekkTilgangTilPerson(any());
 
         doNothing()
                 .when(authService)
