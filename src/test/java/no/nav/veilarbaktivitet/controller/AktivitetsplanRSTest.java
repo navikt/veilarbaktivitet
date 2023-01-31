@@ -5,6 +5,8 @@ import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao.dab.spring_auth.AuthService;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanController;
@@ -23,8 +25,8 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.AuthContextRule;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.junit.*;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -60,7 +63,10 @@ public class AktivitetsplanRSTest {
     MockHttpServletRequest mockHttpServletRequest;
 
     @MockBean
-    private AuthService authService;
+    private IAuthService authService;
+
+    @MockBean
+    private PersonService personService;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -91,11 +97,13 @@ public class AktivitetsplanRSTest {
     @Before
     public void setup() {
         mockBruker = MockNavService.createHappyBruker();
-        when(authService.getAktorIdForPersonBrukerService(any())).thenReturn(Optional.of(Person.aktorId(mockBruker.getAktorId())));
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(KJENT_SAKSBEHANDLER));
+
+        when(personService.getAktorIdForPersonBruker(any(Person.class))).thenReturn(Optional.of(Person.aktorId(mockBruker.getAktorId())));
+        when(personService.getFnrForAktorId(any(Person.AktorId.class))).thenReturn(Person.fnr(mockBruker.getFnr()));
+        when(authService.getLoggedInnUser()).thenReturn(KJENT_SAKSBEHANDLER.otherNavIdent());
         when(authService.erInternBruker()).thenReturn(Boolean.TRUE);
         when(authService.erEksternBruker()).thenReturn(Boolean.FALSE);
-        when(authService.sjekKvpTilgang(null)).thenReturn(true);
+        when(authService.harTilgangTilEnhet(any())).thenReturn(false);
         mockHttpServletRequest.setParameter("fnr", mockBruker.getFnr());
 
     }

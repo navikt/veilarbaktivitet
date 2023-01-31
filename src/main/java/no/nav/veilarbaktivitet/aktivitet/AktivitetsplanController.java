@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
@@ -10,7 +11,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +28,7 @@ import static java.util.Arrays.asList;
 @RequestMapping("/api/aktivitet")
 public class AktivitetsplanController {
 
-    private final AuthService authService;
+    private final IAuthService authService;
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
 
@@ -41,7 +41,7 @@ public class AktivitetsplanController {
                 .hentAktiviteterForIdent(getContextUserIdent())
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                .filter(migreringService.ikkeFiltrerBortEksterneAktiviteterHvisToggleAktiv())
+                .filter(migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv())
                 .toList();
 
         return new AktivitetsplanDTO().setAktiviteter(aktiviter);
@@ -125,11 +125,11 @@ public class AktivitetsplanController {
         return oppdaterReferat(aktivitetDTO);
     }
 
+    // TODO: 30/01/2023  Bruk UserInContext istedet
+
     private Person getContextUserIdent() {
         if (authService.erEksternBruker()) {
-            return authService.getInnloggetBrukerIdent()
-                    .map(Person::fnr)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "Fant ikke ident for innlogget bruker"));
+            return Person.fnr(authService.getLoggedInnUser().get());
         }
 
         Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);

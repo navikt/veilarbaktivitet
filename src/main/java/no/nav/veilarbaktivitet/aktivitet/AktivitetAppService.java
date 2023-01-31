@@ -2,11 +2,14 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import no.nav.common.types.identer.AktorId;
+import no.nav.common.types.identer.EnhetId;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,9 +22,10 @@ import java.util.function.Supplier;
 @RequiredArgsConstructor
 public class AktivitetAppService {
 
-    private final AuthService authService;
+    private final IAuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
+    private final PersonService personService;
 
     private static final Set<AktivitetTypeData> TYPER_SOM_KAN_ENDRES_EKSTERNT = new HashSet<>(Arrays.asList(
             AktivitetTypeData.EGENAKTIVITET,
@@ -40,8 +44,8 @@ public class AktivitetAppService {
     ));
 
     public List<AktivitetData> hentAktiviteterForIdent(Person ident) {
-        authService.sjekkTilgangTilPerson(ident);
-        List<AktivitetData> aktiviteter = authService.getAktorIdForPersonBrukerService(ident)
+        authService.sjekkTilgangTilPerson(ident.eksternBrukerId());
+        List<AktivitetData> aktiviteter = personService.getAktorIdForPersonBruker(ident)
                 .map(aktivitetService::hentAktiviteterForAktorId)
                 .orElseThrow(RuntimeException::new);
         return filterKontorsperret(aktiviteter);
@@ -50,7 +54,10 @@ public class AktivitetAppService {
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
-        authService.sjekkTilgang(aktivitetData.getAktorId(), aktivitetData.getKontorsperreEnhetId());
+        authService.sjekkTilgangTilPerson(AktorId.of(aktivitetData.getAktorId()));
+        if (aktivitetData.getKontorsperreEnhetId() != null) {
+            authService.sjekkTilgangTilEnhet(EnhetId.of(aktivitetData.getKontorsperreEnhetId()));
+        }
         return aktivitetData;
     }
 
@@ -90,7 +97,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData opprettNyAktivitet(Person ident, AktivitetData aktivitetData) {
-        authService.sjekkTilgangTilPerson(ident);
+        authService.sjekkTilgangTilPerson(ident.eksternBrukerId());
 
         if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -100,10 +107,10 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
         }
 
-        Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(ident).orElseThrow(RuntimeException::new);
+        Person.AktorId aktorId = personService.getAktorIdForPersonBruker(ident).orElseThrow(RuntimeException::new);
         Person loggedInUser = authService.erEksternBruker() ?
                 aktorId :
-                authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+                Person.of(authService.getLoggedInnUser());
 
         AktivitetData nyAktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, loggedInUser.tilIdent());
 
@@ -119,7 +126,7 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 
-        Supplier<Person> loggedInnUser = () -> authService.getLoggedInnUser().orElseThrow(RuntimeException::new);
+        Supplier<Person> loggedInnUser = () -> Person.of(authService.getLoggedInnUser());
 
         if (authService.erInternBruker()) {
             oppdaterSomNav(aktivitet, original, loggedInnUser.get());
@@ -198,9 +205,7 @@ public class AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
 
-        Person endretAv = authService
-                .getLoggedInnUser()
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE));
+        Person endretAv = Person.of(authService.getLoggedInnUser());
 
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -217,12 +222,9 @@ public class AktivitetAppService {
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
         val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
-        return authService.getLoggedInnUser()
-                .map(userIdent -> {
-                    aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);
-                    return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
-                })
-                .orElseThrow(RuntimeException::new);
+        var userIdent = Person.of(authService.getLoggedInnUser());
+        aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet, userIdent);
+        return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
     }
 
     @Transactional
@@ -237,7 +239,7 @@ public class AktivitetAppService {
         aktivitetService.oppdaterReferat(
                 originalAktivitet,
                 aktivitet,
-                authService.getLoggedInnUser().orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN))
+                Person.of(authService.getLoggedInnUser())
         );
 
         return hentAktivitet(aktivitet.getId());
@@ -262,6 +264,7 @@ public class AktivitetAppService {
      * This function reports real usage through the metric system.
      */
     private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        return authService.sjekKvpTilgang(aktivitet.getKontorsperreEnhetId());
+        if (aktivitet.getKontorsperreEnhetId() == null) return true;
+        return authService.harTilgangTilEnhet(EnhetId.of(aktivitet.getKontorsperreEnhetId()));
     }
 }

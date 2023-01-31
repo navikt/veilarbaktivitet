@@ -13,8 +13,8 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +34,10 @@ import static no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService.FORHAAN
 public class ArenaService {
     private final ForhaandsorienteringDAO fhoDAO;
     private final IdMappingDAO idMappingDAO;
-    private final AuthService authService;
     private final MeterRegistry meterRegistry;
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService;
     private final VeilarbarenaClient veilarbarenaClient;
+    private final PersonService personService;
 
     public static final String AVTALT_MED_NAV_COUNTER = "arena.avtalt.med.nav";
     public static final String AKTIVITET_TYPE_LABEL = "AktivitetType";
@@ -45,18 +45,18 @@ public class ArenaService {
 
     public ArenaService(
             ForhaandsorienteringDAO fhoDAO,
-            AuthService authService,
             MeterRegistry meterRegistry,
             BrukernotifikasjonService brukernotifikasjonArenaAktivitetService,
             VeilarbarenaClient veilarbarenaClient,
-            IdMappingDAO idMappingDAO
+            IdMappingDAO idMappingDAO,
+            PersonService personService
     ) {
-        this.authService = authService;
         this.meterRegistry = meterRegistry;
         this.fhoDAO = fhoDAO;
         this.brukernotifikasjonArenaAktivitetService = brukernotifikasjonArenaAktivitetService;
         this.veilarbarenaClient = veilarbarenaClient;
         this.idMappingDAO = idMappingDAO;
+        this.personService = personService;
         Counter.builder(AVTALT_MED_NAV_COUNTER)
                 .description("Antall arena aktiviteter som er avtalt med NAV")
                 .tags(AKTIVITET_TYPE_LABEL, "", FORHAANDSORIENTERING_TYPE_LABEL, "")
@@ -70,7 +70,7 @@ public class ArenaService {
 
         List<ArenaAktivitetDTO> aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get());
 
-        Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
+        Person.AktorId aktorId = personService.getAktorIdForPersonBruker(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke aktorId"));
 
         List<Forhaandsorientering> forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId);
@@ -109,7 +109,7 @@ public class ArenaService {
         ArenaAktivitetDTO arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktiviteten finnes ikke"));
 
-        Person.AktorId aktorId = authService.getAktorIdForPersonBrukerService(fnr)
+        Person.AktorId aktorId = personService.getAktorIdForPersonBruker(fnr)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Fant ikke aktorId"));
 
         var fho = fhoDAO.getFhoForArenaAktivitet(arenaaktivitetId);

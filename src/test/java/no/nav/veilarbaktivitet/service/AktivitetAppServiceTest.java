@@ -1,15 +1,16 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
-import no.nav.veilarbaktivitet.person.AuthService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,9 @@ public class AktivitetAppServiceTest {
 
     private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
     @Mock
-    private AuthService authService;
+    private IAuthService authService;
+    @Mock
+    private PersonService personService;
 
     @Mock
     AktivitetService aktivitetService;
@@ -201,7 +204,7 @@ public class AktivitetAppServiceTest {
     @Test
     void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.aktorId("123")));
+        when(authService.getLoggedInnUser()).thenReturn(Person.aktorId("123").otherAktorId());
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
         Assertions.assertThat(aktivitetData).isNotNull();
@@ -211,8 +214,8 @@ public class AktivitetAppServiceTest {
     void opprett_skal_ikke_returnere_kontorsperreEnhet_naar_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("systembruker")));
-        when(authService.getAktorIdForPersonBrukerService(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("systembruker").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.TRUE);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
 
@@ -224,8 +227,8 @@ public class AktivitetAppServiceTest {
     void opprett_skal_returnere_kontorsperreEnhet_naar_ikke_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
 
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(Person.navIdent("saksbehandler")));
-        when(authService.getAktorIdForPersonBrukerService(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
+        when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("saksbehandler").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.FALSE);
         when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
 
@@ -302,7 +305,9 @@ public class AktivitetAppServiceTest {
     private void loggetInnSom(Innsender innsender) {
         when(authService.erEksternBruker()).thenReturn(innsender == BRUKER);
         when(authService.erInternBruker()).thenReturn(innsender == NAV);
-        when(authService.getLoggedInnUser()).thenReturn(Optional.of(innsender == BRUKER ? Person.aktorId(TESTPERSONNUMMER) : Person.navIdent(TESTNAVIDENT)));
+        when(authService.getLoggedInnUser()).thenReturn(innsender == BRUKER
+                ? Person.aktorId(TESTPERSONNUMMER).eksternBrukerId()
+                : Person.navIdent(TESTNAVIDENT).otherNavIdent());
     }
 
     private static final long AKTIVITET_ID = 666L;

@@ -3,10 +3,12 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.types.identer.EksternBrukerId;
+import no.nav.common.types.identer.NavIdent;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
-import no.nav.veilarbaktivitet.aktivitetskort.test.AktivitetskortTestMetrikker;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
@@ -25,7 +27,7 @@ import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
-import no.nav.veilarbaktivitet.person.AuthService;
+import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
@@ -49,7 +51,7 @@ import static org.mockito.Mockito.*;
 
 class ArenaControllerTest {
     private final UserInContext context = mock(UserInContext.class);
-    private final AuthService authService = mock(AuthService.class);
+    private final IAuthService authService = mock(AuthService.class);
     private final PersonService personService = mock(PersonService.class);
     private final AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
     private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
@@ -57,7 +59,7 @@ class ArenaControllerTest {
     private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
 
     private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
-    private String aktivitetsplanBasepath = "http://localhost:3000";
+    private final String aktivitetsplanBasepath = "http://localhost:3000";
 
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
@@ -69,10 +71,10 @@ class ArenaControllerTest {
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
     private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
-    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client, mock(AktivitetskortTestMetrikker.class));
+    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
-    private final ArenaService arenaService = new ArenaService(fhoDao, authService, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO);
+    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
     private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, migreringService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
@@ -80,32 +82,38 @@ class ArenaControllerTest {
     private final Person.Fnr ikkeTilgangFnr = Person.fnr("10108000");
     private final Person.AktorId ikkeTilgangAktorid = Person.aktorId("00080101");
 
+    private final NavIdent veilederIdent = NavIdent.of("Z123456");
+
     private final ForhaandsorienteringDTO forhaandsorientering = ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
 
     @BeforeEach
     void cleanup() {
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangOgInternBruker(any(), any());
+                .sjekkTilgangTilEnhet(any());
+        doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
+                .when(authService)
+                .sjekkTilgangTilPerson(any());
 
         doNothing()
                 .when(authService)
-                .sjekkTilgangOgInternBruker(aktorid.get(), null);
+                .sjekkTilgangTilEnhet(null);
+        doNothing()
+                .when(authService)
+                .sjekkTilgangTilPerson(Person.aktorId(aktorid.get()).eksternBrukerId());
+
 
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
-                .sjekkTilgangTilPerson((Person) any());
+                .sjekkTilgangTilPerson(any());
 
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(fnr);
-
-        when(authService.getInnloggetBrukerIdent())
-                .thenReturn(Optional.of("Z12345"));
+                .sjekkTilgangTilPerson(fnr.eksternBrukerId());
 
         when(authService.erInternBruker()).thenReturn(true);
-        when(authService.getAktorIdForPersonBrukerService(fnr)).thenReturn(Optional.of(aktorid));
-        when(authService.getAktorIdForPersonBrukerService(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
+        when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
+        when(personService.getAktorIdForPersonBruker(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
         when(context.getFnr()).thenReturn(Optional.of(fnr));
         when(manuellStatusClient.get(aktorid)).thenReturn(Optional.of(new ManuellStatusV2DTO(false, new ManuellStatusV2DTO.KrrStatus(true, false))));
         when(nivaa4Client.get(aktorid)).thenReturn(Optional.of(Nivaa4DTO.builder().harbruktnivaa4(true).build()));
@@ -116,6 +124,7 @@ class ArenaControllerTest {
     @BeforeEach
     void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
+        when(authService.getInnloggetVeilederIdent()).thenReturn(veilederIdent);
 
     }
 

@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
+import no.nav.veilarbaktivitet.util.KasserTestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,8 @@ public abstract class SpringBootTestBase {
     @Autowired
     private StillingFraNavTestService stillingFraNavTestService;
     protected AktivitetTestService aktivitetTestService;
+
+    protected KasserTestService kasserTestService;
 
     @Autowired
     protected JdbcTemplate jdbcTemplate;
@@ -58,5 +61,6 @@ public abstract class SpringBootTestBase {
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
         aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, kafkaTestService, stringStringKafkaTemplate, aktivitetskortTopic);
+        kasserTestService = new KasserTestService(port);
     }
 }
