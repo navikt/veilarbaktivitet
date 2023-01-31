@@ -36,6 +36,7 @@ under importering må du velge:
     * 11.5 vedtak
 * Kontakt og reservasjonsregistret
     * du kan bare sende fåråndsårentering på brukere som er registerert i krr og har epost eller mobil
+    * du kan **ikke** sende fåråndsårentering med  standard kontakt- og reservasjonsopplysninger
 
 
 Testmiljø Q1 og Q2.
