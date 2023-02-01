@@ -34,11 +34,11 @@ class Nivaa4ClientTest {
         Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
         PersonService personService = mock(PersonService.class);
         Mockito.when(personService.getFnrForAktorId(Person.aktorId(AKTORID))).thenReturn(Person.fnr(FNR));
-        nivaa4Client = new Nivaa4ClientImpl("http://localhost:8089/veilarbperson/api", personService, new OkHttpClient());
+        nivaa4Client = new Nivaa4ClientImpl(wireMock.baseUrl() + "/veilarbperson/api", personService, new OkHttpClient());
     }
 
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(8089);
+    WireMockExtension wireMock = new WireMockExtension(0);
 
     @Test
     void test_nivaa4_ok_respons() {

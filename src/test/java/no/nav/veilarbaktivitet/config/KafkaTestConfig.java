@@ -9,8 +9,6 @@ import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
-import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO;
-import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.util.NavCommonKafkaSerialized;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -58,7 +56,7 @@ public class KafkaTestConfig {
         // TODO config
         return new EmbeddedKafkaBroker(
                 1,
-                true,
+                false,
                 1,
                 innStillingFraNav,
                 utStillingFraNav,
