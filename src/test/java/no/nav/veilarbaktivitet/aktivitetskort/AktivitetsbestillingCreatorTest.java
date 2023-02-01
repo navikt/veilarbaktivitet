@@ -9,6 +9,7 @@ import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -28,6 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 class AktivitetsbestillingCreatorTest {
@@ -82,33 +84,38 @@ class AktivitetsbestillingCreatorTest {
         assertEquals("2022-01-01T00:00:00.001+01:00", endretTidspunkt);
     }
 
-    @SneakyThrows
     @Test
-    void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil {
+    void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
-        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "key", json);
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"));
         Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
-
     }
 
-    @SneakyThrows
     @Test
-    void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil {
+    void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "invalid-key", json);
+        assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> {
+            aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        });
+    }
+
+    @Test
+    void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
-        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "key", json);
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"));
         Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
 
     }
 
-    @SneakyThrows
     @Test
-    void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil {
+    void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
-        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "key", json);
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"));
         var endretTidspunkt = aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt();
