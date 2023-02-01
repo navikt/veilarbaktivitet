@@ -82,6 +82,7 @@ class AktivitetsbestillingCreatorTest {
         assertEquals("2022-01-01T00:00:00.001+01:00", endretTidspunkt);
     }
 
+    @SneakyThrows
     @Test
     void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
@@ -92,6 +93,7 @@ class AktivitetsbestillingCreatorTest {
 
     }
 
+    @SneakyThrows
     @Test
     void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
@@ -102,6 +104,7 @@ class AktivitetsbestillingCreatorTest {
 
     }
 
+    @SneakyThrows
     @Test
     void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
