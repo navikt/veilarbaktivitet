@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.kvp.KvpService;
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
@@ -71,7 +72,7 @@ public class AktivitetService {
         return opprettAktivitet(aktorId, aktivitet, endretAv, LocalDateTime.now());
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) {
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) throws IngenGjeldendePeriodeException {
         UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
         return opprettAktivitet(aktorId, aktivitet, endretAv, opprettet, oppfolgingsperiode);
     }
