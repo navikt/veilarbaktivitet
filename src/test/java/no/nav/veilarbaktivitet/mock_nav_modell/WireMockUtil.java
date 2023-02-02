@@ -24,20 +24,20 @@ public class WireMockUtil {
 
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
 
-        oppfolging(fnr, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
+        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
     }
 
-    private static void oppfolging(String fnr, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
+    private static void oppfolging(String fnr, String aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
         if (oppfolgingFeiler) {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
-            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId)
                     .willReturn(aResponse().withStatus(500)));
             return;
         }
@@ -47,15 +47,16 @@ public class WireMockUtil {
                         .withBody("{\"erUnderOppfolging\":" + underOppfolging + "}")));
 
         if (underOppfolging) {
-            OppfolgingPeriodeMinimalDTO oppfolgingsperiode = OppfolgingPeriodeMinimalDTO.builder()
-                    .startDato(ZonedDateTime.now().minusDays(5))
-                    .uuid(periode)
-                    .build();
-            OppfolgingPeriodeMinimalDTO gammelPeriode = OppfolgingPeriodeMinimalDTO.builder()
-                    .startDato(ZonedDateTime.now().minusDays(100))
-                    .sluttDato(ZonedDateTime.now().minusDays(50))
-                    .uuid(UUID.randomUUID())
-                    .build();
+            OppfolgingPeriodeMinimalDTO oppfolgingsperiode = new OppfolgingPeriodeMinimalDTO(
+                    periode,
+                    ZonedDateTime.now().minusDays(5),
+                    null
+            );
+            OppfolgingPeriodeMinimalDTO gammelPeriode = new OppfolgingPeriodeMinimalDTO(
+                    UUID.randomUUID(),
+                    ZonedDateTime.now().minusDays(100),
+                    ZonedDateTime.now().minusDays(50)
+            );
 
             String gjeldendePeriode = JsonUtils.toJson(oppfolgingsperiode);
 
@@ -64,7 +65,7 @@ public class WireMockUtil {
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody(gjeldendePeriode)));
-            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?fnr=" + fnr)
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId)
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody(oppfolgingsperioder)));
@@ -176,11 +177,6 @@ public class WireMockUtil {
                                   }
                                 }
                                 """.formatted(aktorId))));
-    }
-
-    public static void tekniskFeilPåPDL() {
-        stubFor(post(urlEqualTo("/pdl/graphql"))
-            .willReturn(serverError().withBody("Teknisk feil")));
     }
 
 

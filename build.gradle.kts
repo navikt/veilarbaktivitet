@@ -15,6 +15,7 @@ plugins {
     java
     application
     `maven-publish`
+    kotlin("jvm") version "1.8.0"
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
