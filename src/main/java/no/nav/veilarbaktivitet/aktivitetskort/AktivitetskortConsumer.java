@@ -52,15 +52,17 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         }
     }
 
+
     private final AktivitetsbestillingCreator bestillingsCreator;
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
+        MDC.put(MetricService.SOURCE, bestilling.getSource());
+
         var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
         log.info("Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}", consumerRecord.offset(), consumerRecord.partition(), bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
-        ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
 
-        MDC.put(MetricService.SOURCE, bestilling.getSource());
         if (bestilling.getActionType() == ActionType.UPSERT_AKTIVITETSKORT_V1) {
+            ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
             UpsertActionResult upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling);
 
             aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult);
