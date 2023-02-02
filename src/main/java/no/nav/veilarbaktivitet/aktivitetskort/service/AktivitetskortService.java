@@ -47,9 +47,7 @@ public class AktivitetskortService {
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
             return UpsertActionResult.OPPDATER;
         } else {
-
             var opprettetAktivitet = opprettAktivitet(bestilling);
-
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }

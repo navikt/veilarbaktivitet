@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
@@ -32,6 +33,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -264,28 +266,61 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         assertThat(aktivitetEtter.isHistorisk()).isTrue();
     }
-
     @Test
-    void arenatiltak_uten_oppfolgingsperiode_skal_ignoreres() {
+    void historisk_lonnstilskudd_aktivitet_skal_ha_oppfolgingsperiode() {
         UUID funksjonellId = UUID.randomUUID();
 
         Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
-        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(200));
-        ArenaId arenaId = new ArenaId("ARENATA123");
-        ArenaMeldingHeaders kontekst = meldingContext(arenaId, "MIDLONNTIL");
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(75));
 
-        // Aktivitet skal ikke bli opprettet
-        var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet).isNull();
+        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
+                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(actual)
+                .source("source")
+                .messageId(UUID.randomUUID())
+                .build();
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
 
-        var upsertActionResult = jdbcTemplate.queryForObject("""
-                SELECT ACTION_RESULT
-                FROM AKTIVITETSKORT_MSG_ID
-                WHERE FUNKSJONELL_ID = ?
-                """, String.class, funksjonellId.toString());
+        var aktivitetFoer = hentAktivitet(funksjonellId);
 
-        assertThat(upsertActionResult).isEqualTo(UpsertActionResult.IGNORE.name());
+        assertThat(aktivitetFoer.getOppfolgingsperiodeId()).isNotNull();
+        assertThat(aktivitetFoer.isHistorisk()).isFalse();
+
+        var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
+                SELECT opprettet_som_historisk
+                FROM EKSTERNAKTIVITET
+                WHERE AKTIVITET_ID = ? 
+                ORDER BY VERSJON desc
+                FETCH NEXT 1 ROW ONLY 
+                """, boolean.class, aktivitetFoer.getId());
+
+        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue();
+
+        tiltakMigreringCronService.settTiltakOpprettetSomHistoriskTilHistorisk();
+
+        var aktivitetEtter = hentAktivitet(funksjonellId);
+
+        assertThat(aktivitetEtter.isHistorisk()).isTrue();
+    }
+
+    @Test
+    void lonnstilskudd_uten_oppfolgingsperiode_skal_feile() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        actual.setEndretTidspunkt(ZonedDateTime.now().minusDays(500));
+
+        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
+                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(actual)
+                .source("source")
+                .messageId(UUID.randomUUID())
+                .build();
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
+        assertFeilmeldingPublished(funksjonellId, ManglerOppfolgingsperiodeFeil.class, "Finner ingen passende oppfølgingsperiode for aktivitetskortet.");
+
     }
 
     @Test
@@ -733,5 +768,5 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder veileder = MockNavService.createVeileder(mockBruker);
-    private final ZonedDateTime endretDato = ZonedDateTime.now().minusDays(100);
+    private final ZonedDateTime endretDato = ZonedDateTime.now();
 }
