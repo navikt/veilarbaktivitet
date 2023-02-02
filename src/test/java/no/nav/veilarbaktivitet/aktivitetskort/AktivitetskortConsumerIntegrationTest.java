@@ -142,11 +142,16 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         );
     }
 
-    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
+    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass, String feilmelding) {
         var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.errorMessage()).contains(errorClass.getName());
+        assertThat(payload.errorMessage()).contains(feilmelding);
+    }
+
+    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
+        assertFeilmeldingPublished(funksjonellId, errorClass, "");
     }
 
     private void assertIdMappingPublished(UUID funksjonellId, ArenaId arenaId) {
@@ -305,6 +310,58 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getEndretAv()).isEqualTo(annenVeileder.ident());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
+    }
+
+    @Test
+    void oppdater_tiltaksaktivitet_fra_avtalt_til_ikke_avtalt_skal_throwe() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        lonnstilskuddAktivitet.setAvtaltMedNav(true);
+        var melding1 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        Aktivitetskort lonnstilskuddAktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withAvtaltMedNav(false);
+        var melding2 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(melding1, melding2));
+
+        AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
+        Assertions.assertNotNull(aktivitet);
+
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class,
+                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
+        );
+    }
+
+    @Test
+    void oppdater_tiltaksaktivitet_endre_bruker_skal_throwe() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        var melding1 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        MockBruker mockBruker2 = MockNavService.createHappyBruker();
+        Aktivitetskort lonnstilskuddAktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withPersonIdent(mockBruker2.getFnr());
+        var melding2 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(melding1, melding2));
+
+        AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
+        Assertions.assertNotNull(aktivitet);
+
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class,
+                "Kan ikke endre bruker på samme aktivitetskort"
+        );
     }
 
     @Test

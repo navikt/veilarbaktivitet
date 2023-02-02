@@ -10,6 +10,7 @@ import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.MessageIdIkkeUnikFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -85,7 +86,7 @@ class AktivitetsbestillingCreatorTest {
     }
 
     @Test
-    void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+    void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
@@ -103,7 +104,16 @@ class AktivitetsbestillingCreatorTest {
     }
 
     @Test
-    void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+    void should_throw_exception_when_messageId_is_equal_to_funksjonell_id() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+        String json = AktivitetskortProducerUtil.validExampleFromFile("invalidaktivitetskortMessageIdEqualFunksjonellId.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "2edf9ba0-b195-49ff-a5cd-939c7f26826f", json);
+        assertThrows(MessageIdIkkeUnikFeil.class, () -> {
+            aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        });
+    }
+
+    @Test
+    void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
@@ -113,7 +123,7 @@ class AktivitetsbestillingCreatorTest {
     }
 
     @Test
-    void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+    void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
