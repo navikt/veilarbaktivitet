@@ -143,13 +143,11 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         UUID funksjonellId = UUID.randomUUID();
 
-
         Aktivitetskort aktivitetskort = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
 
-        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, funksjonellId, "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
 
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
-
 
         cronService.sendOppTil5000AktiviterTilPortefolje();
 

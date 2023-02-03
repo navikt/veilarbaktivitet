@@ -8,9 +8,7 @@ import no.nav.common.json.JsonMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.Person;
@@ -53,8 +51,13 @@ public class AktivitetsbestillingCreator {
             throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
         }
     }
-    public AktivitetskortBestilling lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException {
+    public AktivitetskortBestilling lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         var melding = deserialiser(consumerRecord);
+        if (!melding.aktivitetskort.id.toString().equals(consumerRecord.key()))
+            throw new KeyErIkkeFunksjonellIdFeil(new ErrorMessage(String.format("aktivitetsId: %s må være lik kafka-meldings-id: %s", melding.aktivitetskort.id, consumerRecord.key())), null);
+        if (melding.messageId.equals(melding.aktivitetskort.id)) {
+            throw new MessageIdIkkeUnikFeil(new ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"), null);
+        }
         var aktorId = hentAktorId(Person.fnr(melding.aktivitetskort.getPersonIdent()));
         boolean erArenaAktivitet = ARENA_TILTAK_AKTIVITET_ACL.equals(melding.source);
         if (erArenaAktivitet) {

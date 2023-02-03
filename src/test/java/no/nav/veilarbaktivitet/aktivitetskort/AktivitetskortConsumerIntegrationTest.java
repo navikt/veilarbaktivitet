@@ -45,19 +45,17 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
@@ -65,7 +63,8 @@ import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKT
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -142,11 +141,16 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         );
     }
 
-    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
+    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass, String feilmelding) {
         var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.errorMessage()).contains(errorClass.getName());
+        assertThat(payload.errorMessage()).contains(feilmelding);
+    }
+
+    private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass) {
+        assertFeilmeldingPublished(funksjonellId, errorClass, "");
     }
 
     private void assertIdMappingPublished(UUID funksjonellId, ArenaId arenaId) {
@@ -204,6 +208,49 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var resultat = hentAktivitet(aktivitetskort.getId());
         assertThat(resultat.getEndretAv()).isEqualTo(brukerIdent);
         assertThat(resultat.getEndretAvType()).isEqualTo(Innsender.BRUKER.toString());
+    }
+
+
+    // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+    @Test
+    void opptatering_av_historisk_aktivitet_skal_feile() {
+        var brukerIdent = "12129312122";
+        var aktiviteskortId = UUID.randomUUID();
+        var aktivitetskort = aktivitetskort(aktiviteskortId, AktivitetStatus.PLANLAGT)
+                .withEndretAv(new Ident(
+                        brukerIdent,
+                        IdentType.PERSONBRUKERIDENT
+                ));
+        var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
+                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
+
+        var resultat1 = hentAktivitet(aktivitetskort.getId());
+        SqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitet_id",resultat1.getId())
+                .addValue("historisk_dato", new Date());
+
+        namedParameterJdbcTemplate
+                .update("update AKTIVITET set historisk_dato = :historisk_dato where aktivitet_id = :aktivitet_id and gjeldende = 1", params);
+
+        var resultat = hentAktivitet(aktivitetskort.getId());
+        assertThat(resultat.isHistorisk()).isTrue();
+        assertThat(resultat.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+
+
+        var aktivitetskort2 = aktivitetskort(aktiviteskortId, AktivitetStatus.GJENNOMFORES)
+                .withEndretAv(new Ident(
+                        brukerIdent,
+                        IdentType.PERSONBRUKERIDENT
+                ));
+        var kafkaAktivitetskortWrapperDTO2 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                aktivitetskort2, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO2));
+
+        var resultat2 = hentAktivitet(aktivitetskort.getId());
+        assertThat(resultat2.getStatus()).isEqualTo(AktivitetStatus.GJENNOMFORES);
+        assertThat(resultat2.isHistorisk()).isFalse();
+
     }
 
 
@@ -305,6 +352,59 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getEndretAv()).isEqualTo(annenVeileder.ident());
         Assertions.assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.getStatus());
         Assertions.assertEquals(AktivitetTransaksjonsType.STATUS_ENDRET, aktivitet.getTransaksjonsType());
+    }
+
+    @Test
+    void oppdater_tiltaksaktivitet_fra_avtalt_til_ikke_avtalt_skal_throwe() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        lonnstilskuddAktivitet.setAvtaltMedNav(true);
+        var melding1 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        Aktivitetskort lonnstilskuddAktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withAvtaltMedNav(false);
+        var melding2 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(melding1, melding2));
+
+        AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
+        Assertions.assertNotNull(aktivitet);
+// TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+        Assertions.assertFalse(aktivitet.isAvtalt());
+//        assertFeilmeldingPublished(
+//                funksjonellId,
+//                UlovligEndringFeil.class,
+//                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
+//        );
+    }
+
+    @Test
+    void oppdater_tiltaksaktivitet_endre_bruker_skal_throwe() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+        var melding1 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        MockBruker mockBruker2 = MockNavService.createHappyBruker();
+        Aktivitetskort lonnstilskuddAktivitetUpdate = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+                .withPersonIdent(mockBruker2.getFnr());
+        var melding2 = AktivitetskortTestBuilder.aktivitetskortMelding(
+                lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(melding1, melding2));
+
+        AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
+        Assertions.assertNotNull(aktivitet);
+
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class,
+                "Kan ikke endre bruker på samme aktivitetskort"
+        );
     }
 
     @Test
@@ -432,7 +532,9 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
+        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 
     @Test
@@ -445,12 +547,12 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
-
-        assertFeilmeldingPublished(
-                funksjonellId,
-                UlovligEndringFeil.class
-        );
+        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+//        assertFeilmeldingPublished(
+//                funksjonellId,
+//                UlovligEndringFeil.class
+//        );
     }
 
     @Test

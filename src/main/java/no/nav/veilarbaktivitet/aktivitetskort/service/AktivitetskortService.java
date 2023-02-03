@@ -5,23 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.IkkeUnderOppfolgingsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
-import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -42,8 +42,13 @@ public class AktivitetskortService {
         var gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
 
         if (gammelAktivitetVersjon.isPresent()) {
+            // TODO: 03/02/2023 denne skal sletes når vi er ferdig med å konsumere topicen for midlertidig lønstilskudd på nytt
+            //patch gammel for rekjøring av toppic pga ødlagt historie
+            //alle tester som er oppdatert for denne er merket med "reverter etter midlertidig løsntilskud migrering"
+            AktivitetData aktivitetData = patchGammelAktivitet(gammelAktivitetVersjon.get(), bestilling);
+
             // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-            var oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
+            var oppdatertAktivitet = oppdaterAktivitet(aktivitetData, bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
             return UpsertActionResult.OPPDATER;
         } else {
@@ -56,6 +61,21 @@ public class AktivitetskortService {
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }
+    }
+
+    private AktivitetData patchGammelAktivitet(AktivitetData gammelAktivitet, AktivitetskortBestilling aktivitetskortBestilling) {
+        boolean blirIkkeAvtalt = gammelAktivitet.isAvtalt() && !aktivitetskortBestilling.getAktivitetskort().isAvtaltMedNav();
+        AktivitetStatus status = gammelAktivitet.getStatus();
+        if(gammelAktivitet.getHistoriskDato() != null) {
+            aktivitetDAO.patchKanHistorisk(gammelAktivitet);
+        }
+        if(blirIkkeAvtalt) {
+            aktivitetDAO.patchBlirIkkeAvtalt(gammelAktivitet);
+        }
+        if(AktivitetStatus.AVBRUTT.equals(status) || AktivitetStatus.FULLFORT.equals(status)) {
+            aktivitetDAO.patchKanLifslopstatusKode(gammelAktivitet);
+        }
+        return aktivitetDAO.hentAktivitet(gammelAktivitet.getId());
     }
 
     private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
@@ -100,7 +120,10 @@ public class AktivitetskortService {
     }
 
     private AktivitetData oppdaterAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
-        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
+        if (!Objects.equals(gammelAktivitet.getAktorId(), nyAktivitet.getAktorId())) throw new UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort");
+        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil("Kan ikke endre aktiviteter som er avbrutt, fullført eller historiske (avsluttet oppfølgingsperiode)");
+        if (gammelAktivitet.isAvtalt() && !nyAktivitet.isAvtalt()) throw new UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt");
+
         return Stream.of(gammelAktivitet)
                 .map( aktivitet -> settAvtaltHvisAvtalt( aktivitet, nyAktivitet))
                 .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
