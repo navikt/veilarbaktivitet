@@ -513,6 +513,7 @@ public class AktivitetDAO {
         namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET SET historisk_dato = null, livslopstatus_kode = 'GJENNOMFORES'
                 WHERE aktivitet_id = :aktivitetId
+                and GJELDENDE = 1
                 """, params);
     }
 
@@ -523,6 +524,7 @@ public class AktivitetDAO {
         namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET SET avtalt = :avtalt
                 WHERE aktivitet_id = :aktivitetId
+                and GJELDENDE = 1
                 """, params);
     }
 }
