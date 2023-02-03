@@ -25,7 +25,10 @@ channels:
           description: aktiviteskorts id. Også kalt funksjonell id
     publish:
       message:
-        $ref: '#/components/messages/aktivitetskort'
+        oneOf:
+          - $ref: '#/components/messages/aktivitetskort'
+          - $ref: '#/components/messages/kassering'
+
   aktivitetskort-feil-v1:
     description: Dead-letter kø for aktivitetskort meldinger som ikke kan behandles.
     bindings:
@@ -38,17 +41,26 @@ channels:
       message:
         $ref: '#/components/messages/aktivitetskortfeilmelding'
 
-
 components:
   messages:
     aktivitetskort:
       name: aktivitetskortBestilling
       title: Aktivitetskort bestilling
       summary: Bestilling for oppretting eller endring av et aktivitetskort
+      description: aktivitetskort.id må være det samme som kafka key
       traits:
         - $ref: '#/components/messageTraits/commonHeaders'
       payload:
         $ref: "Aktivitetskort.V1.aktivitetskort.schema.yml"
+    kassering:
+      name: aktivitetskortkassering
+      title: Aktivitetskort kassering
+      summary: Melding som overskriver alle versoner og historikk for aktiviteten
+      description: aktivitetsid må være det samme som kafka key
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: "Aktivitetskort.V1.kasser.schema.yml"
     aktivitetskortfeilmelding:
       name: aktivitetskortFeilMelding
       title: Aktivitetskort feilmelding

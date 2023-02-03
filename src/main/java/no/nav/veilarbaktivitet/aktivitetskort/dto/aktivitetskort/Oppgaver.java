@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
 
 public record Oppgaver(
     Oppgave ekstern,
