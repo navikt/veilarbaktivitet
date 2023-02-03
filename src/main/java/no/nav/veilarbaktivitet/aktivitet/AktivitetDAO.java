@@ -516,6 +516,7 @@ public class AktivitetDAO {
                 """, params);
     }
 
+    //skal slettes etter patch
     public void patchBlirIkkeAvtalt(AktivitetData gammelAktivitet) {
         var params = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId()).addValue("avtalt", false);
 
