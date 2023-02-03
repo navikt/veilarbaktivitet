@@ -29,7 +29,7 @@ class OppfolgingsperiodeService(
 		val oppfolgingsperioder = oppfolgingClient.hentOppfolgingsperioder(aktorId)
 
 		if (oppfolgingsperioder.isEmpty()) {
-			log.info( "Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
+			log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
 			return null
 		}
 
@@ -47,12 +47,18 @@ class OppfolgingsperiodeService(
 		return maybePeriode.let {
 			oppfolgingsperioderCopy
 				.stream()
-				.filter { it.sluttDato == null || it.sluttDato.isAfter(opprettetTidspunktCZDT.minus(SLACK_ETTER)) } // Tiltak som er opprettet etter oppfølgingsperiode slutt
+				.filter { // Tiltak som er opprettet etter oppfølgingsperiode slutt
+					val predicate = it.sluttDato.isAfter(opprettetTidspunktCZDT.minus(SLACK_ETTER))
+					if (predicate) {
+						log.info("PATCH - Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke etter oppfølgingsperiode sluttdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+					}
+					it.sluttDato == null || predicate
+				}
 				.min(comparingLong { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) })
 				.filter {
 					val predicate = it.startDato.minus(SLACK_FOER).isBefore(opprettetTidspunktCZDT) // Skal ta inn tiltak som er opprettet før oppfølgingsperiode start
 					if (predicate) {
-						log.info( "Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+						log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
 					}
 					predicate
 				}.orElseGet {
