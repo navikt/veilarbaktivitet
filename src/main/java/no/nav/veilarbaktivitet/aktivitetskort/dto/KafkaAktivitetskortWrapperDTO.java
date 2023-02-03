@@ -19,10 +19,6 @@ public class KafkaAktivitetskortWrapperDTO extends BestillingBase {
     @JsonProperty(required = true)
     Aktivitetskort aktivitetskort;
 
-    public KafkaAktivitetskortWrapperDTO(String source, UUID messageId, ActionType actionType) {
-        super(source, messageId, actionType);
-    }
-
     @Override
     public UUID getAktivitetskortId() {
         return aktivitetskort.getId();
