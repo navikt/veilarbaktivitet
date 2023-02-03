@@ -8,10 +8,13 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -54,10 +57,27 @@ public class AktivitetskortProducerUtil {
         return objectMapper
                 .valueToTree(kafkaAktivitetskortWrapperDTO);
     }
+    private static JsonNode kasserMessageNode(KasseringsBestilling kasseringsBestilling) {
+        return objectMapper
+                .valueToTree(kasseringsBestilling);
+    }
 
-    public static JsonNode validExampleRecord(Person.Fnr fnr) {
+    public static JsonNode validExampleAktivitetskortRecord(Person.Fnr fnr) {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);
         return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
+    }
+
+    public static JsonNode validExampleKasseringsRecord() {
+        KasseringsBestilling kasseringsBestilling = new KasseringsBestilling(
+                "team-tiltak",
+                UUID.randomUUID(),
+                ActionType.KASSER_AKTIVITET,
+                NavIdent.of("z123456"),
+                NorskIdent.of("12121212121"),
+                UUID.randomUUID(),
+                "Fordi"
+        );;
+        return kasserMessageNode(kasseringsBestilling);
     }
 
     public static JsonNode invalidExampleRecord(Person.Fnr fnr) {

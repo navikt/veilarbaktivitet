@@ -3,7 +3,7 @@
 required:
   - source
   - actionType
-  - aktivitetsid
+  - aktivitetsId
   - personIdent
   - navIdent
 type: object
@@ -18,7 +18,7 @@ properties:
     format: date-time
   actionType:
     const: KASSER_AKTIVITET
-  aktivitetsid:
+  aktivitetsId:
     type: string
     format: uuid
     description: |

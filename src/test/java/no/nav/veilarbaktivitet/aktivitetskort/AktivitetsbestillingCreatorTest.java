@@ -8,7 +8,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.MessageIdIkkeUnikFeil;
@@ -63,8 +63,7 @@ class AktivitetsbestillingCreatorTest {
 
         JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
 
-
-        var valid = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
+        var valid = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
         var validValidationMessages = jsonSchema.validate(valid);
 
         assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
@@ -72,6 +71,19 @@ class AktivitetsbestillingCreatorTest {
         var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
         var invalidValidationMessages= jsonSchema.validate(invalid);
         assertEquals(2, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
+    }
+    @Test
+    void schema_should_be_in_sync_with_classes_for_kassering() {
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        InputStream kasserYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.kasser.schema.yml");
+        String kasserSchemaJsonString = convertYamlToJson(kasserYml);
+
+        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(kasserSchemaJsonString.getBytes()));
+
+        var valid = AktivitetskortProducerUtil.validExampleKasseringsRecord();
+        var validValidationMessages = jsonSchema.validate(valid);
+
+        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
     }
 
     private String errorMessage(Set<ValidationMessage> validValidationMessages) {
@@ -81,7 +93,7 @@ class AktivitetsbestillingCreatorTest {
 
     @Test
     void should_have_correct_timezone_when_serializing() {
-        var jsonNode = AktivitetskortProducerUtil.validExampleRecord(Person.fnr("1234567890"));
+        var jsonNode = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
         var endretTidspunkt = jsonNode.path("aktivitetskort").get("endretTidspunkt").asText();
         assertEquals("2022-01-01T00:00:00.001+01:00", endretTidspunkt);
     }
@@ -131,5 +143,13 @@ class AktivitetsbestillingCreatorTest {
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"));
         var endretTidspunkt = aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt();
         Assertions.assertThat(endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+    }
+
+    @Test
+    void should_be_able_to_deserialize_kasserings_bestilling() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+        String json = AktivitetskortProducerUtil.validExampleFromFile("validkassering.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        var aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        Assertions.assertThat(aktivitetskortBestilling).isInstanceOf(KasseringsBestilling.class);
     }
 }

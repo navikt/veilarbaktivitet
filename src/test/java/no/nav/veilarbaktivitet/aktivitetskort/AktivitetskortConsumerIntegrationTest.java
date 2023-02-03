@@ -4,6 +4,8 @@ import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
+import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -16,6 +18,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortF
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
@@ -773,6 +777,48 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         AktivitetDTO aktivitet = eksterneAktiviteterUnntattMigrerteArenaAktiviteter.getAktiviteter().get(0);
         assertThat(aktivitet.getEksternAktivitet().type()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+    }
+
+    @Test
+    void skal_kunne_kassere_aktiviteter() {
+        var tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(defaultcontext));
+        var kassering = new KasseringsBestilling(
+            "team-tiltak",
+                UUID.randomUUID(),
+                ActionType.KASSER_AKTIVITET,
+                NavIdent.of("z123456"),
+                NorskIdent.of("12121212121"),
+                tiltaksaktivitet.id,
+                "Fordi"
+        );
+        aktivitetTestService.kasserEskterntAktivitetskort(kassering);
+        var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, veileder, kassering.getAktivitetsId());
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
+        assertThat(aktivitet.getEndretAv()).isEqualTo("z123456");
+        assertThat(aktivitet.getEksternAktivitet().detaljer()).isEmpty();
+        assertThat(aktivitet.getEksternAktivitet().etiketter()).isEmpty();
+        assertThat(aktivitet.getEksternAktivitet().handlinger()).isEmpty();
+        assertThat(aktivitet.getEksternAktivitet().oppgave()).isNull();
+    }
+
+    @Test
+    void skal_kunne_publisere_feilmelding_nar_man_kasserer_aktivitet_som_ikke_finnes() {
+        var funksjonellId = UUID.randomUUID();
+        var kassering = new KasseringsBestilling(
+                "team-tiltak",
+                UUID.randomUUID(),
+                ActionType.KASSER_AKTIVITET,
+                NavIdent.of("z123456"),
+                NorskIdent.of("12121212121"),
+                funksjonellId,
+                "Fordi"
+        );
+        aktivitetTestService.kasserEskterntAktivitetskort(kassering);
+        assertFeilmeldingPublished(
+                funksjonellId,
+                AktivitetIkkeFunnetFeil.class
+        );
     }
 
 
