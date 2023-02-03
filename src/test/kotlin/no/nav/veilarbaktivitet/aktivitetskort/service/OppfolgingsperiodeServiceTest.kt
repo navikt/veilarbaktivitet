@@ -224,3 +224,4 @@ class OppfolgingsperiodeServiceTest {
         return OppfolgingPeriodeMinimalDTO(UUID.randomUUID(), startDato, sluttDato)
     }
 }
+
