@@ -5,23 +5,22 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.IkkeUnderOppfolgingsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
-import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -100,7 +99,10 @@ public class AktivitetskortService {
     }
 
     private AktivitetData oppdaterAktivitet(AktivitetData gammelAktivitet, AktivitetData nyAktivitet) throws UlovligEndringFeil {
-        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil();
+        if (!Objects.equals(gammelAktivitet.getAktorId(), nyAktivitet.getAktorId())) throw new UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort");
+        if (!gammelAktivitet.endringTillatt()) throw new UlovligEndringFeil("Kan ikke endre aktiviteter som er avbrutt, fullført eller historiske (avsluttet oppfølgingsperiode)");
+        if (gammelAktivitet.isAvtalt() && !nyAktivitet.isAvtalt()) throw new UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt");
+
         return Stream.of(gammelAktivitet)
                 .map( aktivitet -> settAvtaltHvisAvtalt( aktivitet, nyAktivitet))
                 .map( aktivitet -> oppdaterDetaljer(aktivitet, nyAktivitet))
