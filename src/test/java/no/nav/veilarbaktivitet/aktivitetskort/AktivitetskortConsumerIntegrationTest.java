@@ -20,6 +20,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
