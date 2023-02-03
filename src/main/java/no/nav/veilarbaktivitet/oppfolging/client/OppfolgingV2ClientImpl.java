@@ -68,16 +68,15 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
 
     @Timed
     @Override
-    public Optional<List<OppfolgingPeriodeMinimalDTO>> hentOppfolgingsperioder(Person.AktorId aktorId) {
-        Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
+    public List<OppfolgingPeriodeMinimalDTO> hentOppfolgingsperioder(Person.AktorId aktorId) {
 
-        String uri = String.format("%s/v2/oppfolging/perioder?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/v2/oppfolging/perioder?aktorId=%s", baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
-            return RestUtils.parseJsonArrayResponse(response, OppfolgingPeriodeMinimalDTO.class);
+           return RestUtils.parseJsonResponseArrayOrThrow(response, OppfolgingPeriodeMinimalDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
         }

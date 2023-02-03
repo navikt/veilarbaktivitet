@@ -15,11 +15,12 @@ plugins {
     java
     application
     `maven-publish`
+    kotlin("jvm") version "1.8.0"
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "3.4.0.2513"
+    id("org.sonarqube") version "3.5.0.2730"
     id("org.springframework.boot") version "2.7.7"
 }
 

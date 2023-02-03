@@ -71,7 +71,7 @@ class ArenaControllerTest {
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
     private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
-    private final MigreringService migreringService = new MigreringService(unleashClient, oppfolgingV2Client);
+    private final MigreringService migreringService = new MigreringService(unleashClient);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);

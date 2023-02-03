@@ -6,21 +6,11 @@ import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client;
-import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
-import java.time.*;
-import java.time.chrono.ChronoZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Predicate;
 
-import static java.util.Comparator.comparing;
-import static java.util.Comparator.comparingLong;
 import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.GRUPPEAKTIVITET;
 import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET;
 
@@ -31,8 +21,6 @@ public class MigreringService {
     public static final String VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter";
 
     private final UnleashClient unleashClient;
-
-    private final OppfolgingV2Client oppfolgingV2Client;
 
     private final Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
     private static final Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
@@ -53,59 +41,5 @@ public class MigreringService {
         } else {
             return ikkeMigrerteArenaAktiviteter;
         }
-    }
-
-    public Optional<OppfolgingPeriodeMinimalDTO> finnOppfolgingsperiode(Person.AktorId aktorId, LocalDateTime opprettetTidspunkt) {
-        var oppfolgingsperioderDTO = oppfolgingV2Client.hentOppfolgingsperioder(aktorId);
-
-        if (oppfolgingsperioderDTO.isEmpty()) {
-            log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
-                    aktorId.get(),
-                    opprettetTidspunkt,
-                    List.of());
-            return Optional.empty();
-        }
-
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioder = oppfolgingsperioderDTO.get();
-
-        if (oppfolgingsperioder.isEmpty()) {
-            log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
-                    aktorId.get(),
-                    opprettetTidspunkt,
-                    List.of());
-            return Optional.empty();
-        }
-
-        List<OppfolgingPeriodeMinimalDTO> oppfolgingsperioderCopy = new ArrayList<>(oppfolgingsperioder);
-        oppfolgingsperioderCopy.sort(comparing(OppfolgingPeriodeMinimalDTO::getStartDato).reversed()); // nyeste først
-
-        var opprettetTidspunktCZDT = ChronoZonedDateTime.from(opprettetTidspunkt.atZone(ZoneId.systemDefault()));
-        var maybePeriode = oppfolgingsperioderCopy
-                .stream()
-                .filter(o -> ((o.getStartDato().isBefore(opprettetTidspunktCZDT) || o.getStartDato().isEqual(opprettetTidspunktCZDT)) && o.getSluttDato() == null) ||
-                        ((o.getStartDato().isBefore(opprettetTidspunktCZDT) || o.getStartDato().isEqual(opprettetTidspunktCZDT)) && o.getSluttDato().isAfter(opprettetTidspunktCZDT)))
-                .findFirst();
-
-        return Optional.ofNullable(maybePeriode.orElseGet(() -> oppfolgingsperioderCopy
-                .stream()
-                .filter(o -> o.getSluttDato() == null || (o.getSluttDato().isAfter(opprettetTidspunktCZDT)))
-                .min(comparingLong(o -> Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())))) // filteret over kan returnere flere perioder, velg perioden som har startdato nærmest opprettettidspunkt
-                .filter(o -> {
-                    var innenTiMinutter = Math.abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, o.getStartDato())) < 600000;
-                    if (innenTiMinutter) {
-                        log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 10 minutter oppfølging startdato) - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
-                                aktorId.get(),
-                                opprettetTidspunkt,
-                                oppfolgingsperioder);
-                    }
-                    return innenTiMinutter;
-                }).orElseGet(() -> {
-                    log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - aktorId={}, opprettetTidspunkt={}, oppfolgingsperioder={}",
-                            aktorId.get(),
-                            opprettetTidspunkt,
-                            oppfolgingsperioder);
-                    return null;
-                })
-        ));
     }
 }

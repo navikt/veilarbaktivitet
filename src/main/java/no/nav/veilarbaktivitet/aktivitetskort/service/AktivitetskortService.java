@@ -14,7 +14,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestillin
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.IkkeUnderOppfolgingsFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.person.Person;
@@ -36,6 +36,8 @@ public class AktivitetskortService {
     private final AktivitetsMessageDAO aktivitetsMessageDAO;
     private final ArenaAktivitetskortService arenaAktivitetskortService;
 
+    private final OppfolgingsperiodeService oppfolgingsperiodeService;
+
 
     public UpsertActionResult upsertAktivitetskort(AktivitetskortBestilling bestilling) throws AktivitetsKortFunksjonellException {
         var aktivitetskort = bestilling.getAktivitetskort();
@@ -53,16 +55,36 @@ public class AktivitetskortService {
             return UpsertActionResult.OPPDATER;
         } else {
             var opprettetAktivitet = opprettAktivitet(bestilling);
-
-            if (opprettetAktivitet == null) {
-                log.info("Ignorert aktivitetskort som ikke har passende oppfølgingsperiode funksjonellId={}", bestilling.getAktivitetskort().getId());
-                return UpsertActionResult.IGNORE;
-            }
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }
     }
 
+    private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws ManglerOppfolgingsperiodeFeil {
+        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
+            return arenaAktivitetskortService.opprettAktivitet(arenaAktivitetskortBestilling);
+        } else if (bestilling instanceof EksternAktivitetskortBestilling eksternAktivitetskortBestilling) {
+            return opprettEksternAktivitet(eksternAktivitetskortBestilling);
+        } else {
+            throw new IllegalStateException("Unexpected value: " + bestilling);
+        }
+    }
+
+    private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws ManglerOppfolgingsperiodeFeil {
+        var endretAv = bestilling.getAktivitetskort().getEndretAv();
+        var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
+        var oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(bestilling.getAktorId(), opprettet);
+        if (oppfolgingsperiode == null) throw new ManglerOppfolgingsperiodeFeil();
+
+        var aktivitetData = AktivitetskortMapper
+                .mapTilAktivitetData(bestilling, bestilling.getAktivitetskort().getEndretTidspunkt());
+
+        if (oppfolgingsperiode.sluttDato() != null) {
+            aktivitetData.getEksternAktivitetData().setOpprettetSomHistorisk(true);
+            aktivitetData.getEksternAktivitetData().setOppfolgingsperiodeSlutt(oppfolgingsperiode.sluttDato().toLocalDateTime());
+        }
+        return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAv, opprettet, oppfolgingsperiode.uuid());
+    }
     private AktivitetData patchGammelAktivitet(AktivitetData gammelAktivitet, AktivitetskortBestilling aktivitetskortBestilling) {
         boolean blirIkkeAvtalt = gammelAktivitet.isAvtalt() && !aktivitetskortBestilling.getAktivitetskort().isAvtaltMedNav();
         AktivitetStatus status = gammelAktivitet.getStatus();
@@ -76,28 +98,6 @@ public class AktivitetskortService {
             aktivitetDAO.patchKanLifslopstatusKode(gammelAktivitet);
         }
         return aktivitetDAO.hentAktivitet(gammelAktivitet.getId());
-    }
-
-    private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
-        if (bestilling instanceof ArenaAktivitetskortBestilling arenaAktivitetskortBestilling) {
-            return arenaAktivitetskortService.opprettAktivitet(arenaAktivitetskortBestilling);
-        } else if (bestilling instanceof EksternAktivitetskortBestilling eksternAktivitetskortBestilling) {
-            return opprettEksternAktivitet(eksternAktivitetskortBestilling);
-        } else {
-            throw new IllegalStateException("Unexpected value: " + bestilling);
-        }
-    }
-
-    private AktivitetData opprettEksternAktivitet(EksternAktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
-        var endretAv = bestilling.getAktivitetskort().getEndretAv();
-        var opprettet = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
-        var aktivitetData = AktivitetskortMapper
-                .mapTilAktivitetData(bestilling, bestilling.getAktivitetskort().getEndretTidspunkt());
-        try {
-            return aktivitetService.opprettAktivitet(Person.aktorId(aktivitetData.getAktorId()), aktivitetData, endretAv, opprettet);
-        } catch (IngenGjeldendePeriodeException e) {
-            throw new IkkeUnderOppfolgingsFeil(e);
-        }
     }
 
     private AktivitetData oppdaterDetaljer(AktivitetData aktivitet, AktivitetData nyAktivitet) {

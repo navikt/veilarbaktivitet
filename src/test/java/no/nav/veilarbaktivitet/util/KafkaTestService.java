@@ -24,6 +24,8 @@ import static org.awaitility.Awaitility.await;
 @RequiredArgsConstructor
 public class KafkaTestService {
 
+    public static int DEFAULT_WAIT_TIMEOUT_SEC = 5;
+
 
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
 
