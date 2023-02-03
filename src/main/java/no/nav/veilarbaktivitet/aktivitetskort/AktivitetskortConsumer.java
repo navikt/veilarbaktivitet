@@ -6,9 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.common.kafka.consumer.ConsumeStatus;
 import no.nav.common.kafka.consumer.TopicConsumer;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DuplikatMeldingFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
+import no.nav.veilarbaktivitet.aktivitetskort.service.KasseringsService;
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -28,6 +31,7 @@ import java.util.UUID;
 public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     private final AktivitetskortService aktivitetskortService;
+    private final KasseringsService kasseringsService;
 
     private final AktivitetsKortFeilProducer feilProducer;
 
@@ -52,20 +56,22 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
         }
     }
 
+
     private final AktivitetsbestillingCreator bestillingsCreator;
     ConsumeStatus consumeThrowing(ConsumerRecord<String, String> consumerRecord) throws AktivitetsKortFunksjonellException {
         var bestilling = bestillingsCreator.lagBestilling(consumerRecord);
-        var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
-        log.info("Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}", consumerRecord.offset(), consumerRecord.partition(), bestilling.getMessageId(), timestamp, bestilling.getAktivitetskort().id);
-        ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskort().id);
-
         MDC.put(MetricService.SOURCE, bestilling.getSource());
-        if (bestilling.getActionType() == ActionType.UPSERT_AKTIVITETSKORT_V1) {
-            UpsertActionResult upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling);
 
-            aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult);
+        var timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault());
+        log.info("Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}", consumerRecord.offset(), consumerRecord.partition(), bestilling.getMessageId(), timestamp, bestilling.getAktivitetskortId());
 
-            aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult);
+        ignorerHvisSettFor(bestilling.getMessageId(), bestilling.getAktivitetskortId());
+        if (bestilling instanceof AktivitetskortBestilling aktivitetskortBestilling) {
+            UpsertActionResult upsertActionResult = aktivitetskortService.upsertAktivitetskort(aktivitetskortBestilling);
+            aktivitetskortService.oppdaterMeldingResultat(aktivitetskortBestilling.getMessageId(), upsertActionResult);
+            aktivitetskortMetrikker.countAktivitetskortUpsert(aktivitetskortBestilling, upsertActionResult);
+        } else if (bestilling instanceof KasseringsBestilling kasseringsBestilling) {
+            kasseringsService.kassertAktivitet(kasseringsBestilling);
         } else {
             throw new NotImplementedException("Unknown kafka message");
         }

@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.bestilling;
 
 import lombok.Getter;
-import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
@@ -23,4 +22,8 @@ public class EksternAktivitetskortBestilling extends AktivitetskortBestilling {
         return AktivitetskortMapper.mapTilAktivitetData(this, null);
     }
 
+    @Override
+    public UUID getAktivitetskortId() {
+        return this.getAktivitetskort().getId();
+    }
 }

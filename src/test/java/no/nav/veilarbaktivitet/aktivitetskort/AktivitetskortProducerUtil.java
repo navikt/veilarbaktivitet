@@ -8,9 +8,13 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.NorskIdent;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -27,7 +31,6 @@ import java.time.*;
 import java.util.UUID;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 
 public class AktivitetskortProducerUtil {
     private static final ObjectMapper objectMapper = JsonUtils.getMapper().copy()
@@ -54,15 +57,32 @@ public class AktivitetskortProducerUtil {
         return objectMapper
                 .valueToTree(kafkaAktivitetskortWrapperDTO);
     }
+    private static JsonNode kasserMessageNode(KasseringsBestilling kasseringsBestilling) {
+        return objectMapper
+                .valueToTree(kasseringsBestilling);
+    }
 
-    public static JsonNode validExampleRecord(Person.Fnr fnr) {
+    public static JsonNode validExampleAktivitetskortRecord(Person.Fnr fnr) {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);
         return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
     }
 
+    public static JsonNode validExampleKasseringsRecord() {
+        KasseringsBestilling kasseringsBestilling = new KasseringsBestilling(
+                "team-tiltak",
+                UUID.randomUUID(),
+                ActionType.KASSER_AKTIVITET,
+                NavIdent.of("z123456"),
+                NorskIdent.of("12121212121"),
+                UUID.randomUUID(),
+                "Fordi"
+        );;
+        return kasserMessageNode(kasseringsBestilling);
+    }
+
     public static JsonNode invalidExampleRecord(Person.Fnr fnr) {
         KafkaAktivitetskortWrapperDTO kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr);
-        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.withActionType(null));
+        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.toBuilder().actionType(null).build());
     }
 
     @SneakyThrows
@@ -74,7 +94,7 @@ public class AktivitetskortProducerUtil {
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.remove("tittel");
-        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.getMessageId());
     }
 
     public static Pair extraFieldRecord(Person.Fnr fnr) {
@@ -82,7 +102,7 @@ public class AktivitetskortProducerUtil {
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.put("kake", "123");
-        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.getMessageId());
     }
 
     public static Pair invalidDateFieldRecord(Person.Fnr fnr) {
@@ -90,7 +110,7 @@ public class AktivitetskortProducerUtil {
         JsonNode jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO);
         var payload = (ObjectNode)jsonNode.path("aktivitetskort");
         payload.set("startDato", new TextNode("2022/-1/04T12:00:00+02:00"));
-        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.messageId);
+        return new Pair(jsonNode.toString(), kafkaAktivitetskortWrapperDTO.getMessageId());
     }
 
     @SneakyThrows

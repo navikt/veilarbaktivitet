@@ -103,7 +103,7 @@ public class Database {
 
     public static <T> List<T>  hentListObjectFromJsonString(ResultSet rs, String kolonneNavn, Class<T> valueClass) throws SQLException {
         String json = rs.getString(kolonneNavn);
-        if (json == null) return null;
+        if (json == null) return List.of();
 
         return JsonUtils.fromJsonArray(json, valueClass);
     }

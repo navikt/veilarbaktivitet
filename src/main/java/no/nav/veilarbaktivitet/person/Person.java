@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.person;
 import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Id;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
 
 import java.util.Objects;
 

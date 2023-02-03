@@ -8,7 +8,10 @@ import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
 import no.nav.veilarbaktivitet.aktivitetskort.util.ZonedOrNorwegianDateTimeDeserializer;
 
 import java.time.LocalDate;
