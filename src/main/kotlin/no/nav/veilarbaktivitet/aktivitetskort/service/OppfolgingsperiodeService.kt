@@ -48,11 +48,13 @@ class OppfolgingsperiodeService(
 			oppfolgingsperioderCopy
 				.stream()
 				.filter { // Tiltak som er opprettet etter oppfølgingsperiode slutt
-					val predicate = it.sluttDato.isAfter(opprettetTidspunktCZDT.minus(SLACK_ETTER))
+					val aktivPeriode = it.sluttDato == null
+					if (aktivPeriode) return@filter true
+					val predicate =  it.sluttDato.isAfter(opprettetTidspunktCZDT.minus(SLACK_ETTER))
 					if (predicate) {
 						log.info("PATCH - Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke etter oppfølgingsperiode sluttdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
 					}
-					it.sluttDato == null || predicate
+					predicate
 				}
 				.min(comparingLong { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) })
 				.filter {
