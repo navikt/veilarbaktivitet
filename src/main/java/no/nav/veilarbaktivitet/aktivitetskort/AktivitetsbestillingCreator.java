@@ -8,6 +8,8 @@ import no.nav.common.json.JsonMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
@@ -32,9 +34,9 @@ public class AktivitetsbestillingCreator {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         return objectMapper;
     }
-    static KafkaAktivitetskortWrapperDTO deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
+    static BestillingBase deserialiser(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil {
         try {
-            return getMapper().readValue(consumerRecord.value(), KafkaAktivitetskortWrapperDTO.class);
+            return getMapper().readValue(consumerRecord.value(), BestillingBase.class);
         } catch (Exception e) {
             throw new DeserialiseringsFeil(
                     new ErrorMessage(e.getMessage()),
@@ -51,35 +53,39 @@ public class AktivitetsbestillingCreator {
             throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
         }
     }
-    public AktivitetskortBestilling lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         var melding = deserialiser(consumerRecord);
-        if (!melding.aktivitetskort.id.toString().equals(consumerRecord.key()))
-            throw new KeyErIkkeFunksjonellIdFeil(new ErrorMessage(String.format("aktivitetsId: %s må være lik kafka-meldings-id: %s", melding.aktivitetskort.id, consumerRecord.key())), null);
-        if (melding.messageId.equals(melding.aktivitetskort.id)) {
+        if (!melding.getAktivitetskortId().toString().equals(consumerRecord.key()))
+            throw new KeyErIkkeFunksjonellIdFeil(new ErrorMessage(String.format("aktivitetsId: %s må være lik kafka-meldings-id: %s", melding.getAktivitetskortId(), consumerRecord.key())), null);
+        if (melding.getMessageId().equals(melding.getAktivitetskortId())) {
             throw new MessageIdIkkeUnikFeil(new ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"), null);
         }
-        var aktorId = hentAktorId(Person.fnr(melding.aktivitetskort.getPersonIdent()));
-        boolean erArenaAktivitet = ARENA_TILTAK_AKTIVITET_ACL.equals(melding.source);
-        if (erArenaAktivitet) {
-            return new ArenaAktivitetskortBestilling(
-                melding.aktivitetskort,
-                melding.source,
-                melding.aktivitetskortType,
-                getEksternReferanseId(consumerRecord),
-                getArenaTiltakskode(consumerRecord),
-                melding.messageId,
-                melding.actionType,
-                aktorId
-            );
+        if (melding instanceof KafkaAktivitetskortWrapperDTO aktivitetskortMelding) {
+            var aktorId = hentAktorId(Person.fnr(aktivitetskortMelding.getAktivitetskort().getPersonIdent()));
+            boolean erArenaAktivitet = ARENA_TILTAK_AKTIVITET_ACL.equals(melding.getSource());
+            if (erArenaAktivitet) {
+                return new ArenaAktivitetskortBestilling(
+                        aktivitetskortMelding.getAktivitetskort(),
+                        aktivitetskortMelding.getSource(),
+                        aktivitetskortMelding.getAktivitetskortType(),
+                        getEksternReferanseId(consumerRecord),
+                        getArenaTiltakskode(consumerRecord),
+                        aktivitetskortMelding.getMessageId(),
+                        aktivitetskortMelding.getActionType(),
+                        aktorId
+                );
+            } else {
+                return new EksternAktivitetskortBestilling(
+                        aktivitetskortMelding.getAktivitetskort(),
+                        aktivitetskortMelding.getSource(),
+                        aktivitetskortMelding.getAktivitetskortType(),
+                        aktivitetskortMelding.getMessageId(),
+                        aktivitetskortMelding.getActionType(),
+                        aktorId
+                );
+            }
         } else {
-            return new EksternAktivitetskortBestilling(
-                melding.aktivitetskort,
-                melding.source,
-                melding.aktivitetskortType,
-                melding.messageId,
-                melding.actionType,
-                aktorId
-            );
+            return melding;
         }
     }
 

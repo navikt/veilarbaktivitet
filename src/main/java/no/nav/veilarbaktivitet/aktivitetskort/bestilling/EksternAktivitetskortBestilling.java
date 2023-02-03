@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.person.Person;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
@@ -23,4 +24,8 @@ public class EksternAktivitetskortBestilling extends AktivitetskortBestilling {
         return AktivitetskortMapper.mapTilAktivitetData(this, null);
     }
 
+    @Override
+    public UUID getAktivitetskortId() {
+        return this.getAktivitetskort().getId();
+    }
 }

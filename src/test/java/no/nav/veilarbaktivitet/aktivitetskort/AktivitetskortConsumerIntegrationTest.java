@@ -11,10 +11,11 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortFeilMelding;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
@@ -639,7 +640,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Assertions.assertThrows(IllegalStateException.class, () -> aktivitetskortConsumer.consume(recordOppdatert));
 
         /* Assert successful rollback */
-        assertThat(messageDAO.exist(aktivitetskortOppdatert.messageId)).isFalse();
+        assertThat(messageDAO.exist(aktivitetskortOppdatert.getMessageId())).isFalse();
         var aktivitet = hentAktivitet(funksjonellId);
         assertThat(aktivitet.getEksternAktivitet().detaljer().get(0).verdi()).isEqualTo(tiltaksaktivitet.detaljer.get(0).verdi());
         assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);

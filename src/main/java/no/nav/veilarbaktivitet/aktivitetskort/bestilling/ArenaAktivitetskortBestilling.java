@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.person.Person;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
@@ -26,5 +27,10 @@ public class ArenaAktivitetskortBestilling extends AktivitetskortBestilling {
     public AktivitetData toAktivitet() {
         var opprettetTidspunkt = this.getAktivitetskort().getEndretTidspunkt();
         return AktivitetskortMapper.mapTilAktivitetData(this, opprettetTidspunkt);
+    }
+
+    @Override
+    public UUID getAktivitetskortId() {
+        return this.getAktivitetskort().getId();
     }
 }

@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.person;
 
-import no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
 
 public enum Innsender {
     BRUKER,

@@ -12,7 +12,6 @@ import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTilAktivitetData;
-import static no.nav.veilarbaktivitet.aktivitetskort.dto.IdentType.ARENAIDENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class AktivitetskortMapperTest {

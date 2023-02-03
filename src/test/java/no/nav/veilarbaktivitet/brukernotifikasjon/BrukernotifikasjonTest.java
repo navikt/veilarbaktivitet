@@ -376,7 +376,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Opprett fho når toggle er av
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
         // Assert url bruker teknisk id og ikke arenaId
-        var funksjonellId = aktivitetskortMelding.getAktivitetskort().getId();
+        var funksjonellId = aktivitetskortMelding.getAktivitetskortId();
         var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, funksjonellId);
         var tekniskId = aktivitet.getId();
 

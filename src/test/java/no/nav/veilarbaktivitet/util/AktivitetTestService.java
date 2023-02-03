@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -400,14 +400,14 @@ public class AktivitetTestService {
 
     public ProducerRecord makeAktivitetskortProducerRecord(KafkaAktivitetskortWrapperDTO melding, ArenaMeldingHeaders arenaMeldingHeaders) {
         if (arenaMeldingHeaders == null) {
-            return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding));
+            return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding));
         }
 
         List<Header> headers = List.of(
                 new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
                 new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
         );
-        return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskort().getId().toString(), JsonUtils.toJson(melding), headers);
+        return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
     public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {

@@ -39,3 +39,7 @@ properties:
   begrunnelse:
     type: string
     description: begrunnelse for kasseing som er synlig for bruker inne i aktivitetskortet
+  messageId:
+    type: string
+    format: uuid
+    description: Unik id for denne meldingen brukes til deduplisering

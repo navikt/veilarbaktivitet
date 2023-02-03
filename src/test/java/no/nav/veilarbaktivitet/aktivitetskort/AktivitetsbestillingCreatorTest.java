@@ -8,6 +8,7 @@ import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.MessageIdIkkeUnikFeil;
@@ -89,7 +90,7 @@ class AktivitetsbestillingCreatorTest {
     void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
-        AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"));
         Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
     }
@@ -116,7 +117,7 @@ class AktivitetsbestillingCreatorTest {
     void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
-        AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"));
         Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
 
@@ -126,7 +127,7 @@ class AktivitetsbestillingCreatorTest {
     void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
-        AktivitetskortBestilling aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
+        var aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"));
         var endretTidspunkt = aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt();
         Assertions.assertThat(endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));

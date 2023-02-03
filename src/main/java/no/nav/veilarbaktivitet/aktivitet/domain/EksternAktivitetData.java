@@ -5,10 +5,10 @@ import lombok.Data;
 import lombok.Singular;
 import lombok.With;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Attributt;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Etikett;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.LenkeSeksjon;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Oppgaver;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 
 import java.time.LocalDateTime;
