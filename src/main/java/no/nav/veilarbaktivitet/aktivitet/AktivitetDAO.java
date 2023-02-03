@@ -505,4 +505,23 @@ public class AktivitetDAO {
                 WHERE aktivitet_id = :aktivitetId
                 """, params);
     }
+
+    //skal slettes etter patch
+    public void patchKanIkkeEndres(AktivitetData gammelAktivitet) {
+        var params = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId());
+
+        namedParameterJdbcTemplate.update("""
+                UPDATE AKTIVITET SET historisk_dato = null, livslopstatus_kode = 'GJENNOMFORES'
+                WHERE aktivitet_id = :aktivitetId
+                """, params);
+    }
+
+    public void patchBlirIkkeAvtalt(AktivitetData gammelAktivitet) {
+        var params = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId()).addValue("avtalt", false);
+
+        namedParameterJdbcTemplate.update("""
+                UPDATE AKTIVITET SET avtalt = :avtalt
+                WHERE aktivitet_id = :aktivitetId
+                """, params);
+    }
 }

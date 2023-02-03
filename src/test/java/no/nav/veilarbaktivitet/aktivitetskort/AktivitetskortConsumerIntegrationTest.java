@@ -45,7 +45,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -65,7 +64,8 @@ import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKT
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getRecords;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -330,12 +330,13 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
         Assertions.assertNotNull(aktivitet);
-
-        assertFeilmeldingPublished(
-                funksjonellId,
-                UlovligEndringFeil.class,
-                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
-        );
+// TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+        Assertions.assertFalse(aktivitet.isAvtalt());
+//        assertFeilmeldingPublished(
+//                funksjonellId,
+//                UlovligEndringFeil.class,
+//                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
+//        );
     }
 
     @Test
@@ -489,7 +490,9 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
+        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 
     @Test
@@ -502,12 +505,12 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
-
-        assertFeilmeldingPublished(
-                funksjonellId,
-                UlovligEndringFeil.class
-        );
+        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+//        assertFeilmeldingPublished(
+//                funksjonellId,
+//                UlovligEndringFeil.class
+//        );
     }
 
     @Test

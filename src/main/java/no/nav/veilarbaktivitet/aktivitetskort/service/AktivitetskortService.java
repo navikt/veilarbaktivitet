@@ -41,8 +41,13 @@ public class AktivitetskortService {
         var gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
 
         if (gammelAktivitetVersjon.isPresent()) {
+            // TODO: 03/02/2023 denne skal sletes når vi er ferdig med å konsumere topicen for midlertidig lønstilskudd på nytt
+            //patch gammel for rekjøring av toppic pga ødlagt historie
+            //alle tester som er oppdatert for denne er merket med "reverter etter midlertidig løsntilskud migrering"
+            AktivitetData aktivitetData = patchGammelAktivitet(gammelAktivitetVersjon.get(), bestilling);
+
             // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-            var oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
+            var oppdatertAktivitet = oppdaterAktivitet(aktivitetData, bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
             return UpsertActionResult.OPPDATER;
         } else {
@@ -55,6 +60,18 @@ public class AktivitetskortService {
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }
+    }
+
+    private AktivitetData patchGammelAktivitet(AktivitetData gammelAktivitet, AktivitetskortBestilling aktivitetskortBestilling) {
+        boolean blirIkkeAvtalt = gammelAktivitet.isAvtalt() && !aktivitetskortBestilling.getAktivitetskort().isAvtaltMedNav();
+        boolean kanIkkeEndres = !gammelAktivitet.endringTillatt();
+        if(kanIkkeEndres) {
+            aktivitetDAO.patchKanIkkeEndres(gammelAktivitet);
+        }
+        if(blirIkkeAvtalt) {
+            aktivitetDAO.patchBlirIkkeAvtalt(gammelAktivitet);
+        }
+        return aktivitetDAO.hentAktivitet(gammelAktivitet.getId());
     }
 
     private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
