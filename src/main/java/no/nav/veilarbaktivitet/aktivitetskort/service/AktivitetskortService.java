@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
@@ -41,8 +42,13 @@ public class AktivitetskortService {
         var gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(aktivitetskort.getId());
 
         if (gammelAktivitetVersjon.isPresent()) {
+            // TODO: 03/02/2023 denne skal sletes når vi er ferdig med å konsumere topicen for midlertidig lønstilskudd på nytt
+            //patch gammel for rekjøring av toppic pga ødlagt historie
+            //alle tester som er oppdatert for denne er merket med "reverter etter midlertidig løsntilskud migrering"
+            AktivitetData aktivitetData = patchGammelAktivitet(gammelAktivitetVersjon.get(), bestilling);
+
             // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-            var oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet());
+            var oppdatertAktivitet = oppdaterAktivitet(aktivitetData, bestilling.toAktivitet());
             log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet);
             return UpsertActionResult.OPPDATER;
         } else {
@@ -55,6 +61,21 @@ public class AktivitetskortService {
             log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet);
             return UpsertActionResult.OPPRETT;
         }
+    }
+
+    private AktivitetData patchGammelAktivitet(AktivitetData gammelAktivitet, AktivitetskortBestilling aktivitetskortBestilling) {
+        boolean blirIkkeAvtalt = gammelAktivitet.isAvtalt() && !aktivitetskortBestilling.getAktivitetskort().isAvtaltMedNav();
+        AktivitetStatus status = gammelAktivitet.getStatus();
+        if(gammelAktivitet.getHistoriskDato() != null) {
+            aktivitetDAO.patchKanHistorisk(gammelAktivitet);
+        }
+        if(blirIkkeAvtalt) {
+            aktivitetDAO.patchBlirIkkeAvtalt(gammelAktivitet);
+        }
+        if(AktivitetStatus.AVBRUTT.equals(status) || AktivitetStatus.FULLFORT.equals(status)) {
+            aktivitetDAO.patchKanLifslopstatusKode(gammelAktivitet);
+        }
+        return aktivitetDAO.hentAktivitet(gammelAktivitet.getId());
     }
 
     private AktivitetData opprettAktivitet(AktivitetskortBestilling bestilling) throws IkkeUnderOppfolgingsFeil {
