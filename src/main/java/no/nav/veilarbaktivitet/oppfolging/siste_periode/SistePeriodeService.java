@@ -25,7 +25,7 @@ public class SistePeriodeService {
                 .filter(periode -> periode.sluttTid()  == null)
                 .or(() -> oppfolgingV2Client.fetchGjeldendePeriode(aktorId)
                         .map(
-                                dto -> new Oppfolgingsperiode(aktorId.get(), dto.getUuid(), dto.getStartDato(), dto.getSluttDato())
+                                dto -> new Oppfolgingsperiode(aktorId.get(), dto.uuid(), dto.startDato(), dto.sluttDato())
                         )
                 ).orElseThrow(exceptionSupplier);
 

@@ -61,6 +61,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_SEC;
 import static org.junit.Assert.*;
 
 
@@ -394,7 +395,7 @@ public class AktivitetTestService {
                 key,
                 payload
         )).get(3, TimeUnit.SECONDS);
-        Awaitility.await().atMost(Duration.ofSeconds(5))
+        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
                 .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
     }
 
@@ -425,7 +426,7 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(5))
+        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
                 .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
     }
 
@@ -446,7 +447,7 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(5))
+        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
                 .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
     }
 
