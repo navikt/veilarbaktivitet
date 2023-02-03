@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.config.database;
 
-import com.google.common.collect.Lists;
 import lombok.Getter;
 import no.nav.common.json.JsonUtils;
 import org.apache.commons.lang3.StringUtils;
