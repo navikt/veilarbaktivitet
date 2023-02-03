@@ -508,21 +508,23 @@ public class AktivitetDAO {
 
     //skal slettes etter patch
     public void patchKanHistorisk(AktivitetData gammelAktivitet) {
-        var eksternParam = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId());
-        eksternParam.addValue("opprettet_som_historisk", true);
+        var eksternParam = new MapSqlParameterSource()
+                .addValue("aktivitetId", gammelAktivitet.getId())
+                .addValue("opprettet_som_historisk", true);
 
         namedParameterJdbcTemplate.update("""
-                                EKSTERNAKTIVITET set opprettet_som_historisk = :opprettet_som_historisk
+                                update EKSTERNAKTIVITET set opprettet_som_historisk = :opprettet_som_historisk,
                                 OPPFOLGINGSPERIODE_SLUTT = (
                                     select historisk_dato from AKTIVITET 
                                     where aktivitet_id = :aktivitetId 
                                     and GJELDENDE = 1
+                                    and EKSTERNAKTIVITET.VERSJON = AKTIVITET.VERSJON
                                 )
                                 where versjon = (
                                     select versjon from AKTIVITET 
                                     where aktivitet_id = :aktivitetId 
                                     and GJELDENDE = 1
-                                )
+                                ) 
                 """, eksternParam
         );
 
