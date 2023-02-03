@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.common.kafka.producer.KafkaProducerClient;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortFeilMelding;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortFeilMelding;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;

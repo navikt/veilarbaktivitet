@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
 
 import no.nav.veilarbaktivitet.person.Innsender;
 

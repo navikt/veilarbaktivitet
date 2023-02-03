@@ -27,4 +27,9 @@ public class ArenaAktivitetskortBestilling extends AktivitetskortBestilling {
         var opprettetTidspunkt = this.getAktivitetskort().getEndretTidspunkt();
         return AktivitetskortMapper.mapTilAktivitetData(this, opprettetTidspunkt);
     }
+
+    @Override
+    public UUID getAktivitetskortId() {
+        return this.getAktivitetskort().getId();
+    }
 }
