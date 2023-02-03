@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
@@ -64,12 +65,15 @@ public class AktivitetskortService {
 
     private AktivitetData patchGammelAktivitet(AktivitetData gammelAktivitet, AktivitetskortBestilling aktivitetskortBestilling) {
         boolean blirIkkeAvtalt = gammelAktivitet.isAvtalt() && !aktivitetskortBestilling.getAktivitetskort().isAvtaltMedNav();
-        boolean kanIkkeEndres = !gammelAktivitet.endringTillatt();
-        if(kanIkkeEndres) {
-            aktivitetDAO.patchKanIkkeEndres(gammelAktivitet);
+        AktivitetStatus status = gammelAktivitet.getStatus();
+        if(gammelAktivitet.getHistoriskDato() != null) {
+            aktivitetDAO.patchKanHistorisk(gammelAktivitet);
         }
         if(blirIkkeAvtalt) {
             aktivitetDAO.patchBlirIkkeAvtalt(gammelAktivitet);
+        }
+        if(AktivitetStatus.AVBRUTT.equals(status) || AktivitetStatus.FULLFORT.equals(status)) {
+            aktivitetDAO.patchKanLifslopstatusKode(gammelAktivitet);
         }
         return aktivitetDAO.hentAktivitet(gammelAktivitet.getId());
     }

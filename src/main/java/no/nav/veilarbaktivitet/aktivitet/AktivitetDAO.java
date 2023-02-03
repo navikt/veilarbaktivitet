@@ -507,11 +507,34 @@ public class AktivitetDAO {
     }
 
     //skal slettes etter patch
-    public void patchKanIkkeEndres(AktivitetData gammelAktivitet) {
+    public void patchKanHistorisk(AktivitetData gammelAktivitet) {
         var params = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId());
 
         namedParameterJdbcTemplate.update("""
                 UPDATE AKTIVITET SET historisk_dato = null, livslopstatus_kode = 'GJENNOMFORES'
+                WHERE aktivitet_id = :aktivitetId
+                and GJELDENDE = 1
+                """, params);
+
+        params.addValue("opprettet_som_historisk", true);
+
+        namedParameterJdbcTemplate.update("""
+                                EKSTERNAKTIVITET set opprettet_som_historisk = :opprettet_som_historisk
+                                where versjon = (
+                                    select versjon from AKTIVITET 
+                                    where aktivitet_id = :aktivitetId 
+                                    and GJELDENDE = 1
+                                )
+                """, params
+        );
+    }
+
+    //skal slettes etter patch
+    public void patchKanLifslopstatusKode(AktivitetData gammelAktivitet) {
+        var params = new MapSqlParameterSource().addValue("aktivitetId", gammelAktivitet.getId());
+
+        namedParameterJdbcTemplate.update("""
+                UPDATE AKTIVITET SET livslopstatus_kode = 'GJENNOMFORES'
                 WHERE aktivitet_id = :aktivitetId
                 and GJELDENDE = 1
                 """, params);
