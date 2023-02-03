@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase;
 import no.nav.veilarbaktivitet.person.Person;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter

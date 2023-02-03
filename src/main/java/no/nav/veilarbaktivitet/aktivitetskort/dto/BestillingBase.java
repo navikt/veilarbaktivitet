@@ -2,12 +2,12 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
@@ -30,7 +30,7 @@ public abstract class BestillingBase {
     protected UUID messageId;
     protected ActionType actionType;
 
-    public BestillingBase(String source, UUID messageId, ActionType actionType) {
+    protected BestillingBase(String source, UUID messageId, ActionType actionType) {
         this.source = source;
         this.messageId = messageId;
         this.actionType = actionType;

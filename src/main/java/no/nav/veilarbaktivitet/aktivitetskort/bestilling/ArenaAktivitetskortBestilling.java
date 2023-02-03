@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.person.Person;
 
-import java.time.ZonedDateTime;
 import java.util.UUID;
 
 @Getter
