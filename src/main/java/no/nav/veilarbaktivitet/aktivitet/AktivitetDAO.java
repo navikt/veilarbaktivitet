@@ -57,7 +57,7 @@ public class AktivitetDAO {
     public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
-                        " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
+                              " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 oppfolgingsperiodeId.toString()
         );
@@ -66,7 +66,7 @@ public class AktivitetDAO {
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
-                        " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
+                              " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktorId.get()
         );
@@ -75,7 +75,7 @@ public class AktivitetDAO {
     public AktivitetData hentAktivitet(long aktivitetId) {
         // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
-                        " WHERE A.aktivitet_id = ? and gjeldende = 1",
+                                       " WHERE A.aktivitet_id = ? and gjeldende = 1",
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
@@ -96,7 +96,7 @@ public class AktivitetDAO {
             MapSqlParameterSource params = new MapSqlParameterSource()
                     .addValue("funksjonellId", funksjonellId.toString());
             aktivitetData = namedParameterJdbcTemplate.queryForObject(SELECT_AKTIVITET +
-                            " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
+                                                        " WHERE A.funksjonell_id = :funksjonellId and gjeldende = 1",
                     params,
                     aktivitetsDataRowMapper
             );
@@ -110,7 +110,7 @@ public class AktivitetDAO {
     public AktivitetData hentAktivitetVersion(long version) {
         // language=sql
         return database.queryForObject(SELECT_AKTIVITET +
-                        " WHERE A.VERSJON = ? ",
+                                       " WHERE A.VERSJON = ? ",
                 AktivitetDataRowMapper::mapAktivitet,
                 version
         );
@@ -281,7 +281,7 @@ public class AktivitetDAO {
                             .addValue("oppfolging", egen.getOppfolging());
                     // language=sql
                     namedParameterJdbcTemplate.update("INSERT INTO EGENAKTIVITET(aktivitet_id, versjon, hensikt, oppfolging) " +
-                                    "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
+                                                           "VALUES(:aktivitet_id, :versjon, :hensikt, :oppfolging)",
                             params
                     );
                 });
@@ -380,52 +380,52 @@ public class AktivitetDAO {
                                     .addValue("ikkefattjobbendetaljer", stilling.getIkkefattjobbendetaljer());
 
                             // language=sql
-                            String sql = """ 
-                                    insert into STILLING_FRA_NAV (
-                                    AKTIVITET_ID,
-                                    VERSJON,
-                                    CV_KAN_DELES,
-                                    CV_KAN_DELES_TIDSPUNKT,
-                                    CV_KAN_DELES_AV,
-                                    CV_KAN_DELES_AV_TYPE,
-                                    CV_KAN_DELES_AVTALT_DATO,
-                                    soknadsfrist,
-                                    svarfrist,
-                                    arbeidsgiver,
-                                    bestillingsId,
-                                    stillingsId,
-                                    arbeidssted,
-                                    varselid,
-                                    kontaktperson_navn,
-                                    kontaktperson_tittel,
-                                    kontaktperson_mobil,
-                                    soknadsstatus,
-                                    livslopsstatus,
-                                    ikkefattjobbendetaljer
-                                    ) VALUES (
-                                    :aktivitet_id,
-                                    :versjon,
-                                    :cv_kan_deles,
-                                    :cv_kan_deles_tidspunkt,
-                                    :cv_kan_deles_av,
-                                    :cv_kan_deles_av_type,
-                                    :cv_kan_deles_avtalt_dato,
-                                    :soknadsfrist ,
-                                    :svarfrist ,
-                                    :arbeidsgiver ,
-                                    :bestillingsId ,
-                                    :stillingsId ,
-                                    :arbeidssted ,
-                                    :varselid ,
-                                    :kontaktperson_navn ,
-                                    :kontaktperson_tittel ,
-                                    :kontaktperson_mobil ,
-                                    :soknadsstatus,
-                                    :livslopsstatus,
-                                    :ikkefattjobbendetaljer)
-                                    """;
-                            namedParameterJdbcTemplate.update(
-                                    sql,
+                    String sql = """ 
+                            insert into STILLING_FRA_NAV (
+                            AKTIVITET_ID,
+                            VERSJON,
+                            CV_KAN_DELES,
+                            CV_KAN_DELES_TIDSPUNKT,
+                            CV_KAN_DELES_AV,
+                            CV_KAN_DELES_AV_TYPE,
+                            CV_KAN_DELES_AVTALT_DATO,
+                            soknadsfrist,
+                            svarfrist,
+                            arbeidsgiver,
+                            bestillingsId,
+                            stillingsId,
+                            arbeidssted,
+                            varselid,
+                            kontaktperson_navn,
+                            kontaktperson_tittel,
+                            kontaktperson_mobil,
+                            soknadsstatus,
+                            livslopsstatus,
+                            ikkefattjobbendetaljer
+                            ) VALUES (
+                            :aktivitet_id,
+                            :versjon,
+                            :cv_kan_deles,
+                            :cv_kan_deles_tidspunkt,
+                            :cv_kan_deles_av,
+                            :cv_kan_deles_av_type,
+                            :cv_kan_deles_avtalt_dato,
+                            :soknadsfrist ,
+                            :svarfrist ,
+                            :arbeidsgiver ,
+                            :bestillingsId ,
+                            :stillingsId ,
+                            :arbeidssted ,
+                            :varselid ,
+                            :kontaktperson_navn ,
+                            :kontaktperson_tittel ,
+                            :kontaktperson_mobil ,
+                            :soknadsstatus,
+                            :livslopsstatus,
+                            :ikkefattjobbendetaljer)
+                            """;
+                    namedParameterJdbcTemplate.update(
+                            sql,
                                     parms
                             );
                         }
@@ -450,12 +450,12 @@ public class AktivitetDAO {
                             .addValue("etiketter", JsonUtils.toJson(eksternAktivitetData.getEtiketter()));
                     // language=sql
                     namedParameterJdbcTemplate.update(
-                            """
-                                    INSERT INTO EKSTERNAKTIVITET
-                                    (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
-                                    (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
-                                    """,
-                            params
+                    """
+                        INSERT INTO EKSTERNAKTIVITET
+                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        """,
+                    params
                     );
                 });
     }
@@ -464,10 +464,10 @@ public class AktivitetDAO {
         // language=sql
         return database.query(
                 SELECT_AKTIVITET +
-                        """
-                                    WHERE A.aktivitet_id = ?
-                                    ORDER BY A.versjon desc
-                                """,
+                """
+                            WHERE A.aktivitet_id = ?
+                            ORDER BY A.versjon desc
+                        """,
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
