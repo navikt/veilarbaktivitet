@@ -6,7 +6,6 @@ required:
   - failingMessage
   - errorMessage
 type: object
-additionalProperties: false
 properties:
   key:
     type: string
