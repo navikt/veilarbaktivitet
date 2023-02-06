@@ -15,7 +15,7 @@ info:
 defaultContentType: application/json
 
 channels:
-  aktivitetskort-v1:
+  aktivitetskort-v1_1:
     description: Topic for å bestille eller oppdatere aktiviteter i aktivitetsplan
     bindings:
       kafka:
