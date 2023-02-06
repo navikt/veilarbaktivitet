@@ -18,12 +18,13 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
-import java.util.stream.Stream;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -473,30 +474,7 @@ public class AktivitetDAO {
         );
     }
 
-    @Transactional
-    public boolean kasserAktivitet(long aktivitetId) {
-        var params = new MapSqlParameterSource().addValue("aktivitetId", aktivitetId);
-        // language=sql
-        String whereClause = "aktivitet_id = :aktivitetId";
-        // language=sql
-        int oppdaterteRader = Stream.of(
-                        "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV' WHERE",
-                        "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV' WHERE",
-                        "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV' WHERE",
-                        "UPDATE IJOBB SET ANSETTELSESFORHOLD = 'Kassert av NAV', ARBEIDSTID = 'Kassert av NAV' WHERE",
-                        "UPDATE BEHANDLING SET BEHANDLING_STED = 'Kassert av NAV', EFFEKT = 'Kassert av NAV', BEHANDLING_OPPFOLGING = 'Kassert av NAV', BEHANDLING_TYPE = 'Kassert av NAV' WHERE",
-                        "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV' WHERE",
-                        "UPDATE MOTE SET REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND", // Hvis referat er satt og ikke delt, kommer det en 'ikke delt' label i aktivitetsplan
-                        "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null WHERE",
-                        "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV' WHERE",
-                        "UPDATE EKSTERNAKTIVITET SET OPPGAVE = null, HANDLINGER = null, DETALJER = null, ETIKETTER = null WHERE"
-                )
-                .map(sql -> sql + " " + whereClause)
-                .mapToInt(sql -> namedParameterJdbcTemplate.update(sql, params))
-                .sum();
 
-        return oppdaterteRader > 0;
-    }
 
     public void insertLestAvBrukerTidspunkt(long aktivitetId) {
         var params = new MapSqlParameterSource().addValue("aktivitetId", aktivitetId);

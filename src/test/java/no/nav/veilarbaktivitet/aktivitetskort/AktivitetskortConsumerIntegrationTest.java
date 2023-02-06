@@ -53,6 +53,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.time.Duration;
@@ -111,6 +112,9 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
     @Value("${spring.kafka.consumer.group-id}")
     String springKafkaConsumerGroupId;
+
+    @Autowired
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -834,6 +838,14 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(aktivitet.getEksternAktivitet().etiketter()).isEmpty();
         assertThat(aktivitet.getEksternAktivitet().handlinger()).isEmpty();
         assertThat(aktivitet.getEksternAktivitet().oppgave()).isNull();
+
+        MapSqlParameterSource params = new MapSqlParameterSource().addValue("aktivitetId", aktivitet.getId());
+        Integer count = namedParameterJdbcTemplate.queryForObject("""
+                SELECT count(*) 
+                FROM KASSERT_AKTIVITET 
+                WHERE AKTIVITET_ID = :aktivitetId
+                """, params, int.class);
+        assertThat(count).isEqualTo(1);
     }
 
     @Test

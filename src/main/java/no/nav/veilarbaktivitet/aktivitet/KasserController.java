@@ -16,7 +16,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.VEILARB_KASSERING_IDENTER_PROPERTY;
@@ -30,6 +29,8 @@ public class KasserController {
     private final IAuthService authService;
     private final AktivitetDAO aktivitetDAO;
 
+    private final KasseringDAO kasseringDAO;
+
     private final String godkjenteIdenter = getOptionalProperty(VEILARB_KASSERING_IDENTER_PROPERTY).orElse("");
 
     @PutMapping("/{aktivitetId}")
@@ -38,7 +39,7 @@ public class KasserController {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
 
-        kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> aktivitetDAO.kasserAktivitet(id));
+        kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> kasseringDAO.kasserAktivitet(id));
     }
 
     private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, BooleanSupplier fn) {
