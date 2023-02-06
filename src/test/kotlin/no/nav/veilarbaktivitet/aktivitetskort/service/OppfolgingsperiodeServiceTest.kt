@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -191,7 +193,7 @@ class OppfolgingsperiodeServiceTest {
         val perioder = listOf(
             oppfperiodeDTO(
                 opprettetTidspunkt.minus(OppfolgingsperiodeService.SLACK_FOER).minusDays(10),
-                opprettetTidspunkt.minus(OppfolgingsperiodeService.SLACK_FOER)
+                opprettetTidspunkt.minus(OppfolgingsperiodeService.SLACK_FOER).minusDays(1)
             )
         )
 
@@ -205,6 +207,23 @@ class OppfolgingsperiodeServiceTest {
 
         val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.minusDays(10).plusMinutes(5), null)
         val perioder = listOf(riktigPeriode)
+        val oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? =
+            stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
+        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+    }
+
+    @Test
+    fun test() {
+        val opprettetTidspunkt = ZonedDateTime.parse("2022-03-28T08:20:00.586835+01")
+        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(
+            ZonedDateTime.parse("2020-12-02T12:44:48.355676+01:00"),
+            ZonedDateTime.parse("2022-09-06T00:01:04.457439+02:00")
+        )
+        val feilPeriode = oppfperiodeDTO(
+            ZonedDateTime.parse("2022-09-26T11:10:57.374597+02:00"),
+            null
+        )
+        val perioder = listOf(riktigPeriode, feilPeriode)
         val oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? =
             stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
         assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
