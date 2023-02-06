@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.db.dao;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitet.KasseringDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
@@ -44,6 +45,8 @@ class AktivitetDAOTest {
     private JdbcTemplate jdbcTemplate;
     @Autowired
     private AktivitetDAO aktivitetDAO;
+    @Autowired
+    private KasseringDAO kasseringDAO;
     @Autowired
     private TransactionTemplate transactionTemplate;
 
@@ -209,7 +212,7 @@ class AktivitetDAOTest {
     @Test
     void kassering_skal_overskrive_mange_felter() {
         var aktivitet = gitt_at_det_finnes_et_mote();
-        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
         assertThat(kassert).isTrue();
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
 
@@ -227,7 +230,7 @@ class AktivitetDAOTest {
     void referat_skal_kasseres_dersom_utfylt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat();
         assertThat(aktivitet.getMoteData().getReferat()).isNotNull();
-        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
         assertTrue(kassert);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isEqualTo(KASSERT_AV_NAV);
@@ -236,7 +239,7 @@ class AktivitetDAOTest {
     @Test
     void referat_skal_ikke_kasseres_dersom_tomt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat_uten_innhold();
-        var kassert = aktivitetDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
         assertTrue(kassert);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isNull();
