@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.service
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
 import no.nav.veilarbaktivitet.person.Person.AktorId
+import okhttp3.internal.toImmutableList
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -11,9 +12,11 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.chrono.ChronoZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.Comparator.comparingLong
 import kotlin.math.abs
 
+enum class Resultat {
+	GJELDENDE,FOR,ETTER,UTENFOR
+}
 @Service
 class OppfolgingsperiodeService(
 	private val oppfolgingClient: OppfolgingV2Client
@@ -26,49 +29,53 @@ class OppfolgingsperiodeService(
 	}
 
 	fun finnOppfolgingsperiode(aktorId: AktorId, opprettetTidspunkt: LocalDateTime): OppfolgingPeriodeMinimalDTO? {
-		val oppfolgingsperioder = oppfolgingClient.hentOppfolgingsperioder(aktorId)
+		val oppfolgingsperioder = oppfolgingClient.hentOppfolgingsperioder(aktorId).toImmutableList()
+			.sortedByDescending { it.startDato }
 
 		if (oppfolgingsperioder.isEmpty()) {
 			log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
 			return null
 		}
 
-		val oppfolgingsperioderCopy = oppfolgingsperioder.toMutableList()
-		oppfolgingsperioderCopy.sortWith(Comparator.comparing(OppfolgingPeriodeMinimalDTO::startDato).reversed())
+		fun OppfolgingPeriodeMinimalDTO.erInnenforPeriode(opprettetTidspunktCZDT: ZonedDateTime): Boolean {
+			return (this.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && this.sluttDato == null) ||
+					(this.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && this.sluttDato!!.isAfter(
+						opprettetTidspunktCZDT
+					))
+		}
 
-		val opprettetTidspunktCZDT = ChronoZonedDateTime.from(opprettetTidspunkt.atZone(ZoneId.systemDefault()))
-		val maybePeriode = oppfolgingsperioderCopy
-			.filter {
-				(it.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && it.sluttDato == null) ||
-					(it.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && it.sluttDato!!.isAfter(opprettetTidspunktCZDT))
-			}
-			.firstOrNull()
+		fun OppfolgingPeriodeMinimalDTO.erInnenforMedEkstraSlack(opprettetTidspunktCZDT: ZonedDateTime): Boolean {
+			val utvidetOppfolginsPeriode = OppfolgingPeriodeMinimalDTO(
+				this.uuid,
+				this.startDato.minus(SLACK_FOER),
+				this.sluttDato?.plus(SLACK_ETTER)
+			)
+			return utvidetOppfolginsPeriode.erInnenforPeriode(opprettetTidspunktCZDT)
+		}
 
-		return maybePeriode.let {
-			oppfolgingsperioderCopy
-				.stream()
-				.filter { // Tiltak som er opprettet etter oppfølgingsperiode slutt
-					val aktivPeriode = it.sluttDato == null
-					if (aktivPeriode) return@filter true
-					val predicate =  it.sluttDato.isAfter(opprettetTidspunktCZDT.minus(SLACK_ETTER))
-					if (predicate) {
+		val opprettetTidspunktCZDT = opprettetTidspunkt.atZone(ZoneId.systemDefault())
+		val match = oppfolgingsperioder
+			.firstOrNull { oppfolgingsperiode -> oppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCZDT) }
+			?: oppfolgingsperioder
+				.filter { oppfolgingsperiode -> oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCZDT) }
+				.minByOrNull { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) }
+				?.also { oppfolgingsperiode ->
+					if (oppfolgingsperiode.startDato.isAfter(opprettetTidspunktCZDT)) {
+						log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke før oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+					} else {
 						log.info("PATCH - Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke etter oppfølgingsperiode sluttdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
 					}
-					predicate
 				}
-				.min(comparingLong { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) })
-				.filter {
-					val predicate = it.startDato.minus(SLACK_FOER).isBefore(opprettetTidspunktCZDT) // Skal ta inn tiltak som er opprettet før oppfølgingsperiode start
-					if (predicate) {
-						log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
-					}
-					predicate
-				}.orElseGet {
-					log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
-					null
-				}
+
+		return if (match != null) {
+			match
+		} else {
+			log.info("Arenatiltak finn oppfølgingsperiode - opprettetTidspunkt har ingen god match på oppfølgingsperioder) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
+			null
 		}
 	}
+
+
 
 	private fun ZonedDateTime.isBeforeOrEqual(other: ChronoZonedDateTime<*>): Boolean {
 		return this.isBefore(other) || this.isEqual(other)
