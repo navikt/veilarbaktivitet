@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet
 
 import lombok.RequiredArgsConstructor
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
@@ -39,16 +40,22 @@ open class KasseringDAO (
     @Transactional
     open fun kasserAktivitetMedBegrunnelse(aktivitetId: Long, begrunnelse: String?) {
         kasserAktivitet(aktivitetId)
-
-        namedParameterJdbcTemplate.update(
-            """
+        kotlin.runCatching {
+            namedParameterJdbcTemplate.update(
+                """
                 INSERT INTO KASSERT_AKTIVITET (AKTIVITET_ID, BEGRUNNELSE) 
                 VALUES (:aktivitetId, :begrunnelse)
             """.trimIndent(),
-            mapOf(
-                "aktivitetId" to aktivitetId,
-                "begrunnelse" to begrunnelse
+                mapOf(
+                    "aktivitetId" to aktivitetId,
+                    "begrunnelse" to begrunnelse
+                )
             )
-        )
+        }.onFailure {
+            when (it) {
+                is DuplicateKeyException -> return@onFailure
+                else -> throw it
+            }
+        }
     }
 }
