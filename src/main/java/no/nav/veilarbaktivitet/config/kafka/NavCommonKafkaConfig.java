@@ -24,6 +24,7 @@ import static no.nav.common.kafka.util.KafkaPropertiesPreset.aivenDefaultProduce
 public class NavCommonKafkaConfig {
 
     public static final String CONSUMER_GROUP_ID = "veilarbaktivitet-consumer-aiven";
+    public static final String AKTIVITETSKORT_CONSUMER_GROUP = "veilarbaktivitet-aktivitetskort-consumer";
     public static final String PRODUCER_CLIENT_ID = "veilarbaktivitet-producer";
     private static final String AKTIVITETSKORT_KAFKACONSUMER_DISABLED = "veilarbaktivitet.kafka.aktivitetskort.aiven.consumer.disabled";
     private static final String KVPAVSLUTTET_KAFKACONSUMER_DISABLED = "veilarbaktivitet.kafka.kvpavsluttet.aiven.consumer.disabled";
@@ -33,11 +34,11 @@ public class NavCommonKafkaConfig {
     public KafkaConsumerClient aktivitetskortConsumerClient(
             AktivitetsKortConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
-            Properties aivenConsumerProperties,
+            Properties aktivitetskortConsumerProperties,
             UnleashClient unleashClient
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenConsumerProperties)
+                .withProperties(aktivitetskortConsumerProperties)
                 .withToggle(() -> unleashClient.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED))
                 .withTopicConfig(
                         new TopicConfig<String, String>()
@@ -56,11 +57,11 @@ public class NavCommonKafkaConfig {
     public KafkaConsumerClient kvpAvsluttetConsumerClient(
             KvpAvsluttetConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
-            Properties aivenConsumerProperties,
+            Properties kvpAvsluttetConsumerProperties,
             UnleashClient unleashClient
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
-                .withProperties(aivenConsumerProperties)
+                .withProperties(kvpAvsluttetConsumerProperties)
                 .withToggle(() -> unleashClient.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED))
                 .withTopicConfig(
                         new TopicConfig<String, KvpAvsluttetKafkaDTO>()
@@ -85,7 +86,13 @@ public class NavCommonKafkaConfig {
 
     @Bean
     @Profile("!dev")
-    Properties aivenConsumerProperties() {
+    Properties aktivitetskortConsumerProperties() {
+        return aivenDefaultConsumerProperties(AKTIVITETSKORT_CONSUMER_GROUP);
+    }
+
+    @Bean
+    @Profile("!dev")
+    Properties kvpAvsluttetConsumerProperties() {
         return aivenDefaultConsumerProperties(CONSUMER_GROUP_ID);
     }
 

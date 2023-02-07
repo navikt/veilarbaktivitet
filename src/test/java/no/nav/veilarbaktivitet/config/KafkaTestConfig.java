@@ -112,7 +112,7 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties aivenConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+    Properties aktivitetskortConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
                 .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
@@ -123,10 +123,10 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties testAivenConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+    Properties kvpAvsluttetConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
-                .withConsumerGroupId("veilarbaktivitet-test-consumer-aiven")
+                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .withPollProperties(10, 30_000)
