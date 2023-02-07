@@ -14,9 +14,6 @@ import java.time.chrono.ChronoZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
-enum class Resultat {
-	GJELDENDE,FOR,ETTER,UTENFOR
-}
 @Service
 class OppfolgingsperiodeService(
 	private val oppfolgingClient: OppfolgingV2Client
@@ -25,7 +22,6 @@ class OppfolgingsperiodeService(
 
 	companion object {
 		val SLACK_FOER: Duration = Duration.ofDays(7)
-		val SLACK_ETTER: Duration = Duration.ofDays(7)
 	}
 
 	fun finnOppfolgingsperiode(aktorId: AktorId, opprettetTidspunkt: LocalDateTime): OppfolgingPeriodeMinimalDTO? {
@@ -38,19 +34,17 @@ class OppfolgingsperiodeService(
 		}
 
 		fun OppfolgingPeriodeMinimalDTO.erInnenforPeriode(opprettetTidspunktCZDT: ZonedDateTime): Boolean {
-			return (this.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && this.sluttDato == null) ||
-					(this.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) && this.sluttDato!!.isAfter(
-						opprettetTidspunktCZDT
-					))
+			return this.startDato.isBeforeOrEqual(opprettetTidspunktCZDT) &&
+					(this.sluttDato?.isAfter(opprettetTidspunktCZDT) ?: true)
 		}
 
 		fun OppfolgingPeriodeMinimalDTO.erInnenforMedEkstraSlack(opprettetTidspunktCZDT: ZonedDateTime): Boolean {
-			val utvidetOppfolginsPeriode = OppfolgingPeriodeMinimalDTO(
+			val utvidetOppfolgingsperiode = OppfolgingPeriodeMinimalDTO(
 				this.uuid,
 				this.startDato.minus(SLACK_FOER),
-				this.sluttDato?.plus(SLACK_ETTER)
+				this.sluttDato
 			)
-			return utvidetOppfolginsPeriode.erInnenforPeriode(opprettetTidspunktCZDT)
+			return utvidetOppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCZDT)
 		}
 
 		val opprettetTidspunktCZDT = opprettetTidspunkt.atZone(ZoneId.systemDefault())
@@ -60,11 +54,7 @@ class OppfolgingsperiodeService(
 				.filter { oppfolgingsperiode -> oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCZDT) }
 				.minByOrNull { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) }
 				?.also { oppfolgingsperiode ->
-					if (oppfolgingsperiode.startDato.isAfter(opprettetTidspunktCZDT)) {
-						log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke før oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
-					} else {
-						log.info("PATCH - Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke etter oppfølgingsperiode sluttdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
-					}
+					log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke før oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
 				}
 
 		return if (match != null) {

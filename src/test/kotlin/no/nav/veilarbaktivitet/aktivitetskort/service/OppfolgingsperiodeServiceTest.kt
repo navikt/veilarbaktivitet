@@ -70,7 +70,6 @@ class OppfolgingsperiodeServiceTest {
     }
 
     @Test
-    @Disabled("Disable til etter inntagelse av LONNSTILSKUDD")
     fun `feil periode er naermere, men foer oppstart`() {
         val opprettetTidspunkt = DATE_TIME_NOW
 
@@ -119,7 +118,6 @@ class OppfolgingsperiodeServiceTest {
     }
 
     @Test
-    @Disabled("Disable til etter inntagelse av LONNSTILSKUDD")
     fun `velg naermeste periode etter opprettetitdspunkt OG som er 10 min innen opprettetTidspunkt`() {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(10)
 
@@ -134,7 +132,6 @@ class OppfolgingsperiodeServiceTest {
     }
 
     @Test
-    @Disabled("Disable til etter inntagelse av LONNSTILSKUDD")
     fun `ikke velg periode hvis perioden slutter foer aktivitetens opprettetTidspunkt`() {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(10)
 
@@ -144,26 +141,6 @@ class OppfolgingsperiodeServiceTest {
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
         assertThat(oppfolgingsperiode).isNull()
-    }
-
-    @Test
-    fun `velg periode hvis den slutter mindre enn en uke foer opprettetTidspunkt`() {
-        val opprettetTidspunkt = DATE_TIME_NOW
-
-        val riktigPeriode = oppfperiodeDTO(
-            opprettetTidspunkt.minus(OppfolgingsperiodeService.SLACK_FOER).minusDays(2),
-            opprettetTidspunkt.minus(OppfolgingsperiodeService.SLACK_FOER).plusDays(1)
-        )
-        val perioder = listOf(
-            riktigPeriode,
-            oppfperiodeDTO(
-                opprettetTidspunkt.plusDays(10),
-                opprettetTidspunkt.plusDays(15)
-            )
-        )
-
-        val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode).isEqualTo(riktigPeriode)
     }
 
     @Test
