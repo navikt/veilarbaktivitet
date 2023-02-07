@@ -220,50 +220,6 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         assertThat(resultat.getEndretAvType()).isEqualTo(Innsender.BRUKER.toString());
     }
 
-
-    // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
-    @Test
-    void opptatering_av_historisk_aktivitet_skal_feile() {
-        var brukerIdent = "12129312122";
-        var aktiviteskortId = UUID.randomUUID();
-        var aktivitetskort = aktivitetskort(aktiviteskortId, AktivitetStatus.PLANLAGT)
-                .withEndretAv(new Ident(
-                        brukerIdent,
-                        IdentType.PERSONBRUKERIDENT
-                ));
-        var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
-                aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
-
-        var resultat1 = hentAktivitet(aktivitetskort.getId());
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("aktivitet_id",resultat1.getId())
-                .addValue("historisk_dato", new Date());
-
-        namedParameterJdbcTemplate
-                .update("update AKTIVITET set historisk_dato = :historisk_dato where aktivitet_id = :aktivitet_id and gjeldende = 1", params);
-
-        var resultat = hentAktivitet(aktivitetskort.getId());
-        assertThat(resultat.isHistorisk()).isTrue();
-        assertThat(resultat.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
-
-
-        var aktivitetskort2 = aktivitetskort(aktiviteskortId, AktivitetStatus.GJENNOMFORES)
-                .withEndretAv(new Ident(
-                        brukerIdent,
-                        IdentType.PERSONBRUKERIDENT
-                ));
-        var kafkaAktivitetskortWrapperDTO2 = AktivitetskortTestBuilder.aktivitetskortMelding(
-                aktivitetskort2, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO2));
-
-        var resultat2 = hentAktivitet(aktivitetskort.getId());
-        assertThat(resultat2.getStatus()).isEqualTo(AktivitetStatus.GJENNOMFORES);
-        assertThat(resultat2.isHistorisk()).isFalse();
-
-    }
-
-
     @Test
     void ekstern_aktivitet_skal_ha_oppfolgingsperiode() {
         UUID funksjonellId = UUID.randomUUID();
@@ -415,13 +371,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         AktivitetDTO aktivitet = hentAktivitet(funksjonellId);
         Assertions.assertNotNull(aktivitet);
-// TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
-        Assertions.assertFalse(aktivitet.isAvtalt());
-//        assertFeilmeldingPublished(
-//                funksjonellId,
-//                UlovligEndringFeil.class,
-//                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
-//        );
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class,
+                "Kan ikke oppdatere fra avtalt til ikke-avtalt"
+        );
     }
 
     @Test
@@ -575,9 +529,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
-
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class
+        );
     }
 
     @Test
@@ -590,12 +546,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        // TODO: 03/02/2023 reverter etter midlertidig løsntilskud migrering
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
-//        assertFeilmeldingPublished(
-//                funksjonellId,
-//                UlovligEndringFeil.class
-//        );
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
+        assertFeilmeldingPublished(
+                funksjonellId,
+                UlovligEndringFeil.class
+        );
     }
 
     @Test
