@@ -31,7 +31,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -46,7 +45,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,14 +52,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
@@ -110,8 +109,8 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     @Value("${topic.ut.aktivitetskort-idmapping}")
     String aktivitetskortIdMappingTopic;
 
-    @Value("${spring.kafka.consumer.group-id}")
-    String springKafkaConsumerGroupId;
+    @Value("${app.kafka.consumer-group-id}")
+    String navCommonConsumerGroupId;
 
     @Autowired
     NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -415,7 +414,8 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ProducerRecord<String, String> producerRecord = aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context);
         producerClient.sendSync(producerRecord);
         RecordMetadata recordMetadataDuplicate = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataDuplicate.offset()));
+
+        kafkaTestService.assertErKonsumertNavCommon(topic, recordMetadataDuplicate.offset(), DEFAULT_WAIT_TIMEOUT_SEC);
 
         var aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
                 .aktiviteter.stream()
@@ -585,8 +585,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .reduce((first, second) -> second)
                 .get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset()));
+        kafkaTestService.assertErKonsumertNavCommon(topic, lastRecordMetadata.offset(), DEFAULT_WAIT_TIMEOUT_SEC);
 
         ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 1000, messages.size());
 

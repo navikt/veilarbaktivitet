@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 
 @Data
 @Accessors(chain = true)
-public class KvpAvsluttetKafkaDTO implements NavCommonKafkaSerialized {
+public class KvpAvsluttetDTO implements NavCommonKafkaSerialized {
     private String aktorId;
     private String avsluttetAv;
     private ZonedDateTime avsluttetDato;

@@ -4,7 +4,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class VeilarbAktivitetTestAppTest {
+class VeilarbAktivitetTestAppTest {
 
     @Test
     void smokeTest()  {

@@ -20,7 +20,6 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
-import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -38,14 +37,12 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.assertj.core.api.Assertions;
-import org.awaitility.Awaitility;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import shaded.com.google.common.collect.Streams;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -72,9 +69,6 @@ public class AktivitetTestService {
 
     @Value("${topic.inn.oppfolgingsperiode}")
     private String oppfolgingperiodeTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    private String springKafkaConsumerGroupId;
 
     private final KafkaTestService kafkaTestService;
 
@@ -395,8 +389,7 @@ public class AktivitetTestService {
                 key,
                 payload
         )).get(3, TimeUnit.SECONDS);
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumertSpringKafka(oppfolgingperiodeTopic, sendResult.getRecordMetadata().offset(), DEFAULT_WAIT_TIMEOUT_SEC);
     }
 
 
@@ -426,16 +419,15 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumertNavCommon(aktivitetsKortV1Topic, lastRecord.getRecordMetadata().offset(), DEFAULT_WAIT_TIMEOUT_SEC);
     }
 
     @SneakyThrows
     public void kasserEskterntAktivitetskort(KasseringsBestilling kasseringsBestilling) {
         var record = new ProducerRecord<>(aktivitetsKortV1Topic, kasseringsBestilling.getAktivitetskortId().toString(), JsonUtils.toJson(kasseringsBestilling));
         var recordMetadata = stringStringKafkaTemplate.send(record).get();
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.getRecordMetadata().offset()));
+
+        kafkaTestService.assertErKonsumertNavCommon(aktivitetsKortV1Topic, recordMetadata.getRecordMetadata().offset(), DEFAULT_WAIT_TIMEOUT_SEC);
     }
 
     @SuppressWarnings("unchecked")
@@ -447,8 +439,7 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumertNavCommon(aktivitetsKortV1Topic, lastRecord.getRecordMetadata().offset(), DEFAULT_WAIT_TIMEOUT_SEC);
     }
 
     public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {

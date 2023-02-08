@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
-import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -32,13 +31,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static org.mockito.Mockito.when;
-class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
+class KvpAvsluttetConsumerTest extends SpringBootTestBase {
 
     MockBruker mockBruker;
     MockVeileder mockVeileder;
 
     @Autowired
-    KafkaJsonTemplate<KvpAvsluttetKafkaDTO> navCommonKafkaJsonTemplate;
+    KafkaJsonTemplate<KvpAvsluttetDTO> navCommonKafkaJsonTemplate;
 
     @Autowired
     UnleashClient unleashClient;
@@ -63,7 +62,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
         var kvpAvsluttetDato = ZonedDateTime.now();
 
         var kvpAvsluttet =
-                new KvpAvsluttetKafkaDTO()
+                new KvpAvsluttetDTO()
                         .setAktorId(mockBruker.getAktorId())
                         .setAvsluttetAv(mockVeileder.getNavIdent())
                         .setAvsluttetBegrunnelse("Derfor")
@@ -72,7 +71,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
         var sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
         long offset = sendResultListenableFuture.get(2, TimeUnit.SECONDS).getRecordMetadata().offset();
         System.out.println("Ho");
-        kafkaTestService.assertErKonsumertAiven(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset, 2);
+        kafkaTestService.assertErKonsumertNavCommon(kvpAvsluttetTopic, offset, 2);
         var avsluttetAktivitet = aktivitetTestService.hentAktivitet(mockBruker, opprettetAktivitet.getId());
 
         Assertions.assertThat(avsluttetAktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
@@ -92,16 +91,16 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
         ZonedDateTime kvpAvsluttetDato = ZonedDateTime.now();
 
-        KvpAvsluttetKafkaDTO kvpAvsluttet =
-                new KvpAvsluttetKafkaDTO()
+        KvpAvsluttetDTO kvpAvsluttet =
+                new KvpAvsluttetDTO()
                         .setAktorId(mockBruker.getAktorId())
                         .setAvsluttetAv(mockVeileder.getNavIdent())
                         .setAvsluttetBegrunnelse("Derfor")
                         .setAvsluttetDato(kvpAvsluttetDato);
 
-        ListenableFuture<SendResult<String, KvpAvsluttetKafkaDTO>> sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
+        ListenableFuture<SendResult<String, KvpAvsluttetDTO>> sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
         long offset = sendResultListenableFuture.get(2, TimeUnit.SECONDS).getRecordMetadata().offset();
-        kafkaTestService.assertErKonsumertAiven(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset, 2);
+        kafkaTestService.assertErKonsumertNavCommon(kvpAvsluttetTopic, offset, 2);
         AktivitetDTO avsluttetAktivitet = aktivitetTestService.hentAktivitet(mockBruker, opprettetAktivitet.getId());
 
         Assertions.assertThat(avsluttetAktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);

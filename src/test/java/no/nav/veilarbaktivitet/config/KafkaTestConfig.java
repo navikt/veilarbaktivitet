@@ -1,11 +1,7 @@
 package no.nav.veilarbaktivitet.config;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.common.kafka.producer.KafkaProducerClient;
-import no.nav.common.kafka.producer.util.KafkaProducerClientBuilder;
 import no.nav.common.kafka.util.KafkaPropertiesBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
-import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
@@ -85,7 +81,7 @@ public class KafkaTestConfig {
         return new DefaultKafkaConsumerFactory<>(consumerProperties);
     }
 
- // Denne er opprettet spesifikt for å støtte JsonSerialiseren fra nav.common.kafka
+    // Denne er opprettet spesifikt for å støtte JsonSerialiseren fra nav.common.kafka
     @Bean
     <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
@@ -112,10 +108,10 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties aktivitetskortConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+    Properties consumerProperties(@Value("${app.kafka.consumer-group-id}") String consumerGroupId, EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
-                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
+                .withConsumerGroupId(consumerGroupId)
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
                 .withPollProperties(10, 30_000)
@@ -123,31 +119,12 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties kvpAvsluttetConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
-        return KafkaPropertiesBuilder.consumerBuilder()
-                .withBaseProperties()
-                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
-                .withBrokerUrl(embeddedKafka.getBrokersAsString())
-                .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
-                .withPollProperties(10, 30_000)
-                .build();
-    }
-
-    @Bean
-    Properties aivenProducerProperties(@Value("${app.kafka.producer-client-id}") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
+    Properties producerProperties(@Value("${app.kafka.producer-client-id}") String producerClientId, EmbeddedKafkaBroker embeddedKafkaBroker) {
         return KafkaPropertiesBuilder.producerBuilder()
                 .withBaseProperties()
                 .withProducerId(producerClientId)
                 .withBrokerUrl(embeddedKafkaBroker.getBrokersAsString())
                 .withSerializers(StringSerializer.class, StringSerializer.class)
-                .build();
-    }
-
-    @Bean
-    public KafkaProducerClient<String, String> producerClient(Properties aivenProducerProperties, MeterRegistry meterRegistry) {
-        return KafkaProducerClientBuilder.<String, String>builder()
-                .withMetrics(meterRegistry)
-                .withProperties(aivenProducerProperties)
                 .build();
     }
 }

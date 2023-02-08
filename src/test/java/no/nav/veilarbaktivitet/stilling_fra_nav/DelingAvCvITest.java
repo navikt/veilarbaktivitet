@@ -307,7 +307,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         ForesporselOmDelingAvCv duplikatMelding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         SendResult<String, ForesporselOmDelingAvCv> result = foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, duplikatMelding.getBestillingsId(), duplikatMelding).get();
-        kafkaTestService.assertErKonsumertAiven(stillingFraNavForespurt, result.getRecordMetadata().offset(), 5);
+        kafkaTestService.assertErKonsumertSpringKafka(stillingFraNavForespurt, result.getRecordMetadata().offset(), 5);
 
         ConsumerRecords<String, DelingAvCvRespons> poll = delingAvCvResponsConsumer.poll(Duration.ofMillis(100));
         assertTrue(poll.isEmpty());

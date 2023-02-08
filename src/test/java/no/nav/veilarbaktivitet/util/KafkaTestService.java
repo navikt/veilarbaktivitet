@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 @Service
@@ -25,7 +25,6 @@ import static org.awaitility.Awaitility.await;
 public class KafkaTestService {
 
     public static int DEFAULT_WAIT_TIMEOUT_SEC = 5;
-
 
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
 
@@ -38,10 +37,10 @@ public class KafkaTestService {
     private final Admin kafkaAdminClient;
 
     @Value("${app.kafka.consumer-group-id}")
-    String onPremConsumerGroup;
+    String navCommonConsumerGroupId;
 
     @Value("${spring.kafka.consumer.group-id}")
-    String aivenGroupId;
+    String springKafkaConsumerGroupId;
 
     /**
      * Lager en ny kafka consumer med random groupid på topic som leser fra slutten av topic.
@@ -107,20 +106,16 @@ public class KafkaTestService {
         newConsumer.commitSync(Duration.ofSeconds(10));
     }
 
-    public void assertErKonsumertOnprem(String topic, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, onPremConsumerGroup, producerOffset));
+    public void assertErKonsumertNavCommon(String topic, long producerOffset, int timeOutSeconds) {
+        await().atMost(timeOutSeconds, TimeUnit.SECONDS).until(() -> erKonsumert(topic, navCommonConsumerGroupId, producerOffset));
     }
 
-    public void assertErKonsumertAiven(String topic, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
-    }
-
-    public void assertErKonsumertAiven(String topic, String groupId, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, groupId, producerOffset));
+    public void assertErKonsumertSpringKafka(String topic, long producerOffset, int timeOutSeconds) {
+        await().atMost(timeOutSeconds, TimeUnit.SECONDS).until(() -> erKonsumert(topic, springKafkaConsumerGroupId, producerOffset));
     }
 
     @SneakyThrows
-    public boolean erKonsumert(String topic, String groupId, long producerOffset) {
+    private boolean erKonsumert(String topic, String groupId, long producerOffset) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
         OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
 
@@ -160,7 +155,4 @@ public class KafkaTestService {
         return offsetAndMetadata.offset() == endOffset;
     }
 
-    public String getAivenConsumerGroup() {
-        return aivenGroupId;
-    }
 }

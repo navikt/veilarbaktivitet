@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AktivitetsKortConsumerConfig extends TopicConsumerConfig<String, String> {
+
     public AktivitetsKortConsumerConfig(
-            @Value("${topic.inn.aktivitetskort}")
-            String topic,
+            @Value("${topic.inn.aktivitetskort}") String topic,
             AktivitetskortConsumer consumer
     ) {
         this.setTopic(topic);

@@ -3,21 +3,19 @@ package no.nav.veilarbaktivitet.kvp;
 import no.nav.common.kafka.consumer.util.TopicConsumerConfig;
 import no.nav.common.kafka.consumer.util.deserializer.Deserializers;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 
-@Service
-public class KvpAvsluttetConsumerConfig extends TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> {
+@Component
+public class KvpAvsluttetConsumerConfig extends TopicConsumerConfig<String, KvpAvsluttetDTO> {
 
     public KvpAvsluttetConsumerConfig(
-            KvpAvsluttetKafkaConsumer consumer,
-            @Value("${topic.inn.kvpAvsluttet}")
-                    String topic
+            @Value("${topic.inn.kvpAvsluttet}") String topic,
+            KvpAvsluttetConsumer consumer
     ) {
-        super();
         this.setTopic(topic);
         this.setKeyDeserializer(Deserializers.stringDeserializer());
-        this.setValueDeserializer(Deserializers.jsonDeserializer(KvpAvsluttetKafkaDTO.class));
+        this.setValueDeserializer(Deserializers.jsonDeserializer(KvpAvsluttetDTO.class));
         this.setConsumer(consumer);
     }
 }
