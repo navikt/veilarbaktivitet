@@ -82,6 +82,9 @@ spec:
         - application: aktivitetsplan
           namespace: pto
           cluster: dev-gcp
+        - application: arbeidsrettet-dialog
+          namespace: pto
+          cluster: dev-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1

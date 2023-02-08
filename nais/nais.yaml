@@ -80,6 +80,9 @@ spec:
         - application: aktivitetsplan
           namespace: pto
           cluster: prod-gcp
+        - application: arbeidsrettet-dialog
+          namespace: pto
+          cluster: prod-gcp
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
