@@ -54,7 +54,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -519,7 +518,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    void avbrutt_aktivitet_kan_ikke_endres() {
+    void avbrutt_aktivitet_kan_endres() {
         var funksjonellId = UUID.randomUUID();
 
         var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT);
@@ -529,15 +528,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(context, context));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
-        assertFeilmeldingPublished(
-                funksjonellId,
-                UlovligEndringFeil.class
-        );
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 
     @Test
-    void fullfort_aktivitet_kan_ikke_endres() {
+    void fullfort_aktivitet_kan_endres() {
         var funksjonellId = UUID.randomUUID();
 
         var tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.FULLFORT);
@@ -546,11 +541,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet, tiltaksaktivitetEndret), List.of(defaultcontext, defaultcontext));
 
         var aktivitet = hentAktivitet(funksjonellId);
-        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.FULLFORT);
-        assertFeilmeldingPublished(
-                funksjonellId,
-                UlovligEndringFeil.class
-        );
+        assertThat(aktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
     }
 
     @Test
