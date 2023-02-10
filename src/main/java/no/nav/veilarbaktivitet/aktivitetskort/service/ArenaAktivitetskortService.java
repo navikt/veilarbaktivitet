@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;

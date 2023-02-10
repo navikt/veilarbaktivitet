@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.KasseringDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage;
 import no.nav.veilarbaktivitet.person.Person;

@@ -18,11 +18,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortF
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.feil.*;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto;
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService;
 import no.nav.veilarbaktivitet.aktivitetskort.service.TiltakMigreringCronService;
@@ -248,7 +245,6 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ArenaId arenata123 = new ArenaId("ARENATA123");
         ArenaMeldingHeaders kontekst = meldingContext(arenata123, "MIDLONNTIL");
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst)); // Kjør to ganger for å sjekke at vi tar med oss OPPRETTET_SOM_HISTORISK når vi oppdaterer
 
         var aktivitetFoer = hentAktivitet(funksjonellId);
 
@@ -270,6 +266,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitetEtter = hentAktivitet(funksjonellId);
 
         assertThat(aktivitetEtter.isHistorisk()).isTrue();
+
     }
     @Test
     void historisk_lonnstilskudd_aktivitet_skal_ha_oppfolgingsperiode() {
@@ -597,6 +594,62 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
             funksjonellId,
             UgyldigIdentFeil.class
         );
+    }
+
+    @Test void should_throw_runtime_exception_on_missing_arena_headers() {
+        KafkaAktivitetskortWrapperDTO aktivitetWrapper = AktivitetskortProducerUtil.kafkaAktivitetWrapper(mockBruker.getFnrAsFnr());
+        aktivitetWrapper = aktivitetWrapper.toBuilder().aktivitetskortType(AktivitetskortType.ARENA_TILTAK).build();
+        var h1 = new RecordHeader("NONSENSE_HEADER", "DUMMYVALUE".getBytes());
+        var record = new ConsumerRecord<>(topic, 0, 0, aktivitetWrapper.getAktivitetskort().id.toString(), JsonUtils.toJson(aktivitetWrapper));
+        record.headers().add(h1);
+        /* Call consume directly to avoid retry / waiting for message to be consumed */
+        RuntimeException runtimeException = Assertions.assertThrows(RuntimeException.class, () -> aktivitetskortConsumer.consume(record));
+        assertThat(runtimeException.getMessage()).isEqualTo("Mangler Arena Header for ArenaTiltak aktivitetskort");
+    }
+
+    @Test void should_throw_runtime_exception_on_missing_messageId() {
+        KafkaAktivitetskortWrapperDTO aktivitetWrapper = AktivitetskortProducerUtil.kafkaAktivitetWrapper(mockBruker.getFnrAsFnr());
+        aktivitetWrapper = aktivitetWrapper.toBuilder()
+                .aktivitetskortType(AktivitetskortType.VARIG_LONNSTILSKUDD)
+                .messageId(null)
+                .build();
+        var record = new ConsumerRecord<>(topic, 0, 0, aktivitetWrapper.getAktivitetskort().id.toString(), JsonUtils.toJson(aktivitetWrapper));
+        /* Call consume directly to avoid retry / waiting for message to be consumed */
+        RuntimeException runtimeException = Assertions.assertThrows(RuntimeException.class, () -> aktivitetskortConsumer.consume(record));
+        assertThat(runtimeException.getMessage()).isEqualTo("Mangler påkrevet messageId på aktivitetskort melding");
+    }
+
+    @Test void should_handle_messageId_in_header() {
+        KafkaAktivitetskortWrapperDTO aktivitetWrapper = AktivitetskortProducerUtil.kafkaAktivitetWrapper(mockBruker.getFnrAsFnr());
+        aktivitetWrapper = aktivitetWrapper.toBuilder()
+                .aktivitetskortType(AktivitetskortType.VARIG_LONNSTILSKUDD)
+                .messageId(null)
+                .build();
+
+        UUID messageId = UUID.randomUUID();
+        var record = new ProducerRecord<>(topic, 0, new Date().getTime(), aktivitetWrapper.getAktivitetskort().id.toString(), JsonUtils.toJson(aktivitetWrapper));
+        Header msgIdHeader = new RecordHeader(AktivitetskortConsumer.UNIQUE_MESSAGE_IDENTIFIER, messageId.toString().getBytes());
+        record.headers().add(msgIdHeader);
+        aktivitetTestService.opprettEksterntAktivitetsKort(record);
+
+    }
+
+    @Test
+    void should_throw_exception_when_messageId_is_equal_to_funksjonell_id() {
+        UUID funksjonellId = UUID.randomUUID();
+
+        Aktivitetskort actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT);
+
+        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
+                .messageId(funksjonellId)
+                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(actual)
+                .source("source")
+                .build();
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
+        assertFeilmeldingPublished(funksjonellId, MessageIdIkkeUnikFeil.class);
+
     }
 
     @Test

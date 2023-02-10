@@ -3,9 +3,9 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 
 import java.time.ZonedDateTime;
