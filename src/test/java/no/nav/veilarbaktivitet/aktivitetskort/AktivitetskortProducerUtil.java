@@ -14,7 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -76,7 +76,7 @@ public class AktivitetskortProducerUtil {
                 NorskIdent.of("12121212121"),
                 UUID.randomUUID(),
                 "Fordi"
-        );;
+        );
         return kasserMessageNode(kasseringsBestilling);
     }
 
@@ -114,7 +114,7 @@ public class AktivitetskortProducerUtil {
     }
 
     @SneakyThrows
-    private static KafkaAktivitetskortWrapperDTO kafkaAktivitetWrapper(Person.Fnr fnr) {
+    public static KafkaAktivitetskortWrapperDTO kafkaAktivitetWrapper(Person.Fnr fnr) {
         Aktivitetskort aktivitetskort = Aktivitetskort.builder()
                 .id(UUID.randomUUID())
                 .personIdent(fnr.get())

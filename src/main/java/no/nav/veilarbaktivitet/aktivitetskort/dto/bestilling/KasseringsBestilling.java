@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.kassering;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

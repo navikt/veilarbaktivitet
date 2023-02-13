@@ -36,14 +36,16 @@ public class AktivitetsMessageDAO {
         return antall != null && antall > 0;
     }
 
-    public void updateActionResult(UUID messageId, UpsertActionResult upsertActionResult) {
+    public void updateActionResult(UUID messageId, UpsertActionResult upsertActionResult, String reason) {
         var params = new MapSqlParameterSource()
                 .addValue("messageId", messageId.toString())
-                .addValue("actionResult", upsertActionResult.name());
+                .addValue("actionResult", upsertActionResult.name())
+                .addValue("reason", reason);
 
         template.update("""
                 UPDATE AKTIVITETSKORT_MSG_ID
-                SET ACTION_RESULT = :actionResult 
+                SET ACTION_RESULT = :actionResult,
+                    REASON = :reason
                 WHERE MESSAGE_ID = :messageId
                 """, params);
     }

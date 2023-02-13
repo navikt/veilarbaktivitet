@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
 
 import java.util.UUID;
 
@@ -27,6 +28,7 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 @SuperBuilder(toBuilder = true)
 public abstract class BestillingBase {
     protected String source;
+    @Setter
     protected UUID messageId;
     protected ActionType actionType;
 

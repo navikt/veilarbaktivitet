@@ -5,9 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.json.JsonMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.*;
@@ -17,6 +16,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 import org.springframework.stereotype.Component;
 
 
@@ -53,16 +53,13 @@ public class AktivitetsbestillingCreator {
             throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
         }
     }
-    public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil {
         var melding = deserialiser(consumerRecord);
         if (!melding.getAktivitetskortId().toString().equals(consumerRecord.key()))
             throw new KeyErIkkeFunksjonellIdFeil(new ErrorMessage(String.format("aktivitetsId: %s må være lik kafka-meldings-id: %s", melding.getAktivitetskortId(), consumerRecord.key())), null);
-        if (melding.getMessageId().equals(melding.getAktivitetskortId())) {
-            throw new MessageIdIkkeUnikFeil(new ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"), null);
-        }
         if (melding instanceof KafkaAktivitetskortWrapperDTO aktivitetskortMelding) {
             var aktorId = hentAktorId(Person.fnr(aktivitetskortMelding.getAktivitetskort().getPersonIdent()));
-            boolean erArenaAktivitet = ARENA_TILTAK_AKTIVITET_ACL.equals(melding.getSource());
+            boolean erArenaAktivitet = AktivitetskortType.ARENA_TILTAK.equals(aktivitetskortMelding.getAktivitetskortType());
             if (erArenaAktivitet) {
                 return new ArenaAktivitetskortBestilling(
                         aktivitetskortMelding.getAktivitetskort(),
@@ -90,12 +87,16 @@ public class AktivitetsbestillingCreator {
     }
 
     private static ArenaId getEksternReferanseId(ConsumerRecord<String, String> consumerRecord) {
-        byte[] eksternReferanseIdBytes = consumerRecord.headers().lastHeader(HEADER_EKSTERN_REFERANSE_ID).value();
+        Header header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_REFERANSE_ID);
+        if (header == null) throw new RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort");
+        byte[] eksternReferanseIdBytes = header.value();
         return new ArenaId(new String(eksternReferanseIdBytes));
     }
 
     private static String getArenaTiltakskode(ConsumerRecord<String, String> consumerRecord) {
-        byte[] arenaTiltakskode = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE).value();
+        Header header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE);
+        if (header == null) throw new RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort");
+        byte[] arenaTiltakskode = header.value();
         return new String(arenaTiltakskode);
     }
 }
