@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.JsonSchema;
@@ -7,8 +10,8 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.kassering.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.MessageIdIkkeUnikFeil;
@@ -23,6 +26,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,6 +34,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -99,16 +104,18 @@ class AktivitetsbestillingCreatorTest {
     }
 
     @Test
-    void should_handle_zoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    @SneakyThrows
+    void should_handle_zoned_datetime_format() {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"));
-        Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+        assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
     }
 
     @Test
-    void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
+    @SneakyThrows
+    void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "invalid-key", json);
         assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> {
@@ -117,39 +124,34 @@ class AktivitetsbestillingCreatorTest {
     }
 
     @Test
-    void should_throw_exception_when_messageId_is_equal_to_funksjonell_id() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("invalidaktivitetskortMessageIdEqualFunksjonellId.json");
-        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "2edf9ba0-b195-49ff-a5cd-939c7f26826f", json);
-        assertThrows(MessageIdIkkeUnikFeil.class, () -> {
-            aktivitetsbestillingCreator.lagBestilling(consumerRecord);
-        });
-    }
-
-    @Test
-    void should_handle_zoned_datetime_format_pluss_time() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    @SneakyThrows
+    void should_handle_zoned_datetime_format_pluss_time() {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"));
-        Assertions.assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+        assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
 
     }
 
     @Test
-    void should_handle_UNzoned_datetime_format() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    @SneakyThrows
+    void should_handle_UNzoned_datetime_format() {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         var aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"));
         var endretTidspunkt = aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt();
-        Assertions.assertThat(endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+        assertThat(endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
     }
 
     @Test
-    void should_be_able_to_deserialize_kasserings_bestilling() throws UgyldigIdentFeil, DeserialiseringsFeil, KeyErIkkeFunksjonellIdFeil, MessageIdIkkeUnikFeil {
+    @SneakyThrows
+    void should_be_able_to_deserialize_kasserings_bestilling() {
         String json = AktivitetskortProducerUtil.validExampleFromFile("validkassering.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         var aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord);
-        Assertions.assertThat(aktivitetskortBestilling).isInstanceOf(KasseringsBestilling.class);
+        assertThat(aktivitetskortBestilling).isInstanceOf(KasseringsBestilling.class);
     }
+
 }

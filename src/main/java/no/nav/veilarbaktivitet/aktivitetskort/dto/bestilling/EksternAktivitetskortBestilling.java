@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort.bestilling;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling;
 
 import lombok.Getter;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;

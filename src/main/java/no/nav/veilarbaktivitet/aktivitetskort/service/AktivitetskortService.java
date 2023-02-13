@@ -9,9 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil;
@@ -130,8 +130,8 @@ public class AktivitetskortService {
         aktivitetsMessageDAO.insert(messageId, funksjonellId);
     }
 
-    public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult) {
-        aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult);
+    public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult, String reason) {
+        aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason);
     }
 
 }
