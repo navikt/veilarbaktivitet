@@ -12,9 +12,8 @@ val _version: String by project
 
 
 plugins {
-    java
-    application
-    `maven-publish`
+    id("application")
+    id("maven-publish")
     kotlin("jvm") version "1.8.0"
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
@@ -82,6 +81,9 @@ tasks.compileJava {
     dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
 }
 
+tasks.compileKotlin {
+    dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
+}
 
 openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/AktivitetsplanV1.yaml")
@@ -121,21 +123,24 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-
-    implementation("org.apache.kafka:kafka-clients:3.0.1") {
-        version {
-            strictly("3.0.1")
-            because("fellesbibloteket og avro serializer drar inn ny version som ikke fungerer med spring boot  2.66")
+    constraints {
+        implementation("org.apache.kafka:kafka-clients:3.0.1") {
+            version {
+                strictly("3.0.1")
+                because("fellesbibloteket og avro serializer drar inn ny version som ikke fungerer med spring boot  2.66")
+            }
         }
-    }
-    implementation("net.minidev:json-smart:2.4.8") {
-        because(
-            """
+        implementation("net.minidev:json-smart:2.4.8"){
+            because(
+                """
             Could not resolve net.minidev:json-smart:[1.3.3,2.4.8].
             Required by:
                 project : > no.nav.common:sts:2.2022.10.28_07.53-25ffb4a980b5 > com.nimbusds:oauth2-oidc-sdk:9.41
         """)
+        }
     }
+
+
     compileOnly("org.projectlombok:lombok:$lombok_version")
     annotationProcessor("org.projectlombok:lombok:$lombok_version")
     testCompileOnly("org.projectlombok:lombok:$lombok_version")
