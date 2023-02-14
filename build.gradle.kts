@@ -78,6 +78,10 @@ tasks.generateAvroJava {
     )
 }
 
+tasks.compileKotlin {
+    dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
+}
+
 tasks.compileJava {
     dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
 }
