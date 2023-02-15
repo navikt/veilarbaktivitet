@@ -30,7 +30,7 @@ public class BehandleNotifikasjonForDelingAvCvService {
         }
 
         AktivitetData nyAktivitet = aktivitetData.toBuilder().stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
-        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.navIdent("SYSTEM"));
+        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.systemUser());
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 
         stillingFraNavProducerClient.sendVarslet(aktivitetData);
@@ -46,7 +46,7 @@ public class BehandleNotifikasjonForDelingAvCvService {
         }
 
         AktivitetData nyAktivitet = aktivitetData.toBuilder().stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)).build();
-        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.navIdent("SYSTEM"));
+        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.systemUser());
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 
         stillingFraNavProducerClient.sendKanIkkeVarsle(aktivitetData);
