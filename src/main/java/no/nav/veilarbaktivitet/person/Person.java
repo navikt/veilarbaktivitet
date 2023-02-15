@@ -30,6 +30,10 @@ public abstract class Person {
         return new NavIdent(navIdent);
     }
 
+    public static SystemUser systemUser() {
+        return new SystemUser("SYSTEM");
+    }
+
     public boolean erEkstern() {
         return this instanceof AktorId || this instanceof Fnr;
     }
@@ -82,6 +86,12 @@ public abstract class Person {
             super(id);
         }
         public no.nav.common.types.identer.NavIdent otherNavIdent() { return no.nav.common.types.identer.NavIdent.of(this.get()); }
+    }
+
+    public static class SystemUser extends Person {
+        private SystemUser(String id) {
+            super(id);
+        }
     }
 
     public static Person of(Id id) {

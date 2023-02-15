@@ -13,7 +13,8 @@ public enum IdentType {
     public Innsender toInnsender() {
         return switch (this) {
             case ARENAIDENT -> Innsender.ARENAIDENT;
-            case NAVIDENT, SYSTEM -> Innsender.NAV;
+            case NAVIDENT-> Innsender.NAV;
+            case SYSTEM -> Innsender.SYSTEM;
             case PERSONBRUKERIDENT -> Innsender.BRUKER;
             case ARBEIDSGIVER -> Innsender.ARBEIDSGIVER;
             case TILTAKSARRANGOER -> Innsender.TILTAKSARRANGOER;

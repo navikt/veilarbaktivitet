@@ -9,11 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 import static java.util.Arrays.asList;
 
@@ -48,8 +46,15 @@ public class RekrutteringsbistandStatusoppdateringService {
         }
     }
 
+    private Person systemIfNull(String navIdent) {
+        if(navIdent == null) {
+            return Person.systemUser();
+        }
+        return Person.navIdent(navIdent);
+    }
+
     public void behandleCvDelt(String bestillingsId, String navIdent, AktivitetData aktivitet) {
-        Person endretAv = Person.navIdent(Optional.ofNullable(navIdent).orElse("SYSTEM"));
+        Person endretAv = systemIfNull(navIdent);
         var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.CV_DELT);
         var nyAktivitet = aktivitet.toBuilder()
                 .endretAvType(endretAv.tilInnsenderType())
@@ -64,7 +69,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     public void behandleIkkeFattJobben(String bestillingsId, String navIdent, AktivitetData aktivitet, String ikkefattjobbendetaljer) {
-        Person endretAv = Person.navIdent(Optional.ofNullable(navIdent).orElse("SYSTEM"));
+        Person endretAv = systemIfNull(navIdent);
         var nyStillingFraNavData = aktivitet.getStillingFraNavData()
                 .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
                 .withSoknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN);

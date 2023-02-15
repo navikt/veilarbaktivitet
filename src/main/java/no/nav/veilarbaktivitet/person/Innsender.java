@@ -7,6 +7,7 @@ public enum Innsender {
     ARBEIDSGIVER,
     TILTAKSARRANGOER,
     NAV,
+    SYSTEM,
     ARENAIDENT;
 
     public IdentType toIdentType() {
@@ -14,6 +15,7 @@ public enum Innsender {
             case NAV -> IdentType.NAVIDENT;
             case BRUKER -> IdentType.PERSONBRUKERIDENT;
             case ARBEIDSGIVER -> IdentType.ARBEIDSGIVER;
+            case SYSTEM -> IdentType.SYSTEM;
             case TILTAKSARRANGOER -> IdentType.TILTAKSARRANGOER;
             case ARENAIDENT -> IdentType.ARENAIDENT;
         };
