@@ -64,6 +64,7 @@ spec:
   azure:
     application:
       enabled: true
+      allowAllUsers: true #todo burde vi legge inn noen roller her?
       claims:
         extra:
           - "NAVident"
