@@ -46,7 +46,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         }
     }
 
-    private Person navIdentEllerSystem(String navIdent) {
+    private Person systemIfNull(String navIdent) {
         if(navIdent == null) {
             return Person.systemUser();
         }
@@ -54,7 +54,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     public void behandleCvDelt(String bestillingsId, String navIdent, AktivitetData aktivitet) {
-        Person endretAv = navIdentEllerSystem(navIdent);
+        Person endretAv = systemIfNull(navIdent);
         var nyStillingFraNavData = aktivitet.getStillingFraNavData().withSoknadsstatus(Soknadsstatus.CV_DELT);
         var nyAktivitet = aktivitet.toBuilder()
                 .endretAvType(endretAv.tilInnsenderType())
@@ -69,7 +69,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     public void behandleIkkeFattJobben(String bestillingsId, String navIdent, AktivitetData aktivitet, String ikkefattjobbendetaljer) {
-        Person endretAv = navIdentEllerSystem(navIdent);
+        Person endretAv = systemIfNull(navIdent);
         var nyStillingFraNavData = aktivitet.getStillingFraNavData()
                 .withIkkefattjobbendetaljer(ikkefattjobbendetaljer)
                 .withSoknadsstatus(Soknadsstatus.IKKE_FATT_JOBBEN);
