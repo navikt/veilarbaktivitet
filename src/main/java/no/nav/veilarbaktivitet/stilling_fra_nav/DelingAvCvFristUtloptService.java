@@ -23,7 +23,7 @@ public class DelingAvCvFristUtloptService {
 
         aktivitetDataer.forEach(aktivitet -> {
             try {
-                delingAvCvService.avsluttAktivitet(aktivitet, Person.navIdent("SYSTEM"));
+                delingAvCvService.avsluttAktivitet(aktivitet, Person.systemUser());
             } catch (Exception e) {
                 log.warn("Behandling av utløpt aktivitet aktivitetId={} feilet.", aktivitet.getId());
                 log.error("Kunne ikke avslutte utlopede aktiviteter", e);
