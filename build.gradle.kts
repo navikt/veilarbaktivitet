@@ -108,7 +108,6 @@ java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
 
 group = "no.nav"
 description = "veilarbaktivitet"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 publishing {
     publications.create<MavenPublication>("maven") {
