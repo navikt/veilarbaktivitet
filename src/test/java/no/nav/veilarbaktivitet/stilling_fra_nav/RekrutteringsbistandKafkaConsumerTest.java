@@ -42,7 +42,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.AVBRUTT;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.FULLFORT;
 
-public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
+class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
 
 
     @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
@@ -75,7 +75,6 @@ public class RekrutteringsbistandKafkaConsumerTest extends SpringBootTestBase {
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters().forEach(it -> meterRegistry.remove(it));
         aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
-        aktivitetTestService.opprettStillingFraNav(mockBruker);
         bestillingsId = aktivitetDTO.getStillingFraNavData().bestillingsId;
     }
 
