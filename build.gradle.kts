@@ -24,6 +24,12 @@ plugins {
     id("org.springframework.boot") version "2.7.7"
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
 }
