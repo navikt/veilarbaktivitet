@@ -51,7 +51,7 @@ tasks.jacocoTestReport {
     }
 }
 
-tasks.sonarqube {
+tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
 }
 
@@ -81,7 +81,9 @@ tasks.generateAvroJava {
 tasks.compileKotlin {
     dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
 }
-
+tasks.compileTestKotlin {
+    dependsOn(tasks.generateTestAvroJava)
+}
 
 openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/AktivitetsplanV1.yaml")
