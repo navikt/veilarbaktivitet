@@ -36,7 +36,7 @@ application {
     mainClass.set("no.nav.veilarbaktivitet.VeilarbaktivitetApp")
 }
 
-sonarqube {
+sonar {
     properties {
         property("sonar.projectKey", "navikt_veilarbaktivitet")
         property("sonar.organization", "navikt")
