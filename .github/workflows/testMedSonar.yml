@@ -40,5 +40,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           cache-read-only: false
-          arguments: build sonarqube --info --scan
+          arguments: build sonar --info --scan
 
