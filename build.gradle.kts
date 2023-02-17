@@ -1,4 +1,4 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spring_version: String by project
 val common_version: String by project
@@ -12,16 +12,26 @@ val _version: String by project
 
 
 plugins {
-    java
-    application
-    `maven-publish`
+    id("java")
+    id("application")
+    id("maven-publish")
     kotlin("jvm") version "1.8.0"
     id("org.openapi.generator") version "5.3.1"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id("jacoco")
-    id("org.sonarqube") version "3.5.0.2730"
+    id("org.sonarqube") version "4.0.0.2929"
     id("org.springframework.boot") version "2.7.7"
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 configurations.all {
@@ -36,7 +46,7 @@ application {
     mainClass.set("no.nav.veilarbaktivitet.VeilarbaktivitetApp")
 }
 
-sonarqube {
+sonar {
     properties {
         property("sonar.projectKey", "navikt_veilarbaktivitet")
         property("sonar.organization", "navikt")
@@ -51,7 +61,7 @@ tasks.jacocoTestReport {
     }
 }
 
-tasks.sonarqube {
+tasks.sonar {
     dependsOn(tasks.jacocoTestReport)
 }
 
@@ -78,10 +88,12 @@ tasks.generateAvroJava {
     )
 }
 
-tasks.compileJava {
+tasks.compileKotlin {
     dependsOn(tasks.openApiGenerate, tasks.generateAvroJava)
 }
-
+tasks.compileTestKotlin {
+    dependsOn(tasks.generateTestAvroJava)
+}
 
 openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/AktivitetsplanV1.yaml")
@@ -100,7 +112,6 @@ java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
 
 group = "no.nav"
 description = "veilarbaktivitet"
-java.sourceCompatibility = JavaVersion.VERSION_17
 
 publishing {
     publications.create<MavenPublication>("maven") {
