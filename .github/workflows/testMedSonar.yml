@@ -24,6 +24,8 @@ jobs:
 
       - name: setup gradle
         uses: gradle/gradle-build-action@v2
+        with:
+          cache-read-only: false
 
 
       - name: Cache SonarCloud packages
@@ -38,7 +40,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          cache-read-only: false
+
           arguments: build sonar --info --scan
 

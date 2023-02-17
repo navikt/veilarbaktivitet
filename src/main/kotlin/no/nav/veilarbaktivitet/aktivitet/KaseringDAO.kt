@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional
 open class KasseringDAO (
     private val namedParameterJdbcTemplate: NamedParameterJdbcTemplate
 ) {
-
     @Transactional
     open fun kasserAktivitet(aktivitetId: Long): Boolean {
         val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId)
