@@ -132,14 +132,10 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
+    implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_version"))
 
-    implementation("org.apache.kafka:kafka-clients:3.0.1") {
-        version {
-            strictly("3.0.1")
-            because("fellesbibloteket og avro serializer drar inn ny version som ikke fungerer med spring boot  2.66")
-        }
-    }
-    implementation("net.minidev:json-smart:2.4.8") {
+
+    implementation(platform("net.minidev:json-smart:2.4.8")) {
         because(
             """
             Could not resolve net.minidev:json-smart:[1.3.3,2.4.8].
