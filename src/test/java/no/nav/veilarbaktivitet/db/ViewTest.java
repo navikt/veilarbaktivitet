@@ -44,9 +44,10 @@ class ViewTest extends DatabaseTest {
     @Test
     void database_skal_ha_riktig_antall_views() {
         long count = (long) jdbcTemplate.queryForList("" +
-                                                      "SELECT " +
-                                                      "COUNT(*) AS VIEW_COUNT " +
-                                                      "FROM INFORMATION_SCHEMA.VIEWS;"
+                "SELECT " +
+                "COUNT(*) AS VIEW_COUNT " +
+                "FROM INFORMATION_SCHEMA.VIEWS " +
+                "where TABLE_SCHEMA = 'PUBLIC';"
         ).get(0).get("VIEW_COUNT");
 
         assertThat(count).isEqualTo(antallViews);
@@ -73,7 +74,7 @@ class ViewTest extends DatabaseTest {
         return jdbcTemplate.queryForList(
                 "SELECT " +
                 "COLUMN_NAME, " +
-                "TYPE_NAME, " +
+                "DATA_TYPE, " +
                 "CHARACTER_MAXIMUM_LENGTH " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
                 "WHERE TABLE_NAME = '" + view + "';"
