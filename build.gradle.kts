@@ -1,13 +1,8 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 val spring_version: String by project
 val common_version: String by project
-val lombok_version: String by project
-val spring_kafka_version: String by project
 val springfox_version: String by project
 val shedlock_version: String by project
-val okhttp_version: String by project
-val micrometer_version: String by project
 val _version: String by project
 
 
@@ -22,6 +17,7 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "4.0.0.2929"
     id("org.springframework.boot") version "2.7.7"
+    id("io.freefair.lombok") version "6.6.2"
 }
 
 java {
@@ -132,48 +128,16 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-
-    implementation("org.apache.kafka:kafka-clients:3.0.1") {
-        version {
-            strictly("3.0.1")
-            because("fellesbibloteket og avro serializer drar inn ny version som ikke fungerer med spring boot  2.66")
-        }
-    }
-    implementation("net.minidev:json-smart:2.4.8") {
-        because(
-            """
-            Could not resolve net.minidev:json-smart:[1.3.3,2.4.8].
-            Required by:
-                project : > no.nav.common:sts:2.2022.10.28_07.53-25ffb4a980b5 > com.nimbusds:oauth2-oidc-sdk:9.41
-        """)
-    }
-    compileOnly("org.projectlombok:lombok:$lombok_version")
-    annotationProcessor("org.projectlombok:lombok:$lombok_version")
-    testCompileOnly("org.projectlombok:lombok:$lombok_version")
-    testAnnotationProcessor("org.projectlombok:lombok:$lombok_version")
-
+    implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_version")
 
     implementation("org.apache.avro:avro:1.10.2")
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
-    implementation("org.springframework.boot:spring-boot-starter-cache:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-actuator:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-web:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-validation:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-logging:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-data-jdbc:$spring_version")
-    implementation("org.springframework.boot:spring-boot-starter-aop:$spring_version")
-    implementation("org.springframework.boot:spring-boot-configuration-processor:$spring_version")
-    implementation("org.springframework.kafka:spring-kafka:$spring_kafka_version")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
-    implementation("com.squareup.okhttp3:okhttp:$okhttp_version")
-    implementation("io.micrometer:micrometer-registry-prometheus:$micrometer_version")
     implementation("io.springfox:springfox-swagger2:$springfox_version")
     implementation("io.springfox:springfox-swagger-ui:$springfox_version")
     implementation("com.zaxxer:HikariCP:3.4.5")
-    implementation("org.flywaydb:flyway-core:8.5.13")
-    implementation("com.oracle.database.jdbc:ojdbc11:21.3.0.0")
     implementation("io.confluent:kafka-avro-serializer:6.1.1")
     implementation("no.nav.common:abac:$common_version")
     implementation("no.nav.common:kafka:$common_version")
@@ -195,17 +159,37 @@ dependencies {
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.1")
     implementation("com.github.navikt.dab:spring-auth:2023.01.26-15.29.bdcfc1bfb316")
     implementation("com.github.navikt.dab:spring-a2-annotations:2023.01.26-15.29.bdcfc1bfb316")
-    runtimeOnly("org.springframework.boot:spring-boot-devtools:$spring_version")
+
+    //spring managed runtime/compile dependencies
+    implementation("org.springframework.boot:spring-boot-starter-cache")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-logging")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
+    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-configuration-processor")
+    implementation("org.springframework.kafka:spring-kafka")
+    implementation("com.squareup.okhttp3:okhttp")
+    implementation("io.micrometer:micrometer-registry-prometheus")
+    implementation("org.flywaydb:flyway-core")
+    implementation("com.oracle.database.jdbc:ojdbc11")
+
+    runtimeOnly("org.springframework.boot:spring-boot-devtools")
+
+    //test dependencys
     testImplementation("no.nav.common:test:$common_version")
-    testImplementation("io.rest-assured:rest-assured:3.3.0")
     testImplementation("org.awaitility:awaitility:4.1.0")
-    testImplementation("com.h2database:h2:1.4.200")
     testImplementation("org.junit.vintage:junit-vintage-engine:5.8.2")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:$spring_version")
-    testImplementation("org.springframework.kafka:spring-kafka-test:$spring_kafka_version")
     testImplementation("com.github.tomakehurst:wiremock-jre8:2.29.1")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:3.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
-    testImplementation("org.mockito:mockito-core:5.0.0")
+
+    //spring managed test dependencies
+    testImplementation("io.rest-assured:rest-assured")
+    testImplementation("com.h2database:h2")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.mockito:mockito-core")
 }
