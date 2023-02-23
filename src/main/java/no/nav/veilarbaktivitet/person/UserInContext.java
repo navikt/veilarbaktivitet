@@ -1,12 +1,12 @@
 package no.nav.veilarbaktivitet.person;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
 
 @Service

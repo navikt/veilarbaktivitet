@@ -2,21 +2,23 @@ package no.nav.veilarbaktivitet.config;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
+import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
 import org.springframework.stereotype.Service;
 
-import javax.servlet.FilterConfig;
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
-import static no.nav.common.test.auth.AuthTestUtils.TEST_AUDIENCE;
-import static no.nav.common.test.auth.AuthTestUtils.TEST_ISSUER;
+
 
 @Service
 public class TestAuthContextFilter implements Filter {
+
+    public final static String TEST_AUDIENCE = "test-audience";
+
+    public final static String TEST_ISSUER = "https://testIssuer.test";
+
     public static final String identHeder = "test_ident";
     public static final String typeHeder = "test_ident_type";
 
