@@ -72,7 +72,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
         var sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
         long offset = sendResultListenableFuture.get(2, TimeUnit.SECONDS).getRecordMetadata().offset();
         System.out.println("Ho");
-        kafkaTestService.assertErKonsumertAiven(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset, 2);
+        kafkaTestService.assertErKonsumert(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset);
         var avsluttetAktivitet = aktivitetTestService.hentAktivitet(mockBruker, opprettetAktivitet.getId());
 
         Assertions.assertThat(avsluttetAktivitet.getStatus()).isEqualTo(AktivitetStatus.AVBRUTT);
@@ -101,7 +101,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
         ListenableFuture<SendResult<String, KvpAvsluttetKafkaDTO>> sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
         long offset = sendResultListenableFuture.get(2, TimeUnit.SECONDS).getRecordMetadata().offset();
-        kafkaTestService.assertErKonsumertAiven(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset, 2);
+        kafkaTestService.assertErKonsumert(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset);
         AktivitetDTO avsluttetAktivitet = aktivitetTestService.hentAktivitet(mockBruker, opprettetAktivitet.getId());
 
         Assertions.assertThat(avsluttetAktivitet.getStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
