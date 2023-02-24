@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.util;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -14,17 +15,20 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class KafkaTestService {
 
     public static int DEFAULT_WAIT_TIMEOUT_SEC = 5;
+    public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
+
 
 
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
@@ -104,23 +108,25 @@ public class KafkaTestService {
 
         collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
-        newConsumer.commitSync(Duration.ofSeconds(10));
+        newConsumer.commitSync(DEFAULT_WAIT_TIMEOUT_DURATION);
     }
 
-    public void assertErKonsumertOnprem(String topic, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, onPremConsumerGroup, producerOffset));
+    public void assertErKonsumert(String topic, String groupId, long producerOffset) {
+        await()
+                .with()
+                .conditionEvaluationListener(condition -> log.debug("Venter på melding med offset {} på topic {} for groupId {} - Tid brukt: {}ms Tid gjenstående: {}ms", producerOffset, topic, groupId, condition.getElapsedTimeInMS(), condition.getRemainingTimeInMS()))
+                .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> erKonsumert(topic, groupId, producerOffset));
     }
 
-    public void assertErKonsumertAiven(String topic, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
-    }
-
-    public void assertErKonsumertAiven(String topic, String groupId, long producerOffset, int timeOutSeconds) {
-        await().atMost(timeOutSeconds, SECONDS).until(() -> erKonsumert(topic, groupId, producerOffset));
+    public void assertErKonsumert(String topic, long producerOffset) {
+        await()
+                .with()
+                .conditionEvaluationListener(condition -> log.debug("Venter på melding med offset {} på topic {} for groupId {} - Tid brukt: {}ms Tid gjenstående: {}ms", producerOffset, topic, aivenGroupId, condition.getElapsedTimeInMS(), condition.getRemainingTimeInMS()))
+                .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
     }
 
     @SneakyThrows
-    public boolean erKonsumert(String topic, String groupId, long producerOffset) {
+    private boolean erKonsumert(String topic, String groupId, long producerOffset) {
         Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
         OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
 
