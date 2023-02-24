@@ -143,8 +143,9 @@ dependencies {
     implementation("com.github.navikt.common-java-modules:token-client:$common_version")
     implementation("com.github.navikt.common-java-modules:auth:$common_version")
     implementation("com.github.navikt.common-java-modules:log:$common_version")
-    implementation("ch.qos.logback:logback-core:1.4.5")
-    implementation("ch.qos.logback:logback-classic:1.4.5")
+    // overstyr logback eksplisitt pga en eller annen transitiv versjon
+//    implementation("ch.qos.logback:logback-core:1.4.5")
+//    implementation("ch.qos.logback:logback-classic:1.4.5")
     implementation("com.github.navikt.common-java-modules:health:$common_version")
     implementation("com.github.navikt.common-java-modules:feature-toggle:$common_version")
     implementation("com.github.navikt.common-java-modules:metrics:$common_version")
