@@ -27,6 +27,7 @@ import org.springframework.util.concurrent.ListenableFuture;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -99,7 +100,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
                         .setAvsluttetBegrunnelse("Derfor")
                         .setAvsluttetDato(kvpAvsluttetDato);
 
-        ListenableFuture<SendResult<String, KvpAvsluttetKafkaDTO>> sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
+        CompletableFuture<SendResult<String, KvpAvsluttetKafkaDTO>> sendResultListenableFuture = navCommonKafkaJsonTemplate.send(kvpAvsluttetTopic, kvpAvsluttet);
         long offset = sendResultListenableFuture.get(2, TimeUnit.SECONDS).getRecordMetadata().offset();
         kafkaTestService.assertErKonsumertAiven(kvpAvsluttetTopic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, offset, 2);
         AktivitetDTO avsluttetAktivitet = aktivitetTestService.hentAktivitet(mockBruker, opprettetAktivitet.getId());

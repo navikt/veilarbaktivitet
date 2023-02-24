@@ -9,6 +9,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -55,7 +56,7 @@ class ViewTest extends DatabaseTest {
 
     @ParameterizedTest
     @MethodSource("views")
-    public void view_eksisterer(String viewName) {
+    void view_eksisterer(String viewName) {
         List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
@@ -63,7 +64,7 @@ class ViewTest extends DatabaseTest {
 
     @ParameterizedTest
     @MethodSource("views")
-    public void view_skal_reflektere_kolonner_i_tabell(String viewName) {
+    void view_skal_reflektere_kolonner_i_tabell(String viewName) {
         String kolonneData = jsonFormatter(JsonUtils.toJson(hentKolonneDataForView(viewName)));
         String kolonneDataFasit = jsonFormatter(lesInnholdFraFil("view-meta-data/" + viewName.toLowerCase() + ".json"));
 
@@ -88,6 +89,6 @@ class ViewTest extends DatabaseTest {
 
 
     private static String lesInnholdFraFil(String filNavn) {
-        return new Scanner(ViewTest.class.getClassLoader().getResourceAsStream(filNavn), "UTF-8").useDelimiter("\\A").next();
+        return new Scanner(ViewTest.class.getClassLoader().getResourceAsStream(filNavn), StandardCharsets.UTF_8).useDelimiter("\\A").next();
     }
 }

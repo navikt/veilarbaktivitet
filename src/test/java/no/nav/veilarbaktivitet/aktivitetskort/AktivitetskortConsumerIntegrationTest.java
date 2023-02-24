@@ -62,6 +62,7 @@ import java.util.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_SEC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -148,7 +149,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass, String feilmelding) {
-        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.errorMessage()).contains(errorClass.getName());
@@ -160,7 +161,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     private void assertIdMappingPublished(UUID funksjonellId, ArenaId arenaId) {
-        var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, 10000);
+        var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.arenaId()).isEqualTo(arenaId);
@@ -254,7 +255,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
                 SELECT opprettet_som_historisk
                 FROM EKSTERNAKTIVITET
-                WHERE AKTIVITET_ID = ? 
+                WHERE AKTIVITET_ID = ?
                 ORDER BY VERSJON desc
                 FETCH NEXT 1 ROW ONLY 
                 """, boolean.class, aktivitetFoer.getId());
@@ -576,7 +577,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
                 .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset()));
 
-        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 1000, messages.size());
+        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, DEFAULT_WAIT_TIMEOUT_DURATION, messages.size());
 
         assertThat(records.count()).isEqualTo(messages.size());
     }
@@ -840,7 +841,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         MapSqlParameterSource params = new MapSqlParameterSource().addValue("aktivitetId", aktivitet.getId());
         Integer count = namedParameterJdbcTemplate.queryForObject("""
-                SELECT count(*) 
+                SELECT count(*)
                 FROM KASSERT_AKTIVITET 
                 WHERE AKTIVITET_ID = :aktivitetId
                 """, params, int.class);

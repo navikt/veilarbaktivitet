@@ -14,6 +14,7 @@ import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +26,7 @@ import static org.awaitility.Awaitility.await;
 public class KafkaTestService {
 
     public static int DEFAULT_WAIT_TIMEOUT_SEC = 5;
+    public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
 
 
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;

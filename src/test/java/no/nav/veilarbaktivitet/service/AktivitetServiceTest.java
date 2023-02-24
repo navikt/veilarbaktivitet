@@ -34,12 +34,12 @@ import java.util.Optional;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-public class AktivitetServiceTest {
+class AktivitetServiceTest {
 
     private static final long AKTIVITET_ID = 69L;
     private static final String KONTORSPERRE_ENHET_ID = "1337";
@@ -245,7 +245,7 @@ public class AktivitetServiceTest {
         try {
             aktivitetService.oppdaterAktivitet(aktivitet, aktivitet, SAKSBEHANDLER);
         } catch (ResponseStatusException e) {
-            assertEquals(HttpStatus.CONFLICT, e.getStatus());
+            assertEquals(HttpStatus.CONFLICT, e.getStatusCode());
         }
     }
 

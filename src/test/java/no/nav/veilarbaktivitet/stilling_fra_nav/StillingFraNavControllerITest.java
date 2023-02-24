@@ -43,6 +43,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -270,7 +271,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     private void assertSentSvarTilRekruteringsbistand(MockBruker mockBruker, MockVeileder veileder, AktivitetDTO aktivitetDTO, Consumer<String, DelingAvCvRespons> consumer, boolean svar) {
         // Sjekk at svarmelding sendt til rekrutteringsbistand
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         Svar expectedSvar = Svar.newBuilder()

@@ -83,7 +83,7 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
     }
 
     private ResponseStatusException internalServerError(Exception cause, String url) {
-        return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s", url), cause);
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", url, cause.getMessage()), cause);
     }
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;

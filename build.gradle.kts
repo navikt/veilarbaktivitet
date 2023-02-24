@@ -113,7 +113,7 @@ publishing {
     }
 }
 
-tasks.withType<JavaCompile>() {
+tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
@@ -154,8 +154,8 @@ dependencies {
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("org.quartz-scheduler:quartz:2.3.2")
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.1")
-    implementation("com.github.navikt.dab:spring-auth:2023.01.26-15.29.bdcfc1bfb316")
-    implementation("com.github.navikt.dab:spring-a2-annotations:2023.01.26-15.29.bdcfc1bfb316")
+    implementation("com.github.navikt.dab:spring-auth:2023.02.24-10.12.c01f6e9ff044")
+    implementation("com.github.navikt.dab:spring-a2-annotations:2023.02.24-10.12.c01f6e9ff044")
 
     //spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -178,7 +178,7 @@ dependencies {
     //test dependencys
     testImplementation("org.awaitility:awaitility:4.1.0")
     testImplementation("org.junit.vintage:junit-vintage-engine:5.8.2")
-    testImplementation("com.github.tomakehurst:wiremock-jre8:2.29.1")
+    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
