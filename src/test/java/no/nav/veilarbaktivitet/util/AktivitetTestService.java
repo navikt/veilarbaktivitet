@@ -395,8 +395,8 @@ public class AktivitetTestService {
                 key,
                 payload
         )).get(3, TimeUnit.SECONDS);
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset()));
+
+        kafkaTestService.assertErKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset());
     }
 
 
@@ -426,24 +426,21 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset());
     }
 
     @SneakyThrows
-    public void opprettEksterntAktivitetsKort(ProducerRecord<String, String> producerRecord) {
-        var sendResult = stringStringKafkaTemplate.send(producerRecord);
-
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, sendResult.get().getRecordMetadata().offset()));
+    public SendResult opprettEksterntAktivitetsKort(ProducerRecord<String, String> producerRecord) {
+        var sendResult = stringStringKafkaTemplate.send(producerRecord).get();
+        kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, sendResult.getRecordMetadata().offset());
+        return sendResult;
     }
 
     @SneakyThrows
     public void kasserEskterntAktivitetskort(KasseringsBestilling kasseringsBestilling) {
         var record = new ProducerRecord<>(aktivitetsKortV1Topic, kasseringsBestilling.getAktivitetskortId().toString(), JsonUtils.toJson(kasseringsBestilling));
         var recordMetadata = stringStringKafkaTemplate.send(record).get();
-        Awaitility.await().atMost(Duration.ofSeconds(5))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.getRecordMetadata().offset());
     }
 
     @SuppressWarnings("unchecked")
@@ -455,8 +452,7 @@ public class AktivitetTestService {
                 .skip(meldinger.size() - 1)
                 .findFirst().get().get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset()));
+        kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset());
     }
 
     public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {

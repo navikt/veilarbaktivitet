@@ -105,7 +105,7 @@ public class BrukernotifikasjonAsserts {
         String kviteringsId = getKviteringsId(record);
         DoknotifikasjonStatus doknot = doknotifikasjonStatus(kviteringsId, status);
         SendResult<String, DoknotifikasjonStatus> result = kviteringsProducer.send(config.getKviteringsToppic(), kviteringsId, doknot).get();
-        kafkaTestService.assertErKonsumertAiven(config.getKviteringsToppic(), result.getRecordMetadata().offset(), 5);
+        kafkaTestService.assertErKonsumert(config.getKviteringsToppic(), result.getRecordMetadata().offset());
     }
 
     public void assertSkalIkkeHaProdusertFlereMeldinger() {

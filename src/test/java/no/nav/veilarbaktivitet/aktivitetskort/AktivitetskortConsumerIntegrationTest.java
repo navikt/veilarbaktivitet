@@ -43,7 +43,6 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
-import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.kafka.support.SendResult;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -293,7 +293,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject("""
                 SELECT opprettet_som_historisk
                 FROM EKSTERNAKTIVITET
-                WHERE AKTIVITET_ID = ? 
+                WHERE AKTIVITET_ID = ?
                 ORDER BY VERSJON desc
                 FETCH NEXT 1 ROW ONLY 
                 """, boolean.class, aktivitetFoer.getId());
@@ -412,7 +412,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         ProducerRecord<String, String> producerRecord = aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context);
         producerClient.sendSync(producerRecord);
         RecordMetadata recordMetadataDuplicate = producerClient.sendSync(producerRecord);
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC)).until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataDuplicate.offset()));
+        kafkaTestService.assertErKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadataDuplicate.offset());
 
         var aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
                 .aktiviteter.stream()
@@ -574,8 +574,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
                 .reduce((first, second) -> second)
                 .get();
 
-        Awaitility.await().atMost(Duration.ofSeconds(DEFAULT_WAIT_TIMEOUT_SEC))
-                .until(() -> kafkaTestService.erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset()));
+        kafkaTestService.assertErKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset());
 
         ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, DEFAULT_WAIT_TIMEOUT_DURATION, messages.size());
 
@@ -631,8 +630,8 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var record = new ProducerRecord<>(topic, 0, new Date().getTime(), aktivitetWrapper.getAktivitetskort().id.toString(), JsonUtils.toJson(aktivitetWrapper));
         Header msgIdHeader = new RecordHeader(AktivitetskortConsumer.UNIQUE_MESSAGE_IDENTIFIER, messageId.toString().getBytes());
         record.headers().add(msgIdHeader);
-        aktivitetTestService.opprettEksterntAktivitetsKort(record);
-
+        SendResult sendResult = aktivitetTestService.opprettEksterntAktivitetsKort(record);
+        assertThat(sendResult.getRecordMetadata().hasOffset()).isTrue();
     }
 
     @Test
