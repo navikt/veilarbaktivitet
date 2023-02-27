@@ -14,7 +14,7 @@ import java.util.Date;
 
 
 @Service
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class KvpAvsluttetKafkaConsumer extends no.nav.common.kafka.consumer.util.TopicConsumerConfig<String, KvpAvsluttetKafkaDTO> implements TopicConsumer<String, KvpAvsluttetKafkaDTO> {
     private final KVPAvsluttetService kvpService;
 

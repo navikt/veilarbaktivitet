@@ -1,8 +1,8 @@
 
-val spring_version: String by project
-val common_version: String by project
-val springfox_version: String by project
-val shedlock_version: String by project
+val spring_boot_version = "3.0.2"
+val common_version = "3.2023.02.24_13.46-3c88f74b064e"
+val dab_common_version = "2023.02.24-10.12.c01f6e9ff044"
+val shedlock_version = "4.42.0"
 val _version: String by project
 
 
@@ -126,15 +126,13 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_version"))
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_version")
+    implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
     implementation("org.apache.avro:avro:1.10.2")
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
-    implementation("io.springfox:springfox-swagger2:$springfox_version")
-    implementation("io.springfox:springfox-swagger-ui:$springfox_version")
     implementation("com.zaxxer:HikariCP:3.4.5")
     implementation("io.confluent:kafka-avro-serializer:6.1.1")
     implementation("com.github.navikt.common-java-modules:abac:$common_version")
@@ -154,8 +152,8 @@ dependencies {
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("org.quartz-scheduler:quartz:2.3.2")
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.1")
-    implementation("com.github.navikt.dab:spring-auth:2023.02.24-10.12.c01f6e9ff044")
-    implementation("com.github.navikt.dab:spring-a2-annotations:2023.02.24-10.12.c01f6e9ff044")
+    implementation("com.github.navikt.dab:spring-auth:$dab_common_version")
+    implementation("com.github.navikt.dab:spring-a2-annotations:$dab_common_version")
 
     //spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
