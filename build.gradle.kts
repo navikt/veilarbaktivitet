@@ -1,6 +1,6 @@
 
 val spring_boot_version = "3.0.2"
-val common_version = "3.2023.02.24_13.46-3c88f74b064e"
+val common_version = "3.2023.02.27_13.54-e084f0f4afc1"
 val dab_common_version = "2023.02.24-10.12.c01f6e9ff044"
 val shedlock_version = "4.42.0"
 val _version: String by project
