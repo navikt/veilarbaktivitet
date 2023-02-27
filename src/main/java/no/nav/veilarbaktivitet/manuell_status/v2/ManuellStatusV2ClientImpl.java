@@ -36,7 +36,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
             RestUtils.throwIfNotSuccessful(response);
             return RestUtils.parseJsonResponse(response, ManuellStatusV2DTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot " + request.url(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", request.url(), e.getMessage()), e);
         }
     }
 

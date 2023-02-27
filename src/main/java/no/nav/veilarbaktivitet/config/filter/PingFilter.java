@@ -1,9 +1,13 @@
 package no.nav.veilarbaktivitet.config.filter;
 
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.*;
-import javax.servlet.http.HttpServletResponse;
+
 
 public class PingFilter implements Filter {
     @Override

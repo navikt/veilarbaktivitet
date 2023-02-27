@@ -14,7 +14,7 @@ import java.util.List;
  * This class wraps a single string-field to a more type-safe ArenaId
  * Will serialize to a single value, not a json-object with a field named "id"
  * */
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 public class ArenaId extends JsonSerializable.Base {
     public static final String PREFIX_TILTAK = "TA";
     public static final String PREFIX_GRUPPE = "GA";

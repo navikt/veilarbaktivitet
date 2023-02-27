@@ -24,9 +24,9 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentStillingFraNavUtenSvarDerFristErUtlopt(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("""
-                            SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.*
+                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, SFN.*
                             FROM AKTIVITET A
-                            JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON 
+                            JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                             WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' 
                             AND LIVSLOPSTATUS_KODE != 'AVBRUTT' 
                             AND GJELDENDE = 1 
@@ -43,10 +43,10 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("""
-                            SELECT SFN.ARBEIDSGIVER as \"STILLING_FRA_NAV.ARBEIDSGIVER\", SFN.ARBEIDSSTED as \"STILLING_FRA_NAV.ARBEIDSSTED\", A.*, SFN.*
+                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, SFN.*
                             FROM AKTIVITET A
                             JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
-                            WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' 
+                            WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV'
                             AND LIVSLOPSTATUS_KODE IN('AVBRUTT','FULLFORT')
                             AND GJELDENDE = 1 
                             AND HISTORISK_DATO is null

@@ -9,6 +9,7 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 public class DbTestUtils {
 
@@ -44,10 +45,13 @@ public class DbTestUtils {
     }
 
     public static void initDb(DataSource dataSource) {
+        Properties properties = new Properties();
+        properties.put("flyway.cleanDisabled", false);
         FluentConfiguration config = Flyway
                 .configure()
                 .dataSource(dataSource)
                 .table("schema_version")
+                .configuration(properties)
                 .cleanOnValidationError(true)
                 .validateMigrationNaming(true);
         Flyway flyway = new Flyway(config);

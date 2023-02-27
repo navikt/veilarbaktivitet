@@ -32,15 +32,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.*;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
+class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
 
     @Autowired
     BrukernotifikasjonService brukernotifikasjonService;
@@ -78,9 +79,6 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
 
     @Autowired
     MeterRegistry meterRegistry;
-
-    @LocalServerPort
-    private int port;
 
     @Value("${app.env.aktivitetsplan.basepath}")
     String basepath;
@@ -239,7 +237,7 @@ public class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase 
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         NokkelInput nokkel = oppgaveRecord.key();
         OppgaveInput oppgave = oppgaveRecord.value();
 

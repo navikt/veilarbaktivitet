@@ -18,7 +18,7 @@ class SistePeriodeDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
 
-    private RowMapper<Oppfolgingsperiode> rowmapper= (rs, rowNum) -> new Oppfolgingsperiode(
+    private final RowMapper<Oppfolgingsperiode> rowmapper= (rs, rowNum) -> new Oppfolgingsperiode(
             rs.getString("AKTORID"),
             Database.hentMaybeUUID(rs, "PERIODE_UUID"),
             Database.hentZonedDateTime(rs, "STARTDATO"),

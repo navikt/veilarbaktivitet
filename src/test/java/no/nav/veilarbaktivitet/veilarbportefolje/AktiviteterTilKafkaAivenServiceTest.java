@@ -35,8 +35,9 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilKafkaService.OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
@@ -92,13 +93,13 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         AktivitetDTO opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes);
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
-        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, 10000);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         assertEquals(opprettetAktivitet.getId(), melding.getAktivitetId());
         assertEquals(opprettetAktivitet.getVersjon(), melding.getVersion().toString());
 
-        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktiviteterKafkaConsumer, aktivitetRawJson, 10000);
+        ConsumerRecord<String, AktivitetData> singleRecord = getSingleRecord(aktiviteterKafkaConsumer, aktivitetRawJson, DEFAULT_WAIT_TIMEOUT_DURATION);
         AktivitetData aktivitetMelding = singleRecord.value();
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
@@ -127,7 +128,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
-        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, 10000);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         Assertions.assertThat(melding.getTiltakskode()).isEqualTo(arenaTiltakskode);
@@ -151,7 +152,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
-        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, 10000);
+        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         Assertions.assertThat(melding.getTiltakskode()).isEqualTo(KafkaAktivitetDAO.TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD);

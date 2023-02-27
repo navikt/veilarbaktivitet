@@ -29,8 +29,8 @@ class AktivitetsCompareUtilTest {
     void ider_er_ikke_faktisk_endring() {
         var gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet();
         var nyAktivitet = gammelAktivitet
-                .withVersjon(10l)
-                .withId(12l);
+                .withVersjon(10L)
+                .withId(12L);
         Assertions.assertThat(
                 AktivitetskortCompareUtil
                         .erFaktiskOppdatert(gammelAktivitet, nyAktivitet)

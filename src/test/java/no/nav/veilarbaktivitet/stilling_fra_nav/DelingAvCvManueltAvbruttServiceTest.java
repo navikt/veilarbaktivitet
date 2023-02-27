@@ -18,10 +18,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils.assertOppdatertAktivitet;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
@@ -92,7 +93,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
         assertOppdatertAktivitet(expectedAktivitet, oppdatertAktivitet);
 
-        final ConsumerRecord<String, DelingAvCvRespons> avbruttMelding = getSingleRecord(consumer, utTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> avbruttMelding = getSingleRecord(consumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = avbruttMelding.value();
         String bestillingsId = skalBehandles.getStillingFraNavData().bestillingsId;
 

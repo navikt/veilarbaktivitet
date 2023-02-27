@@ -30,7 +30,6 @@ public class KafkaTestService {
     public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
 
 
-
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
 
     private final ConsumerFactory<String, Object> stringJsonConsumerFactory;

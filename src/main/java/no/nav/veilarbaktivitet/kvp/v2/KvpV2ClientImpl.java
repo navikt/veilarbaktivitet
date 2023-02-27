@@ -34,7 +34,7 @@ class KvpV2ClientImpl implements KvpV2Client {
 
             return RestUtils.parseJsonResponse(response, KvpV2DTO.class);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved kall mot" + request.url(), e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", request.url(), e.getMessage()), e);
         }
 
     }

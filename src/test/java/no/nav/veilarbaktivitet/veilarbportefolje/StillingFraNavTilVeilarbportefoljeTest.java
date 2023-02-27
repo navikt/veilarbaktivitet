@@ -23,9 +23,10 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Calendar;
 
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
+class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     private final MockBruker mockBruker = MockNavService.createHappyBruker();
     private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
     @Value("${topic.ut.portefolje}")
@@ -108,7 +109,7 @@ public class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     }
 
     private KafkaAktivitetMeldingV4 getMelding() {
-        return JsonUtils.fromJson(getSingleRecord(portefoljeConsumer, portefoljetopic, 10000).value(), KafkaAktivitetMeldingV4.class);
+        return JsonUtils.fromJson(getSingleRecord(portefoljeConsumer, portefoljetopic, DEFAULT_WAIT_TIMEOUT_DURATION).value(), KafkaAktivitetMeldingV4.class);
     }
 
     private void clearKafkaTopic() {

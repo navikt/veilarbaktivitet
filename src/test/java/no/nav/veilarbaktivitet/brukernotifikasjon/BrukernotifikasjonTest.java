@@ -45,6 +45,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
@@ -157,7 +158,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 SMSTekst
         );
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
+        ConsumerRecord<NokkelInput, OppgaveInput> oppgaveSendt = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
 
         NokkelInput key = oppgaveSendt.key();
         assertEquals(mockBruker.getFnr(), key.getFodselsnummer());
@@ -202,7 +203,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 10000);
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         BeskjedInput oppgave = oppgaveRecord.value();
 
         assertEquals(epostTitel, oppgave.getEpostVarslingstittel());
@@ -228,7 +229,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
 
-        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, 10000);
+        final ConsumerRecord<NokkelInput, BeskjedInput> oppgaveRecord = getSingleRecord(beskjedConsumer, beskjedTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         NokkelInput nokkel = oppgaveRecord.key();
         BeskjedInput beskjed = oppgaveRecord.value();
 
@@ -319,7 +320,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsert oppgave meldinger");
 
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 10000);
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
 
         NokkelInput oppgaveNokkel = oppgaveRecord.key();
         NokkelInput doneNokkel = doneRecord.key();
@@ -351,7 +352,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
 
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var lenke = oppgaveRecord.value().getLink();
         assertEquals(lenke, String.format("http://localhost:3000/aktivitet/vis/%s", arenaId.id()));
     }
@@ -442,7 +443,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
-        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, 10000);
+        final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         OppgaveInput oppgave = oppgaveRecord.value();
 
         assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgaveRecord.key().getGrupperingsId());
@@ -457,7 +458,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(oppgaveTopic, oppgaveConsumer), "Skal ikke produsere oppgave");
-        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, 10000);
+        final ConsumerRecord<NokkelInput, DoneInput> doneRecord = getSingleRecord(doneConsumer, doneTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
 
         assertEquals(oppgaveRecord.key().getAppnavn(), doneRecord.key().getAppnavn());
         assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());

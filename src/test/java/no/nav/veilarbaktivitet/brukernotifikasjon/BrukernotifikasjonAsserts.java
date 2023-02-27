@@ -21,6 +21,7 @@ import org.springframework.kafka.support.SendResult;
 
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FEILET;
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.Assert.assertEquals;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -28,7 +29,7 @@ public class BrukernotifikasjonAsserts {
     Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
     Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
     Consumer<NokkelInput, DoneInput> doneInputConsumer;
-    private KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
+    private final KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
 
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
@@ -48,7 +49,7 @@ public class BrukernotifikasjonAsserts {
 
     public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr) {
         config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), 10000);
+        ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
 
         NokkelInput key = singleRecord.key();
         assertEquals(fnr.get(), key.getFodselsnummer());
@@ -59,7 +60,7 @@ public class BrukernotifikasjonAsserts {
 
     public ConsumerRecord<NokkelInput, BeskjedInput> assertBeskjedSendt(Person.Fnr fnr) {
         config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), 10000);
+        ConsumerRecord<NokkelInput, BeskjedInput> singleRecord = getSingleRecord(beskjedConsumer, config.getBeskjedTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
 
         NokkelInput key = singleRecord.key();
         assertEquals(fnr.get(), key.getFodselsnummer());
@@ -80,7 +81,7 @@ public class BrukernotifikasjonAsserts {
     public ConsumerRecord<NokkelInput, DoneInput> assertDone(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), 10000);
+        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
         NokkelInput key = singleRecord.key();
         assertEquals(eventNokkel.getFodselsnummer(), key.getFodselsnummer());
         assertEquals(eventNokkel.getEventId(), key.getEventId());
