@@ -30,7 +30,7 @@ public class TestDriver implements Driver {
         }
     }
 
-    private Driver driver = new org.h2.Driver();
+    private final Driver driver = new org.h2.Driver();
 
     @Override
     public Connection connect(String url, Properties info) throws SQLException {

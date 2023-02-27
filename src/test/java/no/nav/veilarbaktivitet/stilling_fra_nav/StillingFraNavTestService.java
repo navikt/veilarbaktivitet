@@ -23,6 +23,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
 
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -41,7 +42,7 @@ public class StillingFraNavTestService {
     @Autowired
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> kafkaAvroTemplate;
 
-    public ConsumerRecord<String, DelingAvCvRespons>  opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding, int springPort) {
+    public ConsumerRecord<String, DelingAvCvRespons>  opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding) {
         assertEquals(mockBruker.getAktorId(), melding.getAktorId());
 
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(stillingFraNavUtTopic);
@@ -50,7 +51,7 @@ public class StillingFraNavTestService {
         kafkaAvroTemplate.send(stillingFraNavInnTopic, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, stillingFraNavUtTopic, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(consumer, stillingFraNavUtTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {

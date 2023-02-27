@@ -28,12 +28,13 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -148,8 +149,8 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
-        ListenableFuture<SendResult<String, ForesporselOmDelingAvCv>> send = foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -175,7 +176,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -198,7 +199,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -222,7 +223,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -247,7 +248,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -270,7 +271,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -294,7 +295,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         foresporselOmDelingAvCvProducer.send(stillingFraNavForespurt, melding.getBestillingsId(), melding);
 
 
-        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, 10000);
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatert, DEFAULT_WAIT_TIMEOUT_DURATION);
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);

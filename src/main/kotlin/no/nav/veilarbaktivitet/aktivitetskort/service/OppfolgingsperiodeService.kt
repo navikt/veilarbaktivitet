@@ -53,7 +53,7 @@ class OppfolgingsperiodeService(
 			?: oppfolgingsperioder
 				.filter { oppfolgingsperiode -> oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCZDT) }
 				.minByOrNull { abs(ChronoUnit.MILLIS.between(opprettetTidspunktCZDT, it.startDato)) }
-				?.also { oppfolgingsperiode ->
+				?.also { _ ->
 					log.info("Arenatiltak finn oppfølgingsperiode - opprettetdato innen 1 uke før oppfølging startdato) - aktorId=${aktorId.get()}, opprettetTidspunkt=${opprettetTidspunkt}, oppfolgingsperioder=${oppfolgingsperioder}")
 				}
 

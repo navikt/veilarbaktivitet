@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.featuretoggle.UnleashClient;
-import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -70,7 +69,6 @@ class ArenaControllerTest {
 
     private final UnleashClient unleashClient = mock(UnleashClient.class);
 
-    private final OppfolgingV2Client oppfolgingV2Client = mock(OppfolgingV2Client.class);
     private final MigreringService migreringService = new MigreringService(unleashClient);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
@@ -146,7 +144,7 @@ class ArenaControllerTest {
         ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, arenaId));
         assertEquals("forhaandsorientering kan ikke være null", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
@@ -155,14 +153,14 @@ class ArenaControllerTest {
         ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
     void sendForhaandsorienteringSkalFeileUtenArenaAktivitet() {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, null));
         assertEquals("arenaaktivitetId kan ikke være null eller tom", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
@@ -173,7 +171,7 @@ class ArenaControllerTest {
         ArenaId arenaId = new ArenaId("ARENAGA123");
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaId));
         assertEquals("Aktiviteten finnes ikke", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
@@ -193,7 +191,7 @@ class ArenaControllerTest {
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFhoId));
         assertEquals("Det er allerede sendt forhaandsorientering på aktiviteten", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
@@ -297,7 +295,7 @@ class ArenaControllerTest {
         ArenaId arenaId = new ArenaId("ARENATAerrorId");
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.lest(arenaId));
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
     }
 
     @Test
@@ -313,7 +311,7 @@ class ArenaControllerTest {
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentArenaAktiviteter);
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
     }
 
     @Test
@@ -322,7 +320,7 @@ class ArenaControllerTest {
 
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentHarTiltak);
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
     }
 
     @Test
@@ -342,7 +340,7 @@ class ArenaControllerTest {
         ArenaId arenaAktivitetId = medFho.getAktivitetId();
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaAktivitetId));
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatus());
+        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
     }
 
     private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {

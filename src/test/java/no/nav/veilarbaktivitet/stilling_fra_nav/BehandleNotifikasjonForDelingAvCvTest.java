@@ -25,10 +25,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Date;
 
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
-public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
+class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
     @Autowired
     BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
@@ -66,7 +67,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     }
 
     @Test //TODO rydd denne testen
-    public void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
+    void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
 
         // sett opp testdata
         MockBruker mockBruker = MockNavService.createHappyBruker();
@@ -91,7 +92,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
-        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 10000);
+        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.HAR_VARSLET);
 
@@ -138,7 +139,7 @@ public class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
-        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, 10000);
+        ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
 

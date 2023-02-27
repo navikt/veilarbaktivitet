@@ -52,6 +52,7 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.support.SendResult;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -61,6 +62,8 @@ import java.util.*;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
+import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_SEC;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.mockito.ArgumentMatchers.any;
@@ -146,7 +149,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     private void assertFeilmeldingPublished(UUID funksjonellId, Class<? extends Exception> errorClass, String feilmelding) {
-        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, 10000);
+        var singleRecord = getSingleRecord(aktivitetskortFeilConsumer, aktivitetskortFeilTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.errorMessage()).contains(errorClass.getName());
@@ -158,7 +161,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     private void assertIdMappingPublished(UUID funksjonellId, ArenaId arenaId) {
-        var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, 10000);
+        var singleRecord = getSingleRecord(aktivitetskortIdMappingConsumer, aktivitetskortIdMappingTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         var payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto.class);
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString());
         assertThat(payload.arenaId()).isEqualTo(arenaId);
@@ -573,7 +576,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         kafkaTestService.assertErKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset());
 
-        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, 1000, messages.size());
+        ConsumerRecords<String, String> records = getRecords(aktivitetskortFeilConsumer, DEFAULT_WAIT_TIMEOUT_DURATION, messages.size());
 
         assertThat(records.count()).isEqualTo(messages.size());
     }

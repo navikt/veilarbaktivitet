@@ -37,6 +37,11 @@ public class PepMock implements Pep {
     }
 
     @Override
+    public boolean harTilgangTilEnhetMedSperre(NavIdent navIdent, EnhetId enhetId) {
+        return MockNavService.getVeileder(navIdent.get()).harTilgangTilEnhet(enhetId.get());
+    }
+
+    @Override
     public boolean harVeilederTilgangTilPerson(NavIdent veilederIdent, ActionId actionId, EksternBrukerId eksternBrukerId) {
         return this.harTilgangTilBruker(veilederIdent.get(), eksternBrukerId.get());
     }

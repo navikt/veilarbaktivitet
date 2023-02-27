@@ -203,7 +203,7 @@ public class AktivitetTestService {
     }
 
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding) {
-        ConsumerRecord<String, DelingAvCvRespons> stillingFraNavRecord = stillingFraNavTestService.opprettStillingFraNav(mockBruker, melding, port);
+        ConsumerRecord<String, DelingAvCvRespons> stillingFraNavRecord = stillingFraNavTestService.opprettStillingFraNav(mockBruker, melding);
         DelingAvCvRespons value = stillingFraNavRecord.value();
         AktivitetsplanDTO aktivitetsplanDTO = this.hentAktiviteterForFnr(mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetsplanDTO.getAktiviteter().stream().filter(a -> a.getId().equals(value.getAktivitetId())).findAny().get();
@@ -211,19 +211,19 @@ public class AktivitetTestService {
         //TODO skriv bedre test
         assertEquals(AktivitetTypeDTO.STILLING_FRA_NAV, aktivitetDTO.getType());
         assertEquals(melding.getStillingstittel(), aktivitetDTO.getTittel());
-        assertEquals(null, aktivitetDTO.getLenke());
+        assertNull(aktivitetDTO.getLenke());
         assertEquals(melding.getBestillingsId(), aktivitetDTO.getStillingFraNavData().getBestillingsId());
 
         KontaktInfo meldingKontaktInfo = melding.getKontaktInfo();
         KontaktpersonData kontaktpersonData = aktivitetDTO.getStillingFraNavData().getKontaktpersonData();
         if (meldingKontaktInfo == null) {
-            assertEquals(null, kontaktpersonData);
+            assertNull(kontaktpersonData);
         } else if (kontaktpersonData == null) {
             assertTrue(meldingKontaktInfo.getMobil() == null || meldingKontaktInfo.getMobil().equals(""));
             assertTrue(meldingKontaktInfo.getTittel() == null || meldingKontaktInfo.getTittel().equals(""));
             assertTrue(meldingKontaktInfo.getNavn() == null || meldingKontaktInfo.getNavn().equals(""));
         } else {
-            Assertions.assertThat(meldingKontaktInfo).isEqualToComparingFieldByField(kontaktpersonData);
+            Assertions.assertThat(meldingKontaktInfo).usingRecursiveComparison().isEqualTo(kontaktpersonData);
         }
         return aktivitetDTO;
     }

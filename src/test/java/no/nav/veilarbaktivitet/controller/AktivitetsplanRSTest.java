@@ -1,11 +1,12 @@
 package no.nav.veilarbaktivitet.controller;
 
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.PlainJWT;
 import lombok.val;
+import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
-import no.nav.common.test.auth.AuthTestUtils;
 import no.nav.common.types.identer.NavIdent;
-import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -40,6 +41,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.TEST_AUDIENCE;
+import static no.nav.veilarbaktivitet.config.TestAuthContextFilter.TEST_ISSUER;
+
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_KONTORSPERRE_ENHET_ID;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_SAKSBEHANDLER;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
@@ -47,7 +51,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 
 /**
@@ -92,7 +95,17 @@ public class AktivitetsplanRSTest {
     private MockBruker mockBruker;
 
     @Rule
-    public AuthContextRule authContextRule = new AuthContextRule(AuthTestUtils.createAuthContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.get()));
+    public AuthContextRule authContextRule = new AuthContextRule(getAutContext(UserRole.INTERN, KJENT_SAKSBEHANDLER.otherNavIdent().get()));
+
+    private AuthContext getAutContext(UserRole role, String subject) {
+        JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
+                .subject(subject)
+                .audience(TEST_AUDIENCE)
+                .issuer(TEST_ISSUER)
+                .build();
+
+        return new AuthContext(role, new PlainJWT(claimsSet));
+    }
 
     @Before
     public void setup() {
