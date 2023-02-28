@@ -27,4 +27,6 @@
     <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR"/>
     <logger name="org.apache.wss4j.common.crypto.CryptoBase" level="ERROR"/>
 
+    <include resource="no/nav/common/log/logback-naudit.xml"/>
+    <include resource="no/nav/common/log/logback-securelogs.xml"/>
 </configuration>
