@@ -60,7 +60,6 @@ import static org.mockito.Mockito.when;
  */
 // TODO: 19/01/2023 skriv om til nye test rammeverk (SpringBootTestBase)
 @SpringBootTest
-//@RunWith(SpringRunner.class)
 @AutoConfigureWireMock(port = 0)
 class AktivitetsplanRSTest {
     
