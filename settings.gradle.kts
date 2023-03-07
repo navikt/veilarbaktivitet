@@ -4,6 +4,7 @@
 
 rootProject.name = "veilarbaktivitet"
 
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
