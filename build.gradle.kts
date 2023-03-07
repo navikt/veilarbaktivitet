@@ -129,12 +129,8 @@ dependencies {
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
-    implementation("org.apache.avro:avro:1.10.2")
-    implementation("com.github.ben-manes.caffeine:caffeine:2.9.3")
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
-    implementation("com.zaxxer:HikariCP:3.4.5")
-    implementation("io.confluent:kafka-avro-serializer:6.1.1")
     implementation("com.github.navikt.common-java-modules:abac:$common_version")
     implementation("com.github.navikt.common-java-modules:kafka:$common_version")
     implementation("com.github.navikt.common-java-modules:sts:$common_version")
@@ -151,7 +147,7 @@ dependencies {
     implementation("com.github.navikt.common-java-modules:types:$common_version")
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("org.quartz-scheduler:quartz:2.3.2")
-    implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.1")
+    implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.2")
     implementation("com.github.navikt.dab:spring-auth:$dab_common_version")
     implementation("com.github.navikt.dab:spring-a2-annotations:$dab_common_version")
 
@@ -169,7 +165,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("com.oracle.database.jdbc:ojdbc11")
-    implementation("io.swagger.parser.v3:swagger-parser-v3:2.1.12") //TODO finn ut av denne
+
+    // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
+    implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
