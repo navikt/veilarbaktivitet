@@ -11,9 +11,10 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.Assert;
 
 import java.util.List;
+
+import static org.springframework.util.Assert.isTrue;
 
 @Repository
 @RequiredArgsConstructor
@@ -64,7 +65,7 @@ public class KvitteringDAO {
                         " where id = :id "
                 , param);
 
-        Assert.isTrue(update == 1, "Forventet en rad oppdatert, id=" + id);
+        isTrue(update == 1, "Forventet en rad oppdatert, id=" + id);
     }
 
     public List<BrukernotifikasjonAktivitetIder> hentFullfortIkkeBehandletForAktiviteter(int maksAntall, VarselType type) {

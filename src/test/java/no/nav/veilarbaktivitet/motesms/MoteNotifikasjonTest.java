@@ -9,7 +9,7 @@ import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.TimeZone;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MoteNotifikasjonTest {
     private final ZonedDateTime startTid = ZonedDateTime.of(LocalDate.of(2022, 2, 14), LocalTime.of(14, 42), TimeZone.getTimeZone("CET").toZoneId());
@@ -34,7 +34,7 @@ class MoteNotifikasjonTest {
     }
 
     @Test
-    void oppmøteTekst() {
+    void oppmoteTekst() {
         MoteNotifikasjon oppmote = create(KanalDTO.OPPMOTE, startTid);
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getSmsTekst());
         assertEquals("Vi minner om at du har et møte mandag 14. februar kl. 14:42", oppmote.getDitNavTekst());

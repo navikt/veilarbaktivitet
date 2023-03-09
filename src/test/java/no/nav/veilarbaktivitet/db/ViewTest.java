@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ViewTest extends DatabaseTest {
+class ViewTest {
 
     public static Stream<String> views() {
         return Stream.of(
