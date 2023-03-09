@@ -4,7 +4,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AktivitetAssertUtils {
