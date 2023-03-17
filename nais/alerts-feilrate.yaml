@@ -7,7 +7,7 @@ metadata:
     team: dab
 spec:
   groups:
-    - name: SLOs-nginx_ingress_controller_requests
+    - name: SLOs-veilarbaktivitet_error_budget_burn
       rules:
         - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
           annotations:
