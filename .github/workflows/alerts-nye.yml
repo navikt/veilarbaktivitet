@@ -1,0 +1,33 @@
+name: Deploy alerts
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'nais/alerts-feilrate.yaml'
+      - '.github/workflows/alerts-nye.yml'
+
+concurrency:
+  group: deploy_alerts_nye
+  cancel-in-progress: true
+
+jobs:
+  apply-alerts:
+    name: Apply alerts to cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: deploy to dev-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE: nais/alerts-feilrate.yaml
+      - name: deploy to prod-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-fss
+          RESOURCE: nais/alerts-feilrate.yaml
