@@ -9,6 +9,14 @@ spec:
   groups:
     - name: SLOs-nginx_ingress_controller_requests
       rules:
+        - alert: veilarbajtivitetsmetrikkenFinnes
+          expr: |
+            nginx_ingress_controller_requests{service="veilarbaktivitet"}
+          for: 1m
+          labels:
+            service: veilarbaktivitet
+            namespace: dab
+            severity: warning
         - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
           annotations:
             message: 'veilarbaktivitet metrikken eksisterer ikke i nginx_ingress_controller_requests'
@@ -17,6 +25,7 @@ spec:
           for: 15m
           labels:
             service: veilarbaktivitet
+            namespace: dab
             severity: warning
         - alert: VeilarbaktivitetErrorBudgetBurn
           annotations:
@@ -30,6 +39,7 @@ spec:
           for: 2m
           labels:
             service: veilarbaktivitet
+            namespace: dab
             severity: critical
         - alert: VeilarbaktivitetErrorBudgetBurn
           annotations:
@@ -43,6 +53,7 @@ spec:
           for: 15m
           labels:
             service: veilarbaktivitet
+            namespace: dab
             severity: critical
         - alert: VeilarbaktivitetErrorBudgetBurn
           annotations:
@@ -54,6 +65,7 @@ spec:
           for: 1h
           labels:
             service: veilarbaktivitet
+            namespace: dab
             severity: warning
         - alert: VeilarbaktivitetErrorBudgetBurn
           annotations:
@@ -65,6 +77,7 @@ spec:
           for: 3h
           labels:
             service: veilarbaktivitet
+            namespace: dab
             severity: warning
         - record: mellom_kl_06_og_23
           expr: |
