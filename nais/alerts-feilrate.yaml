@@ -9,13 +9,6 @@ spec:
   groups:
     - name: SLOs-nginx_ingress_controller_requests
       rules:
-        - alert: veilarbajtivitetsmetrikkenFinnes
-          expr: |
-            nginx_ingress_controller_requests{service="veilarbaktivitet"}
-          for: 1m
-          labels:
-            service: veilarbaktivitet
-            severity: warning
         - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
           annotations:
             message: 'veilarbaktivitet metrikken eksisterer ikke i nginx_ingress_controller_requests'
