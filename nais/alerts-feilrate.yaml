@@ -1,0 +1,128 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: veilarbaktivitet-error-rate
+  namespace: pto
+  labels:
+    team: dab
+spec:
+  groups:
+    - name: SLOs-nginx_ingress_controller_requests
+      rules:
+        - alert: veilarbajtivitetsmetrikkenFinnes
+          expr: |
+            nginx_ingress_controller_requests{service="veilarbaktivitet"}
+          for: 1m
+          labels:
+            service: veilarbaktivitet
+            severity: warning
+        - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
+          annotations:
+            message: 'veilarbaktivitet metrikken eksisterer ikke i nginx_ingress_controller_requests'
+          expr: |
+            absent(nginx_ingress_controller_requests{service="veilarbaktivitet"})
+          for: 15m
+          labels:
+            service: veilarbaktivitet
+            severity: warning
+        - alert: VeilarbaktivitetErrorBudgetBurn
+          annotations:
+            message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
+          expr: |
+            sum(nginx_ingress_controller_requests:burnrate5m{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            and
+            sum(nginx_ingress_controller_requests:burnrate1h{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            and
+            mellom_kl_06_og_23
+          for: 2m
+          labels:
+            service: veilarbaktivitet
+            severity: critical
+        - alert: VeilarbaktivitetErrorBudgetBurn
+          annotations:
+            message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
+          expr: |
+            sum(nginx_ingress_controller_requests:burnrate30m{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            and
+            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            and
+            mellom_kl_06_og_23
+          for: 15m
+          labels:
+            service: veilarbaktivitet
+            severity: critical
+        - alert: VeilarbaktivitetErrorBudgetBurn
+          annotations:
+            message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
+          expr: |
+            sum(nginx_ingress_controller_requests:burnrate2h{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+            and
+            sum(nginx_ingress_controller_requests:burnrate1d{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+          for: 1h
+          labels:
+            service: veilarbaktivitet
+            severity: warning
+        - alert: VeilarbaktivitetErrorBudgetBurn
+          annotations:
+            message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
+          expr: |
+            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+            and
+            sum(nginx_ingress_controller_requests:burnrate3d{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+          for: 3h
+          labels:
+            service: veilarbaktivitet
+            severity: warning
+        - record: mellom_kl_06_og_23
+          expr: |
+            (hour() >= 6 and hour() <= 23)
+
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[1d]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1d]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate1d
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[1h]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1h]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate1h
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[2h]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[2h]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate2h
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[30m]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[30m]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate30m
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[3d]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[3d]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate3d
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[5m]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[5m]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate5m
+        - expr: |
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",code=~"5.."}[6h]))
+            /
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[6h]))
+          labels:
+            service: veilarbaktivitet
+          record: nginx_ingress_controller_requests:burnrate6h
