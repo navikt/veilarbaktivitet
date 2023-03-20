@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: veilarbaktivitet-error-rate
-  namespace: pto
+  namespace: dab
   labels:
     team: dab
 spec:
