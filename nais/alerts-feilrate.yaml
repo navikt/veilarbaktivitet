@@ -14,7 +14,7 @@ spec:
             nginx_ingress_controller_requests{service="veilarbaktivitet"}
           for: 1m
           labels:
-            team: dab
+            namespace: dab
             service: veilarbaktivitet
             severity: warning
         - alert: veialrbaktivitetIngerssMetrikkenFinnesIkke
@@ -24,7 +24,7 @@ spec:
             absent(nginx_ingress_controller_requests{service="veilarbaktivitet"})
           for: 15m
           labels:
-            team: dab
+            namespace: dab
             service: veilarbaktivitet
             severity: warning
         - alert: VeilarbaktivitetErrorBudgetBurn
@@ -38,7 +38,7 @@ spec:
             mellom_kl_06_og_23
           for: 2m
           labels:
-            team: dab
+            namespace: dab
             service: veilarbaktivitet
             severity: critical
         - alert: VeilarbaktivitetErrorBudgetBurn
@@ -52,7 +52,7 @@ spec:
             mellom_kl_06_og_23
           for: 15m
           labels:
-            team: dab
+            namespace: dab
             service: veilarbaktivitet
             severity: critical
         - alert: VeilarbaktivitetErrorBudgetBurn
@@ -64,7 +64,7 @@ spec:
             sum(nginx_ingress_controller_requests:burnrate1d{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
           for: 1h
           labels:
-            team: dab
+            namespace: dab
             service: veilarbaktivitet
             severity: warning
         - alert: VeilarbaktivitetErrorBudgetBurn
