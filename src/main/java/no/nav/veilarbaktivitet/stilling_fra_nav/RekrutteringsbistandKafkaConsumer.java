@@ -3,10 +3,9 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
-import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -23,7 +22,7 @@ public class RekrutteringsbistandKafkaConsumer {
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
 
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
-    @Transactional(noRollbackFor = {IkkeFunnetPersonException.class, UgyldigIdentException.class})
+    @Transactional(noRollbackFor = {IngenGjeldendeIdentException.class})
     @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
         String bestillingsId = consumerRecord.key();

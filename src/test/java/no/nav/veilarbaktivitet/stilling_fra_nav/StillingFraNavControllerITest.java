@@ -21,6 +21,7 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
@@ -36,7 +37,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -50,7 +50,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 class StillingFraNavControllerITest extends SpringBootTestBase {
 
-    static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
+    static final Date AVTALT_DATO = DateUtils.dateFromISO8601("2021-05-04T00:00:00+02:00");
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
