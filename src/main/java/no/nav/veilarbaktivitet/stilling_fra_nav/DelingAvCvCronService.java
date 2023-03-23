@@ -4,6 +4,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,7 @@ public class DelingAvCvCronService {
         while (delingAvCvManueltAvbruttService.notifiserFullfortEllerAvbruttUtenSvar(500) == 500) ;
     }
     @PreDestroy
+    @ExcludeFromCoverageGenerated
     public void stopScheduler() {
         scheduledExecutorService.shutdown();
     }

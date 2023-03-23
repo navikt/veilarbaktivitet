@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -82,6 +83,7 @@ public class MoteSMSService {
         MDC.clear();
     }
     @PreDestroy
+    @ExcludeFromCoverageGenerated
     public void stopScheduler() {
         scheduledExecutorService.shutdown();
     }

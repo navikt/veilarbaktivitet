@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -45,6 +46,7 @@ public class AktiviteterTilKafkaService {
         MDC.clear();
     }
     @PreDestroy
+    @ExcludeFromCoverageGenerated
     public void stopScheduler() {
         scheduledExecutorService.shutdown();
     }

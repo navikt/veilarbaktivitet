@@ -6,6 +6,7 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +53,7 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
         return brukernotifikasjonList.size();
     }
     @PreDestroy
+    @ExcludeFromCoverageGenerated
     public void stopScheduler() {
         scheduledExecutorService.shutdown();
     }

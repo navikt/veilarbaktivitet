@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,7 @@ public class SendBrukernotifikasjonCron {
         varselMetrikk.countForsinkedeVarslerSisteDognet(antall);
     }
     @PreDestroy
+    @ExcludeFromCoverageGenerated
     public void stopScheduler() {
         scheduledExecutorService.shutdown();
     }
