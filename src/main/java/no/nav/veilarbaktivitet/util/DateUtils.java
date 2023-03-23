@@ -1,9 +1,7 @@
 package no.nav.veilarbaktivitet.util;
 
 import lombok.NonNull;
-import lombok.SneakyThrows;
 
-import javax.xml.datatype.DatatypeFactory;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
@@ -11,16 +9,7 @@ import java.util.Date;
 
 public class DateUtils {
 
-    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     private DateUtils() {}
-
-    private static final DatatypeFactory datatypeFactory = getDatatypeFactory();
-
-    @SneakyThrows
-    private static DatatypeFactory getDatatypeFactory() {
-        return DatatypeFactory.newInstance();
-    }
 
     public static Date toDate(LocalDate localDate) {
         if (localDate == null) return null;
@@ -54,7 +43,7 @@ public class DateUtils {
      * @throws ParseException ved feil i formatet
      */
     public static Date dateFromString(String dateString) throws ParseException {
-        return dateFromString(dateString, DEFAULT_DATE_FORMAT);
+        return dateFromString(dateString, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
     }
 
     public static OffsetDateTime toOffsetDateTime(Date date) {
