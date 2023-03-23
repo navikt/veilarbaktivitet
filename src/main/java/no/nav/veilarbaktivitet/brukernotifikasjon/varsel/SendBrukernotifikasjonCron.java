@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -7,6 +8,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Service
 @EnableScheduling
@@ -15,6 +18,8 @@ public class SendBrukernotifikasjonCron {
     private final BrukerNotifkasjonProducerService internalService;
     private final VarselDAO varselDao;
     private final VarselMetrikk varselMetrikk;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
+
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -43,5 +48,9 @@ public class SendBrukernotifikasjonCron {
     public void countForsinkedeVarslerSisteDognet() {
         int antall = varselDao.hentAntallUkvitterteVarslerForsoktSendt(20);
         varselMetrikk.countForsinkedeVarslerSisteDognet(antall);
+    }
+    @PreDestroy
+    public void stopScheduler() {
+        scheduledExecutorService.shutdown();
     }
 }

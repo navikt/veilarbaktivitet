@@ -28,4 +28,5 @@ public class KafkaHelsesjekOppdaterer {
             helsesjekk.setIsHealty(false, t.getMessage());
         }
     }
+
 }

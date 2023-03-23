@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -8,6 +9,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Service
@@ -15,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AvsluttBrukernotifikasjonCron {
     private final AvsluttSender internalService;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -43,5 +47,10 @@ public class AvsluttBrukernotifikasjonCron {
         } catch (Exception e) {
             log.error("Kunne ikke avslutte oppgave", e);
         }
+    }
+
+    @PreDestroy
+    public void stopScheduler() {
+        scheduledExecutorService.shutdown();
     }
 }
