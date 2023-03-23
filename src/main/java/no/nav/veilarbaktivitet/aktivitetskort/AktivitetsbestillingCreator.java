@@ -4,6 +4,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.json.JsonMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.EksternAktivitetskortBestilling;
@@ -11,10 +12,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.springframework.stereotype.Component;
@@ -47,13 +46,11 @@ public class AktivitetsbestillingCreator {
     private Person.AktorId hentAktorId(Person.Fnr fnr) throws UgyldigIdentFeil {
         try {
             return personService.getAktorIdForPersonBruker(fnr).orElseThrow(() -> new UgyldigIdentFeil("Ugyldig identtype for " + fnr.get(), null));
-        } catch (UgyldigIdentException e) {
-            throw new UgyldigIdentFeil("Ugyldig ident for fnr :" + fnr.get(), e);
-        } catch (IkkeFunnetPersonException e) {
-            throw new UgyldigIdentFeil("AktørId ikke funnet for fnr :" + fnr.get(), e);
+        } catch (IngenGjeldendeIdentException e) {
+            throw new UgyldigIdentFeil("Ident ikke funnet eller ugyldig ident for fnr :" + fnr.get(), e);
         }
     }
-    public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, IkkeFunnetPersonException, KeyErIkkeFunksjonellIdFeil {
+    public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, KeyErIkkeFunksjonellIdFeil {
         var melding = deserialiser(consumerRecord);
         if (!melding.getAktivitetskortId().toString().equals(consumerRecord.key()))
             throw new KeyErIkkeFunksjonellIdFeil(new ErrorMessage(String.format("aktivitetsId: %s må være lik kafka-meldings-id: %s", melding.getAktivitetskortId(), consumerRecord.key())), null);

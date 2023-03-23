@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -21,6 +22,7 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
@@ -35,8 +37,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
+
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.UUID;
@@ -49,8 +51,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class StillingFraNavControllerITest extends SpringBootTestBase {
-
-    static final Date AVTALT_DATO = new Date(2021, Calendar.MAY, 4);
+    private final String AVTALT_DATO_STRING = "2021-05-04 00:00:00";
+    private Date AVTALT_DATO;
 
     @Autowired
     BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
@@ -75,7 +77,9 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
     }
 
     @BeforeEach
+    @SneakyThrows
     void cleanupBetweenTests() {
+        AVTALT_DATO = DateUtils.dateFromString(AVTALT_DATO_STRING);
         brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
         DbTestUtils.cleanupTestDb(jdbc);
     }

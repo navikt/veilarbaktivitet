@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -13,10 +14,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.UgyldigIdentException;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -66,7 +65,7 @@ public class OpprettForesporselOmDelingAvCv {
         try {
             sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
             underOppfolging = true;
-        } catch (IkkeFunnetPersonException | UgyldigIdentException exception) {
+        } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
             log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
