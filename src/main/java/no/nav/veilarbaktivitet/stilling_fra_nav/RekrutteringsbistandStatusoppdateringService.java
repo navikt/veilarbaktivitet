@@ -27,7 +27,7 @@ public class RekrutteringsbistandStatusoppdateringService {
 
     private void maybeBestillBrukernotifikasjon(AktivitetData aktivitetData, VarselType varselType) {
         if (brukernotifikasjonService.finnesBrukernotifikasjonMedVarselTypeForAktivitet(aktivitetData.getId(), varselType)) {
-            log.warn("Brukernotifikasjon er allerede sendt for {} på bestillingsid {}", varselType, aktivitetData.getStillingFraNavData().bestillingsId);
+            log.info("Brukernotifikasjon er allerede sendt for {} på bestillingsid {}", varselType, aktivitetData.getStillingFraNavData().bestillingsId);
             return;
         }
         try {
