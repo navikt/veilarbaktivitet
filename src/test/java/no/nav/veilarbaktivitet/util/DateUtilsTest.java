@@ -10,7 +10,7 @@ class DateUtilsTest {
     void should_return_correct_date() {
         String original = "2010-12-03T10:15:30+02:00";
         Date dateFromString = DateUtils.dateFromISO8601(original);
-        String fromDate = DateUtils.ISO8601FromDate(dateFromString, ZoneId.of("+02:00"));
+        String fromDate = DateUtils.iso8601Fromdate(dateFromString, ZoneId.of("+02:00"));
 
         Assertions.assertThat(fromDate).isEqualTo(original);
     }

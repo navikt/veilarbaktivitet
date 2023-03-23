@@ -3,13 +3,13 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.person.IkkeFunnetPersonException;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
@@ -41,7 +41,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                         default -> "";
                     },
                     varselType);
-        } catch (IkkeFunnetPersonException e) {
+        } catch (IngenGjeldendeIdentException e) {
             log.warn("Fikk ikke opprettet brukernotifikasjon pga ugyldig aktørId={}. Fortsetter behandling", aktivitetData.getAktorId());
         }
     }
