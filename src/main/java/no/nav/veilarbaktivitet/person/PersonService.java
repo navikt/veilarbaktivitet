@@ -55,14 +55,14 @@ public class PersonService implements IPersonService {
 
     @NotNull
     @Override
-    public AktorId getAktorIdForPersonBruker(@NotNull EksternBrukerId eksternBrukerId) {
+    public AktorId getAktorIdForPersonBruker(@NotNull EksternBrukerId eksternBrukerId) throws IngenGjeldendeIdentException {
         if (eksternBrukerId.type() == EksternBrukerId.Type.AKTOR_ID) return AktorId.of(eksternBrukerId.get());
         return aktorOppslagClient.hentAktorId(Fnr.of(eksternBrukerId.get()));
     }
 
     @NotNull
     @Override
-    public Fnr getFnrForAktorId(@NotNull EksternBrukerId eksternBrukerId) {
+    public Fnr getFnrForAktorId(@NotNull EksternBrukerId eksternBrukerId) throws IngenGjeldendeIdentException {
         if (eksternBrukerId.type() == EksternBrukerId.Type.FNR) return Fnr.of(eksternBrukerId.get());
         return aktorOppslagClient.hentFnr(AktorId.of(eksternBrukerId.get()));
     }
