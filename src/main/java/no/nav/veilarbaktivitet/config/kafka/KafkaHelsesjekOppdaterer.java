@@ -24,7 +24,7 @@ public class KafkaHelsesjekOppdaterer {
         try {
             kafkaTemplate.partitionsFor(portefolgeTopic);
             helsesjekk.setIsHealty(true, "");
-        } catch (Throwable t) {
+        } catch (Exception t) {
             helsesjekk.setIsHealty(false, t.getMessage());
         }
     }
