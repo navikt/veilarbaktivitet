@@ -1,16 +1,18 @@
 package no.nav.veilarbaktivitet.util;
 
+import lombok.NonNull;
 import lombok.SneakyThrows;
 
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.*;
 import java.util.Date;
-import java.util.GregorianCalendar;
-
-import static java.util.Optional.ofNullable;
 
 public class DateUtils {
+
+    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     private DateUtils() {}
 
     private static final DatatypeFactory datatypeFactory = getDatatypeFactory();
@@ -18,14 +20,6 @@ public class DateUtils {
     @SneakyThrows
     private static DatatypeFactory getDatatypeFactory() {
         return DatatypeFactory.newInstance();
-    }
-
-    public static XMLGregorianCalendar xmlCalendar(Date date) {
-        return ofNullable(date).map(d->{
-            GregorianCalendar cal = new GregorianCalendar();
-            cal.setTime(date);
-            return datatypeFactory.newXMLGregorianCalendar(cal);
-        }).orElse(null);
     }
 
     public static Date toDate(LocalDate localDate) {
@@ -38,8 +32,29 @@ public class DateUtils {
         return Date.from(instant);
     }
 
-    public static String ISO8601FromDate(Date date, ZoneId zoneId) {
+    public static String iso8601Fromdate(Date date, ZoneId zoneId) {
         return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
+    }
+
+    /**
+     *
+     * @param dateString dato-streng
+     * @param dateFormat Datoformat for parsing, f.eks "yyyy-MM-dd HH:mm:ss"
+     * @return Dato objektet
+     * @throws ParseException ved feil i formatet
+     */
+    public static Date dateFromString(String dateString, @NonNull SimpleDateFormat dateFormat) throws ParseException {
+        return dateFormat.parse(dateString);
+    }
+
+    /**
+     *
+     * @param dateString dato-streng, på formatet "yyyy-MM-dd HH:mm:ss"
+     * @return Dato objektet
+     * @throws ParseException ved feil i formatet
+     */
+    public static Date dateFromString(String dateString) throws ParseException {
+        return dateFromString(dateString, DEFAULT_DATE_FORMAT);
     }
 
     public static OffsetDateTime toOffsetDateTime(Date date) {
