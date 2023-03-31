@@ -43,8 +43,8 @@ slos:
         labels:
           severity: warning
 
-  - name: "slo-veilarbaktivitet-latency-90"
-    objective: 90
+  - name: "slo-veilarbaktivitet-latency-80"
+    objective: 80
     description: "Latency mot veilarbaktivitet uten arena og logger"
     sli:
       events:
