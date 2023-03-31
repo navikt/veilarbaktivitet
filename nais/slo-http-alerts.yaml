@@ -25,7 +25,7 @@ slos:
           severity: warning
 
   - name: "slo-veilarbaktivitet-availablity-spring"
-    objective: 90
+    objective: 99.9
     description: "Availability for veilarbaktivitet uten arena og logger målt fra poddene"
     sli:
       events:
