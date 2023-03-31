@@ -1,0 +1,47 @@
+name: Deploy slo-alerts
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'nais/alerts-feilrate.yaml'
+      - '.github/workflows/alerts-nye.yml'
+
+concurrency:
+  group: deploy_slo_alerts
+  cancel-in-progress: true
+
+jobs:
+  apply-slo-alerts:
+    name: Apply alerts to cluster
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: generate alerts from sloth
+        uses: navikt/sloth-nais-alert-action@main
+        with:
+          input-file: nais/slo-http-alerts.yaml
+          output-file: alerts-feilrate-slo.yaml
+          team: dab
+          name: veilarbaktivitet-alarm
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: alerts
+          path: alerts-feilrate-slo.yaml
+
+      - name: deploy to dev-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-fss
+          RESOURCE:  alerts-feilrate-slo.yaml
+      - name: deploy to prod-gcp
+        uses: nais/deploy/actions/deploy@v1
+        env:
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-fss
+          RESOURCE: alerts-feilrate-slo.yaml
