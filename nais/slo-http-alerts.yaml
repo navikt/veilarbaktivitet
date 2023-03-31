@@ -48,7 +48,7 @@ slos:
     description: "Latency mot veilarbaktivitet uten arena og logger"
     sli:
       events:
-        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", status=~"(5..)",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.1"}[{{.window}}]))
+        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.1"}[{{.window}}]))
         total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
     alerting:
       name: veilarbaktivitet-latency
@@ -67,7 +67,7 @@ slos:
     description: "Latency mot veilarbaktivitet uten arena og logger"
     sli:
       events:
-        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", status=~"(5..)",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.5"}[{{.window}}]))
+        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.5"}[{{.window}}]))
         total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
     alerting:
       name: veilarbaktivitet-latency
