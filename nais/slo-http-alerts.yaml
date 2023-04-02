@@ -17,12 +17,7 @@ slos:
       labels:
         category: "availability"
         namespace: dab
-      page_alert:
-        labels:
-          severity: critical
-      ticket_alert:
-        labels:
-          severity: warning
+
 
   - name: "slo-veilarbaktivitet-availablity-spring"
     objective: 99.9
@@ -36,12 +31,7 @@ slos:
       labels:
         category: "availability"
         namespace: dab
-      page_alert:
-        labels:
-          severity: critical
-      ticket_alert:
-        labels:
-          severity: warning
+
 
   - name: "slo-veilarbaktivitet-latency-80"
     objective: 80
@@ -60,12 +50,7 @@ slos:
       labels:
         category: "latency"
         namespace: dab
-      page_alert:
-        labels:
-          severity: critical
-      ticket_alert:
-        labels:
-          severity: warning
+
 
   - name: "slo-veilarbaktivitet-latency-99"
     objective: 99
@@ -84,9 +69,4 @@ slos:
       labels:
         category: "latency"
         namespace: dab
-      page_alert:
-        labels:
-          severity: critical
-      ticket_alert:
-        labels:
-          severity: warning
+
