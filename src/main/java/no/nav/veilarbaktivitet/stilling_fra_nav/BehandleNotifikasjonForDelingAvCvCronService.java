@@ -1,14 +1,18 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 
 @Service
@@ -17,6 +21,7 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
 
     private final KvitteringDAO kvitteringsDao;
     private final BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -47,5 +52,9 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
         brukernotifikasjonList.forEach(behandleNotifikasjonForDelingAvCvService::behandleFeiletKvittering);
         return brukernotifikasjonList.size();
     }
-
+    @PreDestroy
+    @ExcludeFromCoverageGenerated
+    public void stopScheduler() {
+        scheduledExecutorService.shutdown();
+    }
 }
