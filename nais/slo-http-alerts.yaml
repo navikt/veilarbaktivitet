@@ -1,0 +1,82 @@
+version: "prometheus/v1"
+service: "veilarbaktivitet"
+labels:
+  owner: dab
+  namespace: dab
+  repo: "navikt/veilarbaktivitet"
+slos:
+  - name: "slo-veilarbaktivitet-availablity"
+    objective: 99.9
+    description: "Availability for veilarbaktivitet is measured at ingress level. this do not include cluster internal calls."
+    sli:
+      events:
+        error_query: sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"(5..)"}[{{.window}}]))
+        total_query: sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[{{.window}}]))
+    alerting:
+      name: veilarbaktivitet-availablity
+      labels:
+        category: "availability"
+        namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
+
+  - name: "slo-veilarbaktivitet-availablity-spring"
+    objective: 99.9
+    description: "Availability for veilarbaktivitet uten arena og logger målt fra poddene"
+    sli:
+      events:
+        error_query: sum(rate(http_server_requests_seconds_count{app="veilarbaktivitet", status=~"(5..)",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*"}[{{.window}}]))
+        total_query: sum(rate(http_server_requests_seconds_count{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*"}[{{.window}}]))
+    alerting:
+      name: veilarbaktivitet-availablity
+      labels:
+        category: "availability"
+        namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
+
+  - name: "slo-veilarbaktivitet-latency-90"
+    objective: 90
+    description: "Latency mot veilarbaktivitet uten arena og logger"
+    sli:
+      events:
+        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", status=~"(5..)",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.1"}[{{.window}}]))
+        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
+    alerting:
+      name: veilarbaktivitet-latency
+      labels:
+        category: "latency"
+        namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
+
+  - name: "slo-veilarbaktivitet-latency-99"
+    objective: 99
+    description: "Latency mot veilarbaktivitet uten arena og logger"
+    sli:
+      events:
+        error_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", status=~"(5..)",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.5"}[{{.window}}]))
+        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
+    alerting:
+      name: veilarbaktivitet-latency
+      labels:
+        category: "latency"
+        namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
