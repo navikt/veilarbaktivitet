@@ -1,16 +1,20 @@
 package no.nav.veilarbaktivitet.motesms;
 
 import io.micrometer.core.annotation.Timed;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static java.time.Duration.ofHours;
 
@@ -20,6 +24,7 @@ import static java.time.Duration.ofHours;
 public class MoteSMSService {
     private final MoteSmsDAO moteSmsDAO;
     private final BrukernotifikasjonService brukernotifikasjonService;
+    private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
     @Scheduled(
             initialDelayString = "${app.env.scheduled.default.initialDelay}",
@@ -76,5 +81,10 @@ public class MoteSMSService {
                 });
 
         MDC.clear();
+    }
+    @PreDestroy
+    @ExcludeFromCoverageGenerated
+    public void stopScheduler() {
+        scheduledExecutorService.shutdown();
     }
 }
