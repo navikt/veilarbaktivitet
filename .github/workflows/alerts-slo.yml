@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'nais/alerts-slo.yml'
+      - 'nais/slo-http-alerts.yaml'
       - '.github/workflows/alerts-slo.yml'
 
 concurrency:
