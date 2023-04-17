@@ -17,7 +17,12 @@ slos:
       labels:
         category: "availability"
         namespace: dab
-
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
 
   - name: "slo-veilarbaktivitet-availablity-spring"
     objective: 99.9
@@ -31,10 +36,15 @@ slos:
       labels:
         category: "availability"
         namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
 
-
-  - name: "slo-veilarbaktivitet-latency-80"
-    objective: 80
+  - name: "slo-veilarbaktivitet-latency-90-0,2s"
+    objective: 90
     description: "Latency mot veilarbaktivitet uten arena og logger"
     sli:
       events:
@@ -42,17 +52,22 @@ slos:
           (
             sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
             -
-            sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.1"}[{{.window}}]))
-          )
-        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
+            sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.2"}[{{.window}}]))
+          ) and hour() > 6 and hour() < 23 and day_of_week() < 6 and day_of_week() > 0 OR on() vector(0)
+        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}])) and hour() > 6 and hour() < 23 and day_of_week() < 6 and day_of_week() > 0 OR on() vector(0)
     alerting:
       name: veilarbaktivitet-latency
       labels:
         category: "latency"
         namespace: dab
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
 
-
-  - name: "slo-veilarbaktivitet-latency-99"
+  - name: "slo-veilarbaktivitet-latency-99-0.5s"
     objective: 99
     description: "Latency mot veilarbaktivitet uten arena og logger"
     sli:
@@ -62,11 +77,16 @@ slos:
             sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet",  uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
             -
             sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="0.5"}[{{.window}}]))
-          )
-        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}]))
+          ) and hour() > 6 and hour() < 23 and day_of_week() < 6 and day_of_week() > 0 OR on() vector(0)
+        total_query: sum(rate(http_server_requests_seconds_bucket{app="veilarbaktivitet", uri=~"/api/.*", uri !~"/api/arena/.*", uri !~"/api/logger/.*", le="+Inf"}[{{.window}}])) and hour() > 6 and hour() < 23 and day_of_week() < 6 and day_of_week() > 0 OR on() vector(0)
     alerting:
       name: veilarbaktivitet-latency
       labels:
         category: "latency"
         namespace: dab
-
+      page_alert:
+        labels:
+          severity: critical
+      ticket_alert:
+        labels:
+          severity: warning
