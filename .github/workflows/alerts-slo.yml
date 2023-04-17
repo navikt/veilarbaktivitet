@@ -5,8 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'nais/alerts-feilrate.yaml'
-      - '.github/workflows/alerts-nye.yml'
+      - 'nais/alerts-slo.yml'
+      - '.github/workflows/alerts-slo.yml'
 
 concurrency:
   group: deploy_slo_alerts
