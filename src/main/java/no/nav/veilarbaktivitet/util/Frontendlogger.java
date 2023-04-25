@@ -5,11 +5,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.lang.NonNull;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
@@ -22,6 +20,7 @@ public class Frontendlogger {
     private final MetricsClient metricsClient;
 
     @PostMapping("/event")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void skrivEventTilInflux(@RequestBody FrontendEvent event) {
         Event toInflux = new Event(event.name + ".event");
         if (event.getTags() != null) {
