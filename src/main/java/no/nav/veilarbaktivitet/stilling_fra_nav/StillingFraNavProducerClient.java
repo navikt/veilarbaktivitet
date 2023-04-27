@@ -6,12 +6,15 @@ import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.person.Innsender;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 public class StillingFraNavProducerClient {
+    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
     private final KafkaStringAvroTemplate<DelingAvCvRespons> producerClient;
     private final String topicUt;
 
@@ -98,7 +101,7 @@ public class StillingFraNavProducerClient {
         delingAvCvRespons.setKanIkkeOppretteBegrunnelse(kanIkkeOppretteBegrunnelse);
 
         ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
-        log.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
+        secureLogs.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
 
