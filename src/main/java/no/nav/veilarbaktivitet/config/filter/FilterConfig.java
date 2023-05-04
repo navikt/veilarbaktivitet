@@ -104,10 +104,10 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         azureAdAuthConfig(properties),
-                        loginserviceIdportenConfig(properties),
                         naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties),
-                        tokenxConfig()
+                        tokenxConfig(),
+                        loginserviceIdportenConfig(properties)
                 )
         );
 
