@@ -378,7 +378,7 @@ public class AktivitetDAO {
                                     .addValue("kontaktperson_mobil", kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()))
-                                    .addValue("ikkefattjobbendetaljer", stilling.getIkkefattjobbendetaljer());
+                                    .addValue("detaljer", stilling.getDetaljer());
 
                             // language=sql
                     String sql = """ 
@@ -402,7 +402,7 @@ public class AktivitetDAO {
                             kontaktperson_mobil,
                             soknadsstatus,
                             livslopsstatus,
-                            ikkefattjobbendetaljer
+                            detaljer
                             ) VALUES (
                             :aktivitet_id,
                             :versjon,
@@ -423,7 +423,7 @@ public class AktivitetDAO {
                             :kontaktperson_mobil ,
                             :soknadsstatus,
                             :livslopsstatus,
-                            :ikkefattjobbendetaljer)
+                            :detaljer)
                             """;
                     namedParameterJdbcTemplate.update(
                             sql,

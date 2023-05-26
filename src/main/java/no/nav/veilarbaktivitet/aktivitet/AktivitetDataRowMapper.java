@@ -156,7 +156,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
-                .ikkefattjobbendetaljer(rs.getString("ikkefattjobbendetaljer"))
+                .detaljer(rs.getString("detaljer"))
                 .build();
     }
 

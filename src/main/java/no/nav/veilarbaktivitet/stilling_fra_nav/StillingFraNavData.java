@@ -21,5 +21,5 @@ public class StillingFraNavData {
     Soknadsstatus soknadsstatus;
     LivslopsStatus livslopsStatus;
     String varselId; // TODO fjerne denne?
-    String ikkefattjobbendetaljer;
+    String detaljer;
 }

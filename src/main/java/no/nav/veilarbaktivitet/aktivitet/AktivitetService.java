@@ -379,7 +379,7 @@ public class AktivitetService {
             .withBestillingsId(updated.getBestillingsId())
             .withSvarfrist(updated.getSvarfrist())
             .withKontaktpersonData(updated.getKontaktpersonData())
-            .withIkkefattjobbendetaljer(updated.getIkkefattjobbendetaljer())
+            .withDetaljer(updated.getDetaljer())
             .withVarselId(updated.getVarselId());
     }
 
