@@ -34,10 +34,16 @@ import static java.util.Optional.ofNullable;
 @RequiredArgsConstructor
 public class AktivitetDAO {
 
+    // Duplicate column names must _all_ be aliased
+
     // language=sql
     private static final String SELECT_AKTIVITET = """
-            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
-                A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.*, T.* FROM AKTIVITET A
+            SELECT
+            SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
+            S.ARBEIDSGIVER AS "STILLINGSSOK.ARBEIDSGIVER", S.ARBEIDSSTED AS "STILLINGSSOK.ARBEIDSSTED",
+            SFN.DETALJER as "STILLING_FRA_NAV.DETALJER",
+            T.DETALJER AS "EKSTERNAKTIVITET.DETALJER",
+            A.*, S.*, E.*, SA.*, IJ.*, M.*, B.*, SFN.*, T.* FROM AKTIVITET A
             LEFT JOIN STILLINGSSOK S ON A.aktivitet_id = S.aktivitet_id AND A.versjon = S.versjon
             LEFT JOIN EGENAKTIVITET E ON A.aktivitet_id = E.aktivitet_id AND A.versjon = E.versjon
             LEFT JOIN SOKEAVTALE SA ON A.aktivitet_id = SA.aktivitet_id AND A.versjon = SA.versjon
@@ -226,17 +232,8 @@ public class AktivitetDAO {
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
-        ofNullable(moteData).ifPresent(m -> {
-            SqlParameterSource params = new MapSqlParameterSource()
-                    .addValue(AKTIVITETID, aktivitetId)
-                    .addValue(VERSJON, versjon)
-                    .addValue("adresse", moteData.getAdresse())
-                    .addValue("forberedelser", moteData.getForberedelser())
-                    .addValue("kanal", EnumUtils.getName(moteData.getKanal()))
-                    .addValue("referat", moteData.getReferat())
-                    .addValue("referat_publisert", moteData.isReferatPublisert());
-            // language=sql
-            String sql = """
+        // language=sql
+        String sql = """
                     INSERT INTO MOTE(aktivitet_id, versjon, adresse, forberedelser, kanal, referat, referat_publisert) VALUES (
                     :aktivitet_id,
                     :versjon,
@@ -246,11 +243,27 @@ public class AktivitetDAO {
                     :referat,
                     :referat_publisert)
                     """;
+        ofNullable(moteData).ifPresent(m -> {
+            SqlParameterSource params = new MapSqlParameterSource()
+                    .addValue(AKTIVITETID, aktivitetId)
+                    .addValue(VERSJON, versjon)
+                    .addValue("adresse", moteData.getAdresse())
+                    .addValue("forberedelser", moteData.getForberedelser())
+                    .addValue("kanal", EnumUtils.getName(moteData.getKanal()))
+                    .addValue("referat", moteData.getReferat())
+                    .addValue("referat_publisert", moteData.isReferatPublisert());
             namedParameterJdbcTemplate.update(sql, params);
         });
     }
 
     private void insertStillingsSoek(long aktivitetId, long versjon, StillingsoekAktivitetData stillingsSoekAktivitet) {
+        // language=sql
+        String sql = """
+                            INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel,
+                            arbeidsgiver, arbeidssted, kontaktperson, etikett)
+                            VALUES(:aktivitet_id, :versjon, :stillingstittel,
+                            :arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)
+                            """;
         ofNullable(stillingsSoekAktivitet)
                 .ifPresent(stillingsoek -> {
                     SqlParameterSource params = new MapSqlParameterSource()
@@ -261,13 +274,6 @@ public class AktivitetDAO {
                             .addValue("arbeidssted", stillingsoek.getArbeidssted())
                             .addValue("kontaktperson", stillingsoek.getKontaktPerson())
                             .addValue("etikett", EnumUtils.getName(stillingsoek.getStillingsoekEtikett()));
-                    // language=sql
-                    String sql = """
-                            INSERT INTO STILLINGSSOK(aktivitet_id, versjon, stillingstittel,
-                            arbeidsgiver, arbeidssted, kontaktperson, etikett)
-                            VALUES(:aktivitet_id, :versjon, :stillingstittel,
-                            :arbeidsgiver, :arbeidssted, :kontaktperson, :etikett)
-                            """;
                     namedParameterJdbcTemplate.update(sql, params);
                 });
     }
@@ -330,6 +336,13 @@ public class AktivitetDAO {
     }
 
     private void insertBehandling(long aktivitetId, long versjon, BehandlingAktivitetData behandlingAktivitet) {
+        // language=sql
+        String sql = """
+                            INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type,
+                            behandling_sted, effekt, behandling_oppfolging)
+                            VALUES(:aktivitet_id, :versjon, :behandling_type,
+                            :behandling_sted, :effekt, :behandling_oppfolging)
+                            """;
         ofNullable(behandlingAktivitet)
                 .ifPresent(behandling -> {
                     SqlParameterSource params = new MapSqlParameterSource()
@@ -339,13 +352,6 @@ public class AktivitetDAO {
                             .addValue("behandling_sted", behandling.getBehandlingSted())
                             .addValue("effekt", behandling.getEffekt())
                             .addValue("behandling_oppfolging", behandling.getBehandlingOppfolging());
-                    // language=sql
-                    String sql = """
-                            INSERT INTO BEHANDLING(aktivitet_id, versjon, behandling_type,
-                            behandling_sted, effekt, behandling_oppfolging)
-                            VALUES(:aktivitet_id, :versjon, :behandling_type,
-                            :behandling_sted, :effekt, :behandling_oppfolging)
-                            """;
                     namedParameterJdbcTemplate.update(
                             sql,
                             params);
@@ -354,34 +360,9 @@ public class AktivitetDAO {
 
 
     private void insertStillingFraNav(long aktivitetId, long versjon, StillingFraNavData stillingFraNavData) {
-        ofNullable(stillingFraNavData)
-                .ifPresent(stilling -> {
-                            var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
-                            var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
-                            SqlParameterSource parms = new MapSqlParameterSource()
-                                    .addValue(AKTIVITETID, aktivitetId)
-                                    .addValue(VERSJON, versjon)
-                                    .addValue("cv_kan_deles", cvKanDelesData.map(CvKanDelesData::getKanDeles).orElse(null))
-                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.map(CvKanDelesData::getEndretTidspunkt).orElse(null))
-                                    .addValue("cv_kan_deles_av", cvKanDelesData.map(CvKanDelesData::getEndretAv).orElse(null))
-                                    .addValue("cv_kan_deles_av_type", cvKanDelesData.map(CvKanDelesData::getEndretAvType).map(Enum::name).orElse(null))
-                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.map(CvKanDelesData::getAvtaltDato).orElse(null))
-                                    .addValue("soknadsfrist", stilling.getSoknadsfrist())
-                                    .addValue("svarfrist", stilling.getSvarfrist())
-                                    .addValue("arbeidsgiver", stilling.getArbeidsgiver())
-                                    .addValue("bestillingsId", stilling.getBestillingsId())
-                                    .addValue("stillingsId", stilling.getStillingsId())
-                                    .addValue("arbeidssted", stilling.getArbeidssted())
-                                    .addValue("varselid", stilling.getVarselId())
-                                    .addValue("kontaktperson_navn", kontaktpersonData.map(KontaktpersonData::getNavn).orElse(null))
-                                    .addValue("kontaktperson_tittel", kontaktpersonData.map(KontaktpersonData::getTittel).orElse(null))
-                                    .addValue("kontaktperson_mobil", kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
-                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
-                                    .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()))
-                                    .addValue("detaljer", stilling.getDetaljer());
 
-                            // language=sql
-                    String sql = """ 
+        // language=sql
+        String sql = """ 
                             insert into STILLING_FRA_NAV (
                             AKTIVITET_ID,
                             VERSJON,
@@ -425,9 +406,34 @@ public class AktivitetDAO {
                             :livslopsstatus,
                             :detaljer)
                             """;
+        ofNullable(stillingFraNavData)
+                .ifPresent(stilling -> {
+                            var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
+                            var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
+                            SqlParameterSource parms = new MapSqlParameterSource()
+                                    .addValue(AKTIVITETID, aktivitetId)
+                                    .addValue(VERSJON, versjon)
+                                    .addValue("cv_kan_deles", cvKanDelesData.map(CvKanDelesData::getKanDeles).orElse(null))
+                                    .addValue("cv_kan_deles_tidspunkt", cvKanDelesData.map(CvKanDelesData::getEndretTidspunkt).orElse(null))
+                                    .addValue("cv_kan_deles_av", cvKanDelesData.map(CvKanDelesData::getEndretAv).orElse(null))
+                                    .addValue("cv_kan_deles_av_type", cvKanDelesData.map(CvKanDelesData::getEndretAvType).map(Enum::name).orElse(null))
+                                    .addValue("cv_kan_deles_avtalt_dato", cvKanDelesData.map(CvKanDelesData::getAvtaltDato).orElse(null))
+                                    .addValue("soknadsfrist", stilling.getSoknadsfrist())
+                                    .addValue("svarfrist", stilling.getSvarfrist())
+                                    .addValue("arbeidsgiver", stilling.getArbeidsgiver())
+                                    .addValue("bestillingsId", stilling.getBestillingsId())
+                                    .addValue("stillingsId", stilling.getStillingsId())
+                                    .addValue("arbeidssted", stilling.getArbeidssted())
+                                    .addValue("varselid", stilling.getVarselId())
+                                    .addValue("kontaktperson_navn", kontaktpersonData.map(KontaktpersonData::getNavn).orElse(null))
+                                    .addValue("kontaktperson_tittel", kontaktpersonData.map(KontaktpersonData::getTittel).orElse(null))
+                                    .addValue("kontaktperson_mobil", kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
+                                    .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
+                                    .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()))
+                                    .addValue("detaljer", stilling.getDetaljer());
                     namedParameterJdbcTemplate.update(
                             sql,
-                                    parms
+                            parms
                             );
                         }
                 );

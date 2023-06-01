@@ -89,8 +89,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     private static StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
         return StillingsoekAktivitetData.builder()
                 .stillingsTittel(rs.getString("stillingstittel"))
-                .arbeidsgiver(rs.getString("arbeidsgiver"))
-                .arbeidssted(rs.getString("arbeidssted"))
+                .arbeidsgiver(rs.getString("STILLINGSSOK.ARBEIDSGIVER"))
+                .arbeidssted(rs.getString("STILLINGSSOK.ARBEIDSSTED"))
                 .kontaktPerson(rs.getString("kontaktperson"))
                 .stillingsoekEtikett(EnumUtils.valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
                 .build()
@@ -156,7 +156,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
-                .detaljer(rs.getString("detaljer"))
+                .detaljer(rs.getString("STILLING_FRA_NAV.DETALJER"))
                 .build();
     }
 
@@ -172,7 +172,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
                 .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
                 .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
-                .detaljer(Database.hentListObjectFromJsonString(rs, "DETALJER", Attributt.class))
+                .detaljer(Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class))
                 .build();
     }
 }

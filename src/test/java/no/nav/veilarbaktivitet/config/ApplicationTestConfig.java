@@ -15,7 +15,6 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.EventListener;
-import org.checkerframework.checker.units.qual.A;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -66,7 +65,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getDb().getDataSource();
+        return LocalH2Database.getPresistentDb().getDataSource();
     }
 
     @Bean
