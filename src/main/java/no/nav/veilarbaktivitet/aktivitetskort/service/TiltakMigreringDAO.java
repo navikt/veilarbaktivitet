@@ -24,7 +24,8 @@ public class TiltakMigreringDAO {
                 .addValue("maxAntall", maxAntall);
 
         return jdbcTemplate.query("""
-                SELECT *
+                SELECT e.DETALJER AS "EKSTERNAKTIVITET.DETALJER",
+                *
                 FROM EKSTERNAKTIVITET e JOIN AKTIVITET a ON e.AKTIVITET_ID = a.AKTIVITET_ID AND e.VERSJON = a.VERSJON
                 WHERE e.OPPRETTET_SOM_HISTORISK = 1 AND
                     a.GJELDENDE = 1 AND

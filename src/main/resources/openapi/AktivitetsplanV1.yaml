@@ -209,6 +209,7 @@ components:
                 - JOBBTILBUD
                 - AVSLAG
                 - IKKE_FATT_JOBBEN
+                - FATT_JOBBEN
 
 paths:
   /internal/api/v1/aktivitet:

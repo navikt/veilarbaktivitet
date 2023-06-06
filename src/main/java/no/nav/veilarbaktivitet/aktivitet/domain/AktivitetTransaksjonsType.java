@@ -15,5 +15,6 @@ public enum AktivitetTransaksjonsType {
     FORHAANDSORIENTERING_LEST,
     DEL_CV_SVART,
     SOKNADSSTATUS_ENDRET,
-    IKKE_FATT_JOBBEN
+    IKKE_FATT_JOBBEN,
+    FATT_JOBBEN
 }
