@@ -24,7 +24,9 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentStillingFraNavUtenSvarDerFristErUtlopt(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("""
-                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, SFN.*
+                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
+                            SFN.DETALJER AS "STILLING_FRA_NAV.DETALJER",
+                            A.*, SFN.*
                             FROM AKTIVITET A
                             JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                             WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV' 
@@ -43,12 +45,14 @@ public class DelingAvCvDAO {
     public List<AktivitetData> hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(long maxAntall) {
         SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
         return jdbcTemplate.query("""
-                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED", A.*, SFN.*
+                            SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
+                            SFN.DETALJER AS "STILLING_FRA_NAV.DETALJER",
+                            A.*, SFN.*
                             FROM AKTIVITET A
                             JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
                             WHERE AKTIVITET_TYPE_KODE  = 'STILLING_FRA_NAV'
                             AND LIVSLOPSTATUS_KODE IN('AVBRUTT','FULLFORT')
-                            AND GJELDENDE = 1 
+                            AND GJELDENDE = 1
                             AND HISTORISK_DATO is null
                             AND SFN.LIVSLOPSSTATUS NOT IN('AVBRUTT_AV_BRUKER', 'AVBRUTT_AV_SYSTEM', 'HAR_SVART')
                             AND SFN.CV_KAN_DELES IS NULL

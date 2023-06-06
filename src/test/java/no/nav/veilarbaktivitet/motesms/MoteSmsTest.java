@@ -193,7 +193,7 @@ class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdatterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
+        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.FULLFORT);
 
         moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);
@@ -210,7 +210,7 @@ class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
-        aktivitetTestService.oppdatterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
+        aktivitetTestService.oppdaterAktivitetStatus(happyBruker, veileder, mote, AktivitetStatus.AVBRUTT);
 
         moteSmsCronjobber();
         int antall = jdbcTemplate.queryForObject("Select count(*) from GJELDENDE_MOTE_SMS", Integer.class);

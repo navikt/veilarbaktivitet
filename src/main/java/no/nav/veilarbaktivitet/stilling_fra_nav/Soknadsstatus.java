@@ -6,5 +6,6 @@ public enum Soknadsstatus {
     SKAL_PAA_INTERVJU,
     JOBBTILBUD,
     AVSLAG,
-    IKKE_FATT_JOBBEN
+    IKKE_FATT_JOBBEN,
+    FATT_JOBBEN
 }

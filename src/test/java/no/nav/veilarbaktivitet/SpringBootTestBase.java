@@ -5,7 +5,9 @@ import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -48,8 +50,14 @@ public abstract class SpringBootTestBase {
     @Autowired
     private KafkaTemplate<String, String> stringStringKafkaTemplate;
 
+    @Autowired
+    private KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate;
+
     @Value("${topic.inn.aktivitetskort}")
     private String aktivitetskortTopic;
+
+    @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
+    private String innRekrutteringsbistandStatusoppdateringTopic;
 
     @LocalServerPort
     protected int port;
@@ -60,7 +68,7 @@ public abstract class SpringBootTestBase {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, kafkaTestService, stringStringKafkaTemplate, aktivitetskortTopic);
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, innRekrutteringsbistandStatusoppdateringTopic, kafkaTestService, stringStringKafkaTemplate, navCommonKafkaJsonTemplate, aktivitetskortTopic);
         kasserTestService = new KasserTestService(port);
     }
 }

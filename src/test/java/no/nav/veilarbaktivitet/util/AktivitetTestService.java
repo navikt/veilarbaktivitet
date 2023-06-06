@@ -21,13 +21,15 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdateringEventType;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
@@ -38,14 +40,11 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.assertj.core.api.Assertions;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import shaded.com.google.common.collect.Streams;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -67,15 +66,13 @@ public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
 
-    @Value("${topic.inn.oppfolgingsperiode}")
-    private String oppfolgingperiodeTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    private String springKafkaConsumerGroupId;
+    private final String innRekrutteringsbistandStatusoppdateringTopic;
 
     private final KafkaTestService kafkaTestService;
 
     private final KafkaTemplate<String, String> stringStringKafkaTemplate;
+
+    private final KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringProducer;
 
     private final String aktivitetsKortV1Topic;
 
@@ -199,6 +196,24 @@ public class AktivitetTestService {
         return opprettStillingFraNav(mockBruker, createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker));
     }
 
+    public void mottaOppdateringFraRekrutteringsbistand(String bestillingsId, String detaljer, RekrutteringsbistandStatusoppdateringEventType oppdateringsType, String endretAvIdent, ZonedDateTime tidspunkt) throws ExecutionException, InterruptedException, TimeoutException {
+        var payload = new RekrutteringsbistandStatusoppdatering(
+                oppdateringsType,
+                detaljer,
+                endretAvIdent,
+                tidspunkt
+        );
+        var sendResultFattJobben = rekrutteringsbistandStatusoppdateringProducer.send(
+                innRekrutteringsbistandStatusoppdateringTopic,
+                bestillingsId,
+                payload
+        ).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumert(
+                innRekrutteringsbistandStatusoppdateringTopic,
+                sendResultFattJobben.getRecordMetadata().offset()
+        );
+    }
+
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding) {
         ConsumerRecord<String, DelingAvCvRespons> stillingFraNavRecord = stillingFraNavTestService.opprettStillingFraNav(mockBruker, melding);
         DelingAvCvRespons value = stillingFraNavRecord.value();
@@ -235,7 +250,7 @@ public class AktivitetTestService {
 
     }
 
-    public AktivitetDTO oppdatterAktivitetStatus(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, AktivitetStatus status) {
+    public AktivitetDTO oppdaterAktivitetStatus(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, AktivitetStatus status) {
         AktivitetDTO aktivitetDTO = orginalAktivitet.toBuilder().status(status).build();
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
@@ -374,26 +389,6 @@ public class AktivitetTestService {
                 .extract()
                 .response()
                 .jsonPath().getList(".", Aktivitet.class);
-    }
-
-    public void avsluttOppfolgingsperiode(UUID oppfolgingsperiode, Person.AktorId aktorId) throws ExecutionException, InterruptedException, TimeoutException {
-        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
-        var start = now.withYear(2020);
-        var key = aktorId.get();
-        var payload = JsonUtils.toJson(
-                SisteOppfolgingsperiodeV1.builder()
-                        .aktorId(aktorId.get())
-                        .uuid(oppfolgingsperiode)
-                        .startDato(start)
-                        .sluttDato(now)
-        );
-        var sendResult = stringStringKafkaTemplate.send(new ProducerRecord<>(
-                oppfolgingperiodeTopic,
-                key,
-                payload
-        )).get(3, TimeUnit.SECONDS);
-
-        kafkaTestService.assertErKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset());
     }
 
 
