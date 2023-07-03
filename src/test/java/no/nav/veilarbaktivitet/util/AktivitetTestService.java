@@ -431,9 +431,9 @@ public class AktivitetTestService {
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
-    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {
+    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> arenaMeldingHeaders) {
         var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
-        opprettEksterntAktivitetsKort(aktivitetskorter, meldingContextList);
+        opprettEksterntAktivitetsKort(aktivitetskorter, arenaMeldingHeaders);
     }
 
     @SuppressWarnings("unchecked")

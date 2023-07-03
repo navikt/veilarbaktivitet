@@ -742,9 +742,36 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var context = meldingContext(arenaaktivitetId);
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(context));
 
-        var arenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
-        assertThat(arenaAktiviteter).hasSize(1);
-        assertThat(arenaAktiviteter.get(0).getId()).doesNotStartWith("ARENA"); // Skal ikke være arenaId
+        var res = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
+        var aktiviteter = res.aktiviteter;
+        assertThat(aktiviteter).hasSize(0);
+    }
+
+    @Test
+    void skal_alltid_vere_like_mange_aktiviteter_med_toggle_av_eller_pa() {
+        ArenaId arenaaktivitetId =  new ArenaId("ARENATA123");
+        Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
+
+        // Default toggle for testene er på
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
+        var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(preMigreringArenaAktiviteter).hasSize(1);
+        var preMigreringVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
+        assertThat(preMigreringVeilarbAktiviteter).hasSize(0);
+
+        // Migrer aktivtet
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(defaultcontext));
+
+        var toggleAvArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(toggleAvArenaAktiviteter).hasSize(1);
+        var toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
+        assertThat(toggleAvVeilarbAktiviteter).hasSize(0);
+
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
+        var togglePaArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(togglePaArenaAktiviteter).hasSize(0);
+        var togglePaVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
+        assertThat(togglePaVeilarbAktiviteter).hasSize(1);
     }
 
     @Test
