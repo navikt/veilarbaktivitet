@@ -11,7 +11,6 @@ public class BrukerOptions {
     private boolean erReservertKrr;
     private boolean kanVarsles;
     private boolean erUnderKvp;
-    private String kontorsperreEnhet;
     private boolean harBruktNivaa4;
 
     private boolean oppfolgingFeiler;
@@ -36,5 +35,4 @@ public class BrukerOptions {
                 .erUnderKvp(false)
                 .harBruktNivaa4(true);
     }
-
 }

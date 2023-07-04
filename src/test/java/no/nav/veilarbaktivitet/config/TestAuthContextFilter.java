@@ -7,9 +7,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import no.nav.common.auth.context.AuthContext;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.auth.context.UserRole;
+import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt;
 import org.springframework.stereotype.Service;
 
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
+import static no.nav.common.auth.Constants.AZURE_OID_CLAIM;
+import static no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.NAV_CONTEXT;
 
 
 @Service
@@ -37,11 +40,14 @@ public class TestAuthContextFilter implements Filter {
     }
 
     private JWTClaimsSet veilederClaims(String test_ident) {
+        NavAnsatt navAnsatt = NAV_CONTEXT.getNavAnsatt().get(test_ident);
+
         return new JWTClaimsSet.Builder()
                 .subject(test_ident)
                 .audience(TEST_AUDIENCE)
                 .issuer(TEST_ISSUER)
                 .claim(AAD_NAV_IDENT_CLAIM, test_ident)
+                .claim(AZURE_OID_CLAIM, navAnsatt.getAzureObjectId().toString())
                 .build();
     }
     private JWTClaimsSet brukerClaims(String test_ident) {

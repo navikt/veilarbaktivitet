@@ -20,7 +20,7 @@ public class WireMockUtil {
         boolean kanVarsles = mockBruker.getBrukerOptions().isKanVarsles();
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
-        String kontorsperreEnhet = mockBruker.getBrukerOptions().getKontorsperreEnhet();
+        String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
 
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
 

@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.db.dao;
 
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.KasseringDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -16,8 +17,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,10 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 @Slf4j
-@SpringBootTest
-@AutoConfigureWireMock(port = 0)
 @Transactional
-class AktivitetDAOTest {
+class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives ort fra spring test?
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
     private static final String KASSERT_AV_NAV = "Kassert av NAV";

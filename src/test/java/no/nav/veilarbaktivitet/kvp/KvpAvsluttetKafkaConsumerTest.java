@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFuture;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -49,7 +48,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
     @BeforeEach
     public void before() {
-        var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).kontorsperreEnhet("123").build();
+        var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).build();
         mockBruker = MockNavService.createBruker(medKvp);
         mockVeileder = MockNavService.createVeileder(mockBruker);
         when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
