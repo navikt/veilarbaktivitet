@@ -87,3 +87,5 @@ spec:
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
+    - name: POAO_TILGANG_SCOPE
+      value: api://prod-fss.poao.poao-tilgang/.default
