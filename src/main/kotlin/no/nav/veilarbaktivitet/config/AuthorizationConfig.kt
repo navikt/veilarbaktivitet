@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-open class AuthurisationConfig {
+open class AuthorizationConfig {
     @Bean
     open fun poaoTilgangClient(@Value("\${app.env.poao_tilgang.url}") baseUrl: String, tokenProvider: AzureAdMachineToMachineTokenClient, @Value("app.env.poao_tilgang.scope") scope: String): PoaoTilgangClient {
         val poaoTilgangHttpClient = PoaoTilgangHttpClient(baseUrl, { tokenProvider.createMachineToMachineToken(scope) } )
