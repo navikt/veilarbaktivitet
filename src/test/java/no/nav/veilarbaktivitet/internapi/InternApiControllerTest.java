@@ -37,7 +37,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
 
         // Sett bruker under KVP
-        BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).kontorsperreEnhet("9999").build();
+        BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
         MockNavService.updateBruker(mockBruker, kvpOptions);
         aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 

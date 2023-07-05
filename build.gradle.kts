@@ -1,7 +1,8 @@
 
 val spring_boot_version = "3.0.2"
-val common_version = "3.2023.03.22_12.48-00fcbdc8f455"
-val dab_common_version = "2023.02.24-10.12.c01f6e9ff044"
+val common_version = "3.2023.06.27_13.10-a13ff6f90290"
+val dab_common_version = "2023.06.30-12.11.f11e6e6e92ef"
+val poao_tilgang_version = "2023.07.03_09.35-6073bc164ee2"
 val shedlock_version = "4.42.0"
 val _version: String by project
 
@@ -172,6 +173,8 @@ dependencies {
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
     //test dependencys
+    testImplementation("com.github.navikt.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
+
     testImplementation("org.awaitility:awaitility:4.1.0")
     testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
