@@ -744,7 +744,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
 
         var res = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
         var aktiviteter = res.aktiviteter;
-        assertThat(aktiviteter).hasSize(0);
+        assertThat(aktiviteter).isEmpty();
     }
 
     @Test
@@ -757,7 +757,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(preMigreringArenaAktiviteter).hasSize(1);
         var preMigreringVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
-        assertThat(preMigreringVeilarbAktiviteter).hasSize(0);
+        assertThat(preMigreringVeilarbAktiviteter).isEmpty();
 
         // Migrer aktivtet
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(defaultcontext));
@@ -765,11 +765,11 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var toggleAvArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
         assertThat(toggleAvArenaAktiviteter).hasSize(1);
         var toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
-        assertThat(toggleAvVeilarbAktiviteter).hasSize(0);
+        assertThat(toggleAvVeilarbAktiviteter).isEmpty();
 
         when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
         var togglePaArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
-        assertThat(togglePaArenaAktiviteter).hasSize(0);
+        assertThat(togglePaArenaAktiviteter).isEmpty();
         var togglePaVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
         assertThat(togglePaVeilarbAktiviteter).hasSize(1);
     }
