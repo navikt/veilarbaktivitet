@@ -37,14 +37,15 @@ public class AktivitetsplanController {
     @GetMapping
     public AktivitetsplanDTO hentAktivitetsplan() {
         boolean erEksternBruker = authService.erEksternBruker();
+        val userFnr = getContextUserIdent();
         val aktiviter = appService
-                .hentAktiviteterForIdent(getContextUserIdent())
+                .hentAktiviteterForIdent(userFnr)
                 .stream()
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                .filter(migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv())
                 .toList();
+        var filtrerteAktiviter = migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter);
 
-        return new AktivitetsplanDTO().setAktiviteter(aktiviter);
+        return new AktivitetsplanDTO().setAktiviteter(filtrerteAktiviter);
     }
 
     @GetMapping("/{id}")
