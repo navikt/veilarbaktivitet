@@ -102,6 +102,7 @@ class AuthServiceTest {
                         .claim("acr", "Level4")
                         .build()
         );
+
         Assertions.assertThrows(ResponseStatusException.class, () -> {
             authService.sjekkTilgangTilPerson(Person.fnr("12121212121").eksternBrukerId());
         });
