@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -35,7 +36,9 @@ public class MigreringService {
             return aktiviteter;
         } else {
             // Ikke vis migrerte aktiviter
-            var funksjonelleIds = aktiviteter.stream().map(AktivitetDTO::getFunksjonellId).toList();
+            var funksjonelleIds = aktiviteter.stream().map(AktivitetDTO::getFunksjonellId)
+                    .filter(Objects::nonNull)
+                    .toList();
             var idMapping = idMappingDAO.getMappingsByFunksjonellId(funksjonelleIds);
             return aktiviteter.stream().filter(aktivitet -> !idMapping.containsKey(aktivitet.getFunksjonellId())).toList();
         }
