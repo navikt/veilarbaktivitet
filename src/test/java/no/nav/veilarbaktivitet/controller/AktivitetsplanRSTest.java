@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -49,7 +50,6 @@ import static org.junit.jupiter.api.Assertions.*;
 // TODO: 19/01/2023 skriv om til nye test rammeverk (SpringBootTestBase)
 
 class AktivitetsplanRSTest extends SpringBootTestBase {
-
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
