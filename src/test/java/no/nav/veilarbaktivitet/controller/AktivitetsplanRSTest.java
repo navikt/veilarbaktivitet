@@ -318,7 +318,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
                 .avsluttetKommentar(nyAvsluttetKommentar)
                 .build();
 
-        this.aktivitet = aktivitetTestService.oppdatterAktivitetOk(mockBruker, mockVeileder, AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, false));
+        this.aktivitet = aktivitetTestService.oppdaterAktivitetOk(mockBruker, mockVeileder, AktivitetDTOMapper.mapTilAktivitetDTO(nyAktivitet, false));
         this.lagredeAktivitetsIder.set(0, Long.parseLong(this.aktivitet.getId()));
     }
 

@@ -88,20 +88,20 @@ class MoteSmsTest extends SpringBootTestBase {
         moteSmsCronjobber();
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
-        AktivitetDTO nyKanal = aktivitetTestService.oppdatterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
+        AktivitetDTO nyKanal = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
         moteSmsCronjobber();
         harAvsluttetVarsel(orginalMelding);
         ConsumerRecord<NokkelInput, BeskjedInput> ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
 
         ZonedDateTime ny_startTid = startTid.plusHours(2);
-        AktivitetDTO nyTid = aktivitetTestService.oppdatterAktivitetOk(happyBruker, veileder, nyKanal.setFraDato(new Date(ny_startTid.toInstant().toEpochMilli())));
+        AktivitetDTO nyTid = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, nyKanal.setFraDato(new Date(ny_startTid.toInstant().toEpochMilli())));
 
         moteSmsCronjobber();
         harAvsluttetVarsel(ny_kanal_varsel);
         assertForventetMeldingSendt("Varsel skal ha tid", happyBruker, KanalDTO.TELEFON, ny_startTid, mote);
 
-        aktivitetTestService.oppdatterAktivitetOk(happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
+        aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, nyTid.setTittel("ny test tittel skal ikke oppdatere varsel"));
         moteSmsCronjobber();
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger(); //"skal ikke sende på nytt for andre oppdateringer"
 

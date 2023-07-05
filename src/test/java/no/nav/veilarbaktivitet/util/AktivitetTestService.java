@@ -157,7 +157,7 @@ public class AktivitetTestService {
                 .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId(), mockBruker))
                 .then();
     }
-    public AktivitetDTO oppdatterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         Response response = oppdatterAktivitet(mockBruker, user, aktivitetDTO)
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
