@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.common.abac.Pep;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
@@ -23,16 +22,14 @@ public class HelsesjekkConfig {
     public SelfTestChecks selfTestChecks(
             VeilarbarenaHelsesjekk veilarbarenaHelsesjekk,
             AktorOppslagClient aktorOppslagClient,
-            Pep pep,
             DatabaseHelsesjekk databaseHelsesjekk,
             UnleashClient unleashClient,
             KafkaHelsesjekk kafkaHelsesjekk,
             MeterRegistry meterRegistry
-    ) {
+    ) {  //TODO legg til poao tilgang.
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Veilarbarena", false, veilarbarenaHelsesjekk),
                 new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
-                new SelfTestCheck("ABAC", true, pep.getAbacClient()),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("Unleash", false, unleashClient),
                 new SelfTestCheck("Kafka", false, kafkaHelsesjekk)

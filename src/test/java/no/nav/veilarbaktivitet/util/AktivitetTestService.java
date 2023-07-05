@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
@@ -145,18 +146,22 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public AktivitetDTO oppdatterAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public ValidatableResponse oppdatterAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
-        Response response = user
+        return user
                 .createRequest()
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
                 .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId(), mockBruker))
-                .then()
+                .then();
+    }
+    public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+        Response response = oppdatterAktivitet(mockBruker, user, aktivitetDTO)
                 .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
+                .extract()
+                .response();
 
         AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
         assertNotNull(aktivitet);
@@ -260,6 +265,28 @@ public class AktivitetTestService {
                 .body(aktivitetPayloadJson)
                 .when()
                 .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
+        assertNotNull(aktivitet);
+        assertNotNull(aktivitet.getId());
+        AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
+
+        return aktivitet;
+    }
+
+    public AktivitetDTO oppdaterAktivitetEtikett(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, EtikettTypeDTO status) {
+        AktivitetDTO aktivitetDTO = orginalAktivitet.toBuilder().etikett(status).build();
+        String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
+
+        Response response = user
+                .createRequest()
+                .and()
+                .body(aktivitetPayloadJson)
+                .when()
+                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/etikett", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

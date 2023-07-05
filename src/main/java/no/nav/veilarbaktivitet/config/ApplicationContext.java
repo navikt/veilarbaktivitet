@@ -1,8 +1,5 @@
 package no.nav.veilarbaktivitet.config;
 
-import no.nav.common.abac.Pep;
-import no.nav.common.abac.VeilarbPepFactory;
-import no.nav.common.abac.audit.SpringAuditRequestInfoSupplier;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.featuretoggle.UnleashClient;
@@ -12,9 +9,6 @@ import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.NaisSystemUserTokenProvider;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.utils.Credentials;
-import no.nav.poao.dab.spring_auth.AuthService;
-import no.nav.poao.dab.spring_auth.IAuthService;
-import no.nav.veilarbaktivitet.person.PersonService;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,18 +51,5 @@ public class ApplicationContext {
     @Bean
     public MetricsClient metricsClient() {
         return new InfluxClient();
-    }
-
-    @Bean
-    public Pep veilarbPep(EnvironmentProperties properties, Credentials serviceUserCredentials) {
-        return VeilarbPepFactory.get(
-                properties.getAbacUrl(), serviceUserCredentials.username,
-                serviceUserCredentials.password, new SpringAuditRequestInfoSupplier()
-        );
-    }
-
-    @Bean
-    public IAuthService authService(AuthContextHolder authContextHolder, Pep pep, PersonService personService) {
-        return new AuthService(authContextHolder, pep, personService);
     }
 }

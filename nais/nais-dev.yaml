@@ -91,3 +91,5 @@ spec:
       value: q1
     - name: APPD_ENABLED
       value: "false"
+    - name: POAO_TILGANG_SCOPE
+      value: api://dev-fss.poao.poao-tilgang/.default
