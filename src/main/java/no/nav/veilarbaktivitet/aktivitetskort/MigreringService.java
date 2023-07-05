@@ -4,15 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
-
-import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.GRUPPEAKTIVITET;
-import static no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET;
 
 @Service
 @RequiredArgsConstructor
@@ -21,25 +21,26 @@ public class MigreringService {
     public static final String VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter";
 
     private final UnleashClient unleashClient;
-
-    private final Predicate<ArenaAktivitetDTO> ikkeArenaTiltak = a -> List.of(GRUPPEAKTIVITET, UTDANNINGSAKTIVITET).contains(a.getType());
+    private final IdMappingDAO idMappingDAO;
     private static final Predicate<ArenaAktivitetDTO> alleArenaAktiviteter = a -> true;
-    public Predicate<ArenaAktivitetDTO> filtrerBortArenaTiltakHvisToggleAktiv() {
+    public Predicate<ArenaAktivitetDTO> filtrerBortArenaTiltakHvisToggleAktiv(Set<ArenaId> arenaIds) {
         if (unleashClient.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
-            return ikkeArenaTiltak;
+            // Hvis migrert, skjul fra /tiltak endepunkt
+            return arenaAktivitetDTO -> !arenaIds.contains(new ArenaId(arenaAktivitetDTO.getId()));
         } else {
             return alleArenaAktiviteter;
         }
     }
-
-    private final Predicate<AktivitetDTO> ikkeMigrerteArenaAktiviteter = a -> !(AktivitetTypeDTO.EKSTERNAKTIVITET == a.getType() && AktivitetskortType.ARENA_TILTAK == a.getEksternAktivitet().type());
-    private static final Predicate<AktivitetDTO> alleLokaleAktiviteter = a -> true;
-
-    public Predicate<AktivitetDTO> visMigrerteArenaAktiviteterHvisToggleAktiv() {
+    public List<AktivitetDTO> visMigrerteArenaAktiviteterHvisToggleAktiv(List<AktivitetDTO> aktiviteter) {
         if (unleashClient.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
-            return alleLokaleAktiviteter;
+            return aktiviteter;
         } else {
-            return ikkeMigrerteArenaAktiviteter;
+            // Ikke vis migrerte aktiviter
+            var funksjonelleIds = aktiviteter.stream().map(AktivitetDTO::getFunksjonellId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            var idMapping = idMappingDAO.getMappingsByFunksjonellId(funksjonelleIds);
+            return aktiviteter.stream().filter(aktivitet -> !idMapping.containsKey(aktivitet.getFunksjonellId())).toList();
         }
     }
 }

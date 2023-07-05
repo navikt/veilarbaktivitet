@@ -58,13 +58,15 @@ public class ArenaController {
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
         return arenaAktiviteter
-            .stream().map(arenaAktivitet -> {
-                var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
-                if (idMapping != null && idMapping.aktivitetId() != null)
-                    return arenaAktivitet.withId(idMapping.aktivitetId().toString());
-                return arenaAktivitet;
-            })
-                .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv())
+            .stream()
+                // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
+                .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keySet()))
+                .map(arenaAktivitet -> {
+                    var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
+                    if (idMapping != null && idMapping.aktivitetId() != null)
+                        return arenaAktivitet.withId(idMapping.aktivitetId().toString());
+                    return arenaAktivitet;
+                })
                 .toList();
     }
 

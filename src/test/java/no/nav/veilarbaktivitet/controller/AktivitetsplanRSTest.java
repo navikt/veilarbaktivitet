@@ -49,8 +49,6 @@ import static org.junit.jupiter.api.Assertions.*;
 // TODO: 19/01/2023 skriv om til nye test rammeverk (SpringBootTestBase)
 
 class AktivitetsplanRSTest extends SpringBootTestBase {
-
-
     @Autowired
     private JdbcTemplate jdbcTemplate;
 

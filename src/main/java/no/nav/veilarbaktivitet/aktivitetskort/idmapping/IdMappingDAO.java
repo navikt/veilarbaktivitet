@@ -36,6 +36,25 @@ public class IdMappingDAO {
                 .findFirst();
     }
 
+    public Map<UUID, IdMapping> getMappingsByFunksjonellId(List<UUID> ids) {
+        if (ids.isEmpty()) return Collections.emptyMap();
+        var stringIds = ids.stream().map(UUID::toString).toList();
+        var params = new MapSqlParameterSource()
+                .addValue("arenaIds",  stringIds);
+        var idList = template.query("""
+                SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.FUNKSJONELL_ID in (:arenaIds)
+                """, params, rowmapper);
+
+        return idList.stream()
+                .reduce(new HashMap<>(), (mapping, singleIdMapping) -> {
+                    mapping.put(singleIdMapping.funksjonellId(), singleIdMapping);
+                    return mapping;
+                }, (accumulatedMappings, nextSingleMapping) -> {
+                    accumulatedMappings.putAll(nextSingleMapping);
+                    return accumulatedMappings;
+                });
+    }
+
     public Map<ArenaId, IdMapping> getMappings(List<ArenaId> ids) {
         if (ids.isEmpty()) return new HashMap<>();
         var stringIds = ids.stream().map(ArenaId::id).toList();
