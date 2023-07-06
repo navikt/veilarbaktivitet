@@ -112,17 +112,17 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     @Test
     void skal_sende_tiltak_til_portefolje() throws InterruptedException {
         MockBruker mockBruker = MockNavService.createHappyBruker();
+        Aktivitetskort actual = AktivitetskortTestBuilder.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
 
-        UUID funksjonellId = UUID.randomUUID();
+        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
+                .messageId(UUID.randomUUID())
+                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
+                .aktivitetskort(actual)
+                .source("source")
+                .build();
 
-        String arenaTiltakskode = KafkaAktivitetDAO.TILTAKSKODE_VARIG_LONNSTILSKUDD;
-
-        ArenaId arenaId = new ArenaId("ARENATA123");
-
-        Aktivitetskort actual = AktivitetskortTestBuilder.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
-
-        ArenaMeldingHeaders kontekst = new ArenaMeldingHeaders(arenaId, arenaTiltakskode);
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(actual), List.of(kontekst));
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
 
         Thread.sleep(2000L);
 
@@ -131,8 +131,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
-        Assertions.assertThat(melding.getTiltakskode()).isEqualTo(arenaTiltakskode);
-        Assertions.assertThat(melding.getAktivitetId()).isEqualTo(arenaId.id());
+        Assertions.assertThat(melding.getTiltakskode()).isEqualTo("MIDLONTIL");
         Assertions.assertThat(melding.getAktivitetType()).isEqualTo(AktivitetTypeDTO.TILTAK);
 
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
