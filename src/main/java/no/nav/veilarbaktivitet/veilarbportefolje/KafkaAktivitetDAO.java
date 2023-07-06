@@ -37,7 +37,7 @@ public class KafkaAktivitetDAO {
                             LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
                             WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
                             AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
-                            AND EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK'
+                            AND (EA.AKTIVITETKORT_TYPE IS NULL OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
                             ORDER BY A.VERSJON
                             FETCH NEXT 5000 ROWS ONLY
                             """,
