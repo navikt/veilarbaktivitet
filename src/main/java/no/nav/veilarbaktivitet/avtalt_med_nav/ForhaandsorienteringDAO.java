@@ -150,7 +150,8 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForArenaAktivitet(ArenaId aktivitetId) {
         try {
-            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ? ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY",
+                    ForhaandsorienteringDAO::map,
                     aktivitetId.id());
         } catch (EmptyResultDataAccessException e) {
             return null;
