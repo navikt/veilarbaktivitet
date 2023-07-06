@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -82,6 +83,25 @@ class ForhaandsorienteringDAOTest {
         assertEquals(veileder, fhoResultat.getOpprettetAv());
         assertNull(fhoResultat.getLestDato());
 
+    }
+
+    @Test
+    void skal_ikke_kunne_opprette_flere_fho_pa_arenaaktivitet() {
+        ArenaAktivitetDTO aktivitetData = new ArenaAktivitetDTO();
+        ArenaId arenaId = new ArenaId("ARENATA123");
+        aktivitetData.setId(new ArenaId("ARENATA123").id());
+        aktivitetData.setType(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET);
+        String veileder = "V123";
+
+        var fho = ForhaandsorienteringDTO.builder()
+                .type(Type.SEND_FORHAANDSORIENTERING)
+                .tekst("tralala")
+                .build();
+
+        fhoDAO.insertForArenaAktivitet(fho, arenaId, AKTOR_ID, veileder, new Date(), Optional.empty());
+        assertThrows(ResponseStatusException.class, () -> {
+            fhoDAO.insertForArenaAktivitet(fho, arenaId, AKTOR_ID, veileder, new Date(), Optional.empty());
+        });
     }
 
 
