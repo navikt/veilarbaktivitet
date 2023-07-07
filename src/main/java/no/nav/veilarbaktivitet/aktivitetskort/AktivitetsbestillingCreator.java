@@ -52,7 +52,7 @@ public class AktivitetsbestillingCreator {
         }
     }
 
-    @Timed(value="akas_lagBestilling")
+    @Timed(value="akaas_lagBestilling")
     public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, KeyErIkkeFunksjonellIdFeil {
         var melding = deserialiser(consumerRecord);
         if (!melding.getAktivitetskortId().toString().equals(consumerRecord.key()))
