@@ -32,7 +32,7 @@ public class ArenaAktivitetskortService {
 
     private final AktivitetIdMappingProducer aktivitetIdMappingProducer;
 
-    @Timed(value="akas_opprett_arema_aktivitet")
+    @Timed(value="akaas_opprett_arema_aktivitet")
     public AktivitetData opprettAktivitet(ArenaAktivitetskortBestilling bestilling) {
         var aktorId = bestilling.getAktorId();
         var opprettetTidspunkt = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();
