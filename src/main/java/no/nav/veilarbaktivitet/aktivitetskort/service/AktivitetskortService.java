@@ -131,7 +131,7 @@ public class AktivitetskortService {
         aktivitetsMessageDAO.insert(messageId, funksjonellId);
     }
 
-    @Timed(value="akas_oppdaterMeldingResultat")
+    @Timed(value="akaas_oppdaterMeldingResultat")
     public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult, String reason) {
         aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason);
     }
