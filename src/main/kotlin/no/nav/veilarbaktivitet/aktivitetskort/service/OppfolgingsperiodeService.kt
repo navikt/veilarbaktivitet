@@ -25,7 +25,7 @@ class OppfolgingsperiodeService(
 		val SLACK_FOER: Duration = Duration.ofDays(7)
 	}
 
-	@Timed(value="akas_find_oppfolings_periode")
+	@Timed(value="akaas_find_oppfolings_periode")
 	fun finnOppfolgingsperiode(aktorId: AktorId, opprettetTidspunkt: LocalDateTime): OppfolgingPeriodeMinimalDTO? {
 		val oppfolgingsperioder = oppfolgingClient.hentOppfolgingsperioder(aktorId).toImmutableList()
 			.sortedByDescending { it.startDato }
