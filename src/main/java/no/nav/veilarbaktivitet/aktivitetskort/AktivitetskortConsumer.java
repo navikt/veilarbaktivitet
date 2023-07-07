@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +44,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
+    @Timed(value="akas_consume_aktivitetskort")
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         UUID messageId = null;
         try {

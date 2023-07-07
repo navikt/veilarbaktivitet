@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.json.JsonMapper;
@@ -50,6 +51,8 @@ public class AktivitetsbestillingCreator {
             throw new UgyldigIdentFeil("Ident ikke funnet eller ugyldig ident for fnr :" + fnr.get(), e);
         }
     }
+
+    @Timed(value="akas_lagBestilling")
     public BestillingBase lagBestilling(ConsumerRecord<String, String> consumerRecord) throws DeserialiseringsFeil, UgyldigIdentFeil, KeyErIkkeFunksjonellIdFeil {
         var melding = deserialiser(consumerRecord);
         if (!melding.getAktivitetskortId().toString().equals(consumerRecord.key()))

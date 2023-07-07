@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
+import io.micrometer.core.annotation.Timed
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
 import no.nav.veilarbaktivitet.person.Person.AktorId
@@ -24,6 +25,7 @@ class OppfolgingsperiodeService(
 		val SLACK_FOER: Duration = Duration.ofDays(7)
 	}
 
+	@Timed(value="akas_find_oppfolings_periode")
 	fun finnOppfolgingsperiode(aktorId: AktorId, opprettetTidspunkt: LocalDateTime): OppfolgingPeriodeMinimalDTO? {
 		val oppfolgingsperioder = oppfolgingClient.hentOppfolgingsperioder(aktorId).toImmutableList()
 			.sortedByDescending { it.startDato }

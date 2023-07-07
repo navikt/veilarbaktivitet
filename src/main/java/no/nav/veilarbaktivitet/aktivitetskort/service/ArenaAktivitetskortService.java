@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -31,6 +32,7 @@ public class ArenaAktivitetskortService {
 
     private final AktivitetIdMappingProducer aktivitetIdMappingProducer;
 
+    @Timed(value="akas_opprett_arema_aktivitet")
     public AktivitetData opprettAktivitet(ArenaAktivitetskortBestilling bestilling) {
         var aktorId = bestilling.getAktorId();
         var opprettetTidspunkt = bestilling.getAktivitetskort().getEndretTidspunkt().toLocalDateTime();

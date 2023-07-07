@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service;
 
+import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -130,6 +131,7 @@ public class AktivitetskortService {
         aktivitetsMessageDAO.insert(messageId, funksjonellId);
     }
 
+    @Timed(value="akas_oppdaterMeldingResultat")
     public void oppdaterMeldingResultat(UUID messageId, UpsertActionResult upsertActionResult, String reason) {
         aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason);
     }
