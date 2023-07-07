@@ -16,7 +16,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
 @Service
-class OppfolgingsperiodeService(
+open class OppfolgingsperiodeService(
 	private val oppfolgingClient: OppfolgingV2Client
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
