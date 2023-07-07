@@ -44,7 +44,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
 
     @Transactional(noRollbackFor = AktivitetsKortFunksjonellException.class)
     @Override
-    @Timed(value="akas_consume_aktivitetskort")
+    @Timed(value="akaas_consume_aktivitetskort")
     public ConsumeStatus consume(ConsumerRecord<String, String> consumerRecord) {
         UUID messageId = null;
         try {
