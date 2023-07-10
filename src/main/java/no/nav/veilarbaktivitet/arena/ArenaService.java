@@ -99,7 +99,7 @@ public class ArenaService {
         return arenaAktivitetDTO -> arenaAktivitetDTO.setForhaandsorientering(forhaandsorienteringData
                 .stream()
                 .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId()))
-                .max(Comparator.comparingInt(fho -> Integer.parseInt(fho.getId())))
+                .max(Comparator.comparing(Forhaandsorientering::getOpprettetDato))
                 .map(AktivitetDTOMapper::mapForhaandsorientering)
                 .orElse(null)
         );
