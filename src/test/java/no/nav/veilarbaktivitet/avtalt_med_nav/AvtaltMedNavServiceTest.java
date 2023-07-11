@@ -116,7 +116,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDto.getId()));
 
-        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID, Long.valueOf(aktivitetDto.getVersjon()));
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDto.getId()));
 
@@ -129,7 +129,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
         var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID.get()));
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
-        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID);
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID, Long.valueOf(aktivitetDTO.getVersjon()));
         var nyFHO = avtaltMedNavService.hentFHO(aktivitetDTO.getForhaandsorientering().getId());
 
         Assertions.assertNotNull(nyFHO.getLestDato());

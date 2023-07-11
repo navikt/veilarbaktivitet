@@ -72,7 +72,7 @@ public class AvtaltMedNavController {
 
         Person innloggetBruker = Person.of(authService.getLoggedInnUser());
 
-        return avtaltMedNavService.markerSomLest(fho, innloggetBruker);
+        return avtaltMedNavService.markerSomLest(fho, innloggetBruker, lestDTO.aktivitetVersion);
     }
 
 }
