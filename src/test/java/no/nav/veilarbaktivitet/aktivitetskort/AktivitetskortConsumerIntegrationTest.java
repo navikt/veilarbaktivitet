@@ -729,7 +729,7 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
     }
 
     @Test
-    void tiltak_endepunkt_skal_legge_pa_aktivitet_id_pa_migrerte_arena_aktiviteteter() {
+    void tiltak_endepunkt_skal_legge_pa_aktivitet_id_og_versjon_pa_migrerte_arena_aktiviteteter() {
         ArenaId arenaaktivitetId =  new ArenaId("ARENATA123");
         Aktivitetskort tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT);
 
@@ -742,9 +742,18 @@ class AktivitetskortConsumerIntegrationTest extends SpringBootTestBase {
         var context = meldingContext(arenaaktivitetId);
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(List.of(tiltaksaktivitet), List.of(context));
 
-        var res = aktivitetTestService.hentAktiviteterForFnr(mockBruker);
-        var aktiviteter = res.aktiviteter;
-        assertThat(aktiviteter).isEmpty();
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
+        var aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream().findFirst().get();
+        var tekniskId = aktivitet.getId();
+        var versjon = Long.parseLong(aktivitet.getVersjon());
+
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
+        var postMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId);
+        assertThat(postMigreringArenaAktiviteter).hasSize(1);
+        var migrertArenaAktivitet = postMigreringArenaAktiviteter.get(0);
+        assertThat(migrertArenaAktivitet.getId()).isEqualTo(tekniskId);
+        assertThat(migrertArenaAktivitet.getAktivitetsVersjon()).isEqualTo(versjon);
+
     }
 
     @Test
