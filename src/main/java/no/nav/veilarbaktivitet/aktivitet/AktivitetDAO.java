@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import kotlin.Pair;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,10 +22,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -478,6 +476,24 @@ public class AktivitetDAO {
                 AktivitetDataRowMapper::mapAktivitet,
                 aktivitetId
         );
+    }
+
+    public Map<Long, Long> getAktivitetsVersjoner(List<Long> aktiviteter) {
+        if (aktiviteter.isEmpty()) return Map.of();
+        var params = new MapSqlParameterSource()
+            .addValue("aktiviteter",  aktiviteter);
+        // language=sql
+        return database.getNamedJdbcTemplate().query("""
+            SELECT AKTIVITET_ID, VERSJON FROM AKTIVITET where AKTIVITET.AKTIVITET_ID in (:aktiviteter)
+        """, params, (rs, rowNum) -> new Pair<Long, Long>(rs.getLong("AKTIVITET_ID"), rs.getLong("VERSJON")))
+            .stream()
+            .reduce(new HashMap<>(), (mapping, pair) -> {
+                mapping.put(pair.component1(), pair.component2());
+                return mapping;
+            }, (accumulatedMappings, nextSingleMapping) -> {
+                accumulatedMappings.putAll(nextSingleMapping);
+                return accumulatedMappings;
+            });
     }
 
 
