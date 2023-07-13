@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
@@ -26,6 +27,7 @@ public class ArenaController {
     private final IAuthService authService;
     private final ArenaService arenaService;
     private final IdMappingDAO idMappingDAO;
+    private final AktivitetDAO aktivitetDAO;
 
     private final MigreringService migreringService;
 
@@ -57,6 +59,7 @@ public class ArenaController {
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
+        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(it -> it.aktivitetId()).toList());
         return arenaAktiviteter
             .stream()
                 // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
@@ -64,7 +67,9 @@ public class ArenaController {
                 .map(arenaAktivitet -> {
                     var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
                     if (idMapping != null && idMapping.aktivitetId() != null)
-                        return arenaAktivitet.withId(idMapping.aktivitetId().toString());
+                        return arenaAktivitet
+                            .withId(idMapping.aktivitetId().toString())
+                            .withAktivitetsVersjon(aktivitetsVersjoner.get(idMapping.aktivitetId()));
                     return arenaAktivitet;
                 })
                 .toList();
