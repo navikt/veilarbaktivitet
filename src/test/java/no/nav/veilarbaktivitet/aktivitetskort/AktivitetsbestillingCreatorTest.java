@@ -1,8 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.networknt.schema.JsonSchema;
@@ -10,12 +7,10 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.AktivitetskortBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.MessageIdIkkeUnikFeil;
-import no.nav.veilarbaktivitet.aktivitetskort.feil.UgyldigIdentFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -26,7 +21,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -110,7 +104,7 @@ class AktivitetsbestillingCreatorTest {
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"));
-        assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+        assertThat(aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt()).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
     }
 
     @Test
@@ -130,7 +124,7 @@ class AktivitetsbestillingCreatorTest {
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord);
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"));
-        assertThat(aktivitetskortBestilling.getAktivitetskort().endretTidspunkt).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
+        assertThat(aktivitetskortBestilling.getAktivitetskort().getEndretTidspunkt()).isCloseTo(expected, Assertions.within(100, ChronoUnit.MILLIS));
 
     }
 

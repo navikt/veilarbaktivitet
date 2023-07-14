@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.ArenaAktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -44,11 +44,7 @@ public class ArenaAktivitetskortService {
         }
 
         // Opprett via AktivitetService
-        var aktivitetsData = bestilling.toAktivitet();
-        if (oppfolgingsperiode.sluttDato() != null) {
-            aktivitetsData.getEksternAktivitetData().setOpprettetSomHistorisk(true);
-            aktivitetsData.getEksternAktivitetData().setOppfolgingsperiodeSlutt(oppfolgingsperiode.sluttDato().toLocalDateTime());
-        }
+        var aktivitetsData = bestilling.toAktivitet(oppfolgingsperiode);
         var opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
             aktivitetsData,

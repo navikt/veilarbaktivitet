@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult;
 import org.springframework.stereotype.Component;
 

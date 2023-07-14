@@ -13,30 +13,35 @@ import no.nav.veilarbaktivitet.person.Innsender;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.UUID;
 
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
+import static no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
 
 
 public class AktivitetskortTestBuilder {
 
     public static Aktivitetskort ny(UUID funksjonellId, AktivitetStatus aktivitetStatus, ZonedDateTime endretTidspunkt, MockBruker mockBruker) {
-            return Aktivitetskort.builder()
-                    .id(funksjonellId)
-                    .personIdent(mockBruker.getFnr())
-                    .startDato(LocalDate.now().minusDays(30))
-                    .sluttDato(LocalDate.now().minusDays(30))
-                    .tittel("The Elder Scrolls: Arena")
-                    .beskrivelse("arenabeskrivelse")
-                    .aktivitetStatus(aktivitetStatus)
-                    .avtaltMedNav(true)
-                    .endretAv(new Ident("arenaEndretav", Innsender.ARENAIDENT))
-                    .endretTidspunkt(endretTidspunkt)
-                    .etikett(new Etikett("SOKT_INN"))
-                    .detalj(new Attributt("arrangørnavn", "Arendal"))
-                    .detalj(new Attributt("deltakelsesprosent", "40%"))
-                    .detalj(new Attributt("dager per uke", "2"))
-                    .build();
+        return new Aktivitetskort(
+               funksjonellId,
+               mockBruker.getFnr(),
+                "The Elder Scrolls: Arena",
+                "arenabeskrivelse",
+                aktivitetStatus,
+                LocalDate.now().minusDays(30),
+                LocalDate.now().minusDays(30),
+                new Ident("arenaEndretav", Innsender.ARENAIDENT),
+                endretTidspunkt,
+                true,
+               null,
+                null,
+                List.of(
+                    new Attributt("arrangørnavn", "Arendal"),
+                    new Attributt("deltakelsesprosent", "40%"),
+                    new Attributt("dager per uke", "2")
+                ),
+               List.of(new Etikett("SOKT_INN"))
+        );
     }
 
     public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload, UUID messageId, String source, AktivitetskortType aktivitetskortType) {
