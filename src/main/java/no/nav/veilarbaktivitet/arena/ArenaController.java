@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -59,17 +60,17 @@ public class ArenaController {
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
-        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(it -> it.aktivitetId()).toList());
+        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(IdMapping::getAktivitetId).toList());
         return arenaAktiviteter
             .stream()
                 // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
                 .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keySet()))
                 .map(arenaAktivitet -> {
                     var idMapping = idMappings.get(new ArenaId(arenaAktivitet.getId()));
-                    if (idMapping != null && idMapping.aktivitetId() != null)
+                    if (idMapping != null)
                         return arenaAktivitet
-                            .withId(idMapping.aktivitetId().toString())
-                            .withAktivitetsVersjon(aktivitetsVersjoner.get(idMapping.aktivitetId()));
+                            .withId(String.valueOf(idMapping.getAktivitetId()))
+                            .withAktivitetsVersjon(aktivitetsVersjoner.get(idMapping.getAktivitetId()));
                     return arenaAktivitet;
                 })
                 .toList();

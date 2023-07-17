@@ -7,7 +7,6 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;

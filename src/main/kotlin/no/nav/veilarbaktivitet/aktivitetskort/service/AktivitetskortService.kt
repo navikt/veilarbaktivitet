@@ -1,7 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
-import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
@@ -20,10 +18,8 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.stream.Stream
 
 @Service
-@Slf4j
 class AktivitetskortService(
     private val aktivitetService: AktivitetService,
     private val aktivitetDAO: AktivitetDAO,
@@ -49,11 +45,12 @@ class AktivitetskortService(
     }
 
     @Throws(ManglerOppfolgingsperiodeFeil::class)
-    private fun opprettAktivitet(bestilling: AktivitetskortBestilling): AktivitetData {
-        return if (bestilling is ArenaAktivitetskortBestilling) {
-            arenaAktivitetskortService.opprettAktivitet(bestilling)
-        } else (bestilling as? EksternAktivitetskortBestilling)?.let { opprettEksternAktivitet(it) }
-            ?: throw IllegalStateException("Unexpected value: $bestilling")
+    private fun opprettAktivitet(bestilling: AktivitetskortBestilling): AktivitetData? {
+        return when (bestilling) {
+            is ArenaAktivitetskortBestilling -> arenaAktivitetskortService.opprettAktivitet(bestilling)
+            is EksternAktivitetskortBestilling -> opprettEksternAktivitet(bestilling)
+            else -> throw IllegalStateException("Unexpected value: $bestilling")
+        }
     }
 
     @Throws(ManglerOppfolgingsperiodeFeil::class)
@@ -73,12 +70,12 @@ class AktivitetskortService(
         )
     }
 
-    private fun oppdaterDetaljer(aktivitet: AktivitetData, nyAktivitet: AktivitetData?): AktivitetData {
+    private fun oppdaterDetaljer(aktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
         return if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
-            aktivitetService!!.oppdaterAktivitet(
+            aktivitetService.oppdaterAktivitet(
                 aktivitet,
                 nyAktivitet,
-                Person.navIdent(nyAktivitet!!.endretAv),
+                Person.navIdent(nyAktivitet.endretAv),
                 DateUtils.dateToLocalDateTime(
                     nyAktivitet.endretDato
                 )
@@ -100,16 +97,15 @@ class AktivitetskortService(
     }
 
     @Throws(UlovligEndringFeil::class)
-    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData?): AktivitetData? {
-        if (gammelAktivitet.aktorId != nyAktivitet!!.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
+    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
+        if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
         if (gammelAktivitet.historiskDato != null) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
         //TODO vurder avtalt-logikken https://trello.com/c/dFyre4EK
         if (gammelAktivitet.avtalt && !nyAktivitet.avtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
-        return Stream.of(gammelAktivitet)
-            .map { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
-            .map { aktivitet: AktivitetData -> oppdaterDetaljer(aktivitet, nyAktivitet) }
-            .map { aktivitet: AktivitetData -> oppdaterStatus(aktivitet, nyAktivitet) }
-            .findFirst().orElse(null)
+        return gammelAktivitet
+            .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
+            .let { aktivitet: AktivitetData -> oppdaterDetaljer(aktivitet, nyAktivitet) }
+            .let { aktivitet: AktivitetData -> oppdaterStatus(aktivitet, nyAktivitet) }
     }
 
     private fun settAvtaltHvisAvtalt(originalAktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
@@ -124,15 +120,15 @@ class AktivitetskortService(
         }
     }
 
-    fun harSettMelding(messageId: UUID?): Boolean {
-        return aktivitetsMessageDAO!!.exist(messageId!!)
+    fun harSettMelding(messageId: UUID): Boolean {
+        return aktivitetsMessageDAO.exist(messageId)
     }
 
-    fun lagreMeldingsId(messageId: UUID?, funksjonellId: UUID?) {
-        aktivitetsMessageDAO!!.insert(messageId, funksjonellId)
+    fun lagreMeldingsId(messageId: UUID, funksjonellId: UUID) {
+        aktivitetsMessageDAO.insert(messageId, funksjonellId)
     }
 
-    fun oppdaterMeldingResultat(messageId: UUID?, upsertActionResult: UpsertActionResult?, reason: String?) {
-        aktivitetsMessageDAO!!.updateActionResult(messageId, upsertActionResult, reason)
+    fun oppdaterMeldingResultat(messageId: UUID, upsertActionResult: UpsertActionResult, reason: String?) {
+        aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason)
     }
 }

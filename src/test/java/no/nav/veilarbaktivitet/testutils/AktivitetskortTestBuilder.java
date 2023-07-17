@@ -16,7 +16,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
 
 
 public class AktivitetskortTestBuilder {

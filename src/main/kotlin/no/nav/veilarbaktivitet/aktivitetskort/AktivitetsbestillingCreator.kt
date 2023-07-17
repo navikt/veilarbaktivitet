@@ -1,12 +1,10 @@
-package no.nav.veilarbaktivitet.aktivitet
+package no.nav.veilarbaktivitet.aktivitetskort
 
 import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
-import lombok.RequiredArgsConstructor
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import no.nav.common.json.JsonMapper
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase

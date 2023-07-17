@@ -17,5 +17,5 @@ abstract class AktivitetskortBestilling (
     actionType: ActionType?,
     val aktorId: Person.AktorId
 ) : BestillingBase(source, messageId, actionType) {
-    abstract fun toAktivitet(oppfolgingPeriodeMinimalDTO: OppfolgingPeriodeMinimalDTO? = null): AktivitetData?
+    abstract fun toAktivitet(oppfolgingPeriodeMinimalDTO: OppfolgingPeriodeMinimalDTO? = null): AktivitetData
 }

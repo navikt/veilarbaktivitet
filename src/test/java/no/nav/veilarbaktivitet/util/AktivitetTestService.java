@@ -56,8 +56,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
-import static no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.jupiter.api.Assertions.*;
 

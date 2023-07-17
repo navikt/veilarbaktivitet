@@ -9,7 +9,6 @@ import lombok.SneakyThrows
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.NavIdent
 import no.nav.common.types.identer.NorskIdent
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling

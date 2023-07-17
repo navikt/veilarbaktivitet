@@ -8,7 +8,6 @@ import no.nav.common.kafka.producer.KafkaProducerClient
 import no.nav.common.types.identer.NavIdent
 import no.nav.common.types.identer.NorskIdent
 import no.nav.veilarbaktivitet.SpringBootTestBase
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsbestillingCreator
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
@@ -42,8 +41,8 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
 import org.apache.kafka.common.header.Header
 import org.apache.kafka.common.header.internals.RecordHeader
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -62,8 +61,6 @@ import kotlin.collections.Iterable
 import kotlin.collections.emptyList
 
 internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
-    @Autowired
-    var unleashClient: UnleashClient? = null
 
     @Autowired
     var producerClient: KafkaProducerClient<String, String>? = null
@@ -89,17 +86,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Value("\${topic.ut.aktivitetskort-feil}")
     var aktivitetskortFeilTopic: String? = null
 
-    @Value("\${topic.inn.oppfolgingsperiode}")
-    var oppfolgingperiodeTopic: String? = null
-
     @Value("\${topic.ut.aktivitetskort-idmapping}")
     var aktivitetskortIdMappingTopic: String? = null
-
-    @Value("\${spring.kafka.consumer.group-id}")
-    var springKafkaConsumerGroupId: String? = null
-
-    @Autowired
-    var namedParameterJdbcTemplate: NamedParameterJdbcTemplate? = null
 
     @Autowired
     var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
@@ -147,9 +135,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
         )
         val payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding::class.java)
-        Assertions.assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
-        Assertions.assertThat(payload.errorMessage).contains(errorClass.name)
-        Assertions.assertThat(payload.errorMessage).contains(feilmelding)
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
+        assertThat(payload.errorMessage).contains(errorClass.name)
+        assertThat(payload.errorMessage).contains(feilmelding)
     }
 
     private fun assertIdMappingPublished(funksjonellId: UUID, arenaId: ArenaId) {
@@ -159,8 +147,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
         )
         val payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto::class.java)
-        Assertions.assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
-        Assertions.assertThat(payload.arenaId).isEqualTo(arenaId)
+        assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
+        assertThat(payload.arenaId).isEqualTo(arenaId)
     }
 
     @Test
@@ -175,9 +163,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val kontekst = meldingContext(arenata123, "MIDL")
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(listOf(actual), listOf(kontekst))
         val count = meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter().count()
-        Assertions.assertThat(count).isEqualTo(1.0)
+        assertThat(count).isEqualTo(1.0)
         val aktivitet = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
+        assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertEquals(AktivitetTransaksjonsType.OPPRETTET, aktivitet.transaksjonsType)
         assertEquals(AktivitetStatus.PLANLAGT, aktivitet.status)
         assertTrue(aktivitet.isAvtalt)
@@ -206,8 +194,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
         val resultat = hentAktivitet(aktivitetskort.id)
-        Assertions.assertThat(resultat.endretAv).isEqualTo(brukerIdent)
-        Assertions.assertThat(resultat.endretAvType).isEqualTo(Innsender.BRUKER.toString())
+        assertThat(resultat.endretAv).isEqualTo(brukerIdent)
+        assertThat(resultat.endretAvType).isEqualTo(Innsender.BRUKER.toString())
     }
 
     @Test
@@ -235,8 +223,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val kontekst = meldingContext(arenata123, "MIDLONNTIL")
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(listOf(actual), listOf(kontekst))
         val aktivitetFoer = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
-        Assertions.assertThat(aktivitetFoer.isHistorisk).isFalse()
+        assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
+        assertThat(aktivitetFoer.isHistorisk).isFalse()
         val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
             """
                 SELECT opprettet_som_historisk
@@ -247,10 +235,10 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 
                 """.trimIndent(), Boolean::class.javaPrimitiveType, aktivitetFoer.id
         )
-        Assertions.assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
+        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
         tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
         val aktivitetEtter = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitetEtter.isHistorisk).isTrue()
+        assertThat(aktivitetEtter.isHistorisk).isTrue()
     }
 
     @Test
@@ -267,8 +255,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             .build()
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitetFoer = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
-        Assertions.assertThat(aktivitetFoer.isHistorisk).isFalse()
+        assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
+        assertThat(aktivitetFoer.isHistorisk).isFalse()
         val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
             """
                 SELECT opprettet_som_historisk
@@ -279,10 +267,10 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 
                 """.trimIndent(), Boolean::class.javaPrimitiveType, aktivitetFoer.id
         )
-        Assertions.assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
+        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
         tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
         val aktivitetEtter = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitetEtter.isHistorisk).isTrue()
+        assertThat(aktivitetEtter.isHistorisk).isTrue()
     }
 
     @Test
@@ -321,11 +309,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             ), listOf(meldingContext, updatemeldingContext)
         )
         val aktivitet = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
+        assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertNotNull(aktivitet)
-        Assertions.assertThat(tiltaksaktivitet.endretTidspunkt)
-            .isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.endretDato), Assertions.within(1, ChronoUnit.MILLIS))
-        Assertions.assertThat(aktivitet.endretAv).isEqualTo(annenVeileder.ident)
+        assertThat(tiltaksaktivitet.endretTidspunkt)
+            .isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.endretDato), within(1, ChronoUnit.MILLIS))
+        assertThat(aktivitet.endretAv).isEqualTo(annenVeileder.ident)
         assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.status)
         assertEquals(
             AktivitetTransaksjonsType.STATUS_ENDRET,
@@ -475,7 +463,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(listOf(aktivitetskort), listOf(context))
         val aktivitet = hentAktivitet(funksjonellId)
         val endretDatoInstant = endretDato.toInstant()
-        Assertions.assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
+        assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
     }
 
     @Test
@@ -498,8 +486,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val aktivitet = hentAktivitet(funksjonellId)
         val detaljer = aktivitet.eksternAktivitet.detaljer
-        Assertions.assertThat(detaljer.stream().filter { it: Attributt -> it.label == "Tiltaksnavn" }).hasSize(1)
-        Assertions.assertThat(detaljer).containsOnlyOnceElementsOf(listOf(Attributt("Tiltaksnavn", nyesteNavn)))
+        assertThat(detaljer.stream().filter { it: Attributt -> it.label == "Tiltaksnavn" }).hasSize(1)
+        assertThat(detaljer).containsOnlyOnceElementsOf(listOf(Attributt("Tiltaksnavn", nyesteNavn)))
     }
 
     private fun hentAktivitet(funksjonellId: UUID): AktivitetDTO {
@@ -521,7 +509,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             ), listOf(context, context)
         )
         val aktivitet = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
     @Test
@@ -535,7 +523,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             ), listOf(defaultcontext, defaultcontext)
         )
         val aktivitet = hentAktivitet(tiltaksaktivitet.id)
-        Assertions.assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
     @Test
@@ -550,7 +538,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             ), listOf(defaultcontext, defaultcontext)
         )
         val aktivitet = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
     }
 
     @Test
@@ -586,7 +574,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION,
             messages.size
         )
-        Assertions.assertThat(records.count()).isEqualTo(messages.size)
+        assertThat(records.count()).isEqualTo(messages.size)
     }
 
     @Test
@@ -621,7 +609,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val runtimeException = assertThrows(
             RuntimeException::class.java
         ) { aktivitetskortConsumer!!.consume(record) }
-        Assertions.assertThat(runtimeException.message).isEqualTo("Mangler Arena Header for ArenaTiltak aktivitetskort")
+        assertThat(runtimeException.message).isEqualTo("Mangler Arena Header for ArenaTiltak aktivitetskort")
     }
 
     @Test
@@ -642,7 +630,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val runtimeException = assertThrows(
             RuntimeException::class.java
         ) { aktivitetskortConsumer!!.consume(record) }
-        Assertions.assertThat(runtimeException.message)
+        assertThat(runtimeException.message)
             .isEqualTo("Mangler påkrevet messageId på aktivitetskort melding")
     }
 
@@ -665,7 +653,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             RecordHeader(AktivitetskortConsumer.UNIQUE_MESSAGE_IDENTIFIER, messageId.toString().toByteArray())
         record.headers().add(msgIdHeader)
         val sendResult = aktivitetTestService.opprettEksterntAktivitetsKort(record)
-        Assertions.assertThat(sendResult.recordMetadata.hasOffset()).isTrue()
+        assertThat(sendResult.recordMetadata.hasOffset()).isTrue()
     }
 
     @Test
@@ -717,13 +705,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             aktivitetskortConsumer!!.consume(recordOppdatert)
         }
 
-        /* Assert successful rollback */Assertions.assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId))
+        /* Assert successful rollback */assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId))
             .isFalse()
         val aktivitet = hentAktivitet(funksjonellId)
-        Assertions.assertThat(aktivitet.eksternAktivitet.detaljer[0].verdi).isEqualTo(
+        assertThat(aktivitet.eksternAktivitet.detaljer[0].verdi).isEqualTo(
             tiltaksaktivitet.detaljer!![0].verdi
         )
-        Assertions.assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)
     }
 
     @Test
@@ -739,12 +727,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
-        Assertions.assertThat(aktivitet.endretAv).isEqualTo(veileder.navIdent)
+        assertThat(aktivitet.endretAv).isEqualTo(veileder.navIdent)
         // Assert endreDato is now because we forhaandsorientering was created during test-run
-        Assertions.assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
-            .isCloseTo(LocalDateTime.now(), Assertions.within(1, ChronoUnit.SECONDS))
-        Assertions.assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(aktivitet.forhaandsorientering.id)
-        Assertions.assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+        assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
+            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
+        assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(aktivitet.forhaandsorientering.id)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
     }
 
     @Autowired
@@ -777,8 +765,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        Assertions.assertThat(preMigreringArenaAktiviteter).hasSize(1)
-        Assertions.assertThat(preMigreringArenaAktiviteter[0].id).isEqualTo(arenaaktivitetId.id()) // Skal være arenaid
+        assertThat(preMigreringArenaAktiviteter).hasSize(1)
+        assertThat(preMigreringArenaAktiviteter[0].id).isEqualTo(arenaaktivitetId.id()) // Skal være arenaid
         val context = meldingContext(arenaaktivitetId)
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(listOf(tiltaksaktivitet), listOf(context))
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
@@ -788,10 +776,10 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val postMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        Assertions.assertThat(postMigreringArenaAktiviteter).hasSize(1)
+        assertThat(postMigreringArenaAktiviteter).hasSize(1)
         val migrertArenaAktivitet = postMigreringArenaAktiviteter[0]
-        Assertions.assertThat(migrertArenaAktivitet.id).isEqualTo(tekniskId)
-        Assertions.assertThat(migrertArenaAktivitet.aktivitetsVersjon).isEqualTo(versjon)
+        assertThat(migrertArenaAktivitet.id).isEqualTo(tekniskId)
+        assertThat(migrertArenaAktivitet.aktivitetsVersjon).isEqualTo(versjon)
     }
 
     @Test
@@ -803,9 +791,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        Assertions.assertThat(preMigreringArenaAktiviteter).hasSize(1)
+        assertThat(preMigreringArenaAktiviteter).hasSize(1)
         val preMigreringVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        Assertions.assertThat(preMigreringVeilarbAktiviteter).isEmpty()
+        assertThat(preMigreringVeilarbAktiviteter).isEmpty()
 
         // Migrer aktivtet
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
@@ -813,14 +801,14 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             listOf(defaultcontext)
         )
         val toggleAvArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        Assertions.assertThat(toggleAvArenaAktiviteter).hasSize(1)
+        assertThat(toggleAvArenaAktiviteter).hasSize(1)
         val toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        Assertions.assertThat(toggleAvVeilarbAktiviteter).isEmpty()
+        assertThat(toggleAvVeilarbAktiviteter).isEmpty()
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         val togglePaArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        Assertions.assertThat(togglePaArenaAktiviteter).isEmpty()
+        assertThat(togglePaArenaAktiviteter).isEmpty()
         val togglePaVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        Assertions.assertThat(togglePaVeilarbAktiviteter).hasSize(1)
+        assertThat(togglePaVeilarbAktiviteter).hasSize(1)
     }
 
     @Test
@@ -831,7 +819,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             listOf(defaultcontext)
         )
         val aktiviteter = aktivitetTestService.hentAktiviteterInternApi(veileder, mockBruker.aktorIdAsAktorId)
-        Assertions.assertThat(aktiviteter).isEmpty()
+        assertThat(aktiviteter).isEmpty()
     }
 
     @Test
@@ -843,9 +831,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             listOf(defaultcontext)
         )
         val aktivitet = hentAktivitet(tiltaksaktivitet.id)
-        Assertions.assertThat(aktivitet.fraDato).isNull()
-        Assertions.assertThat(aktivitet.tilDato).isNull()
-        Assertions.assertThat(aktivitet.beskrivelse).isNull()
+        assertThat(aktivitet.fraDato).isNull()
+        assertThat(aktivitet.tilDato).isNull()
+        assertThat(aktivitet.beskrivelse).isNull()
     }
 
     @Test
@@ -869,13 +857,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val arbeidsAktivitet = hentAktivitet(arbeidgiverAktivitet.id)
         val tilatksarratgoerAktivitet = hentAktivitet(tiltaksarrangoerAktivitet.id)
         val systemAktivitet = hentAktivitet(systemAktivitetsKort.id)
-        Assertions.assertThat(arbeidsAktivitet.endretAv).isEqualTo(arbeidsgiverIdent.ident)
-        Assertions.assertThat(arbeidsAktivitet.endretAvType).isEqualTo(arbeidsgiverIdent.identType.toString())
-        Assertions.assertThat(tilatksarratgoerAktivitet.endretAv).isEqualTo(tiltaksarragoerIdent.ident)
-        Assertions.assertThat(tilatksarratgoerAktivitet.endretAvType)
+        assertThat(arbeidsAktivitet.endretAv).isEqualTo(arbeidsgiverIdent.ident)
+        assertThat(arbeidsAktivitet.endretAvType).isEqualTo(arbeidsgiverIdent.identType.toString())
+        assertThat(tilatksarratgoerAktivitet.endretAv).isEqualTo(tiltaksarragoerIdent.ident)
+        assertThat(tilatksarratgoerAktivitet.endretAvType)
             .isEqualTo(tiltaksarragoerIdent.identType.toString())
-        Assertions.assertThat(systemAktivitet.endretAv).isEqualTo(systemIdent.ident)
-        Assertions.assertThat(systemAktivitet.endretAvType).isEqualTo(systemIdent.identType.toInnsender().toString())
+        assertThat(systemAktivitet.endretAv).isEqualTo(systemIdent.ident)
+        assertThat(systemAktivitet.endretAvType).isEqualTo(systemIdent.identType.toInnsender().toString())
     }
 
     @Test
@@ -891,13 +879,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         val alleEksternAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-        Assertions.assertThat(alleEksternAktiviteter.aktiviteter).hasSize(2)
+        assertThat(alleEksternAktiviteter.aktiviteter).hasSize(2)
         Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val eksterneAktiviteterUnntattMigrerteArenaAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
-        Assertions.assertThat(eksterneAktiviteterUnntattMigrerteArenaAktiviteter.aktiviteter).hasSize(1)
+        assertThat(eksterneAktiviteterUnntattMigrerteArenaAktiviteter.aktiviteter).hasSize(1)
         val aktivitet = eksterneAktiviteterUnntattMigrerteArenaAktiviteter.getAktiviteter()[0]
-        Assertions.assertThat(aktivitet.eksternAktivitet.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        assertThat(aktivitet.eksternAktivitet.type).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
     }
 
     @Test
@@ -918,12 +906,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         aktivitetTestService.kasserEskterntAktivitetskort(kassering)
         val aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, veileder, kassering.aktivitetsId)
-        Assertions.assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
-        Assertions.assertThat(aktivitet.endretAv).isEqualTo("z123456")
-        Assertions.assertThat(aktivitet.eksternAktivitet.detaljer).isEmpty()
-        Assertions.assertThat(aktivitet.eksternAktivitet.etiketter).isEmpty()
-        Assertions.assertThat(aktivitet.eksternAktivitet.handlinger).isEmpty()
-        Assertions.assertThat(aktivitet.eksternAktivitet.oppgave).isNull()
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
+        assertThat(aktivitet.endretAv).isEqualTo("z123456")
+        assertThat(aktivitet.eksternAktivitet.detaljer).isEmpty()
+        assertThat(aktivitet.eksternAktivitet.etiketter).isEmpty()
+        assertThat(aktivitet.eksternAktivitet.handlinger).isEmpty()
+        assertThat(aktivitet.eksternAktivitet.oppgave).isNull()
         val params = MapSqlParameterSource().addValue("aktivitetId", aktivitet.id)
         val count = namedParameterJdbcTemplate.queryForObject(
             """
@@ -933,7 +921,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 
                 """.trimIndent(), params, Int::class.javaPrimitiveType
         )
-        Assertions.assertThat(count).isEqualTo(1)
+        assertThat(count).isEqualTo(1)
     }
 
     @Test
