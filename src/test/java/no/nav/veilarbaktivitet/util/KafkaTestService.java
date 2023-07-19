@@ -26,7 +26,7 @@ import static org.awaitility.Awaitility.await;
 @Slf4j
 public class KafkaTestService {
 
-    public static int DEFAULT_WAIT_TIMEOUT_SEC = 5;
+    public static int DEFAULT_WAIT_TIMEOUT_SEC = 10;
     public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
 
 
@@ -134,7 +134,8 @@ public class KafkaTestService {
         }
 
         long commitedOffset = offsetAndMetadata.offset();
-        return commitedOffset >= producerOffset;
+        // Consumer-group offsets er på meldinger som ikke er committet/behandlet enda
+        return (commitedOffset - 1) >= producerOffset;
     }
 
     @SneakyThrows
