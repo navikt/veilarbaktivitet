@@ -49,6 +49,7 @@ public class AktivitetskortConsumer implements TopicConsumer<String, String> {
             messageId = extractMessageId(consumerRecord);
             UUID funksjonellId = UUID.fromString(consumerRecord.key()); // Lik aktivitetskort.id i payload
             ignorerHvisSettFor(messageId, funksjonellId);
+
             if (messageId.equals(funksjonellId)) {
                 throw new MessageIdIkkeUnikFeil(new ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"), null);
             }
