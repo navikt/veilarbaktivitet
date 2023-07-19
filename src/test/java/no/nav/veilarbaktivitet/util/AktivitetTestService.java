@@ -13,7 +13,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;

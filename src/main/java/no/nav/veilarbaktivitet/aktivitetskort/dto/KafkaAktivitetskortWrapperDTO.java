@@ -15,9 +15,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class KafkaAktivitetskortWrapperDTO extends BestillingBase {
     @JsonProperty(required = true)
-    AktivitetskortType aktivitetskortType;
+    public AktivitetskortType aktivitetskortType;
     @JsonProperty(required = true)
-    Aktivitetskort aktivitetskort;
+    public Aktivitetskort aktivitetskort;
 
     @Override
     public UUID getAktivitetskortId() {

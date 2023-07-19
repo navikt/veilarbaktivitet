@@ -447,7 +447,7 @@ public class AktivitetDAO {
                             .addValue("tiltak_kode", eksternAktivitetData.getTiltaksKode())
                             .addValue("arena_id", eksternAktivitetData.getArenaId() != null ? eksternAktivitetData.getArenaId().id() : null)
                             .addValue("oppfolgingsperiode_slutt", eksternAktivitetData.getOppfolgingsperiodeSlutt())
-                            .addValue("opprettet_som_historisk", eksternAktivitetData.isOpprettetSomHistorisk())
+                            .addValue("opprettet_som_historisk", eksternAktivitetData.getOpprettetSomHistorisk())
                             .addValue("aktivitetkort_type", eksternAktivitetData.getType().name())
                             .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
                             .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
