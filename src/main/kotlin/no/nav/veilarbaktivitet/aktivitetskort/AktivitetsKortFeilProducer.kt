@@ -27,7 +27,7 @@ class AktivitetsKortFeilProducer (
         aivenProducerClient.sendSync(producerRecord)
     }
 
-    fun publishAktivitetsFeil(e: AktivitetsKortFunksjonellException, consumerRecord: ConsumerRecord<String, String?>) {
+    fun publishAktivitetsFeil(e: AktivitetsKortFunksjonellException, consumerRecord: ConsumerRecord<String, String>) {
         publishAktivitetsFeil(
             AktivitetskortFeilMelding(
                 consumerRecord.key(),

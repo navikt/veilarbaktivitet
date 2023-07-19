@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import lombok.Singular
-import lombok.With
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt

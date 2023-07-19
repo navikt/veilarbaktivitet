@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTilAktivitetData
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
@@ -33,17 +33,14 @@ internal class AktivitetskortMapperTest {
         // These fields are set to null when deserializing, but are empty lists when using builder
         val aktivitetskortWithNullFields = aktivitetskort()
             .copy(etiketter = emptyList(), handlinger = emptyList(), detaljer = emptyList())
-        val result = mapTilAktivitetData(
-            EksternAktivitetskortBestilling(
-                aktivitetskortWithNullFields,
-                "test-source",
-                AktivitetskortType.ARENA_TILTAK,
-                UUID.randomUUID(),
-                ActionType.UPSERT_AKTIVITETSKORT_V1,
-                Person.aktorId("1234567890")
-            ),
-            ZonedDateTime.now(),
-        )
+        val result = EksternAktivitetskortBestilling(
+            aktivitetskortWithNullFields,
+            "test-source",
+            AktivitetskortType.ARENA_TILTAK,
+            UUID.randomUUID(),
+            ActionType.UPSERT_AKTIVITETSKORT_V1,
+            Person.aktorId("1234567890")
+        ).toAktivitetsData(ZonedDateTime.now())
         result.withAktorId("adas")
         Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()

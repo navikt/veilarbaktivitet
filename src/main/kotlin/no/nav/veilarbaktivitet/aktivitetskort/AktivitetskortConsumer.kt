@@ -32,11 +32,11 @@ open class AktivitetskortConsumer (
     private val feilProducer: AktivitetsKortFeilProducer,
     private val aktivitetskortMetrikker: AktivitetskortMetrikker,
     private val bestillingsCreator: AktivitetsbestillingCreator,
-) : TopicConsumer<String, String?>  {
+) : TopicConsumer<String, String>  {
 
     val log = LoggerFactory.getLogger(javaClass)
     @Transactional(noRollbackFor = [AktivitetsKortFunksjonellException::class])
-    override fun consume(consumerRecord: ConsumerRecord<String, String?>): ConsumeStatus {
+    override fun consume(consumerRecord: ConsumerRecord<String, String>): ConsumeStatus {
         var messageId: UUID? = null
         return try {
             messageId = extractMessageId(consumerRecord)
@@ -53,13 +53,12 @@ open class AktivitetskortConsumer (
                 bestilling.setMessageId(messageId) // messageId populert i header i stedet for payload
             }
             MDC.put(MetricService.SOURCE, bestilling.getSource())
-            val timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(consumerRecord.timestamp()), ZoneId.systemDefault())
             log.info(
                 "Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}",
                 consumerRecord.offset(),
                 consumerRecord.partition(),
                 bestilling.getMessageId(),
-                timestamp,
+                consumerRecord.timestamp().toLocalDateTimeDefaultZone(),
                 bestilling.aktivitetskortId
             )
             behandleBestilling(bestilling)
@@ -97,15 +96,17 @@ open class AktivitetskortConsumer (
 
     @Throws(AktivitetsKortFunksjonellException::class)
     fun behandleBestilling(bestilling: BestillingBase): ConsumeStatus {
-        if (bestilling is AktivitetskortBestilling) {
-            val upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling)
-            aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult, null)
-            aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult)
-        } else if (bestilling is KasseringsBestilling) {
-            kasseringsService.kassertAktivitet(bestilling)
-            aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), UpsertActionResult.KASSER, null)
-        } else {
-            throw NotImplementedException("Unknown kafka message")
+        when (bestilling) {
+            is AktivitetskortBestilling -> {
+                val upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling)
+                aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult, null)
+                aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult)
+            }
+            is KasseringsBestilling -> {
+                kasseringsService.kassertAktivitet(bestilling)
+                aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), UpsertActionResult.KASSER, null)
+            }
+            else -> throw NotImplementedException("Unknown kafka message")
         }
         return ConsumeStatus.OK
     }
@@ -120,7 +121,7 @@ open class AktivitetskortConsumer (
         }
 
     @Throws(AktivitetsKortFunksjonellException::class)
-    private fun extractMessageId(consumerRecord: ConsumerRecord<String, String?>): UUID {
+    private fun extractMessageId(consumerRecord: ConsumerRecord<String, String>): UUID {
         try {
             JsonUtil.extractStringPropertyFromJson(UNIQUE_MESSAGE_IDENTIFIER, consumerRecord.value())
                 ?.let { return UUID.fromString(it) }
@@ -138,3 +139,5 @@ open class AktivitetskortConsumer (
         const val UNIQUE_MESSAGE_IDENTIFIER = "messageId"
     }
 }
+
+fun Long.toLocalDateTimeDefaultZone() = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())

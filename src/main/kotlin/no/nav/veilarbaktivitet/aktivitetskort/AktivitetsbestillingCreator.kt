@@ -35,7 +35,7 @@ class AktivitetsbestillingCreator (
     }
 
     @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class)
-    fun lagBestilling(consumerRecord: ConsumerRecord<String, String?>): BestillingBase {
+    fun lagBestilling(consumerRecord: ConsumerRecord<String, String>): BestillingBase {
         val melding = deserialiser(consumerRecord)
         if (melding.aktivitetskortId.toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
             ErrorMessage(
@@ -90,7 +90,7 @@ class AktivitetsbestillingCreator (
             }
 
         @Throws(DeserialiseringsFeil::class)
-        fun deserialiser(consumerRecord: ConsumerRecord<String, String?>): BestillingBase {
+        fun deserialiser(consumerRecord: ConsumerRecord<String, String>): BestillingBase {
             return try {
                 mapper!!.readValue(consumerRecord.value(), BestillingBase::class.java)
             } catch (e: Exception) {
@@ -101,14 +101,14 @@ class AktivitetsbestillingCreator (
             }
         }
 
-        private fun getEksternReferanseId(consumerRecord: ConsumerRecord<String, String?>): ArenaId {
+        private fun getEksternReferanseId(consumerRecord: ConsumerRecord<String, String>): ArenaId {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_REFERANSE_ID)
                 ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
             val eksternReferanseIdBytes = header.value()
             return ArenaId(String(eksternReferanseIdBytes))
         }
 
-        private fun getArenaTiltakskode(consumerRecord: ConsumerRecord<String, String?>): String {
+        private fun getArenaTiltakskode(consumerRecord: ConsumerRecord<String, String>): String {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE)
                 ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
             val arenaTiltakskode = header.value()

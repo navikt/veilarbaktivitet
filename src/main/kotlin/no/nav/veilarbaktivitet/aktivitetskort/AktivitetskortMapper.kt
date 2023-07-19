@@ -34,18 +34,17 @@ object AktivitetskortMapper {
     }
 
     @JvmStatic
-    fun mapTilAktivitetData(
-        bestilling: AktivitetskortBestilling,
+    fun AktivitetskortBestilling.toAktivitetsData(
         opprettetDato: ZonedDateTime?,
         oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? = null
     ): AktivitetData {
-        val (id, _, tittel, beskrivelse, aktivitetStatus, startDato, sluttDato, endretAv, endretTidspunkt, avtaltMedNav, oppgave, handlinger, detaljer, etiketter) = bestilling.aktivitetskort
+        val (id, _, tittel, beskrivelse, aktivitetStatus, startDato, sluttDato, endretAv, endretTidspunkt, avtaltMedNav, oppgave, handlinger, detaljer, etiketter) = this.aktivitetskort
         val oppfolgingsperiodeSluttDato = oppfolgingsperiode?.sluttDato?.toLocalDateTime()
         val eksternAktivitetData = EksternAktivitetData(
-            source = bestilling.source,
-            type = bestilling.aktivitetskortType,
-            tiltaksKode = getTiltakskode(bestilling),
-            arenaId = getArenaId(bestilling),
+            source = this.source,
+            type = this.aktivitetskortType,
+            tiltaksKode = getTiltakskode(this),
+            arenaId = getArenaId(this),
             detaljer = Optional.ofNullable(detaljer).orElse(listOf()),
             oppgave = oppgave,
             handlinger = Optional.ofNullable(handlinger).orElse(listOf()),
@@ -56,26 +55,9 @@ object AktivitetskortMapper {
             oppfolgingsperiodeSlutt = oppfolgingsperiodeSluttDato
         )
 
-//        val aktivitetData = AktivitetData.builder()
-//        aktivitetData.funksjonellId = id
-//        aktivitetData.aktorId = bestilling.aktorId.get()
-//        aktivitetData.avtalt = avtaltMedNav
-//        aktivitetData.tittel = tittel
-//        aktivitetData.fraDato = DateUtils.toDate(startDato)
-//        aktivitetData.tilDato = DateUtils.toDate(sluttDato)
-//        aktivitetData.beskrivelse = beskrivelse
-//        aktivitetData.status = aktivitetStatus
-//        aktivitetData.aktivitetType = AktivitetTypeData.EKSTERNAKTIVITET
-//        aktivitetData.endretAv = endretAv!!.ident
-//        aktivitetData.endretAvType = endretAv.identType.toInnsender()
-//        aktivitetData.opprettetDato = DateUtils.zonedDateTimeToDate(opprettetDato)
-//        aktivitetData.endretDato = DateUtils.zonedDateTimeToDate(endretTidspunkt)
-//        aktivitetData.eksternAktivitetData = eksternAktivitetData
-//        return aktivitetData
-
         return AktivitetData.builder()
             .funksjonellId(id)
-            .aktorId(bestilling.aktorId.get())
+            .aktorId(this.aktorId.get())
             .avtalt(avtaltMedNav)
             .tittel(tittel)
             .fraDato(DateUtils.toDate(startDato))

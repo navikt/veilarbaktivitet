@@ -6,7 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.mapTilAktivitetData
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
@@ -32,15 +32,18 @@ class AktivitetskortService(
     fun upsertAktivitetskort(bestilling: AktivitetskortBestilling): UpsertActionResult {
         val (id) = bestilling.aktivitetskort
         val gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(id)
-        return if (gammelAktivitetVersjon.isPresent) {
-            // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-            val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet())
-            log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
-            UpsertActionResult.OPPDATER
-        } else {
-            val opprettetAktivitet = opprettAktivitet(bestilling)
-            log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet)
-            UpsertActionResult.OPPRETT
+        return when {
+            gammelAktivitetVersjon.isPresent -> {
+                // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
+                val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet())
+                log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
+                UpsertActionResult.OPPDATER
+            }
+            else -> {
+                val opprettetAktivitet = opprettAktivitet(bestilling)
+                log.info("Opprettet ekstern aktivitetskort {}", opprettetAktivitet)
+                UpsertActionResult.OPPRETT
+            }
         }
     }
 
@@ -55,16 +58,15 @@ class AktivitetskortService(
 
     @Throws(ManglerOppfolgingsperiodeFeil::class)
     private fun opprettEksternAktivitet(bestilling: EksternAktivitetskortBestilling): AktivitetData {
-        val endretAv = bestilling.aktivitetskort.endretAv
         val opprettet = bestilling.aktivitetskort.endretTidspunkt.toLocalDateTime()
-        val oppfolgingsperiode = oppfolgingsperiodeService!!.finnOppfolgingsperiode(bestilling.aktorId, opprettet)
+        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(bestilling.aktorId, opprettet)
             ?: throw ManglerOppfolgingsperiodeFeil()
-        val aktivitetData: AktivitetData = mapTilAktivitetData(bestilling, bestilling.aktivitetskort.endretTidspunkt, oppfolgingsperiode)
+        val aktivitetData: AktivitetData = bestilling.toAktivitetsData(bestilling.aktivitetskort.endretTidspunkt, oppfolgingsperiode)
 
         return aktivitetService.opprettAktivitet(
             Person.aktorId(aktivitetData.aktorId),
             aktivitetData,
-            endretAv,
+            bestilling.aktivitetskort.endretAv,
             opprettet,
             oppfolgingsperiode.uuid
         )
@@ -85,7 +87,7 @@ class AktivitetskortService(
 
     fun oppdaterStatus(aktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
         return if (aktivitet.status != nyAktivitet.status) {
-            aktivitetService!!.oppdaterStatus(
+            aktivitetService.oppdaterStatus(
                 aktivitet,
                 nyAktivitet,  // TODO: Populer avbrutt-tekstfelt
                 Ident(nyAktivitet.endretAv, nyAktivitet.endretAvType),

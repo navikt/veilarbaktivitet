@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitetskort.util;
 
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
