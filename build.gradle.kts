@@ -18,8 +18,7 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "4.0.0.2929"
     id("org.springframework.boot") version "3.0.2"
-    kotlin("plugin.lombok") version "1.9.0"
-    id("io.freefair.lombok") version "8.1.0"
+    id("io.freefair.lombok") version "6.6.2"
 }
 
 java {
@@ -128,12 +127,6 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    // Lombok stuff
-//    compileOnly("org.projectlombok:lombok:1.18.28")
-//    annotationProcessor("org.projectlombok:lombok:1.18.28")
-//    testCompileOnly("org.projectlombok:lombok:1.18.28")
-//    testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
-
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
@@ -173,7 +166,6 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("com.oracle.database.jdbc:ojdbc11")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
@@ -188,7 +180,6 @@ dependencies {
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
     //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")

@@ -162,17 +162,17 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
 
     private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
         var arenaId = rs.getString("ARENA_ID");
-        return new EksternAktivitetData(
-            rs.getString("SOURCE"),
-            rs.getString("TILTAK_KODE"),
-            rs.getBoolean("OPPRETTET_SOM_HISTORISK"),
-            Database.hentLocalDateTime(rs, "OPPFOLGINGSPERIODE_SLUTT"),
-            arenaId != null ? new ArenaId(arenaId) : null,
-            EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")),
-            Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class),
-            Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class),
-            Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class),
-            Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class)
-        );
+        return EksternAktivitetData.builder()
+                .source(rs.getString("SOURCE"))
+                .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
+                .tiltaksKode(rs.getString("TILTAK_KODE"))
+                .arenaId(arenaId != null ? new ArenaId(arenaId) : null)
+                .oppfolgingsperiodeSlutt(Database.hentLocalDateTime(rs, "OPPFOLGINGSPERIODE_SLUTT"))
+                .opprettetSomHistorisk(rs.getBoolean("OPPRETTET_SOM_HISTORISK"))
+                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
+                .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
+                .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
+                .detaljer(Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class))
+                .build();
     }
 }

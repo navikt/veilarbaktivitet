@@ -320,18 +320,14 @@ public class AktivitetService {
     }
 
     private EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData left, EksternAktivitetData right) {
-        return left.copy(
-                    right.getSource(),
-                    right.getTiltaksKode(),
-                    left.getOpprettetSomHistorisk(),
-                    left.getOppfolgingsperiodeSlutt(),
-                    left.getArenaId(),
-                    right.getType(),
-                    right.getOppgave(),
-                    right.getHandlinger(),
-                    right.getDetaljer(),
-                    right.getEtiketter()
-                );
+        return left
+                .withDetaljer(right.getDetaljer())
+                .withEtiketter(right.getEtiketter())
+                .withHandlinger(right.getHandlinger())
+                .withOppgave(right.getOppgave())
+                .withSource(right.getSource())
+                .withTiltaksKode(right.getTiltaksKode())
+                .withType(right.getType());
     }
 
     @Transactional

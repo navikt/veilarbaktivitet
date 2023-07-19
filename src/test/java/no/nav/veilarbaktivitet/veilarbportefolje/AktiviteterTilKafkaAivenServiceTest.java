@@ -4,7 +4,6 @@ import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;

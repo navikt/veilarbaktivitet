@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.avslutt;
 import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import no.nav.brukernotifikasjon.schemas.builders.DoneInputBuilder;
 import no.nav.brukernotifikasjon.schemas.builders.NokkelInputBuilder;
 import no.nav.brukernotifikasjon.schemas.input.DoneInput;
@@ -22,7 +21,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 class AvsluttSender {
     private final KafkaAvroAvroTemplate<NokkelInput, DoneInput> producer;
     private final AvsluttDao avsluttDao;
@@ -58,7 +56,7 @@ class AvsluttSender {
                     .withEventId(brukernotifikasjonId)
                     .build();
             final ProducerRecord<NokkelInput, DoneInput> kafkaMelding = new ProducerRecord<>(doneToppic, nokkel, done);
-            log.info("Sender brukernotifikasjon 'done' for grupperingsid: {}", nokkel.getGrupperingsId());
+
             producer.send(kafkaMelding).get();
         }
     }
