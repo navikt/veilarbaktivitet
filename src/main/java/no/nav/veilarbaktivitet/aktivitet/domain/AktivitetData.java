@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain;
 
-import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
@@ -17,76 +14,77 @@ import java.util.UUID;
 @ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
 public class AktivitetData {
 
+
     /**
      * Teknisk id for aktiviteten
      */
-    Long id;
+    public Long id;
     /**
      * Funksjonell id for aktiviteten
      */
-    UUID funksjonellId;
+    public UUID funksjonellId;
     /**
      * Versjon inkrementeres når det utføres en transasjon på aktiviteten.
      * Denne er en global sekvens for alle aktiviteter, men for en enkelt aktivitet, vil en sortering på versjon gi rekkefølgen på transaksjonene
      */
-    Long versjon;
+    public Long versjon;
     /**
      * AktørId for eksternbruker som 'eier' aktiviteten
      */
-    String aktorId;
+    public String aktorId;
     /**
      * Tittel på aktiviteten
      */
-    String tittel;
+    public String tittel;
     /**
      * Type aktivitet
      */
-    AktivitetTypeData aktivitetType;
-    String beskrivelse;
+    public AktivitetTypeData aktivitetType;
+    public String beskrivelse;
     /**
      * Overordnet status for aktiviteten i aktivitetsplanen
      */
-    AktivitetStatus status;
-    String avsluttetKommentar;
+    public AktivitetStatus status;
+    public String avsluttetKommentar;
     /**
      * Gjelder for en AktivitetData versjon, og sier om det var NAV eller BRUKER som utførte en {@link AktivitetTransaksjonsType} på aktiviteten
      */
-    Innsender endretAvType;
-    Date fraDato;
-    Date tilDato;
-    String lenke;
-    Date opprettetDato;
-    Date endretDato;
+    public Innsender endretAvType;
+    public Date fraDato;
+    public Date tilDato;
+    public String lenke;
+    public Date opprettetDato;
+    public Date endretDato;
     /**
      * Gjelder for en AktivitetData versjon, og angir ident som utførte en {@link AktivitetTransaksjonsType} på aktiviteten
      */
-    String endretAv;
+    public String endretAv;
     /**
      * Merket som 'Avtalt med Nav'
      */
-    boolean avtalt;
-    Forhaandsorientering forhaandsorientering;
+    public boolean avtalt;
+    public Forhaandsorientering forhaandsorientering;
     /**
      * Alle type endringer på aktiviteten angis med en endringstype av type AktivitetTransaksjonsType.
      */
-    AktivitetTransaksjonsType transaksjonsType;
-    Date historiskDato;
-    String kontorsperreEnhetId;
-    Date lestAvBrukerForsteGang;
-    boolean automatiskOpprettet;
-    String malid;
-    String fhoId;
+    public AktivitetTransaksjonsType transaksjonsType;
+    public Date historiskDato;
+    public String kontorsperreEnhetId;
+    public Date lestAvBrukerForsteGang;
+    public boolean automatiskOpprettet;
+    public String malid;
+    public String fhoId;
 
-    UUID oppfolgingsperiodeId;
+    public UUID oppfolgingsperiodeId;
 
-    EgenAktivitetData egenAktivitetData;
-    StillingsoekAktivitetData stillingsSoekAktivitetData;
-    SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
-    IJobbAktivitetData iJobbAktivitetData;
-    BehandlingAktivitetData behandlingAktivitetData;
-    MoteData moteData;
-    StillingFraNavData stillingFraNavData;
-    EksternAktivitetData eksternAktivitetData;
+    public EgenAktivitetData egenAktivitetData;
+    public StillingsoekAktivitetData stillingsSoekAktivitetData;
+    public SokeAvtaleAktivitetData sokeAvtaleAktivitetData;
+    public IJobbAktivitetData iJobbAktivitetData;
+    public BehandlingAktivitetData behandlingAktivitetData;
+    public MoteData moteData;
+    public StillingFraNavData stillingFraNavData;
+    public EksternAktivitetData eksternAktivitetData;
 
     public boolean endringTillatt() {
         return !(AktivitetStatus.AVBRUTT.equals(status)

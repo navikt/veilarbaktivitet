@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 
 import java.util.UUID;
 
@@ -27,10 +27,10 @@ import static com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY;
 @NoArgsConstructor
 @SuperBuilder(toBuilder = true)
 public abstract class BestillingBase {
-    protected String source;
+    public String source;
     @Setter
-    protected UUID messageId;
-    protected ActionType actionType;
+    public UUID messageId;
+    public ActionType actionType;
 
     protected BestillingBase(String source, UUID messageId, ActionType actionType) {
         this.source = source;
