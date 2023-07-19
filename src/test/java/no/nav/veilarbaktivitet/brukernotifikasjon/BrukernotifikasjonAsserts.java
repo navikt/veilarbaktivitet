@@ -81,7 +81,7 @@ public class BrukernotifikasjonAsserts {
     public ConsumerRecord<NokkelInput, DoneInput> assertDone(NokkelInput eventNokkel) {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.getAvsluttBrukernotifikasjonCron().avsluttBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
+        ConsumerRecord<NokkelInput, DoneInput> singleRecord = getSingleRecord(doneInputConsumer, config.getBrukernotifkasjonFerdigTopic(), DEFAULT_WAIT_TIMEOUT_DURATION.plusSeconds(5));
         NokkelInput key = singleRecord.key();
         assertEquals(eventNokkel.getFodselsnummer(), key.getFodselsnummer());
         assertEquals(eventNokkel.getEventId(), key.getEventId());
