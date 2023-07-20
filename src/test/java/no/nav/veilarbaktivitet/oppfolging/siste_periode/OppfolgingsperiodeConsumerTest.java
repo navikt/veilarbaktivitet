@@ -95,7 +95,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get();
         kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset());
 
-        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter;
+        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).getAktiviteter();
         AktivitetDTO skalVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalBliHistorisk.getId())).findAny().get();
         AktivitetAssertUtils.assertOppdatertAktivitet(skalBliHistorisk.setHistorisk(true), skalVaereHistorisk);
         assertEquals(AktivitetTransaksjonsType.BLE_HISTORISK, skalVaereHistorisk.getTransaksjonsType());
@@ -103,7 +103,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         AktivitetDTO skalIkkeVaereHistorisk = aktiviteter.stream().filter(a -> a.getId().equals(skalIkkeBliHistorisk.getId())).findAny().get();
         assertEquals(skalIkkeBliHistorisk, skalIkkeVaereHistorisk);
 
-        AktivitetDTO skalIkkeVaereHistoriskMockBruker2 = aktivitetTestService.hentAktiviteterForFnr(mockBruker2).aktiviteter.get(0);
+        AktivitetDTO skalIkkeVaereHistoriskMockBruker2 = aktivitetTestService.hentAktiviteterForFnr(mockBruker2).getAktiviteter().get(0);
         assertEquals(skalIkkeBliHistoriskMockBruker2, skalIkkeVaereHistoriskMockBruker2);
     }
 }

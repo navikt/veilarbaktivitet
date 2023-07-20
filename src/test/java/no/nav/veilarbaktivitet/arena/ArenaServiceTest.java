@@ -21,7 +21,7 @@ import static org.mockito.Mockito.mock;
 class ArenaServiceTest {
 
     @Test
-    public void skal_bruke_nyeste_fho_hvis_det_finnes_flere_på_en_arena_aktivitet() {
+    void skal_bruke_nyeste_fho_hvis_det_finnes_flere_på_en_arena_aktivitet() {
         var arenaService = new ArenaService(
                 mock(ForhaandsorienteringDAO.class),
                 mock(MeterRegistry.class),

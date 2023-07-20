@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -90,7 +91,9 @@ class AuthServiceTest {
                         .claim("acr", "Level4")
                         .build()
         );
-        authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
+        assertDoesNotThrow(() -> {
+            authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
+        });
     }
 
     @Test
@@ -103,8 +106,9 @@ class AuthServiceTest {
                         .build()
         );
 
+        var ident =  Person.fnr("12121212121").eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(Person.fnr("12121212121").eksternBrukerId());
+            authService.sjekkTilgangTilPerson(ident);
         });
     }
 
@@ -117,8 +121,9 @@ class AuthServiceTest {
                         .claim("acr", "Level3")
                         .build()
         );
+        var ident = Person.fnr(FNR).eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(Person.fnr(FNR).eksternBrukerId());
+            authService.sjekkTilgangTilPerson(ident);
         });
     }
 
