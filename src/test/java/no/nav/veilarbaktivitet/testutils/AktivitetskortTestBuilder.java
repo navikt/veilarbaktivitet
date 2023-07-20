@@ -45,13 +45,14 @@ public class AktivitetskortTestBuilder {
     }
 
     public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload, UUID messageId, String source, AktivitetskortType aktivitetskortType) {
-        return KafkaAktivitetskortWrapperDTO.builder()
-                .messageId(messageId)
-                .source(source)
-                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-                .aktivitetskort(payload)
-                .aktivitetskortType(aktivitetskortType)
-                .build();
+        return new KafkaAktivitetskortWrapperDTO(
+                aktivitetskortType,
+                payload,
+                source,
+//                ActionType.UPSERT_AKTIVITETSKORT_V1,
+                messageId);
+
+
     }
 
     public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload) {

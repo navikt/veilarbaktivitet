@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import io.micrometer.core.instrument.Meter
 import io.micrometer.core.instrument.MeterRegistry
-import no.nav.common.featuretoggle.UnleashClient
 import no.nav.common.json.JsonUtils
 import no.nav.common.kafka.producer.KafkaProducerClient
 import no.nav.common.types.identer.NavIdent
@@ -18,6 +17,10 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.extraFi
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.invalidDateFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaAktivitetWrapper
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.missingFieldRecord
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortFeilMelding
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
@@ -51,7 +54,6 @@ import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
@@ -202,13 +204,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun ekstern_aktivitet_skal_ha_oppfolgingsperiode() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-            .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-            .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-            .aktivitetskort(actual)
-            .source("source")
-            .messageId(UUID.randomUUID())
-            .build()
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
+            aktivitetskort = actual,
+            source = "source",
+            messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitet = hentAktivitet(funksjonellId)
         assertEquals(mockBruker.oppfolgingsperiode, aktivitet.oppfolgingsperiodeId)
@@ -246,13 +247,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now().minusDays(75))
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-            .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-            .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-            .aktivitetskort(actual)
-            .source("source")
-            .messageId(UUID.randomUUID())
-            .build()
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
+            aktivitetskort = actual,
+            source = "source",
+            messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitetFoer = hentAktivitet(funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
@@ -278,13 +278,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now().minusDays(500))
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-            .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-            .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-            .aktivitetskort(actual)
-            .source("source")
-            .messageId(UUID.randomUUID())
-            .build()
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
+            aktivitetskort = actual,
+            source = "source",
+            messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         assertFeilmeldingPublished(
             funksjonellId,
@@ -398,7 +397,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val context = meldingContext()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val tiltaksaktivitetEndret: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(detaljer = listOf(Attributt("Tiltaksnavn", "Nytt navn")))
+            .copy(detaljer = listOf(
+                Attributt(
+                    "Tiltaksnavn",
+                    "Nytt navn"
+                )
+            ))
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
             listOf(
                 tiltaksaktivitet,
@@ -472,10 +476,20 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val nyesteNavn = "Nytt navn"
         val context = meldingContext()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(detaljer = listOf(Attributt("Tiltaksnavn", "Gammelt navn")))
+            .copy(detaljer = listOf(
+                Attributt(
+                    "Tiltaksnavn",
+                    "Gammelt navn"
+                )
+            ))
         val tiltaksMelding = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet)
         val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(detaljer = listOf(Attributt("Tiltaksnavn", nyesteNavn)))
+            .copy(detaljer = listOf(
+                Attributt(
+                    "Tiltaksnavn",
+                    nyesteNavn
+                )
+            ))
         val tiltaksMeldingEndret = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetEndret)
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
@@ -487,7 +501,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val aktivitet = hentAktivitet(funksjonellId)
         val detaljer = aktivitet.eksternAktivitet.detaljer
         assertThat(detaljer.stream().filter { it: Attributt -> it.label == "Tiltaksnavn" }).hasSize(1)
-        assertThat(detaljer).containsOnlyOnceElementsOf(listOf(Attributt("Tiltaksnavn", nyesteNavn)))
+        assertThat(detaljer).containsOnlyOnceElementsOf(listOf(
+            Attributt(
+                "Tiltaksnavn",
+                nyesteNavn
+            )
+        ))
     }
 
     private fun hentAktivitet(funksjonellId: UUID): AktivitetDTO {
@@ -556,7 +575,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             RecordHeader(AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".toByteArray())
         )
         val lastRecordMetadata = messages.stream()
-            .map { (json, messageId): AktivitetskortProducerUtil.Pair ->
+            .map { (json, messageId) ->
                 ProducerRecord(
                     topic,
                     null,
@@ -595,7 +614,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun should_throw_runtime_exception_on_missing_arena_headers() {
         var aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
-        aktivitetWrapper = aktivitetWrapper.toBuilder().aktivitetskortType(AktivitetskortType.ARENA_TILTAK).build()
+        aktivitetWrapper = aktivitetWrapper.copy(aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
         val h1 = RecordHeader("NONSENSE_HEADER", "DUMMYVALUE".toByteArray())
         val record = ConsumerRecord(
             topic,
@@ -614,11 +633,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun should_throw_runtime_exception_on_missing_messageId() {
-        var aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
-        aktivitetWrapper = aktivitetWrapper.toBuilder()
-            .aktivitetskortType(AktivitetskortType.VARIG_LONNSTILSKUDD)
-            .messageId(null)
-            .build()
+        val aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
+            .copy(messageId = null, aktivitetskortType = AktivitetskortType.VARIG_LONNSTILSKUDD)
         val record = ConsumerRecord(
             topic,
             0,
@@ -626,21 +642,20 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             aktivitetWrapper.aktivitetskort.id.toString(),
             JsonUtils.toJson(aktivitetWrapper)
         )
-        /* Call consume directly to avoid retry / waiting for message to be consumed */
-        val runtimeException = assertThrows(
-            RuntimeException::class.java
-        ) { aktivitetskortConsumer!!.consume(record) }
-        assertThat(runtimeException.message)
-            .isEqualTo("Mangler påkrevet messageId på aktivitetskort melding")
+        aktivitetskortConsumer!!.consume(record)
+        assertFeilmeldingPublished(
+            aktivitetWrapper.getAktivitetskortId(),
+            DeserialiseringsFeil::class.java
+        )
     }
 
     @Test
     fun should_handle_messageId_in_header() {
         var aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
-        aktivitetWrapper = aktivitetWrapper.toBuilder()
-            .aktivitetskortType(AktivitetskortType.VARIG_LONNSTILSKUDD)
-            .messageId(null)
-            .build()
+        aktivitetWrapper = aktivitetWrapper.copy(
+            aktivitetskortType = AktivitetskortType.VARIG_LONNSTILSKUDD,
+            messageId = null
+        )
         val messageId = UUID.randomUUID()
         val record = ProducerRecord(
             topic,
@@ -660,13 +675,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun should_throw_exception_when_messageId_is_equal_to_funksjonell_id() {
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-            .messageId(funksjonellId)
-            .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-            .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-            .aktivitetskort(actual)
-            .source("source")
-            .build()
+        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
+            messageId = funksjonellId,
+            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
+            aktivitetskort = actual,
+            source = "source")
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         assertFeilmeldingPublished(funksjonellId, MessageIdIkkeUnikFeil::class.java)
     }
@@ -676,7 +690,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val tiltaksaktivitetOppdatert: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)
-            .copy(detaljer = listOf(Attributt("Tiltaksnavn", "Nytt navn")))
+            .copy(detaljer = listOf(
+                Attributt(
+                    "Tiltaksnavn",
+                    "Nytt navn"
+                )
+            ))
         val aktivitetskort = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet)
         val aktivitetskortOppdatert = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetOppdatert)
         val h1 = RecordHeader(
@@ -705,7 +724,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             aktivitetskortConsumer!!.consume(recordOppdatert)
         }
 
-        /* Assert successful rollback */assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId))
+        /* Assert successful rollback */
+        assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId!!))
             .isFalse()
         val aktivitet = hentAktivitet(funksjonellId)
         assertThat(aktivitet.eksternAktivitet.detaljer[0].verdi).isEqualTo(
@@ -898,7 +918,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val kassering = KasseringsBestilling(
             "team-tiltak",
             UUID.randomUUID(),
-            ActionType.KASSER_AKTIVITET,
+//            ActionType.KASSER_AKTIVITET,
             NavIdent.of("z123456"),
             NorskIdent.of("12121212121"),
             tiltaksaktivitet.id,
@@ -930,7 +950,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val kassering = KasseringsBestilling(
             "team-tiltak",
             UUID.randomUUID(),
-            ActionType.KASSER_AKTIVITET,
+//            ActionType.KASSER_AKTIVITET,
             NavIdent.of("z123456"),
             NorskIdent.of("12121212121"),
             funksjonellId,

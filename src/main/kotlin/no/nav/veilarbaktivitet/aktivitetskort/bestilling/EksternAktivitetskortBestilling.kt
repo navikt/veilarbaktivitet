@@ -10,18 +10,17 @@ import no.nav.veilarbaktivitet.person.Person
 import java.util.*
 
 class EksternAktivitetskortBestilling(
-    aktivitetskort: Aktivitetskort?,
-    source: String?,
-    type: AktivitetskortType?,
-    messageId: UUID?,
-    actionType: ActionType?,
-    aktorId: Person.AktorId?
-) : AktivitetskortBestilling(source, type!!, aktivitetskort!!, messageId, actionType, aktorId!!) {
+    aktivitetskort: Aktivitetskort,
+    source: String,
+    type: AktivitetskortType,
+    messageId: UUID,
+    actionType: ActionType,
+    aktorId: Person.AktorId
+) : AktivitetskortBestilling(source, type, aktivitetskort, messageId, actionType, aktorId) {
+
+    override fun getAktivitetskortId() = aktivitetskort.id
+
     override fun toAktivitet(oppfolgingsPeriode: OppfolgingPeriodeMinimalDTO?): AktivitetData {
         return this.toAktivitetsData(null, oppfolgingsPeriode)
-    }
-
-    override fun getAktivitetskortId(): UUID {
-        return aktivitetskort.id
     }
 }

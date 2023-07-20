@@ -7,15 +7,12 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase
 import java.util.*
 
 class KasseringsBestilling(
-    source: String?,
-    messageId: UUID?,
-    actionType: ActionType?,
+    source: String,
+    messageId: UUID,
     val navIdent: NavIdent,
     val personIdent: NorskIdent,
     val aktivitetsId: UUID,
     val begrunnelse: String?
-) : BestillingBase(source, messageId, actionType) {
-    override fun getAktivitetskortId(): UUID {
-        return aktivitetsId
-    }
+) : BestillingBase(source, messageId, ActionType.KASSER_AKTIVITET) {
+    override fun getAktivitetskortId() = aktivitetsId
 }

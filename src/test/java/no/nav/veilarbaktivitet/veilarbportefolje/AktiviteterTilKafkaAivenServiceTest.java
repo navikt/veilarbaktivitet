@@ -115,13 +115,13 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         Aktivitetskort actual = AktivitetskortTestBuilder.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
 
-        KafkaAktivitetskortWrapperDTO wrapperDTO = KafkaAktivitetskortWrapperDTO.builder()
-                .messageId(UUID.randomUUID())
-                .aktivitetskortType(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
-                .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-                .aktivitetskort(actual)
-                .source("source")
-                .build();
+        KafkaAktivitetskortWrapperDTO wrapperDTO = new KafkaAktivitetskortWrapperDTO(
+                AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+                actual,
+                "source",
+//                ActionType.UPSERT_AKTIVITETSKORT_V1,
+                UUID.randomUUID()
+                );
 
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
 

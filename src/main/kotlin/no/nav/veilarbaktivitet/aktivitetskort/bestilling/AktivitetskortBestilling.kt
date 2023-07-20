@@ -10,11 +10,11 @@ import no.nav.veilarbaktivitet.person.Person
 import java.util.*
 
 abstract class AktivitetskortBestilling (
-    source: String?,
+    source: String,
     val aktivitetskortType: AktivitetskortType,
     val aktivitetskort: Aktivitetskort,
-    messageId: UUID?,
-    actionType: ActionType?,
+    messageId: UUID,
+    actionType: ActionType,
     val aktorId: Person.AktorId
 ) : BestillingBase(source, messageId, actionType) {
     abstract fun toAktivitet(oppfolgingPeriodeMinimalDTO: OppfolgingPeriodeMinimalDTO? = null): AktivitetData

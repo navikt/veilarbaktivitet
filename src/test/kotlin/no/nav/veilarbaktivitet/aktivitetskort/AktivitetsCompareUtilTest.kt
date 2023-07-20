@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
-import java.util.List
 
 internal class AktivitetsCompareUtilTest {
     @Test
@@ -16,7 +15,11 @@ internal class AktivitetsCompareUtilTest {
             .withEksternAktivitetData(
                 gammelAktivitet
                     .getEksternAktivitetData()
-                    .copy(etiketter = listOf(Etikett("DELTAR")))
+                    .copy(etiketter = listOf(
+                        Etikett(
+                            "DELTAR"
+                        )
+                    ))
             )
         Assertions.assertThat(
             AktivitetskortCompareUtil
@@ -63,7 +66,12 @@ internal class AktivitetsCompareUtilTest {
     fun tiltaksnavn_endring_er_faktisk_endring() {
         val gammelAktivitet = AktivitetDataTestBuilder.nyEksternAktivitet()
         val nyeDetaljer = gammelAktivitet.getEksternAktivitetData()
-            .copy(detaljer = listOf(Attributt("tiltaksnavn", "Hurra AS")))
+            .copy(detaljer = listOf(
+                Attributt(
+                    "tiltaksnavn",
+                    "Hurra AS"
+                )
+            ))
         val nyAktivitet = gammelAktivitet.withEksternAktivitetData(nyeDetaljer)
         Assertions.assertThat(
             AktivitetskortCompareUtil.erFaktiskOppdatert(gammelAktivitet, nyAktivitet)

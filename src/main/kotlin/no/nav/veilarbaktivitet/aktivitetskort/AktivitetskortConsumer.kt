@@ -41,25 +41,23 @@ open class AktivitetskortConsumer (
         return try {
             messageId = extractMessageId(consumerRecord)
             val funksjonellId = UUID.fromString(consumerRecord.key()) // Lik aktivitetskort.id i payload
-            ignorerHvisSettFor(messageId, funksjonellId)
+            ignorerHvisSettFor(messageId!!, funksjonellId)
             if (messageId == funksjonellId) {
                 throw MessageIdIkkeUnikFeil(
                     ErrorMessage("messageId må være unik for hver melding. aktivitetsId er lik messageId"),
                     null
                 )
             }
-            val bestilling = bestillingsCreator.lagBestilling(consumerRecord)
-            if (bestilling.getMessageId() == null) {
-                bestilling.setMessageId(messageId) // messageId populert i header i stedet for payload
-            }
-            MDC.put(MetricService.SOURCE, bestilling.getSource())
+            val bestilling = bestillingsCreator.lagBestilling(consumerRecord, messageId)
+
+            MDC.put(MetricService.SOURCE, bestilling.source)
             log.info(
                 "Konsumerer aktivitetskortmelding: offset={}, partition={}, messageId={}, sendt={}, funksjonellId={}",
                 consumerRecord.offset(),
                 consumerRecord.partition(),
-                bestilling.getMessageId(),
+                bestilling.messageId,
                 consumerRecord.timestamp().toLocalDateTimeDefaultZone(),
-                bestilling.aktivitetskortId
+                bestilling.getAktivitetskortId()
             )
             behandleBestilling(bestilling)
         } catch (e: DuplikatMeldingFeil) {
@@ -99,12 +97,12 @@ open class AktivitetskortConsumer (
         when (bestilling) {
             is AktivitetskortBestilling -> {
                 val upsertActionResult = aktivitetskortService.upsertAktivitetskort(bestilling)
-                aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), upsertActionResult, null)
+                aktivitetskortService.oppdaterMeldingResultat(bestilling.messageId!!, upsertActionResult, null)
                 aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult)
             }
             is KasseringsBestilling -> {
                 kasseringsService.kassertAktivitet(bestilling)
-                aktivitetskortService.oppdaterMeldingResultat(bestilling.getMessageId(), UpsertActionResult.KASSER, null)
+                aktivitetskortService.oppdaterMeldingResultat(bestilling.messageId!!, UpsertActionResult.KASSER, null)
             }
             else -> throw NotImplementedException("Unknown kafka message")
         }
@@ -112,8 +110,8 @@ open class AktivitetskortConsumer (
     }
 
     @Throws(DuplikatMeldingFeil::class)
-    private fun ignorerHvisSettFor(messageId: UUID?, funksjonellId: UUID) =
-        if (aktivitetskortService.harSettMelding(messageId!!)) {
+    private fun ignorerHvisSettFor(messageId: UUID, funksjonellId: UUID) =
+        if (aktivitetskortService.harSettMelding(messageId)) {
             log.warn("Previously handled message seen {} , ignoring", messageId)
             throw DuplikatMeldingFeil()
         } else {
@@ -127,7 +125,7 @@ open class AktivitetskortConsumer (
                 ?.let { return UUID.fromString(it) }
             consumerRecord.headers().lastHeader(UNIQUE_MESSAGE_IDENTIFIER)
                 ?.let { return UUID.fromString(String(it.value())) }
-            throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
+            throw DeserialiseringsFeil(ErrorMessage("Mangler påkrevet messageId på aktivitetskort melding"), java.lang.IllegalArgumentException())
         } catch (e: IOException) {
             throw DeserialiseringsFeil(ErrorMessage("Meldingspayload er ikke gyldig json"), e)
         } catch (e: IllegalArgumentException) {

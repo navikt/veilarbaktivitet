@@ -18,6 +18,7 @@ import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Component
+import java.util.UUID
 
 @Component
 class AktivitetsbestillingCreator (
@@ -35,13 +36,14 @@ class AktivitetsbestillingCreator (
     }
 
     @Throws(DeserialiseringsFeil::class, UgyldigIdentFeil::class, KeyErIkkeFunksjonellIdFeil::class)
-    fun lagBestilling(consumerRecord: ConsumerRecord<String, String>): BestillingBase {
+    fun lagBestilling(consumerRecord: ConsumerRecord<String, String>, messageId: UUID?): BestillingBase {
         val melding = deserialiser(consumerRecord)
-        if (melding.aktivitetskortId.toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
+        val resolvedMessageId = (melding.messageId ?: messageId) ?: throw RuntimeException("Mangler påkrevet messageId på aktivitetskort melding")
+        if (melding.getAktivitetskortId().toString() != consumerRecord.key()) throw KeyErIkkeFunksjonellIdFeil(
             ErrorMessage(
                 String.format(
                     "aktivitetsId: %s må være lik kafka-meldings-id: %s",
-                    melding.aktivitetskortId,
+                    melding.getAktivitetskortId(),
                     consumerRecord.key()
                 )
             ), null
@@ -56,7 +58,7 @@ class AktivitetsbestillingCreator (
                     melding.aktivitetskortType,
                     getEksternReferanseId(consumerRecord),
                     getArenaTiltakskode(consumerRecord),
-                    melding.messageId,
+                    resolvedMessageId,
                     melding.actionType,
                     aktorId
                 )
@@ -65,7 +67,7 @@ class AktivitetsbestillingCreator (
                     melding.aktivitetskort,
                     melding.source,
                     melding.aktivitetskortType,
-                    melding.messageId,
+                    resolvedMessageId,
                     melding.actionType,
                     aktorId
                 )

@@ -73,7 +73,7 @@ object AktivitetskortProducerUtil {
         val kasseringsBestilling = KasseringsBestilling(
             "team-tiltak",
             UUID.randomUUID(),
-            ActionType.KASSER_AKTIVITET,
+//            ActionType.KASSER_AKTIVITET,
             NavIdent.of("z123456"),
             NorskIdent.of("12121212121"),
             UUID.randomUUID(),
@@ -82,11 +82,11 @@ object AktivitetskortProducerUtil {
         return kasserMessageNode(kasseringsBestilling)
     }
 
-    @JvmStatic
-    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
-        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.toBuilder().actionType(null).build())
-    }
+//    @JvmStatic
+//    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
+//        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+//        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(actionType = null!!))
+//    }
 
     @JvmStatic
     @SneakyThrows
@@ -95,7 +95,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun missingFieldRecord(fnr: Person.Fnr): Pair {
+    fun missingFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -104,7 +104,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun extraFieldRecord(fnr: Person.Fnr): Pair {
+    fun extraFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -113,7 +113,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun invalidDateFieldRecord(fnr: Person.Fnr): Pair {
+    fun invalidDateFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -135,13 +135,36 @@ object AktivitetskortProducerUtil {
             endretAv = Ident("arenaEndretav", Innsender.ARENAIDENT),
             endretTidspunkt = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneOffset.ofHours(1)),
             detaljer = listOf(
-                Attributt("deltakelsesprosent", "40"),
-                Attributt("dagerPerUke", "2"),
+                Attributt(
+                    "deltakelsesprosent",
+                    "40"
+                ),
+                Attributt(
+                    "dagerPerUke",
+                    "2"
+                ),
             ),
-            oppgave = Oppgaver(Oppgave("tekst", "subtekst", URL("http://localhost:8080/ekstern")), null),
+            oppgave = Oppgaver(
+                Oppgave(
+                    "tekst",
+                    "subtekst",
+                    URL("http://localhost:8080/ekstern")
+                ),
+                null
+            ),
             handlinger = listOf(
-                LenkeSeksjon("tekst", "subtekst", URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN),
-                LenkeSeksjon("tekst", "subtekst", URL("http://localhost:8080/intern"), LenkeType.INTERN)
+                LenkeSeksjon(
+                    "tekst",
+                    "subtekst",
+                    URL("http://localhost:8080/ekstern"),
+                    LenkeType.EKSTERN
+                ),
+                LenkeSeksjon(
+                    "tekst",
+                    "subtekst",
+                    URL("http://localhost:8080/intern"),
+                    LenkeType.INTERN
+                )
             ),
             etiketter = listOf(
                 Etikett("INNSOKT"),
@@ -149,14 +172,12 @@ object AktivitetskortProducerUtil {
             ),
             avtaltMedNav = false
         )
-        return KafkaAktivitetskortWrapperDTO
-            .builder()
-            .messageId(UUID.randomUUID())
-            .source(AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL)
-            .actionType(ActionType.UPSERT_AKTIVITETSKORT_V1)
-            .aktivitetskort(aktivitetskort)
-            .aktivitetskortType(AktivitetskortType.ARENA_TILTAK)
-            .build()
+        return KafkaAktivitetskortWrapperDTO(
+            messageId = UUID.randomUUID(),
+            source = AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL,
+//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
+            aktivitetskort = aktivitetskort,
+            aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
     }
 
     @JvmRecord
