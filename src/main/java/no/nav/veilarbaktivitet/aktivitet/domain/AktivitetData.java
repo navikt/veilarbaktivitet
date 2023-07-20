@@ -1,9 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet.domain;
 
-import lombok.Builder;
-import lombok.ToString;
-import lombok.Value;
-import lombok.With;
+import lombok.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
@@ -16,6 +13,7 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @ToString(of = {"id", "funksjonellId", "versjon", "aktivitetType", "status", "endretDato", "transaksjonsType", "avtalt", "oppfolgingsperiodeId"})
 public class AktivitetData {
+
 
     /**
      * Teknisk id for aktiviteten
