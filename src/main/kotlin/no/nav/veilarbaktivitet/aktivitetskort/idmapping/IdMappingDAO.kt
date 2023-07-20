@@ -85,7 +85,7 @@ open class IdMappingDAO (
             }
     }
 
-    var rowmapper = RowMapper { rs: ResultSet, rowNum: Int ->
+    var rowmapper = RowMapper { rs: ResultSet, _: Int ->
         IdMapping(
             ArenaId(rs.getString("EKSTERN_REFERANSE_ID")),
             rs.getLong("AKTIVITET_ID"),

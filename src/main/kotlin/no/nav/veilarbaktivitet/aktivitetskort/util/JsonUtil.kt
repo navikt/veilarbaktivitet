@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitetskort.util
 
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonToken
-import org.slf4j.event.Level
 import java.io.IOException
 
 object JsonUtil {

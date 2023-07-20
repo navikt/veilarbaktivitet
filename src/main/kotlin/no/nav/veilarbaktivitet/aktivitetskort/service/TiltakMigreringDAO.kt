@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
-import org.springframework.stereotype.Repository
 import org.springframework.stereotype.Service
 import java.sql.ResultSet
 
@@ -16,11 +15,11 @@ class TiltakMigreringDAO (
     private val jdbcTemplate: NamedParameterJdbcTemplate
 ) {
 
-    private val rowMapper = RowMapper { rs: ResultSet, i: Int -> AktivitetDataRowMapper.mapAktivitet(rs) }
+    private val rowMapper = RowMapper { rs: ResultSet, _: Int -> AktivitetDataRowMapper.mapAktivitet(rs) }
     fun hentTiltakOpprettetSomHistoriskSomIkkeErHistorisk(maxAntall: Int): List<AktivitetData> {
         val params = MapSqlParameterSource()
             .addValue("maxAntall", maxAntall)
-        return jdbcTemplate!!.query(
+        return jdbcTemplate.query(
             """
                 SELECT e.DETALJER AS "EKSTERNAKTIVITET.DETALJER",
                 *

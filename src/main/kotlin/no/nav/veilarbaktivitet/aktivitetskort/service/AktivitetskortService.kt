@@ -89,7 +89,7 @@ class AktivitetskortService(
         return if (aktivitet.status != nyAktivitet.status) {
             aktivitetService.oppdaterStatus(
                 aktivitet,
-                nyAktivitet,  // TODO: Populer avbrutt-tekstfelt
+                nyAktivitet,
                 Ident(nyAktivitet.endretAv, nyAktivitet.endretAvType),
                 DateUtils.dateToLocalDateTime(nyAktivitet.endretDato)
             )
@@ -102,7 +102,6 @@ class AktivitetskortService(
     private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
         if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
         if (gammelAktivitet.historiskDato != null) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
-        //TODO vurder avtalt-logikken https://trello.com/c/dFyre4EK
         if (gammelAktivitet.isAvtalt && !nyAktivitet.isAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
         return gammelAktivitet
             .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }

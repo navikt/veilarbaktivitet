@@ -42,6 +42,6 @@ class MigreringService (
 
     companion object {
         const val VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter"
-        private val alleArenaAktiviteter = Predicate { a: ArenaAktivitetDTO -> true }
+        private val alleArenaAktiviteter = Predicate { _: ArenaAktivitetDTO -> true }
     }
 }
