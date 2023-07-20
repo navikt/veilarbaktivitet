@@ -285,12 +285,12 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).aktiviteter.get(0);
+        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).getAktiviteter().get(0);
         this.aktivitet = aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder,aktivitet, nyAktivitetStatus);
     }
 
     private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).aktiviteter.get(0);
+        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).getAktiviteter().get(0);
         this.aktivitet = aktivitetTestService.oppdaterAktivitetEtikett(mockBruker, mockVeileder,aktivitet, nyAktivitetEtikett);
     }
 
@@ -322,12 +322,12 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
 
     private void da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan() {
-        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).aktiviteter;
+        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).getAktiviteter();
         assertThat(aktiviteter, hasSize(2));
     }
 
     private void da_skal_jeg_ikke_kunne_hente_noen_aktiviteter() {
-        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).aktiviteter;
+        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder).getAktiviteter();
         assertThat(aktiviteter, hasSize(0));
     }
 

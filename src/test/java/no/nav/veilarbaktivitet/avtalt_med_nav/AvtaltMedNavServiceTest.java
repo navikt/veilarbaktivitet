@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.hamcrest.Matchers.equalTo;
 
-public class AvtaltMedNavServiceTest extends SpringBootTestBase {
+class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     private static final MockBruker bruker = MockNavService.createHappyBruker();
     private static final MockVeileder veileder = MockNavService.createVeileder(bruker);

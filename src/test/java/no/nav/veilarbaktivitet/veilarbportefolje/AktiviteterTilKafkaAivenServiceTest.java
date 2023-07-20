@@ -111,7 +111,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     }
 
     @Test
-    void skal_sende_tiltak_til_portefolje() throws InterruptedException {
+    void skal_sende_tiltak_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         Aktivitetskort actual = AktivitetskortTestBuilder.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
 
@@ -119,14 +119,10 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
                 AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
                 actual,
                 "source",
-//                ActionType.UPSERT_AKTIVITETSKORT_V1,
                 UUID.randomUUID()
                 );
 
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
-
-        Thread.sleep(2000L);
-
         cronService.sendOppTil5000AktiviterTilPortefolje();
 
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);

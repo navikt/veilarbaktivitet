@@ -177,7 +177,7 @@ public class AktivitetTestService {
     }
 
     public static AktivitetDTO finnAktivitet(AktivitetsplanDTO aktivitetsplanDTO, String id) {
-        return aktivitetsplanDTO.aktiviteter.stream().filter(a -> a.getId().equals(id)).findAny().get();
+        return aktivitetsplanDTO.getAktiviteter().stream().filter(a -> a.getId().equals(id)).findAny().get();
     }
 
     public AktivitetDTO hentAktivitet(MockBruker mockBruker, String id) {
@@ -476,7 +476,7 @@ public class AktivitetTestService {
 
     public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {
         return hentAktiviteterForFnr(mockBruker, veileder)
-                .aktiviteter.stream()
+                .getAktiviteter().stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Fant ikke aktivitet med funksjonellId %s", funksjonellId)));
     }

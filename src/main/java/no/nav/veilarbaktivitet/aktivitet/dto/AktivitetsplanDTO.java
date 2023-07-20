@@ -10,5 +10,5 @@ import static java.util.Collections.emptyList;
 @Data
 @Accessors(chain = true)
 public class AktivitetsplanDTO {
-    public List<AktivitetDTO> aktiviteter = emptyList();
+    List<AktivitetDTO> aktiviteter = emptyList();
 }

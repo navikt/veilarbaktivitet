@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions;
 import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 
-public class ArenaIdTest {
+class ArenaIdTest {
 
     @Test
     void should_deserialize_arenaId_correctly() {
