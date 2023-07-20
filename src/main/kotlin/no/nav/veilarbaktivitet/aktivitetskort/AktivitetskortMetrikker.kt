@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
     fun countAktivitetskortUpsert(bestilling: AktivitetskortBestilling, upsertActionResult: UpsertActionResult) {
         val type = bestilling.aktivitetskortType.name
-        val source = bestilling.getSource()
+        val source = bestilling.source
         Counter.builder(AKTIVITETSKORT_UPSERT)
             .tag("type", type)
             .tag("source", source)

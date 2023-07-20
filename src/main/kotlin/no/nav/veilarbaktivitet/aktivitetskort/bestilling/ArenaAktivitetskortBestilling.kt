@@ -18,14 +18,12 @@ class ArenaAktivitetskortBestilling(
     val arenaTiltakskode: String,
     messageId: UUID,
     actionType: ActionType,
-    aktorId: Person.AktorId
+    aktorId: Person.AktorId,
 ) : AktivitetskortBestilling(source, type, aktivitetskort, messageId, actionType, aktorId) {
+
+    override fun getAktivitetskortId() = aktivitetskort.id
     override fun toAktivitet(oppfolgingsPeriode: OppfolgingPeriodeMinimalDTO?): AktivitetData {
         val opprettetTidspunkt = aktivitetskort.endretTidspunkt
         return this.toAktivitetsData(opprettetTidspunkt, oppfolgingsPeriode)
-    }
-
-    override fun getAktivitetskortId(): UUID {
-        return aktivitetskort.id
     }
 }
