@@ -6,13 +6,16 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataUpdate
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException
+import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
@@ -25,17 +28,17 @@ class AktivitetskortService(
     private val aktivitetDAO: AktivitetDAO,
     private val aktivitetsMessageDAO: AktivitetsMessageDAO,
     private val arenaAktivitetskortService: ArenaAktivitetskortService,
-    private val oppfolgingsperiodeService: OppfolgingsperiodeService
+    private val sistePeriodeService: SistePeriodeService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     @Throws(AktivitetsKortFunksjonellException::class)
     fun upsertAktivitetskort(bestilling: AktivitetskortBestilling): UpsertActionResult {
         val (id) = bestilling.aktivitetskort
-        val gammelAktivitetVersjon = aktivitetDAO.hentAktivitetByFunksjonellId(id)
+        val gammelAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(id)
         return when {
-            gammelAktivitetVersjon.isPresent -> {
+            gammelAktivitet.isPresent -> {
                 // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-                val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet())
+                val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitet.get(), bestilling.toAktivitetsDataUpdate())
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
             }
@@ -59,16 +62,18 @@ class AktivitetskortService(
     @Throws(ManglerOppfolgingsperiodeFeil::class)
     private fun opprettEksternAktivitet(bestilling: EksternAktivitetskortBestilling): AktivitetData {
         val opprettet = bestilling.aktivitetskort.endretTidspunkt.toLocalDateTime()
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(bestilling.aktorId, opprettet)
-            ?: throw ManglerOppfolgingsperiodeFeil()
-        val aktivitetData: AktivitetData = bestilling.toAktivitetsData(bestilling.aktivitetskort.endretTidspunkt, oppfolgingsperiode)
+        val oppfolgingsperiode = try {
+            sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(bestilling.aktorId)
+        } catch (e: IngenGjeldendePeriodeException) {
+            throw ManglerOppfolgingsperiodeFeil()
+        }
+        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert(bestilling.aktivitetskort.endretTidspunkt, null)
 
         return aktivitetService.opprettAktivitet(
             Person.aktorId(aktivitetData.aktorId),
-            aktivitetData,
+            aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
             bestilling.aktivitetskort.endretAv,
             opprettet,
-            oppfolgingsperiode.uuid
         )
     }
 

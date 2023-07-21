@@ -72,14 +72,17 @@ public class AktivitetService {
         return opprettAktivitet(aktorId, aktivitet, endretAv, LocalDateTime.now());
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) throws IngenGjeldendePeriodeException {
-        UUID oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
-        return opprettAktivitet(aktorId, aktivitet, endretAv, opprettet, oppfolgingsperiode);
+    private AktivitetData enforceOppfolgingsPeriode(AktivitetData aktivitet, Person.AktorId aktorId) throws IngenGjeldendePeriodeException {
+        if (aktivitet.getOppfolgingsperiodeId() == null) {
+            var oppfolgingsperiode = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId);
+            return aktivitet.withOppfolgingsperiodeId(oppfolgingsperiode);
+        } else {
+            return aktivitet;
+        }
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet, UUID oppfolgingsperiode) {
-
-        AktivitetData nyAktivivitet = aktivitet
+    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) throws IngenGjeldendePeriodeException {
+        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktorId)
                 .toBuilder()
                 .aktorId(aktorId.get())
                 .avtalt(aktivitet.isAvtalt())
@@ -88,7 +91,6 @@ public class AktivitetService {
                 .opprettetDato(localDateTimeToDate(opprettet))
                 .endretAv(endretAv.ident())
                 .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
-                .oppfolgingsperiodeId(oppfolgingsperiode)
                 .build();
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);

@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestillin
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.arena.model.ArenaId
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.ZonedDateTime
 import java.util.*
@@ -34,12 +33,24 @@ object AktivitetskortMapper {
     }
 
     @JvmStatic
-    fun AktivitetskortBestilling.toAktivitetsData(
+    fun AktivitetskortBestilling.toAktivitetsDataInsert(
+        opprettet: ZonedDateTime,
+        historiskTidspunkt: ZonedDateTime?
+    ): AktivitetData {
+        return this.toAktivitet(opprettet, historiskTidspunkt)
+    }
+
+    @JvmStatic
+    fun AktivitetskortBestilling.toAktivitetsDataUpdate(): AktivitetData {
+        return this.toAktivitet(null, null)
+    }
+
+
+    fun AktivitetskortBestilling.toAktivitet(
         opprettetDato: ZonedDateTime?,
-        oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? = null
+        historiskTidspunkt: ZonedDateTime?
     ): AktivitetData {
         val (id, _, tittel, beskrivelse, aktivitetStatus, startDato, sluttDato, endretAv, endretTidspunkt, avtaltMedNav, oppgave, handlinger, detaljer, etiketter) = this.aktivitetskort
-        val oppfolgingsperiodeSluttDato = oppfolgingsperiode?.sluttDato?.toLocalDateTime()
         val eksternAktivitetData = EksternAktivitetData(
             source = this.source,
             type = this.aktivitetskortType,
@@ -51,8 +62,8 @@ object AktivitetskortMapper {
             etiketter = Optional.ofNullable(
                 etiketter
             ).orElse(listOf()),
-            opprettetSomHistorisk = oppfolgingsperiodeSluttDato != null,
-            oppfolgingsperiodeSlutt = oppfolgingsperiodeSluttDato
+            opprettetSomHistorisk = historiskTidspunkt != null,
+            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime()
         )
 
         return AktivitetData.builder()

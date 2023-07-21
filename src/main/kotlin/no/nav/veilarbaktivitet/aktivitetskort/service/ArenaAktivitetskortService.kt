@@ -5,7 +5,9 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
@@ -29,19 +31,19 @@ class ArenaAktivitetskortService (
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
         val aktorId = bestilling.aktorId
-        val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt.toLocalDateTime()
+        val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
         val endretAv = bestilling.aktivitetskort.endretAv
         // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt)
+        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt.toLocalDateTime())
+            ?: throw ManglerOppfolgingsperiodeFeil()
 
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitet(oppfolgingsperiode)
+        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, oppfolgingsperiode.sluttDato)
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
-            aktivitetsData,
+            aktivitetsData.withOppfolgingsperiodeId(oppfolgingsperiode.uuid),
             endretAv,
-            opprettetTidspunkt,
-            oppfolgingsperiode?.uuid
+            opprettetTidspunkt.toLocalDateTime(),
         )
 
         // Gjør arena-spesifikk migrering

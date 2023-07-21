@@ -18,7 +18,7 @@ import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Component
-import java.util.UUID
+import java.util.*
 
 @Component
 class AktivitetsbestillingCreator (
@@ -80,6 +80,8 @@ class AktivitetsbestillingCreator (
     companion object {
         const val HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId"
         const val HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode"
+        const val HEADER_EKSTERN_ARENA_OPPFOLGINGSPERIODE = "oppfolgingsperiode"
+        const val HEADER_EKSTERN_ARENA_HISTORISK = "historisk"
         const val ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL"
         private var objectMapper: ObjectMapper? = null
         private val mapper: ObjectMapper?

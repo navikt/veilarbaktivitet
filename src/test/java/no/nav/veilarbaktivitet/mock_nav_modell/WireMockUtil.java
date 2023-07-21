@@ -11,6 +11,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class WireMockUtil {
 
+    public static final ZonedDateTime GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START = ZonedDateTime.now().minusDays(5);
+
     static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
         String aktorId = mockBruker.getAktorId();
@@ -49,7 +51,7 @@ public class WireMockUtil {
         if (underOppfolging) {
             OppfolgingPeriodeMinimalDTO oppfolgingsperiode = new OppfolgingPeriodeMinimalDTO(
                     periode,
-                    ZonedDateTime.now().minusDays(5),
+                    GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START,
                     null
             );
             OppfolgingPeriodeMinimalDTO gammelPeriode = new OppfolgingPeriodeMinimalDTO(
