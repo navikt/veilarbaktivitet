@@ -56,6 +56,10 @@ public class DateUtils {
         return date.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
     }
 
+//    public static LocalDateTime zonedToLocalDateTime(ZonedDateTime zoned) {
+//        return zoned..toLocalDateTime();
+//    }
+
     public static Date localDateTimeToDate(LocalDateTime localDateTime) {
         if (localDateTime == null) return null;
         return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());

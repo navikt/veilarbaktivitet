@@ -80,6 +80,8 @@ class AktivitetsbestillingCreator (
     companion object {
         const val HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId"
         const val HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode"
+        const val HEADER_EKSTERN_ARENA_OPPFOLGINGSPERIODE = "oppfolgingsperiode"
+        const val HEADER_EKSTERN_ARENA_HISTORISK = "historisk"
         const val ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL"
         private var objectMapper: ObjectMapper? = null
         private val mapper: ObjectMapper?
@@ -112,6 +114,13 @@ class AktivitetsbestillingCreator (
 
         private fun getArenaTiltakskode(consumerRecord: ConsumerRecord<String, String>): String {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE)
+                ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
+            val arenaTiltakskode = header.value()
+            return String(arenaTiltakskode)
+        }
+
+        private fun getOppfolgingsperiode(consumerRecord: ConsumerRecord<String, String>): String {
+            val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_OPPFOLGINGSPERIODE)
                 ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
             val arenaTiltakskode = header.value()
             return String(arenaTiltakskode)
