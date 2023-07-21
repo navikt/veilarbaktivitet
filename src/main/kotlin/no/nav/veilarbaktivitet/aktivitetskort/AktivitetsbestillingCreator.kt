@@ -18,7 +18,7 @@ import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.springframework.stereotype.Component
-import java.util.UUID
+import java.util.*
 
 @Component
 class AktivitetsbestillingCreator (
@@ -114,13 +114,6 @@ class AktivitetsbestillingCreator (
 
         private fun getArenaTiltakskode(consumerRecord: ConsumerRecord<String, String>): String {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE)
-                ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
-            val arenaTiltakskode = header.value()
-            return String(arenaTiltakskode)
-        }
-
-        private fun getOppfolgingsperiode(consumerRecord: ConsumerRecord<String, String>): String {
-            val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_OPPFOLGINGSPERIODE)
                 ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
             val arenaTiltakskode = header.value()
             return String(arenaTiltakskode)
