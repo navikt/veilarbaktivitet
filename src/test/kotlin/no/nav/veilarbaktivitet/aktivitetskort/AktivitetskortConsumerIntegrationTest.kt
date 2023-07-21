@@ -17,10 +17,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.extraFi
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.invalidDateFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaAktivitetWrapper
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.missingFieldRecord
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortFeilMelding
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
@@ -33,6 +29,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil
 import no.nav.veilarbaktivitet.person.Innsender
@@ -59,8 +57,6 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.collections.Iterable
-import kotlin.collections.emptyList
 
 internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
@@ -117,12 +113,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     private val defaultcontext = meldingContext()
-    fun aktivitetskort(funksjonellId: UUID?, aktivitetStatus: AktivitetStatus?): Aktivitetskort {
+    fun aktivitetskort(funksjonellId: UUID?, aktivitetStatus: AktivitetStatus?, bruker: MockBruker = mockBruker): Aktivitetskort {
         return AktivitetskortTestBuilder.ny(
             funksjonellId,
             aktivitetStatus,
             endretDato,
-            mockBruker
+            bruker
         )
     }
 
@@ -243,44 +239,14 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun historisk_lonnstilskudd_aktivitet_skal_ha_oppfolgingsperiode() {
+    fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(endretTidspunkt = ZonedDateTime.now().minusDays(75))
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
-            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
-//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
-            aktivitetskort = actual,
-            source = "source",
-            messageId = UUID.randomUUID())
-        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
-        val aktivitetFoer = hentAktivitet(funksjonellId)
-        assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
-        assertThat(aktivitetFoer.isHistorisk).isFalse()
-        val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
-            """
-                SELECT opprettet_som_historisk
-                FROM EKSTERNAKTIVITET
-                WHERE AKTIVITET_ID = ?
-                ORDER BY VERSJON desc
-                FETCH NEXT 1 ROW ONLY 
-                
-                """.trimIndent(), Boolean::class.javaPrimitiveType, aktivitetFoer.id
+        val brukerUtenOppfolging = MockNavService.createBruker(
+            BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build()
         )
-        assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
-        tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
-        val aktivitetEtter = hentAktivitet(funksjonellId)
-        assertThat(aktivitetEtter.isHistorisk).isTrue()
-    }
-
-    @Test
-    fun lonnstilskudd_uten_oppfolgingsperiode_skal_feile() {
-        val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(endretTidspunkt = ZonedDateTime.now().minusDays(500))
+        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT, brukerUtenOppfolging)
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
-//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
             aktivitetskort = actual,
             source = "source",
             messageId = UUID.randomUUID())

@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
@@ -40,7 +40,7 @@ internal class AktivitetskortMapperTest {
             UUID.randomUUID(),
             ActionType.UPSERT_AKTIVITETSKORT_V1,
             Person.aktorId("1234567890")
-        ).toAktivitetsData(ZonedDateTime.now())
+        ).toAktivitetsDataInsert(ZonedDateTime.now(), null)
         result.withAktorId("adas")
         Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()
