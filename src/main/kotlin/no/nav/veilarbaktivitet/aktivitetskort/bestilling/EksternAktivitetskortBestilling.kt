@@ -19,8 +19,4 @@ class EksternAktivitetskortBestilling(
 ) : AktivitetskortBestilling(source, type, aktivitetskort, messageId, actionType, aktorId) {
 
     override fun getAktivitetskortId() = aktivitetskort.id
-
-    override fun toAktivitet(oppfolgingsPeriode: OppfolgingPeriodeMinimalDTO?): AktivitetData {
-        return this.toAktivitetsData(null, oppfolgingsPeriode)
-    }
 }

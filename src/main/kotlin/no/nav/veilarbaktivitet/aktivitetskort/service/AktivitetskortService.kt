@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsMessageDAO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
@@ -14,9 +15,11 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellExce
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
 import no.nav.veilarbaktivitet.person.Person
+import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -35,7 +38,15 @@ class AktivitetskortService(
         return when {
             gammelAktivitetVersjon.isPresent -> {
                 // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-                val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitet())
+                val oppdatertAktivitet = when (bestilling.aktivitetskortType == AktivitetskortType.ARENA_TILTAK) {
+                    true -> arenaAktivitetskortService.oppdater(
+                        bestilling.toAktivitetsData(bestilling.aktivitetskort.endretTidspunkt),
+                        bestilling.aktorId,
+                        gammelAktivitetVersjon.get().id)
+                    else -> oppdaterAktivitet(gammelAktivitetVersjon.get(), bestilling.toAktivitetsData(
+                        DateUtils.dateToLocalDateTime(gammelAktivitetVersjon.get().opprettetDato))
+                    )
+                }
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
             }

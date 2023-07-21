@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBe
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.util.DateUtils
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -35,7 +36,7 @@ object AktivitetskortMapper {
 
     @JvmStatic
     fun AktivitetskortBestilling.toAktivitetsData(
-        opprettetDato: ZonedDateTime?,
+        opprettetDato: LocalDateTime,
         oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? = null
     ): AktivitetData {
         val (id, _, tittel, beskrivelse, aktivitetStatus, startDato, sluttDato, endretAv, endretTidspunkt, avtaltMedNav, oppgave, handlinger, detaljer, etiketter) = this.aktivitetskort
@@ -67,7 +68,7 @@ object AktivitetskortMapper {
             .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
             .endretAv(endretAv!!.ident)
             .endretAvType(endretAv.identType.toInnsender())
-            .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
+            .opprettetDato(DateUtils.localDateTimeToDate(opprettetDato))
             .endretDato(DateUtils.zonedDateTimeToDate(endretTidspunkt))
             .eksternAktivitetData(eksternAktivitetData)
             .build()

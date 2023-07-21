@@ -1,20 +1,26 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsData
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
 import no.nav.veilarbaktivitet.person.Person
+import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Slf4j
 @Service
@@ -23,6 +29,7 @@ class ArenaAktivitetskortService (
     private val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     private val idMappingDAO: IdMappingDAO,
     private val aktivitetService: AktivitetService,
+    private val aktivitetDao: AktivitetDAO,
     private val oppfolgingsperiodeService: OppfolgingsperiodeService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
 ) {
@@ -33,9 +40,10 @@ class ArenaAktivitetskortService (
         val endretAv = bestilling.aktivitetskort.endretAv
         // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
         val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt)
+            ?: throw ManglerOppfolgingsperiodeFeil()
 
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitet(oppfolgingsperiode)
+        val aktivitetsData = bestilling.toAktivitetsData(opprettetTidspunkt, oppfolgingsperiode)
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
             aktorId,
             aktivitetsData,
@@ -47,6 +55,15 @@ class ArenaAktivitetskortService (
         // Gjør arena-spesifikk migrering
         arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
         return opprettetAktivitetsData
+    }
+
+    fun oppdater(aktivitetsData: AktivitetData, aktorId: AktorId, aktivitetsId: Long): AktivitetData {
+        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, DateUtils.dateToLocalDateTime(aktivitetsData.opprettetDato))
+            ?: throw ManglerOppfolgingsperiodeFeil()
+        return aktivitetDao.overskrivAktivitet(aktivitetsData
+            .withOppfolgingsperiodeId(oppfolgingsperiode.uuid)
+            .withId(aktivitetsId)
+        )
     }
 
     private fun arenaspesifikkMigrering(
@@ -86,4 +103,6 @@ class ArenaAktivitetskortService (
         // Send idmapping til dialog
         aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping)
     }
+
+
 }
