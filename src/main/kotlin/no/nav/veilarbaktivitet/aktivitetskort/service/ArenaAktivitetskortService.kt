@@ -13,8 +13,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
-import no.nav.veilarbaktivitet.person.Person
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -32,7 +30,6 @@ class ArenaAktivitetskortService (
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
         val aktorId = bestilling.aktorId
         val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-        val endretAv = bestilling.aktivitetskort.endretAv
         // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
         val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt.toLocalDateTime())
             ?: throw ManglerOppfolgingsperiodeFeil()
@@ -40,10 +37,7 @@ class ArenaAktivitetskortService (
         // Opprett via AktivitetService
         val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, oppfolgingsperiode.sluttDato)
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            aktorId,
-            aktivitetsData.withOppfolgingsperiodeId(oppfolgingsperiode.uuid),
-            endretAv,
-            opprettetTidspunkt.toLocalDateTime(),
+            aktivitetsData.withOppfolgingsperiodeId(oppfolgingsperiode.uuid)
         )
 
         // Gjør arena-spesifikk migrering
@@ -68,9 +62,7 @@ class ArenaAktivitetskortService (
                 if (updated == 0) return@let
                 aktivitetService.oppdaterAktivitet(
                     opprettetAktivitet,
-                    opprettetAktivitet.withFhoId(fho.id),
-                    Person.navIdent(fho.opprettetAv),
-                    DateUtils.dateToLocalDateTime(fho.opprettetDato)
+                    opprettetAktivitet.withFhoId(fho.id)
                 )
                 log.debug(
                     "La til teknisk id på FHO med id={}, tekniskId={}",

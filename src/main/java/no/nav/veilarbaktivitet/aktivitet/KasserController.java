@@ -35,7 +35,7 @@ public class KasserController {
         long id = Long.parseLong(aktivitetId);
         AktivitetData aktivitetData = aktivitetDAO.hentAktivitet(id);
 
-        kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> kasseringDAO.kasserAktivitet(id));
+        kjorHvisTilgang(Person.aktorId(aktivitetData.getAktorId()), aktivitetId, () -> kasseringDAO.kasserAktivitet(id, Person.navIdent(authService.getInnloggetVeilederIdent().get())));
     }
 
     private boolean kjorHvisTilgang(Person.AktorId aktorId, String id, BooleanSupplier fn) {

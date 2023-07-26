@@ -1,27 +1,57 @@
 package no.nav.veilarbaktivitet.aktivitet.mappers;
 
+import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.common.auth.context.AuthContextHolderThreadLocal;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
+import no.nav.common.types.identer.*;
+import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.UserInContext;
+import no.nav.veilarbaktivitet.util.DateUtils;
+import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
-public class AktivitetDataMapper {
-    private AktivitetDataMapper() {}
-    public static AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
+@RequiredArgsConstructor
+@Service
+public class AktivitetDataMapperService {
 
+    private final IAuthService authService;
+    private final AktorOppslagClient aktorOppslagClient;
+    private final UserInContext userInContext;
+
+    private String getEndretAv(Id bruker) {
+        if (bruker instanceof AktorId) return bruker.get();
+        if (bruker instanceof NavIdent) return bruker.get();
+        if (bruker instanceof Fnr fnr) {
+            return aktorOppslagClient.hentAktorId(fnr).get();
+        }
+        throw new IllegalArgumentException("Bruker må være AktorId, NavIdent eller Fnr");
+    }
+
+    public AktivitetData mapTilAktivitetData(AktivitetDTO aktivitetDTO) {
         val id = Optional.ofNullable(aktivitetDTO.getId())
                 .filter(s -> !s.isEmpty())
                 .map(Long::parseLong)
                 .orElse(null);
         val versjon = Optional.ofNullable(aktivitetDTO.getVersjon()).map(Long::parseLong).orElse(0L);
         val aktivitetType = Helpers.Type.getData(aktivitetDTO.getType());
+        val innloggetBruker = authService.getLoggedInnUser();
+        val endretAvType = innloggetBruker instanceof EksternBrukerId ? Innsender.BRUKER : Innsender.NAV;
+        val endretAv = getEndretAv(innloggetBruker);
+        val aktorId = userInContext.getAktorId();
 
         val aktivitetData = AktivitetData
                 .builder()
                 .id(id)
+                .aktorId(aktorId.get())
+                .endretAv(endretAv)
+                .endretAvType(endretAvType)
+                .endretDato(DateUtils.localDateTimeToDate(LocalDateTime.now()))
+                .opprettetDato(id == null ? DateUtils.localDateTimeToDate(LocalDateTime.now()) : null)
                 .versjon(versjon)
                 .tittel(aktivitetDTO.getTittel())
                 .fraDato(aktivitetDTO.getFraDato())
@@ -31,8 +61,6 @@ public class AktivitetDataMapper {
                 .status(aktivitetDTO.getStatus())
                 .avsluttetKommentar(aktivitetDTO.getAvsluttetKommentar())
                 .avtalt(aktivitetDTO.isAvtalt())
-                // TODO: Ikke bruk statiske ting som dette inne i en mapper
-                .endretAvType(AuthContextHolderThreadLocal.instance().erEksternBruker() ? Innsender.BRUKER : Innsender.NAV)
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
                 .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());
@@ -52,14 +80,14 @@ public class AktivitetDataMapper {
         return aktivitetData.build();
     }
 
-    private static EgenAktivitetData egenAktivitetData(AktivitetDTO aktivitetDTO) {
+    private EgenAktivitetData egenAktivitetData(AktivitetDTO aktivitetDTO) {
         return EgenAktivitetData.builder()
                 .hensikt(aktivitetDTO.getHensikt())
                 .oppfolging(aktivitetDTO.getOppfolging())
                 .build();
     }
 
-    private static StillingsoekAktivitetData stillingsoekAktivitetData(AktivitetDTO aktivitetDTO) {
+    private StillingsoekAktivitetData stillingsoekAktivitetData(AktivitetDTO aktivitetDTO) {
         return StillingsoekAktivitetData.builder()
                 .stillingsoekEtikett(Helpers.Etikett.getData(aktivitetDTO.getEtikett()))
                 .kontaktPerson(aktivitetDTO.getKontaktperson())
@@ -69,7 +97,7 @@ public class AktivitetDataMapper {
                 .build();
     }
 
-    private static SokeAvtaleAktivitetData sokeAvtaleAktivitetData(AktivitetDTO aktivitetDTO) {
+    private SokeAvtaleAktivitetData sokeAvtaleAktivitetData(AktivitetDTO aktivitetDTO) {
         return SokeAvtaleAktivitetData.builder()
                 .antallStillingerSokes(aktivitetDTO.getAntallStillingerSokes())
                 .antallStillingerIUken(aktivitetDTO.getAntallStillingerIUken())
@@ -77,7 +105,7 @@ public class AktivitetDataMapper {
                 .build();
     }
 
-    private static IJobbAktivitetData iJobbAktivitetData(AktivitetDTO aktivitetDTO) {
+    private IJobbAktivitetData iJobbAktivitetData(AktivitetDTO aktivitetDTO) {
         return IJobbAktivitetData.builder()
                 .jobbStatusType(Helpers.JobbStatus.getData(aktivitetDTO.getJobbStatus()))
                 .ansettelsesforhold(aktivitetDTO.getAnsettelsesforhold())
@@ -85,7 +113,7 @@ public class AktivitetDataMapper {
                 .build();
     }
 
-    private static BehandlingAktivitetData behandlingAktivitetData(AktivitetDTO aktivitetDTO) {
+    private BehandlingAktivitetData behandlingAktivitetData(AktivitetDTO aktivitetDTO) {
         return BehandlingAktivitetData.builder()
                 .behandlingType(aktivitetDTO.getBehandlingType())
                 .behandlingSted(aktivitetDTO.getBehandlingSted())
@@ -94,7 +122,7 @@ public class AktivitetDataMapper {
                 .build();
     }
 
-    private static MoteData moteData(AktivitetDTO aktivitetDTO) {
+    private MoteData moteData(AktivitetDTO aktivitetDTO) {
         return MoteData.builder()
                 .adresse(aktivitetDTO.getAdresse())
                 .forberedelser(aktivitetDTO.getForberedelser())

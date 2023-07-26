@@ -79,17 +79,11 @@ public class OpprettForesporselOmDelingAvCv {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
-
-        Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
-
         boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
-
         AktivitetData aktivitetData = map(melding, kanVarsle);
-
         MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
-        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent.tilIdent());
+        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktivitetData);
         MDC.clear();
-
         if (kanVarsle) {
             brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);

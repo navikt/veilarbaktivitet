@@ -64,17 +64,16 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(1))
-                .oppdaterAktivitetFrist(any(), captureAktivitet.capture(), capturePerson.capture());
+                .oppdaterAktivitetFrist(any(), captureAktivitet.capture());
 
         SoftAssertions.assertSoftly(s -> {
             AktivitetData aktivitet = captureAktivitet.getValue();
             s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
             s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
-            Person endretAv = capturePerson.getValue();
-            s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
-            s.assertThat(endretAv.tilInnsenderType()).isSameAs(BRUKER);
+            s.assertThat(aktivitet.getEndretAv()).isEqualTo(TESTPERSONNUMMER);
+            s.assertThat(aktivitet.getEndretAvType()).isSameAs(BRUKER);
             s.assertAll();
         });
 
@@ -97,9 +96,9 @@ public class AktivitetAppServiceTest {
 
         appService.oppdaterAktivitet(endretAktivitet);
 
-        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
         verify(aktivitetService, times(1))
-                .oppdaterAktivitet(any(), captureAktivitet.capture(), capturePerson.capture());
+                .oppdaterAktivitet(any(), captureAktivitet.capture());
 
         SoftAssertions.assertSoftly(s -> {
             AktivitetData aktivitet = captureAktivitet.getValue();
@@ -109,9 +108,8 @@ public class AktivitetAppServiceTest {
             s.assertThat(aktivitet.getBeskrivelse()).isEqualTo(endretAktivitet.getBeskrivelse());
             s.assertThat(aktivitet.getBehandlingAktivitetData()).isNotEqualTo(avtaltBehandlingsdata);
             s.assertThat(aktivitet.getBehandlingAktivitetData()).isEqualTo(endretBehandlingsdata);
-            Person endretAv = capturePerson.getValue();
-            s.assertThat(endretAv.get()).isEqualTo(TESTPERSONNUMMER);
-            s.assertThat(endretAv.tilInnsenderType()).isSameAs(BRUKER);
+            s.assertThat(aktivitet.getEndretAv()).isEqualTo(TESTPERSONNUMMER);
+            s.assertThat(aktivitet.getEndretAvType()).isSameAs(BRUKER);
             s.assertAll();
         });
     }
@@ -125,17 +123,16 @@ public class AktivitetAppServiceTest {
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
-        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
         verify(aktivitetService, times(1))
-                .oppdaterAktivitetFrist(any(), captureAktivitet.capture(), capturePerson.capture());
+                .oppdaterAktivitetFrist(any(), captureAktivitet.capture());
 
         SoftAssertions.assertSoftly(s -> {
             AktivitetData aktivitet = captureAktivitet.getValue();
             s.assertThat(aktivitet.getTilDato()).isNotEqualTo(gammelAktivitet.getTilDato());
             s.assertThat(aktivitet.getTilDato()).isEqualTo(oppdatertAktivitet.getTilDato());
-            Person endretAv = capturePerson.getValue();
-            s.assertThat(endretAv.get()).isEqualTo(TESTNAVIDENT);
-            s.assertThat(endretAv.tilInnsenderType()).isSameAs(NAV);
+            s.assertThat(aktivitet.getEndretAv()).isEqualTo(TESTNAVIDENT);
+            s.assertThat(aktivitet.getEndretAvType()).isSameAs(NAV);
             s.assertAll();
         });
     }
@@ -149,9 +146,9 @@ public class AktivitetAppServiceTest {
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
 
         appService.oppdaterAktivitet(oppdatertAktivitet);
-        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any(), any());
-        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any(), any());
-        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitet(any(), any());
+        verify(aktivitetService, times(0)).oppdaterAktivitetFrist(any(), any());
+        verify(aktivitetService, times(1)).oppdaterMoteTidStedOgKanal(any(), any());
     }
 
     @Test
@@ -217,9 +214,9 @@ public class AktivitetAppServiceTest {
         when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
         when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("systembruker").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.TRUE);
-        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
+        when(aktivitetService.opprettAktivitet(any())).thenReturn(aktivitet);
 
-        AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
+        AktivitetData aktivitetData = appService.opprettNyAktivitet(aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isNull();
     }
 
@@ -230,9 +227,9 @@ public class AktivitetAppServiceTest {
         when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
         when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("saksbehandler").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.FALSE);
-        when(aktivitetService.opprettAktivitet(any(), any(), any())).thenReturn(aktivitet);
+        when(aktivitetService.opprettAktivitet(any())).thenReturn(aktivitet);
 
-        AktivitetData aktivitetData = appService.opprettNyAktivitet(Person.fnr("123"), aktivitet);
+        AktivitetData aktivitetData = appService.opprettNyAktivitet(aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isEqualTo(KONTORSPERRE_ENHET_ID);
     }
 
@@ -266,12 +263,12 @@ public class AktivitetAppServiceTest {
         } catch (IllegalArgumentException ignored) {
         }
 
-        verify(aktivitetService, never()).oppdaterStatus(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterAktivitet(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterEtikett(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterReferat(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterStatus(any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
+        verify(aktivitetService, never()).oppdaterEtikett(any(), any());
+        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
 
@@ -292,12 +289,12 @@ public class AktivitetAppServiceTest {
         } catch (IllegalArgumentException ignored) {
         }
 
-        verify(aktivitetService, never()).oppdaterStatus(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterAktivitet(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterEtikett(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any(), any());
-        verify(aktivitetService, never()).oppdaterReferat(any(), any(), any());
+        verify(aktivitetService, never()).oppdaterStatus(any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
+        verify(aktivitetService, never()).oppdaterAktivitetFrist(any(), any());
+        verify(aktivitetService, never()).oppdaterEtikett(any(), any());
+        verify(aktivitetService, never()).oppdaterMoteTidStedOgKanal(any(), any());
+        verify(aktivitetService, never()).oppdaterReferat(any(), any());
 
     }
 
@@ -314,7 +311,6 @@ public class AktivitetAppServiceTest {
     private static final String KONTORSPERRE_ENHET_ID = "1224";
     private final String TESTPERSONNUMMER = "01010012345";
     private final ArgumentCaptor<AktivitetData> captureAktivitet = ArgumentCaptor.forClass(AktivitetData.class);
-    private final ArgumentCaptor<Person> capturePerson = ArgumentCaptor.forClass(Person.class);
     private final String TESTNAVIDENT = "S314159";
     private final BehandlingAktivitetData endretBehandlingsdata = BehandlingAktivitetData.builder()
             .effekt("Endret effekt")
