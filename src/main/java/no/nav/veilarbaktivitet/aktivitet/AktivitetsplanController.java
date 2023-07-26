@@ -31,6 +31,7 @@ public class AktivitetsplanController {
     private final IAuthService authService;
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
+    private final AktivitetDataMapperService aktivitetDataMapperService;
 
     private final MigreringService migreringService;
 
@@ -115,7 +116,7 @@ public class AktivitetsplanController {
     public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitetDTO)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterReferat)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);

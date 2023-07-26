@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
@@ -13,6 +12,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.LivslopsStatus;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.MappingUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +26,6 @@ import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 import static no.nav.common.utils.StringUtils.nullOrEmpty;
-import static no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate;
 
 @Service
 @AllArgsConstructor
@@ -77,13 +76,10 @@ public class AktivitetService {
         }
     }
 
-    public AktivitetData opprettAktivitet(Person.AktorId aktorId, AktivitetData aktivitet, Ident endretAv, LocalDateTime opprettet) throws IngenGjeldendePeriodeException {
-        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktorId)
+    public AktivitetData opprettAktivitet(AktivitetData aktivitet) throws IngenGjeldendePeriodeException {
+        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, Person.aktorId(aktivitet.getAktorId()))
                 .toBuilder()
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .opprettetDato(localDateTimeToDate(opprettet))
-                .endretAv(endretAv.ident())
-                .automatiskOpprettet(aktivitet.isAutomatiskOpprettet())
                 .build();
 
         AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
@@ -99,12 +95,11 @@ public class AktivitetService {
         var nyAktivitet = originalAktivitet
                 .toBuilder()
                 .status(aktivitet.getStatus())
-                .endretAv(endretAv.ident())
-                .endretAvType(endretAv.identType().toInnsender())
+                .endretAv(aktivitet.getEndretAv())
+                .endretAvType(aktivitet.getEndretAvType())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
-
 
         if(nyAktivitet.getStatus() == AktivitetStatus.AVBRUTT || nyAktivitet.getStatus() == AktivitetStatus.FULLFORT){
             avtaltMedNavService.settVarselFerdig(originalAktivitet.getFhoId());
@@ -131,28 +126,25 @@ public class AktivitetService {
 
     public void oppdaterEtikett(AktivitetData originalAktivitet, AktivitetData aktivitet) {
         val nyEtikett = aktivitet.getStillingsSoekAktivitetData().getStillingsoekEtikett();
-
         val originalStillingsAktivitet = originalAktivitet.getStillingsSoekAktivitetData();
         val nyStillingsAktivitet = originalStillingsAktivitet.withStillingsoekEtikett(nyEtikett);
-
         val nyAktivitet = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilInnsenderType())
+                .endretAvType(aktivitet.getEndretAvType())
+                .endretAv(aktivitet.getEndretAv())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
-                .endretAv(endretAv.get())
                 .build();
-
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
     }
 
     public void oppdaterAktivitetFrist(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilInnsenderType())
+                .endretAvType(aktivitetData.getEndretAvType())
+                .endretAv(aktivitetData.getEndretAv())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
-                .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
@@ -160,7 +152,8 @@ public class AktivitetService {
     public void oppdaterMoteTidStedOgKanal(AktivitetData originalAktivitet, AktivitetData aktivitetData) {
         val oppdatertAktivitetMedNyFrist = originalAktivitet
                 .toBuilder()
-                .endretAvType(endretAv.tilInnsenderType())
+                .endretAvType(aktivitetData.getEndretAvType())
+                .endretAv(aktivitetData.getEndretAv())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -168,7 +161,6 @@ public class AktivitetService {
                         moteData.withAdresse(aktivitetData.getMoteData().getAdresse())
                                 .withKanal(aktivitetData.getMoteData().getKanal())
                 ).orElse(null))
-                .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitetMedNyFrist);
     }
@@ -181,8 +173,8 @@ public class AktivitetService {
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
-                .withEndretAv(endretAv.get())
-                .withEndretAvType(endretAv.tilInnsenderType())
+                .withEndretAv(aktivitetData.getEndretAv())
+                .withEndretAvType(aktivitetData.getEndretAvType())
                 .withTransaksjonsType(transaksjon)
                 .withMoteData(merger.map(AktivitetData::getMoteData).merge(this::mergeReferat))
         );
@@ -207,8 +199,8 @@ public class AktivitetService {
 
     public void svarPaaKanCvDeles(AktivitetData originalAktivitet, AktivitetData aktivitet) {
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
-                .withEndretAv(endretAv.get())
-                .withEndretAvType(endretAv.tilInnsenderType())
+                .withEndretAv(aktivitet.getEndretAv())
+                .withEndretAvType(aktivitet.getEndretAvType())
                 .withTransaksjonsType(AktivitetTransaksjonsType.DEL_CV_SVART)
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
@@ -226,10 +218,10 @@ public class AktivitetService {
                 .behandlingAktivitetData(merger.map(AktivitetData::getBehandlingAktivitetData).merge(this::mergeBehandlingAktivitetData))
                 .beskrivelse(aktivitet.getBeskrivelse())
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
-                .endretAv(endretAv.get())
+                .endretAv(aktivitet.getEndretAv())
                 .fraDato(aktivitet.getFraDato())
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
-                .endretAvType(endretAv.tilInnsenderType())
+                .endretAvType(aktivitet.getEndretAvType())
                 .lenke(aktivitet.getLenke())
                 .moteData(merger.map(AktivitetData::getMoteData).merge(this::mergeMoteData))
                 .sokeAvtaleAktivitetData(merger.map(AktivitetData::getSokeAvtaleAktivitetData).merge(this::mergeSokeAvtaleAktivitetData))
@@ -249,6 +241,7 @@ public class AktivitetService {
         if (!originalAktivitet.endringTillatt()) throw new IllegalStateException(String.format("Ikke lov å endre aktivtet med id %s", originalAktivitet.getId()));
         return aktivitetDAO.oppdaterAktivitet(
                 originalAktivitet
+                        .withEndretDato(DateUtils.localDateTimeToDate(endretTidspunkt))
                         .withAvtalt(true)
                         .withTransaksjonsType(AktivitetTransaksjonsType.AVTALT)
                         .withEndretAv(endretAv.ident())

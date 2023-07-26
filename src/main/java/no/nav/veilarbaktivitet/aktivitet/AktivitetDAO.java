@@ -172,7 +172,7 @@ public class AktivitetDAO {
                 .addValue("livslopstatus_kode", EnumUtils.getName(aktivitet.getStatus()))
                 .addValue("avsluttet_kommentar", aktivitet.getAvsluttetKommentar())
                 .addValue("opprettet_dato", aktivitet.getOpprettetDato())
-                .addValue("endret_dato", endretDato)
+                .addValue("endret_dato", aktivitet.getEndretDato())
                 .addValue("endret_av", aktivitet.getEndretAv())
                 .addValue("lagt_inn_av", EnumUtils.getName(aktivitet.getEndretAvType()))
                 .addValue("lenke", aktivitet.getLenke())

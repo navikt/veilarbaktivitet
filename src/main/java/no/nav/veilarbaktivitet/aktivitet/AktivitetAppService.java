@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +101,6 @@ public class AktivitetAppService {
         if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
-
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_OPPRETTES_EKSTERNT.contains(aktivitetData.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Eksternbruker kan ikke opprette denne aktivitetstypen. Fikk: " + aktivitetData.getAktivitetType());
         }
@@ -124,7 +122,6 @@ public class AktivitetAppService {
         if (authService.erInternBruker()) {
             oppdaterSomNav(aktivitet, original);
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
-
         } else if (authService.erEksternBruker()) {
             oppdaterSomEksternBruker(aktivitet, original);
             return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
@@ -134,33 +131,29 @@ public class AktivitetAppService {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
-    private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original, Person loggedInnUser) {
+    private void oppdaterSomNav(AktivitetData aktivitet, AktivitetData original) {
         if (original.isAvtalt()) {
             if (original.getAktivitetType() == AktivitetTypeData.MOTE) {
-                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet, loggedInnUser);
+                aktivitetService.oppdaterMoteTidStedOgKanal(original, aktivitet);
             } else {
-                aktivitetService.oppdaterAktivitetFrist(original, aktivitet, loggedInnUser);
+                aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
             }
         } else {
-            aktivitetService.oppdaterAktivitet(original, aktivitet, loggedInnUser);
+            aktivitetService.oppdaterAktivitet(original, aktivitet);
         }
     }
 
     private void oppdaterSomEksternBruker(AktivitetData aktivitet, AktivitetData original) {
         boolean denneAktivitetstypenKanIkkeEndresEksternt = !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(original.getAktivitetType());
-
         // Når behandling er avtalt må vi begrense hva som kan oppdateres til kun sluttdato for behandlingen.
         // Når behandling ikke er avtalt, skal ekstern bruker ha mulighet til å endre flere ting.
         boolean skalOppdatereTilDatoForAvtaltMedisinskBehandling = original.isAvtalt() && original.getAktivitetType() == AktivitetTypeData.BEHANDLING;
-
         if (denneAktivitetstypenKanIkkeEndresEksternt) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Feil aktivitetstype " + original.getAktivitetType());
         }
-
         if (original.isAvtalt() && original.getAktivitetType() != AktivitetTypeData.BEHANDLING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Aktivitet er avtalt " + original.getAktivitetType());
         }
-
         if (skalOppdatereTilDatoForAvtaltMedisinskBehandling) {
             aktivitetService.oppdaterAktivitetFrist(original, aktivitet);
         } else {
