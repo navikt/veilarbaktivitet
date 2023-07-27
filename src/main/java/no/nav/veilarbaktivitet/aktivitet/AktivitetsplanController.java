@@ -76,7 +76,7 @@ public class AktivitetsplanController {
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
-                .map(aktivitetData -> appService.opprettNyAktivitet(aktivitetData))
+                .map(appService::opprettNyAktivitet)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
     }
