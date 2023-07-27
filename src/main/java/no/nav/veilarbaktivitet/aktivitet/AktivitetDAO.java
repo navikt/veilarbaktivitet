@@ -131,9 +131,16 @@ public class AktivitetDAO {
     }
 
 
+    private void setTilUgyldigVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
+        SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue(VERSJON, ikkeLengerGjeldendeVersjon);
+        // language=sql
+        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon=:versjon", updateGjeldendeParams);
+    }
+
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         long aktivitetId = aktivitet.getId();
-
         SqlParameterSource selectGjeldendeParams = new MapSqlParameterSource(AKTIVITETID, aktivitetId);
         // Denne 'select for update' sørger for å låse gjeldende versjon for å hindre race-conditions
         // slik at ikke flere kan oppdatere samme aktivitet samtidig.
@@ -143,18 +150,39 @@ public class AktivitetDAO {
             log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - gjeldende versjon: {}", aktivitet.getVersjon(), gjeldendeVersjon);
             throw new IllegalStateException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
         }
-
         long versjon = nesteVersjon();
-
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
+        setTilUgyldigVersjon(aktivitetId, gjeldendeVersjon);
+        return nyAktivitetVersjon;
+    }
 
+    private void slettEksternAktivitet(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
-                .addValue(VERSJON, gjeldendeVersjon);
+                .addValue("gammel_versjon", ikkeLengerGjeldendeVersjon);
         // language=sql
-        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon=:versjon", updateGjeldendeParams);
+        database.getNamedJdbcTemplate()
+                .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon = :gammel_versjon AND aktivitet_id = :aktivitet_id",
+                        updateGjeldendeParams);
+    }
 
+    public AktivitetData overskrivMenMedNyVersjon(AktivitetData aktivitet) {
+        long nyesteVersjon = nesteVersjon();
+        long gammelVersjon = aktivitet.getVersjon();
+        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitet.getId(), nyesteVersjon);
+        setTilUgyldigVersjon(aktivitet.getId(), gammelVersjon);
+        slettEksternAktivitet(aktivitet.getId(), gammelVersjon);
+        slettAlleAndreVersjoner(aktivitet.getId(), nyesteVersjon);
         return nyAktivitetVersjon;
+    }
+
+    private void slettAlleAndreVersjoner(long aktivitetId, long versjon) {
+        SqlParameterSource slettParams = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue(VERSJON, versjon);
+        // language=sql
+        database.getNamedJdbcTemplate()
+                .update("DELETE FROM AKTIVITET WHERE gjeldende = 0 AND aktivitet_id = :aktivitet_id and versjon != :versjon", slettParams);
     }
 
     private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon) {

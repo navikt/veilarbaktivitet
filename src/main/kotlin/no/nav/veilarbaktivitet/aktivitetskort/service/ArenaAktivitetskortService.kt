@@ -1,10 +1,13 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
@@ -13,8 +16,11 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import java.time.ZoneOffset
+import java.time.ZonedDateTime
 
 @Slf4j
 @Service
@@ -22,6 +28,7 @@ class ArenaAktivitetskortService (
     private val forhaandsorienteringDAO: ForhaandsorienteringDAO,
     private val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     private val idMappingDAO: IdMappingDAO,
+    private val aktivitetDAO: AktivitetDAO,
     private val aktivitetService: AktivitetService,
     private val oppfolgingsperiodeService: OppfolgingsperiodeService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
@@ -79,5 +86,20 @@ class ArenaAktivitetskortService (
         )
         // Send idmapping til dialog
         aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping)
+    }
+
+    fun oppdaterAktivitet(
+        bestilling: ArenaAktivitetskortBestilling,
+        gammelAktivitet: AktivitetData
+    ): AktivitetData {
+        val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
+        val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
+        val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
+            .withId(gammelAktivitet.id)
+            .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
+            .withVersjon(gammelAktivitet.versjon)
+            .withOpprettetDato(gammelAktivitet.opprettetDato)
+        val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
+        return opprettetAktivitetsData
     }
 }

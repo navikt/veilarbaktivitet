@@ -12,8 +12,8 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -431,6 +431,11 @@ public class AktivitetTestService {
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
+    /**
+     * Samme som opprettEksterntAktivitetsKort med kan ikke hete det samme pga type-erasure
+     * @param meldinger
+     * @param arenaMeldingHeaders
+     */
     public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> arenaMeldingHeaders) {
         var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
         opprettEksterntAktivitetsKort(aktivitetskorter, arenaMeldingHeaders);

@@ -44,9 +44,8 @@ import org.apache.kafka.common.header.Header
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -927,6 +926,32 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             funksjonellId,
             AktivitetIkkeFunnetFeil::class.java
         )
+    }
+
+    @Test
+    fun `relast skal overskrive første feilede migrering`() {
+        val funksjonellId = UUID.randomUUID()
+        val kontekst = meldingContext(ArenaId("TA31212"), "ARENA_TILTAK")
+        val opprettet = ZonedDateTime.now().minusDays(10)
+        val gammel = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+            .copy(endretTidspunkt = opprettet)
+        val ny = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+            .copy(endretTidspunkt = ZonedDateTime.now())
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+            listOf(gammel), listOf(kontekst))
+        val initiellAktivitet = hentAktivitet(funksjonellId)
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+            listOf(ny), listOf(kontekst))
+        val versjoner = aktivitetTestService.hentVersjoner(initiellAktivitet.id, mockBruker, mockBruker)
+        // Skal bare finnes siste versjon, alle andre skal slettes
+        assertThat(versjoner).hasSize(1)
+        val sisteVersjon = versjoner.first()
+        assertThat(sisteVersjon.versjon.toLong()).isGreaterThan(initiellAktivitet.versjon.toLong())
+        // Skal bruke første opprettet dato
+        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(opprettet, within(1, ChronoUnit.SECONDS))
+        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
+        assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
+        assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
     }
 
     private val mockBruker = MockNavService.createHappyBruker()
