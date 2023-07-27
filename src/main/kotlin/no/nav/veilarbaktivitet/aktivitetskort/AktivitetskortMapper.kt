@@ -68,7 +68,7 @@ object AktivitetskortMapper {
 
         return AktivitetData.builder()
             .funksjonellId(id)
-            .aktorId(this.aktorId.get())
+            .aktorId(this.aktorId)
             .avtalt(avtaltMedNav)
             .tittel(tittel)
             .fraDato(DateUtils.toDate(startDato))

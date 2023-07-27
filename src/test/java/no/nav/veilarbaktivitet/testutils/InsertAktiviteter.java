@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.testutils;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.config.database.Database;
+import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -12,11 +13,11 @@ public class InsertAktiviteter {
     public static void insertAktiviteter(JdbcTemplate jdbcTemplate) {
         AktivitetDAO aktivitetDAO = new AktivitetDAO(new Database(jdbcTemplate), new NamedParameterJdbcTemplate(jdbcTemplate));
         for (int i = 0; i < 10; i++) {
-            insertEnAvHver(i + "auto", aktivitetDAO);
+            insertEnAvHver(Person.aktorId(i + "auto"), aktivitetDAO);
         }
     }
 
-    public static void insertEnAvHver(String akotrid, AktivitetDAO aktivitetDAO) {
+    public static void insertEnAvHver(Person.AktorId akotrid, AktivitetDAO aktivitetDAO) {
         insertNyAktivitet(AktivitetDataTestBuilder.nyBehandlingAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyIJobbAktivitet(), akotrid, aktivitetDAO);
         insertNyAktivitet(AktivitetDataTestBuilder.nyMoteAktivitet(), akotrid, aktivitetDAO);
@@ -26,7 +27,7 @@ public class InsertAktiviteter {
         insertNyAktivitet(AktivitetDataTestBuilder.nyttStillingssok(), akotrid, aktivitetDAO);
     }
 
-    private static void insertNyAktivitet(AktivitetData aktivitetData, String aktorId, AktivitetDAO aktivitetDAO) {
+    private static void insertNyAktivitet(AktivitetData aktivitetData, Person.AktorId aktorId, AktivitetDAO aktivitetDAO) {
         AktivitetData build = aktivitetData.toBuilder().aktorId(aktorId).build();
         aktivitetDAO.opprettNyAktivitet(build);
     }

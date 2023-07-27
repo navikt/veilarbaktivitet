@@ -11,8 +11,10 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -21,7 +23,6 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.*;
 
 import static java.util.Optional.empty;
@@ -129,11 +130,8 @@ public class AktivitetDAO {
         return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
     }
 
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
-        return oppdaterAktivitet(aktivitet, LocalDateTime.now());
-    }
 
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet, LocalDateTime endretDato) {
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
         long aktivitetId = aktivitet.getId();
 
         SqlParameterSource selectGjeldendeParams = new MapSqlParameterSource(AKTIVITETID, aktivitetId);
@@ -148,7 +146,7 @@ public class AktivitetDAO {
 
         long versjon = nesteVersjon();
 
-        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
+        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
 
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
@@ -159,11 +157,15 @@ public class AktivitetDAO {
         return nyAktivitetVersjon;
     }
 
-    private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon, LocalDateTime endretDato) {
+    private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon) {
+        if (aktivitet.getOpprettetDato() == null || aktivitet.getEndretDato() == null) {
+            throw new DataIntegrityViolationException("OpprettetDato og endretDato må være satt for aktivitetId: {}");
+        }
+
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon)
-                .addValue("aktor_id", aktivitet.getAktorId())
+                .addValue("aktor_id", aktivitet.getAktorId().get())
                 .addValue("aktivitet_type_kode", aktivitet.getAktivitetType().name())
                 .addValue("fra_dato", aktivitet.getFraDato())
                 .addValue("til_dato", aktivitet.getTilDato())
@@ -172,7 +174,7 @@ public class AktivitetDAO {
                 .addValue("livslopstatus_kode", EnumUtils.getName(aktivitet.getStatus()))
                 .addValue("avsluttet_kommentar", aktivitet.getAvsluttetKommentar())
                 .addValue("opprettet_dato", aktivitet.getOpprettetDato())
-                .addValue("endret_dato", endretDato)
+                .addValue("endret_dato", aktivitet.getEndretDato())
                 .addValue("endret_av", aktivitet.getEndretAv())
                 .addValue("lagt_inn_av", EnumUtils.getName(aktivitet.getEndretAvType()))
                 .addValue("lenke", aktivitet.getLenke())
@@ -212,7 +214,7 @@ public class AktivitetDAO {
         insertStillingFraNav(aktivitetId, versjon, aktivitet.getStillingFraNavData());
         insertEksternAktivitet(aktivitetId, versjon, aktivitet.getEksternAktivitetData());
 
-        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon).withEndretDato(Date.from(endretDato.atZone(ZoneId.systemDefault()).toInstant()));
+        AktivitetData nyAktivitet = aktivitet.withId(aktivitetId).withVersjon(versjon);
 
         log.info("opprettet {}", nyAktivitet);
         return nyAktivitet;
@@ -220,13 +222,10 @@ public class AktivitetDAO {
 
 
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
-        return opprettNyAktivitet(aktivitet, LocalDateTime.now());
-    }
-
-    public AktivitetData opprettNyAktivitet(AktivitetData aktivitet, LocalDateTime endretDato) {
         long aktivitetId = nesteAktivitetId();
         long versjon = nesteVersjon();
-        return insertAktivitetVersjon(aktivitet, aktivitetId, versjon, endretDato);
+        var now = DateUtils.localDateTimeToDate(LocalDateTime.now());
+        return insertAktivitetVersjon(aktivitet.withOpprettetDato(now), aktivitetId, versjon);
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {

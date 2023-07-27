@@ -16,7 +16,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService
-import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -61,7 +60,6 @@ class AktivitetskortService(
 
     @Throws(ManglerOppfolgingsperiodeFeil::class)
     private fun opprettEksternAktivitet(bestilling: EksternAktivitetskortBestilling): AktivitetData {
-        val opprettet = bestilling.aktivitetskort.endretTidspunkt.toLocalDateTime()
         val oppfolgingsperiode = try {
             sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(bestilling.aktorId)
         } catch (e: IngenGjeldendePeriodeException) {
@@ -70,10 +68,7 @@ class AktivitetskortService(
         val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert(bestilling.aktivitetskort.endretTidspunkt, null)
 
         return aktivitetService.opprettAktivitet(
-            Person.aktorId(aktivitetData.aktorId),
             aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
-            bestilling.aktivitetskort.endretAv,
-            opprettet,
         )
     }
 
@@ -81,11 +76,7 @@ class AktivitetskortService(
         return if (AktivitetskortCompareUtil.erFaktiskOppdatert(nyAktivitet, aktivitet)) {
             aktivitetService.oppdaterAktivitet(
                 aktivitet,
-                nyAktivitet,
-                Person.navIdent(nyAktivitet.endretAv),
-                DateUtils.dateToLocalDateTime(
-                    nyAktivitet.endretDato
-                )
+                nyAktivitet
             )
         } else aktivitet
     }
@@ -94,9 +85,7 @@ class AktivitetskortService(
         return if (aktivitet.status != nyAktivitet.status) {
             aktivitetService.oppdaterStatus(
                 aktivitet,
-                nyAktivitet,
-                Ident(nyAktivitet.endretAv, nyAktivitet.endretAvType),
-                DateUtils.dateToLocalDateTime(nyAktivitet.endretDato)
+                nyAktivitet
             )
         } else {
             aktivitet

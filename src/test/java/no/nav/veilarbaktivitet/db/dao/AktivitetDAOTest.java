@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.AfterEach;
@@ -210,7 +211,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     @Test
     void kassering_skal_overskrive_mange_felter() {
         var aktivitet = gitt_at_det_finnes_et_mote();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         assertThat(kassert).isTrue();
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
 
@@ -228,7 +229,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     void referat_skal_kasseres_dersom_utfylt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat();
         assertThat(aktivitet.getMoteData().getReferat()).isNotNull();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         assertTrue(kassert);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isEqualTo(KASSERT_AV_NAV);
@@ -237,7 +238,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     @Test
     void referat_skal_ikke_kasseres_dersom_tomt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat_uten_innhold();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId());
+        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         assertTrue(kassert);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isNull();
@@ -312,7 +313,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
 
     private AktivitetData addAktivitet(AktivitetData aktivitet) {
         val aktivitetUtenId = aktivitet.toBuilder()
-                .aktorId(AKTOR_ID.get())
+                .aktorId(AKTOR_ID)
                 .build();
 
         return aktivitetDAO.opprettNyAktivitet(aktivitetUtenId);

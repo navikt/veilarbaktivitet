@@ -22,8 +22,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Date;
 import java.util.List;
 
-import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
-
 @Service
 @Transactional
 @Slf4j
@@ -90,7 +88,7 @@ public class AvtaltMedNavService {
                 .withEndretAvType(Innsender.NAV) // alltid NAV
                 .withAvtalt(true);
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet, dateToLocalDateTime(now));
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();

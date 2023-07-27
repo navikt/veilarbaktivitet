@@ -10,7 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapper;
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -31,6 +31,7 @@ public class AktivitetsplanController {
     private final IAuthService authService;
     private final AktivitetAppService appService;
     private final HttpServletRequest requestProvider;
+    private final AktivitetDataMapperService aktivitetDataMapperService;
 
     private final MigreringService migreringService;
 
@@ -73,9 +74,9 @@ public class AktivitetsplanController {
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitet)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
-                .map(aktivitetData -> appService.opprettNyAktivitet(getContextUserIdent(), aktivitetData))
+                .map(appService::opprettNyAktivitet)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
     }
@@ -84,7 +85,7 @@ public class AktivitetsplanController {
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitet)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
@@ -94,7 +95,7 @@ public class AktivitetsplanController {
     public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitet)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterEtikett)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
@@ -105,7 +106,7 @@ public class AktivitetsplanController {
     public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitet)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);
@@ -115,7 +116,7 @@ public class AktivitetsplanController {
     public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         return Optional.of(aktivitetDTO)
-                .map(AktivitetDataMapper::mapTilAktivitetData)
+                .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterReferat)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(RuntimeException::new);

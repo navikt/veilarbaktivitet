@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet
 
 import lombok.RequiredArgsConstructor
+import no.nav.veilarbaktivitet.person.Person
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
@@ -14,8 +15,8 @@ open class KasseringDAO (
 ) {
 
     @Transactional
-    open fun kasserAktivitet(aktivitetId: Long): Boolean {
-        val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId)
+    open fun kasserAktivitet(aktivitetId: Long, navIdent: Person.NavIdent ): Boolean {
+        val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId).addValue("navIdent", navIdent.get())
         // language=sql
         val whereClause = "aktivitet_id = :aktivitetId"
         // language=sql
@@ -29,7 +30,7 @@ open class KasseringDAO (
             "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV' WHERE",
             "UPDATE MOTE SET REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND",  // Hvis referat er satt og ikke delt, kommer det en 'ikke delt' label i aktivitetsplan
             "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null WHERE",
-            "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV' WHERE",
+            "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV', ENDRET_AV = :navIdent, LAGT_INN_AV = 'NAV' WHERE",
             "UPDATE EKSTERNAKTIVITET SET OPPGAVE = null, HANDLINGER = null, DETALJER = null, ETIKETTER = null WHERE"
         )
             .map { sql: String -> "$sql $whereClause" }
@@ -38,8 +39,8 @@ open class KasseringDAO (
     }
 
     @Transactional
-    open fun kasserAktivitetMedBegrunnelse(aktivitetId: Long, begrunnelse: String?) {
-        kasserAktivitet(aktivitetId)
+    open fun kasserAktivitetMedBegrunnelse(aktivitetId: Long, begrunnelse: String?, navIdent : Person.NavIdent ) {
+        kasserAktivitet(aktivitetId, navIdent)
         kotlin.runCatching {
             namedParameterJdbcTemplate.update(
                 """

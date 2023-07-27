@@ -45,7 +45,7 @@ public class AktivitetKafkaProducerService {
         ProducerRecord<String, String> portefoljeMelding = toJsonProducerRecord(portefoljeTopic, melding.getAktorId(), melding);
         portefoljeMelding.headers().add(new RecordHeader(NAV_CALL_ID_HEADER_NAME, getCorrelationId().getBytes()));
 
-        CompletableFuture<SendResult<String, AktivitetData>> send = kafkaJsonTemplate.send(aktivitetTopic, aktivitetData.getAktorId(), aktivitetData);
+        CompletableFuture<SendResult<String, AktivitetData>> send = kafkaJsonTemplate.send(aktivitetTopic, aktivitetData.getAktorId().get(), aktivitetData);
         long offset = portefoljeProducer.send(portefoljeMelding).get().getRecordMetadata().offset();
         send.get();
 

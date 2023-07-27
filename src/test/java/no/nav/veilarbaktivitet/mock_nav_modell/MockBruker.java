@@ -28,8 +28,8 @@ public class MockBruker extends RestassuredUser {
         return super.ident;
     }
 
-    public String getAktorId() {
-        return new StringBuilder(getFnr()).reverse().toString();
+    public Person.AktorId getAktorId() {
+        return Person.aktorId(new StringBuilder(getFnr()).reverse().toString());
     }
 
 
@@ -39,7 +39,7 @@ public class MockBruker extends RestassuredUser {
 
 
     public Person.AktorId getAktorIdAsAktorId() {
-        return Person.aktorId(getAktorId());
+        return getAktorId();
     }
 
     public String getOppfolgingsenhet() {
