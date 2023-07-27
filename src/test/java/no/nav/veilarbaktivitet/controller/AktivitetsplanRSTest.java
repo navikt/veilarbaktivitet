@@ -248,8 +248,11 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
+        var aktorId = Person.aktorId(mockBruker.getAktorId());
         lagredeAktivitetsIder = aktiviteter.stream()
-                .map(aktivitet -> aktivitetService.opprettAktivitet(aktivitet))
+                .map(aktivitet -> aktivitetService.opprettAktivitet(
+                    aktivitet.withAktorId(aktorId.get()).withEndretAvType(aktorId.tilInnsenderType())
+                ))
                 .map(AktivitetData::getId)
                 .collect(Collectors.toList());
     }
