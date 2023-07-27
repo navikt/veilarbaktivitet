@@ -42,7 +42,7 @@ public abstract class Person {
         return this instanceof AktorId || this instanceof Fnr;
     }
 
-    private void logWrongTypeToSecureLogsAndThrow() {
+    private Innsender logWrongTypeToSecureLogsAndThrow() {
         secureLogs.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
         throw new IllegalStateException("Bare fnr eller aktorId kan brukes som eksternId");
     }
