@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -15,7 +16,7 @@ public class WireMockUtil {
 
     static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
-        String aktorId = mockBruker.getAktorId();
+        Person.AktorId aktorId = mockBruker.getAktorId();
         boolean erManuell = mockBruker.getBrukerOptions().isErManuell();
         boolean erReservertKrr = mockBruker.getBrukerOptions().isErReservertKrr();
         boolean erUnderKvp = mockBruker.getBrukerOptions().isErUnderKvp();
@@ -33,13 +34,13 @@ public class WireMockUtil {
         nivaa4(fnr, harBruktNivaa4);
     }
 
-    private static void oppfolging(String fnr, String aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
+    private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
         if (oppfolgingFeiler) {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
-            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId)
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId.get())
                     .willReturn(aResponse().withStatus(500)));
             return;
         }
@@ -67,7 +68,7 @@ public class WireMockUtil {
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody(gjeldendePeriode)));
-            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId)
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId.get())
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody(oppfolgingsperioder)));
@@ -92,22 +93,22 @@ public class WireMockUtil {
                         .withBody("{\"erUnderManuellOppfolging\":" + erManuell + ",\"krrStatus\":{\"kanVarsles\":" + kanVarsles + ",\"erReservert\":" + erReservertKrr + "}}")));
     }
 
-    private static void kvp(String aktorId, boolean erUnderKvp, String enhet) {
+    private static void kvp(Person.AktorId aktorId, boolean erUnderKvp, String enhet) {
         if (erUnderKvp) {
-            stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
+            stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId.get())
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody("{\"enhet\":\"" + enhet + "\"}")));
         } else {
-            stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId)
+            stubFor(get("/veilarboppfolging/api/v2/kvp?aktorId=" + aktorId.get())
                     .willReturn(aResponse().withStatus(204)));
         }
     }
 
-    public static void aktorUtenGjeldende(String fnr, String aktorId) {
+    public static void aktorUtenGjeldende(String fnr, Person.AktorId aktorId) {
         stubFor(post(urlEqualTo("/pdl/graphql"))
                 .withRequestBody(matching("^.*FOLKEREGISTERIDENT.*"))
-                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId)))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId.get())))
                 .willReturn(aResponse()
                         .withBody("""
                                 {
@@ -140,11 +141,11 @@ public class WireMockUtil {
                                 """)));
     }
 
-    private static void aktor(String fnr, String aktorId) {
+    private static void aktor(String fnr, Person.AktorId aktorId) {
 
         stubFor(post(urlEqualTo("/pdl/graphql"))
                 .withRequestBody(matching("^.*FOLKEREGISTERIDENT.*"))
-                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId)))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId.get())))
                         .willReturn(aResponse()
                                 .withBody("""
                                 {
@@ -178,7 +179,7 @@ public class WireMockUtil {
                                     }
                                   }
                                 }
-                                """.formatted(aktorId))));
+                                """.formatted(aktorId.get()))));
     }
 
 

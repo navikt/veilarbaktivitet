@@ -34,7 +34,7 @@ public class RekrutteringsbistandStatusoppdateringService {
             brukernotifikasjonService.opprettVarselPaaAktivitet(
                     aktivitetData.getId(),
                     aktivitetData.getVersjon(),
-                    Person.aktorId(aktivitetData.getAktorId()),
+                    aktivitetData.getAktorId(),
                     switch (varselType) {
                         case CV_DELT -> CV_DELT_DITT_NAV_TEKST;
                         case IKKE_FATT_JOBBEN -> IKKE_FATT_JOBBEN_TEKST;

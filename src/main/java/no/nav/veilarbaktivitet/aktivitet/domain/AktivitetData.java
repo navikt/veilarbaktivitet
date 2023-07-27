@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet.domain;
 import lombok.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 
 import java.util.Date;
@@ -32,7 +33,7 @@ public class AktivitetData {
     /**
      * AktørId for eksternbruker som 'eier' aktiviteten
      */
-    private String aktorId;
+    private Person.AktorId aktorId;
     /**
      * Tittel på aktiviteten
      */

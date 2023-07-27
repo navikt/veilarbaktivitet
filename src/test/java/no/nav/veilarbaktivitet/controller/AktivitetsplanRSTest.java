@@ -22,7 +22,6 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
-import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -92,7 +91,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         aktivitetService.oppdaterStatus(aktivitet, aktivitet.withStatus(AktivitetStatus.GJENNOMFORES));
         var sisteAktivitetVersjon = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetId);
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
-        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), aktivitetId, Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(sisteAktivitetVersjon.getVersjon()).setForhaandsorientering(fho), aktivitetId, mockBruker.getAktorId(), NavIdent.of("V123"));
         var resultat = aktivitetTestService.hentVersjoner(String.valueOf(aktivitetId), mockBruker, mockVeileder);
 
 
@@ -109,7 +108,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
-        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), Person.aktorId(mockBruker.getAktorId()), NavIdent.of("V123"));
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), mockBruker.getAktorId(), NavIdent.of("V123"));
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockVeileder);
         assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
         assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
@@ -248,10 +247,10 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
-        var aktorId = Person.aktorId(mockBruker.getAktorId());
+        var aktorId = mockBruker.getAktorId();
         lagredeAktivitetsIder = aktiviteter.stream()
                 .map(aktivitet -> aktivitetService.opprettAktivitet(
-                    aktivitet.withAktorId(aktorId.get()).withEndretAvType(aktorId.tilInnsenderType())
+                    aktivitet.withAktorId(aktorId).withEndretAvType(aktorId.tilInnsenderType())
                 ))
                 .map(AktivitetData::getId)
                 .collect(Collectors.toList());
@@ -341,7 +340,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
-        assertThat(aktivitetService.hentAktiviteterForAktorId(Person.aktorId(mockBruker.getAktorId())), hasSize(1));
+        assertThat(aktivitetService.hentAktiviteterForAktorId(mockBruker.getAktorId()), hasSize(1));
     }
 
     private void da_skal_min_aktivitet_fatt_ny_status() {

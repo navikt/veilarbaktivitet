@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.Person;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -195,14 +196,15 @@ public class AktivitetAppServiceTest {
 
     @Test
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId(Person.aktorId("haha")).status(AktivitetStatus.AVBRUTT).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
     }
 
     @Test
     void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+                .aktorId(Person.aktorId("haha")).status(AktivitetStatus.AVBRUTT).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
         Assertions.assertThat(aktivitetData).isNotNull();
@@ -228,7 +230,8 @@ public class AktivitetAppServiceTest {
 
     @Test
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
-        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
+        val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+                .aktorId(Person.aktorId("haha")).historiskDato(new Date()).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         testAlleOppdateringsmetoder(aktivitet);
     }

@@ -47,7 +47,7 @@ public class AktivitetDataMapperService {
         val aktivitetData = AktivitetData
                 .builder()
                 .id(id)
-                .aktorId(aktorId.get())
+                .aktorId(aktorId)
                 .endretAv(endretAv)
                 .endretAvType(endretAvType)
                 .endretDato(DateUtils.localDateTimeToDate(LocalDateTime.now()))

@@ -33,7 +33,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 import static java.lang.Long.parseLong;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +43,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ForhaandsorienteringDTOControllerTest {
-    private final String aktorid = "12345678";
+    private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final String ident = "V12345678";
     @Mock
     private MetricService metricService;
@@ -78,8 +77,8 @@ class ForhaandsorienteringDTOControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+                .sjekkTilgangTilPerson(aktorid.otherAktorId());
+        when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
 
         String tekst = "fho tekst";
@@ -111,7 +110,7 @@ class ForhaandsorienteringDTOControllerTest {
         doThrow(new ResponseStatusException(HttpStatus.FORBIDDEN))
                 .when(authService)
                 .sjekkTilgangTilPerson(any());
-        AktivitetData aktivitetData = opprettAktivitet("0987654");
+        AktivitetData aktivitetData = opprettAktivitet(Person.aktorId("0987654"));
         Assertions.assertThrows(ResponseStatusException.class, () ->
                 avtaltMedNavController.opprettFHO(lagForhaandsorentering(aktivitetData), aktivitetData.getId()));
     }
@@ -164,9 +163,9 @@ class ForhaandsorienteringDTOControllerTest {
     void skalTaVarePaaForhaandsorienteringsTekst() {
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
+                .sjekkTilgangTilPerson(aktorid.otherAktorId());
         when(authService.erInternBruker()).thenReturn(true);
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         String tekst = "tekst";
         AktivitetData orginal = opprettAktivitet(aktorid);
@@ -206,7 +205,7 @@ class ForhaandsorienteringDTOControllerTest {
         return fho;
     }
 
-    private AktivitetData opprettAktivitet(String aktorid) {
+    private AktivitetData opprettAktivitet(Person.AktorId aktorid) {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nySokeAvtaleAktivitet()
                 .toBuilder()
                 .aktorId(aktorid)
@@ -221,10 +220,10 @@ class ForhaandsorienteringDTOControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
+                .sjekkTilgangTilPerson(aktorid.otherAktorId());
         doReturn(Person.navIdent(ident).otherNavIdent())
                 .when(authService).getLoggedInnUser();
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+        when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
 
         Date start = new Date();
@@ -256,15 +255,15 @@ class ForhaandsorienteringDTOControllerTest {
         when(authService.erInternBruker()).thenReturn(true);
         doNothing()
                 .when(authService)
-                .sjekkTilgangTilPerson(Person.aktorId(aktorid).eksternBrukerId());
-        when(brukernotifikasjonService.kanVarsles(Person.aktorId(aktorid))).thenReturn(true);
+                .sjekkTilgangTilPerson(aktorid.otherAktorId());
+        when(brukernotifikasjonService.kanVarsles(aktorid)).thenReturn(true);
         when(authService.getInnloggetVeilederIdent()).thenReturn(new NavIdent(ident));
         Arrays.stream(AktivitetTypeData.values())
                 .map(AktivitetDataTestBuilder::nyAktivitet)
                 .map(a -> a.toBuilder().aktorId(aktorid).build())
                 .forEach(aktivitetDAO::opprettNyAktivitet);
 
-        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorid));
+        List<AktivitetData> aktivitetData = aktivitetDAO.hentAktiviteterForAktorId(aktorid);
 
         for (AktivitetData orginal :
                 aktivitetData) {

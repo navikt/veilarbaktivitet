@@ -313,7 +313,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
 
     private AktivitetData addAktivitet(AktivitetData aktivitet) {
         val aktivitetUtenId = aktivitet.toBuilder()
-                .aktorId(AKTOR_ID.get())
+                .aktorId(AKTOR_ID)
                 .build();
 
         return aktivitetDAO.opprettNyAktivitet(aktivitetUtenId);

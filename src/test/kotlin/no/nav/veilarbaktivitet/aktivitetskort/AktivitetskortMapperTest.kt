@@ -41,7 +41,7 @@ internal class AktivitetskortMapperTest {
             ActionType.UPSERT_AKTIVITETSKORT_V1,
             Person.aktorId("1234567890")
         ).toAktivitetsDataInsert(ZonedDateTime.now(), null)
-        result.withAktorId("adas")
+        result.withAktorId(Person.aktorId("adas"))
         Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().handlinger).isEmpty()

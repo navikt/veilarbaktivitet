@@ -20,7 +20,7 @@ public class SistePeriodeService {
 
         Supplier<IngenGjeldendePeriodeException> exceptionSupplier = () -> new IngenGjeldendePeriodeException(String.format("AktorId: %s har ingen gjeldende oppfølgingsperiode", aktorId.get()));
 
-        Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(aktorId.get())
+        Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(aktorId)
                 // Mangler aktiv oppfølgingsperiode
                 .filter(periode -> periode.sluttTid()  == null)
                 .or(() -> oppfolgingV2Client.fetchGjeldendePeriode(aktorId)

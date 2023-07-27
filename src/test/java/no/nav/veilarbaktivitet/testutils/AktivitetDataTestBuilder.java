@@ -22,7 +22,7 @@ public class AktivitetDataTestBuilder {
     public static AktivitetDataBuilder nyAktivitet() {
         return AktivitetData.builder()
                 .id(new Random().nextLong()) // Hvis denne persisteres, vil den få en ny id fra sekvens
-                .aktorId(TestData.KJENT_AKTOR_ID.get())
+                .aktorId(TestData.KJENT_AKTOR_ID)
                 .versjon(1L) // Hvis denne persisteres vil den få en ny versjon fra sekvens
                 .fraDato(nyDato())
                 .tilDato(nyDato())

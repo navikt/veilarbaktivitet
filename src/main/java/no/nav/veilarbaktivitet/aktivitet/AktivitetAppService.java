@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -53,7 +52,7 @@ public class AktivitetAppService {
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
-        authService.sjekkTilgangTilPerson(AktorId.of(aktivitetData.getAktorId()));
+        authService.sjekkTilgangTilPerson(aktivitetData.getAktorId().otherAktorId());
         if (aktivitetData.getKontorsperreEnhetId() != null) {
             authService.sjekkTilgangTilEnhet(EnhetId.of(aktivitetData.getKontorsperreEnhetId()));
         }
@@ -96,7 +95,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
-        authService.sjekkTilgangTilPerson(AktorId.of(aktivitetData.getAktorId()));
+        authService.sjekkTilgangTilPerson(aktivitetData.getAktorId().otherAktorId());
 
         if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);

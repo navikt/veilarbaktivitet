@@ -78,7 +78,7 @@ public class AktivitetService {
     }
 
     public AktivitetData opprettAktivitet(AktivitetData aktivitet) throws IngenGjeldendePeriodeException {
-        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, Person.aktorId(aktivitet.getAktorId()))
+        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getAktorId())
                 .toBuilder()
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
                 .build();

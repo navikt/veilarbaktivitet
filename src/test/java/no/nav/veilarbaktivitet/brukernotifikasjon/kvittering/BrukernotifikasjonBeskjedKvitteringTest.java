@@ -23,7 +23,6 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTempla
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -32,7 +31,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
@@ -228,7 +226,7 @@ class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.STILLING_FRA_NAV
         );

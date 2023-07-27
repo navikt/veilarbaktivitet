@@ -165,7 +165,7 @@ public class AktivitetDAO {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, versjon)
-                .addValue("aktor_id", aktivitet.getAktorId())
+                .addValue("aktor_id", aktivitet.getAktorId().get())
                 .addValue("aktivitet_type_kode", aktivitet.getAktivitetType().name())
                 .addValue("fra_dato", aktivitet.getFraDato())
                 .addValue("til_dato", aktivitet.getTilDato())

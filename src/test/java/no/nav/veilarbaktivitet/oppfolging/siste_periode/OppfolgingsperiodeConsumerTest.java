@@ -44,10 +44,10 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
 
         SisteOppfolgingsperiodeV1 startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
                 .uuid(mockBruker.getOppfolgingsperiode())
-                .aktorId(mockBruker.getAktorId())
+                .aktorId(mockBruker.getAktorId().get())
                 .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .build();
-        SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(startOppfolgiong)).get(1, SECONDS);
+        SendResult<String, String> sendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId().get(), JsonUtils.toJson(startOppfolgiong)).get(1, SECONDS);
         kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, sendResult.getRecordMetadata().offset());
 
 
@@ -59,7 +59,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         assertThat(oppfolgingsperiode.sluttTid()).isNull();
 
         SisteOppfolgingsperiodeV1 avsluttetOppfolgingsperide = startOppfolgiong.withSluttDato(ZonedDateTime.now().truncatedTo(MILLIS));
-        SendResult<String, String> avsluttetSendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId(), JsonUtils.toJson(avsluttetOppfolgingsperide)).get(1, SECONDS);
+        SendResult<String, String> avsluttetSendResult = producer.send(oppfolgingSistePeriodeTopic, mockBruker.getAktorId().get(), JsonUtils.toJson(avsluttetOppfolgingsperide)).get(1, SECONDS);
         kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, avsluttetSendResult.getRecordMetadata().offset());
 
         Oppfolgingsperiode oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId()).orElseThrow();
@@ -86,7 +86,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         AktivitetDTO skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO);
         SisteOppfolgingsperiodeV1 avsluttOppfolging = SisteOppfolgingsperiodeV1.builder()
                 .uuid(oppfolgingsperiodeSkalAvsluttes)
-                .aktorId(mockBruker.getAktorId())
+                .aktorId(mockBruker.getAktorId().get())
                 .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .sluttDato(ZonedDateTime.now().minusHours(1).truncatedTo(MILLIS))
                 .build();

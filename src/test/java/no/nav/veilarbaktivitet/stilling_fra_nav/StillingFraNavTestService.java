@@ -67,7 +67,7 @@ public class StillingFraNavTestService {
 
     public static ForesporselOmDelingAvCv createForesporselOmDelingAvCv(String bestillingsId, MockBruker mockBruker) {
         return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(mockBruker.getAktorId())
+                .setAktorId(mockBruker.getAktorId().get())
                 .setArbeidsgiver("arbeidsgiver")
                 .setArbeidssteder(List.of(
                         Arbeidssted.newBuilder()

@@ -126,7 +126,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         return AktivitetData
                 .builder()
-                .aktorId(aktorId.get())
+                .aktorId(aktorId)
                 .tittel(stillingstittel)
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
                 .status(AktivitetStatus.BRUKER_ER_INTERESSERT)
