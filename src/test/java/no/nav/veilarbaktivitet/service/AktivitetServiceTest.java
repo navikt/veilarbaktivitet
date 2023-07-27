@@ -111,6 +111,8 @@ class AktivitetServiceTest {
         val nyStatus = AktivitetStatus.GJENNOMFORES;
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
+                .endretAv("bruker")
+                .endretAvType(Innsender.BRUKER)
                 .beskrivelse("ikke rett beskrivelse")
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
@@ -121,8 +123,8 @@ class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getBeskrivelse(), equalTo(aktivitet.getBeskrivelse()));
         assertThat(getCapturedAktivitet().getStatus(), equalTo(nyStatus));
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
-        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(KJENT_SAKSBEHANDLER.get()));
-        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
+        assertThat(getCapturedAktivitet().getEndretAv(), equalTo(oppdatertAktivitet.getEndretAv()));
+        assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(oppdatertAktivitet.getEndretAvType()));
     }
 
     @SneakyThrows
