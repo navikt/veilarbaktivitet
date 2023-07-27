@@ -9,8 +9,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.person.Innsender;
-import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.PersonService;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Optional;
 
 import static no.nav.veilarbaktivitet.person.Innsender.BRUKER;
 import static no.nav.veilarbaktivitet.person.Innsender.NAV;
@@ -41,8 +38,6 @@ public class AktivitetAppServiceTest {
     private final String AVTALT_BESKRIVELSE = "Avtalt beskrivelse";
     @Mock
     private IAuthService authService;
-    @Mock
-    private PersonService personService;
 
     @Mock
     AktivitetService aktivitetService;
@@ -57,7 +52,10 @@ public class AktivitetAppServiceTest {
     @Test
     void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withId(AKTIVITET_ID).withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
-        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet
+                .withEndretAv(TESTPERSONNUMMER)
+                .withEndretAvType(BRUKER)
+                .withTilDato(toJavaUtilDate("2022-12-12"));
 
         loggetInnSom(BRUKER);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(gammelAktivitet);
@@ -87,6 +85,8 @@ public class AktivitetAppServiceTest {
                 .withBehandlingAktivitetData(avtaltBehandlingsdata)
                 .withTilDato(toJavaUtilDate("2022-12-10"));
         AktivitetData endretAktivitet = gammelAktivitet
+                .withEndretAv(TESTPERSONNUMMER)
+                .withEndretAvType(BRUKER)
                 .withBeskrivelse("Endret beskrivelse")
                 .withBehandlingAktivitetData(endretBehandlingsdata)
                 .withTilDato(toJavaUtilDate("2022-12-12"));
@@ -117,7 +117,10 @@ public class AktivitetAppServiceTest {
     @Test
     void nav_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
-        AktivitetData oppdatertAktivitet = gammelAktivitet.withTilDato(toJavaUtilDate("2022-12-12"));
+        AktivitetData oppdatertAktivitet = gammelAktivitet
+                .withEndretAv(TESTNAVIDENT)
+                .withEndretAvType(NAV)
+                .withTilDato(toJavaUtilDate("2022-12-12"));
 
         loggetInnSom(NAV);
         when(aktivitetService.hentAktivitetMedForhaandsorientering(oppdatertAktivitet.getId())).thenReturn(gammelAktivitet);
@@ -183,10 +186,10 @@ public class AktivitetAppServiceTest {
     void oppdaterAktivitet_aktivitetsTypeSomBrukerIkkeKanLage_kasterException() {
         var aktivitet = nyMoteAktivitet();
         loggetInnSom(BRUKER);
-        when(aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId())).thenReturn(aktivitet);
-
+        when(aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId()))
+            .thenReturn(aktivitet);
         Assertions.assertThatThrownBy(() -> appService.oppdaterAktivitet(aktivitet))
-                .isInstanceOf(ResponseStatusException.class);
+            .isInstanceOf(ResponseStatusException.class);
     }
 
 
@@ -194,14 +197,12 @@ public class AktivitetAppServiceTest {
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
-
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
     }
 
     @Test
     void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").status(AktivitetStatus.AVBRUTT).build();
-        when(authService.getLoggedInnUser()).thenReturn(Person.aktorId("123").otherAktorId());
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         AktivitetData aktivitetData = appService.oppdaterEtikett(aktivitet);
         Assertions.assertThat(aktivitetData).isNotNull();
@@ -210,12 +211,8 @@ public class AktivitetAppServiceTest {
     @Test
     void opprett_skal_ikke_returnere_kontorsperreEnhet_naar_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
-
-        when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
-        when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("systembruker").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.TRUE);
         when(aktivitetService.opprettAktivitet(any())).thenReturn(aktivitet);
-
         AktivitetData aktivitetData = appService.opprettNyAktivitet(aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isNull();
     }
@@ -223,12 +220,8 @@ public class AktivitetAppServiceTest {
     @Test
     void opprett_skal_returnere_kontorsperreEnhet_naar_ikke_systembruker() {
         var aktivitet = nyMoteAktivitet().withId(AKTIVITET_ID).withKontorsperreEnhetId(KONTORSPERRE_ENHET_ID);
-
-        when(personService.getAktorIdForPersonBruker(Person.fnr("123"))).thenReturn(Optional.of(Person.aktorId("321")));
-        when(authService.getLoggedInnUser()).thenReturn(Person.navIdent("saksbehandler").otherNavIdent());
         when(authService.erSystemBruker()).thenReturn(Boolean.FALSE);
         when(aktivitetService.opprettAktivitet(any())).thenReturn(aktivitet);
-
         AktivitetData aktivitetData = appService.opprettNyAktivitet(aktivitet);
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isEqualTo(KONTORSPERRE_ENHET_ID);
     }
@@ -237,7 +230,6 @@ public class AktivitetAppServiceTest {
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID).aktorId("haha").historiskDato(new Date()).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
-
         testAlleOppdateringsmetoder(aktivitet);
     }
 
@@ -302,9 +294,9 @@ public class AktivitetAppServiceTest {
     private void loggetInnSom(Innsender innsender) {
         when(authService.erEksternBruker()).thenReturn(innsender == BRUKER);
         when(authService.erInternBruker()).thenReturn(innsender == NAV);
-        when(authService.getLoggedInnUser()).thenReturn(innsender == BRUKER
-                ? Person.aktorId(TESTPERSONNUMMER).eksternBrukerId()
-                : Person.navIdent(TESTNAVIDENT).otherNavIdent());
+//        when(authService.getLoggedInnUser()).thenReturn(innsender == BRUKER
+//                ? Person.aktorId(TESTPERSONNUMMER).eksternBrukerId()
+//                : Person.navIdent(TESTNAVIDENT).otherNavIdent());
     }
 
     private static final long AKTIVITET_ID = 666L;
