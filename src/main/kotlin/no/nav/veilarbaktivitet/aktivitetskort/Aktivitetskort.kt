@@ -27,7 +27,7 @@ data class Aktivitetskort(
     val startDato: LocalDate? = null,
     val sluttDato: LocalDate? = null,
     @JsonProperty(required = true)
-    val endretAv: Ident? = null,
+    val endretAv: Ident,
     @JsonProperty(required = true)
     @JsonDeserialize(using = ZonedOrNorwegianDateTimeDeserializer::class)
     val endretTidspunkt: ZonedDateTime,

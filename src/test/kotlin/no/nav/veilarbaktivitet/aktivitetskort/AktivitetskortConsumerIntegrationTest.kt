@@ -701,7 +701,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun new_aktivitet_with_existing_forhaandsorientering_should_have_forhaandsorientering() {
+    fun aktivitet_med_fho_for_migrering_skal_ha_fho_etter_migrering() {
         val arenaaktivitetId = "ARENATA123"
         val arenaAktivitetDTO =
             aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, ArenaId(arenaaktivitetId), veileder)
@@ -713,7 +713,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
-        assertThat(aktivitet.endretAv).isEqualTo(veileder.navIdent)
+        assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv!!.ident)
         // Assert endreDato is now because we forhaandsorientering was created during test-run
         assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
