@@ -36,10 +36,9 @@ class KasseringsService(
         if (aktivitet.getStatus() != AktivitetStatus.AVBRUTT && aktivitet.getStatus() != AktivitetStatus.FULLFORT) {
             aktivitetService.oppdaterStatus(
                 aktivitet,
-                aktivitet.withStatus(AktivitetStatus.AVBRUTT),
-                navIdent.tilIdent()
+                aktivitet.withStatus(AktivitetStatus.AVBRUTT)
             )
         }
-        kasseringDAO.kasserAktivitetMedBegrunnelse(aktivitet.getId(), begrunnelse)
+        kasseringDAO.kasserAktivitetMedBegrunnelse(aktivitet.getId(), begrunnelse, navIdent)
     }
 }

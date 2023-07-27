@@ -72,7 +72,7 @@ public class StillingFraNavProducerClient {
     private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
         sendRespons(tilstand,
                 aktivitetData.getStillingFraNavData().getBestillingsId(),
-                aktivitetData.getAktorId(),
+                aktivitetData.getAktorId().get(),
                 aktivitetData.getId()
                 , getSvar(aktivitetData.getStillingFraNavData().getCvKanDelesData())
                 , null);

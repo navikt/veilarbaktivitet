@@ -24,7 +24,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonC
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
@@ -150,7 +149,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.STILLING_FRA_NAV,
                 epostTitel,
@@ -191,7 +190,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.MOTE_SMS,
                 epostTitel,
@@ -222,7 +221,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.MOTE_SMS
         );
@@ -245,7 +244,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         AktivitetDTO skalOpprettes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes);
 
-        brukernotifikasjonService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), Person.aktorId(mockBruker.getAktorId()), "Testvarsel", VarselType.STILLING_FRA_NAV);
+        brukernotifikasjonService.opprettVarselPaaAktivitet(Long.parseLong(aktivitetDTO.getId()), Long.parseLong(aktivitetDTO.getVersjon()), mockBruker.getAktorId(), "Testvarsel", VarselType.STILLING_FRA_NAV);
         brukernotifikasjonService.setDone(Long.parseLong(aktivitetDTO.getId()), VarselType.STILLING_FRA_NAV);
 
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
@@ -265,7 +264,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.STILLING_FRA_NAV
         );
@@ -434,7 +433,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         brukernotifikasjonService.opprettVarselPaaAktivitet(
                 Long.parseLong(aktivitetDTO.getId()),
                 Long.parseLong(aktivitetDTO.getVersjon()),
-                Person.aktorId(mockBruker.getAktorId()),
+                mockBruker.getAktorId(),
                 "Testvarsel",
                 VarselType.STILLING_FRA_NAV
         );

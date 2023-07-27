@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.Arbeidssted;
@@ -59,18 +58,21 @@ public class DelingAvCvService {
     @Transactional
     @Timed(value = "avsluttUtloptStillingFraNavEn")
     public void avsluttAktivitet(AktivitetData aktivitet, Person person) {
-        AktivitetData nyAktivitet = aktivitetService.avsluttStillingFraNav(aktivitet, person);
+        AktivitetData nyAktivitet = aktivitetService.avsluttStillingFraNav(aktivitet, person.tilIdent());
         stillingFraNavProducerClient.sendSvarfristUtlopt(nyAktivitet);
         metrikker.countTidsfristUtlopt();
     }
 
     @Transactional
     @Timed(value = "stillingFraNavAvbruttEllerFullfortUtenSvar")
-    public void notifiserAvbruttEllerFullfortUtenSvar(AktivitetData aktivitet, Person person) {
+    public void notifiserAvbruttEllerFullfortUtenSvar(AktivitetData aktivitet) {
+        var endretAv = Person.systemUser();
         AktivitetData nyAktivitet = aktivitet.toBuilder()
+                .endretAv(endretAv.get())
+                .endretAvType(endretAv.tilInnsenderType())
                 .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER))
                 .build();
-        aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet, person);
+        aktivitetService.oppdaterAktivitet(aktivitet, nyAktivitet);
         stillingFraNavProducerClient.sendAvbruttEllerFullfortUtenSvar(aktivitet);
         metrikker.countManuletAvbrutt(aktivitet.getEndretAvType());
     }
@@ -128,7 +130,7 @@ public class DelingAvCvService {
 
 
 
-    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData aktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
+    private AktivitetData oppdaterSvarPaaOmCvKanDeles(AktivitetData originalAktivitetData, boolean kanDeles, Date avtaltDato, boolean erEksternBruker) {
         Person innloggetBruker = Person.of(authService.getLoggedInnUser());
 
         var deleCvDetaljer = CvKanDelesData.builder()
@@ -140,27 +142,30 @@ public class DelingAvCvService {
                 .build();
 
 
-        var stillingFraNavData = aktivitetData.getStillingFraNavData()
+        var stillingFraNavData = originalAktivitetData.getStillingFraNavData()
                 .withCvKanDelesData(deleCvDetaljer)
                 .withLivslopsStatus(LivslopsStatus.HAR_SVART);
         if (kanDeles) {
             stillingFraNavData = stillingFraNavData.withSoknadsstatus(Soknadsstatus.VENTER);
         }
+        var aktivitetData = originalAktivitetData
+                .withEndretAv(innloggetBruker.get())
+                .withEndretAvType(innloggetBruker.tilInnsenderType())
+                .withStillingFraNavData(stillingFraNavData);
+        aktivitetService.svarPaaKanCvDeles(originalAktivitetData, aktivitetData);
+        var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(originalAktivitetData.getId());
 
-        aktivitetService.svarPaaKanCvDeles(aktivitetData, aktivitetData.withStillingFraNavData(stillingFraNavData), innloggetBruker);
-        var aktivitetMedCvSvar = aktivitetService.hentAktivitetMedForhaandsorientering(aktivitetData.getId());
-
-        var statusOppdatering = aktivitetMedCvSvar.toBuilder();
+        var aktivitetMedStatusOppdatering = aktivitetMedCvSvar.toBuilder();
 
         if (kanDeles) {
-            statusOppdatering.status(AktivitetStatus.GJENNOMFORES);
+            aktivitetMedStatusOppdatering.status(AktivitetStatus.GJENNOMFORES);
         } else {
-            statusOppdatering
+            aktivitetMedStatusOppdatering
                     .status(AktivitetStatus.AVBRUTT)
                     .avsluttetKommentar("Automatisk avsluttet fordi cv ikke skal deles");
         }
 
-        return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, statusOppdatering.build(), innloggetBruker.tilIdent());
+        return aktivitetService.oppdaterStatus(aktivitetMedCvSvar, aktivitetMedStatusOppdatering.build());
     }
 
 

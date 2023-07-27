@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.person;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NorskIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
@@ -15,6 +16,7 @@ public class UserInContext {
     private final HttpServletRequest requestProvider;
     private final IAuthService authService;
     private final PersonService personService;
+    private final AktorOppslagClient aktorOppslagClient;
 
     public Optional<Person.Fnr> getFnr() {
         var user = authService.getLoggedInnUser();
@@ -32,5 +34,21 @@ public class UserInContext {
 
         return fnr.or(() -> aktorId)
                 .flatMap(personService::getFnrForPersonbruker);
+    }
+
+    public Person.AktorId getAktorId() {
+        var user = authService.getLoggedInnUser();
+        if (user instanceof Fnr || user instanceof NorskIdent) {
+            return Person.aktorId(aktorOppslagClient.hentAktorId(Fnr.of(user.get())).get());
+        }
+        Optional<Person.AktorId> aktorIdFromFnr = Optional
+                .ofNullable(requestProvider.getParameter("fnr"))
+                .map(fnr -> aktorOppslagClient.hentAktorId(Fnr.of(fnr)))
+                .map(aktorId -> Person.aktorId(aktorId.get()));
+        Optional<Person.AktorId> aktorId = Optional
+                .ofNullable(requestProvider.getParameter("aktorId"))
+                .map(Person::aktorId);
+        return aktorId.or(() -> aktorIdFromFnr)
+                .orElseThrow();
     }
 }

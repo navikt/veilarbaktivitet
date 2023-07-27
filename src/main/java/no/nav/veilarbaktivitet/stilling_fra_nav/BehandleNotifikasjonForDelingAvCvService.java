@@ -29,8 +29,13 @@ public class BehandleNotifikasjonForDelingAvCvService {
             return;
         }
 
-        AktivitetData nyAktivitet = aktivitetData.toBuilder().stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
-        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.systemUser());
+        var endretAv = Person.systemUser();
+
+        AktivitetData nyAktivitet = aktivitetData.toBuilder()
+                .endretAv(endretAv.get())
+                .endretAvType(endretAv.tilInnsenderType())
+                .stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
+        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet);
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 
         stillingFraNavProducerClient.sendVarslet(aktivitetData);
@@ -44,9 +49,13 @@ public class BehandleNotifikasjonForDelingAvCvService {
             kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
             return;
         }
+        var endretAv = Person.systemUser();
 
-        AktivitetData nyAktivitet = aktivitetData.toBuilder().stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)).build();
-        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet, Person.systemUser());
+        AktivitetData nyAktivitet = aktivitetData.toBuilder()
+                .endretAv(endretAv.get())
+                .endretAvType(endretAv.tilInnsenderType())
+                .stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.KAN_IKKE_VARSLE)).build();
+        aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet);
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());
 
         stillingFraNavProducerClient.sendKanIkkeVarsle(aktivitetData);

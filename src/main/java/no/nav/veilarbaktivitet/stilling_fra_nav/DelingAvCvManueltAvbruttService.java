@@ -4,7 +4,6 @@ import io.micrometer.core.annotation.Timed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,7 +21,7 @@ public class DelingAvCvManueltAvbruttService {
         List<AktivitetData> aktivitetData = delingAvCvDAO.hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(maxantall);
         aktivitetData.forEach(aktivitet -> {
             try {
-                delingAvCvService.notifiserAvbruttEllerFullfortUtenSvar(aktivitet, Person.systemUser());
+                delingAvCvService.notifiserAvbruttEllerFullfortUtenSvar(aktivitet);
             } catch (Exception e) {
                 log.warn("Behandling av fullført/avbrutt aktivitet aktivitetId={} feilet", aktivitet.getId());
                 log.error("Kunne ikke behandle avbrutt/fullført aktivitet", e);

@@ -34,7 +34,7 @@ public class KvpService {
 
     public AktivitetData tagUsingKVP(AktivitetData a) {
         try {
-            Optional<KvpV2DTO> kvp = kvpClient.get(Person.aktorId(a.getAktorId()));
+            Optional<KvpV2DTO> kvp = kvpClient.get(a.getAktorId());
             return kvp
                     .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
                     .orElse(a);

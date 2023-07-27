@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,7 +35,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .id(rs.getLong("aktivitet_id"))
                 .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
                 .versjon(rs.getLong("versjon"))
-                .aktorId(rs.getString("aktor_id"))
+                .aktorId(Person.aktorId(rs.getString("aktor_id")))
                 .aktivitetType(type)
                 .fraDato(Database.hentDato(rs, "fra_dato"))
                 .tilDato(Database.hentDato(rs, "til_dato"))

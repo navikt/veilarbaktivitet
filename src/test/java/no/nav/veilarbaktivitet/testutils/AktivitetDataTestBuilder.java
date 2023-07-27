@@ -1,8 +1,12 @@
 package no.nav.veilarbaktivitet.testutils;
 
-import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
+import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.person.Innsender;
 
 import java.util.Date;
@@ -18,7 +22,7 @@ public class AktivitetDataTestBuilder {
     public static AktivitetDataBuilder nyAktivitet() {
         return AktivitetData.builder()
                 .id(new Random().nextLong()) // Hvis denne persisteres, vil den få en ny id fra sekvens
-                .aktorId("kake")
+                .aktorId(TestData.KJENT_AKTOR_ID)
                 .versjon(1L) // Hvis denne persisteres vil den få en ny versjon fra sekvens
                 .fraDato(nyDato())
                 .tilDato(nyDato())
@@ -27,14 +31,14 @@ public class AktivitetDataTestBuilder {
                 .versjon(new Random().nextLong())
                 .status(AktivitetStatus.PLANLAGT)
                 .avsluttetKommentar("avsluttetKommentar")
-                .endretAvType(Innsender.values()[0])
+                .endretAvType(Innsender.NAV)
                 .opprettetDato(nyDato())
                 .lenke("lenke")
                 .transaksjonsType(AktivitetTransaksjonsType.DETALJER_ENDRET)
                 .lestAvBrukerForsteGang(null)
                 .historiskDato(null)
                 .endretDato(nyDato())
-                .endretAv("Z999999")
+                .endretAv(TestData.KJENT_SAKSBEHANDLER.get())
                 .malid("2");
     }
 

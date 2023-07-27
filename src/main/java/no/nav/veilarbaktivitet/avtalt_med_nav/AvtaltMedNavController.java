@@ -37,7 +37,7 @@ public class AvtaltMedNavController {
         if (aktivitet.getKontorsperreEnhetId() != null) {
             authService.sjekkTilgangTilEnhet(EnhetId.of(aktivitet.getKontorsperreEnhetId()));
         }
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktivitet.getAktorId()).eksternBrukerId());
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().otherAktorId());
 
         if (avtaltMedNavDTO.getAktivitetVersjon() != aktivitet.getVersjon()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Feil aktivitetversjon");
@@ -47,7 +47,7 @@ public class AvtaltMedNavController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten har allerede en forhåndsorientering");
         }
 
-        return avtaltMedNavService.opprettFHO(avtaltMedNavDTO, aktivitetId, Person.aktorId(aktivitet.getAktorId()), authService.getInnloggetVeilederIdent());
+        return avtaltMedNavService.opprettFHO(avtaltMedNavDTO, aktivitetId, aktivitet.getAktorId(), authService.getInnloggetVeilederIdent());
 
     }
 

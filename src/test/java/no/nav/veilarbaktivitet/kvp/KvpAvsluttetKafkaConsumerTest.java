@@ -64,7 +64,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
         var kvpAvsluttet =
                 new KvpAvsluttetKafkaDTO()
-                        .setAktorId(mockBruker.getAktorId())
+                        .setAktorId(mockBruker.getAktorId().get())
                         .setAvsluttetAv(mockVeileder.getNavIdent())
                         .setAvsluttetBegrunnelse("Derfor")
                         .setAvsluttetDato(kvpAvsluttetDato);
@@ -94,7 +94,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
 
         KvpAvsluttetKafkaDTO kvpAvsluttet =
                 new KvpAvsluttetKafkaDTO()
-                        .setAktorId(mockBruker.getAktorId())
+                        .setAktorId(mockBruker.getAktorId().get())
                         .setAvsluttetAv(mockVeileder.getNavIdent())
                         .setAvsluttetBegrunnelse("Derfor")
                         .setAvsluttetDato(kvpAvsluttetDato);
