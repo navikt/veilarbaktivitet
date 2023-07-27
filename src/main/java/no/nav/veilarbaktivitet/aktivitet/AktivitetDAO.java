@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +22,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static java.util.Optional.empty;
@@ -222,7 +224,8 @@ public class AktivitetDAO {
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
         long aktivitetId = nesteAktivitetId();
         long versjon = nesteVersjon();
-        return insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
+        var now = DateUtils.localDateTimeToDate(LocalDateTime.now());
+        return insertAktivitetVersjon(aktivitet.withOpprettetDato(now), aktivitetId, versjon);
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {
