@@ -252,8 +252,11 @@ public class AktivitetDAO {
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitet) {
         long aktivitetId = nesteAktivitetId();
         long versjon = nesteVersjon();
-        var now = DateUtils.localDateTimeToDate(LocalDateTime.now());
-        return insertAktivitetVersjon(aktivitet.withOpprettetDato(now), aktivitetId, versjon);
+        var opprettetDato = Optional.ofNullable(aktivitet.getOpprettetDato());
+        return insertAktivitetVersjon(
+                aktivitet.withOpprettetDato(opprettetDato.orElse(DateUtils.localDateTimeToDate(LocalDateTime.now()))),
+                aktivitetId,
+                versjon);
     }
 
     private void insertMote(long aktivitetId, long versjon, MoteData moteData) {

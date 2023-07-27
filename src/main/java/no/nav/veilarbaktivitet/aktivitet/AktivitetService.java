@@ -78,17 +78,15 @@ public class AktivitetService {
     }
 
     public AktivitetData opprettAktivitet(AktivitetData aktivitet) throws IngenGjeldendePeriodeException {
-        AktivitetData nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getAktorId())
+        var kontorSperreEnhet = kvpService.getKontorSperreEnhet(aktivitet.getAktorId());
+        var nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getAktorId())
                 .toBuilder()
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
+                .kontorsperreEnhetId(kontorSperreEnhet.orElse(null))
                 .build();
-
-        AktivitetData kvpAktivivitet = kvpService.tagUsingKVP(nyAktivivitet);
-
-        nyAktivivitet = aktivitetDAO.opprettNyAktivitet(kvpAktivivitet);
-
-        metricService.opprettNyAktivitetMetrikk(aktivitet);
-        return nyAktivivitet;
+        var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
+        metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);
+        return opprettetAktivitet;
     }
 
     @Transactional

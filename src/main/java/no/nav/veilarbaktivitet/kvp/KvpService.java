@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.kvp;
 import jakarta.ws.rs.ForbiddenException;
 import jakarta.ws.rs.InternalServerErrorException;
 import lombok.RequiredArgsConstructor;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2Client;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.person.Person;
@@ -32,12 +31,10 @@ public class KvpService {
     }
 
 
-    public AktivitetData tagUsingKVP(AktivitetData a) {
+    public Optional<String> getKontorSperreEnhet(Person.AktorId aktorId) {
         try {
-            Optional<KvpV2DTO> kvp = kvpClient.get(a.getAktorId());
-            return kvp
-                    .map(k -> a.toBuilder().kontorsperreEnhetId(k.getEnhet()).build())
-                    .orElse(a);
+            Optional<KvpV2DTO> kvp = kvpClient.get(aktorId);
+            return kvp.map(k -> k.getEnhet());
         } catch (ForbiddenException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "veilarbaktivitet har ikke tilgang til å spørre om KVP-status.");
         } catch (InternalServerErrorException e) {
