@@ -82,7 +82,7 @@ class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getTittel(), equalTo(aktivitet.getTittel()));
 
         assertThat(getCapturedAktivitet().getKontorsperreEnhetId(), nullValue());
-        assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID.get()));
+        assertThat(getCapturedAktivitet().getAktorId(), equalTo(KJENT_AKTOR_ID));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
         assertThat(getCapturedAktivitet().getOpprettetDato(), notNullValue());
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(KJENT_SAKSBEHANDLER.get()));

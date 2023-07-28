@@ -37,7 +37,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.time.Instant;
-
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -290,7 +289,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(aktivitetDTO.getStillingFraNavData().getBestillingsId());
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isEqualTo(aktivitetDTO.getId());
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.HAR_SVART);
             assertions.assertThat(value.getSvar()).isEqualTo(expectedSvar);

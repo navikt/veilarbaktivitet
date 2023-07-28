@@ -43,7 +43,7 @@ class InternApiControllerTest extends SpringBootTestBase {
 
         // Test "/internal/api/v1/aktivitet"
         List<Aktivitet> aktiviteter = mockVeileder.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
@@ -59,7 +59,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         mockVeileder2.setNasjonalTilgang(true);
 
         List<Aktivitet> aktiviteter2 = mockVeileder2.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
@@ -88,7 +88,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         }
 
         List<Aktivitet> aktiviteter = mockVeileder.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}", mockBruker.getAktorId())
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId={aktorId}", mockBruker.getAktorId().get())
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
@@ -104,7 +104,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
         mockVeilederUtenBruker.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()
                 .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
     }
@@ -125,7 +125,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         // Forbidden (403)
         MockBruker mockBruker = MockNavService.createHappyBruker();
         mockBruker.createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId())
+                .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()
                 .assertThat().statusCode(HttpStatus.FORBIDDEN.value());
     }
