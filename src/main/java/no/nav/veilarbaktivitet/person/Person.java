@@ -28,7 +28,7 @@ public abstract class Person extends JsonSerializable.Base {
     private final String id;
 
     @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
-    private Person(String id) {
+    Person(String id) {
         this.id = id;
     }
 

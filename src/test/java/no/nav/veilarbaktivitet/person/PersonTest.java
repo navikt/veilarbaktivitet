@@ -1,13 +1,8 @@
-package no.nav.veilarbaktivitet.domain;
+package no.nav.veilarbaktivitet.person;
 
-import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.EksternBrukerId;
-import no.nav.common.types.identer.Fnr;
-import no.nav.common.types.identer.NavIdent;
+import no.nav.common.types.identer.*;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
-import no.nav.veilarbaktivitet.person.Innsender;
-import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -82,6 +77,24 @@ class PersonTest {
     @Test
     void testFnrOtherFnr() {
         assertEquals(Person.fnr(FNR).otherFnr(), Fnr.of(FNR));
+    }
+
+    @Test
+    void testFailure() {
+        class UgyldigPerson extends Person {
+            UgyldigPerson(String id) {
+                super(id);
+            }
+
+        }
+
+        UgyldigPerson ugyldigPerson = new UgyldigPerson("ugyldig");
+
+        assertThrows(IllegalArgumentException.class, () -> ugyldigPerson.tilInnsenderType());
+        assertThrows(IllegalArgumentException.class, () -> ugyldigPerson.tilIdent());
+
+        var azureObjectId = AzureObjectId.of("XXXXXXX");
+        assertThrows(IllegalStateException.class, () -> Person.of(azureObjectId));
     }
 
 }
