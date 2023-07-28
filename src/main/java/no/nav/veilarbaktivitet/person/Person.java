@@ -19,7 +19,8 @@ import java.util.Objects;
  * Applikasjonsintern representasjon av en bruker. Kan også være en systembruker, som ikke er en person.
  * Merk JsonSerializable.Base for å støtte deserialisering av en person til en simpel json streng (brukerid).
  * Deserialisering av Person skjer kun i ett tilfelle, og det er under deserialisering av AktivitetData under skriving til topic.ut.aktivitetdata.rawjson.
- * Denne topicen er foreløpig ikke i bruk av andre funksjoner, og skal den tas i bruk, er det nok fornuftig å mappe om til en dto før serialisering.
+ * Denne topicen er foreløpig ikke i bruk av andre funksjoner, og skal den tas i bruk,
+ * @TODO er det nok fornuftig å mappe AktivitetData om til en dto før serialisering, og fjerne jackson-annotasjonene på denne klassen.
  */
 public abstract class Person extends JsonSerializable.Base {
     private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
