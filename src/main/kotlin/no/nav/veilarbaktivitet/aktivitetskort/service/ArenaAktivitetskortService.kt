@@ -98,6 +98,7 @@ class ArenaAktivitetskortService (
             .withId(gammelAktivitet.id)
             .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
             .withVersjon(gammelAktivitet.versjon)
+            .withOppfolgingsperiodeId(gammelAktivitet.oppfolgingsperiodeId)
             .withOpprettetDato(gammelAktivitet.opprettetDato)
         val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
         return opprettetAktivitetsData
