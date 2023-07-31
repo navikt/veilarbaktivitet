@@ -19,6 +19,9 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
@@ -387,7 +390,44 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_aktiviteter_blir_avbrutt() {
+    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_lonnstilskudd_blir_avbrutt() {
+        var mockBruker = MockNavService.createHappyBruker();
+        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        // Opprett ekstern aktivitet og avbryter den
+        var funksjonellId = UUID.randomUUID();
+        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        funksjonellId,
+                        AktivitetStatus.GJENNOMFORES,
+                        ZonedDateTime.now(),
+                        mockBruker
+                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+        );
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding));
+        var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, funksjonellId);
+        // Opprett FHO
+        var avtaltMedNavDTO = new AvtaltMedNavDTO()
+                .setAktivitetVersjon(Long.parseLong(aktivitet.getVersjon()))
+                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                        .type(Type.SEND_FORHAANDSORIENTERING)
+                        .tekst("lol").lestDato(null).build());
+        aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(aktivitet.getId()));
+        var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+
+        var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        funksjonellId,
+                        AktivitetStatus.AVBRUTT,
+                        ZonedDateTime.now(),
+                        mockBruker
+                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+        );
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet));
+        brukernotifikasjonAsserts.assertDone(oppgave.key());
+    }
+
+    @Test
+    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
@@ -401,7 +441,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.GJENNOMFORES,
                         ZonedDateTime.now(),
                         mockBruker
-                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+                ), AktivitetskortType.ARENA_TILTAK
         );
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
@@ -413,7 +453,48 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.AVBRUTT,
                         ZonedDateTime.now(),
                         mockBruker
-                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+                ), AktivitetskortType.ARENA_TILTAK
+        );
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet), List.of(headers));
+        brukernotifikasjonAsserts.assertDone(oppgave.key());
+    }
+
+    @Test
+    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt2() {
+        var mockBruker = MockNavService.createHappyBruker();
+        var mockVeileder = MockNavService.createVeileder(mockBruker);
+        var arenaId = new ArenaId("ARENATA512");
+        // Opprett ekstern aktivitet og avbryter den
+        var funksjonellId = UUID.randomUUID();
+        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        funksjonellId,
+                        AktivitetStatus.GJENNOMFORES,
+                        ZonedDateTime.now(),
+                        mockBruker
+                ), AktivitetskortType.ARENA_TILTAK
+        );
+        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
+        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
+
+        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaId);
+
+        // Opprett FHO
+        var avtaltMedNavDTO = new AvtaltMedNavDTO()
+                .setAktivitetVersjon(Long.parseLong(aktivitet.getVersjon()))
+                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
+                        .type(Type.SEND_FORHAANDSORIENTERING)
+                        .tekst("lol").lestDato(null).build());
+        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(aktivitet.getId()));
+        var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+
+        var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
+                AktivitetskortTestBuilder.ny(
+                        funksjonellId,
+                        AktivitetStatus.AVBRUTT,
+                        ZonedDateTime.now(),
+                        mockBruker
+                ), AktivitetskortType.ARENA_TILTAK
         );
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet), List.of(headers));
         brukernotifikasjonAsserts.assertDone(oppgave.key());
