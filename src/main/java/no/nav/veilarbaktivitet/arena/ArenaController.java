@@ -70,7 +70,7 @@ public class ArenaController {
                     if (idMapping != null)
                         return arenaAktivitet
                             .withId(String.valueOf(idMapping.getAktivitetId()))
-                            .withAktivitetsVersjon(aktivitetsVersjoner.get(idMapping.getAktivitetId()));
+                            .withVersjon(aktivitetsVersjoner.get(idMapping.getAktivitetId()));
                     return arenaAktivitet;
                 })
                 .toList();

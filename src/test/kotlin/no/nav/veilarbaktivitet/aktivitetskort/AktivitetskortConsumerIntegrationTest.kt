@@ -765,7 +765,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(postMigreringArenaAktiviteter).hasSize(1)
         val migrertArenaAktivitet = postMigreringArenaAktiviteter[0]
         assertThat(migrertArenaAktivitet.id).isEqualTo(tekniskId)
-        assertThat(migrertArenaAktivitet.aktivitetsVersjon).isEqualTo(versjon)
+        assertThat(migrertArenaAktivitet.versjon).isEqualTo(versjon)
     }
 
     @Test
