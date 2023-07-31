@@ -131,7 +131,7 @@ public class AktivitetDAO {
     }
 
 
-    private void setTilUgyldigVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
+    private void settTilUgyldigVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, ikkeLengerGjeldendeVersjon);
@@ -152,7 +152,7 @@ public class AktivitetDAO {
         }
         long versjon = nesteVersjon();
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
-        setTilUgyldigVersjon(aktivitetId, gjeldendeVersjon);
+        settTilUgyldigVersjon(aktivitetId, gjeldendeVersjon);
         return nyAktivitetVersjon;
     }
 
@@ -164,16 +164,39 @@ public class AktivitetDAO {
         database.getNamedJdbcTemplate()
                 .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon = :gammel_versjon AND aktivitet_id = :aktivitet_id",
                         updateGjeldendeParams);
+        log.info("slettet ekstern aktivitet med id {} - {}", aktivitetId, ikkeLengerGjeldendeVersjon);
     }
 
     public AktivitetData overskrivMenMedNyVersjon(AktivitetData aktivitet) {
         long nyesteVersjon = nesteVersjon();
         long gammelVersjon = aktivitet.getVersjon();
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitet.getId(), nyesteVersjon);
-        setTilUgyldigVersjon(aktivitet.getId(), gammelVersjon);
+        settTilUgyldigVersjon(aktivitet.getId(), gammelVersjon);
+        flyttBrukerNotifikasjonTilVersjon(aktivitet.getId(), gammelVersjon, nyesteVersjon);
+        // Ny versjon blir opprettet av insertAktivitetVersjon, trenger bare slette den gamle
         slettEksternAktivitet(aktivitet.getId(), gammelVersjon);
         slettAlleAndreVersjoner(aktivitet.getId(), nyesteVersjon);
         return nyAktivitetVersjon;
+    }
+
+    public void flyttBrukerNotifikasjonTilVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon, long nyVersjon) {
+        var template = database.getNamedJdbcTemplate();
+        var params = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitetId)
+                .addValue("gammel_versjon", ikkeLengerGjeldendeVersjon)
+                .addValue("ny_versjon", nyVersjon);
+
+        // Mest sannsynlig bare 1 brukernotifikasjon
+        // language=sql
+        List<Long> brukernotifikasjoner = template.queryForList(
+                "SELECT BRUKERNOTIFIKASJON_ID FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE AKTIVITET_ID = :aktivitet_id",
+                params, Long.class);
+        brukernotifikasjoner.forEach(brukernotifikasjonId -> {
+            var paramsWithBrukernotifkasjonsId = params.addValue("brukernotifikasjon_id", brukernotifikasjonId);
+            template.update("DELETE FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE BRUKERNOTIFIKASJON_ID = :brukernotifikasjon_id", paramsWithBrukernotifkasjonsId);
+            template.update("INSERT INTO AKTIVITET_BRUKERNOTIFIKASJON VALUES (:aktivitet_id, :ny_versjon, :brukernotifikasjon_id) ", paramsWithBrukernotifkasjonsId);
+        });
+
     }
 
     private void slettAlleAndreVersjoner(long aktivitetId, long versjon) {
