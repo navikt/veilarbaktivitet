@@ -54,7 +54,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
         Oppfolgingsperiode oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId()).orElseThrow();
 
         assertThat(oppfolgingsperiode.oppfolgingsperiode()).isEqualTo(mockBruker.getOppfolgingsperiode());
-        assertThat(oppfolgingsperiode.aktorid()).isEqualTo(mockBruker.getAktorId());
+        assertThat(oppfolgingsperiode.aktorid()).isEqualTo(mockBruker.getAktorId().get());
         assertThat(oppfolgingsperiode.startTid()).isEqualTo(startOppfolgiong.getStartDato());
         assertThat(oppfolgingsperiode.sluttTid()).isNull();
 
@@ -64,7 +64,7 @@ class OppfolgingsperiodeConsumerTest extends SpringBootTestBase {
 
         Oppfolgingsperiode oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.getAktorId()).orElseThrow();
         assertThat(oppfolgingsperiodeAvsluttet.oppfolgingsperiode()).isEqualTo(mockBruker.getOppfolgingsperiode());
-        assertThat(oppfolgingsperiodeAvsluttet.aktorid()).isEqualTo(mockBruker.getAktorId());
+        assertThat(oppfolgingsperiodeAvsluttet.aktorid()).isEqualTo(mockBruker.getAktorId().get());
         assertThat(oppfolgingsperiodeAvsluttet.startTid()).isEqualTo(avsluttetOppfolgingsperide.getStartDato());
         assertThat(oppfolgingsperiodeAvsluttet.sluttTid()).isEqualTo(avsluttetOppfolgingsperide.getSluttDato());
     }
