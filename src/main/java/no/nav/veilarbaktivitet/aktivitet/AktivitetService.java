@@ -82,7 +82,7 @@ public class AktivitetService {
         var nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getAktorId())
                 .toBuilder()
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .kontorsperreEnhetId(kontorSperreEnhet.orElse(null))
+                .kontorsperreEnhetId(kontorSperreEnhet.orElse(aktivitet.getKontorsperreEnhetId()))
                 .build();
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
         metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);
