@@ -930,8 +930,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun `relast skal overskrive første feilede migrering`() {
+        val arenaaktivitetId = ArenaId("TA31212")
+        val arenaAktivitetDTO =
+            aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
         val funksjonellId = UUID.randomUUID()
-        val kontekst = meldingContext(ArenaId("TA31212"), "ARENA_TILTAK")
+        val kontekst = meldingContext(arenaaktivitetId, "ARENA_TILTAK")
         val opprettet = ZonedDateTime.now().minusDays(10)
         val gammel = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(endretTidspunkt = opprettet)
@@ -950,8 +953,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         // Skal bruke første opprettet dato
         assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(opprettet, within(1, ChronoUnit.SECONDS))
         assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
+        // TODO: Vurder om nyeste periode er mer riktig enn gammel periode
         assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
         assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
+        // Behold FHO
+        assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(sisteVersjon.forhaandsorientering.id)
     }
 
     private val mockBruker = MockNavService.createHappyBruker()
