@@ -15,7 +15,7 @@ public enum IdentType {
             case ARENAIDENT -> Innsender.ARENAIDENT;
             case NAVIDENT-> Innsender.NAV;
             case SYSTEM -> Innsender.SYSTEM;
-            case PERSONBRUKERIDENT -> Innsender.BRUKER;
+            case PERSONBRUKERIDENT -> Innsender.BRUKER; // NB vær obs på at denne skiller ikke mellom fnr og aktorId
             case ARBEIDSGIVER -> Innsender.ARBEIDSGIVER;
             case TILTAKSARRANGOER -> Innsender.TILTAKSARRANGOER;
         };

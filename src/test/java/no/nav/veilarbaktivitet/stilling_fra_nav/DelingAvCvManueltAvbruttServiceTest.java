@@ -99,7 +99,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isEqualTo(skalBehandles.getId());
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.AVBRUTT);
             assertions.assertThat(value.getSvar()).isNull();

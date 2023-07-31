@@ -31,7 +31,6 @@ import org.springframework.kafka.support.SendResult;
 
 import java.time.Duration;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 import static no.nav.veilarbaktivitet.util.AktivitetTestService.createForesporselOmDelingAvCv;
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
@@ -155,7 +154,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNull();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
             assertions.assertThat(value.getKanIkkeOppretteBegrunnelse().getFeilmelding()).isEqualTo("Finner ingen gyldig ident for aktorId");
@@ -181,7 +180,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNull();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
             assertions.assertThat(value.getSvar()).isNull();
@@ -204,7 +203,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNull();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_OPPRETTE);
             assertions.assertThat(value.getSvar()).isNull();
@@ -228,7 +227,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
@@ -253,7 +252,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
@@ -276,7 +275,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
             assertions.assertThat(value.getSvar()).isNull();
@@ -299,7 +298,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         DelingAvCvRespons value = record.value();
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
             assertions.assertThat(value.getSvar()).isNull();
