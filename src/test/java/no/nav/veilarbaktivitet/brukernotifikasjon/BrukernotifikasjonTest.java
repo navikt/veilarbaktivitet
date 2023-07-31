@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -369,7 +370,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.GJENNOMFORES,
                         ZonedDateTime.now(),
                         mockBruker
-                )
+                ), AktivitetskortType.ARENA_TILTAK
         );
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
@@ -400,7 +401,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.GJENNOMFORES,
                         ZonedDateTime.now(),
                         mockBruker
-                )
+                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         );
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
@@ -412,7 +413,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.AVBRUTT,
                         ZonedDateTime.now(),
                         mockBruker
-                )
+                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         );
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet), List.of(headers));
         brukernotifikasjonAsserts.assertDone(oppgave.key());

@@ -100,6 +100,7 @@ class ArenaAktivitetskortService (
             .withVersjon(gammelAktivitet.versjon)
             .withOppfolgingsperiodeId(gammelAktivitet.oppfolgingsperiodeId)
             .withOpprettetDato(gammelAktivitet.opprettetDato)
+            .withFhoId(gammelAktivitet.fhoId)
         val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
         return opprettetAktivitetsData
     }

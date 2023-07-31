@@ -260,22 +260,20 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun happy_case_upsert_status_existing_tiltaksaktivitet() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val meldingContext = meldingContext(ArenaId("ARENATA123"), "MIDL")
+        val tiltaksaktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.VARIG_LONNSTILSKUDD)
         val annenVeileder = Ident("ANNEN_NAV_IDENT", Innsender.ARENAIDENT)
-        val tiltaksaktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
-            .copy(endretAv = annenVeileder)
-        val updatemeldingContext = meldingContext(ArenaId("ARENATA123"), "MIDL")
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+        val tiltaksaktivitetUpdate = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+            .copy(endretAv = annenVeileder), AktivitetskortType.VARIG_LONNSTILSKUDD)
+        aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksaktivitet,
                 tiltaksaktivitetUpdate
-            ), listOf(meldingContext, updatemeldingContext)
+            )
         )
         val aktivitet = hentAktivitet(funksjonellId)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertNotNull(aktivitet)
-        assertThat(tiltaksaktivitet.endretTidspunkt)
+        assertThat(tiltaksaktivitet.aktivitetskort.endretTidspunkt)
             .isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.endretDato), within(1, ChronoUnit.MILLIS))
         assertThat(aktivitet.endretAv).isEqualTo(annenVeileder.ident)
         assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.status)
@@ -335,7 +333,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun duplikat_melding_bare_1_opprettet_transaksjon() {
         val funksjonellId = UUID.randomUUID()
         val aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort)
+        val kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
         val context = meldingContext()
         val producerRecord =
             aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context) as ProducerRecord<String, String>
@@ -359,21 +357,20 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdatering_av_detaljer_gir_riktig_transaksjon() {
         val funksjonellId = UUID.randomUUID()
-        val context = meldingContext()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val tiltaksaktivitetEndret: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
+            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        val tiltaksaktivitetEndret = AktivitetskortTestBuilder.aktivitetskortMelding(
+            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
                     "Tiltaksnavn",
                     "Nytt navn"
                 )
-            ))
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+            )), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksaktivitet,
-                tiltaksaktivitetEndret
-            ), listOf(context, context)
-        )
+                tiltaksaktivitetEndret))
         val aktivitet = hentAktivitet(funksjonellId)
         assertEquals(
             AktivitetTransaksjonsType.DETALJER_ENDRET,
@@ -384,18 +381,17 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         val funksjonellId = UUID.randomUUID()
-        val context = meldingContext()
-        val tiltaksaktivitet: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(avtaltMedNav = false)
+        val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+            .copy(avtaltMedNav = false), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
         val etikett = Etikett("FÅTT_PLASS")
-        val tiltaksaktivitetEndret: Aktivitetskort =
+        val tiltaksaktivitetEndret = AktivitetskortTestBuilder.aktivitetskortMelding(
             aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
-                .copy(avtaltMedNav = true, etiketter = listOf(etikett))
-        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+                .copy(avtaltMedNav = true, etiketter = listOf(etikett)), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksaktivitet,
                 tiltaksaktivitetEndret
-            ), listOf(context, context)
+            )
         )
         val aktivitetId = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
             .findFirst().get().id
@@ -403,7 +399,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertEquals(4, aktivitetVersjoner.size)
         val sisteVersjon = aktivitetVersjoner[0]
         assertThat(sisteVersjon.isAvtalt).isTrue()
-        assertThat(sisteVersjon.eksternAktivitet.etiketter).isEqualTo(tiltaksaktivitetEndret.etiketter)
+        assertThat(sisteVersjon.eksternAktivitet.etiketter).isEqualTo(tiltaksaktivitetEndret.aktivitetskort.etiketter)
         assertThat(sisteVersjon.status).isEqualTo(AktivitetStatus.GJENNOMFORES)
         assertEquals(
             AktivitetTransaksjonsType.STATUS_ENDRET,
@@ -447,7 +443,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     "Gammelt navn"
                 )
             ))
-        val tiltaksMelding = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet)
+        val tiltaksMelding = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
         val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
@@ -455,7 +451,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     nyesteNavn
                 )
             ))
-        val tiltaksMeldingEndret = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetEndret)
+        val tiltaksMeldingEndret = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetEndret, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksMelding,
@@ -661,8 +657,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     "Nytt navn"
                 )
             ))
-        val aktivitetskort = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet)
-        val aktivitetskortOppdatert = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetOppdatert)
+        val aktivitetskort = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
+        val aktivitetskortOppdatert = AktivitetskortTestBuilder.aktivitetskortMelding(tiltaksaktivitetOppdatert, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD)
         val h1 = RecordHeader(
             AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID,
             ArenaId("ARENATA123").id().toByteArray()
@@ -938,10 +934,14 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val opprettet = ZonedDateTime.now().minusDays(10)
         val gammel = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(endretTidspunkt = opprettet)
+        val endaEnVersjon = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+            .copy(endretTidspunkt = opprettet.plusDays(5))
         val ny = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now())
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
             listOf(gammel), listOf(kontekst))
+        aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
+            listOf(endaEnVersjon), listOf(kontekst))
         val initiellAktivitet = hentAktivitet(funksjonellId)
         aktivitetTestService.opprettEksterntAktivitetsKortByAktivitetkort(
             listOf(ny), listOf(kontekst))
@@ -957,7 +957,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
         assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
         // Behold FHO
-        assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(sisteVersjon.forhaandsorientering.id)
+        val heleAktiviteten = hentAktivitet(funksjonellId)
+        assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(heleAktiviteten.forhaandsorientering.id)
     }
 
     private val mockBruker = MockNavService.createHappyBruker()

@@ -1,13 +1,12 @@
 package no.nav.veilarbaktivitet.testutils;
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
-import no.nav.veilarbaktivitet.aktivitetskort.ActionType;
+import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.person.Innsender;
 
@@ -15,8 +14,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
-
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL;
 
 
 public class AktivitetskortTestBuilder {
@@ -55,8 +52,12 @@ public class AktivitetskortTestBuilder {
 
     }
 
-    public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload) {
-        return AktivitetskortTestBuilder.aktivitetskortMelding(payload, UUID.randomUUID(), ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+    public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload, AktivitetskortType type, String source) {
+        return AktivitetskortTestBuilder.aktivitetskortMelding(payload, UUID.randomUUID(), source, type);
+    }
+
+    public static KafkaAktivitetskortWrapperDTO aktivitetskortMelding(Aktivitetskort payload, AktivitetskortType type) {
+        return AktivitetskortTestBuilder.aktivitetskortMelding(payload, UUID.randomUUID(), "testsource", type);
     }
 }
 

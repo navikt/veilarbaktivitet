@@ -156,17 +156,6 @@ public class AktivitetDAO {
         return nyAktivitetVersjon;
     }
 
-    private void slettEksternAktivitet(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
-        SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
-                .addValue(AKTIVITETID, aktivitetId)
-                .addValue("gammel_versjon", ikkeLengerGjeldendeVersjon);
-        // language=sql
-        database.getNamedJdbcTemplate()
-                .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon = :gammel_versjon AND aktivitet_id = :aktivitet_id",
-                        updateGjeldendeParams);
-        log.info("slettet ekstern aktivitet med id {} - {}", aktivitetId, ikkeLengerGjeldendeVersjon);
-    }
-
     public AktivitetData overskrivMenMedNyVersjon(AktivitetData aktivitet) {
         long nyesteVersjon = nesteVersjon();
         long gammelVersjon = aktivitet.getVersjon();
@@ -174,8 +163,14 @@ public class AktivitetDAO {
         settTilUgyldigVersjon(aktivitet.getId(), gammelVersjon);
         flyttBrukerNotifikasjonTilVersjon(aktivitet.getId(), gammelVersjon, nyesteVersjon);
         // Ny versjon blir opprettet av insertAktivitetVersjon, trenger bare slette den gamle
-        slettEksternAktivitet(aktivitet.getId(), gammelVersjon);
-        slettAlleAndreVersjoner(aktivitet.getId(), nyesteVersjon);
+        SqlParameterSource slettParams = new MapSqlParameterSource()
+                .addValue(AKTIVITETID, aktivitet.getId())
+                .addValue("ny_versjon", nyesteVersjon);
+        // language=sql
+        namedParameterJdbcTemplate
+                .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon != :ny_versjon AND aktivitet_id = :aktivitet_id", slettParams);
+        database.getNamedJdbcTemplate()
+                .update("DELETE FROM AKTIVITET WHERE gjeldende = 0 AND aktivitet_id = :aktivitet_id and versjon != :ny_versjon", slettParams);
         return nyAktivitetVersjon;
     }
 
@@ -197,15 +192,6 @@ public class AktivitetDAO {
             template.update("INSERT INTO AKTIVITET_BRUKERNOTIFIKASJON VALUES (:aktivitet_id, :ny_versjon, :brukernotifikasjon_id) ", paramsWithBrukernotifkasjonsId);
         });
 
-    }
-
-    private void slettAlleAndreVersjoner(long aktivitetId, long versjon) {
-        SqlParameterSource slettParams = new MapSqlParameterSource()
-                .addValue(AKTIVITETID, aktivitetId)
-                .addValue(VERSJON, versjon);
-        // language=sql
-        database.getNamedJdbcTemplate()
-                .update("DELETE FROM AKTIVITET WHERE gjeldende = 0 AND aktivitet_id = :aktivitet_id and versjon != :versjon", slettParams);
     }
 
     private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon) {

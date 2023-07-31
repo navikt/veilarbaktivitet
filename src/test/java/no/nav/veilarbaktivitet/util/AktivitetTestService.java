@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
@@ -56,8 +57,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -437,7 +437,7 @@ public class AktivitetTestService {
      * @param arenaMeldingHeaders
      */
     public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> arenaMeldingHeaders) {
-        var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
+        var aktivitetskorter = meldinger.stream().map(it -> AktivitetskortTestBuilder.aktivitetskortMelding(it, AktivitetskortType.ARENA_TILTAK, ARENA_TILTAK_AKTIVITET_ACL)).toList();
         opprettEksterntAktivitetsKort(aktivitetskorter, arenaMeldingHeaders);
     }
 
