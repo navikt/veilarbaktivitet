@@ -647,7 +647,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun should_not_commit_database_transaction_if_runtimeException_is_thrown2() {
+    fun should_not_commit_database_transaction_if_runtimeException_is_thrown() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val tiltaksaktivitetOppdatert: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)

@@ -115,6 +115,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
         beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
+        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
     }
 
     @AfterEach
@@ -460,7 +461,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     }
 
     @Test
-    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt2() {
+    void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA512");
@@ -477,15 +478,14 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
 
-        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaId);
-
+        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaId).get(0);
         // Opprett FHO
         var avtaltMedNavDTO = new AvtaltMedNavDTO()
-                .setAktivitetVersjon(Long.parseLong(aktivitet.getVersjon()))
+                .setAktivitetVersjon(arenaAktivitet.getVersjon())
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder()
                         .type(Type.SEND_FORHAANDSORIENTERING)
                         .tekst("lol").lestDato(null).build());
-        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(aktivitet.getId()));
+        aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(arenaAktivitet.getId()));
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
