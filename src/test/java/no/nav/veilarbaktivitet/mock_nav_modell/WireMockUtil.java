@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,6 +77,10 @@ public class WireMockUtil {
         } else {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(204)));
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId.get())
+                    .willReturn(ok()
+                            .withHeader("Content-Type", "text/json")
+                            .withBody(JsonUtils.toJson(Collections.emptyList()))));
         }
     }
 

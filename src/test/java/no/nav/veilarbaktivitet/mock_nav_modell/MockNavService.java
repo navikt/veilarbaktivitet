@@ -45,8 +45,13 @@ public class MockNavService {
         NAV_CONTEXT.getNavAnsatt().add(navAnsatt);
         navAnsatt.getAdGrupper().add(DomainKt.getTilgjengligeAdGrupper().getModiaOppfolging());
 
-        MockVeileder mockVeileder = new MockVeileder(navAnsatt);
-        return mockVeileder;
+        return new MockVeileder(navAnsatt);
+    }
+
+    public static MockVeileder createVeilederMedNasjonalTilgang() {
+        NavAnsatt navAnsatt = NAV_CONTEXT.getNavAnsatt().nyNksAnsatt();
+
+        return new MockVeileder(navAnsatt);
     }
 
 }

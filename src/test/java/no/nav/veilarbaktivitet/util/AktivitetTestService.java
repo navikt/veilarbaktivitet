@@ -10,10 +10,10 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -35,7 +35,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
-import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
@@ -44,7 +43,6 @@ import org.assertj.core.api.Assertions;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import shaded.com.google.common.collect.Streams;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -431,18 +429,17 @@ public class AktivitetTestService {
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
-    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> arenaMeldingHeaders) {
-        var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
-        opprettEksterntAktivitetsKort(aktivitetskorter, arenaMeldingHeaders);
+    public void opprettEksterntArenaKort(ArenaKort arenaKort) {
+        opprettEksterntArenaKort(List.of(arenaKort));
     }
 
     @SuppressWarnings("unchecked")
     @SneakyThrows
-    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger, List<ArenaMeldingHeaders> contexts) {
-        var lastRecord = (SendResult<String, String>) Streams.mapWithIndex(meldinger.stream(),
-                    (melding, index) -> makeAktivitetskortProducerRecord(melding, contexts.get((int) index)))
+    public void opprettEksterntArenaKort(List<ArenaKort> arenaKort) {
+        var lastRecord = (SendResult<String, String>) arenaKort.stream().map(
+                    kort -> makeAktivitetskortProducerRecord(kort.getMelding(), kort.getHeader()))
                 .map((record) -> stringStringKafkaTemplate.send(record))
-                .skip(meldinger.size() - 1)
+                .skip(arenaKort.size() - 1)
                 .findFirst().get().get();
 
         kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset());

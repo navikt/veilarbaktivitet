@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
@@ -15,7 +16,6 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -81,8 +81,8 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @Test
     void skal_ikke_avbryte_eksterne_aktiviteter_i_kvp_periode() throws ExecutionException, InterruptedException, TimeoutException {
 
-        var aktivitetskort = AktivitetskortTestBuilder.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
-        var kafkaAktivitetskortWrapperDTO = AktivitetskortTestBuilder.aktivitetskortMelding(
+        var aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
+        var kafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(
                 aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
 
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(kafkaAktivitetskortWrapperDTO));
