@@ -209,8 +209,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun skal_kreve_passende_oppfolgingsperiode_pa_arenaaktivitet() {
-        val brukerUtenOppfolgingsperioder = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-        val serie = ArenaAktivitetskortSerie(brukerUtenOppfolgingsperioder, "tiltak")
+        val serie = ArenaAktivitetskortSerie(brukerUtenOppfolging, "tiltak")
         val kort = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
         aktivitetTestService.opprettEksterntArenaKort(kort)
         assertFeilmeldingPublished(
@@ -221,14 +220,23 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
+    fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
+        val serie = AktivitetskortSerie(brukerUtenOppfolging)
+        val actual = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(actual))
+        assertFeilmeldingPublished(
+            serie.funksjonellId,
+            ManglerOppfolgingsperiodeFeil::class.java,
+            "Finner ingen passende oppfølgingsperiode for aktivitetskortet."
+        )
+    }
+
+    @Test
     fun historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
-        val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(endretTidspunkt = ZonedDateTime.now().minusDays(75))
-        val arenata123 = ArenaId("ARENATA123")
-        val kontekst = meldingContext(arenata123, "MIDLONNTIL")
-        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(actual, kontekst))
-        val aktivitetFoer = hentAktivitet(funksjonellId)
+        val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL")
+        val actual = serie.ny(AktivitetStatus.PLANLAGT, endretTidspunkt = ZonedDateTime.now().minusDays(75))
+        aktivitetTestService.opprettEksterntArenaKort(actual)
+        val aktivitetFoer = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
         assertThat(aktivitetFoer.isHistorisk).isFalse()
         val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
@@ -243,44 +251,26 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
         tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
-        val aktivitetEtter = hentAktivitet(funksjonellId)
+        val aktivitetEtter = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetEtter.isHistorisk).isTrue()
     }
 
-    @Test
-    fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
-        val funksjonellId = UUID.randomUUID()
-        val brukerUtenOppfolging = MockNavService.createBruker(
-            BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build()
-        )
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT, brukerUtenOppfolging)
-        val wrapperDTO = KafkaAktivitetskortWrapperDTO(
-            aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
-            aktivitetskort = actual,
-            source = "source",
-            messageId = UUID.randomUUID())
-        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
-        assertFeilmeldingPublished(
-            funksjonellId,
-            ManglerOppfolgingsperiodeFeil::class.java,
-            "Finner ingen passende oppfølgingsperiode for aktivitetskortet."
-        )
-    }
+
 
     @Test
     fun happy_case_upsert_status_existing_tiltaksaktivitet() {
-        val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.VARIG_LONNSTILSKUDD)
+        val serie = AktivitetskortSerie(mockBruker)
+        val tiltaksaktivitet = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
         val annenVeileder = Ident("ANNEN_NAV_IDENT", Innsender.ARENAIDENT)
-        val tiltaksaktivitetUpdate = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
-            .copy(endretAv = annenVeileder), AktivitetskortType.VARIG_LONNSTILSKUDD)
+        val tiltaksaktivitetUpdate = serie.ny(AktivitetStatus.GJENNOMFORES, ZonedDateTime.now())
+            .let { it.copy(aktivitetskort = it.aktivitetskort.copy(endretAv = annenVeileder)) }
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksaktivitet,
                 tiltaksaktivitetUpdate
             )
         )
-        val aktivitet = hentAktivitet(funksjonellId)
+        val aktivitet = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertNotNull(aktivitet)
         assertThat(tiltaksaktivitet.aktivitetskort.endretTidspunkt)
@@ -949,6 +939,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(heleAktiviteten.forhaandsorientering.id)
     }
 
+    private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
     private val mockBruker = MockNavService.createHappyBruker()
     private val veileder = MockNavService.createVeileder(mockBruker)
     private val endretDato = ZonedDateTime.now()

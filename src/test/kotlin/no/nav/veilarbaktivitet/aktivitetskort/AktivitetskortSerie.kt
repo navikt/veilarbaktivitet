@@ -6,10 +6,11 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import java.time.ZonedDateTime
 import java.util.*
+import kotlin.random.Random
 
 open class AktivitetskortSerie(
     val mockBruker: MockBruker,
-    val type: AktivitetskortType = AktivitetskortType.ARENA_TILTAK
+    val type: AktivitetskortType = AktivitetskortType.VARIG_LONNSTILSKUDD
 ) {
     val funksjonellId = UUID.randomUUID()
     companion object {
@@ -36,7 +37,7 @@ open class AktivitetskortSerie(
 class ArenaAktivitetskortSerie(mockBruker: MockBruker, val tiltakskode: String) {
     private val serie = AktivitetskortSerie(mockBruker, AktivitetskortType.ARENA_TILTAK)
     val funksjonellId = serie.funksjonellId
-    val arenaId = ArenaId("TA1001")
+    val arenaId = ArenaId("TA" + Random.nextInt(1000, 10000))
     fun ny(status: AktivitetStatus, endretTidspunkt: ZonedDateTime): ArenaKort {
         return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode))
     }
