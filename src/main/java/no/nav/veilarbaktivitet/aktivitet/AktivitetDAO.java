@@ -131,7 +131,7 @@ public class AktivitetDAO {
     }
 
 
-    private void settTilUgyldigVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
+    private void settTilIkkeGjeldendeVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon) {
         SqlParameterSource updateGjeldendeParams = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, ikkeLengerGjeldendeVersjon);
@@ -152,7 +152,7 @@ public class AktivitetDAO {
         }
         long versjon = nesteVersjon();
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
-        settTilUgyldigVersjon(aktivitetId, gjeldendeVersjon);
+        settTilIkkeGjeldendeVersjon(aktivitetId, gjeldendeVersjon);
         return nyAktivitetVersjon;
     }
 
@@ -160,7 +160,7 @@ public class AktivitetDAO {
         long nyesteVersjon = nesteVersjon();
         long gammelVersjon = aktivitet.getVersjon();
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitet.getId(), nyesteVersjon);
-        settTilUgyldigVersjon(aktivitet.getId(), gammelVersjon);
+        settTilIkkeGjeldendeVersjon(aktivitet.getId(), gammelVersjon);
         flyttBrukerNotifikasjonTilVersjon(aktivitet.getId(), gammelVersjon, nyesteVersjon);
         // Ny versjon blir opprettet av insertAktivitetVersjon, trenger bare slette den gamle
         SqlParameterSource slettParams = new MapSqlParameterSource()
