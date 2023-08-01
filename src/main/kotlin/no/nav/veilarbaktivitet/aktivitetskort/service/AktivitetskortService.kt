@@ -33,11 +33,19 @@ class AktivitetskortService(
     @Throws(AktivitetsKortFunksjonellException::class)
     fun upsertAktivitetskort(bestilling: AktivitetskortBestilling): UpsertActionResult {
         val (id) = bestilling.aktivitetskort
-        val gammelAktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(id)
+        val gammelAktivitetMaybe = aktivitetDAO.hentAktivitetByFunksjonellId(id)
         return when {
-            gammelAktivitet.isPresent -> {
+            gammelAktivitetMaybe.isPresent -> {
+                val gammelAktivitet = gammelAktivitetMaybe.get()
                 // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
-                val oppdatertAktivitet = oppdaterAktivitet(gammelAktivitet.get(), bestilling.toAktivitetsDataUpdate())
+                val oppdatertAktivitet = when  {
+                    bestilling is ArenaAktivitetskortBestilling -> {
+                        arenaAktivitetskortService.oppdaterAktivitet(
+                            bestilling,
+                            gammelAktivitet)
+                    }
+                    else -> oppdaterAktivitet(gammelAktivitet, bestilling.toAktivitetsDataUpdate())
+                }
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
             }
