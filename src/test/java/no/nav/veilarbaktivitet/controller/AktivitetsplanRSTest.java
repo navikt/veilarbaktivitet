@@ -30,12 +30,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static no.nav.veilarbaktivitet.mock.TestData.KJENT_KONTORSPERRE_ENHET_ID;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -248,30 +246,36 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void gitt_at_jeg_har_aktiviteter_med_kontorsperre() {
-        gitt_at_jeg_har_folgende_aktiviteter(Arrays.asList(
+        var enableKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
+        MockNavService.updateBruker(mockBruker, enableKvp);
+        gitt_at_jeg_har_folgende_aktiviteter(List.of(
                 nyttStillingssok(),
-                nyttStillingssok().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID),
+                nyttStillingssok()
+        ));
+        var removeKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(false).build();
+        MockNavService.updateBruker(mockBruker, removeKvp);
+        gitt_at_jeg_har_folgende_aktiviteter(List.of(
                 nyttStillingssok(),
-                nyttStillingssok().withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
+                nyttStillingssok()
         ));
     }
 
     private void gitt_at_jeg_har_en_aktivitet_med_kontorsperre() {
-
         var enableKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
         MockNavService.updateBruker(mockBruker, enableKvp);
-        gitt_at_jeg_har_folgende_aktiviteter(Collections.singletonList(
-                nyttStillingssok() //.withKontorsperreEnhetId(KJENT_KONTORSPERRE_ENHET_ID)
-        ));
+        gitt_at_jeg_har_folgende_aktiviteter(List.of(nyttStillingssok()));
         var removeKvp = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(false).build();
         MockNavService.updateBruker(mockBruker, removeKvp);
     }
 
     private void gitt_at_jeg_har_folgende_aktiviteter(List<AktivitetData> aktiviteter) {
         var aktorId = mockBruker.getAktorId();
+        var kontorSperreEnhet = mockBruker.getPrivatbruker().getOppfolgingsenhet();
         lagredeAktivitetsIder = aktiviteter.stream()
                 .map(aktivitet -> aktivitetService.opprettAktivitet(
-                    aktivitet.withAktorId(aktorId).withEndretAvType(aktorId.tilInnsenderType())
+                    aktivitet.withAktorId(aktorId)
+                            .withEndretAvType(aktorId.tilInnsenderType())
+                            .withKontorsperreEnhetId(kontorSperreEnhet)
                 ))
                 .map(AktivitetData::getId)
                 .collect(Collectors.toList());
