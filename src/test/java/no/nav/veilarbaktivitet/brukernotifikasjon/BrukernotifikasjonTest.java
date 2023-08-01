@@ -15,9 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
-import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
-import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
+import no.nav.veilarbaktivitet.aktivitetskort.*;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -29,7 +27,6 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -368,8 +365,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
         // Opprett ekstern aktivitet
-        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
+        var aktivitetskortMelding = AktivitetskortUtil.aktivitetskortMelding(
+                AktivitetskortUtil.ny(
                         UUID.randomUUID(),
                         AktivitetStatus.GJENNOMFORES,
                         ZonedDateTime.now(),
@@ -377,7 +374,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 ), AktivitetskortType.ARENA_TILTAK
         );
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(aktivitetskortMelding, headers));
         // Opprett fho når toggle er av
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
         // Assert url bruker teknisk id og ikke arenaId
@@ -394,19 +391,12 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_lonnstilskudd_blir_avbrutt() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        // Opprett ekstern aktivitet og avbryter den
-        var funksjonellId = UUID.randomUUID();
-        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.GJENNOMFORES,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
-        );
+        // Opprett ekstern aktivitet
+        var serie = new AktivitetskortSerie(mockBruker, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        var aktivitetskortMelding = serie.ny(AktivitetStatus.GJENNOMFORES, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding));
-        var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, funksjonellId);
         // Opprett FHO
+        var aktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, serie.getFunksjonellId());
         var avtaltMedNavDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(aktivitet.getVersjon()))
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder()
@@ -414,15 +404,8 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         .tekst("lol").lestDato(null).build());
         aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(aktivitet.getId()));
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
-
-        var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.AVBRUTT,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
-        );
+        // Sett til avbrutt
+        var avbruttAktivitet = serie.ny(AktivitetStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet));
         brukernotifikasjonAsserts.assertDone(oppgave.key());
     }
@@ -431,32 +414,16 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        var arenaId = new ArenaId("ARENATA123");
+        var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
         // Opprett FHO
-        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
+        aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, serie.getArenaId(), mockVeileder);
         // Opprett ekstern aktivitet og avbryter den
-        var funksjonellId = UUID.randomUUID();
-        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.GJENNOMFORES,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.ARENA_TILTAK
-        );
-        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
+        var aktivitetskortMelding = serie.ny(AktivitetStatus.GJENNOMFORES, ZonedDateTime.now());
+        aktivitetTestService.opprettEksterntArenaKort(List.of(aktivitetskortMelding));
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
-
-        var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.AVBRUTT,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.ARENA_TILTAK
-        );
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet), List.of(headers));
+        // Avbryt aktivitet
+        var avbruttAktivitet = serie.ny(AktivitetStatus.AVBRUTT, ZonedDateTime.now());
+        aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
         brukernotifikasjonAsserts.assertDone(oppgave.key());
     }
 
@@ -464,22 +431,12 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
-        var arenaId = new ArenaId("ARENATA512");
         // Opprett ekstern aktivitet og avbryter den
-        var funksjonellId = UUID.randomUUID();
-        var aktivitetskortMelding = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.GJENNOMFORES,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.ARENA_TILTAK
-        );
-        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(aktivitetskortMelding), List.of(headers));
-
-        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaId).get(0);
+        var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
+        var aktivitetskortMelding = serie.ny(AktivitetStatus.GJENNOMFORES, ZonedDateTime.now());
+        aktivitetTestService.opprettEksterntArenaKort(List.of(aktivitetskortMelding));
         // Opprett FHO
+        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, serie.getArenaId()).get(0);
         var avtaltMedNavDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(arenaAktivitet.getVersjon())
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder()
@@ -487,16 +444,9 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         .tekst("lol").lestDato(null).build());
         aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(arenaAktivitet.getId()));
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
-
-        var avbruttAktivitet = AktivitetskortTestBuilder.aktivitetskortMelding(
-                AktivitetskortTestBuilder.ny(
-                        funksjonellId,
-                        AktivitetStatus.AVBRUTT,
-                        ZonedDateTime.now(),
-                        mockBruker
-                ), AktivitetskortType.ARENA_TILTAK
-        );
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet), List.of(headers));
+        // Avbryt aktivitet
+        var avbruttAktivitet = serie.ny(AktivitetStatus.AVBRUTT, ZonedDateTime.now());
+        aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
         brukernotifikasjonAsserts.assertDone(oppgave.key());
     }
 
