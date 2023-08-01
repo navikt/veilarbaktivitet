@@ -97,7 +97,8 @@ class ArenaAktivitetskortService (
     ): AktivitetData {
         val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
-        val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
+        val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt
+            ?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
             .withId(gammelAktivitet.id)
             .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
             .withVersjon(gammelAktivitet.versjon)

@@ -199,13 +199,25 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
-//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
             aktivitetskort = actual,
             source = "source",
             messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitet = hentAktivitet(funksjonellId)
         assertEquals(mockBruker.oppfolgingsperiode, aktivitet.oppfolgingsperiodeId)
+    }
+
+    @Test
+    fun skal_kreve_passende_oppfolgingsperiode_pa_arenaaktivitet() {
+        val brukerUtenOppfolgingsperioder = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
+        val serie = ArenaAktivitetskortSerie(brukerUtenOppfolgingsperioder, "tiltak")
+        val kort = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
+        aktivitetTestService.opprettEksterntArenaKort(kort)
+        assertFeilmeldingPublished(
+            serie.funksjonellId,
+            ManglerOppfolgingsperiodeFeil::class.java,
+            "Finner ingen passende oppfølgingsperiode for aktivitetskortet."
+        )
     }
 
     @Test
