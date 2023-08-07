@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
+import org.joda.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import java.util.Optional;
 
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_AKTOR_ID;
 import static no.nav.veilarbaktivitet.mock.TestData.KJENT_SAKSBEHANDLER;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -105,7 +107,9 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterStatus() {
-        val aktivitet = lagEnNyAktivitet();
+        var oneSecondAgo = LocalDateTime.now().minusMillis(1).toDate();
+        val aktivitet = lagEnNyAktivitet()
+                .withEndretDato(oneSecondAgo);
 
         val avsluttKommentar = "Alexander er best";
         val nyStatus = AktivitetStatus.GJENNOMFORES;
@@ -113,6 +117,7 @@ class AktivitetServiceTest {
                 .toBuilder()
                 .endretAv("bruker")
                 .endretAvType(Innsender.BRUKER)
+                .endretDato(new Date())
                 .beskrivelse("ikke rett beskrivelse")
                 .avsluttetKommentar(avsluttKommentar)
                 .status(nyStatus)
@@ -125,6 +130,7 @@ class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getAvsluttetKommentar(), equalTo(avsluttKommentar));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(oppdatertAktivitet.getEndretAv()));
         assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(oppdatertAktivitet.getEndretAvType()));
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @SneakyThrows
@@ -136,12 +142,14 @@ class AktivitetServiceTest {
         val nyStatus = AktivitetStatus.GJENNOMFORES;
         val oppdatertAktivitet = kvpAktivitet
                 .toBuilder()
+                .endretDato(new Date())
                 .status(nyStatus)
                 .build();
 
         aktivitetService.oppdaterStatus(kvpAktivitet, oppdatertAktivitet);
         captureOppdaterAktivitetWithDateArgument();
         assertEquals(AktivitetStatus.GJENNOMFORES, getCapturedAktivitet().getStatus());
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @Test
@@ -151,6 +159,7 @@ class AktivitetServiceTest {
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
                 .beskrivelse("Alexander er fremdeles best")
+                .endretDato(new Date())
                 .stillingsSoekAktivitetData(aktivitet
                         .getStillingsSoekAktivitetData()
                         .withStillingsoekEtikett(StillingsoekEtikettData.AVSLAG))
@@ -163,6 +172,7 @@ class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
         assertThat(getCapturedAktivitet().getStillingsSoekAktivitetData().getStillingsoekEtikett(),
                 equalTo(StillingsoekEtikettData.AVSLAG));
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @Test
@@ -173,6 +183,7 @@ class AktivitetServiceTest {
 
         val oppdatertAktivitet = aktivitet
                 .toBuilder()
+                .endretDato(new Date())
                 .beskrivelse("Alexander er fremdeles best")
                 .moteData(MoteData.builder()
                         .referat(REFERAT)
@@ -187,6 +198,7 @@ class AktivitetServiceTest {
         assertThat(getCapturedAktivitet().getMoteData().getReferat(),
                 equalTo(REFERAT));
         assertThat(getCapturedAktivitet().getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.REFERAT_ENDRET));
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @Test
@@ -194,12 +206,14 @@ class AktivitetServiceTest {
         val aktivitet = lagEnNyAktivitet();
 
         val nyFrist = new Date();
-        aktivitetService.oppdaterAktivitetFrist(aktivitet, aktivitet.toBuilder().tilDato(nyFrist).build());
+        val oppdatertAktivitet = aktivitet.toBuilder().endretDato(new Date()).tilDato(nyFrist).build();
+        aktivitetService.oppdaterAktivitetFrist(aktivitet, oppdatertAktivitet);
 
         captureOppdaterAktivitetArgument();
         assertThat(getCapturedAktivitet().getTilDato(), equalTo(nyFrist));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(KJENT_SAKSBEHANDLER.get()));
         assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @Test
@@ -208,7 +222,10 @@ class AktivitetServiceTest {
 
         Date nyFrist = new Date();
         String nyAdresse = "ny adresse";
-        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, aktivitet.withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse)));
+        var oppdatertAktivitet = aktivitet
+                .withEndretDato(new Date())
+                .withTilDato(nyFrist).withFraDato(nyFrist).withMoteData(aktivitet.getMoteData().withAdresse(nyAdresse));
+        aktivitetService.oppdaterMoteTidStedOgKanal(aktivitet, oppdatertAktivitet);
 
         captureOppdaterAktivitetArgument();
         AktivitetData capturedAktivitet = getCapturedAktivitet();
@@ -218,6 +235,7 @@ class AktivitetServiceTest {
         assertThat(capturedAktivitet.getMoteData().getAdresse(), equalTo(nyAdresse));
         assertThat(getCapturedAktivitet().getEndretAv(), equalTo(KJENT_SAKSBEHANDLER.get()));
         assertThat(getCapturedAktivitet().getEndretAvType(), equalTo(Innsender.NAV));
+        assertThat(getCapturedAktivitet().getEndretDato()).isCloseTo(oppdatertAktivitet.getEndretDato(), 1);
     }
 
     @Test
@@ -261,7 +279,8 @@ class AktivitetServiceTest {
     }
 
     public AktivitetData lagEnNyAktivitet() {
-        return AktivitetDataTestBuilder.nyttStillingssok();
+        return AktivitetDataTestBuilder.nyttStillingssok()
+                .withEndretDato(LocalDateTime.now().minusMillis(1).toDate());
     }
 
     public void captureOppdaterAktivitetArgument() {

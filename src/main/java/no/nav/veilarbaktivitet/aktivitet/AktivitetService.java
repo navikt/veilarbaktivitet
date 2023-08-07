@@ -96,6 +96,7 @@ public class AktivitetService {
                 .status(aktivitet.getStatus())
                 .endretAv(aktivitet.getEndretAv())
                 .endretAvType(aktivitet.getEndretAvType())
+                .endretDato(aktivitet.getEndretDato())
                 .avsluttetKommentar(aktivitet.getAvsluttetKommentar())
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
                 .build();
@@ -114,6 +115,7 @@ public class AktivitetService {
                 .toBuilder()
                 .endretAv(endretAv.ident())
                 .endretAvType(endretAv.identType().toInnsender())
+                .endretDato(new Date())
                 .status(AktivitetStatus.AVBRUTT)
                 .avsluttetKommentar("Avsluttet fordi svarfrist har utløpt")
                 .transaksjonsType(AktivitetTransaksjonsType.STATUS_ENDRET)
@@ -131,6 +133,7 @@ public class AktivitetService {
                 .toBuilder()
                 .endretAvType(aktivitet.getEndretAvType())
                 .endretAv(aktivitet.getEndretAv())
+                .endretDato(aktivitet.getEndretDato())
                 .stillingsSoekAktivitetData(nyStillingsAktivitet)
                 .transaksjonsType(AktivitetTransaksjonsType.ETIKETT_ENDRET)
                 .build();
@@ -142,6 +145,7 @@ public class AktivitetService {
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
+                .endretDato(aktivitetData.getEndretDato())
                 .transaksjonsType(AktivitetTransaksjonsType.AVTALT_DATO_ENDRET)
                 .tilDato(aktivitetData.getTilDato())
                 .build();
@@ -153,6 +157,7 @@ public class AktivitetService {
                 .toBuilder()
                 .endretAvType(aktivitetData.getEndretAvType())
                 .endretAv(aktivitetData.getEndretAv())
+                .endretDato(aktivitetData.getEndretDato())
                 .transaksjonsType(AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
                 .fraDato(aktivitetData.getFraDato())
                 .tilDato(aktivitetData.getTilDato())
@@ -172,6 +177,7 @@ public class AktivitetService {
 
         val merger = MappingUtils.merge(originalAktivitet, aktivitetData);
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
+                .withEndretDato(aktivitetData.getEndretDato())
                 .withEndretAv(aktivitetData.getEndretAv())
                 .withEndretAvType(Innsender.NAV) // Bare NAV kan endre referat
                 .withTransaksjonsType(transaksjon)
@@ -218,6 +224,7 @@ public class AktivitetService {
                 .beskrivelse(aktivitet.getBeskrivelse())
                 .egenAktivitetData(merger.map(AktivitetData::getEgenAktivitetData).merge(this::mergeEgenAktivitetData))
                 .endretAv(aktivitet.getEndretAv())
+                .endretDato(aktivitet.getEndretDato())
                 .fraDato(aktivitet.getFraDato())
                 .iJobbAktivitetData(merger.map(AktivitetData::getIJobbAktivitetData).merge(this::mergeIJobbAktivitetData))
                 .endretAvType(aktivitet.getEndretAvType())
