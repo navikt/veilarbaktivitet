@@ -107,9 +107,7 @@ class AktivitetServiceTest {
 
     @Test
     void oppdaterStatus() {
-        var oneSecondAgo = LocalDateTime.now().minusMillis(1).toDate();
-        val aktivitet = lagEnNyAktivitet()
-                .withEndretDato(oneSecondAgo);
+        val aktivitet = lagEnNyAktivitet();
 
         val avsluttKommentar = "Alexander er best";
         val nyStatus = AktivitetStatus.GJENNOMFORES;
@@ -280,7 +278,7 @@ class AktivitetServiceTest {
 
     public AktivitetData lagEnNyAktivitet() {
         return AktivitetDataTestBuilder.nyttStillingssok()
-                .withEndretDato(LocalDateTime.now().minusMillis(1).toDate());
+                .withEndretDato(LocalDateTime.now().minusSeconds(1).toDate());
     }
 
     public void captureOppdaterAktivitetArgument() {
