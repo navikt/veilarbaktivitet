@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
@@ -13,16 +14,13 @@ public class MockBruker extends RestassuredUser {
     protected final PrivatBruker privatbruker;
     @Setter
     public UUID oppfolgingsperiode = UUID.randomUUID();
+    @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
     MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
         super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
         this.privatbruker = privatBruker;
-    }
-
-    public void setBrukerOptions(BrukerOptions brukerOptions) {
-        this.brukerOptions = brukerOptions;
     }
 
     public String getFnr() {
