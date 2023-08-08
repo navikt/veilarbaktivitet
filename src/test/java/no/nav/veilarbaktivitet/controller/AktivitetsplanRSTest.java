@@ -182,8 +182,8 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     @Test
     void hent_aktivitetsplan_med_kontorsperre() {
         gitt_at_jeg_har_aktiviteter_med_kontorsperre();
-        og_veileder_har_nasjonsal_tilgang_men_ikke_tilgang_til_brukers_enhet();
-        da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan();
+        og_veileder_har_tilgang_til_brukers_enhet();
+        da_aktiviteter_med_og_uten_kontosperre_ligge_i_min_aktivitetsplan();
     }
 
     @Test
@@ -352,6 +352,11 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     private void da_skal_disse_aktivitene_ligge_i_min_aktivitetsplan() {
         List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, aktivVeileder).getAktiviteter();
         assertThat(aktiviteter, hasSize(2));
+    }
+
+    private void da_aktiviteter_med_og_uten_kontosperre_ligge_i_min_aktivitetsplan() {
+        List<AktivitetDTO> aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker, aktivVeileder).getAktiviteter();
+        assertThat(aktiviteter, hasSize(4));
     }
 
     private void da_skal_jeg_ikke_kunne_hente_noen_aktiviteter() {

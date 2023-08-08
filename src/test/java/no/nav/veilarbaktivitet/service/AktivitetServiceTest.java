@@ -81,7 +81,8 @@ class AktivitetServiceTest {
         assertNotNull(capturedAktivitet.getAktorId());
         assertThat(capturedAktivitet.getAktorId(), equalTo(aktivitet.getAktorId()));
         assertThat(capturedAktivitet.getTransaksjonsType(), equalTo(AktivitetTransaksjonsType.OPPRETTET));
-        assertThat(capturedAktivitet.getOpprettetDato()).isCloseTo(new Date(), 1);
+        assertThat(capturedAktivitet.getOpprettetDato()).isEqualTo(aktivitet.getOpprettetDato());
+        assertThat(capturedAktivitet.getEndretDato()).isEqualTo(aktivitet.getEndretDato());
         assertNotNull(capturedAktivitet.getEndretAv());
         assertThat(capturedAktivitet.getEndretAv(), equalTo(aktivitet.getEndretAv()));
         assertThat(capturedAktivitet.getEndretAvType(), equalTo(Innsender.NAV));
