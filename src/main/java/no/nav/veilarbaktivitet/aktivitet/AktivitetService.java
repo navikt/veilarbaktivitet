@@ -5,7 +5,6 @@ import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
-import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Innsender;
@@ -34,7 +33,6 @@ public class AktivitetService {
 
     private final AktivitetDAO aktivitetDAO;
     private final AvtaltMedNavService avtaltMedNavService;
-    private final KvpService kvpService;
     private final MetricService metricService;
     private final SistePeriodeService sistePeriodeService;
 
@@ -78,11 +76,9 @@ public class AktivitetService {
     }
 
     public AktivitetData opprettAktivitet(AktivitetData aktivitet) throws IngenGjeldendePeriodeException {
-        var kontorSperreEnhet = kvpService.getKontorSperreEnhet(aktivitet.getAktorId());
         var nyAktivivitet = enforceOppfolgingsPeriode(aktivitet, aktivitet.getAktorId())
                 .toBuilder()
                 .transaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-                .kontorsperreEnhetId(kontorSperreEnhet.orElse(aktivitet.getKontorsperreEnhetId()))
                 .build();
         var opprettetAktivitet = aktivitetDAO.opprettNyAktivitet(nyAktivivitet);
         metricService.opprettNyAktivitetMetrikk(opprettetAktivitet);

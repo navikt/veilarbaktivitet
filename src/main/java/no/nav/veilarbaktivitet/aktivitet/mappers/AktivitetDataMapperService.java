@@ -7,6 +7,7 @@ import no.nav.common.types.identer.*;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import no.nav.veilarbaktivitet.util.DateUtils;
@@ -22,6 +23,7 @@ public class AktivitetDataMapperService {
     private final IAuthService authService;
     private final AktorOppslagClient aktorOppslagClient;
     private final UserInContext userInContext;
+    private final KvpService kvpService;
 
     private String getEndretAv(Id bruker) {
         if (bruker instanceof AktorId) return bruker.get();
@@ -43,6 +45,7 @@ public class AktivitetDataMapperService {
         val endretAvType = innloggetBruker instanceof EksternBrukerId ? Innsender.BRUKER : Innsender.NAV;
         val endretAv = getEndretAv(innloggetBruker);
         val aktorId = userInContext.getAktorId();
+        var kontorSperreEnhet = kvpService.getKontorSperreEnhet(aktorId);
 
         val aktivitetData = AktivitetData
                 .builder()
@@ -63,7 +66,8 @@ public class AktivitetDataMapperService {
                 .avtalt(aktivitetDTO.isAvtalt())
                 .lenke(aktivitetDTO.getLenke())
                 .malid(aktivitetDTO.getMalid())
-                .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId());
+                .oppfolgingsperiodeId(aktivitetDTO.getOppfolgingsperiodeId())
+                .kontorsperreEnhetId(kontorSperreEnhet.orElse(null));
 
         switch (aktivitetType) {
             case EGENAKTIVITET -> aktivitetData.egenAktivitetData(egenAktivitetData(aktivitetDTO));
