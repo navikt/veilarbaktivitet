@@ -22,7 +22,6 @@ public class MockBruker extends RestassuredUser {
     }
 
     public void setBrukerOptions(BrukerOptions brukerOptions) {
-        privatbruker.setOppfolgingsenhet(brukerOptions.isErUnderKvp() ? "4321" : null);
         this.brukerOptions = brukerOptions;
     }
 
