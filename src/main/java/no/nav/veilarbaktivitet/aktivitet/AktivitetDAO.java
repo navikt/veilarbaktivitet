@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
+import io.micrometer.core.annotation.Timed;
 import kotlin.Pair;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -69,6 +70,7 @@ public class AktivitetDAO {
         );
     }
 
+    @Timed(value = "db_hentGjeldendeAktiviteterForAktorId", histogram = true)
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
         // language=sql
         return database.query(SELECT_AKTIVITET +
