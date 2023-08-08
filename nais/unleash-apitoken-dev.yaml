@@ -1,0 +1,13 @@
+apiVersion: unleash.nais.io/v1
+kind: ApiToken
+metadata:
+  name: veilarbaktivitet
+  namespace: pto
+  cluster: dev-fss
+spec:
+  unleashInstance:
+    apiVersion: unleash.nais.io/v1
+    kind: RemoteUnleash
+    name: dab
+  secretName: veilarbaktivitet-unleash-api-token
+  environment: development
