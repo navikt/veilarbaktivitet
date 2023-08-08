@@ -28,12 +28,10 @@ class InternApiControllerTest extends SpringBootTestBase {
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO moteAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
-
         aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet().withTilDato(null);
         AktivitetDTO egenAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData2, false);
-
         aktivitetTestService.opprettAktivitet(mockBruker, egenAktivitet);
 
         // Sett bruker under KVP

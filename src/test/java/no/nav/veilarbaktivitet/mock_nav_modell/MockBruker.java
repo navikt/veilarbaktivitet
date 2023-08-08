@@ -23,7 +23,6 @@ public class MockBruker extends RestassuredUser {
         this.privatbruker = privatBruker;
     }
 
-
     public String getFnr() {
         return super.ident;
     }
