@@ -18,9 +18,7 @@ open class AxsysClientConfig {
         if (EnvironmentUtils.isProduction().orElse(false)) "prod" else "dev"
     )
 
-    private val axsysUrl = "https://axsys.%s-fss-pub.nais.io".format(
-        if (EnvironmentUtils.isProduction().orElse(false)) "prod" else "dev"
-    )
+    private val axsysUrl = "http://axsys.org.svc.nais.local"
 
     @Bean
     open fun axsysClient(

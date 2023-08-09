@@ -4,6 +4,8 @@ metadata:
   name: veilarbaktivitet
   namespace: pto
   cluster: prod-fss
+  labels:
+    team: pto
 spec:
   unleashInstance:
     apiVersion: unleash.nais.io/v1
