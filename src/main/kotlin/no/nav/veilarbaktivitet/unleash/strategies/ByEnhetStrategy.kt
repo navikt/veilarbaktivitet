@@ -24,11 +24,11 @@ class ByEnhetStrategy(
         return "byEnhet"
     }
 
-    override fun isEnabled(parameters: MutableMap<String, String>): Boolean {
+    override fun isEnabled(parameters: Map<String, String>): Boolean {
         return false
     }
 
-    override fun isEnabled(parameters: MutableMap<String, String>, context: UnleashContext): Boolean {
+    override fun isEnabled(parameters: Map<String, String>, context: UnleashContext): Boolean {
         return context.userId
             .flatMap { userId ->
                 Optional.ofNullable(parameters[PARAM])
