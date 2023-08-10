@@ -73,7 +73,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
 
-        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(true);
+        Mockito.when(unleash.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(true);
 
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktiviteterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
@@ -83,7 +83,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
-        Mockito.when(unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(false);
+        Mockito.when(unleash.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(false);
 
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();

@@ -1,10 +1,10 @@
 package no.nav.veilarbaktivitet;
 
 
+import io.getunleash.Unleash;
 import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -51,7 +51,7 @@ public abstract class SpringBootTestBase {
     private LockProvider lockProvider;
 
     @Autowired
-    protected UnleashClient unleashClient;
+    protected Unleash unleash;
 
     @Autowired
     private KafkaTemplate<String, String> stringStringKafkaTemplate;

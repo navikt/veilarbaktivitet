@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
+import io.getunleash.Unleash
 import lombok.extern.slf4j.Slf4j
-import no.nav.common.featuretoggle.UnleashClient
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
@@ -13,12 +13,12 @@ import java.util.function.Predicate
 @Service
 @Slf4j
 class MigreringService (
-    private val unleashClient: UnleashClient? = null,
-    private val idMappingDAO: IdMappingDAO? = null
+    private val unleash: Unleash,
+    private val idMappingDAO: IdMappingDAO,
 ) {
 
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): Predicate<ArenaAktivitetDTO> {
-        return if (unleashClient!!.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
+        return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             // Hvis migrert, skjul fra /tiltak endepunkt
             Predicate { arenaAktivitetDTO: ArenaAktivitetDTO -> !arenaIds.contains(ArenaId(arenaAktivitetDTO.id)) }
         } else {
@@ -27,14 +27,14 @@ class MigreringService (
     }
 
     fun visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviteter: List<AktivitetDTO>): List<AktivitetDTO> {
-        return if (unleashClient!!.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
+        return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             aktiviteter
         } else {
             // Ikke vis migrerte aktiviter
             val funksjonelleIds = aktiviteter.stream().map { obj: AktivitetDTO -> obj.funksjonellId }
                 .filter { obj: UUID? -> Objects.nonNull(obj) }
                 .toList()
-            val idMapping = idMappingDAO!!.getMappingsByFunksjonellId(funksjonelleIds)
+            val idMapping = idMappingDAO.getMappingsByFunksjonellId(funksjonelleIds)
             aktiviteter.stream().filter { aktivitet: AktivitetDTO -> !idMapping.containsKey(aktivitet.funksjonellId) }
                 .toList()
         }

@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.config.kafka;
 
+import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.kafka.consumer.KafkaConsumerClient;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder;
 import no.nav.common.kafka.consumer.util.KafkaConsumerClientBuilder.TopicConfig;
@@ -35,11 +35,11 @@ public class NavCommonKafkaConfig {
             AktivitetsKortConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
             Properties aktivitetskortConsumerProperties,
-            UnleashClient unleashClient
+            Unleash unleash
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
                 .withProperties(aktivitetskortConsumerProperties)
-                .withToggle(() -> unleashClient.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED))
+                .withToggle(() -> unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED))
                 .withTopicConfig(
                         new TopicConfig<String, String>()
                                 .withConsumerConfig(topicConfig)
@@ -58,11 +58,11 @@ public class NavCommonKafkaConfig {
             KvpAvsluttetConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
             Properties kvpAvsluttetConsumerProperties,
-            UnleashClient unleashClient
+            Unleash unleash
     ) {
         var clientBuilder = KafkaConsumerClientBuilder.builder()
                 .withProperties(kvpAvsluttetConsumerProperties)
-                .withToggle(() -> unleashClient.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED))
+                .withToggle(() -> unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED))
                 .withTopicConfig(
                         new TopicConfig<String, KvpAvsluttetKafkaDTO>()
                                 .withConsumerConfig(topicConfig)

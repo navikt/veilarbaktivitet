@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
+import io.getunleash.Unleash
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
-import no.nav.common.featuretoggle.UnleashClient
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Component
 open class TiltakMigreringCronService(
-    val unleashClient: UnleashClient,
+    val unleash: Unleash,
     val tiltakMigreringDAO: TiltakMigreringDAO,
     val aktivitetDAO: AktivitetDAO,
 ) {
@@ -22,7 +22,7 @@ open class TiltakMigreringCronService(
     )
     @SchedulerLock(name = "historiske_tiltak_migrering_cron", lockAtMostFor = "PT20M")
     open fun settTiltakOpprettetSomHistoriskTilHistorisk() {
-        if (unleashClient.isEnabled(TILTAK_HISTORISK_MIGRERING_CRON_TOGGLE)) return
+        if (unleash.isEnabled(TILTAK_HISTORISK_MIGRERING_CRON_TOGGLE)) return
         tiltakMigreringDAO.hentTiltakOpprettetSomHistoriskSomIkkeErHistorisk(500)
             .map { aktivitet -> aktivitet
                     .withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK)

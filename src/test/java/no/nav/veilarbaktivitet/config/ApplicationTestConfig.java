@@ -5,7 +5,6 @@ import io.getunleash.Unleash;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.axsys.AxsysClient;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
@@ -65,11 +64,6 @@ public class ApplicationTestConfig {
     @Bean
     public DataSource dataSource() {
         return LocalH2Database.getPresistentDb().getDataSource();
-    }
-
-    @Bean
-    UnleashClient unleashClient() {
-        return mock(UnleashClient.class);
     }
 
     @Bean
