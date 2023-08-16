@@ -91,7 +91,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     var aktivitetskortIdMappingConsumer: org.apache.kafka.clients.consumer.Consumer<String, String>? = null
     @BeforeEach
     fun cleanupBetweenTests() {
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic)
         aktivitetskortIdMappingConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortIdMappingTopic)
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
@@ -734,18 +734,18 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun tiltak_endepunkt_skal_legge_pa_aktivitet_id_og_versjon_pa_migrerte_arena_aktiviteteter() {
         val arenaaktivitetId = ArenaId("ARENATA123")
         val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(preMigreringArenaAktiviteter).hasSize(1)
         assertThat(preMigreringArenaAktiviteter[0].id).isEqualTo(arenaaktivitetId.id()) // Skal være arenaid
         val context = meldingContext(arenaaktivitetId)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, context))
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream().findFirst().get()
         val tekniskId = aktivitet.id
         val versjon = aktivitet.versjon.toLong()
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val postMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(postMigreringArenaAktiviteter).hasSize(1)
@@ -760,7 +760,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
 
         // Default toggle for testene er på
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(preMigreringArenaAktiviteter).hasSize(1)
@@ -773,7 +773,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(toggleAvArenaAktiviteter).hasSize(1)
         val toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
         assertThat(toggleAvVeilarbAktiviteter).isEmpty()
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         val togglePaArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
         assertThat(togglePaArenaAktiviteter).isEmpty()
         val togglePaVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
@@ -840,10 +840,10 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             midlertidigLonnstilskudd, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
         val alleEksternAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
         assertThat(alleEksternAktiviteter.aktiviteter).hasSize(2)
-        Mockito.`when`(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
+        Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val eksterneAktiviteterUnntattMigrerteArenaAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker)
         assertThat(eksterneAktiviteterUnntattMigrerteArenaAktiviteter.aktiviteter).hasSize(1)
