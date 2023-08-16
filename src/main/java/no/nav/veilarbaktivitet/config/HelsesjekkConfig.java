@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.config;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.health.selftest.SelfTestCheck;
 import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestMeterBinder;
@@ -23,7 +22,6 @@ public class HelsesjekkConfig {
             VeilarbarenaHelsesjekk veilarbarenaHelsesjekk,
             AktorOppslagClient aktorOppslagClient,
             DatabaseHelsesjekk databaseHelsesjekk,
-            UnleashClient unleashClient,
             KafkaHelsesjekk kafkaHelsesjekk,
             MeterRegistry meterRegistry
     ) {  //TODO legg til poao tilgang.
@@ -31,7 +29,6 @@ public class HelsesjekkConfig {
                 new SelfTestCheck("Veilarbarena", false, veilarbarenaHelsesjekk),
                 new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
-                new SelfTestCheck("Unleash", false, unleashClient),
                 new SelfTestCheck("Kafka", false, kafkaHelsesjekk)
         );
         var checks = new SelfTestChecks(selfTestChecks);

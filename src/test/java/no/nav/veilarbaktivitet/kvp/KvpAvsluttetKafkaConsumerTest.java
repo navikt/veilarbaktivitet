@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.kvp;
 
 
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -40,9 +39,6 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @Autowired
     KafkaJsonTemplate<KvpAvsluttetKafkaDTO> navCommonKafkaJsonTemplate;
 
-    @Autowired
-    UnleashClient unleashClient;
-
     @Value("${topic.inn.kvpAvsluttet}")
     String kvpAvsluttetTopic;
 
@@ -51,7 +47,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
         var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).build();
         mockBruker = MockNavService.createBruker(medKvp);
         mockVeileder = MockNavService.createVeileder(mockBruker);
-        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
+        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 
     @Test

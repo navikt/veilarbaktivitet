@@ -1,17 +1,16 @@
 
 package no.nav.veilarbaktivitet.config;
 
+import io.getunleash.Unleash;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.common.client.axsys.AxsysClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.utils.Credentials;
-import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import okhttp3.EventListener;
 import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -68,8 +67,13 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    UnleashClient unleashClient() {
-        return mock(UnleashClient.class);
+    Unleash unleash() {
+        return mock(Unleash.class);
+    }
+
+    @Bean
+    public AxsysClient axsysClient() {
+        return mock(AxsysClient.class);
     }
 
     @Bean

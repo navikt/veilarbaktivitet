@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.arena;
 
+import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -65,9 +65,9 @@ class ArenaControllerTest {
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db, db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final UnleashClient unleashClient = mock(UnleashClient.class);
+    private final Unleash unleash = mock(Unleash.class);
 
-    private final MigreringService migreringService = new MigreringService(unleashClient, idMappingDAO);
+    private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO);
 
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);

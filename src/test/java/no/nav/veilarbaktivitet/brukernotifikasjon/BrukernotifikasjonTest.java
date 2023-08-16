@@ -112,7 +112,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
         beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
-        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
+        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
     }
 
     @AfterEach
@@ -360,7 +360,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
-        when(unleashClient.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
+        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
         var mockBruker = MockNavService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");

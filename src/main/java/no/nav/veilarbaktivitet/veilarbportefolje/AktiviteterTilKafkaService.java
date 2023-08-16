@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.veilarbportefolje;
 
+import io.getunleash.Unleash;
 import io.micrometer.core.annotation.Timed;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import no.nav.common.featuretoggle.UnleashClient;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.slf4j.MDC;
@@ -23,7 +23,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public class AktiviteterTilKafkaService {
     private final KafkaAktivitetDAO dao;
     private final AktivitetKafkaProducerService producerService;
-    private final UnleashClient unleashClient;
+    private final Unleash unleash;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
 
@@ -38,7 +38,7 @@ public class AktiviteterTilKafkaService {
     public void sendOppTil5000AktiviterTilPortefolje() {
         MDC.put("running.job", "aktiviteter_kafka");
 
-        boolean skalBehandleEksterneAktiviteter = unleashClient.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER);
+        boolean skalBehandleEksterneAktiviteter = unleash.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER);
         List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtPaAiven(skalBehandleEksterneAktiviteter);
         for (KafkaAktivitetMeldingV4 melding : meldinger) {
             producerService.sendAktivitetMelding(melding);
