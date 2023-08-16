@@ -36,7 +36,7 @@ class FeatureController(
         val id = authService.getLoggedInnUser().takeIf { it is NavIdent }?.get()
 
         val unleashContext = UnleashContext(
-            id!!,
+            id,
             sessionId,
             request.remoteAddr,
             emptyMap()
