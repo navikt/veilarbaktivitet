@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
@@ -13,10 +15,13 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
+import no.nav.veilarbaktivitet.person.UserInContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,18 +35,19 @@ public class AktivitetsplanController {
 
     private final IAuthService authService;
     private final AktivitetAppService appService;
-    private final HttpServletRequest requestProvider;
     private final AktivitetDataMapperService aktivitetDataMapperService;
-
+    private final UserInContext userInContext;
     private final MigreringService migreringService;
 
     @GetMapping
+    @HarTilgangTilBruker
     public AktivitetsplanDTO hentAktivitetsplan() {
+        val userFnr = userInContext.getAktorId();
         boolean erEksternBruker = authService.erEksternBruker();
-        val userFnr = getContextUserIdent();
         val aktiviter = appService
                 .hentAktiviteterForIdent(userFnr)
                 .stream()
+                .filter(this::filtrerKontorsperret)
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .toList();
         var filtrerteAktiviter = migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter);
@@ -50,29 +56,32 @@ public class AktivitetsplanController {
     }
 
     @GetMapping("/{id}")
-    public AktivitetDTO hentAktivitet(@PathVariable("id") String aktivitetId) {
+    @HarTilgangTilBruker
+    public AktivitetDTO hentAktivitet(@PathVariable("id") long aktivitetId) {
         boolean erEksternBruker = authService.erEksternBruker();
-        return Optional.of(appService.hentAktivitet(Long.parseLong(aktivitetId)))
+
+        return Optional.of(appService.hentAktivitet(aktivitetId))
+                .filter(it -> it.getAktorId().equals(userInContext.getAktorId()))
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/{id}/versjoner")
-    public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") String aktivitetId) {
-        boolean erEksternBruker = authService.erEksternBruker();
-        return Optional.of(aktivitetId)
-                .map(Long::parseLong)
-                .map(appService::hentAktivitetVersjoner)
-                .map(aktivitetList -> aktivitetList
-                        .stream()
-                        .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
-                        .toList()
-                ).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    @HarTilgangTilBruker
+    public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") long aktivitetId) {
+        return appService.hentAktivitetVersjoner(aktivitetId)
+                .stream()
+                .filter(it -> it.getAktorId().equals(userInContext.getAktorId()))
+                .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()))
+                .toList();
     }
 
     @PostMapping("/ny")
+    @HarTilgangTilBruker
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
+        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
+
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(aktivitetData -> aktivitetData.withAutomatiskOpprettet(automatisk))
@@ -84,6 +93,8 @@ public class AktivitetsplanController {
     @PutMapping("/{id}")
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
+        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
+
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterAktivitet)
@@ -94,6 +105,8 @@ public class AktivitetsplanController {
     @PutMapping("/{id}/etikett")
     public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
+        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
+
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterEtikett)
@@ -105,6 +118,8 @@ public class AktivitetsplanController {
     @PutMapping("/{id}/status")
     public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
+        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
+
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterStatus)
@@ -115,6 +130,12 @@ public class AktivitetsplanController {
     @PutMapping("/{aktivitetId}/referat")
     public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
+        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
+
+        if (erEksternBruker) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+        }
+
         return Optional.of(aktivitetDTO)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterReferat)
@@ -127,18 +148,6 @@ public class AktivitetsplanController {
         return oppdaterReferat(aktivitetDTO);
     }
 
-    // TODO: 30/01/2023  Bruk UserInContext istedet
-
-    private Person getContextUserIdent() {
-        if (authService.erEksternBruker()) {
-            return Person.fnr(authService.getLoggedInnUser().get());
-        }
-
-        Optional<Person> fnr = Optional.ofNullable(requestProvider.getParameter("fnr")).map(Person::fnr);
-        Optional<Person> aktorId = Optional.ofNullable(requestProvider.getParameter("aktorId")).map(Person::aktorId);
-        return fnr.orElseGet(() -> aktorId.orElseThrow(RuntimeException::new));
-    }
-
     @GetMapping("/etiketter")
     public List<EtikettTypeDTO> hentEtiketter() {
         return asList(EtikettTypeDTO.values());
@@ -147,5 +156,9 @@ public class AktivitetsplanController {
     @GetMapping("/kanaler")
     public List<KanalDTO> hentKanaler() {
         return asList(KanalDTO.values());
+    }
+
+    private boolean filtrerKontorsperret(AktivitetData aktivitet) {
+        return aktivitet.getKontorsperreEnhetId() == null || authService.harTilgangTilEnhet(EnhetId.of(aktivitet.getKontorsperreEnhetId()));
     }
 }

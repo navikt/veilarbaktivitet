@@ -30,6 +30,9 @@ public class StillingFraNavController {
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
 
+        authService.sjekkTilgangTilPerson(aktivitet.getForhaandsorientering().getAktorId());
+
+
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));
         }
@@ -60,6 +63,8 @@ public class StillingFraNavController {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
+
+        authService.sjekkTilgangTilPerson(aktivitet.getForhaandsorientering().getAktorId());
 
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
 
