@@ -30,7 +30,7 @@ public class StillingFraNavController {
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
 
-        authService.sjekkTilgangTilPerson(aktivitet.getForhaandsorientering().getAktorId());
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
 
 
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {

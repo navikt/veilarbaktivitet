@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.common.types.identer.EnhetId;
+import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
+import no.nav.poao.dab.spring_a2_annotations.auth.OnlyInternBruker;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
@@ -40,7 +42,7 @@ public class AktivitetsplanController {
     private final MigreringService migreringService;
 
     @GetMapping
-    @HarTilgangTilBruker
+    @AuthorizeFnr
     public AktivitetsplanDTO hentAktivitetsplan() {
         val userFnr = userInContext.getAktorId();
         boolean erEksternBruker = authService.erEksternBruker();
@@ -56,7 +58,7 @@ public class AktivitetsplanController {
     }
 
     @GetMapping("/{id}")
-    @HarTilgangTilBruker
+    @AuthorizeFnr
     public AktivitetDTO hentAktivitet(@PathVariable("id") long aktivitetId) {
         boolean erEksternBruker = authService.erEksternBruker();
 
@@ -67,7 +69,7 @@ public class AktivitetsplanController {
     }
 
     @GetMapping("/{id}/versjoner")
-    @HarTilgangTilBruker
+    @AuthorizeFnr
     public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") long aktivitetId) {
         return appService.hentAktivitetVersjoner(aktivitetId)
                 .stream()
@@ -77,7 +79,7 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    @HarTilgangTilBruker
+    @AuthorizeFnr
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
         authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
@@ -91,9 +93,9 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}")
+    @AuthorizeFnr
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
-        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
 
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
@@ -103,9 +105,9 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}/etikett")
+    @AuthorizeFnr
     public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
-        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
 
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
@@ -116,9 +118,9 @@ public class AktivitetsplanController {
 
 
     @PutMapping("/{id}/status")
+    @AuthorizeFnr
     public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
-        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
 
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
@@ -128,18 +130,14 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{aktivitetId}/referat")
+    @AuthorizeFnr
+    @OnlyInternBruker
     public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
-        boolean erEksternBruker = authService.erEksternBruker();
-        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
-
-        if (erEksternBruker) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
 
         return Optional.of(aktivitetDTO)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)
                 .map(appService::oppdaterReferat)
-                .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
+                .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, false))
                 .orElseThrow(RuntimeException::new);
     }
 

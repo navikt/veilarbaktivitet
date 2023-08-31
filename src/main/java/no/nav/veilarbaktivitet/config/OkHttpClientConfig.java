@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import no.nav.common.rest.client.RestClient;
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.poao.dab.spring_a2_annotations.EnableAuthorization;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Profile;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
+@EnableAuthorization
 @Configuration
 public class OkHttpClientConfig {
     @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
