@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://navikt.github.io/veilarbaktivitet/schemas/Aktivitetskort.V1.aktivitetskort.schema.yml"
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml"
 required:
   - messageId
   - source
@@ -21,28 +21,14 @@ properties:
     type: string
     format: date-time
   aktivitetskortType:
-    $ref: "#/definitions/aktivitetskortType"
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetskortType
   actionType:
-    $ref: "#/definitions/actionType"
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/actionType
   aktivitetskort:
     $ref: "#/definitions/aktivitetskort"
 
 
 definitions:
-  actionType:
-    type: string
-    enum:
-      - UPSERT_AKTIVITETSKORT_V1
-    description: Actiontype forteller hvordan meldingen skal behandles.
-      Forløpig har vi kun støtte for å opprette og oppdatere aktivitetskort.
-  aktivitetskortType:
-    type: string
-    $id: aktivitetskortType
-    enum:
-      - MIDLERTIDIG_LONNSTILSKUDD
-      - VARIG_LONNSTILSKUDD
-      - ARENA_TILTAK
-    description: Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
   oppgave:
     additionalProperties: false
     type:

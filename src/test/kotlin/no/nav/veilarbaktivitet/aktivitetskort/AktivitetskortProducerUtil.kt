@@ -82,11 +82,11 @@ object AktivitetskortProducerUtil {
         return kasserMessageNode(kasseringsBestilling)
     }
 
-//    @JvmStatic
-//    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
-//        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
-//        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(actionType = null!!))
-//    }
+    @JvmStatic
+    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
+        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(aktivitetskortType = null!!))
+    }
 
     @JvmStatic
     @SneakyThrows

@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -52,27 +53,28 @@ class AktivitetsbestillingCreatorTest {
         return jsonWriter.writeValueAsString(obj);
     }
 
-//    @Test
-//    void schema_should_be_in_sync_with_classes() {
-//        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-//        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.aktivitetskort.schema.yml");
-//        String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
-//
-//        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
-//
-//        var valid = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
-//        var validValidationMessages = jsonSchema.validate(valid);
-//
-//        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
-//
-//        var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
-//        var invalidValidationMessages= jsonSchema.validate(invalid);
-//        assertEquals(2, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
-//    }
+    @Test
+    @Disabled("Kjøre etter at schema er publisert til GH pages?")
+    void schema_should_be_in_sync_with_classes() {
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml");
+        String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
+
+        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
+
+        var valid = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
+        var validValidationMessages = jsonSchema.validate(valid);
+
+        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
+
+        var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
+        var invalidValidationMessages= jsonSchema.validate(invalid);
+        assertEquals(2, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
+    }
     @Test
     void schema_should_be_in_sync_with_classes_for_kassering() {
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        InputStream kasserYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.kasser.schema.yml");
+        InputStream kasserYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/akaas/Aktivitetskort.V1.kasser.schema.yml");
         String kasserSchemaJsonString = convertYamlToJson(kasserYml);
 
         JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(kasserSchemaJsonString.getBytes()));
