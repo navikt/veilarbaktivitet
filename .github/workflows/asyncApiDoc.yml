@@ -27,7 +27,7 @@ jobs:
         run: npm install -g @asyncapi/generator
 
       - name: generate documentaion (denne tar litt tid)
-        working-directory: src/main/resources/schemas/
+        working-directory: src/main/resources/schemas/akaas/
         run: ag AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
 
       - name: Deploy 🚀

@@ -82,16 +82,16 @@ object AktivitetskortProducerUtil {
         return kasserMessageNode(kasseringsBestilling)
     }
 
-//    @JvmStatic
-//    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
-//        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
-//        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(actionType = null!!))
-//    }
+    @JvmStatic
+    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
+        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(aktivitetskortType = null!!))
+    }
 
     @JvmStatic
     @SneakyThrows
     fun validExampleFromFile(filename: String?): String {
-        return readFileToString("__files/aktivitetskort/%s".formatted(filename))
+        return readFileToString("__files/aktivitetskort/%s".format(filename))
     }
 
     @JvmStatic
@@ -124,7 +124,7 @@ object AktivitetskortProducerUtil {
     @JvmStatic
     @SneakyThrows
     fun kafkaAktivitetWrapper(fnr: Person.Fnr): KafkaAktivitetskortWrapperDTO {
-        val aktivitetskort: Aktivitetskort = Aktivitetskort(
+        val aktivitetskort = Aktivitetskort(
             id = UUID.randomUUID(),
             personIdent = fnr.get(),
             startDato = LocalDate.now().minusDays(30),

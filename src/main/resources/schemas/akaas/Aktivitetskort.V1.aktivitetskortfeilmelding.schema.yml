@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://navikt.github.io/veilarbaktivitet/schemas/Aktivitetskort.V1.aktivitetskortfeilmelding.schema.yml"
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.aktivitetskortfeilmelding.schema.yml"
 required:
   - key
   - timestamp
@@ -17,9 +17,14 @@ properties:
     format: date-time
   failingMessage:
     type: string
+    description: Hele payloaden til den feilende meldingen
   errorMessage:
     type: string
-
+    description: Feilmelding
+    examples:
+      - DuplikatMeldingFeil Melding allerede handtert, ignorer
+      - DeserialiseringsFeil Meldingspayload er ikke gyldig json
+      - ManglerOppfolgingsperiodeFeil Finner ingen passende oppfølgingsperiode for aktivitetskortet.
 definitions:
   failingMessage:
     type: string
