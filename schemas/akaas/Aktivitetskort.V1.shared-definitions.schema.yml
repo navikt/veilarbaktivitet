@@ -1,0 +1,18 @@
+"$schema": https://json-schema.org/draft-07/schema
+$id: "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.shared-definitions.schema.yml"
+definitions:
+  actionType:
+    type: string
+    enum:
+      - UPSERT_AKTIVITETSKORT_V1
+      - KASSER_AKTIVITET
+    description: Actiontype forteller hvordan meldingen skal behandles.
+      Forløpig har vi kun støtte for å opprette/oppdatere (UPSERT) og kassere aktivitetskort.
+  aktivitetskortType:
+    type: string
+    $id: aktivitetskortType
+    enum:
+      - MIDLERTIDIG_LONNSTILSKUDD
+      - VARIG_LONNSTILSKUDD
+      - ARENA_TILTAK
+    description: Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
