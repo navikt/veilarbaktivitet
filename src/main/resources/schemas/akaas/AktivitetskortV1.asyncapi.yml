@@ -8,9 +8,10 @@ info:
     Tjenesten har støtte for en rekke dynamiske innholdskomponenter i aktivitetskortet, slik at produsentene på tjenesten har stor grad av kontroll på hvordan aktivitetskortet skal se ut.  
     Dynamiske komponenter inkluderer 'oppgave', 'handlinger', 'detaljer' og 'etiketter'. Disse er beskrevet i skjemaet.  
     [Lenke til Mural](https://app.mural.co/t/navdesign3580/m/navdesign3580/1663573695869/1a7a897ac6b2af3fccc11aa65371a83d840e2020?wid=0-1665572511683&outline=open)
-  
-
   version: '0.0.1'
+  contact:
+    name: Team Dab
+    url: https://nav-it.slack.com/archives/C04HS60F283
 
 defaultContentType: application/json
 
