@@ -13,13 +13,14 @@ properties:
     format: uuid
     description: Samme aktivitetId som aktivitetskort-bestillingen, som også er kafka key på originalmeldingen.  Funksjonell id for aktivitetskortet.
   meldingId:
-    type: number
+    type: string
     format: uuid
     description: Samme meldingsid som aktivitetskort-bestillingen
   behandlingstype:
     $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/actionType
   suksess:
     type: boolean
+    description: Sier om behandling av meldingen var vellykket. Dersom 'false' vil behandlingsStatus og feilmelding gi ytterligere informasjon om feilen.
   behandlingsStatus:
     type: string
     enum:
