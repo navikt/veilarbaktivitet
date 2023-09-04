@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/asyncApiDoc.yml'
       - 'src/main/resources/schemas/**'
+permissions:
+  pages: write
 
 concurrency:
   group: AktivitetskortV1.asyncapi.doc
