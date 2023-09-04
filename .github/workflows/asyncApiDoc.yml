@@ -9,7 +9,7 @@ on:
       - '.github/workflows/asyncApiDoc.yml'
       - 'src/main/resources/schemas/**'
 permissions:
-  pages: write
+  contents: write
 
 concurrency:
   group: AktivitetskortV1.asyncapi.doc
