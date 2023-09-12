@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
-import static no.nav.veilarbaktivitet.veilarbportefolje.AktiviteterTilKafkaService.OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
@@ -73,8 +72,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
 
-        Mockito.when(unleash.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(true);
-
         portefoljeConsumer = kafkaTestService.createStringStringConsumer(portefoljeTopic);
         aktiviteterKafkaConsumer = kafkaTestService.createStringJsonConsumer(aktivitetRawJson);
 
@@ -83,8 +80,6 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
-        Mockito.when(unleash.isEnabled(OVERSIKTEN_BEHANDLE_EKSTERN_AKTIVITETER)).thenReturn(false);
-
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -103,56 +98,37 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
         assertEquals(opprettetAktivitet, AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetMelding, false));
 
-
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(aktivitetRawJson, aktiviteterKafkaConsumer));
     }
 
     @Test
-    void skal_sende_tiltak_til_portefolje() {
+    void skal_ikke_sende_arena_tiltak_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         Aktivitetskort actual = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
-
         KafkaAktivitetskortWrapperDTO wrapperDTO = new KafkaAktivitetskortWrapperDTO(
-                AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+                AktivitetskortType.ARENA_TILTAK,
                 actual,
                 "source",
                 UUID.randomUUID()
                 );
-
-        aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapperDTO));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "tiltakskode")));
         cronService.sendOppTil5000AktiviterTilPortefolje();
-
-        ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
-        KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
-
-        Assertions.assertThat(melding.getTiltakskode()).isEqualTo("MIDLONTIL");
-        Assertions.assertThat(melding.getAktivitetType()).isEqualTo(AktivitetTypeDTO.TILTAK);
-
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
     }
 
     @Test
     void skal_sende_nye_lonnstilskudd_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-
-        UUID funksjonellId = UUID.randomUUID();
-
-        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
-
+        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
-
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
-
         cronService.sendOppTil5000AktiviterTilPortefolje();
-
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         KafkaAktivitetMeldingV4 melding = JsonUtils.fromJson(portefojeRecord.value(), KafkaAktivitetMeldingV4.class);
 
         Assertions.assertThat(melding.getTiltakskode()).isEqualTo(KafkaAktivitetDAO.TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD);
         Assertions.assertThat(melding.getAktivitetType()).isEqualTo(AktivitetTypeDTO.TILTAK);
-
-
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
     }
 
@@ -182,13 +158,11 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes1);
         aktivitetTestService.opprettAktivitet(mockBruker, MockNavService.createVeileder(mockBruker), skalSendes2);
 
-
         Mockito
                 .doCallRealMethod()
                 .doThrow(IllegalStateException.class)
                 .when(portefoljeProducer)
                 .send((ProducerRecord<String, String>) Mockito.any(ProducerRecord.class));
-
 
         assertThrows(IllegalStateException.class, () -> cronService.sendOppTil5000AktiviterTilPortefolje());
 
