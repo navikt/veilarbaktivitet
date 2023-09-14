@@ -71,7 +71,7 @@ object AktivitetskortProducerUtil {
     @JvmStatic
     fun validExampleKasseringsRecord(): JsonNode {
         val kasseringsBestilling = KasseringsBestilling(
-            "team-tiltak",
+            MessageSource.TEAM_TILTAK.name,
             UUID.randomUUID(),
 //            ActionType.KASSER_AKTIVITET,
             NavIdent.of("z123456"),

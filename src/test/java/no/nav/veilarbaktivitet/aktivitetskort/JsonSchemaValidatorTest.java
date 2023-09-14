@@ -61,7 +61,8 @@ class JsonSchemaValidatorTest {
         var valid = AktivitetskortProducerUtil.validExampleKasseringsRecord();
         var validValidationMessages = jsonSchema.validate(valid);
 
-        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
+        assertThat(validValidationMessages).isEmpty();
+//        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
     }
 
     @SneakyThrows
