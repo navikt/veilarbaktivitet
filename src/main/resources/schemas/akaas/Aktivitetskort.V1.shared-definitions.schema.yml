@@ -32,6 +32,9 @@ definitions:
     type: string
     maxLength: 200
     description: Applikasjonen eller teamet som er avsender av meldingen.
+    enum:
+      - ARENA_TILTAK_AKTIVITET_ACL
+      - TEAM_TILTAK
   aktivitetsId:
     type: string
     format: uuid
