@@ -5,6 +5,8 @@ required:
   - timestamp
   - failingMessage
   - errorMessage
+  - errorType
+  - source
 type: object
 additionalProperties: false
 properties:
