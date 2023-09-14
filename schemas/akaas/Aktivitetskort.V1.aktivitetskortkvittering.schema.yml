@@ -9,29 +9,19 @@ required:
 type: object
 properties:
   aktivitetId:
-    type: string
-    format: uuid
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
     description: Samme aktivitetId som aktivitetskort-bestillingen, som også er kafka key på originalmeldingen.  Funksjonell id for aktivitetskortet.
   meldingId:
-    type: number
+    type: string
     format: uuid
     description: Samme meldingsid som aktivitetskort-bestillingen
   behandlingstype:
     $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/actionType
   suksess:
     type: boolean
+    description: Sier om behandling av meldingen var vellykket. Dersom 'false' vil behandlingsStatus og feilmelding gi ytterligere informasjon om feilen.
   behandlingsStatus:
-    type: string
-    enum:
-      - OK
-      - AKTIVITET_IKKE_FUNNET
-      - DESERIALISERINGSFEIL
-      - DUPLIKATMELDINGFEIL
-      - KAFKA_KEY_ULIK_AKTIVITETSID
-      - MANGLER_OPPFOLGINGSPERIODE
-      - MESSAGEID_LIK_AKTIVITETSID
-      - UGYLDIG_IDENT
-      - ULOVLIG_ENDRING
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/errorType
     description: Status for behandlingen.
   feilmelding:
     type: string

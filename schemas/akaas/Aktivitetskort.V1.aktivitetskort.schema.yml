@@ -14,9 +14,7 @@ properties:
     format: uuid
     description: Unik id for denne meldingen brukes til deduplisering
   source:
-    type: string
-    maxLength: 200
-    description: Applikasjonen eller teamet som er avsender av meldingen.
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
   sendt:
     type: string
     format: date-time
@@ -81,12 +79,7 @@ definitions:
       - avtaltMedNav
     properties:
       id:
-        type: string
-        format: uuid
-        description: Funksjonell ID for aktiviteten er en globalt unik UUID for aktiviteten.
-          Ved vellykket opprettelse av aktiviteten, vil aktiviteten kunne gjenfinnnes
-          ved hjelp av denne iden. Senere modifisering av samme aktivitet vil også
-          bruke denne iden for å identifisere korrekt aktivitet.
+        $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
       personIdent:
         type: string
         examples:
