@@ -9,9 +9,10 @@ type: object
 additionalProperties: false
 properties:
   key:
-    type: string
-    format: uuid
     description: Samme key som aktivitetskort-bestillingen. I praksis funksjonell id for aktivitetskortet.
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
+  source:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
   timestamp:
     type: string
     format: date-time
@@ -25,6 +26,8 @@ properties:
       - DuplikatMeldingFeil Melding allerede handtert, ignorer
       - DeserialiseringsFeil Meldingspayload er ikke gyldig json
       - ManglerOppfolgingsperiodeFeil Finner ingen passende oppfølgingsperiode for aktivitetskortet.
+  errorType:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/errorType
 definitions:
   failingMessage:
     type: string
