@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.feil;
 
-public class AktivitetsKortFunksjonellException extends Exception {
+sealed public class AktivitetsKortFunksjonellException extends Exception permits AktivitetIkkeFunnetFeil, DeserialiseringsFeil, DuplikatMeldingFeil, KeyErIkkeFunksjonellIdFeil, ManglerOppfolgingsperiodeFeil, MessageIdIkkeUnikFeil, UgyldigIdentFeil, UlovligEndringFeil {
     public AktivitetsKortFunksjonellException(ErrorMessage errorMessage, Throwable cause) {
         super(errorMessage.value(), cause);
     }
