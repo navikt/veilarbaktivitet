@@ -19,6 +19,8 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,8 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavProducerClient producerClient;
     private final StillingFraNavMetrikker metrikker;
 
+    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
+
     private static final String BRUKERNOTIFIKASJON_TEKST = "Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.";
 
     @Transactional
@@ -50,12 +54,12 @@ public class OpprettForesporselOmDelingAvCv {
         ForesporselOmDelingAvCv melding = consumerRecord.value();
 
         if (delingAvCvService.aktivitetAlleredeOpprettetForBestillingsId(melding.getBestillingsId())) {
-            log.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
+            secureLog.info("ForesporselOmDelingAvCv med bestillingsId={} har allerede en aktivitet", melding.getBestillingsId());
             return;
         }
-        log.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
+        secureLog.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
-        log.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId={}", aktorId.get());
+        secureLog.info("OpprettForesporselOmDelingAvCv.createAktivitet AktorId={}", aktorId.get());
 
         if (aktorId.get() == null) {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
@@ -67,7 +71,7 @@ public class OpprettForesporselOmDelingAvCv {
             underOppfolging = true;
         } catch (IngenGjeldendeIdentException exception) {
             producerClient.sendUgyldigInput(melding.getBestillingsId(), aktorId.get(), "Finner ingen gyldig ident for aktorId");
-            log.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
+            secureLog.warn("*** Kan ikke behandle melding={}. Årsak: {} ***", melding, exception.getMessage());
             return;
         } catch (IngenGjeldendePeriodeException exception) {
             underOppfolging = false;

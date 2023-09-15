@@ -138,7 +138,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     void ugyldig_aktorid() {
-        MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("no.nav.veilarbaktivitet");
+        MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("SecureLog");
 
         //TODO se på om vi burde unngå bruker her
         MockBruker mockBruker = MockNavService.createHappyBruker();
