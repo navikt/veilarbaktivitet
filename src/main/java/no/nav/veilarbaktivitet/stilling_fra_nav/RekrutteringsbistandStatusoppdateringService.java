@@ -118,7 +118,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.CV_DELT)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.CV_DELT) {
-            log.warn("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
+            log.info("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede delt", RekrutteringsbistandStatusoppdateringEventType.CV_DELT);
             return false;
         }
@@ -130,7 +130,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.IKKE_FATT_JOBBEN) {
-            log.warn("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
+            log.info("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede ikke fått jobben", RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN);
             return false;
         }
@@ -142,7 +142,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.FATT_JOBBEN) {
-            log.warn("Stilling fra NAV med bestillingsid: {} har allerede status FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
+            log.info("Stilling fra NAV med bestillingsid: {} har allerede status FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Allerede fått jobben", RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN);
             return false;
         }
