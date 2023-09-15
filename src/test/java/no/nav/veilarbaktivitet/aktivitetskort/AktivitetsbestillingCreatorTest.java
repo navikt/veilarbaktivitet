@@ -1,8 +1,13 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.SneakyThrows;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -13,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import java.net.URL;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -103,4 +109,42 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskortBestilling).isInstanceOf(KasseringsBestilling.class);
     }
 
+
+    @Test
+    @SneakyThrows
+    void should_handle_valid_aktivitetskort() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskort.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        EksternAktivitetskortBestilling aktivitetskortBestilling = (EksternAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.TEAM_TILTAK.name());
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
+        var oppgave = aktivitetskort.getOppgave();
+        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        var handlinger = aktivitetskort.getHandlinger();
+        assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_handle_unknown_source_aktivitetskort() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortWithUnknownSource.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        EksternAktivitetskortBestilling aktivitetskortBestilling = (EksternAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo("TEAM_UNKNOWN");
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
+        var oppgave = aktivitetskort.getOppgave();
+        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        var handlinger = aktivitetskort.getHandlinger();
+        assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+    }
 }

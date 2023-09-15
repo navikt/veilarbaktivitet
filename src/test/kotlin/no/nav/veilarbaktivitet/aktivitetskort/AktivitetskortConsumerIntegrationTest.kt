@@ -378,6 +378,21 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
+    fun skal_handtere_ukjent_source() {
+        val funksjonellId = UUID.randomUUID()
+        val tiltaksaktivitet = AktivitetskortUtil.aktivitetskortMelding(
+            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD).copy(source = "UKJENT_SOURCE")
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            listOf(
+                tiltaksaktivitet))
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertEquals(
+            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+           aktivitet.eksternAktivitet.type
+        )
+    }
+
+    @Test
     fun oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
@@ -429,6 +444,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val endretDatoInstant = endretDato.toInstant()
         assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
     }
+
 
     @Test
     fun skal_skippe_gamle_meldinger_etter_ny_melding() {
