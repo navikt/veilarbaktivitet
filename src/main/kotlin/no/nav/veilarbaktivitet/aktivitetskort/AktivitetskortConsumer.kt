@@ -138,7 +138,7 @@ open class AktivitetskortConsumer (
 
     companion object {
         const val UNIQUE_MESSAGE_IDENTIFIER = "messageId"
-        const val SOURCE_FIELD_NAME = "messageId"
+        const val SOURCE_FIELD_NAME = "source"
     }
 }
 

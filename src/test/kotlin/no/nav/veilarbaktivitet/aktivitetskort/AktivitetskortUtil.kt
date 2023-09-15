@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.person.Innsender
 import java.time.LocalDate
@@ -66,6 +67,6 @@ object AktivitetskortUtil {
 
     @JvmStatic
     fun aktivitetskortMelding(payload: Aktivitetskort?, type: AktivitetskortType?): KafkaAktivitetskortWrapperDTO {
-        return aktivitetskortMelding(payload, UUID.randomUUID(), "testsource", type)
+        return aktivitetskortMelding(payload, UUID.randomUUID(), MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name, type)
     }
 }

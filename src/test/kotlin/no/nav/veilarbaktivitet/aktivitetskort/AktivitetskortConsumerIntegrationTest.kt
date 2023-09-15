@@ -132,6 +132,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding::class.java)
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
+        assertThat(payload.errorType).isEqualTo(errorType)
+        assertThat(payload.source).isEqualTo(source)
     }
 
     private fun assertIdMappingPublished(funksjonellId: UUID, arenaId: ArenaId) {
@@ -150,13 +152,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         //trenges for og teste med count hvis ikke må man også matche på tags for å få testet counten
         //burde man endre på metrikkene her? kan man vite en fulstendig liste av aktiviteskort og skilde?
         meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).meters()
-            .forEach(java.util.function.Consumer { it: Meter? -> meterRegistry!!.remove(it) })
+            .forEach(java.util.function.Consumer { it: Meter -> meterRegistry!!.remove(it) })
         val funksjonellId = UUID.randomUUID()
         val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val arenata123 = ArenaId("ARENATA123")
         val kontekst = meldingContext(arenata123, "MIDL")
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(actual, kontekst))
-        val count = meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter().count()
+        val count = meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter()?.count()
         assertThat(count).isEqualTo(1.0)
         val aktivitet = hentAktivitet(funksjonellId)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
@@ -221,7 +223,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val serie = AktivitetskortSerie(brukerUtenOppfolging)
-        val actual = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
+        val actual = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now()).copy(source = MessageSource.TEAM_TILTAK.name)
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(actual))
         assertFeilmeldingPublished(
             serie.funksjonellId,
@@ -238,6 +240,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val aktivitetFoer = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
         assertThat(aktivitetFoer.isHistorisk).isFalse()
+        assertThat(aktivitetFoer.eksternAktivitet.detaljer).isNotEmpty
         val aktivitetFoerOpprettetSomHistorisk = jdbcTemplate.queryForObject(
             """
                 SELECT opprettet_som_historisk
@@ -246,12 +249,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 ORDER BY VERSJON desc
                 FETCH NEXT 1 ROW ONLY 
                 
-                """.trimIndent(), Boolean::class.javaPrimitiveType, aktivitetFoer.id
+                """.trimIndent(), Boolean::class.javaPrimitiveType!!, aktivitetFoer.id
         )
         assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
         tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
         val aktivitetEtter = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetEtter.isHistorisk).isTrue()
+        assertThat(aktivitetEtter.eksternAktivitet.detaljer).isNotEmpty
     }
 
 
@@ -721,7 +725,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, defaultcontext))
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
-        assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv!!.ident)
+        assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv.ident)
         // Assert endreDato is now because we forhaandsorientering was created during test-run
         assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
             .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
@@ -898,9 +902,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 FROM KASSERT_AKTIVITET 
                 WHERE AKTIVITET_ID = :aktivitetId
                 
-                """.trimIndent(), params, Int::class.javaPrimitiveType
+                """.trimIndent(), params, Int::class.javaPrimitiveType!!
         )
-        assertThat(count).isEqualTo(1)
+        assertThat(count!!).isEqualTo(1)
     }
 
     @Test
