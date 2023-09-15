@@ -1,5 +1,5 @@
 "$schema": https://json-schema.org/draft-07/schema
-"$id": "https://navikt.github.io/veilarbaktivitet/schemas/Aktivitetskort.V1.kasser.schema.yml"
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.kasser.schema.yml"
 required:
   - source
   - actionType
@@ -11,17 +11,14 @@ type: object
 additionalProperties: false
 properties:
   source:
-    type: string
-    maxLength: 200
-    description: Applikasjonen eller teamet som er avsender av meldingen.
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
   sendt:
     type: string
     format: date-time
   actionType:
     const: KASSER_AKTIVITET
   aktivitetsId:
-    type: string
-    format: uuid
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
     description: |
       Funksjonell ID for aktiviteten er en globalt unik UUID for aktiviteten.
       Ved vellykket opprettelse av aktiviteten, vil aktiviteten kunne gjenfinnnes

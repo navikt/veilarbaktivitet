@@ -18,9 +18,9 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.invalid
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaAktivitetWrapper
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.missingFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.ErrorType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
-import no.nav.veilarbaktivitet.aktivitetskort.feil.*
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService
 import no.nav.veilarbaktivitet.aktivitetskort.service.TiltakMigreringCronService
@@ -42,8 +42,9 @@ import org.apache.kafka.common.header.Header
 import org.apache.kafka.common.header.internals.RecordHeader
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
-import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -121,8 +122,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     private fun assertFeilmeldingPublished(
         funksjonellId: UUID,
-        errorClass: Class<out Exception?>,
-        feilmelding: String = ""
+        errorType: ErrorType,
+        source: MessageSource
     ) {
         val singleRecord = KafkaTestUtils.getSingleRecord(
             aktivitetskortFeilConsumer,
@@ -131,8 +132,6 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding::class.java)
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
-        assertThat(payload.errorMessage).contains(errorClass.name)
-        assertThat(payload.errorMessage).contains(feilmelding)
     }
 
     private fun assertIdMappingPublished(funksjonellId: UUID, arenaId: ArenaId) {
@@ -214,8 +213,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntArenaKort(kort)
         assertFeilmeldingPublished(
             serie.funksjonellId,
-            ManglerOppfolgingsperiodeFeil::class.java,
-            "Finner ingen passende oppfølgingsperiode for aktivitetskortet."
+            ErrorType.MANGLER_OPPFOLGINGSPERIODE,
+            MessageSource.ARENA_TILTAK_AKTIVITET_ACL
         )
     }
 
@@ -226,8 +225,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(actual))
         assertFeilmeldingPublished(
             serie.funksjonellId,
-            ManglerOppfolgingsperiodeFeil::class.java,
-            "Finner ingen passende oppfølgingsperiode for aktivitetskortet."
+            ErrorType.MANGLER_OPPFOLGINGSPERIODE,
+            MessageSource.TEAM_TILTAK
         )
     }
 
@@ -289,20 +288,20 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(avtaltMedNav = true)
         val melding1 = AktivitetskortUtil.aktivitetskortMelding(
-            lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+            lonnstilskuddAktivitet, UUID.randomUUID(), MessageSource.TEAM_TILTAK.name, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         )
         val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
             .copy(avtaltMedNav = false)
         val melding2 = AktivitetskortUtil.aktivitetskortMelding(
-            lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+            lonnstilskuddAktivitetUpdate, UUID.randomUUID(), MessageSource.TEAM_TILTAK.name, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(melding1, melding2))
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet)
         assertFeilmeldingPublished(
             funksjonellId,
-            UlovligEndringFeil::class.java,
-            "Kan ikke oppdatere fra avtalt til ikke-avtalt"
+            ErrorType.ULOVLIG_ENDRING,
+            MessageSource.TEAM_TILTAK
         )
     }
 
@@ -311,21 +310,21 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
         val melding1 = AktivitetskortUtil.aktivitetskortMelding(
-            lonnstilskuddAktivitet, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+            lonnstilskuddAktivitet, UUID.randomUUID(), MessageSource.TEAM_TILTAK.name, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         )
         val mockBruker2 = MockNavService.createHappyBruker()
         val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
             .copy(personIdent = mockBruker2.fnr)
         val melding2 = AktivitetskortUtil.aktivitetskortMelding(
-            lonnstilskuddAktivitetUpdate, UUID.randomUUID(), "TEAM_TILTAK", AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
+            lonnstilskuddAktivitetUpdate, UUID.randomUUID(), MessageSource.TEAM_TILTAK.name, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(melding1, melding2))
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet)
         assertFeilmeldingPublished(
             funksjonellId,
-            UlovligEndringFeil::class.java,
-            "Kan ikke endre bruker på samme aktivitetskort"
+            ErrorType.ULOVLIG_ENDRING,
+            MessageSource.TEAM_TILTAK
         )
     }
 
@@ -375,6 +374,21 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertEquals(
             AktivitetTransaksjonsType.DETALJER_ENDRET,
             aktivitet.transaksjonsType
+        )
+    }
+
+    @Test
+    fun skal_handtere_ukjent_source() {
+        val funksjonellId = UUID.randomUUID()
+        val tiltaksaktivitet = AktivitetskortUtil.aktivitetskortMelding(
+            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD).copy(source = "UKJENT_SOURCE")
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            listOf(
+                tiltaksaktivitet))
+        val aktivitet = hentAktivitet(funksjonellId)
+        assertEquals(
+            AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
+           aktivitet.eksternAktivitet.type
         )
     }
 
@@ -430,6 +444,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val endretDatoInstant = endretDato.toInstant()
         assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
     }
+
 
     @Test
     fun skal_skippe_gamle_meldinger_etter_ny_melding() {
@@ -565,7 +580,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, defaultcontext),)
         assertFeilmeldingPublished(
             funksjonellId,
-            UgyldigIdentFeil::class.java
+            ErrorType.UGYLDIG_IDENT,
+            MessageSource.ARENA_TILTAK_AKTIVITET_ACL
         )
     }
 
@@ -603,7 +619,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetskortConsumer!!.consume(record)
         assertFeilmeldingPublished(
             aktivitetWrapper.getAktivitetskortId(),
-            DeserialiseringsFeil::class.java
+            ErrorType.DESERIALISERINGSFEIL,
+            MessageSource.UNKNOWN
         )
     }
 
@@ -636,11 +653,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             messageId = funksjonellId,
             aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
-//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
             aktivitetskort = actual,
-            source = "source")
+            source = MessageSource.TEAM_TILTAK.name)
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
-        assertFeilmeldingPublished(funksjonellId, MessageIdIkkeUnikFeil::class.java)
+        assertFeilmeldingPublished(
+            funksjonellId,
+            ErrorType.MESSAGEID_LIK_AKTIVITETSID,
+            MessageSource.TEAM_TILTAK)
     }
 
     @Test
@@ -888,7 +907,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun skal_kunne_publisere_feilmelding_nar_man_kasserer_aktivitet_som_ikke_finnes() {
         val funksjonellId = UUID.randomUUID()
         val kassering = KasseringsBestilling(
-            "team-tiltak",
+            MessageSource.TEAM_TILTAK.name,
             UUID.randomUUID(),
             NavIdent.of("z123456"),
             NorskIdent.of("12121212121"),
@@ -898,7 +917,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         aktivitetTestService.kasserEskterntAktivitetskort(kassering)
         assertFeilmeldingPublished(
             funksjonellId,
-            AktivitetIkkeFunnetFeil::class.java
+            ErrorType.AKTIVITET_IKKE_FUNNET,
+            MessageSource.TEAM_TILTAK
         )
     }
 

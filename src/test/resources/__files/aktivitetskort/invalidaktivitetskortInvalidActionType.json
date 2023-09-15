@@ -1,13 +1,13 @@
 {
   "messageId": "2edf9ba0-b195-49ff-a5cd-939c7f26826f",
   "source": "TEAM_TILTAK",
-  "actionType": "UPSERT_AKTIVITETSKORT_V1",
+  "actionType": "INVALID_ACTION",
   "aktivitetskortType": "MIDLERTIDIG_LONNSTILSKUDD",
   "aktivitetskort": {
     "id": "56155242-6481-43b5-9eac-4d7af695bf9d",
     "personIdent": "48507582368",
-    "tittel": "The Elder Scrolls",
-    "beskrivelse": "aktivitetsbeskrivelse",
+    "tittel": "The Elder Scrolls: Arena",
+    "beskrivelse": "arenabeskrivelse",
     "aktivitetStatus": "PLANLAGT",
     "startDato": "2022-10-19",
     "sluttDato": "2022-10-19",

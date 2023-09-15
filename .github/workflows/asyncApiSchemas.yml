@@ -13,7 +13,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: AktivitetskortV1.asyncapi.scham
+  group: AktivitetskortV1.asyncapi.schema
   cancel-in-progress: true
 
 jobs:

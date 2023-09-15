@@ -1,6 +1,6 @@
 {
   "messageId": "2edf9ba0-b195-49ff-a5cd-939c7f26826f",
-  "source": "TEAM_TILTAK",
+  "source": "TEAM_UNKNOWN",
   "actionType": "UPSERT_AKTIVITETSKORT_V1",
   "aktivitetskortType": "MIDLERTIDIG_LONNSTILSKUDD",
   "aktivitetskort": {
