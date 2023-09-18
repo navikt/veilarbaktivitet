@@ -14,8 +14,30 @@ definitions:
     enum:
       - MIDLERTIDIG_LONNSTILSKUDD
       - VARIG_LONNSTILSKUDD
+      - INDOPPFAG
+      - ARBFORB
+      - AVKLARAG
+      - VASV
+      - ARBRRHDAG
+      - DIGIOPPARB
+      - JOBBK
+      - GRUPPEAMO
+      - GRUFAGYRKE
       - ARENA_TILTAK
-    description: Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
+    description: |
+      Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
+      MIDLERTIDIG_LONNSTILSKUDD - Midlertidig lønnstilskudd
+      VARIG_LONNSTILSKUDD - Varig lønnstilskudd
+      INDOPPFAG - Oppfølging
+      ARBFORB - Arbeidsforberedende trening (AFT)
+      AVKLARAG  - Avklaring
+      VASV  - Varig tilrettelagt arbeid i skjermet virksomhet
+      ARBRRHDAG” - Arbeidsrettet rehabilitering (dag)
+      DIGIOPPARB - Digitalt oppfølgingstiltak for arbeidsledige (jobbklubb)
+      JOBBK - Jobbklubb
+      GRUPPEAMO Gruppe AMO (arbeidsmarkedsopplæring)
+      GRUFAGYRKE  - Gruppe Fag- og yrkesopplæring VGS og høyere yrkesfaglig utdanning
+      ARENA_TILTAK - Resten av arbeidsmarkedstiltakene i arena (>100)
   errorType:
     description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
     type: string
@@ -35,6 +57,7 @@ definitions:
     enum:
       - ARENA_TILTAK_AKTIVITET_ACL
       - TEAM_TILTAK
+      - TEAM_KOMET
   aktivitetsId:
     type: string
     format: uuid
