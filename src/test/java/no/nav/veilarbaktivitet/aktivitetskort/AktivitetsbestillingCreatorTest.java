@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
@@ -73,9 +74,7 @@ class AktivitetsbestillingCreatorTest {
     void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() {
         String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "invalid-key", json);
-        assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> {
-            aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
-        });
+        assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
     }
 
     @Test
