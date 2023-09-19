@@ -8,9 +8,10 @@ info:
     Tjenesten har støtte for en rekke dynamiske innholdskomponenter i aktivitetskortet, slik at produsentene på tjenesten har stor grad av kontroll på hvordan aktivitetskortet skal se ut.  
     Dynamiske komponenter inkluderer 'oppgave', 'handlinger', 'detaljer' og 'etiketter'. Disse er beskrevet i skjemaet.  
     [Lenke til Mural](https://app.mural.co/t/navdesign3580/m/navdesign3580/1663573695869/1a7a897ac6b2af3fccc11aa65371a83d840e2020?wid=0-1665572511683&outline=open)
-  
-
   version: '0.0.1'
+  contact:
+    name: Team Dab
+    url: https://nav-it.slack.com/archives/C04HS60F283
 
 defaultContentType: application/json
 
@@ -28,7 +29,28 @@ channels:
         oneOf:
           - $ref: '#/components/messages/aktivitetskort'
           - $ref: '#/components/messages/kassering'
-
+  aktivitetskort-feil-v1:
+    description: Dead-letter kø for aktivitetskort meldinger som ikke kan behandles.
+    bindings:
+      kafka:
+        key:
+          type: string
+          format: uuid
+          description: aktiviteskorts id. Også kalt funksjonell id
+    subscribe:
+      message:
+        $ref: '#/components/messages/aktivitetskortfeilmelding'
+  aktivitetskort-kvittering-v1:
+    description: Kvitteringskø for aktivitetskort meldinger.
+    bindings:
+      kafka:
+        key:
+          type: string
+          format: uuid
+          description: aktiviteskorts id. Også kalt funksjonell id
+    subscribe:
+      message:
+        $ref: '#/components/messages/aktivitetskortkvittering'
 
 components:
   messages:
@@ -50,6 +72,23 @@ components:
         - $ref: '#/components/messageTraits/commonHeaders'
       payload:
         $ref: "Aktivitetskort.V1.kasser.schema.yml"
+    aktivitetskortfeilmelding:
+      name: aktivitetskortFeilMelding
+      title: Aktivitetskort feilmelding
+      summary: Feilmelding for aktivitetskort som ikke kan behandles
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: "Aktivitetskort.V1.aktivitetskortfeilmelding.schema.yml"
+    aktivitetskortkvittering:
+      name: aktivitetskortkvittering
+      title: Aktivitetskort kvittering
+      summary: Kvitteringsmelding for aktivitetskortBestilling
+      traits:
+        - $ref: '#/components/messageTraits/commonHeaders'
+      payload:
+        $ref: "Aktivitetskort.V1.aktivitetskortkvittering.schema.yml"
+
   messageTraits:
     commonHeaders:
       headers:

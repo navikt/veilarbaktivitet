@@ -1,0 +1,45 @@
+"$schema": https://json-schema.org/draft-07/schema
+$id: "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.shared-definitions.schema.yml"
+definitions:
+  actionType:
+    type: string
+    enum:
+      - UPSERT_AKTIVITETSKORT_V1
+      - KASSER_AKTIVITET
+    description: Actiontype forteller hvordan meldingen skal behandles.
+      Forløpig har vi kun støtte for å opprette/oppdatere (UPSERT) og kassere aktivitetskort.
+  aktivitetskortType:
+    type: string
+    $id: aktivitetskortType
+    enum:
+      - MIDLERTIDIG_LONNSTILSKUDD
+      - VARIG_LONNSTILSKUDD
+      - ARENA_TILTAK
+    description: Aktivitetskort typer som er tillatt å opprette via tjenesten. Denne enumereringen vil utvides etterhvert.
+  errorType:
+    description: Alle mulige funksjonelle-feil som kan oppstå under prosessering av aktivitetskort-meldinger og kasserings-meldinger
+    type: string
+    enum:
+      - AKTIVITET_IKKE_FUNNET
+      - DESERIALISERINGSFEIL
+      - DUPLIKATMELDINGFEIL
+      - KAFKA_KEY_ULIK_AKTIVITETSID
+      - MANGLER_OPPFOLGINGSPERIODE
+      - MESSAGEID_LIK_AKTIVITETSID
+      - UGYLDIG_IDENT
+      - ULOVLIG_ENDRING
+  source:
+    type: string
+    maxLength: 200
+    description: Applikasjonen eller teamet som er avsender av meldingen.
+    enum:
+      - ARENA_TILTAK_AKTIVITET_ACL
+      - TEAM_TILTAK
+  aktivitetsId:
+    type: string
+    format: uuid
+    description: |
+      Funksjonell ID for aktiviteten er en globalt unik UUID for aktiviteten.
+      Ved vellykket opprettelse av aktiviteten, vil aktiviteten kunne gjenfinnnes
+      ved hjelp av denne iden. Senere modifisering av samme aktivitet vil også
+      bruke denne iden for å identifisere korrekt aktivitet.

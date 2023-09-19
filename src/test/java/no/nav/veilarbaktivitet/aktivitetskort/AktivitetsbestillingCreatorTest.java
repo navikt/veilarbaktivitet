@@ -1,14 +1,13 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import lombok.SneakyThrows;
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -19,19 +18,16 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.net.URL;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
 
 class AktivitetsbestillingCreatorTest {
     AktivitetsbestillingCreator aktivitetsbestillingCreator;
@@ -41,51 +37,6 @@ class AktivitetsbestillingCreatorTest {
         PersonService personService = Mockito.mock(PersonService.class);
         Mockito.when(personService.getAktorIdForPersonBruker(ArgumentMatchers.any(Person.class))).thenReturn(Optional.of(Person.aktorId("12345678901")));
         aktivitetsbestillingCreator = new AktivitetsbestillingCreator(personService);
-    }
-
-    @SneakyThrows
-    String convertYamlToJson(InputStream yaml) {
-        ObjectMapper yamlReader = new ObjectMapper(new YAMLFactory());
-        Object obj = yamlReader.readValue(yaml, Object.class);
-
-        ObjectMapper jsonWriter = new ObjectMapper();
-        return jsonWriter.writeValueAsString(obj);
-    }
-
-//    @Test
-//    void schema_should_be_in_sync_with_classes() {
-//        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-//        InputStream aktitivitetskortYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.aktivitetskort.schema.yml");
-//        String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
-//
-//        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
-//
-//        var valid = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
-//        var validValidationMessages = jsonSchema.validate(valid);
-//
-//        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
-//
-//        var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
-//        var invalidValidationMessages= jsonSchema.validate(invalid);
-//        assertEquals(2, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
-//    }
-    @Test
-    void schema_should_be_in_sync_with_classes_for_kassering() {
-        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
-        InputStream kasserYml = AktivitetsbestillingCreatorTest.class.getResourceAsStream("/schemas/Aktivitetskort.V1.kasser.schema.yml");
-        String kasserSchemaJsonString = convertYamlToJson(kasserYml);
-
-        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(kasserSchemaJsonString.getBytes()));
-
-        var valid = AktivitetskortProducerUtil.validExampleKasseringsRecord();
-        var validValidationMessages = jsonSchema.validate(valid);
-
-        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
-    }
-
-    private String errorMessage(Set<ValidationMessage> validValidationMessages) {
-        String[] strings = validValidationMessages.stream().map(it -> it.getMessage()).toArray(String[]::new);
-        return String.join("\n", strings);
     }
 
     @Test
@@ -98,7 +49,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_handle_zoned_datetime_format() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"));
@@ -108,7 +59,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_handle_serialize_action_type() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
         assertThat(aktivitetskortBestilling.getMessageId()).isEqualTo(UUID.fromString("2edf9ba0-b195-49ff-a5cd-939c7f26826f"));
@@ -120,7 +71,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "invalid-key", json);
         assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> {
             aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
@@ -130,7 +81,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_handle_zoned_datetime_format_pluss_time() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortZonedDatetime+Time.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime+Time.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         AktivitetskortBestilling aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"));
@@ -141,7 +92,7 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_handle_UNzoned_datetime_format() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validaktivitetskortUnzonedDatetime.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortUnzonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         var aktivitetskortBestilling = (AktivitetskortBestilling) aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
         ZonedDateTime expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"));
@@ -152,10 +103,48 @@ class AktivitetsbestillingCreatorTest {
     @Test
     @SneakyThrows
     void should_be_able_to_deserialize_kasserings_bestilling() {
-        String json = AktivitetskortProducerUtil.validExampleFromFile("validkassering.json");
+        String json = AktivitetskortProducerUtil.exampleFromFile("validkassering.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
         var aktivitetskortBestilling = aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
         assertThat(aktivitetskortBestilling).isInstanceOf(KasseringsBestilling.class);
     }
 
+
+    @Test
+    @SneakyThrows
+    void should_handle_valid_aktivitetskort() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskort.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        EksternAktivitetskortBestilling aktivitetskortBestilling = (EksternAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.TEAM_TILTAK.name());
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
+        var oppgave = aktivitetskort.getOppgave();
+        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        var handlinger = aktivitetskort.getHandlinger();
+        assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+    }
+
+    @Test
+    @SneakyThrows
+    void should_handle_unknown_source_aktivitetskort() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortWithUnknownSource.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        EksternAktivitetskortBestilling aktivitetskortBestilling = (EksternAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo("TEAM_UNKNOWN");
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
+        var oppgave = aktivitetskort.getOppgave();
+        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        var handlinger = aktivitetskort.getHandlinger();
+        assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+    }
 }

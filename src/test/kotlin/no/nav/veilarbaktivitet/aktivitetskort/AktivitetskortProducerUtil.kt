@@ -71,7 +71,7 @@ object AktivitetskortProducerUtil {
     @JvmStatic
     fun validExampleKasseringsRecord(): JsonNode {
         val kasseringsBestilling = KasseringsBestilling(
-            "team-tiltak",
+            MessageSource.TEAM_TILTAK.name,
             UUID.randomUUID(),
 //            ActionType.KASSER_AKTIVITET,
             NavIdent.of("z123456"),
@@ -82,16 +82,19 @@ object AktivitetskortProducerUtil {
         return kasserMessageNode(kasseringsBestilling)
     }
 
-//    @JvmStatic
-//    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
-//        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
-//        return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO.copy(actionType = null!!))
-//    }
+    @JvmStatic
+    fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
+        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
+        val objectNode = jsonNode as ObjectNode
+        objectNode.remove("aktivitetskortType")
+        return jsonNode
+    }
 
     @JvmStatic
     @SneakyThrows
-    fun validExampleFromFile(filename: String?): String {
-        return readFileToString("__files/aktivitetskort/%s".formatted(filename))
+    fun exampleFromFile(filename: String?): String {
+        return readFileToString("__files/aktivitetskort/%s".format(filename))
     }
 
     @JvmStatic
@@ -124,7 +127,7 @@ object AktivitetskortProducerUtil {
     @JvmStatic
     @SneakyThrows
     fun kafkaAktivitetWrapper(fnr: Person.Fnr): KafkaAktivitetskortWrapperDTO {
-        val aktivitetskort: Aktivitetskort = Aktivitetskort(
+        val aktivitetskort = Aktivitetskort(
             id = UUID.randomUUID(),
             personIdent = fnr.get(),
             startDato = LocalDate.now().minusDays(30),
@@ -175,7 +178,6 @@ object AktivitetskortProducerUtil {
         return KafkaAktivitetskortWrapperDTO(
             messageId = UUID.randomUUID(),
             source = AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL,
-//            actionType = ActionType.UPSERT_AKTIVITETSKORT_V1,
             aktivitetskort = aktivitetskort,
             aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
     }

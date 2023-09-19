@@ -2,7 +2,9 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import no.nav.common.json.JsonUtils
 import no.nav.common.kafka.producer.KafkaProducerClient
+import no.nav.veilarbaktivitet.aktivitetskort.dto.ErrorType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.AktivitetskortFeilMelding
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
@@ -27,15 +29,17 @@ class AktivitetsKortFeilProducer (
         aivenProducerClient.sendSync(producerRecord)
     }
 
-    fun publishAktivitetsFeil(e: AktivitetsKortFunksjonellException, consumerRecord: ConsumerRecord<String, String>) {
+    fun publishAktivitetsFeil(error: AktivitetsKortFunksjonellException, consumerRecord: ConsumerRecord<String, String>, source: MessageSource) {
         publishAktivitetsFeil(
             AktivitetskortFeilMelding(
                 consumerRecord.key(),
                 LocalDateTime.now(),
                 consumerRecord.value(),
-                String.format("%s %s", e.javaClass, e.message),
+                String.format("%s %s", error.javaClass, error.message),
+                source,
+                ErrorType.of(error)
             )
         )
-        aktivitetskortMetrikker.countAktivitetskortFunksjonellFeil(e.javaClass.name)
+        aktivitetskortMetrikker.countAktivitetskortFunksjonellFeil(error.javaClass.name, source)
     }
 }

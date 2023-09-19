@@ -21,5 +21,5 @@ jobs:
         run: npm install -g @asyncapi/cli
 
       - name: generate documentaion (denne tar litt tid)
-        working-directory: src/main/resources/schemas/
+        working-directory: src/main/resources/schemas/akaas
         run: asyncapi validate AktivitetskortV1.asyncapi.yml

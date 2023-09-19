@@ -8,6 +8,8 @@ on:
     paths:
       - '.github/workflows/asyncApiDoc.yml'
       - 'src/main/resources/schemas/**'
+permissions:
+  contents: write
 
 concurrency:
   group: AktivitetskortV1.asyncapi.doc
@@ -27,12 +29,12 @@ jobs:
         run: npm install -g @asyncapi/generator
 
       - name: generate documentaion (denne tar litt tid)
-        working-directory: src/main/resources/schemas/
+        working-directory: src/main/resources/schemas/akaas
         run: ag AktivitetskortV1.asyncapi.yml @asyncapi/html-template -o ./aktivitetskortV1-doc
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          folder: src/main/resources/schemas/aktivitetskortV1-doc
+          folder: src/main/resources/schemas/akaas/aktivitetskortV1-doc
           target-folder: aktivitetskortV1

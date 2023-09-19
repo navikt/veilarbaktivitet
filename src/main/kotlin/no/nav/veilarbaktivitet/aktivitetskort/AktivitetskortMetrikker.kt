@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult
 import org.springframework.stereotype.Component
 
@@ -19,15 +20,17 @@ class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
             .increment()
     }
 
-    fun countAktivitetskortFunksjonellFeil(reason: String) {
+    fun countAktivitetskortFunksjonellFeil(reason: String, source: MessageSource) {
         Counter.builder(AKTIVITETSKORT_FUNKSJONELL_FEIL)
             .tag("reason", reason)
+            .tag("source", source.name)
             .register(meterRegistry)
             .increment()
     }
 
-    fun countAktivitetskortTekniskFeil() {
+    fun countAktivitetskortTekniskFeil(source: MessageSource) {
         Counter.builder(AKTIVITETSKORT_TEKNISK_FEIL)
+            .tag("source", source.name)
             .register(meterRegistry)
             .increment()
     }

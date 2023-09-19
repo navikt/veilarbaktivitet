@@ -19,10 +19,11 @@ class TiltakMigreringDAO (
     fun hentTiltakOpprettetSomHistoriskSomIkkeErHistorisk(maxAntall: Int): List<AktivitetData> {
         val params = MapSqlParameterSource()
             .addValue("maxAntall", maxAntall)
+        // EKSTERNAKTIVITET.DETALJER noedvendig pga AktivitetDataRowMapper
         return jdbcTemplate.query(
             """
                 SELECT e.DETALJER AS "EKSTERNAKTIVITET.DETALJER",
-                *
+                A.*, E.*
                 FROM EKSTERNAKTIVITET e JOIN AKTIVITET a ON e.AKTIVITET_ID = a.AKTIVITET_ID AND e.VERSJON = a.VERSJON
                 WHERE e.OPPRETTET_SOM_HISTORISK = 1 AND
                     a.GJELDENDE = 1 AND

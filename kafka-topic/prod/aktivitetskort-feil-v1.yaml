@@ -25,3 +25,6 @@ spec:
     - team: team-tiltak
       application: tiltak-hendelse-aktivitetsplan
       access: read
+    - team: amt
+      application: amt-aktivitetskort-publisher
+      access: read
