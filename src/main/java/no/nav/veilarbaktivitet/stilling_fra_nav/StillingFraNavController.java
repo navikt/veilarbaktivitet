@@ -27,8 +27,7 @@ public class StillingFraNavController {
     @PutMapping("/kanDeleCV")
     public AktivitetDTO oppdaterKanCvDeles(@RequestParam long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
-        var aktivitet = aktivitetAppService
-                .hentAktivitet(aktivitetId);
+        var aktivitet = aktivitetAppService.hentAktivitet(aktivitetId);
 
         authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
 
@@ -64,7 +63,7 @@ public class StillingFraNavController {
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
 
-        authService.sjekkTilgangTilPerson(aktivitet.getForhaandsorientering().getAktorId());
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
 
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
 

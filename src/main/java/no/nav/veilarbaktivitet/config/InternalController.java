@@ -20,7 +20,6 @@ import java.util.List;
 
 import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 
-@Profile("!dev")
 @RestController
 @RequestMapping("/internal")
 public class InternalController {

@@ -141,6 +141,7 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
+    @AuthorizeFnr
     @PutMapping("/{aktivitetId}/referat/publiser")
     public AktivitetDTO publiserReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return oppdaterReferat(aktivitetDTO);

@@ -260,7 +260,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
                 .when()
                 .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/soknadStatus?fnr=" + mockBruker.getFnr())
                 .then()
-                .assertThat().statusCode(HttpStatus.OK.value())
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
                 .extract()
                 .response()
                 .as(AktivitetDTO.class);

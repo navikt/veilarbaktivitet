@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Profile;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
 
-@EnableAuthorization
 @Configuration
 public class OkHttpClientConfig {
     @Bean OkHttpClient veilarboppfolgingHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
