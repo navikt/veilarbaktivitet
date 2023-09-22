@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.aktivitet;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -16,14 +15,11 @@ import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
-import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 

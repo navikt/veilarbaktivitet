@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
+import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
@@ -54,9 +55,9 @@ public class ArenaController {
 
 
     @GetMapping("/tiltak")
+    @AuthorizeFnr
     public List<ArenaAktivitetDTO> hentArenaAktiviteter() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr.eksternBrukerId());
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
@@ -78,18 +79,16 @@ public class ArenaController {
 
 
     @GetMapping("/harTiltak")
+    @AuthorizeFnr
     boolean hentHarTiltak() {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr.eksternBrukerId());
-
         return arenaService.harAktiveTiltak(fnr);
     }
 
     @PutMapping("/forhaandsorientering/lest")
+    @AuthorizeFnr
     ArenaAktivitetDTO lest(@RequestParam ArenaId aktivitetId) {
         Person.Fnr fnr = userInContext.getFnr().orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker"));
-        authService.sjekkTilgangTilPerson(fnr.eksternBrukerId());
-
         return arenaService.markerSomLest(fnr, aktivitetId);
     }
 

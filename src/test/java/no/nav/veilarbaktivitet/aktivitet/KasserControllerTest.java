@@ -16,7 +16,13 @@ class KasserControllerTest extends SpringBootTestBase {
     @Test
     void skal_ikke_kunne_kassere_aktivitet_uten_tilgang() {
         var aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.STILLING));
-        kasserTestService.kasserAktivitet(veileder, Long.parseLong(aktivitet.getId()))
+
+        veileder
+                .createRequest()
+                .and()
+                .when()
+                .put(veileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.getId(), mockBruker))
+                .then()
                 .assertThat()
                 .statusCode(HttpStatus.FORBIDDEN.value());
     }
