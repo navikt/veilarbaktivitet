@@ -81,7 +81,6 @@ class AktivitetsbestillingCreator (
     companion object {
         const val HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId"
         const val HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode"
-        const val ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL"
         private var objectMapper: ObjectMapper? = null
         private val mapper: ObjectMapper?
             get() {

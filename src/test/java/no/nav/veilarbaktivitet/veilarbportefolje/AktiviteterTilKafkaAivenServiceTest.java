@@ -8,13 +8,13 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
@@ -127,7 +127,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     void skal_sende_nye_lonnstilskudd_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
-        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, UUID.randomUUID(), "TEAM_TILTAK", MIDLERTIDIG_LONNSTILSKUDD);
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, UUID.randomUUID(), MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK);
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
         cronService.sendOppTil5000AktiviterTilPortefolje();
         ConsumerRecord<String, String> portefojeRecord = getSingleRecord(portefoljeConsumer, portefoljeTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
@@ -144,7 +144,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         // Happy bruker har en gammel periode startDato nå-100 dager, sluttDato nå-50 dager
         UUID funksjonellId = UUID.randomUUID();
         Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
-        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, funksjonellId, AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL, AktivitetskortType.ARENA_TILTAK);
+        KafkaAktivitetskortWrapperDTO wrapper = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, funksjonellId, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL);
         ArenaId arenaId = new ArenaId("ARENATA123");
         String tiltakskode = "MIDLONNTIL";
         aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapper, new ArenaMeldingHeaders(arenaId, tiltakskode)));

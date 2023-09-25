@@ -179,7 +179,7 @@ object AktivitetskortProducerUtil {
         )
         return KafkaAktivitetskortWrapperDTO(
             messageId = UUID.randomUUID(),
-            source = AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL,
+            source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name,
             aktivitetskort = aktivitetskort,
             aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
     }

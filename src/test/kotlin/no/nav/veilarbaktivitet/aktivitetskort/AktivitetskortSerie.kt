@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import java.time.ZonedDateTime
@@ -57,7 +58,7 @@ class ArenaKort(
     val header: ArenaMeldingHeaders
 ) {
    constructor(kort: Aktivitetskort, header: ArenaMeldingHeaders) : this(
-       AktivitetskortUtil.aktivitetskortMelding(kort, AktivitetskortType.ARENA_TILTAK, AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL),
+       AktivitetskortUtil.aktivitetskortMelding(kort, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL),
        header
    )
 }
