@@ -172,8 +172,8 @@ object AktivitetskortProducerUtil {
                 )
             ),
             etiketter = listOf(
-                Etikett("INNSOKT"),
-                Etikett("UTSOKT")
+                Etikett("Innsøkt", Sentiment.NEUTRAL, "INNSOKT"),
+                Etikett("Utsøkt", Sentiment.NEGATIVE, "UTSOKT")
             ),
             avtaltMedNav = false
         )

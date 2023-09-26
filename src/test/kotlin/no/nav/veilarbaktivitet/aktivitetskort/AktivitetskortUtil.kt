@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Sentiment
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.person.Innsender
 import java.time.LocalDate
@@ -40,7 +41,7 @@ object AktivitetskortUtil {
                 Attributt("deltakelsesprosent", "40%"),
                 Attributt("dager per uke", "2")
             ),
-            listOf(Etikett("SOKT_INN"))
+            listOf(Etikett("Søkt inn på tiltaket", Sentiment.NEUTRAL,"SOKT_INN"))
         )
     }
 
