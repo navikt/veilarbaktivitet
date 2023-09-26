@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
@@ -44,29 +46,24 @@ object AktivitetskortUtil {
 
     @JvmStatic
     fun aktivitetskortMelding(
-        payload: Aktivitetskort?,
-        messageId: UUID?,
-        source: String?,
-        aktivitetskortType: AktivitetskortType?
+        payload: Aktivitetskort,
+        messageId: UUID = UUID.randomUUID(),
+        aktivitetskortType: AktivitetskortType,
+        source: MessageSource
     ): KafkaAktivitetskortWrapperDTO {
         return KafkaAktivitetskortWrapperDTO(
-            aktivitetskortType!!,
-            payload!!,
-            source!!,
+            aktivitetskortType,
+            payload,
+            source.name,
             messageId
         )
     }
 
-    fun aktivitetskortMelding(
-        payload: Aktivitetskort?,
-        type: AktivitetskortType?,
-        source: String?
-    ): KafkaAktivitetskortWrapperDTO {
-        return aktivitetskortMelding(payload, UUID.randomUUID(), source, type)
-    }
-
     @JvmStatic
-    fun aktivitetskortMelding(payload: Aktivitetskort?, type: AktivitetskortType?): KafkaAktivitetskortWrapperDTO {
-        return aktivitetskortMelding(payload, UUID.randomUUID(), MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name, type)
+    fun aktivitetskortMelding(
+        payload: Aktivitetskort,
+        type: AktivitetskortType = AktivitetskortType.ARENA_TILTAK,
+        source: MessageSource = MessageSource.ARENA_TILTAK_AKTIVITET_ACL): KafkaAktivitetskortWrapperDTO {
+        return aktivitetskortMelding(payload, UUID.randomUUID(), type, source)
     }
 }

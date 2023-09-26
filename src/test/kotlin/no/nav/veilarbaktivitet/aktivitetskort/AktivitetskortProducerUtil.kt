@@ -12,6 +12,8 @@ import no.nav.common.types.identer.NorskIdent
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
 import no.nav.veilarbaktivitet.person.Innsender
@@ -35,7 +37,7 @@ object AktivitetskortProducerUtil {
         .registerModule(JavaTimeModule())
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
 
-    fun readFileToString(path: String?): String {
+    fun readFileToString(path: String): String {
         val resourceLoader: ResourceLoader = DefaultResourceLoader()
         val resource = resourceLoader.getResource(path)
         return asString(resource)
@@ -98,7 +100,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun missingFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
+    fun missingFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -107,7 +109,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun extraFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
+    fun extraFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -116,7 +118,7 @@ object AktivitetskortProducerUtil {
     }
 
     @JvmStatic
-    fun invalidDateFieldRecord(fnr: Person.Fnr): kotlin.Pair<String, UUID?> {
+    fun invalidDateFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
         val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
@@ -177,11 +179,8 @@ object AktivitetskortProducerUtil {
         )
         return KafkaAktivitetskortWrapperDTO(
             messageId = UUID.randomUUID(),
-            source = AktivitetsbestillingCreator.ARENA_TILTAK_AKTIVITET_ACL,
+            source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name,
             aktivitetskort = aktivitetskort,
             aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
     }
-
-    @JvmRecord
-    data class Pair(@JvmField val json: String, @JvmField val messageId: UUID)
 }

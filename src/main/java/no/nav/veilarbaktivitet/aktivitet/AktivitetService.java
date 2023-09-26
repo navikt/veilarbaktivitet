@@ -295,18 +295,18 @@ public class AktivitetService {
                 .withStillingsTittel(stillingsoekAktivitetData.getStillingsTittel());
     }
 
-    private EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData left, EksternAktivitetData right) {
-        return left.copy(
-                    right.getSource(),
-                    right.getTiltaksKode(),
-                    left.getOpprettetSomHistorisk(),
-                    left.getOppfolgingsperiodeSlutt(),
-                    left.getArenaId(),
-                    right.getType(),
-                    right.getOppgave(),
-                    right.getHandlinger(),
-                    right.getDetaljer(),
-                    right.getEtiketter()
+    private EksternAktivitetData mergeEksternAktivitet(EksternAktivitetData original, EksternAktivitetData newData) {
+        return original.copy(
+                    newData.getSource(),
+                    newData.getTiltaksKode(),
+                    original.getOpprettetSomHistorisk(),
+                    original.getOppfolgingsperiodeSlutt(),
+                    newData.getArenaId(),
+                    newData.getType(),
+                    newData.getOppgave(),
+                    newData.getHandlinger(),
+                    newData.getDetaljer(),
+                    newData.getEtiketter()
                 );
     }
 

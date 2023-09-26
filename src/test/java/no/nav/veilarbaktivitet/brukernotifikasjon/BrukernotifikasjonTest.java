@@ -16,6 +16,8 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
@@ -371,7 +373,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                         AktivitetStatus.GJENNOMFORES,
                         ZonedDateTime.now(),
                         mockBruker
-                ), AktivitetskortType.ARENA_TILTAK
+                ), AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL
         );
         var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
         aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(aktivitetskortMelding, headers));

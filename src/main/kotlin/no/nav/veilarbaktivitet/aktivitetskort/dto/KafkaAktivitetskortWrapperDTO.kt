@@ -2,8 +2,6 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.veilarbaktivitet.aktivitetskort.ActionType
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType
 import java.util.*
 
 data class KafkaAktivitetskortWrapperDTO(
