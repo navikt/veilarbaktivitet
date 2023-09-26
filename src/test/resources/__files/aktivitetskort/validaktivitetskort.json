@@ -51,6 +51,8 @@
     ],
     "etiketter": [
       {
+        "tekst": "Etikett tekst",
+        "sentiment": "NEUTRAL",
         "kode": "INNSOKT"
       },
       {

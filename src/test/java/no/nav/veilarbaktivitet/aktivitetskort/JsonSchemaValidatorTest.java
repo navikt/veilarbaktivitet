@@ -62,12 +62,25 @@ class JsonSchemaValidatorTest {
         var validValidationMessages = jsonSchema.validate(valid);
 
         assertThat(validValidationMessages).isEmpty();
-//        assertEquals(0, validValidationMessages.size(), errorMessage(validValidationMessages));
     }
 
     @SneakyThrows
     @Test
     void should_validate_with_schema_validExampleFromFile() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskort.json");
+        JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+        InputStream aktitivitetskortYml = JsonSchemaValidatorTest.class.getResourceAsStream("/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml");
+        String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
+
+        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
+
+        var valid = new ObjectMapper().readTree(json);
+        var validValidationMessages = jsonSchema.validate(valid);
+        assertThat(validValidationMessages).isEmpty();
+    }
+    @SneakyThrows
+    @Test
+    void should_validate_with_schema_validExampleWithZonedDateTime() {
         String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         JsonSchemaFactory factory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
         InputStream aktitivitetskortYml = JsonSchemaValidatorTest.class.getResourceAsStream("/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml");
@@ -79,7 +92,6 @@ class JsonSchemaValidatorTest {
         var validValidationMessages = jsonSchema.validate(valid);
         assertThat(validValidationMessages).isEmpty();
     }
-
     @SneakyThrows
     @Test
     void should_invalidate_with_schema_validExampleFromFile() {
