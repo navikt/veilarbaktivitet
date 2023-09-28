@@ -8,7 +8,7 @@ import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.kvp.v2.KvpV2DTO;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.joda.time.LocalDateTime;

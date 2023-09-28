@@ -1,22 +1,28 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
+import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeDAO
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
-import java.time.LocalDateTime
-import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
 class OppfolgingsperiodeServiceTest {
     private lateinit var oppfolgingClient: OppfolgingV2Client
+    private lateinit var aktivitetService: AktivitetService
+    private lateinit var brukernotifikasjonService: BrukernotifikasjonService
+    private lateinit var sistePeriodeDAO: SistePeriodeDAO
+
+
     private lateinit var oppfolgingsperiodeService: OppfolgingsperiodeService
 
     companion object {
@@ -27,7 +33,10 @@ class OppfolgingsperiodeServiceTest {
     @BeforeEach
     fun setup() {
         oppfolgingClient = Mockito.mock(OppfolgingV2Client::class.java)
-        oppfolgingsperiodeService = OppfolgingsperiodeService(oppfolgingClient)
+        aktivitetService = Mockito.mock(AktivitetService::class.java)
+        brukernotifikasjonService = Mockito.mock(BrukernotifikasjonService::class.java)
+        sistePeriodeDAO = Mockito.mock(SistePeriodeDAO::class.java)
+        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, brukernotifikasjonService, sistePeriodeDAO, oppfolgingClient)
     }
 
     @Test
