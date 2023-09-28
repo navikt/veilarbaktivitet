@@ -78,7 +78,6 @@ definitions:
         enum:
           - POSITIVE
           - NEGATIVE
-          - ACTION
           - NEUTRAL
           - WAITING
       kode:
