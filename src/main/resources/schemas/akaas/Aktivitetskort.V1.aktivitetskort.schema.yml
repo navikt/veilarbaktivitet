@@ -79,10 +79,9 @@ definitions:
           - POSITIVE
           - NEGATIVE
           - NEUTRAL
-          - WAITING
       kode:
         type: string
-      description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Teksten som sendes inn vil vises som på etiketten med styling basert på sentimentet. Kode er valgfritt og blir foreløpig ikke brukt.
+    description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Teksten som sendes inn vil vises som på etiketten med styling basert på sentimentet. Kode er valgfritt og blir foreløpig ikke brukt.
 
   aktivitetskort:
     additionalProperties: false
