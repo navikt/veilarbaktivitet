@@ -4,6 +4,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 import io.restassured.specification.RequestSpecification;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao_tilgang.core.domain.AdGruppe;
 import no.nav.poao_tilgang.core.provider.NavEnhetTilgang;
 import no.nav.poao_tilgang.poao_tilgang_test_core.DomainKt;
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt;
@@ -44,6 +45,10 @@ public class MockVeileder extends RestassuredUser {
                 it -> {},
                 () -> navAnsatt.getEnheter().add(new NavEnhetTilgang(oppfolgingsenhet, "enhetNavn " + oppfolgingsenhet, List.of())
         ));
+    }
+
+    public void addAdGruppe(AdGruppe adGruppe) {
+        navAnsatt.getAdGrupper().add(adGruppe);
     }
 
     public void setNasjonalTilgang(boolean nationalTilgang) {

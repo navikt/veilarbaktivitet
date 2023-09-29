@@ -14,8 +14,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBe
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService
+import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException
+import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service

@@ -18,6 +18,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
