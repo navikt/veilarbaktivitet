@@ -98,4 +98,4 @@ spec:
     - name: POAO_TILGANG_SCOPE
       value: api://dev-fss.poao.poao-tilgang/.default
     - name: ADMIN_GROUPS
-      value: b9bc6348-d25c-450d-85c2-044c0955fbe3
+      value: 554a66fb-fbec-4b92-90c1-0d9c085c362c
