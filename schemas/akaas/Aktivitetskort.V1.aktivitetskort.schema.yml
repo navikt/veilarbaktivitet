@@ -66,6 +66,23 @@ definitions:
         type: string
       verdi:
         type: string
+  tag:
+    type: object
+    additionalProperties: false
+    properties:
+      tekst:
+        type: string
+        maxLength: 20
+      sentiment:
+        type: string
+        enum:
+          - POSITIVE
+          - NEGATIVE
+          - NEUTRAL
+      kode:
+        type: string
+    description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Teksten som sendes inn vil vises som på etiketten med styling basert på sentimentet. Kode er valgfritt og blir foreløpig ikke brukt.
+
   aktivitetskort:
     additionalProperties: false
     type: object
@@ -189,9 +206,4 @@ definitions:
       etiketter:
         type: array
         items:
-          additionalProperties: false
-          type: object
-          properties:
-            kode:
-              type: string
-        description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Koden som sendes inn må mappes om til tekst + korrekt styling i aktivitetsplanen, så DAB trenger å vite hvilke koder som er aktuelle på forhånd.
+          "$ref": "#/definitions/tag"
