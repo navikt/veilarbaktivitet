@@ -1,5 +1,7 @@
-package no.nav.veilarbaktivitet.aktivitetskort.service
+package no.nav.veilarbaktivitet.oppfolging.periode
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetService
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
 import no.nav.veilarbaktivitet.person.Person.AktorId
@@ -12,16 +14,40 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.chrono.ChronoZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.math.abs
 
 @Service
 class OppfolgingsperiodeService(
+	private val aktivitetService: AktivitetService,
+	private val brukernotifikasjonService: BrukernotifikasjonService,
+	private val sistePeriodeDAO: SistePeriodeDAO,
 	private val oppfolgingClient: OppfolgingV2Client
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 
 	companion object {
 		val SLACK_FOER: Duration = Duration.ofDays(7)
+	}
+
+	fun avsluttOppfolgingsperiode(oppfolgingsperiode: UUID, sluttDato: ZonedDateTime) {
+		brukernotifikasjonService.setDoneGrupperingsID(oppfolgingsperiode)
+		aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
+	}
+
+	fun uppsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
+		sistePeriodeDAO.uppsertOppfolingsperide(
+			Oppfolgingsperiode(
+				sisteOppfolgingsperiodeV1.aktorId,
+				sisteOppfolgingsperiodeV1.uuid,
+				sisteOppfolgingsperiodeV1.startDato,
+				sisteOppfolgingsperiodeV1.sluttDato
+			)
+		)
+	}
+
+	fun hentOppfolgingsperiode(aktorId: AktorId, oppfolgingsperiode: UUID): OppfolgingPeriodeMinimalDTO? {
+		return oppfolgingClient.hentOppfolgingsperioder(aktorId).find { it.uuid.equals(oppfolgingsperiode) }
 	}
 
 	fun finnOppfolgingsperiode(aktorId: AktorId, opprettetTidspunkt: LocalDateTime): OppfolgingPeriodeMinimalDTO? {

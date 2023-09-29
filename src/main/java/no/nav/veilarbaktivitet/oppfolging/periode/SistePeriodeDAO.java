@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.siste_periode;
+package no.nav.veilarbaktivitet.oppfolging.periode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +15,7 @@ import java.util.Optional;
 @Repository
 @Slf4j
 @RequiredArgsConstructor
-class SistePeriodeDAO {
+public class SistePeriodeDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
 

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.oppfolging.siste_periode;
+package no.nav.veilarbaktivitet.oppfolging.periode;
 
 
 import no.nav.veilarbaktivitet.SpringBootTestBase;
