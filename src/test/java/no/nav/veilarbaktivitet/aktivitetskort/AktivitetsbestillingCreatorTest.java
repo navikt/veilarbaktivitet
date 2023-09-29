@@ -6,9 +6,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestillin
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -126,6 +124,8 @@ class AktivitetsbestillingCreatorTest {
         assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
         var handlinger = aktivitetskort.getHandlinger();
         assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+        var etiketter = aktivitetskort.getEtiketter();
+        assertThat(etiketter).contains(new Etikett("Etikett tekst", Sentiment.NEUTRAL, "INNSOKT"));
     }
 
     @Test

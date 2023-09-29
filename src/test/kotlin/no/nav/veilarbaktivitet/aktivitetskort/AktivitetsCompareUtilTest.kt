@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortCompareUtil.erFaktiskOppdatert
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Sentiment
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -21,6 +22,8 @@ internal class AktivitetsCompareUtilTest {
                     .getEksternAktivitetData()
                     .copy(etiketter = listOf(
                         Etikett(
+                            "Deltar",
+                            Sentiment.POSITIVE,
                             "DELTAR"
                         )
                     ))

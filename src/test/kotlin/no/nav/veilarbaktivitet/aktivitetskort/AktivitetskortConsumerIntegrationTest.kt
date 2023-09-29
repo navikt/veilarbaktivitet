@@ -403,7 +403,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(avtaltMedNav = false), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
-        val etikett = Etikett("FÅTT_PLASS")
+        val etikett = Etikett("Fått plass", Sentiment.POSITIVE,"FATT_PLASS")
         val tiltaksaktivitetEndret = AktivitetskortUtil.aktivitetskortMelding(
             aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
                 .copy(avtaltMedNav = true, etiketter = listOf(etikett)), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
