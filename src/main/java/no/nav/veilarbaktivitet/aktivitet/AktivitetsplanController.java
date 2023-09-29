@@ -38,7 +38,7 @@ public class AktivitetsplanController {
     private final MigreringService migreringService;
 
     @GetMapping
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "hent aktivitesplan")
     public AktivitetsplanDTO hentAktivitetsplan() {
         val userFnr = userInContext.getAktorId();
         boolean erEksternBruker = authService.erEksternBruker();
@@ -54,7 +54,7 @@ public class AktivitetsplanController {
     }
 
     @GetMapping("/{id}")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "hent en aktivitet")
     public AktivitetDTO hentAktivitet(@PathVariable("id") long aktivitetId) {
         boolean erEksternBruker = authService.erEksternBruker();
 
@@ -65,7 +65,7 @@ public class AktivitetsplanController {
     }
 
     @GetMapping("/{id}/versjoner")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "hent aktivitet historikk")
     public List<AktivitetDTO> hentAktivitetVersjoner(@PathVariable("id") long aktivitetId) {
         return appService.hentAktivitetVersjoner(aktivitetId)
                 .stream()
@@ -75,7 +75,7 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "oppret aktivitet")
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
         authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
@@ -89,7 +89,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet")
     public AktivitetDTO oppdaterAktivitet(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
 
@@ -101,7 +101,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{id}/etikett")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet etikett")
     public AktivitetDTO oppdaterEtikett(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
 
@@ -114,7 +114,7 @@ public class AktivitetsplanController {
 
 
     @PutMapping("/{id}/status")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "oppdater aktivitet status")
     public AktivitetDTO oppdaterStatus(@RequestBody AktivitetDTO aktivitet) {
         boolean erEksternBruker = authService.erEksternBruker();
 
@@ -126,7 +126,7 @@ public class AktivitetsplanController {
     }
 
     @PutMapping("/{aktivitetId}/referat")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "oppdater referat")
     @OnlyInternBruker
     public AktivitetDTO oppdaterReferat(@RequestBody AktivitetDTO aktivitetDTO) {
 
@@ -137,7 +137,7 @@ public class AktivitetsplanController {
                 .orElseThrow(RuntimeException::new);
     }
 
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "publiser referat")
     @PutMapping("/{aktivitetId}/referat/publiser")
     public AktivitetDTO publiserReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return oppdaterReferat(aktivitetDTO);

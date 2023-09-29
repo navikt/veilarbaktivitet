@@ -1,7 +1,7 @@
 
 val spring_boot_version = "3.0.2"
 val common_version = "3.2023.07.07_09.10-85326e9557f0"
-val dab_common_version = "2023.09.19-13.19.d9ae1eedbfa5"
+val dab_common_version = "audith-loging-SNAPSHOT"
 val poao_tilgang_version = "2023.07.03_09.35-6073bc164ee2"
 val shedlock_version = "4.42.0"
 val _version: String by project
@@ -31,10 +31,6 @@ kotlin {
     jvmToolchain(17)
 }
 
-
-configurations.all {
-    resolutionStrategy.failOnNonReproducibleResolution()
-}
 
 tasks.test {
     useJUnitPlatform()

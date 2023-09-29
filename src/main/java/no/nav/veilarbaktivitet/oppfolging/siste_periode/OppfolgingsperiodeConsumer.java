@@ -24,11 +24,13 @@ class OppfolgingsperiodeConsumer {
         uppsertOppfolgingsperiode(sisteOppfolgingsperiodeV1);
 
         if(sisteOppfolgingsperiodeV1.sluttDato != null) {
-            brukernotifikasjonService.setDoneGrupperingsID(sisteOppfolgingsperiodeV1.uuid);
-            aktivitetService.settAktiviteterTilHistoriske(sisteOppfolgingsperiodeV1.uuid, sisteOppfolgingsperiodeV1.sluttDato);
+            oppfolingsperiode(sisteOppfolgingsperiodeV1);
         }
+    }
 
-
+    private void oppfolingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {
+        brukernotifikasjonService.setDoneGrupperingsID(sisteOppfolgingsperiodeV1.uuid);
+        aktivitetService.settAktiviteterTilHistoriske(sisteOppfolgingsperiodeV1.uuid, sisteOppfolgingsperiodeV1.sluttDato);
     }
 
     private void uppsertOppfolgingsperiode(SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1) {

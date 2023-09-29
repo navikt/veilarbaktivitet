@@ -33,7 +33,7 @@ class AuthServiceTest {
 
     private final IPersonService personService = new PersonService(aktorOppslagClient);
 
-    private final AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);
+    private final AuthService authService = new AuthService(authContextHolder, veilarbPep, personService, "veilarbaktivitet");
 
 
     private static final String NAVIDENT = "Z999999";
