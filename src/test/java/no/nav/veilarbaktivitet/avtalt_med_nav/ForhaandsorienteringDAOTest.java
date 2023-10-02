@@ -28,7 +28,7 @@ class ForhaandsorienteringDAOTest {
 
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
-    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database, database.getNamedJdbcTemplate());
+    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database.getNamedJdbcTemplate());
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @AfterEach
