@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -54,7 +53,6 @@ public class AktivitetDAO {
             LEFT JOIN EKSTERNAKTIVITET T on A.AKTIVITET_ID = T.AKTIVITET_ID and A.VERSJON = T.VERSJON
             """;
 
-    private final Database database;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private static final String AKTIVITETID = "aktivitet_id";
     private static final String VERSJON = "versjon";
@@ -62,31 +60,32 @@ public class AktivitetDAO {
     private static final RowMapper<AktivitetData> aktivitetsDataRowMapper = (rs, rowNum) -> AktivitetDataRowMapper.mapAktivitet(rs);
 
     public List<AktivitetData> hentAktiviteterForOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("oppfolgingsperiodeUUID", oppfolgingsperiodeId.toString());
         // language=sql
-        return database.query(SELECT_AKTIVITET +
-                              " WHERE A.OPPFOLGINGSPERIODE_UUID = ? and A.GJELDENDE = 1",
-                AktivitetDataRowMapper::mapAktivitet,
-                oppfolgingsperiodeId.toString()
-        );
+        String sql = SELECT_AKTIVITET +
+                " WHERE A.OPPFOLGINGSPERIODE_UUID = :oppfolgingsperiodeUUID and A.GJELDENDE = 1";
+        return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
     }
 
     @Timed(value = "db_hentGjeldendeAktiviteterForAktorId", histogram = true)
     public List<AktivitetData> hentAktiviteterForAktorId(Person.AktorId aktorId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get());
         // language=sql
-        return database.query(SELECT_AKTIVITET +
-                              " WHERE A.AKTOR_ID = ? and A.gjeldende = 1",
-                AktivitetDataRowMapper::mapAktivitet,
-                aktorId.get()
-        );
+        String sql  = SELECT_AKTIVITET +
+                " WHERE A.AKTOR_ID = :aktorId and A.gjeldende = 1";
+        return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
     }
 
     public AktivitetData hentAktivitet(long aktivitetId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktivitetId", aktivitetId);
         // language=sql
-        return database.queryForObject(SELECT_AKTIVITET +
-                                       " WHERE A.aktivitet_id = ? and gjeldende = 1",
-                AktivitetDataRowMapper::mapAktivitet,
-                aktivitetId
-        );
+        String sql = SELECT_AKTIVITET +
+                " WHERE A.aktivitet_id = :aktivitetId and A.gjeldende = 1";
+
+        return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
     }
 
     public Optional<AktivitetData> hentMaybeAktivitet(long id) {
@@ -116,20 +115,21 @@ public class AktivitetDAO {
     }
 
     public AktivitetData hentAktivitetVersion(long version) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("versjon", version);
         // language=sql
-        return database.queryForObject(SELECT_AKTIVITET +
-                                       " WHERE A.VERSJON = ? ",
-                AktivitetDataRowMapper::mapAktivitet,
-                version
-        );
+        String sql = SELECT_AKTIVITET +
+                " WHERE A.VERSJON = :versjon";
+
+        return namedParameterJdbcTemplate.queryForObject(sql, params, aktivitetsDataRowMapper);
     }
 
-    public long nesteAktivitetId() {
-        return database.nesteFraSekvens("AKTIVITET_ID_SEQ");
+    public Long nesteAktivitetId() {
+        return namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_ID_SEQ.nextval from dual", Long.class);
     }
 
     public long nesteVersjon() {
-        return database.nesteFraSekvens("AKTIVITET_VERSJON_SEQ");
+        return namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_VERSJON_SEQ.nextval from dual", Long.class);
     }
 
 
@@ -138,7 +138,7 @@ public class AktivitetDAO {
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue(VERSJON, ikkeLengerGjeldendeVersjon);
         // language=sql
-        database.getNamedJdbcTemplate().update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon=:versjon", updateGjeldendeParams);
+        namedParameterJdbcTemplate.update("UPDATE AKTIVITET SET gjeldende = 0 where aktivitet_id = :aktivitet_id and versjon=:versjon", updateGjeldendeParams);
     }
 
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
@@ -147,7 +147,7 @@ public class AktivitetDAO {
         // Denne 'select for update' sørger for å låse gjeldende versjon for å hindre race-conditions
         // slik at ikke flere kan oppdatere samme aktivitet samtidig.
         //language=SQL
-        long gjeldendeVersjon = database.getNamedJdbcTemplate().queryForObject("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id AND gjeldende=1 FOR UPDATE NOWAIT", selectGjeldendeParams, Long.class);
+        long gjeldendeVersjon = namedParameterJdbcTemplate.queryForObject("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id AND gjeldende=1 FOR UPDATE NOWAIT", selectGjeldendeParams, Long.class);
         if (aktivitet.getVersjon() != gjeldendeVersjon) {
             log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - gjeldende versjon: {}", aktivitet.getVersjon(), gjeldendeVersjon);
             throw new IllegalStateException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
@@ -171,13 +171,12 @@ public class AktivitetDAO {
         // language=sql
         namedParameterJdbcTemplate
                 .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon != :ny_versjon AND aktivitet_id = :aktivitet_id", slettParams);
-        database.getNamedJdbcTemplate()
+        namedParameterJdbcTemplate
                 .update("DELETE FROM AKTIVITET WHERE gjeldende = 0 AND aktivitet_id = :aktivitet_id and versjon != :ny_versjon", slettParams);
         return nyAktivitetVersjon;
     }
 
     public void flyttBrukerNotifikasjonTilVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon, long nyVersjon) {
-        var template = database.getNamedJdbcTemplate();
         var params = new MapSqlParameterSource()
                 .addValue(AKTIVITETID, aktivitetId)
                 .addValue("gammel_versjon", ikkeLengerGjeldendeVersjon)
@@ -185,13 +184,13 @@ public class AktivitetDAO {
 
         // Mest sannsynlig bare 1 brukernotifikasjon
         // language=sql
-        List<Long> brukernotifikasjoner = template.queryForList(
+        List<Long> brukernotifikasjoner = namedParameterJdbcTemplate.queryForList(
                 "SELECT BRUKERNOTIFIKASJON_ID FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE AKTIVITET_ID = :aktivitet_id",
                 params, Long.class);
         brukernotifikasjoner.forEach(brukernotifikasjonId -> {
             var paramsWithBrukernotifkasjonsId = params.addValue("brukernotifikasjon_id", brukernotifikasjonId);
-            template.update("DELETE FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE BRUKERNOTIFIKASJON_ID = :brukernotifikasjon_id", paramsWithBrukernotifkasjonsId);
-            template.update("INSERT INTO AKTIVITET_BRUKERNOTIFIKASJON VALUES (:aktivitet_id, :ny_versjon, :brukernotifikasjon_id) ", paramsWithBrukernotifkasjonsId);
+            namedParameterJdbcTemplate.update("DELETE FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE BRUKERNOTIFIKASJON_ID = :brukernotifikasjon_id", paramsWithBrukernotifkasjonsId);
+            namedParameterJdbcTemplate.update("INSERT INTO AKTIVITET_BRUKERNOTIFIKASJON VALUES (:aktivitet_id, :ny_versjon, :brukernotifikasjon_id) ", paramsWithBrukernotifkasjonsId);
         });
 
     }
@@ -229,7 +228,7 @@ public class AktivitetDAO {
                 .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
                         ? aktivitet.getOppfolgingsperiodeId().toString() : null);
         //language=SQL
-        database.getNamedJdbcTemplate().update(
+        namedParameterJdbcTemplate.update(
                 """
                         INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
                         fra_dato, til_dato, tittel, beskrivelse, livslopstatus_kode,
@@ -507,16 +506,15 @@ public class AktivitetDAO {
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long aktivitetId) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktivitetId",  aktivitetId);
         // language=sql
-        return database.query(
-                SELECT_AKTIVITET +
+        String sql = SELECT_AKTIVITET +
                 """
-                            WHERE A.aktivitet_id = ?
+                            WHERE A.aktivitet_id = :aktivitetId
                             ORDER BY A.versjon desc
-                        """,
-                AktivitetDataRowMapper::mapAktivitet,
-                aktivitetId
-        );
+                        """;
+        return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
     }
 
     public Map<Long, Long> getAktivitetsVersjoner(List<Long> aktiviteter) {
@@ -524,7 +522,7 @@ public class AktivitetDAO {
         var params = new MapSqlParameterSource()
             .addValue("aktiviteter",  aktiviteter);
         // language=sql
-        return database.getNamedJdbcTemplate().query("""
+        return namedParameterJdbcTemplate.query("""
             SELECT AKTIVITET_ID, VERSJON FROM AKTIVITET where AKTIVITET.AKTIVITET_ID in (:aktiviteter)
         """, params, (rs, rowNum) -> new Pair<Long, Long>(rs.getLong("AKTIVITET_ID"), rs.getLong("VERSJON")))
             .stream()

@@ -1,13 +1,13 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
-import no.nav.veilarbaktivitet.person.Person;
-import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
-import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +29,7 @@ class ForhaandsorienteringDAOTest {
     private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
     private final Database database = new Database(jdbcTemplate);
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database, database.getNamedJdbcTemplate());
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(database, new NamedParameterJdbcTemplate(jdbcTemplate));
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new NamedParameterJdbcTemplate(jdbcTemplate));
 
     @AfterEach
     void cleanup() {
