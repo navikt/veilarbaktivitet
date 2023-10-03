@@ -36,7 +36,7 @@ public class ForhaandsorienteringDAO {
         var id = UUID.randomUUID();
         var fho = fhoData.getForhaandsorientering();
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", id)
+                .addValue("id", id.toString())
                 .addValue("aktorId", aktorId.get())
                 .addValue("aktivitetId", aktivitetId)
                 .addValue("aktivitetVersion", fhoData.getAktivitetVersjon())
