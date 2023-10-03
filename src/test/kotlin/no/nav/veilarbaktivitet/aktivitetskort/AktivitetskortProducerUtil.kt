@@ -66,7 +66,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     fun validExampleAktivitetskortRecord(fnr: Person.Fnr): JsonNode {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         return aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
     }
 
@@ -86,7 +86,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     fun invalidExampleRecord(fnr: Person.Fnr): JsonNode {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val objectNode = jsonNode as ObjectNode
         objectNode.remove("aktivitetskortType")
@@ -101,7 +101,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     fun missingFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
         payload.remove("tittel")
@@ -110,7 +110,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     fun extraFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
         payload.put("kake", "123")
@@ -119,7 +119,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     fun invalidDateFieldRecord(fnr: Person.Fnr): Pair<String, UUID?> {
-        val kafkaAktivitetskortWrapperDTO = kafkaAktivitetWrapper(fnr)
+        val kafkaAktivitetskortWrapperDTO = kafkaArenaAktivitetWrapper(fnr)
         val jsonNode = aktivitetMessageNode(kafkaAktivitetskortWrapperDTO)
         val payload = jsonNode.path("aktivitetskort") as ObjectNode
         payload.set<JsonNode>("startDato", TextNode("2022/-1/04T12:00:00+02:00"))
@@ -128,7 +128,7 @@ object AktivitetskortProducerUtil {
 
     @JvmStatic
     @SneakyThrows
-    fun kafkaAktivitetWrapper(fnr: Person.Fnr): KafkaAktivitetskortWrapperDTO {
+    fun kafkaArenaAktivitetWrapper(fnr: Person.Fnr): KafkaAktivitetskortWrapperDTO {
         val aktivitetskort = Aktivitetskort(
             id = UUID.randomUUID(),
             personIdent = fnr.get(),

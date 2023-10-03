@@ -135,7 +135,7 @@ class AktivitetskortService(
         aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason)
     }
 
-    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): Optional<AktivitetData> {
-        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId)
+    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): AktivitetData {
+        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId).get()
     }
 }
