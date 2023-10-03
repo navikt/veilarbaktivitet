@@ -15,9 +15,6 @@ properties:
     description: Unik id for denne meldingen brukes til deduplisering
   source:
     $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
-  sendt:
-    type: string
-    format: date-time
   aktivitetskortType:
     $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetskortType
   actionType:
