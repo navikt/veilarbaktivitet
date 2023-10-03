@@ -12,8 +12,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.kvp.KvpService;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.IngenGjeldendePeriodeException;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
+import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
+import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
@@ -45,7 +45,6 @@ public class OpprettForesporselOmDelingAvCv {
     private final StillingFraNavMetrikker metrikker;
 
     private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
-
     private static final String BRUKERNOTIFIKASJON_TEKST = "Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.";
 
     @Transactional
@@ -59,7 +58,6 @@ public class OpprettForesporselOmDelingAvCv {
         }
         secureLogs.info("OpprettForesporselOmDelingAvCv.createAktivitet {}", melding);
         Person.AktorId aktorId = Person.aktorId(melding.getAktorId());
-
         if (aktorId.get() == null) {
             log.error("OpprettForesporselOmDelingAvCv.createAktivitet AktorId=null");
         }
@@ -83,17 +81,11 @@ public class OpprettForesporselOmDelingAvCv {
             producerClient.sendUgyldigOppfolgingStatus(melding.getBestillingsId(), aktorId.get());
             return;
         }
-
-        Person.NavIdent navIdent = Person.navIdent(melding.getOpprettetAv());
-
         boolean kanVarsle = brukernotifikasjonService.kanVarsles(aktorId);
-
         AktivitetData aktivitetData = map(melding, kanVarsle);
-
         MDC.put(MetricService.SOURCE, "rekrutteringsbistand");
-        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktorId, aktivitetData, navIdent.tilIdent());
+        AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktivitetData);
         MDC.clear();
-
         if (kanVarsle) {
             brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
             producerClient.sendOpprettet(aktivitet);
@@ -136,7 +128,7 @@ public class OpprettForesporselOmDelingAvCv {
 
         return AktivitetData
                 .builder()
-                .aktorId(aktorId.get())
+                .aktorId(aktorId)
                 .tittel(stillingstittel)
                 .aktivitetType(AktivitetTypeData.STILLING_FRA_NAV)
                 .status(AktivitetStatus.BRUKER_ER_INTERESSERT)

@@ -42,6 +42,7 @@ spec:
   envFrom:
     - configmap: pto-config
     - configmap: loginservice-idporten
+    - secret: veilarbaktivitet-unleash-api-token
   vault:
     enabled: true
     paths:
@@ -86,8 +87,15 @@ spec:
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: dev-gcp
+    outbound:
+      external:
+        - host: dab-unleash-api.nav.cloud.nais.io
   env:
     - name: APP_ENVIRONMENT_NAME
       value: q1
     - name: APPD_ENABLED
       value: "false"
+    - name: POAO_TILGANG_SCOPE
+      value: api://dev-fss.poao.poao-tilgang/.default
+    - name: ADMIN_GROUPS
+      value: 554a66fb-fbec-4b92-90c1-0d9c085c362c

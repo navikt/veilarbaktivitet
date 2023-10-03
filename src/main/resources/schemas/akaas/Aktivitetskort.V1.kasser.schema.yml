@@ -1,0 +1,43 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.kasser.schema.yml"
+required:
+  - source
+  - actionType
+  - aktivitetsId
+  - personIdent
+  - navIdent
+  - messageId
+type: object
+additionalProperties: false
+properties:
+  source:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
+  sendt:
+    type: string
+    format: date-time
+  actionType:
+    const: KASSER_AKTIVITET
+  aktivitetsId:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
+    description: |
+      Funksjonell ID for aktiviteten er en globalt unik UUID for aktiviteten.
+      Ved vellykket opprettelse av aktiviteten, vil aktiviteten kunne gjenfinnnes
+      ved hjelp av denne iden. Senere modifisering av samme aktivitet vil også
+      bruke denne iden for å identifisere korrekt aktivitet.
+  personIdent:
+    type: string
+    examples:
+      - '10068831950'
+    description: Norsk identitetsnummer (d-nr eller f-nr) for personen som eier aktivitetskortet
+  navIdent:
+    type: string
+    examples:
+      - Z999999
+    description: Id til bruker som kasserer aktivitetskortet
+  begrunnelse:
+    type: string
+    description: begrunnelse for kasseing som er synlig for bruker inne i aktivitetskortet
+  messageId:
+    type: string
+    format: uuid
+    description: Unik id for denne meldingen brukes til deduplisering

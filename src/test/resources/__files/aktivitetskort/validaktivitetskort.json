@@ -6,8 +6,8 @@
   "aktivitetskort": {
     "id": "56155242-6481-43b5-9eac-4d7af695bf9d",
     "personIdent": "48507582368",
-    "tittel": "The Elder Scrolls: Arena",
-    "beskrivelse": "arenabeskrivelse",
+    "tittel": "The Elder Scrolls",
+    "beskrivelse": "aktivitetsbeskrivelse",
     "aktivitetStatus": "PLANLAGT",
     "startDato": "2022-10-19",
     "sluttDato": "2022-10-19",
@@ -17,12 +17,11 @@
     },
     "endretTidspunkt": "2022-10-19T12:00:00.100Z",
     "avtaltMedNav": false,
-    "oppgaver": {
+    "oppgave": {
       "ekstern": {
         "tekst": "tekst",
         "subtekst": "subtekst",
-        "url": "http://localhost:8080/ekstern",
-        "knapptekst": "knappetekst"
+        "url": "http://localhost:8080/ekstern"
       },
       "intern": null
     },
@@ -31,13 +30,13 @@
         "tekst": "tekst",
         "subtekst": "subtekst",
         "url": "http://localhost:8080/ekstern",
-        "type": "EKSTERN"
+        "lenkeType": "EKSTERN"
       },
       {
         "tekst": "tekst",
         "subtekst": "subtekst",
         "url": "http://localhost:8080/intern",
-        "type": "INTERN"
+        "lenkeType": "INTERN"
       }
     ],
     "detaljer": [
@@ -52,6 +51,8 @@
     ],
     "etiketter": [
       {
+        "tekst": "Etikett tekst",
+        "sentiment": "NEUTRAL",
         "kode": "INNSOKT"
       },
       {

@@ -1,11 +1,15 @@
 package no.nav.veilarbaktivitet;
 
 
+import io.getunleash.Unleash;
 import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
-import no.nav.common.featuretoggle.UnleashClient;
+import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -19,13 +23,17 @@ import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
 public abstract class SpringBootTestBase {
     @Autowired
     protected KafkaTestService kafkaTestService;
+
+    private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", MockNavService.NAV_CONTEXT);
+
 
     @Autowired
     private StillingFraNavTestService stillingFraNavTestService;
@@ -43,13 +51,19 @@ public abstract class SpringBootTestBase {
     private LockProvider lockProvider;
 
     @Autowired
-    protected UnleashClient unleashClient;
+    protected Unleash unleash;
 
     @Autowired
     private KafkaTemplate<String, String> stringStringKafkaTemplate;
 
+    @Autowired
+    private KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate;
+
     @Value("${topic.inn.aktivitetskort}")
     private String aktivitetskortTopic;
+
+    @Value("${topic.inn.rekrutteringsbistandStatusoppdatering}")
+    private String innRekrutteringsbistandStatusoppdateringTopic;
 
     @LocalServerPort
     protected int port;
@@ -60,7 +74,12 @@ public abstract class SpringBootTestBase {
         DbTestUtils.cleanupTestDb(jdbcTemplate);
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
-        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, kafkaTestService, stringStringKafkaTemplate, aktivitetskortTopic);
+        aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, innRekrutteringsbistandStatusoppdateringTopic, kafkaTestService, stringStringKafkaTemplate, navCommonKafkaJsonTemplate, aktivitetskortTopic);
         kasserTestService = new KasserTestService(port);
+    }
+
+    @DynamicPropertySource
+    public static void tilgangskotroll(DynamicPropertyRegistry registry) {
+        registry.add("app.env.poao_tilgang.url", () -> poaoTilgangWiremock.getWireMockServer().baseUrl());
     }
 }

@@ -28,3 +28,6 @@ spec:
     - team: team-tiltak
       application: tiltak-hendelse-aktivitetsplan
       access: write
+    - team: amt
+      application: amt-aktivitetskort-publisher
+      access: write

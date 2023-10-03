@@ -1,46 +1,39 @@
 package no.nav.veilarbaktivitet.service;
 
 import com.nimbusds.jwt.JWTClaimsSet;
-import no.nav.common.abac.Pep;
-import no.nav.common.auth.Constants;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.UserRole;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.AktorId;
-import no.nav.common.types.identer.Fnr;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IPersonService;
+import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import org.h2.engine.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
 import static no.nav.common.auth.Constants.AAD_NAV_IDENT_CLAIM;
 import static no.nav.common.auth.Constants.ID_PORTEN_PID_CLAIM;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
 
     private final AuthContextHolder authContextHolder = mock(AuthContextHolder.class);
     private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
-    private final Pep veilarbPep = mock(Pep.class);
+    private final PoaoTilgangClient veilarbPep = mock(PoaoTilgangClient.class);
 
     private final IPersonService personService = new PersonService(aktorOppslagClient);
 
-    @InjectMocks
-    private AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);
+    private final AuthService authService = new AuthService(authContextHolder, veilarbPep, personService);
 
 
     private static final String NAVIDENT = "Z999999";
@@ -98,7 +91,9 @@ class AuthServiceTest {
                         .claim("acr", "Level4")
                         .build()
         );
-        authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
+        assertDoesNotThrow(() -> {
+            authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
+        });
     }
 
     @Test
@@ -110,8 +105,10 @@ class AuthServiceTest {
                         .claim("acr", "Level4")
                         .build()
         );
+
+        var ident =  Person.fnr("12121212121").eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(Person.fnr("12121212121").eksternBrukerId());
+            authService.sjekkTilgangTilPerson(ident);
         });
     }
 
@@ -124,8 +121,9 @@ class AuthServiceTest {
                         .claim("acr", "Level3")
                         .build()
         );
+        var ident = Person.fnr(FNR).eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(Person.fnr(FNR).eksternBrukerId());
+            authService.sjekkTilgangTilPerson(ident);
         });
     }
 

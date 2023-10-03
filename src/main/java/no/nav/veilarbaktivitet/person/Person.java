@@ -1,16 +1,34 @@
 package no.nav.veilarbaktivitet.person;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializable;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import no.nav.common.types.identer.EksternBrukerId;
 import no.nav.common.types.identer.Id;
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.IdentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Objects;
 
-public abstract class Person {
+/**
+ * Applikasjonsintern representasjon av en bruker. Kan også være en systembruker, som ikke er en person.
+ * Merk JsonSerializable.Base for å støtte deserialisering av en person til en simpel json streng (brukerid).
+ * Deserialisering av Person skjer kun i ett tilfelle, og det er under deserialisering av AktivitetData under skriving til topic.ut.aktivitetdata.rawjson.
+ * Denne topicen er foreløpig ikke i bruk av andre funksjoner, og skal den tas i bruk,
+ * @TODO er det nok fornuftig å mappe AktivitetData om til en dto før serialisering, og fjerne jackson-annotasjonene på denne klassen.
+ */
+public abstract class Person extends JsonSerializable.Base {
+    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
+
     private final String id;
 
-    private Person(String id) {
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    Person(String id) {
         this.id = id;
     }
 
@@ -38,19 +56,33 @@ public abstract class Person {
         return this instanceof AktorId || this instanceof Fnr;
     }
 
+    private void logWrongTypeToSecureLogs() {
+        secureLogs.warn("Person id:{}, type:{}   må være en av Fnr, AktorId, NavIdent eller SystemUser", this.id, this.getClass().getSimpleName());
+    }
+
     public Innsender tilInnsenderType() {
-        return erEkstern() ? Innsender.BRUKER : Innsender.NAV;
+        if (this instanceof Fnr || this instanceof AktorId) return Innsender.BRUKER;
+        if (this instanceof NavIdent) return Innsender.NAV;
+        if (this instanceof SystemUser) return Innsender.SYSTEM;
+        logWrongTypeToSecureLogs();
+        throw new IllegalArgumentException(String.format("Ukjent persontype %s", this.getClass().getSimpleName()));
     }
 
     public Ident tilIdent() {
         if (this instanceof Fnr || this instanceof AktorId) return new Ident(this.get(), IdentType.PERSONBRUKERIDENT);
-        return new Ident(this.get(), IdentType.NAVIDENT);
+        if (this instanceof NavIdent) return new Ident(this.get(), IdentType.NAVIDENT);
+        if (this instanceof SystemUser) return new Ident(this.get(), IdentType.SYSTEM);
+        logWrongTypeToSecureLogs();
+        throw new IllegalArgumentException(String.format("Ukjent persontype %s", this.getClass().getSimpleName()));
     }
 
     public EksternBrukerId eksternBrukerId(){
         if (this instanceof Fnr) return no.nav.common.types.identer.Fnr.of(this.get());
         if (this instanceof AktorId) return no.nav.common.types.identer.AktorId.of(this.get());
-        throw new IllegalStateException("Bare fnr eller aktorId kan brukes som eksternId");
+        logWrongTypeToSecureLogs();
+        throw new IllegalStateException(String.format(
+            "Bare fnr eller aktorId kan brukes som eksternId, fikk %s", this.getClass().getSimpleName())
+        );
     }
 
     @Override
@@ -75,7 +107,7 @@ public abstract class Person {
 
     public static class AktorId extends Person {
 
-        private AktorId(String id) {
+        public AktorId(String id) {
             super(id);
         }
         public no.nav.common.types.identer.AktorId otherAktorId() { return no.nav.common.types.identer.AktorId.of(this.get()); }
@@ -104,5 +136,14 @@ public abstract class Person {
         } else {
             throw new IllegalStateException("Person må være enten fnr, aktørId eller navIdent");
         }
+    }
+
+    @Override
+    public void serialize(JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
+        jsonGenerator.writeString(id);
+    }
+    @Override
+    public void serializeWithType(JsonGenerator jsonGenerator, SerializerProvider serializerProvider, TypeSerializer typeSerializer) throws IOException {
+        throw new UnsupportedOperationException("Not supported.");
     }
 }

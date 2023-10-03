@@ -1,0 +1,35 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.aktivitetskortkvittering.schema.yml"
+required:
+  - aktivitetId
+  - behandlingstype
+  - suksess
+  - behandlingsStatus
+  - behandlet
+type: object
+properties:
+  aktivitetId:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
+    description: Samme aktivitetId som aktivitetskort-bestillingen, som også er kafka key på originalmeldingen.  Funksjonell id for aktivitetskortet.
+  meldingId:
+    type: string
+    format: uuid
+    description: Samme meldingsid som aktivitetskort-bestillingen
+  behandlingstype:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/actionType
+  suksess:
+    type: boolean
+    description: Sier om behandling av meldingen var vellykket. Dersom 'false' vil behandlingsStatus og feilmelding gi ytterligere informasjon om feilen.
+  behandlingsStatus:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/errorType
+    description: Status for behandlingen.
+  feilmelding:
+    type: string
+    description: I tilfelle feil, inneholder exception.message.
+  behandlet:
+    type: string
+    format: date-time
+    examples:
+      - '2022-09-17T21:00:14'
+    description: Dato-tid for behandling av meldingen
+

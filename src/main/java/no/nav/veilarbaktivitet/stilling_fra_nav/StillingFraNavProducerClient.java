@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class StillingFraNavProducerClient {
-    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
+    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
     private final KafkaStringAvroTemplate<DelingAvCvRespons> producerClient;
     private final String topicUt;
 
@@ -75,7 +75,7 @@ public class StillingFraNavProducerClient {
     private void sendRespons(TilstandEnum tilstand, AktivitetData aktivitetData) {
         sendRespons(tilstand,
                 aktivitetData.getStillingFraNavData().getBestillingsId(),
-                aktivitetData.getAktorId(),
+                aktivitetData.getAktorId().get(),
                 aktivitetData.getId()
                 , getSvar(aktivitetData.getStillingFraNavData().getCvKanDelesData())
                 , null);
@@ -95,13 +95,10 @@ public class StillingFraNavProducerClient {
         delingAvCvRespons.setAktorId(aktorId);
         delingAvCvRespons.setAktivitetId(aktivitetId != null ? aktivitetId.toString() : null);
         delingAvCvRespons.setTilstand(tilstand);
-
         delingAvCvRespons.setSvar(svar);
-
         delingAvCvRespons.setKanIkkeOppretteBegrunnelse(kanIkkeOppretteBegrunnelse);
-
-        ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
-        secureLogs.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
+        ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons)
+        secureLog.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
 

@@ -9,10 +9,12 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.slf4j.Logger;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -62,6 +64,15 @@ public class ForhaandsorienteringDAO {
             Date opprettetDato,
             Optional<Long> tekniskId) {
         var id = UUID.randomUUID();
+
+        var currentFhoOnAktivitet = database.queryForObject(
+                //language=sql
+                "SELECT count(*) FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID = ?",
+                resultSet -> resultSet.getInt(1),
+                arenaAktivitetId.id());
+        if (currentFhoOnAktivitet > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten har allerede forhåndsorientering");
+        }
 
         var params = new MapSqlParameterSource()
                 .addValue("id", id.toString())
@@ -150,7 +161,8 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForArenaAktivitet(ArenaId aktivitetId) {
         try {
-            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
+            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ? ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY",
+                    ForhaandsorienteringDAO::map,
                     aktivitetId.id());
         } catch (EmptyResultDataAccessException e) {
             return null;

@@ -4,6 +4,10 @@ on:
     branches:
       - main
 
+permissions:
+  packages: write
+  contents: write
+
 concurrency:
   group: deploy_prod
   cancel-in-progress: true

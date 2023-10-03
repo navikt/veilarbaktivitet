@@ -1,27 +1,23 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
+import no.nav.poao_tilgang.poao_tilgang_test_core.DomainKt;
+import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt;
+import no.nav.poao_tilgang.poao_tilgang_test_core.NavContext;
+import no.nav.poao_tilgang.poao_tilgang_test_core.PrivatBruker;
+
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
+
 
 public class MockNavService {
-    private static final Map<String, MockBruker> fnrBruker = new HashMap<>();
-    private static final Map<String, MockBruker> aktorIdBruker = new HashMap<>();
-    private static final Map<String, MockVeileder> veleder = new HashMap<>();
+    public static final NavContext NAV_CONTEXT = new NavContext();
 
     public static MockBruker createHappyBruker() {
         return createBruker(BrukerOptions.happyBruker());
     }
 
     public static MockBruker createBruker(BrukerOptions brukerOptions) {
-        String fnr = generateFnr();
-        String aktorId = aktorIdFromFnr(fnr);
-        MockBruker mockBruker = new MockBruker(fnr, aktorId, brukerOptions);
-        fnrBruker.put(fnr, mockBruker);
-        aktorIdBruker.put(aktorId, mockBruker);
+        PrivatBruker ny = NAV_CONTEXT.getPrivatBrukere().ny();
+        MockBruker mockBruker = new MockBruker(brukerOptions, ny);
         WireMockUtil.stubBruker(mockBruker);
         return mockBruker;
     }
@@ -45,47 +41,17 @@ public class MockNavService {
     }
 
     public static MockVeileder createVeileder() {
-        MockVeileder mockVeileder = new MockVeileder(genereteVeilederIdent());
-        veleder.put(mockVeileder.getNavIdent(), mockVeileder);
-        return mockVeileder;
+        NavAnsatt navAnsatt = new NavAnsatt();
+        NAV_CONTEXT.getNavAnsatt().add(navAnsatt);
+        navAnsatt.getAdGrupper().add(DomainKt.getTilgjengligeAdGrupper().getModiaOppfolging());
+
+        return new MockVeileder(navAnsatt);
     }
 
-    private static String generateEnhet() {
-        return null; //TODO fiks
+    public static MockVeileder createVeilederMedNasjonalTilgang() {
+        NavAnsatt navAnsatt = NAV_CONTEXT.getNavAnsatt().nyNksAnsatt();
+
+        return new MockVeileder(navAnsatt);
     }
 
-    private static String genereteVeilederIdent() {
-        Random random = new Random();
-        char letter = (char) ('A' + random.nextInt(26));
-        String numbers = IntStream.range(0, 6)
-                .map(i -> random.nextInt(9))
-                .mapToObj(Integer::toString)
-                .collect(Collectors.joining());
-        return letter + numbers;
-    }
-
-    public static String generateFnr() {
-        //TODO fiks se forskjell på aktorid og fnr fra nummer
-        return IntStream.range(0, 11)
-                .map(i -> new Random().nextInt(9))
-                .mapToObj(Integer::toString)
-                .collect(Collectors.joining());
-    }
-
-    private static String aktorIdFromFnr(String fnr) {
-        return new StringBuilder(fnr).reverse().toString();
-    }
-
-
-    static MockVeileder getVeileder(String id) {
-        return veleder.get(id);
-    }
-
-    static MockBruker getBruker(String ident) {
-        MockBruker mockBruker = fnrBruker.get(ident);
-        if (mockBruker != null) {
-            return mockBruker;
-        }
-        return aktorIdBruker.get(ident);
-    }
 }

@@ -1,0 +1,209 @@
+"$schema": https://json-schema.org/draft-07/schema
+"$id": "https://navikt.github.io/veilarbaktivitet/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml"
+required:
+  - messageId
+  - source
+  - aktivitetskortType
+  - aktivitetskort
+  - actionType
+type: object
+additionalProperties: false
+properties:
+  messageId:
+    type: string
+    format: uuid
+    description: Unik id for denne meldingen brukes til deduplisering
+  source:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/source
+  sendt:
+    type: string
+    format: date-time
+  aktivitetskortType:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetskortType
+  actionType:
+    $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/actionType
+  aktivitetskort:
+    $ref: "#/definitions/aktivitetskort"
+
+
+definitions:
+  oppgave:
+    additionalProperties: false
+    type:
+      - object
+      - 'null'
+    properties:
+      tekst:
+        type: string
+      subtekst:
+        type: string
+      url:
+        type: string
+        format: url
+    description: En oppgave vil bli rendret som et alert-panel med en lenke i aktivitetskortet. Dette signaliserer at det er en oppgave bruker eller veileder trenger å gjøre (f.eks. signere en avtale). Selve handlingen vil utføres i et annet system enn aktivitetsplan, og vil typisk resultere i en ny versjon av aktiviteten med oppdatert status sendes inn på denne tjenesten.
+  lenkeseksjon:
+    type: object
+    additionalProperties: false
+    properties:
+      tekst:
+        type: string
+      subtekst:
+        type: string
+      url:
+        type: string
+        format: url
+      lenkeType:
+        type: string
+        enum:
+          - EKSTERN
+          - INTERN
+          - FELLES
+  attributt:
+    type: object
+    additionalProperties: false
+    properties:
+      label:
+        type: string
+      verdi:
+        type: string
+  tag:
+    type: object
+    additionalProperties: false
+    properties:
+      tekst:
+        type: string
+        maxLength: 20
+      sentiment:
+        type: string
+        enum:
+          - POSITIVE
+          - NEGATIVE
+          - NEUTRAL
+      kode:
+        type: string
+    description: Etiketter rendres som etiketter (Tags) på aktivitetskortet. Teksten som sendes inn vil vises som på etiketten med styling basert på sentimentet. Kode er valgfritt og blir foreløpig ikke brukt.
+
+  aktivitetskort:
+    additionalProperties: false
+    type: object
+    required:
+      - id
+      - personIdent
+      - tittel
+      - aktivitetStatus
+      - endretAv
+      - endretTidspunkt
+      - avtaltMedNav
+    properties:
+      id:
+        $ref: ./Aktivitetskort.V1.shared-definitions.schema.yml#/definitions/aktivitetsId
+      personIdent:
+        type: string
+        examples:
+          - '10068831950'
+        description: Norsk identitetsnummer (d-nr eller f-nr) for personen som eier
+          aktivitetskortet
+      tittel:
+        type: string
+        description: Tittelen på aktivitetskortet
+      aktivitetStatus:
+        type: string
+        enum:
+          - FORSLAG
+          - PLANLAGT
+          - GJENNOMFORES
+          - FULLFORT
+          - AVBRUTT
+        description: Dette feltet forteller hvilken status aktiviteten har, og dermed
+          hvilken kolonne aktivitetskortet skal ligge i i aktivitetsplanen. Merk at
+          aktivitetskort som er fullført eller avbrutt ikke kan endres i etterkant,
+          da dette er en endelig status.
+      startDato:
+        type:
+          - string
+          - 'null'
+        format: date
+        examples:
+          - '2022-03-01'
+        description: Planlagt startdato for aktiviteten
+      sluttDato:
+        type:
+          - string
+          - 'null'
+        format: date
+        examples:
+          - '2022-05-15'
+        description: Planlagt sluttdato for aktiviteten
+      beskrivelse:
+        type:
+          - string
+          - 'null'
+        description: Beskrivende tekst for aktiviteten
+      endretAv:
+        type: object
+        additionalProperties: false
+        required:
+          - ident
+          - identType
+        description: Sporingsfelt som identifiserer hvem som oppretter eller endrer
+          aktiviteten
+        properties:
+          ident:
+            type: string
+            examples:
+              - Z999999
+            description: Id til bruker som oppretter eller endrer aktiviteten
+          identType:
+            type: string
+            enum:
+              - ARENAIDENT
+              - NAVIDENT
+              - PERSONBRUKER
+              - TILTAKSARRAGOER
+              - ARBEIDSGIVER
+              - SYSTEM
+            description: |
+              Tiltaksarrangør og arbeidsgiver er orgNr.
+              Personbruker er norsk-ident (dnr eller fnr).
+              Navident er ident til navansatt: feks Z999999.
+              Arenaident: kun til intern bruk.
+              System: Systembruker
+        examples:
+          - ident: AAA123
+            identType: ARENAIDENT
+      endretTidspunkt:
+        type: string
+        format: date-time
+        examples:
+          - '2022-09-17T21:00:14'
+        description: Dato-tid for opprettelse eller endring i kildesystemet
+      avtaltMedNav:
+        type: boolean
+        description: Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette
+          gjelder typisk aktiviteter med aktivitetsplikt.
+      oppgave:
+        additionalProperties: false
+        type:
+          - object
+          - 'null'
+        properties:
+          ekstern:
+            "$ref": "#/definitions/oppgave"
+          intern:
+            "$ref": "#/definitions/oppgave"
+      handlinger:
+        type:
+          - array
+          - 'null'
+        items:
+          "$ref": "#/definitions/lenkeseksjon"
+        description: Handlinger vil rendres som lenkeseksjoner i aktivitetskortet. Dette kan brukes for å tilby tilleggsfunksjonalitet i kildesystemet, f.eks. Les avtalen, Evaluer deltakelsen på tiltaket, o.l.
+      detaljer:
+        type: array
+        items:
+          "$ref": "#/definitions/attributt"
+        description: For å vise selvdefinerte informasjonsfelter på aktivitetskortet. Disse rendres som enkle label/tekst komponenter i samme rekkefølge som de ligger i meldingen.
+      etiketter:
+        type: array
+        items:
+          "$ref": "#/definitions/tag"

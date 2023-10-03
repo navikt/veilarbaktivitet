@@ -3,11 +3,8 @@ package no.nav.veilarbaktivitet.testutils;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgave;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
@@ -15,6 +12,7 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 
 public class AktivitetTypeDataTestBuilder {
 
@@ -105,14 +103,20 @@ public class AktivitetTypeDataTestBuilder {
 
     @SneakyThrows
     public static EksternAktivitetData eksternAktivitetData() {
-        return EksternAktivitetData.builder()
-                .type(AktivitetskortType.ARENA_TILTAK)
-                .source("AKTIVITET_ARENA_ACL")
-                .tiltaksKode("ABIST")
-                .oppgave(new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no")), null))
-                .detalj(new Attributt("Arrangør", "NAV"))
-                .detalj(new Attributt("Dager per uke", "5"))
-                .etikett(new Etikett("GJENN"))
-                .build();
+        return new EksternAktivitetData(
+            "AKTIVITET_ARENA_ACL",
+            "ABIST",
+            false,
+            null,
+            null,
+            AktivitetskortType.ARENA_TILTAK,
+            new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no")), null),
+            List.of(),
+            List.of(
+               new Attributt("Arrangør", "NAV"),
+               new Attributt("Dager per uke", "5")
+           ),
+           List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN"))
+        );
     }
 }

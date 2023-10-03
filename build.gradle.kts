@@ -1,7 +1,8 @@
 
 val spring_boot_version = "3.0.2"
-val common_version = "3.2023.03.22_12.48-00fcbdc8f455"
-val dab_common_version = "2023.02.24-10.12.c01f6e9ff044"
+val common_version = "3.2023.07.07_09.10-85326e9557f0"
+val dab_common_version = "2023.06.30-12.11.f11e6e6e92ef"
+val poao_tilgang_version = "2023.07.03_09.35-6073bc164ee2"
 val shedlock_version = "4.42.0"
 val _version: String by project
 
@@ -17,7 +18,8 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "4.0.0.2929"
     id("org.springframework.boot") version "3.0.2"
-    id("io.freefair.lombok") version "6.6.2"
+    kotlin("plugin.lombok") version "1.9.0"
+    id("io.freefair.lombok") version "8.1.0"
 }
 
 java {
@@ -126,6 +128,12 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
+    // Lombok stuff
+//    compileOnly("org.projectlombok:lombok:1.18.28")
+//    annotationProcessor("org.projectlombok:lombok:1.18.28")
+//    testCompileOnly("org.projectlombok:lombok:1.18.28")
+//    testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
+
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
 
@@ -165,18 +173,24 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("com.oracle.database.jdbc:ojdbc11")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 
+    implementation("io.getunleash:unleash-client-java:8.2.1")
+
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
     //test dependencys
+    testImplementation("com.github.navikt.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
+
     testImplementation("org.awaitility:awaitility:4.1.0")
     testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
     //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")

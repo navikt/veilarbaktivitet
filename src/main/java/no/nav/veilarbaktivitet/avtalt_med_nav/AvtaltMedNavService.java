@@ -14,13 +14,13 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Date;
 import java.util.List;
-
-import static no.nav.veilarbaktivitet.util.DateUtils.dateToLocalDateTime;
 
 @Service
 @Transactional
@@ -88,7 +88,7 @@ public class AvtaltMedNavService {
                 .withEndretAvType(Innsender.NAV) // alltid NAV
                 .withAvtalt(true);
 
-        aktivitetDAO.oppdaterAktivitet(nyAktivitet, dateToLocalDateTime(now));
+        aktivitetDAO.oppdaterAktivitet(nyAktivitet);
 
         metricService.oppdaterAktivitetMetrikk(nyAktivitet, true, nyAktivitet.isAutomatiskOpprettet());
         meterRegistry.counter(AVTALT_MED_NAV_COUNTER, FORHAANDSORIENTERING_TYPE_LABEL, fho.getType().name(), AKTIVITET_TYPE_LABEL, nyAktivitet.getAktivitetType().name()).increment();
@@ -96,8 +96,10 @@ public class AvtaltMedNavService {
         return AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetDAO.hentAktivitet(aktivitetId).withForhaandsorientering(fho), false);
     }
 
-    public AktivitetDTO markerSomLest(Forhaandsorientering fho, Person innloggetBruker) {
+    public AktivitetDTO markerSomLest(Forhaandsorientering fho, Person innloggetBruker, Long aktivitetVersion) {
         var aktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(fho.getAktivitetId()));
+        if (!aktivitet.getVersjon().equals(aktivitetVersion))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Kan ikke markere gammel versjons som lest");
         var now = new Date();
 
         fhoDAO.markerSomLest(fho.getId(), now, aktivitet.getVersjon());

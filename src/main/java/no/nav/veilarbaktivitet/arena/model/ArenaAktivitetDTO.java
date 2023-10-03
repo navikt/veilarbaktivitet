@@ -26,7 +26,8 @@ public class ArenaAktivitetDTO {
     Date opprettetDato;
     boolean avtalt;
     ForhaandsorienteringDTO forhaandsorientering;
-    public ArenaStatusDTO etikett;
+    ArenaStatusDTO etikett;
+    long versjon;
 
     // Tiltaksaktivitet
     Float deltakelseProsent;

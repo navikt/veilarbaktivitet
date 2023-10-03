@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import de.mkammerer.wiremock.WireMockExtension;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.GjeldendePeriodeMetrikk;
+import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;

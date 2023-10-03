@@ -43,7 +43,7 @@ public class StillingFraNavTestService {
     KafkaStringAvroTemplate<ForesporselOmDelingAvCv> kafkaAvroTemplate;
 
     public ConsumerRecord<String, DelingAvCvRespons>  opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding) {
-        assertEquals(mockBruker.getAktorId(), melding.getAktorId());
+        assertEquals(mockBruker.getAktorId().get(), melding.getAktorId());
 
         final Consumer<String, DelingAvCvRespons> consumer = testService.createStringAvroConsumer(stillingFraNavUtTopic);
 
@@ -56,7 +56,7 @@ public class StillingFraNavTestService {
 
         SoftAssertions.assertSoftly(assertions -> {
             assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
-            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId());
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
             assertions.assertThat(value.getAktivitetId()).isNotEmpty();
             assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.PROVER_VARSLING);
             assertions.assertThat(value.getSvar()).isNull();
@@ -67,7 +67,7 @@ public class StillingFraNavTestService {
 
     public static ForesporselOmDelingAvCv createForesporselOmDelingAvCv(String bestillingsId, MockBruker mockBruker) {
         return ForesporselOmDelingAvCv.newBuilder()
-                .setAktorId(mockBruker.getAktorId())
+                .setAktorId(mockBruker.getAktorId().get())
                 .setArbeidsgiver("arbeidsgiver")
                 .setArbeidssteder(List.of(
                         Arbeidssted.newBuilder()

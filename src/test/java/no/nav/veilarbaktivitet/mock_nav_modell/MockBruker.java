@@ -4,37 +4,44 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
+import no.nav.poao_tilgang.poao_tilgang_test_core.PrivatBruker;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.UUID;
 
 @Getter
 public class MockBruker extends RestassuredUser {
-    private final String aktorId;
-    @Setter(AccessLevel.PACKAGE)
-    private UUID oppfolgingsperiode = UUID.randomUUID();
+    protected final PrivatBruker privatbruker;
+    @Setter
+    public UUID oppfolgingsperiode = UUID.randomUUID();
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
-    MockBruker(String fnr, String aktorId, BrukerOptions brukerOptions) {
-        super(fnr, UserRole.EKSTERN);
-        this.aktorId = aktorId;
+    MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
+        super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
+        this.privatbruker = privatBruker;
     }
 
     public String getFnr() {
         return super.ident;
     }
 
+    public Person.AktorId getAktorId() {
+        return Person.aktorId(new StringBuilder(getFnr()).reverse().toString());
+    }
+
+
     public Person.Fnr getFnrAsFnr() {
         return Person.fnr(super.ident);
     }
 
-    public boolean harIdent(String ident) {
-        return super.ident.equals(ident) || aktorId.equals(ident);
-    }
 
     public Person.AktorId getAktorIdAsAktorId() {
-        return Person.aktorId(aktorId);
+        return getAktorId();
+    }
+
+    public String getOppfolgingsenhet() {
+        return privatbruker.getOppfolgingsenhet();
     }
 }

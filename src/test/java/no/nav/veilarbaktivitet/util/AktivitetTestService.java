@@ -9,10 +9,11 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetsplanDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitet.dto.EtikettTypeDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -21,31 +22,28 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.LestDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
+import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.mock_nav_modell.RestassuredUser;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SisteOppfolgingsperiodeV1;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
+import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdateringEventType;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
-import no.nav.veilarbaktivitet.testutils.AktivitetskortTestBuilder;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
 import org.apache.kafka.common.header.internals.RecordHeader;
 import org.assertj.core.api.Assertions;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
-import shaded.com.google.common.collect.Streams;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.List;
@@ -67,15 +65,13 @@ public class AktivitetTestService {
     private final StillingFraNavTestService stillingFraNavTestService;
     private final int port;
 
-    @Value("${topic.inn.oppfolgingsperiode}")
-    private String oppfolgingperiodeTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    private String springKafkaConsumerGroupId;
+    private final String innRekrutteringsbistandStatusoppdateringTopic;
 
     private final KafkaTestService kafkaTestService;
 
     private final KafkaTemplate<String, String> stringStringKafkaTemplate;
+
+    private final KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> rekrutteringsbistandStatusoppdateringProducer;
 
     private final String aktivitetsKortV1Topic;
 
@@ -148,18 +144,22 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public AktivitetDTO oppdatterAktivitet(int port, MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public ValidatableResponse oppdatterAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
-        Response response = user
+        return user
                 .createRequest()
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
                 .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId(), mockBruker))
-                .then()
+                .then();
+    }
+    public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+        Response response = oppdatterAktivitet(mockBruker, user, aktivitetDTO)
                 .assertThat().statusCode(HttpStatus.OK.value())
-                .extract().response();
+                .extract()
+                .response();
 
         AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
         assertNotNull(aktivitet);
@@ -175,7 +175,7 @@ public class AktivitetTestService {
     }
 
     public static AktivitetDTO finnAktivitet(AktivitetsplanDTO aktivitetsplanDTO, String id) {
-        return aktivitetsplanDTO.aktiviteter.stream().filter(a -> a.getId().equals(id)).findAny().get();
+        return aktivitetsplanDTO.getAktiviteter().stream().filter(a -> a.getId().equals(id)).findAny().get();
     }
 
     public AktivitetDTO hentAktivitet(MockBruker mockBruker, String id) {
@@ -197,6 +197,24 @@ public class AktivitetTestService {
 
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker) {
         return opprettStillingFraNav(mockBruker, createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker));
+    }
+
+    public void mottaOppdateringFraRekrutteringsbistand(String bestillingsId, String detaljer, RekrutteringsbistandStatusoppdateringEventType oppdateringsType, String endretAvIdent, ZonedDateTime tidspunkt) throws ExecutionException, InterruptedException, TimeoutException {
+        var payload = new RekrutteringsbistandStatusoppdatering(
+                oppdateringsType,
+                detaljer,
+                endretAvIdent,
+                tidspunkt
+        );
+        var sendResultFattJobben = rekrutteringsbistandStatusoppdateringProducer.send(
+                innRekrutteringsbistandStatusoppdateringTopic,
+                bestillingsId,
+                payload
+        ).get(5, TimeUnit.SECONDS);
+        kafkaTestService.assertErKonsumert(
+                innRekrutteringsbistandStatusoppdateringTopic,
+                sendResultFattJobben.getRecordMetadata().offset()
+        );
     }
 
     public AktivitetDTO opprettStillingFraNav(MockBruker mockBruker, ForesporselOmDelingAvCv melding) {
@@ -235,7 +253,7 @@ public class AktivitetTestService {
 
     }
 
-    public AktivitetDTO oppdatterAktivitetStatus(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, AktivitetStatus status) {
+    public AktivitetDTO oppdaterAktivitetStatus(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, AktivitetStatus status) {
         AktivitetDTO aktivitetDTO = orginalAktivitet.toBuilder().status(status).build();
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
@@ -245,6 +263,28 @@ public class AktivitetTestService {
                 .body(aktivitetPayloadJson)
                 .when()
                 .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status", mockBruker))
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+
+        AktivitetDTO aktivitet = response.as(AktivitetDTO.class);
+        assertNotNull(aktivitet);
+        assertNotNull(aktivitet.getId());
+        AktivitetAssertUtils.assertOppdatertAktivitet(aktivitet, aktivitetDTO);
+
+        return aktivitet;
+    }
+
+    public AktivitetDTO oppdaterAktivitetEtikett(MockBruker mockBruker, MockVeileder user, AktivitetDTO orginalAktivitet, EtikettTypeDTO status) {
+        AktivitetDTO aktivitetDTO = orginalAktivitet.toBuilder().etikett(status).build();
+        String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
+
+        Response response = user
+                .createRequest()
+                .and()
+                .body(aktivitetPayloadJson)
+                .when()
+                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/etikett", mockBruker))
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -376,26 +416,6 @@ public class AktivitetTestService {
                 .jsonPath().getList(".", Aktivitet.class);
     }
 
-    public void avsluttOppfolgingsperiode(UUID oppfolgingsperiode, Person.AktorId aktorId) throws ExecutionException, InterruptedException, TimeoutException {
-        var now = ZonedDateTime.of(LocalDateTime.now(), ZoneId.systemDefault());
-        var start = now.withYear(2020);
-        var key = aktorId.get();
-        var payload = JsonUtils.toJson(
-                SisteOppfolgingsperiodeV1.builder()
-                        .aktorId(aktorId.get())
-                        .uuid(oppfolgingsperiode)
-                        .startDato(start)
-                        .sluttDato(now)
-        );
-        var sendResult = stringStringKafkaTemplate.send(new ProducerRecord<>(
-                oppfolgingperiodeTopic,
-                key,
-                payload
-        )).get(3, TimeUnit.SECONDS);
-
-        kafkaTestService.assertErKonsumert(oppfolgingperiodeTopic, springKafkaConsumerGroupId, sendResult.getRecordMetadata().offset());
-    }
-
 
     public ProducerRecord makeAktivitetskortProducerRecord(KafkaAktivitetskortWrapperDTO melding, ArenaMeldingHeaders arenaMeldingHeaders) {
         if (arenaMeldingHeaders == null) {
@@ -409,18 +429,17 @@ public class AktivitetTestService {
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
-    public void opprettEksterntAktivitetsKortByAktivitetkort(List<Aktivitetskort> meldinger, List<ArenaMeldingHeaders> meldingContextList) {
-        var aktivitetskorter = meldinger.stream().map(AktivitetskortTestBuilder::aktivitetskortMelding).toList();
-        opprettEksterntAktivitetsKort(aktivitetskorter, meldingContextList);
+    public void opprettEksterntArenaKort(ArenaKort arenaKort) {
+        opprettEksterntArenaKort(List.of(arenaKort));
     }
 
     @SuppressWarnings("unchecked")
     @SneakyThrows
-    public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger, List<ArenaMeldingHeaders> contexts) {
-        var lastRecord = (SendResult<String, String>) Streams.mapWithIndex(meldinger.stream(),
-                    (melding, index) -> makeAktivitetskortProducerRecord(melding, contexts.get((int) index)))
+    public void opprettEksterntArenaKort(List<ArenaKort> arenaKort) {
+        var lastRecord = (SendResult<String, String>) arenaKort.stream().map(
+                    kort -> makeAktivitetskortProducerRecord(kort.getMelding(), kort.getHeader()))
                 .map((record) -> stringStringKafkaTemplate.send(record))
-                .skip(meldinger.size() - 1)
+                .skip(arenaKort.size() - 1)
                 .findFirst().get().get();
 
         kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecord.getRecordMetadata().offset());
@@ -454,7 +473,7 @@ public class AktivitetTestService {
 
     public AktivitetDTO hentAktivitetByFunksjonellId(MockBruker mockBruker, MockVeileder veileder, UUID funksjonellId) {
         return hentAktiviteterForFnr(mockBruker, veileder)
-                .aktiviteter.stream()
+                .getAktiviteter().stream()
                 .filter((a) -> Objects.equals(a.getFunksjonellId(), funksjonellId))
                 .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Fant ikke aktivitet med funksjonellId %s", funksjonellId)));
     }

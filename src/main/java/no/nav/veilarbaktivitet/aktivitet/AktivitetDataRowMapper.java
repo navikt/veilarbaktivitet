@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Innsender;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.springframework.jdbc.core.RowMapper;
@@ -34,7 +35,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .id(rs.getLong("aktivitet_id"))
                 .funksjonellId(Database.hentMaybeUUID(rs, "funksjonell_id"))
                 .versjon(rs.getLong("versjon"))
-                .aktorId(rs.getString("aktor_id"))
+                .aktorId(Person.aktorId(rs.getString("aktor_id")))
                 .aktivitetType(type)
                 .fraDato(Database.hentDato(rs, "fra_dato"))
                 .tilDato(Database.hentDato(rs, "til_dato"))
@@ -89,8 +90,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
     private static StillingsoekAktivitetData mapStillingsAktivitet(ResultSet rs) throws SQLException {
         return StillingsoekAktivitetData.builder()
                 .stillingsTittel(rs.getString("stillingstittel"))
-                .arbeidsgiver(rs.getString("arbeidsgiver"))
-                .arbeidssted(rs.getString("arbeidssted"))
+                .arbeidsgiver(rs.getString("STILLINGSSOK.ARBEIDSGIVER"))
+                .arbeidssted(rs.getString("STILLINGSSOK.ARBEIDSSTED"))
                 .kontaktPerson(rs.getString("kontaktperson"))
                 .stillingsoekEtikett(EnumUtils.valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
                 .build()
@@ -156,23 +157,23 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .kontaktpersonData(kontaktpersonData)
                 .soknadsstatus(EnumUtils.valueOf(Soknadsstatus.class, rs.getString("soknadsstatus")))
                 .livslopsStatus(EnumUtils.valueOf(LivslopsStatus.class, rs.getString("livslopsstatus")))
-                .ikkefattjobbendetaljer(rs.getString("ikkefattjobbendetaljer"))
+                .detaljer(rs.getString("STILLING_FRA_NAV.DETALJER"))
                 .build();
     }
 
     private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
         var arenaId = rs.getString("ARENA_ID");
-        return EksternAktivitetData.builder()
-                .source(rs.getString("SOURCE"))
-                .type(EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")))
-                .tiltaksKode(rs.getString("TILTAK_KODE"))
-                .arenaId(arenaId != null ? new ArenaId(arenaId) : null)
-                .oppfolgingsperiodeSlutt(Database.hentLocalDateTime(rs, "OPPFOLGINGSPERIODE_SLUTT"))
-                .opprettetSomHistorisk(rs.getBoolean("OPPRETTET_SOM_HISTORISK"))
-                .oppgave(Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class))
-                .handlinger(Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class))
-                .etiketter(Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class))
-                .detaljer(Database.hentListObjectFromJsonString(rs, "DETALJER", Attributt.class))
-                .build();
+        return new EksternAktivitetData(
+            rs.getString("SOURCE"),
+            rs.getString("TILTAK_KODE"),
+            rs.getBoolean("OPPRETTET_SOM_HISTORISK"),
+            Database.hentLocalDateTime(rs, "OPPFOLGINGSPERIODE_SLUTT"),
+            arenaId != null ? new ArenaId(arenaId) : null,
+            EnumUtils.valueOf(AktivitetskortType.class, rs.getString("AKTIVITETKORT_TYPE")),
+            Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class),
+            Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class),
+            Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class),
+            Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class)
+        );
     }
 }

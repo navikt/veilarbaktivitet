@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -94,11 +95,11 @@ public class ArenaService {
                 .findAny();
     }
 
-    private Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
+    public Function<ArenaAktivitetDTO, ArenaAktivitetDTO> mergeMedForhaandsorientering(List<Forhaandsorientering> forhaandsorienteringData) {
         return arenaAktivitetDTO -> arenaAktivitetDTO.setForhaandsorientering(forhaandsorienteringData
                 .stream()
                 .filter(arenaForhaandsorienteringData -> arenaForhaandsorienteringData.getArenaAktivitetId().equals(arenaAktivitetDTO.getId()))
-                .findAny()
+                .max(Comparator.comparing(Forhaandsorientering::getOpprettetDato))
                 .map(AktivitetDTOMapper::mapForhaandsorientering)
                 .orElse(null)
         );
