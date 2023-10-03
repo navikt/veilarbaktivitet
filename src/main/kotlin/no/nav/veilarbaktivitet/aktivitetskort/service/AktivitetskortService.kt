@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsD
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetsKortFunksjonellException
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.UlovligEndringFeil
@@ -40,6 +41,11 @@ class AktivitetskortService(
                 // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
                     bestilling is ArenaAktivitetskortBestilling -> {
+                        if(gammelAktivitet.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name) {
+                            log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
+                            return UpsertActionResult.IGNORER
+
+                        }
                         arenaAktivitetskortService.oppdaterAktivitet(
                             bestilling,
                             gammelAktivitet)

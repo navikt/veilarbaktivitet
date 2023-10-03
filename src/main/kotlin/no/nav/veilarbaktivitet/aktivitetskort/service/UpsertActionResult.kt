@@ -4,5 +4,6 @@ enum class UpsertActionResult {
     OPPDATER,
     OPPRETT,
     KASSER,
-    FUNKSJONELL_FEIL
+    FUNKSJONELL_FEIL,
+    IGNORER
 }

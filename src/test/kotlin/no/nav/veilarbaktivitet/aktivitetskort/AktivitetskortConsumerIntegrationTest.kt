@@ -1003,6 +1003,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
         val kometAktivitetskortWrapperDTO = arenaAktivitetskortwrapper
             .copy(
+                messageId = UUID.randomUUID(),
                 aktivitetskort = arenaAktivitetskortwrapper.aktivitetskort.copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetStatus.GJENNOMFORES),
                 aktivitetskortType = AktivitetskortType.GRUPPEAMO,
                 source = MessageSource.TEAM_KOMET.name)
@@ -1019,7 +1020,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.eksternAktivitet?.type).isEqualTo(AktivitetskortType.GRUPPEAMO)
         assertThat(aktivitet.endretAv).isEqualTo("srvamt")
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
-        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET) // TODO egen transaksjonstype for denne?
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET) // TODO egen transaksjonstype for denne?
 
         val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
