@@ -83,7 +83,7 @@ public class ForhaandsorienteringDAO {
         MapSqlParameterSource params1 = new MapSqlParameterSource()
                 .addValue("arenaAktivitetId", arenaAktivitetId.id());
         String sql1 = "SELECT count(*) FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID = :arenaAktivitetId";
-        var currentFhoOnAktivitet = template.queryForObject(sql1, params1, int.class);
+        Integer currentFhoOnAktivitet = Optional.ofNullable(template.queryForObject(sql1, params1, int.class)).orElseThrow();
         if (currentFhoOnAktivitet > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten har allerede forhåndsorientering");
         }

@@ -125,11 +125,11 @@ public class AktivitetDAO {
     }
 
     public Long nesteAktivitetId() {
-        return namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_ID_SEQ.nextval from dual", Long.class);
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_ID_SEQ.nextval from dual", Long.class)).orElseThrow();
     }
 
-    public long nesteVersjon() {
-        return namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_VERSJON_SEQ.nextval from dual", Long.class);
+    public Long nesteVersjon() {
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_VERSJON_SEQ.nextval from dual", Long.class)).orElseThrow();
     }
 
 
