@@ -97,7 +97,7 @@ public class StillingFraNavProducerClient {
         delingAvCvRespons.setTilstand(tilstand);
         delingAvCvRespons.setSvar(svar);
         delingAvCvRespons.setKanIkkeOppretteBegrunnelse(kanIkkeOppretteBegrunnelse);
-        ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons)
+        ProducerRecord<String, DelingAvCvRespons> stringDelingAvCvResponsProducerRecord = new ProducerRecord<>(topicUt, delingAvCvRespons.getBestillingsId(), delingAvCvRespons);
         secureLog.info("StillingFraNavProducerClient.sendRespons:{}", stringDelingAvCvResponsProducerRecord);
         producerClient.send(stringDelingAvCvResponsProducerRecord);
     }
