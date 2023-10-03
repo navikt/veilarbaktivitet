@@ -18,7 +18,7 @@ class EksternaktivitetDAOTest {
     void test_json_serialisering() {
         JdbcTemplate jdbcTemplate = LocalH2Database.getPresistentDb();
         Database database = new Database(jdbcTemplate);
-        AktivitetDAO aktivitetDAO = new AktivitetDAO(database, database.getNamedJdbcTemplate());
+        AktivitetDAO aktivitetDAO = new AktivitetDAO(database.getNamedJdbcTemplate());
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEksternAktivitet();
         AktivitetData opprettetAktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitetData);
