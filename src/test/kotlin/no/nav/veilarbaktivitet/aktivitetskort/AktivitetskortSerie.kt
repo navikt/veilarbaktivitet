@@ -27,7 +27,7 @@ open class AktivitetskortSerie(
         status: AktivitetStatus = AktivitetStatus.GJENNOMFORES,
         endretTidspunkt: ZonedDateTime = ZonedDateTime.now()
     ): KafkaAktivitetskortWrapperDTO {
-        return AktivitetskortUtil.aktivitetskortMelding(
+        return KafkaAktivitetskortWrapperDTO(
             AktivitetskortUtil.ny(
                 funksjonellId,
                 status,
@@ -58,7 +58,7 @@ class ArenaKort(
     val header: ArenaMeldingHeaders
 ) {
    constructor(kort: Aktivitetskort, header: ArenaMeldingHeaders) : this(
-       AktivitetskortUtil.aktivitetskortMelding(kort, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL),
+       KafkaAktivitetskortWrapperDTO(kort, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL),
        header
    )
 }

@@ -15,7 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.extraFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.invalidDateFieldRecord
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaAktivitetWrapper
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaArenaAktivitetWrapper
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.missingFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
@@ -70,7 +70,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     var messageDAO: AktivitetsMessageDAO? = null
 
     @Autowired
-    var aktivitetskortService: AktivitetskortService? = null
+    lateinit var aktivitetskortService: AktivitetskortService
 
     @Autowired
     var tiltakMigreringCronService: TiltakMigreringCronService? = null
@@ -187,7 +187,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 brukerIdent,
                 IdentType.PERSONBRUKERIDENT
             ))
-        val kafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(
+        val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(
             aktivitetskort, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
@@ -293,12 +293,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(avtaltMedNav = true)
-        val melding1 = AktivitetskortUtil.aktivitetskortMelding(
+        val melding1 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitet, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
             .copy(avtaltMedNav = false)
-        val melding2 = AktivitetskortUtil.aktivitetskortMelding(
+        val melding2 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitetUpdate, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(melding1, melding2))
@@ -315,13 +315,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun oppdater_tiltaksaktivitet_endre_bruker_skal_throwe() {
         val funksjonellId = UUID.randomUUID()
         val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val melding1 = AktivitetskortUtil.aktivitetskortMelding(
+        val melding1 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitet, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         val mockBruker2 = MockNavService.createHappyBruker()
         val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
             .copy(personIdent = mockBruker2.fnr)
-        val melding2 = AktivitetskortUtil.aktivitetskortMelding(
+        val melding2 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitetUpdate, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(melding1, melding2))
@@ -338,7 +338,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun duplikat_melding_bare_1_opprettet_transaksjon() {
         val funksjonellId = UUID.randomUUID()
         val aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val kafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+        val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val context = meldingContext()
         val producerRecord =
             aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context) as ProducerRecord<String, String>
@@ -362,9 +362,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdatering_av_detaljer_gir_riktig_transaksjon() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = AktivitetskortUtil.aktivitetskortMelding(
+        val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
             aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
-        val tiltaksaktivitetEndret = AktivitetskortUtil.aktivitetskortMelding(
+        val tiltaksaktivitetEndret = KafkaAktivitetskortWrapperDTO(
             aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
@@ -386,7 +386,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun skal_handtere_ukjent_source() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = AktivitetskortUtil.aktivitetskortMelding(
+        val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
             aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK).copy(source = "UKJENT_SOURCE")
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
@@ -401,10 +401,10 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(avtaltMedNav = false), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val etikett = Etikett("Fått plass", Sentiment.POSITIVE,"FATT_PLASS")
-        val tiltaksaktivitetEndret = AktivitetskortUtil.aktivitetskortMelding(
+        val tiltaksaktivitetEndret = KafkaAktivitetskortWrapperDTO(
             aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
                 .copy(avtaltMedNav = true, etiketter = listOf(etikett)), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         aktivitetTestService.opprettEksterntAktivitetsKort(
@@ -464,7 +464,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     "Gammelt navn"
                 )
             ))
-        val tiltaksMelding = AktivitetskortUtil.aktivitetskortMelding(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+        val tiltaksMelding = KafkaAktivitetskortWrapperDTO(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
@@ -472,7 +472,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     nyesteNavn
                 )
             ))
-        val tiltaksMeldingEndret = AktivitetskortUtil.aktivitetskortMelding(tiltaksaktivitetEndret, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+        val tiltaksMeldingEndret = KafkaAktivitetskortWrapperDTO(tiltaksaktivitetEndret, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
                 ArenaKort(tiltaksMelding, context),
@@ -593,7 +593,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun should_throw_runtime_exception_on_missing_arena_headers() {
-        var aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
+        var aktivitetWrapper = kafkaArenaAktivitetWrapper(mockBruker.fnrAsFnr)
         aktivitetWrapper = aktivitetWrapper.copy(aktivitetskortType = AktivitetskortType.ARENA_TILTAK)
         val h1 = RecordHeader("NONSENSE_HEADER", "DUMMYVALUE".toByteArray())
         val record = ConsumerRecord(
@@ -613,7 +613,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun should_throw_runtime_exception_on_missing_messageId() {
-        val aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
+        val aktivitetWrapper = kafkaArenaAktivitetWrapper(mockBruker.fnrAsFnr)
             .copy(messageId = null, aktivitetskortType = AktivitetskortType.VARIG_LONNSTILSKUDD)
         val record = ConsumerRecord(
             topic,
@@ -632,7 +632,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun should_handle_messageId_in_header() {
-        var aktivitetWrapper = kafkaAktivitetWrapper(mockBruker.fnrAsFnr)
+        var aktivitetWrapper = kafkaArenaAktivitetWrapper(mockBruker.fnrAsFnr)
         aktivitetWrapper = aktivitetWrapper.copy(
             aktivitetskortType = AktivitetskortType.VARIG_LONNSTILSKUDD,
             messageId = null
@@ -679,8 +679,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                     "Nytt navn"
                 )
             ))
-        val aktivitetskort = AktivitetskortUtil.aktivitetskortMelding(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
-        val aktivitetskortOppdatert = AktivitetskortUtil.aktivitetskortMelding(tiltaksaktivitetOppdatert, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+        val aktivitetskort = KafkaAktivitetskortWrapperDTO(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+        val aktivitetskortOppdatert = KafkaAktivitetskortWrapperDTO(tiltaksaktivitetOppdatert, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val h1 = RecordHeader(
             AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID,
             ArenaId("ARENATA123").id().toByteArray()
@@ -861,7 +861,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val kontekst = meldingContext(arenata123, "MIDLONNTIL")
         aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(arenaAktivitet, kontekst)))
         val midlertidigLonnstilskudd = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
-        val kafkaAktivitetskortWrapperDTO = AktivitetskortUtil.aktivitetskortMelding(
+        val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(
             midlertidigLonnstilskudd, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kafkaAktivitetskortWrapperDTO))
@@ -970,18 +970,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
 
         aktivitetTestService.opprettEksterntArenaKort(
-            listOf(
-                ArenaKort(tiltaksaktivitet, defaultcontext)
-            )
+            listOf(ArenaKort(tiltaksaktivitet, defaultcontext))
         )
 
         val tiltaksaktivitetEndret = tiltaksaktivitet.copy(endretAv = Ident.builder().ident("team_tiltak").identType(IdentType.SYSTEM).build())
+        val kometSinAktivitet = KafkaAktivitetskortWrapperDTO(tiltaksaktivitetEndret, AktivitetskortType.GRUPPEAMO, MessageSource.TEAM_KOMET)
 
-        val kometSinAktivitet = AktivitetskortUtil.aktivitetskortMelding(tiltaksaktivitetEndret, AktivitetskortType.GRUPPEAMO, MessageSource.TEAM_KOMET)
-
-        aktivitetTestService.opprettEksterntAktivitetsKort(
-            listOf(
-                kometSinAktivitet))
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kometSinAktivitet))
 
         val aktivitet = hentAktivitet(tiltaksaktivitet.id)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
@@ -992,16 +987,47 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo("SYSTEM")
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetDataOptional =
-            aktivitetskortService?.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id)
-        assertThat(aktivitetDataOptional).isPresent.hasValueSatisfying {
-            a ->
-                assertThat(a.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
-                val eksternAktivitetData = a.eksternAktivitetData!!
-                assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
-                assertThat(eksternAktivitetData.tiltaksKode).isNull()
-                assertThat(eksternAktivitetData.arenaId).isNull()
-        }
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id)
+        assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
+        val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
+        assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
+        assertThat(eksternAktivitetData.tiltaksKode).isNull()
+        assertThat(eksternAktivitetData.arenaId).isNull()
+    }
+
+    @Test
+    fun acl_oppdateringer_skal_ignoreres_hvis_komet_har_tatt_over_aktivitet() {
+        val arenaKortSerie = AktivitetskortSerie(mockBruker, AktivitetskortType.ARENA_TILTAK)
+        val arenaAktivitetskortwrapper = arenaKortSerie.ny(AktivitetStatus.PLANLAGT)
+        aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(arenaAktivitetskortwrapper, defaultcontext)))
+
+        val kometAktivitetskortWrapperDTO = arenaAktivitetskortwrapper
+            .copy(
+                messageId = UUID.randomUUID(),
+                aktivitetskort = arenaAktivitetskortwrapper.aktivitetskort.copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetStatus.GJENNOMFORES),
+                aktivitetskortType = AktivitetskortType.GRUPPEAMO,
+                source = MessageSource.TEAM_KOMET.name)
+        aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kometAktivitetskortWrapperDTO))
+
+        val ignorertArenaAktivitetskort = arenaKortSerie.ny(AktivitetStatus.FULLFORT)
+        aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(ignorertArenaAktivitetskort, defaultcontext)))
+
+        val aktivitet = hentAktivitet(arenaKortSerie.funksjonellId)
+        assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.GJENNOMFORES)
+        val oppfolgingsperiode = aktivitet.oppfolgingsperiodeId
+        assertThat(oppfolgingsperiode).isNotNull()
+        assertThat(aktivitet.eksternAktivitet?.type).isEqualTo(AktivitetskortType.GRUPPEAMO)
+        assertThat(aktivitet.endretAv).isEqualTo("srvamt")
+        assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET) // TODO egen transaksjonstype for denne?
+
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
+        val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
+        assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
+        assertThat(eksternAktivitetData.tiltaksKode).isNull()
+        assertThat(eksternAktivitetData.arenaId).isNull()
     }
 
     private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
