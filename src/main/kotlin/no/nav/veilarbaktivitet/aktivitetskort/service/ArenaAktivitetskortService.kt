@@ -52,7 +52,10 @@ class ArenaAktivitetskortService (
         )
 
         // Gjør arena-spesifikk migrering
-        arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
+        val erMigrertAllerede = idMappingDAO.getAktivitetId(bestilling.eksternReferanseId).isPresent
+        if (!erMigrertAllerede) {
+            arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
+        }
         return opprettetAktivitetsData
     }
 
