@@ -31,6 +31,9 @@ kotlin {
     jvmToolchain(17)
 }
 
+configurations.all {
+    resolutionStrategy.failOnNonReproducibleResolution()
+}
 
 tasks.test {
     useJUnitPlatform()

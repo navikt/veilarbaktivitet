@@ -13,8 +13,6 @@ import org.springframework.stereotype.Service;
 class OppfolgingsperiodeConsumer {
     private final OppfolgingsperiodeService oppfolgingsperiodeService;
 
-
-
     @KafkaListener(topics = "${topic.inn.oppfolgingsperiode}", containerFactory = "stringStringKafkaListenerContainerFactory")
     void opprettEllerOppdaterSistePeriode(ConsumerRecord<String, String> consumerRecord) {
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = JsonUtils.fromJson(consumerRecord.value(), SisteOppfolgingsperiodeV1.class);
@@ -27,6 +25,4 @@ class OppfolgingsperiodeConsumer {
 
 
     }
-
-
 }
