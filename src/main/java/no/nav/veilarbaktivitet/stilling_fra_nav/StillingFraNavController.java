@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
 import lombok.RequiredArgsConstructor;
-import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -26,7 +25,6 @@ public class StillingFraNavController {
     private final DelingAvCvService service;
 
     @PutMapping("/kanDeleCV")
-    @AuthorizeFnr
     public AktivitetDTO oppdaterKanCvDeles(@RequestParam long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(aktivitetId);

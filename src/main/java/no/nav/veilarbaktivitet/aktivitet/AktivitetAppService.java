@@ -47,7 +47,7 @@ public class AktivitetAppService {
                 .orElseThrow(RuntimeException::new);
     }
 
-    public AktivitetData hentAktivitet(long id) { //TODO sjekk tilgangskontroll for alle som bruker denne.
+    public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
         return aktivitetData;
