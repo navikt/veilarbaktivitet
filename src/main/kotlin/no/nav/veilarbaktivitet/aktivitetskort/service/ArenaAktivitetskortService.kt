@@ -101,12 +101,16 @@ class ArenaAktivitetskortService (
     ): AktivitetData {
         val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
+        val aktorId = bestilling.aktorId
+        val endretTidspunkt = bestilling.aktivitetskort.endretTidspunkt
+        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, endretTidspunkt.toLocalDateTime())?.uuid
+            ?: gammelAktivitet.oppfolgingsperiodeId
         val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt
             ?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
             .withId(gammelAktivitet.id)
             .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
             .withVersjon(gammelAktivitet.versjon)
-            .withOppfolgingsperiodeId(gammelAktivitet.oppfolgingsperiodeId)
+            .withOppfolgingsperiodeId(oppfolgingsperiode)
             .withOpprettetDato(gammelAktivitet.opprettetDato)
             .withFhoId(gammelAktivitet.fhoId)
 
