@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.Helpers;
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -18,11 +18,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import static no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.aktivitetsKortTypeToArenaTiltakskode;
+
 @Repository
 @AllArgsConstructor
 public class KafkaAktivitetDAO {
-    public static final String TILTAKSKODE_VARIG_LONNSTILSKUDD = "VARLONTIL";
-    public static final String TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD = "MIDLONTIL";
+
     private final Database database;
 
     @Timed
@@ -57,15 +58,21 @@ public class KafkaAktivitetDAO {
 
     public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs, int i) throws SQLException {
         AktivitetTypeDTO domainAktivitetType = Helpers.Type.getDTO(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")));
+        var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.fromDomainAktivitetType(domainAktivitetType);
+        var aktivitetsId = String.valueOf(rs.getLong("aktivitet_id"));
+        String tiltakskode = null;
         // Eksterne aktiviteter START
-        AktivitetskortType aktivitetskortType = EnumUtils.valueOf(AktivitetskortType.class, rs.getString("aktivitetkort_type"));
-        var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.fromDomainAktivitetType(domainAktivitetType,aktivitetskortType);
-
-        var tiltakskode = rs.getString("TILTAK_KODE");
         if (AktivitetTypeDTO.EKSTERNAKTIVITET.equals(domainAktivitetType)) {
-            tiltakskode = finnTiltakskode(aktivitetskortType, tiltakskode);
+            AktivitetskortType aktivitetskortType = EnumUtils.valueOf(AktivitetskortType.class, rs.getString("aktivitetkort_type"));
+            tiltakskode = rs.getString("TILTAK_KODE");
+            if (tiltakskode == null) {
+                tiltakskode = aktivitetsKortTypeToArenaTiltakskode(aktivitetskortType);
+            }
+            var arenaId = rs.getString("ARENA_ID");
+            if (arenaId != null) {
+                aktivitetsId = String.valueOf(arenaId); // Usikker på om dette er lurt. Snakk med OBO før vi begynner å sende arenatiltak deres vei.
+            }
         }
-        var arenaId = rs.getString("ARENA_ID");
         // Eksterne aktiviteter SLUTT
         AktivitetStatus status = EnumUtils.valueOf(AktivitetStatus.class, rs.getString("livslopstatus_kode"));
         Innsender lagtInnAv = EnumUtils.valueOf(Innsender.class, rs.getString("lagt_inn_av"));
@@ -77,8 +84,6 @@ public class KafkaAktivitetDAO {
                         rs.getDate("SVARFRIST")
                 );
 
-
-        var aktivitetsId = arenaId != null ? arenaId : String.valueOf(rs.getLong("aktivitet_id"));
 
         return KafkaAktivitetMeldingV4.builder()
                 .aktivitetId(aktivitetsId)
@@ -96,13 +101,5 @@ public class KafkaAktivitetDAO {
                 .historisk(rs.getTimestamp("historisk_dato") != null)
                 .tiltakskode(tiltakskode)
                 .build();
-    }
-
-    private static String finnTiltakskode(AktivitetskortType aktivitetskortType, String tiltakskode)  {
-        return switch (aktivitetskortType) {
-            case MIDLERTIDIG_LONNSTILSKUDD -> TILTAKSKODE_MIDLERTIDIG_LONNSTILSKUDD;
-            case VARIG_LONNSTILSKUDD -> TILTAKSKODE_VARIG_LONNSTILSKUDD;
-            case ARENA_TILTAK -> tiltakskode;
-        };
     }
 }

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitet
+package no.nav.veilarbaktivitet.admin
 
 import lombok.RequiredArgsConstructor
 import no.nav.veilarbaktivitet.person.Person

@@ -3,11 +3,8 @@ package no.nav.veilarbaktivitet.testutils;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
-import no.nav.veilarbaktivitet.aktivitetskort.*;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgave;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
@@ -119,7 +116,7 @@ public class AktivitetTypeDataTestBuilder {
                new Attributt("Arrangør", "NAV"),
                new Attributt("Dager per uke", "5")
            ),
-           List.of(new Etikett("GJENN"))
+           List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN"))
         );
     }
 }

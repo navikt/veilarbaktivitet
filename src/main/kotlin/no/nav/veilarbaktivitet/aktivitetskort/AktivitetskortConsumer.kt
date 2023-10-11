@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import lombok.ToString
 import no.nav.common.kafka.consumer.ConsumeStatus
 import no.nav.common.kafka.consumer.TopicConsumer
+import no.nav.veilarbaktivitet.admin.KasseringsService
 import no.nav.veilarbaktivitet.aktivitet.MetricService
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
@@ -10,7 +11,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.feil.*
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService
-import no.nav.veilarbaktivitet.aktivitetskort.service.KasseringsService
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult
 import no.nav.veilarbaktivitet.aktivitetskort.util.JsonUtil
 import org.apache.commons.lang3.NotImplementedException

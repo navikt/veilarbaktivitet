@@ -4,6 +4,7 @@ import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import no.nav.common.types.identer.NavIdent;
+import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
@@ -24,8 +25,7 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
-import no.nav.veilarbaktivitet.oppfolging.siste_periode.SistePeriodeService;
-import no.nav.poao.dab.spring_auth.AuthService;
+import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import no.nav.veilarbaktivitet.person.UserInContext;
@@ -63,7 +63,7 @@ class ArenaControllerTest {
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
-    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db, db.getNamedJdbcTemplate());
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
     private final Unleash unleash = mock(Unleash.class);
 

@@ -5,9 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType;
-import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -73,9 +72,7 @@ class AktivitetsbestillingCreatorTest {
     void should_throw_exception_when_kafka_key_is_not_equal_to_funksjonell_id() {
         String json = AktivitetskortProducerUtil.exampleFromFile("validaktivitetskortZonedDatetime.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0, "invalid-key", json);
-        assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> {
-            aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID());
-        });
+        assertThrows(KeyErIkkeFunksjonellIdFeil.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
     }
 
     @Test
@@ -127,6 +124,8 @@ class AktivitetsbestillingCreatorTest {
         assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
         var handlinger = aktivitetskort.getHandlinger();
         assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+        var etiketter = aktivitetskort.getEtiketter();
+        assertThat(etiketter).contains(new Etikett("Etikett tekst", Sentiment.NEUTRAL, "INNSOKT"));
     }
 
     @Test

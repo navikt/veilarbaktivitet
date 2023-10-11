@@ -5,11 +5,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.json.JsonUtils;
-import no.nav.common.types.identer.NavIdent;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.Ident;
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +24,8 @@ public class RekrutteringsbistandKafkaConsumer {
     private final RekrutteringsbistandStatusoppdateringDAO dao;
     private final StillingFraNavMetrikker stillingFraNavMetrikker;
 
+    private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
+
     @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
     @Transactional(noRollbackFor = {IngenGjeldendeIdentException.class})
     @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
@@ -34,11 +36,13 @@ public class RekrutteringsbistandKafkaConsumer {
         try {
             rekrutteringsbistandStatusoppdatering = JsonUtils.fromJson(consumerRecord.value(), RekrutteringsbistandStatusoppdatering.class);
         } catch (Exception ignored) {
-            log.debug("Feilet i Json-deserialisering");
+            log.error("Feilet i Json-deserialisering. Se securelogs for payload.");
+            secureLogs.error("Feilet i Json-deserialisering. {}.", consumerRecord.value());
         }
 
         if (rekrutteringsbistandStatusoppdatering == null) {
-            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
+            log.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1. Se securelogs for payload. ", bestillingsId);
+            secureLogs.error("Ugyldig melding bestillingsId: {} på pto.rekrutteringsbistand-statusoppdatering-v1 : {}", bestillingsId, consumerRecord.value());
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ugyldig melding", RekrutteringsbistandStatusoppdateringEventType.UKJENT);
             return;
         }
@@ -53,7 +57,7 @@ public class RekrutteringsbistandKafkaConsumer {
 
         if (optionalAktivitetData.isEmpty()) {
             stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Bestillingsid ikke funnet", type);
-            log.warn("Fant ikke stillingFraNav aktivitet med bestillingsid {}, eller aktivitet er historisk", bestillingsId);
+            log.info("Fant ikke stillingFraNav aktivitet med bestillingsid {}, eller aktivitet er historisk", bestillingsId);
             return;
         }
 

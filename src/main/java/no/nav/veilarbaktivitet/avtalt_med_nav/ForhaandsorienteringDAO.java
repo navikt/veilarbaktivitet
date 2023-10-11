@@ -25,7 +25,6 @@ import static org.slf4j.LoggerFactory.getLogger;
 @Repository
 @RequiredArgsConstructor
 public class ForhaandsorienteringDAO {
-    private final Database database;
     private final NamedParameterJdbcTemplate template;
 
     private static final String SELECT_FORHAANDSORIENTERING = "SELECT ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, VARSEL_ID, VARSEL_SKAL_STOPPES, VARSEL_STOPPET " +
@@ -36,20 +35,36 @@ public class ForhaandsorienteringDAO {
     public Forhaandsorientering insert(AvtaltMedNavDTO fhoData, long aktivitetId, Person.AktorId aktorId, String opprettetAv, Date opprettetDato) {
         var id = UUID.randomUUID();
         var fho = fhoData.getForhaandsorientering();
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id.toString())
+                .addValue("aktorId", aktorId.get())
+                .addValue("aktivitetId", aktivitetId)
+                .addValue("aktivitetVersion", fhoData.getAktivitetVersjon())
+                .addValue("arenaAktivitetId", null)
+                .addValue("type", fho.getType().name())
+                .addValue("tekst", fho.getTekst())
+                .addValue("opprettetDato", opprettetDato)
+                .addValue("opprettetAv", opprettetAv)
+                .addValue("lestDato", null)
+                .addValue("brukernotifikasjon", 1);
+
         // language=sql
-        database.update("INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)" +
-                        "VALUES (?,?,?,?,?,?,?,?,?,?, 1)",
-                id.toString(),
-                aktorId.get(),
-                aktivitetId,
-                fhoData.getAktivitetVersjon(),
-                null,
-                fho.getType().name(),
-                fho.getTekst(),
-                opprettetDato,
-                opprettetAv,
-                null
-        );
+        String sql = """
+                 INSERT INTO FORHAANDSORIENTERING(ID, AKTOR_ID, AKTIVITET_ID, AKTIVITET_VERSJON, ARENAAKTIVITET_ID, TYPE, TEKST, OPPRETTET_DATO, OPPRETTET_AV, LEST_DATO, BRUKERNOTIFIKASJON)
+                    VALUES (
+                    :id,
+                    :aktorId,
+                    :aktivitetId,
+                    :aktivitetVersion,
+                    :arenaAktivitetId,
+                    :type,
+                    :tekst,
+                    :opprettetDato,
+                    :opprettetAv,
+                    :lestDato,
+                    :brukernotifikasjon)
+                """;
+        template.update(sql, params);
 
         LOG.info("opprettet forhåndsorientering: {} med id: {} og aktivitetId: {}", fhoData, id, aktivitetId);
 
@@ -65,11 +80,10 @@ public class ForhaandsorienteringDAO {
             Optional<Long> tekniskId) {
         var id = UUID.randomUUID();
 
-        var currentFhoOnAktivitet = database.queryForObject(
-                //language=sql
-                "SELECT count(*) FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID = ?",
-                resultSet -> resultSet.getInt(1),
-                arenaAktivitetId.id());
+        MapSqlParameterSource params1 = new MapSqlParameterSource()
+                .addValue("arenaAktivitetId", arenaAktivitetId.id());
+        String sql1 = "SELECT count(*) FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID = :arenaAktivitetId";
+        Integer currentFhoOnAktivitet = Optional.ofNullable(template.queryForObject(sql1, params1, int.class)).orElseThrow();
         if (currentFhoOnAktivitet > 0) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Aktiviteten har allerede forhåndsorientering");
         }
@@ -108,23 +122,40 @@ public class ForhaandsorienteringDAO {
     }
 
     public void markerSomLest(String id, Date lestDato, Long lestVersjon) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id)
+                .addValue("lestDato", lestDato)
+                .addValue("lestVersjon", lestVersjon);
         // language=sql
-        int rows = database.update("UPDATE FORHAANDSORIENTERING SET LEST_DATO = ?, LEST_AKTIVITET_VERSJON = ?, VARSEL_SKAL_STOPPES = ? WHERE ID = ?", lestDato, lestVersjon, lestDato, id);
-
+        String sql = """
+                UPDATE FORHAANDSORIENTERING
+                SET LEST_DATO = :lestDato,
+                LEST_AKTIVITET_VERSJON = :lestVersjon,
+                VARSEL_SKAL_STOPPES = :lestDato
+                WHERE ID = :id
+                """;
+        int rows = template.update(sql, params);
         if (rows != 1) {
             throw new IllegalStateException("Fant ikke forhåndsorienteringen som skulle oppdateres");
         }
     }
 
     public boolean settVarselFerdig(String forhaandsorienteringId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", forhaandsorienteringId);
         //language=sql
-        return 1 == database.update("UPDATE FORHAANDSORIENTERING SET VARSEL_SKAL_STOPPES = CURRENT_TIMESTAMP WHERE ID = ? AND VARSEL_SKAL_STOPPES is null", forhaandsorienteringId);
+        String sql = """
+            UPDATE FORHAANDSORIENTERING SET VARSEL_SKAL_STOPPES = CURRENT_TIMESTAMP WHERE ID = :id AND VARSEL_SKAL_STOPPES is null
+            """;
+        return 1 == template.update(sql, params);
     }
 
     public Forhaandsorientering getById(String id) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id);
+        String sql = SELECT_FORHAANDSORIENTERING + "WHERE ID = :id";
         try {
-            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ID = ?", ForhaandsorienteringDAO::map,
-                    id);
+            return template.queryForObject(sql, params, ForhaandsorienteringDAO::mapRow);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -143,7 +174,7 @@ public class ForhaandsorienteringDAO {
 
         return Lists.partition(ider, 1000).stream().map(sublist -> {
             SqlParameterSource parms = new MapSqlParameterSource("ider", sublist);
-            return database.getNamedJdbcTemplate().query(
+            return template.query(
                     "SELECT * FROM FORHAANDSORIENTERING WHERE id IN (:ider)",
                     parms,
                     ForhaandsorienteringDAO::mapRow);
@@ -152,18 +183,21 @@ public class ForhaandsorienteringDAO {
 
     public Forhaandsorientering getFhoForAktivitet(long aktivitetId) {
         try {
-            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE AKTIVITET_ID = ?", ForhaandsorienteringDAO::map,
-                    aktivitetId);
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("aktivitetId", aktivitetId);
+            String sql = SELECT_FORHAANDSORIENTERING + "WHERE AKTIVITET_ID = :aktivitetId";
+            return template.queryForObject(sql, params, ForhaandsorienteringDAO::mapRow);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
     }
 
-    public Forhaandsorientering getFhoForArenaAktivitet(ArenaId aktivitetId) {
+    public Forhaandsorientering getFhoForArenaAktivitet(ArenaId arenaId) {
         try {
-            return database.queryForObject(SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = ? ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY",
-                    ForhaandsorienteringDAO::map,
-                    aktivitetId.id());
+            MapSqlParameterSource params = new MapSqlParameterSource()
+                    .addValue("arenaId", arenaId.id());
+            String sql = SELECT_FORHAANDSORIENTERING + "WHERE ARENAAKTIVITET_ID = :arenaId ORDER BY ID DESC FETCH FIRST 1 ROWS ONLY";
+            return template.queryForObject(sql, params, ForhaandsorienteringDAO::mapRow);
         } catch (EmptyResultDataAccessException e) {
             return null;
         }
@@ -173,15 +207,18 @@ public class ForhaandsorienteringDAO {
         SqlParameterSource params = new MapSqlParameterSource()
                 .addValue("fhoId", fhoId)
                 .addValue("aktivitetId", aktivitetId);
-        return database.getNamedJdbcTemplate().update("""
+        return template.update("""
                 UPDATE FORHAANDSORIENTERING SET AKTIVITET_ID = :aktivitetId
                 WHERE ID = :fhoId
                 """, params);
     }
 
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("aktorId", aktorId.get());
         //language=sql
-        return database.query("SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = ?", ForhaandsorienteringDAO::map, aktorId.get());
+        String sql = "SELECT * FROM FORHAANDSORIENTERING WHERE ARENAAKTIVITET_ID is not null AND aktor_id = :aktorId";
+        return template.query(sql, params, ForhaandsorienteringDAO::mapRow);
     }
 
     private static Forhaandsorientering mapRow(ResultSet rs, int rowNum) throws SQLException {

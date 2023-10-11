@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.aktivitetskort
+package no.nav.veilarbaktivitet.aktivitetskort.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize

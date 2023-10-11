@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitet.domain
 
 import lombok.Singular
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon

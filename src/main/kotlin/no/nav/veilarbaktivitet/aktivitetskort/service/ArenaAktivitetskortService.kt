@@ -7,10 +7,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
-import no.nav.veilarbaktivitet.aktivitetskort.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
@@ -18,6 +18,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -51,7 +52,10 @@ class ArenaAktivitetskortService (
         )
 
         // Gjør arena-spesifikk migrering
-        arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
+        val erMigrertAllerede = idMappingDAO.getAktivitetId(bestilling.eksternReferanseId).isPresent
+        if (!erMigrertAllerede) {
+            arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
+        }
         return opprettetAktivitetsData
     }
 

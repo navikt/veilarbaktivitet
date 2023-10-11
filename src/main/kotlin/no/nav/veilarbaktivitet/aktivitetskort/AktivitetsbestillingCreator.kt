@@ -7,6 +7,7 @@ import no.nav.common.client.aktorregister.IngenGjeldendeIdentException
 import no.nav.common.json.JsonMapper
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.BestillingBase
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.feil.DeserialiseringsFeil
@@ -28,7 +29,7 @@ class AktivitetsbestillingCreator (
     @Throws(UgyldigIdentFeil::class)
     private fun hentAktorId(fnr: Person.Fnr): Person.AktorId {
         return try {
-            personService!!.getAktorIdForPersonBruker(fnr)
+            personService.getAktorIdForPersonBruker(fnr)
                 .orElseThrow { UgyldigIdentFeil("Ugyldig identtype for " + fnr.get(), null) }
         } catch (e: IngenGjeldendeIdentException) {
             throw UgyldigIdentFeil("Ident ikke funnet eller ugyldig ident for fnr :" + fnr.get(), e)
@@ -80,12 +81,9 @@ class AktivitetsbestillingCreator (
     companion object {
         const val HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId"
         const val HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode"
-        const val HEADER_EKSTERN_ARENA_OPPFOLGINGSPERIODE = "oppfolgingsperiode"
-        const val HEADER_EKSTERN_ARENA_HISTORISK = "historisk"
-        const val ARENA_TILTAK_AKTIVITET_ACL = "ARENA_TILTAK_AKTIVITET_ACL"
         private var objectMapper: ObjectMapper? = null
         private val mapper: ObjectMapper?
-            private get() {
+            get() {
                 if (objectMapper != null) return objectMapper
                 objectMapper = JsonMapper.defaultObjectMapper()
                     .registerKotlinModule()
