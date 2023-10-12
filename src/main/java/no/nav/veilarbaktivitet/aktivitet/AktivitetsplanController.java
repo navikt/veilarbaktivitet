@@ -78,7 +78,6 @@ public class AktivitetsplanController {
     @AuthorizeFnr(auditlogMessage = "oppret aktivitet")
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
-        authService.sjekkTilgangTilPerson(userInContext.getAktorId().eksternBrukerId());
 
         return Optional.of(aktivitet)
                 .map(aktivitetDataMapperService::mapTilAktivitetData)

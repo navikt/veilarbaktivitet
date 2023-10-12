@@ -88,7 +88,6 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
-        authService.sjekkTilgangTilPerson(aktivitetData.getAktorId().otherAktorId());
 
         if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
