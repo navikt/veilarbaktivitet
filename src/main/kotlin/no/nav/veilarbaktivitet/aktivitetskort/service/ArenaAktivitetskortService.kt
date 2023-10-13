@@ -11,7 +11,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
@@ -39,16 +38,12 @@ class ArenaAktivitetskortService (
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
-        val aktorId = bestilling.aktorId
         val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-        // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt.toLocalDateTime())
-            ?: throw ManglerOppfolgingsperiodeFeil()
 
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, oppfolgingsperiode.sluttDato)
+        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, bestilling.oppfolgingsperiodeSlutt)
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            aktivitetsData.withOppfolgingsperiodeId(oppfolgingsperiode.uuid)
+            aktivitetsData.withOppfolgingsperiodeId(bestilling.oppfolgingsperiode)
         )
 
         // Gjør arena-spesifikk migrering
