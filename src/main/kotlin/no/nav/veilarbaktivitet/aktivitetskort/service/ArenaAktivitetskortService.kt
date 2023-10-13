@@ -17,7 +17,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -32,7 +31,6 @@ class ArenaAktivitetskortService (
     private val idMappingDAO: IdMappingDAO,
     private val aktivitetDAO: AktivitetDAO,
     private val aktivitetService: AktivitetService,
-    private val oppfolgingsperiodeService: OppfolgingsperiodeService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
     private val avtaltMedNavService: AvtaltMedNavService
 ) {
@@ -96,10 +94,7 @@ class ArenaAktivitetskortService (
     ): AktivitetData {
         val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
-        val aktorId = bestilling.aktorId
-        val endretTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, endretTidspunkt.toLocalDateTime())?.uuid
-            ?: gammelAktivitet.oppfolgingsperiodeId
+        val oppfolgingsperiode = bestilling.oppfolgingsperiode
         val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt
             ?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
             .withId(gammelAktivitet.id)

@@ -3,11 +3,13 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
+import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -24,6 +26,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -145,5 +148,63 @@ class AktivitetsbestillingCreatorTest {
         assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
         var handlinger = aktivitetskort.getHandlinger();
         assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
+    }
+
+    @Test
+    @SneakyThrows
+    void require_header_on_arena_tiltak() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validArenaAktivitetskort.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0L, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        String arenaId = "ARENATA1234567";
+        consumerRecord.headers().add(HEADER_EKSTERN_REFERANSE_ID, arenaId.getBytes());
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        String tiltakskode = "VASV";
+        consumerRecord.headers().add(HEADER_EKSTERN_ARENA_TILTAKSKODE, tiltakskode.getBytes());
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        String oppfolgingsperiode = "278f090f-09cc-4720-8638-f68020f3b417";
+        consumerRecord.headers().add(HEADER_OPPFOLGINGSPERIODE, oppfolgingsperiode.getBytes());
+
+        ArenaAktivitetskortBestilling aktivitetskortBestilling = (ArenaAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name());
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.ARENA_TILTAK);
+        assertThat(aktivitetskortBestilling.getOppfolgingsperiode()).isEqualTo(UUID.fromString(oppfolgingsperiode));
+        assertThat(aktivitetskortBestilling.getEksternReferanseId()).isEqualTo(new ArenaId(arenaId));
+        assertThat(aktivitetskortBestilling.getArenaTiltakskode()).isEqualTo(tiltakskode);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
+    }
+
+    @Test
+    @SneakyThrows
+    void handle_oppfolgingsperiode_slutt_header() {
+        String json = AktivitetskortProducerUtil.exampleFromFile("validArenaAktivitetskort.json");
+        ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0L, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+
+        String arenaId = "ARENATA1234567";
+        consumerRecord.headers().add(HEADER_EKSTERN_REFERANSE_ID, arenaId.getBytes());
+        String tiltakskode = "VASV";
+        consumerRecord.headers().add(HEADER_EKSTERN_ARENA_TILTAKSKODE, tiltakskode.getBytes());
+        String oppfolgingsperiode = "278f090f-09cc-4720-8638-f68020f3b417";
+        consumerRecord.headers().add(HEADER_OPPFOLGINGSPERIODE, oppfolgingsperiode.getBytes());
+        String oppfolgingsperiodeSlutt = "2023-01-01T10:00:00.000Z";
+        consumerRecord.headers().add(HEADER_OPPFOLGINGSPERIODE_SLUTT, oppfolgingsperiodeSlutt.getBytes());
+
+        ArenaAktivitetskortBestilling aktivitetskortBestilling = (ArenaAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
+        assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name());
+        assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.ARENA_TILTAK);
+        assertThat(aktivitetskortBestilling.getOppfolgingsperiode()).isEqualTo(UUID.fromString(oppfolgingsperiode));
+        assertThat(aktivitetskortBestilling.getEksternReferanseId()).isEqualTo(new ArenaId(arenaId));
+        assertThat(aktivitetskortBestilling.getOppfolgingsperiodeSlutt()).isEqualTo(oppfolgingsperiodeSlutt);
+        assertThat(aktivitetskortBestilling.getArenaTiltakskode()).isEqualTo(tiltakskode);
+        var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
+        assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
     }
 }
