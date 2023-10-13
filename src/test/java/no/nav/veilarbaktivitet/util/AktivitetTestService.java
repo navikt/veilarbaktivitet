@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.graphql.GraphqlResult;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -97,6 +98,19 @@ public class AktivitetTestService {
                 .response();
 
         return response.as(AktivitetsplanDTO.class);
+    }
+
+    public GraphqlResult queryAktivitetskort(MockBruker mockBruker, RestassuredUser user, String query) {
+        Response response = user
+                .createRequest()
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\" } }")
+                .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/graphql", mockBruker))
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+        return response.as(GraphqlResult.class);
     }
 
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
