@@ -17,11 +17,8 @@ import static no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.NAV_CONTEXT
 
 @Service
 public class TestAuthContextFilter implements Filter {
-
     public final static String TEST_AUDIENCE = "test-audience";
-
     public final static String TEST_ISSUER = "https://testIssuer.test";
-
     public static final String identHeder = "test_ident";
     public static final String typeHeder = "test_ident_type";
 

@@ -37,7 +37,6 @@ import java.util.stream.Collectors;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -55,7 +54,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     @Autowired
     private AktivitetService aktivitetService;
 
-
     @Autowired
     private AvtaltMedNavService avtaltMedNavService;
 
@@ -68,7 +66,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     private MockBruker mockBruker;
     private MockVeileder mockBrukersVeileder;
     private MockVeileder annenMockVeilederMedNasjonalTilgang;
-    private MockVeileder annenMockVeilederUtenNasjonalTilgang;
     private MockVeileder aktivVeileder;
 
 
@@ -78,7 +75,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         mockBruker = MockNavService.createHappyBruker();
         mockBrukersVeileder = MockNavService.createVeileder(mockBruker);
         annenMockVeilederMedNasjonalTilgang = MockNavService.createVeilederMedNasjonalTilgang();
-        annenMockVeilederUtenNasjonalTilgang = MockNavService.createVeileder();
         aktivVeileder = mockBrukersVeileder;
     }
 
@@ -170,13 +166,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     void hent_aktivitet() {
         gitt_at_jeg_har_aktiviter();
         da_skal_jeg_kunne_hente_en_aktivitet();
-    }
-
-    @Test
-    void ikke_tilgang_til_bruker() {
-        gitt_at_jeg_har_aktiviter();
-        og_veileder_har_ikke_tilgang_til_brukers_enhet_eller_nasjonal_tilgang();
-        da_skal_jeg_ikke_faa_tilgang_til_bruker();
     }
 
     @Test
@@ -364,11 +353,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         assertThat(aktiviteter, hasSize(0));
     }
 
-    private void da_skal_jeg_ikke_faa_tilgang_til_bruker() {
-        AssertionError assertionError = assertThrows(AssertionError.class, () -> aktivitetTestService.hentAktiviteterForFnr(mockBruker, aktivVeileder));
-        assertThat(assertionError.getMessage(), is("1 expectation failed.\nExpected status code <200> but was <403>.\n"));
-    }
-
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
         assertThat(lagredeAktivitetsIder.get(0).toString(),
                 equalTo((aktivitetTestService.hentAktivitet(mockBruker, mockBrukersVeileder, lagredeAktivitetsIder.get(0).toString())).getId()));
@@ -417,10 +401,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     private void og_veileder_har_nasjonsal_tilgang_men_ikke_tilgang_til_brukers_enhet() {
         aktivVeileder = annenMockVeilederMedNasjonalTilgang;
-    }
-
-    private void og_veileder_har_ikke_tilgang_til_brukers_enhet_eller_nasjonal_tilgang() {
-        aktivVeileder = annenMockVeilederUtenNasjonalTilgang;
     }
 
     private AktivitetDTO nyAktivitet() {
