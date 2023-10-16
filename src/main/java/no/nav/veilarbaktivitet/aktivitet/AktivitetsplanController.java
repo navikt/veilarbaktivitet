@@ -53,13 +53,15 @@ public class AktivitetsplanController {
         return new AktivitetsplanDTO().setAktiviteter(filtrerteAktiviter);
     }
 
-    @GetMapping("/{id}")
-    @AuthorizeFnr(auditlogMessage = "hent en aktivitet")
+    @GetMapping("/{id}") //kan ikke bruke anotasjonen pga kasserings endepunktet
     public AktivitetDTO hentAktivitet(@PathVariable("id") long aktivitetId) {
         boolean erEksternBruker = authService.erEksternBruker();
 
         return Optional.of(appService.hentAktivitet(aktivitetId))
-                .filter(it -> it.getAktorId().equals(userInContext.getAktorId()))
+                .filter(it -> {
+                    authService.sjekkTilgangTilPerson(it.getAktorId().eksternBrukerId());
+                    return true;
+                })
                 .map(a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
