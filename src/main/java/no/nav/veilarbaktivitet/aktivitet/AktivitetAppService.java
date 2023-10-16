@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -42,32 +41,26 @@ public class AktivitetAppService {
     ));
 
     public List<AktivitetData> hentAktiviteterForIdent(Person ident) {
-        authService.sjekkTilgangTilPerson(ident.eksternBrukerId());
-        List<AktivitetData> aktiviteter = personService.getAktorIdForPersonBruker(ident)
+
+        return personService.getAktorIdForPersonBruker(ident)
                 .map(aktivitetService::hentAktiviteterForAktorId)
                 .orElseThrow(RuntimeException::new);
-        return filterKontorsperret(aktiviteter);
     }
 
     public AktivitetData hentAktivitet(long id) {
         AktivitetData aktivitetData = aktivitetService.hentAktivitetMedForhaandsorientering(id);
         settLestAvBrukerHvisUlest(aktivitetData);
-        authService.sjekkTilgangTilPerson(aktivitetData.getAktorId().otherAktorId());
-        if (aktivitetData.getKontorsperreEnhetId() != null) {
-            authService.sjekkTilgangTilEnhet(EnhetId.of(aktivitetData.getKontorsperreEnhetId()));
-        }
         return aktivitetData;
     }
 
     public List<AktivitetData> hentAktivitetVersjoner(long id) {
-        hentAktivitet(id); // innebærer tilgangskontroll
         return aktivitetService.hentAktivitetVersjoner(id)
                 .stream()
                 .filter(this::erEksternBrukerOgEndringenSkalVereSynnelig)
                 .toList();
     }
 
-    public void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
+    private void settLestAvBrukerHvisUlest(AktivitetData aktivitetData) {
         if (authService.erEksternBruker() && aktivitetData.getLestAvBrukerForsteGang() == null) {
             AktivitetData hentetAktivitet = aktivitetService.settLestAvBrukerTidspunkt(aktivitetData.getId());
             metricService.reportAktivitetLestAvBrukerForsteGang(hentetAktivitet);
@@ -95,7 +88,6 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData opprettNyAktivitet(AktivitetData aktivitetData) {
-        authService.sjekkTilgangTilPerson(aktivitetData.getAktorId().otherAktorId());
 
         if (aktivitetData.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -112,8 +104,8 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
-        AktivitetData original = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(original, aktivitet.getVersjon());
+        AktivitetData original = hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(original, aktivitet.getVersjon(), aktivitet.getAktorId());
         if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
@@ -160,7 +152,10 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon) {
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
+        if(!orginalAktivitet.getAktorId().equals(aktorId)) {
+            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
+        }
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
@@ -172,6 +167,10 @@ public class AktivitetAppService {
     }
 
     private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
+        if (!orginalAktivitet.getAktorId().equals(aktivitet.getAktorId())) {
+            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
+
+        }
         if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
@@ -185,8 +184,8 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
+        val originalAktivitet = hentAktivitet(aktivitet.getId());
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
         if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())){
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
@@ -201,7 +200,7 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
-        val originalAktivitet = hentAktivitet(aktivitet.getId()); // innebærer tilgangskontroll
+        val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
         aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet);
         return aktivitetService.hentAktivitetMedForhaandsorientering(aktivitet.getId());
@@ -209,12 +208,8 @@ public class AktivitetAppService {
 
     @Transactional
     public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
-        if (authService.erEksternBruker()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
-        }
-
         val originalAktivitet = hentAktivitet(aktivitet.getId());
-        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon());
+        kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
         aktivitetService.oppdaterReferat(
                 originalAktivitet,
@@ -224,26 +219,4 @@ public class AktivitetAppService {
         return hentAktivitet(aktivitet.getId());
     }
 
-    /**
-     * Take a list of activities, filter out any that can not be accessed due
-     * to insufficient kontorsperre privileges, and return the remainder.
-     */
-    private List<AktivitetData> filterKontorsperret(List<AktivitetData> list) {
-        return list.stream().sequential()
-                .filter(this::canAccessKvpActivity)
-                .toList();
-    }
-
-
-    /**
-     * Checks the activity for KVP status, and returns true if the current user
-     * can access the activity. If the activity is not tagged with KVP, true
-     * is always returned.
-     * <p>
-     * This function reports real usage through the metric system.
-     */
-    private boolean canAccessKvpActivity(AktivitetData aktivitet) {
-        if (aktivitet.getKontorsperreEnhetId() == null) return true;
-        return authService.harTilgangTilEnhet(EnhetId.of(aktivitet.getKontorsperreEnhetId()));
-    }
 }

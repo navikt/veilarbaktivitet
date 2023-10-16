@@ -1,11 +1,10 @@
 
 val spring_boot_version = "3.0.2"
-val common_version = "3.2023.07.07_09.10-85326e9557f0"
-val dab_common_version = "2023.06.30-12.11.f11e6e6e92ef"
-val poao_tilgang_version = "2023.07.03_09.35-6073bc164ee2"
+val common_version = "3.2023.09.13_04.55-a8ff452fbd94"
+val dab_common_version = "2023.10.12-10.50.75845aeae94f"
+val poao_tilgang_version = "2023.10.09_13.45-b5ace74e861a"
 val shedlock_version = "4.42.0"
 val _version: String by project
-
 
 plugins {
     id("java")
@@ -69,6 +68,8 @@ repositories {
     maven {
         url = uri("https://packages.confluent.io/maven/")
     }
+
+    maven("https://github-package-registry-mirror.gc.nav.no/cached/maven-release")
 
     maven {
         url = uri("https://jitpack.io")
@@ -139,24 +140,24 @@ dependencies {
 
     implementation("net.javacrumbs.shedlock:shedlock-provider-jdbc-template:$shedlock_version")
     implementation("net.javacrumbs.shedlock:shedlock-spring:$shedlock_version")
-    implementation("com.github.navikt.common-java-modules:abac:$common_version")
-    implementation("com.github.navikt.common-java-modules:kafka:$common_version")
-    implementation("com.github.navikt.common-java-modules:sts:$common_version")
-    implementation("com.github.navikt.common-java-modules:token-client:$common_version")
-    implementation("com.github.navikt.common-java-modules:auth:$common_version")
-    implementation("com.github.navikt.common-java-modules:log:$common_version")
-    implementation("com.github.navikt.common-java-modules:health:$common_version")
-    implementation("com.github.navikt.common-java-modules:feature-toggle:$common_version")
-    implementation("com.github.navikt.common-java-modules:metrics:$common_version")
-    implementation("com.github.navikt.common-java-modules:job:$common_version")
-    implementation("com.github.navikt.common-java-modules:rest:$common_version")
-    implementation("com.github.navikt.common-java-modules:client:$common_version")
-    implementation("com.github.navikt.common-java-modules:util:$common_version")
-    implementation("com.github.navikt.common-java-modules:types:$common_version")
+    implementation("no.nav.common:abac:$common_version")
+    implementation("no.nav.common:kafka:$common_version")
+    implementation("no.nav.common:sts:$common_version")
+    implementation("no.nav.common:token-client:$common_version")
+    implementation("no.nav.common:auth:$common_version")
+    implementation("no.nav.common:log:$common_version")
+    implementation("no.nav.common:health:$common_version")
+    implementation("no.nav.common:feature-toggle:$common_version")
+    implementation("no.nav.common:metrics:$common_version")
+    implementation("no.nav.common:job:$common_version")
+    implementation("no.nav.common:rest:$common_version")
+    implementation("no.nav.common:client:$common_version")
+    implementation("no.nav.common:util:$common_version")
+    implementation("no.nav.common:types:$common_version")
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.2")
-    implementation("com.github.navikt.dab:spring-auth:$dab_common_version")
-    implementation("com.github.navikt.dab:spring-a2-annotations:$dab_common_version")
+    implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
+    implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
     //spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
@@ -183,7 +184,7 @@ dependencies {
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
     //test dependencys
-    testImplementation("com.github.navikt.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
+    testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
     testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")

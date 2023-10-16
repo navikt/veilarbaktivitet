@@ -27,8 +27,10 @@ public class StillingFraNavController {
     @PutMapping("/kanDeleCV")
     public AktivitetDTO oppdaterKanCvDeles(@RequestParam long aktivitetId, @RequestBody DelingAvCvDTO delingAvCvDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
-        var aktivitet = aktivitetAppService
-                .hentAktivitet(aktivitetId);
+        var aktivitet = aktivitetAppService.hentAktivitet(aktivitetId);
+
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
+
 
         if (aktivitet.getAktivitetType() != AktivitetTypeData.STILLING_FRA_NAV) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, String.format("Kan bare dele cv på aktiviteter med type %s", AktivitetTypeData.STILLING_FRA_NAV));
@@ -60,6 +62,8 @@ public class StillingFraNavController {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService
                 .hentAktivitet(aktivitetId);
+
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
 
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
 

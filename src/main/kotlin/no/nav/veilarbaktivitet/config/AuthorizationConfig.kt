@@ -26,6 +26,6 @@ open class AuthorizationConfig {
         poaoTilgangClient: PoaoTilgangClient,
         personService: PersonService
     ): IAuthService {
-        return AuthService(authContextHolder, poaoTilgangClient, personService)
+        return AuthService(authContextHolder, poaoTilgangClient, personService,  "veilarbaktivitet")
     }
 }
