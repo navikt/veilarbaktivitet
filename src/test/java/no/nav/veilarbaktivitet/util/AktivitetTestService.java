@@ -45,10 +45,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -421,10 +418,10 @@ public class AktivitetTestService {
             return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding));
         }
 
-        List<Header> headers = List.of(
+        ArrayList<Header> headers = new ArrayList<>(List.of(
                 new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
                 new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
-        );
+        ));
         if (arenaMeldingHeaders.oppfolgingsperiodeSlutt() != null) {
             headers.add(new RecordHeader(HEADER_OPPFOLGINGSPERIODE_SLUTT, arenaMeldingHeaders.oppfolgingsperiodeSlutt().toString().getBytes()));
         }

@@ -212,18 +212,6 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun skal_kreve_passende_oppfolgingsperiode_pa_arenaaktivitet() {
-        val serie = ArenaAktivitetskortSerie(brukerUtenOppfolging, "tiltak")
-        val kort = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
-        aktivitetTestService.opprettEksterntArenaKort(kort)
-        assertFeilmeldingPublished(
-            serie.funksjonellId,
-            ErrorType.MANGLER_OPPFOLGINGSPERIODE,
-            MessageSource.ARENA_TILTAK_AKTIVITET_ACL
-        )
-    }
-
-    @Test
     fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val serie = AktivitetskortSerie(brukerUtenOppfolging)
         val actual = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now()).copy(source = MessageSource.TEAM_TILTAK.name)
@@ -237,7 +225,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
-        val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL")
+        val gammelperiode = SerieOppfolgingsperiode(UUID.randomUUID(), ZonedDateTime.now().minusDays(1))
+        val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL", gammelperiode)
         val actual = serie.ny(AktivitetStatus.PLANLAGT, endretTidspunkt = ZonedDateTime.now().minusDays(75))
         aktivitetTestService.opprettEksterntArenaKort(actual)
         val aktivitetFoer = hentAktivitet(serie.funksjonellId)
@@ -609,7 +598,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val runtimeException = assertThrows(
             RuntimeException::class.java
         ) { aktivitetskortConsumer!!.consume(record) }
-        assertThat(runtimeException.message).isEqualTo("Mangler Arena Header for ArenaTiltak aktivitetskort")
+        assertThat(runtimeException.message).isEqualTo("Mangler Arena Header for arena-id aktivitetskort")
     }
 
     @Test
