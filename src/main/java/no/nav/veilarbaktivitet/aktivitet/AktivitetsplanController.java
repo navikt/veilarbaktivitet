@@ -75,7 +75,7 @@ public class AktivitetsplanController {
     }
 
     @PostMapping("/ny")
-    @AuthorizeFnr(auditlogMessage = "oppret aktivitet", allowlist = {"${app.env.veilarbdirigent}"})
+    @AuthorizeFnr(auditlogMessage = "oppret aktivitet")
     public AktivitetDTO opprettNyAktivitet(@RequestBody AktivitetDTO aktivitet, @RequestParam(required = false, defaultValue = "false") boolean automatisk) {
         boolean erEksternBruker = authService.erEksternBruker();
 

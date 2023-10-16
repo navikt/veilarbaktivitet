@@ -95,5 +95,3 @@ spec:
       value: api://prod-fss.poao.poao-tilgang/.default
     - name: ADMIN_GROUPS
       value: dfc550d0-c5bf-4208-8b2b-3542bb8b5b15
-    - name: VEILARBDIRIGENT
-      value: prod-fss:pto:veilarbdirigent
