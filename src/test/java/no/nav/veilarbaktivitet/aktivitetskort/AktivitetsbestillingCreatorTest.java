@@ -155,18 +155,19 @@ class AktivitetsbestillingCreatorTest {
     void require_header_on_arena_tiltak() {
         String json = AktivitetskortProducerUtil.exampleFromFile("validArenaAktivitetskort.json");
         ConsumerRecord<String, String> consumerRecord = new ConsumerRecord<>("topic", 0, 0L, "56155242-6481-43b5-9eac-4d7af695bf9d", json);
+        var randomUUID = UUID.randomUUID();
 
-        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, randomUUID));
         String arenaId = "ARENATA1234567";
         consumerRecord.headers().add(HEADER_EKSTERN_REFERANSE_ID, arenaId.getBytes());
-        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, randomUUID));
         String tiltakskode = "VASV";
         consumerRecord.headers().add(HEADER_EKSTERN_ARENA_TILTAKSKODE, tiltakskode.getBytes());
-        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()));
+        assertThrows(RuntimeException.class, () -> aktivitetsbestillingCreator.lagBestilling(consumerRecord, randomUUID));
         String oppfolgingsperiode = "278f090f-09cc-4720-8638-f68020f3b417";
         consumerRecord.headers().add(HEADER_OPPFOLGINGSPERIODE, oppfolgingsperiode.getBytes());
 
-        ArenaAktivitetskortBestilling aktivitetskortBestilling = (ArenaAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, UUID.randomUUID()) ;
+        ArenaAktivitetskortBestilling aktivitetskortBestilling = (ArenaAktivitetskortBestilling)aktivitetsbestillingCreator.lagBestilling(consumerRecord, randomUUID) ;
         assertThat(aktivitetskortBestilling).isInstanceOf(AktivitetskortBestilling.class);
         assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name());
         assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.ARENA_TILTAK);
