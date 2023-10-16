@@ -118,7 +118,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
                 "source",
                 UUID.randomUUID()
                 );
-        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "tiltakskode")));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "tiltakskode", mockBruker.oppfolgingsperiode, null)));
         cronService.sendOppTil5000AktiviterTilPortefolje();
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
     }
@@ -147,7 +147,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         KafkaAktivitetskortWrapperDTO wrapper = new KafkaAktivitetskortWrapperDTO(aktivitetskort, funksjonellId, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL);
         ArenaId arenaId = new ArenaId("ARENATA123");
         String tiltakskode = "MIDLONNTIL";
-        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapper, new ArenaMeldingHeaders(arenaId, tiltakskode)));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapper, new ArenaMeldingHeaders(arenaId, tiltakskode, mockBruker.oppfolgingsperiode, null)));
         cronService.sendOppTil5000AktiviterTilPortefolje();
         // Ingen nye meldinger på porteføljetopic
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));

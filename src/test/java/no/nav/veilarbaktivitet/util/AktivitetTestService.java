@@ -45,17 +45,13 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -422,10 +418,16 @@ public class AktivitetTestService {
             return new ProducerRecord<>(aktivitetsKortV1Topic, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding));
         }
 
-        List<Header> headers = List.of(
+        ArrayList<Header> headers = new ArrayList<>(List.of(
                 new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
                 new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
-        );
+        ));
+        if (arenaMeldingHeaders.oppfolgingsperiodeSlutt() != null) {
+            headers.add(new RecordHeader(HEADER_OPPFOLGINGSPERIODE_SLUTT, arenaMeldingHeaders.oppfolgingsperiodeSlutt().toString().getBytes()));
+        }
+        if (arenaMeldingHeaders.oppfolgingsperiode() != null) {
+            headers.add(new RecordHeader(HEADER_OPPFOLGINGSPERIODE, arenaMeldingHeaders.oppfolgingsperiode().toString().getBytes()));
+        }
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 
