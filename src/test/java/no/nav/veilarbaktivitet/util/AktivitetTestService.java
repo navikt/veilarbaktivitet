@@ -54,8 +54,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE;
-import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.HEADER_EKSTERN_REFERANSE_ID;
+import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -426,6 +425,12 @@ public class AktivitetTestService {
                 new RecordHeader(HEADER_EKSTERN_REFERANSE_ID, arenaMeldingHeaders.eksternReferanseId().id().getBytes()),
                 new RecordHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE, arenaMeldingHeaders.arenaTiltakskode().getBytes())
         );
+        if (arenaMeldingHeaders.oppfolgingsperiodeSlutt() != null) {
+            headers.add(new RecordHeader(HEADER_OPPFOLGINGSPERIODE_SLUTT, arenaMeldingHeaders.oppfolgingsperiodeSlutt().toString().getBytes()));
+        }
+        if (arenaMeldingHeaders.oppfolgingsperiode() != null) {
+            headers.add(new RecordHeader(HEADER_OPPFOLGINGSPERIODE, arenaMeldingHeaders.oppfolgingsperiode().toString().getBytes()));
+        }
         return new ProducerRecord<>(aktivitetsKortV1Topic, null, melding.getAktivitetskortId().toString(), JsonUtils.toJson(melding), headers);
     }
 

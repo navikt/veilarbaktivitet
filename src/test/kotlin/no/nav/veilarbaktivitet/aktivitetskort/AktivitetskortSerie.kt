@@ -37,12 +37,12 @@ open class AktivitetskortSerie(
     }
 }
 
-class ArenaAktivitetskortSerie(mockBruker: MockBruker, val tiltakskode: String) {
+class ArenaAktivitetskortSerie(val mockBruker: MockBruker, val tiltakskode: String) {
     private val serie = AktivitetskortSerie(mockBruker, AktivitetskortType.ARENA_TILTAK)
     val funksjonellId = serie.funksjonellId
     val arenaId = ArenaId("TA" + Random.nextInt(1000, 10000))
     fun ny(status: AktivitetStatus, endretTidspunkt: ZonedDateTime): ArenaKort {
-        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode))
+        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode, mockBruker.oppfolgingsperiode, null))
     }
 
     companion object {
