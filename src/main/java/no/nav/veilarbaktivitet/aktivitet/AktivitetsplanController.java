@@ -139,6 +139,7 @@ public class AktivitetsplanController {
     }
 
     @AuthorizeFnr(auditlogMessage = "publiser referat")
+    @OnlyInternBruker
     @PutMapping("/{aktivitetId}/referat/publiser")
     public AktivitetDTO publiserReferat(@RequestBody AktivitetDTO aktivitetDTO) {
         return oppdaterReferat(aktivitetDTO);
