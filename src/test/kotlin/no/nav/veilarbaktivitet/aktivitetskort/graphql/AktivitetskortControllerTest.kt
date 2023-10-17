@@ -40,4 +40,19 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(result.data?.perioder).hasSize(2)
     }
 
+    @Test
+    fun `skal serialisere feil`() {
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                lol
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
+        assertThat(result.errors).hasSize(2)
+        assertThat(result.errors?.get(0)?.message?.contains("Field 'lol' in type 'Query' is undefined")).isTrue()
+        assertThat(result.errors?.get(1)?.message?.contains("Validation error (UnusedVariable) : Unused variable 'fnr'")).isTrue()
+        assertThat(result.data).isNull()
+    }
+
 }
