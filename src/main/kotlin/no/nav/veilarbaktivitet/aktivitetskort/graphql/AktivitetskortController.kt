@@ -8,7 +8,9 @@ import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Controller
+import org.springframework.web.server.ResponseStatusException
 
 
 @Controller
@@ -40,7 +42,7 @@ class AktivitetskortController(
         return when {
             authService.erEksternBruker() -> Person.fnr(authService.getLoggedInnUser().get())
             fnr.isNotBlank() -> Person.fnr(fnr)
-            else -> throw RuntimeException()
+            else -> throw throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
     }
 }
