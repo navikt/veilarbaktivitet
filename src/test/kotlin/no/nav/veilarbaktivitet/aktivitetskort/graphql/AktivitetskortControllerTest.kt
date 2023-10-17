@@ -11,6 +11,7 @@ import java.util.*
 class AktivitetskortControllerTest: SpringBootTestBase() {
 
     private val mockBruker = MockNavService.createHappyBruker()
+    private val mockVeileder = MockNavService.createVeileder(mockBruker)
 
     @Test
     fun `skal gruppere pa oppfolgingsperiode`() {
@@ -38,6 +39,27 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockBruker, query)
         assertThat(result.errors).isNull()
         assertThat(result.data?.perioder).hasSize(2)
+    }
+
+    @Test
+    fun `skal funke for veileder`() {
+        // Escaping $ does not work in multiline strings so use variable instead
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                    id,
+                    aktiviteter {
+                        id
+                    }
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+        aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, jobbAktivitet)
+        val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockVeileder, query)
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.perioder).hasSize(1)
     }
 
     @Test
