@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class AktivitetAppService {
 
+    private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
     private final IAuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
@@ -154,6 +157,8 @@ public class AktivitetAppService {
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
         if(!orginalAktivitet.getAktorId().equals(aktorId)) {
+            secureLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
+                    orginalAktivitet.getAktorId(), aktorId, orginalAktivitet.getId());
             throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
         }
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
