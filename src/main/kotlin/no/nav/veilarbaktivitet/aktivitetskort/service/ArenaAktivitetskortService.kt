@@ -11,14 +11,12 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
-import no.nav.veilarbaktivitet.aktivitetskort.feil.ManglerOppfolgingsperiodeFeil
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -33,22 +31,17 @@ class ArenaAktivitetskortService (
     private val idMappingDAO: IdMappingDAO,
     private val aktivitetDAO: AktivitetDAO,
     private val aktivitetService: AktivitetService,
-    private val oppfolgingsperiodeService: OppfolgingsperiodeService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
     private val avtaltMedNavService: AvtaltMedNavService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
-        val aktorId = bestilling.aktorId
         val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-        // Fant ingen passende oppfølgingsperiode - ignorerer meldingen
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, opprettetTidspunkt.toLocalDateTime())
-            ?: throw ManglerOppfolgingsperiodeFeil()
 
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, oppfolgingsperiode.sluttDato)
+        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, bestilling.oppfolgingsperiodeSlutt)
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            aktivitetsData.withOppfolgingsperiodeId(oppfolgingsperiode.uuid)
+            aktivitetsData.withOppfolgingsperiodeId(bestilling.oppfolgingsperiode)
         )
 
         // Gjør arena-spesifikk migrering
@@ -101,10 +94,7 @@ class ArenaAktivitetskortService (
     ): AktivitetData {
         val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
-        val aktorId = bestilling.aktorId
-        val endretTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-        val oppfolgingsperiode = oppfolgingsperiodeService.finnOppfolgingsperiode(aktorId, endretTidspunkt.toLocalDateTime())?.uuid
-            ?: gammelAktivitet.oppfolgingsperiodeId
+        val oppfolgingsperiode = bestilling.oppfolgingsperiode
         val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt
             ?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
             .withId(gammelAktivitet.id)

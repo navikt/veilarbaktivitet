@@ -378,7 +378,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 AktivitetskortType.ARENA_TILTAK,
                 MessageSource.ARENA_TILTAK_AKTIVITET_ACL
         );
-        var headers = new ArenaMeldingHeaders(arenaId, "MIDL");
+        var headers = new ArenaMeldingHeaders(arenaId, "MIDL", mockBruker.oppfolgingsperiode, null);
         aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(aktivitetskortMelding, headers));
         // Opprett fho når toggle er av
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);

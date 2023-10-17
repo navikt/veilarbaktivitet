@@ -18,7 +18,9 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import org.apache.kafka.clients.consumer.ConsumerRecord
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
+import java.time.ZonedDateTime
 import java.util.*
 
 @Component
@@ -57,8 +59,10 @@ class AktivitetsbestillingCreator (
                     melding.aktivitetskort,
                     melding.source,
                     melding.aktivitetskortType,
-                    getEksternReferanseId(consumerRecord),
-                    getArenaTiltakskode(consumerRecord),
+                    getEksternReferanseIdFromHeader(consumerRecord),
+                    getArenaTiltakskodeFromHeader(consumerRecord),
+                    getOppfolgingsperiodeFromHeader(consumerRecord),
+                    getOppfolgingsperiodeSluttFromHeader(consumerRecord),
                     resolvedMessageId,
                     melding.actionType,
                     aktorId
@@ -79,8 +83,12 @@ class AktivitetsbestillingCreator (
     }
 
     companion object {
+        private val log = LoggerFactory.getLogger(javaClass)
+
         const val HEADER_EKSTERN_REFERANSE_ID = "eksternReferanseId"
         const val HEADER_EKSTERN_ARENA_TILTAKSKODE = "arenaTiltakskode"
+        const val HEADER_OPPFOLGINGSPERIODE = "oppfolgingsperiode"
+        const val HEADER_OPPFOLGINGSPERIODE_SLUTT = "oppfolgingsperiodeSlutt"
         private var objectMapper: ObjectMapper? = null
         private val mapper: ObjectMapper?
             get() {
@@ -103,18 +111,35 @@ class AktivitetsbestillingCreator (
             }
         }
 
-        private fun getEksternReferanseId(consumerRecord: ConsumerRecord<String, String>): ArenaId {
+        private fun getEksternReferanseIdFromHeader(consumerRecord: ConsumerRecord<String, String>): ArenaId {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_REFERANSE_ID)
-                ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
+                ?: throw RuntimeException("Mangler Arena Header for arena-id aktivitetskort")
             val eksternReferanseIdBytes = header.value()
             return ArenaId(String(eksternReferanseIdBytes))
         }
 
-        private fun getArenaTiltakskode(consumerRecord: ConsumerRecord<String, String>): String {
+        private fun getArenaTiltakskodeFromHeader(consumerRecord: ConsumerRecord<String, String>): String {
             val header = consumerRecord.headers().lastHeader(HEADER_EKSTERN_ARENA_TILTAKSKODE)
-                ?: throw RuntimeException("Mangler Arena Header for ArenaTiltak aktivitetskort")
+                ?: throw RuntimeException("Mangler Arena Header for tiltakskode aktivitetskort")
             val arenaTiltakskode = header.value()
             return String(arenaTiltakskode)
+        }
+
+        private fun getOppfolgingsperiodeFromHeader(consumerRecord: ConsumerRecord<String, String>): UUID {
+            val header = consumerRecord.headers().lastHeader(HEADER_OPPFOLGINGSPERIODE)
+                ?: throw RuntimeException("Mangler Arena Header for oppfolgingsperiode aktivitetskort")
+            val oppfolgingsperiode = header.value()
+            return UUID.fromString(String(oppfolgingsperiode))
+        }
+
+        private fun getOppfolgingsperiodeSluttFromHeader(consumerRecord: ConsumerRecord<String, String>): ZonedDateTime? {
+            return runCatching {
+                consumerRecord.headers().lastHeader(HEADER_OPPFOLGINGSPERIODE_SLUTT)
+                    ?.value()
+                    ?.let { ZonedDateTime.parse(String(it)) }
+            }.onFailure {
+                log.error("Feilet på uthenting av header", it)
+            }.getOrNull()
         }
     }
 }

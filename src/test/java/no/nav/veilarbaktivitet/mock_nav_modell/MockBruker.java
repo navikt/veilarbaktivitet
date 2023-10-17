@@ -13,13 +13,16 @@ import java.util.UUID;
 public class MockBruker extends RestassuredUser {
     protected final PrivatBruker privatbruker;
     @Setter
-    public UUID oppfolgingsperiode = UUID.randomUUID();
+    public UUID oppfolgingsperiode;
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
     MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
         super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
+        if (brukerOptions.isUnderOppfolging()) {
+            oppfolgingsperiode = UUID.randomUUID();
+        }
         this.privatbruker = privatBruker;
     }
 

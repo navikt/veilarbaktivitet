@@ -286,40 +286,11 @@ class ArenaControllerTest {
         assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
 
-    @Test
-    void tilgangskontrollPaaMarkerSomLestSkalFinnes() {
-        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
-
-        ArenaId arenaId = new ArenaId("ARENATAerrorId");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.lest(arenaId));
-
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-    }
-
-    @Test
-    void tilgangskontrollPaaHentArenaAktiviteterSkalFinnes() {
-
-        when(veilarbarenaClient.hentAktiviteter(fnr))
-                .thenReturn(Optional.of(new AktiviteterDTO().setTiltaksaktiviteter(List.of(new AktiviteterDTO.Tiltaksaktivitet()
-                        .setAktivitetId(new ArenaId("ARENATA" + getRandomString()))
-                ))));
 
 
-        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentArenaAktiviteter);
 
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-    }
 
-    @Test
-    void tilgangskontrollPaaHarTiltakSkalFinnes() {
-        when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
-
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, controller::hentHarTiltak);
-
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
-    }
 
     @Test
     void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {

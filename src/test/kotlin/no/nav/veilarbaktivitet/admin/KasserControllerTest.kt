@@ -17,7 +17,11 @@ internal class KasserControllerTest : SpringBootTestBase() {
                 AktivitetTypeDTO.STILLING
             )
         )
-        kasserTestService.kasserAktivitet(veileder, aktivitet.id.toLong())
+
+        veileder
+            .createRequest()
+            .put(veileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.getId(), mockBruker))
+            .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
