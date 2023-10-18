@@ -194,9 +194,9 @@ type ForhaandsorienteringDTO {
 }
 
 enum Type {
-    send_forhandsorientering
-    send_paragraf_11_9
-    ikke_send_forhandsorientering
+    SEND_FORHAANDSORIENTERING
+    SEND_PARAGRAF_11_9
+    IKKE_SEND_FORHAANDSORIENTERING
 }
 
 enum AktivitetTypeDTO {
