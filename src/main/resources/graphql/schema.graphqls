@@ -7,6 +7,8 @@ type OppfolgingsPeriode {
     aktiviteter: [AktivitetDTO]
 }
 
+scalar Date
+
 type AktivitetDTO {
     id: String
     funksjonellId: String
@@ -17,10 +19,10 @@ type AktivitetDTO {
     lenke: String
     type: AktivitetTypeDTO
     status: AktivitetStatus
-    fraDato: String
-    tilDato: String
-    opprettetDato: String
-    endretDato: String
+    fraDato: Date
+    tilDato: Date
+    opprettetDato: Date
+    endretDato: Date
     endretAv: String
     historisk: Boolean
     avsluttetKommentar: String
@@ -136,7 +138,7 @@ enum AktivitetskortType {
 type StillingFraNavData {
     cvKanDelesData: CvKanDelesData
     soknadsfrist: String
-    svarfrist: String
+    svarfrist: Date
     arbeidsgiver: String
     bestillingsId: String
     stillingsId: String
@@ -170,10 +172,10 @@ type KontaktpersonData {
 
 type CvKanDelesData {
     kanDeles: Boolean
-    endretTidspunkt: String
+    endretTidspunkt: Date
     endretAv: String
     endretAvType: Innsender
-    avtaltDato: String
+    avtaltDato: Date
 }
 
 enum Innsender {

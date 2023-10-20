@@ -22,7 +22,8 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 perioder(fnr: $fnrParam) { 
                     id,
                     aktiviteter {
-                        id
+                        id,
+                        opprettetDato
                     }
                 }
             }
