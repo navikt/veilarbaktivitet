@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
+import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
@@ -23,6 +24,8 @@ class AktivitetskortController(
     @QueryMapping
     fun perioder(@Argument fnr: String): List<OppfolgingsPeriode> {
         val fnr = getContextUserIdent(fnr)
+        val eksternBrukerId = Fnr.of(fnr.get())
+        authService.sjekkTilgangTilPerson(eksternBrukerId)
         val aktiviteter = getAktiviteter(fnr)
             .groupBy { it.oppfolgingsperiodeId }
             .toList()

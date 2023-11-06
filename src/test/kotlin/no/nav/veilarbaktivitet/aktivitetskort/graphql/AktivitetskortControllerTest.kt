@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -14,7 +15,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     private val mockVeileder = MockNavService.createVeileder(mockBruker)
 
     @Test
-    fun `skal gruppere pa oppfolgingsperiode`() {
+    fun `skal gruppere pa oppfolgingsperiode (bruker)`() {
         // Escaping $ does not work in multiline strings so use variable instead
         val fnrParam = "\$fnr"
         val query = """
@@ -61,6 +62,31 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         val result = aktivitetTestService.queryAktivitetskort(mockBruker, mockVeileder, query)
         assertThat(result.errors).isNull()
         assertThat(result.data?.perioder).hasSize(1)
+    }
+
+    @Test
+    fun `veileder skal ikke ha tilgang på kvp bruker`() {
+        val kvpBruker = MockNavService.createBruker(
+            BrukerOptions.happyBruker().toBuilder()
+                .erUnderKvp(true)
+                .build()
+        )
+        // Escaping $ does not work in multiline strings so use variable instead
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                    id,
+                    aktiviteter { id }
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+        aktivitetTestService.opprettAktivitet(kvpBruker, kvpBruker, jobbAktivitet)
+        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, mockVeileder, query)
+        assertThat(result.data?.perioder).isNull()
+        assertThat(result.errors).isNull()
+
     }
 
     @Test
