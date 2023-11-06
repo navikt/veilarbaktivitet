@@ -85,7 +85,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(kvpBruker, kvpBruker, jobbAktivitet)
         val result = aktivitetTestService.queryAktivitetskort(kvpBruker, mockVeileder, query)
         assertThat(result.data?.perioder).isNull()
-        assertThat(result.errors).isNull()
+        assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
 
     }
 
