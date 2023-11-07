@@ -13,6 +13,7 @@ public class FilterTestConfig {
         registration.setFilter(new TestAuthContextFilter());
         registration.setOrder(1);
         registration.addUrlPatterns("/api/*");
+        registration.addUrlPatterns("/graphql");
         registration.addUrlPatterns("/internal/api/*");
         return registration;
     }

@@ -169,6 +169,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-aop")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
+    implementation("org.springframework.boot:spring-boot-starter-graphql")
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
