@@ -88,6 +88,15 @@ class ArenaAktivitetskortService (
         aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping)
     }
 
+    fun dobbelsjekkMigrering(
+        bestilling: ArenaAktivitetskortBestilling,
+        opprettetAktivitet: AktivitetData): Boolean {
+        val erMigrertAllerede = idMappingDAO.getAktivitetId(bestilling.eksternReferanseId).isPresent
+        if (erMigrertAllerede) return false
+        arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitet, bestilling.eksternReferanseId)
+        return true
+    }
+
     fun oppdaterAktivitet(
         bestilling: ArenaAktivitetskortBestilling,
         gammelAktivitet: AktivitetData

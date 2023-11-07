@@ -42,9 +42,15 @@ class AktivitetskortService(
                 val oppdatertAktivitet = when  {
                     bestilling is ArenaAktivitetskortBestilling -> {
                         if(gammelAktivitet.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name) {
-                            log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
+                            // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
+                            // hvor andre team behandler endringer fra arena raskere enn oss
+                            val bleMigrert = arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
+                            if (bleMigrert) {
+                                log.info("Aktivitet tatt over av annet team men var ikke migrert, gjorde arena-migrering og ignorerte data fra acl $id")
+                            } else {
+                                log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
+                            }
                             return UpsertActionResult.IGNORER
-
                         }
                         arenaAktivitetskortService.oppdaterAktivitet(
                             bestilling,
