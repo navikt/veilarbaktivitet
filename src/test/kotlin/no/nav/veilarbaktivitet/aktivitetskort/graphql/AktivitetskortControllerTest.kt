@@ -65,12 +65,33 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `veileder skal ikke ha tilgang på kvp bruker`() {
+    fun `veileder skal ikke ha tilgang til aktiviteter hvis ikke tilgang på bruker`() {
+        val bruker = MockNavService.createHappyBruker()
+        // Escaping $ does not work in multiline strings so use variable instead
+        val fnrParam = "\$fnr"
+        val query = """
+            query($fnrParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                    id,
+                    aktiviteter { id }
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+        aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitet)
+        val result = aktivitetTestService.queryAktivitetskort(bruker, mockVeileder, query)
+        assertThat(result.data?.perioder).isNull()
+        assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
+    }
+
+    @Test
+    fun `veileder skal ikke ha tilgang på kvp aktiviteter hvis ikke tilgang på enhet`() {
         val kvpBruker = MockNavService.createBruker(
             BrukerOptions.happyBruker().toBuilder()
                 .erUnderKvp(true)
                 .build()
         )
+        val veileder = MockNavService.createVeilederMedNasjonalTilgang()
         // Escaping $ does not work in multiline strings so use variable instead
         val fnrParam = "\$fnr"
         val query = """
@@ -83,10 +104,9 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
         val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
         aktivitetTestService.opprettAktivitet(kvpBruker, kvpBruker, jobbAktivitet)
-        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, mockVeileder, query)
-        assertThat(result.data?.perioder).isNull()
-        assertThat(result.errors!!.first().message).isEqualTo("Ikke tilgang")
-
+        val result = aktivitetTestService.queryAktivitetskort(kvpBruker, veileder, query)
+        assertThat(result.data?.perioder).isEmpty()
+        assertThat(result.errors).isNull()
     }
 
     @Test

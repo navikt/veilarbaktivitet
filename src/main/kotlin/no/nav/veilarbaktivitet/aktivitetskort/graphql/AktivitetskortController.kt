@@ -1,8 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
+import no.nav.common.types.identer.EnhetId
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
@@ -37,6 +39,7 @@ class AktivitetskortController(
         val erEksternBruker: Boolean = authService.erEksternBruker()
         val aktiviter = appService
             .hentAktiviteterForIdent(userFnr)
+            .let { filtrerKontorsperret(it) }
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
         return migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter)
     }
@@ -46,6 +49,22 @@ class AktivitetskortController(
             authService.erEksternBruker() -> Person.fnr(authService.getLoggedInnUser().get())
             fnr.isNotBlank() -> Person.fnr(fnr)
             else -> throw throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+    }
+
+    private fun filtrerKontorsperret(aktiviteter: List<AktivitetData>): List<AktivitetData> {
+        // Ikke spør om kontortilgang på nytt for hver aktivitet
+        val enheterMedTilgang = mutableMapOf<EnhetId, Boolean>()
+        return aktiviteter.filter { aktivitet ->
+            val enhetId = EnhetId.of(aktivitet.kontorsperreEnhetId)
+            when {
+                aktivitet.kontorsperreEnhetId == null -> true
+                enheterMedTilgang[enhetId] == true -> true
+                else -> {
+                    authService.harTilgangTilEnhet(enhetId)
+                        .also { enheterMedTilgang[enhetId] = it }
+                }
+            }
         }
     }
 }
