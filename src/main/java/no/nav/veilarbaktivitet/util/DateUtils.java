@@ -22,7 +22,7 @@ public class DateUtils {
     }
 
     public static String iso8601Fromdate(Date date, ZoneId zoneId) {
-        return ZonedDateTime.ofInstant(date.toInstant(), zoneId).toString();
+        return OffsetDateTime.ofInstant(date.toInstant(), zoneId).toString();
     }
 
     /**
