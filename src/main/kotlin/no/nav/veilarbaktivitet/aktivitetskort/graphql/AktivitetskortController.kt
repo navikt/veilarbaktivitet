@@ -56,9 +56,9 @@ class AktivitetskortController(
         // Ikke spør om kontortilgang på nytt for hver aktivitet
         val enheterMedTilgang = mutableMapOf<EnhetId, Boolean>()
         return aktiviteter.filter { aktivitet ->
-            val enhetId = EnhetId.of(aktivitet.kontorsperreEnhetId)
+            val enhetId = aktivitet.kontorsperreEnhetId?.let(EnhetId::of)
             when {
-                aktivitet.kontorsperreEnhetId == null -> true
+                enhetId == null -> true
                 enheterMedTilgang[enhetId] == true -> true
                 else -> {
                     authService.harTilgangTilEnhet(enhetId)
