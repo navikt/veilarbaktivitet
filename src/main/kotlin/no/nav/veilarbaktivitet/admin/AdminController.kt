@@ -29,7 +29,8 @@ class AdminController(
         val azureId = authContextHolder.requireOid()
         poaoTilgangClient.hentAdGrupper(azureId).get()?.find { adminGroups.contains(it.id) } ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Veileder er ikke i admingroup")
         val aktorId = personService.getAktorIdForPersonBruker(fnr(fnr)).get()
-        val sluttDato = oppfolgingsperiodeService.hentOppfolgingsperiode(aktorId, UUID.fromString(oppfolgingsperiodeUuid))?.sluttDato ?: throw NoSuchElementException("Finner ikke oppfolgingsperiode / sluttdato")
+        val sluttDato = oppfolgingsperiodeService.hentOppfolgingsperiode(aktorId, UUID.fromString(oppfolgingsperiodeUuid))?.sluttDato()
+            ?: throw NoSuchElementException("Finner ikke oppfolgingsperiode / sluttdato")
         oppfolgingsperiodeService.avsluttOppfolgingsperiode(UUID.fromString(oppfolgingsperiodeUuid), sluttDato)
     }
 }
