@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arena;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -8,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.person.Person;
@@ -19,10 +21,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Transactional
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/arena")
 public class ArenaController {
     private final UserInContext userInContext;
@@ -62,7 +66,7 @@ public class ArenaController {
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
         var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(IdMapping::getAktivitetId).toList());
-        return arenaAktiviteter
+        var filtrerteArenaAktiviteter = arenaAktiviteter
             .stream()
                 // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
                 .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keySet()))
@@ -75,6 +79,19 @@ public class ArenaController {
                     return arenaAktivitet;
                 })
                 .toList();
+        migreringService.countArenaAktiviteter(arenaAktiviteter, filtrerteArenaAktiviteter);
+        logUmigrerteIder(filtrerteArenaAktiviteter);
+        return arenaAktiviteter;
+    }
+
+    private void logUmigrerteIder(List<ArenaAktivitetDTO> arenaAktiviteter) {
+        var umigrerteTiltaksIder = arenaAktiviteter.stream()
+                .filter(aktivitet -> aktivitet.getType() == ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
+                .map(ArenaAktivitetDTO::getId)
+                .collect(Collectors.joining(","));
+        if (!umigrerteTiltaksIder.isEmpty()) {
+            log.info("Umigrerte tiltaksIdEr %s", umigrerteTiltaksIder);
+        }
     }
 
 
