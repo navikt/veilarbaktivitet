@@ -52,9 +52,7 @@ class AktivitetskortService(
                             }
                             return UpsertActionResult.IGNORER
                         }
-                        arenaAktivitetskortService.oppdaterAktivitet(
-                            bestilling,
-                            gammelAktivitet)
+                        oppdaterAktivitet(gammelAktivitet, bestilling.toAktivitetsDataUpdate())
                     }
                     else -> oppdaterAktivitet(gammelAktivitet, bestilling.toAktivitetsDataUpdate())
                 }
