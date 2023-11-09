@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import org.springframework.stereotype.Service
 import java.util.*
@@ -15,7 +16,25 @@ import java.util.function.Predicate
 class MigreringService (
     private val unleash: Unleash,
     private val idMappingDAO: IdMappingDAO,
+    private val aktivitetskortMetrikker: AktivitetskortMetrikker
 ) {
+
+    /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
+    fun countArenaAktiviteter(foer: MutableList<ArenaAktivitetDTO>, etter: MutableList<ArenaAktivitetDTO> ) {
+        if (foer.isEmpty()) return
+        val antallFoer = foer.groupBy { it.type }.mapValues { it.value.size }
+        val antallEtter = etter.groupBy { it.type }.mapValues { it.value.size }
+        ArenaAktivitetTypeDTO.values()
+            .map {
+                val totaltFoer = antallFoer[it] ?: 0
+                val totaltEtter = antallEtter[it] ?: 0
+                reportMetric(it, totaltFoer, totaltEtter)
+            }
+    }
+    private fun reportMetric(type: ArenaAktivitetTypeDTO, foer: Int, etter: Int) {
+        if (foer == 0) return
+        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, foer, etter)
+    }
 
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): Predicate<ArenaAktivitetDTO> {
         return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
