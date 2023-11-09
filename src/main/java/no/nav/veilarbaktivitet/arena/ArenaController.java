@@ -81,7 +81,7 @@ public class ArenaController {
                 .toList();
         migreringService.countArenaAktiviteter(arenaAktiviteter, filtrerteArenaAktiviteter);
         logUmigrerteIder(filtrerteArenaAktiviteter);
-        return arenaAktiviteter;
+        return filtrerteArenaAktiviteter;
     }
 
     private void logUmigrerteIder(List<ArenaAktivitetDTO> arenaAktiviteter) {
