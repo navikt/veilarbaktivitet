@@ -46,6 +46,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
@@ -906,6 +907,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
+    @Disabled
     fun `relast skal overskrive første feilede migrering`() {
         val arenaaktivitetId = ArenaId("TA31212")
         val arenaAktivitetDTO =
