@@ -44,7 +44,7 @@ class MigreringService (
                 * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
                 val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
                 val erMigrert = arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
-                val skalVises = !erHistorisertTiltak || !erMigrert
+                val skalVises = !erHistorisertTiltak && !erMigrert
                 skalVises
             }
         } else {
