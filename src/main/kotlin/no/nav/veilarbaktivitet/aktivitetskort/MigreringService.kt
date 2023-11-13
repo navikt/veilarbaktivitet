@@ -42,8 +42,10 @@ class MigreringService (
             Predicate { arenaAktivitetDTO: ArenaAktivitetDTO ->
                 /* Fjern "historiserte" arena-aktiviteter ref
                 * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
-                arenaAktivitetDTO.id.startsWith("ARENATAH") ||
-                    !arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
+                val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
+                val erMigrert = arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
+                val skalVises = !erHistorisertTiltak || !erMigrert
+                skalVises
             }
         } else {
             alleArenaAktiviteter
