@@ -51,9 +51,6 @@ public class VeilarbarenaMapper {
 
         Optional.ofNullable(aktiviteter.getTiltaksaktiviteter()).ifPresent(tiltakList ->
                 result.addAll(tiltakList.stream()
-                        /* Fjern "historiserte" arena-aktiviteter ref
-                        * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
-                        .filter(aktivitet -> !aktivitet.getAktivitetId().id().startsWith("ARENATAH"))
                         .map(VeilarbarenaMapper::mapTilAktivitet)
                         .toList()));
         Optional.ofNullable(aktiviteter.getGruppeaktiviteter()).ifPresent(gruppeList ->
