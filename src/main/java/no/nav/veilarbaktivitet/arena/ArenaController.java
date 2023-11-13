@@ -90,7 +90,7 @@ public class ArenaController {
                 .map(ArenaAktivitetDTO::getId)
                 .collect(Collectors.joining(","));
         if (!umigrerteTiltaksIder.isEmpty()) {
-            log.info("Umigrerte tiltaksIdEr %s", umigrerteTiltaksIder);
+            log.info("Umigrerte tiltaksIdEr: {}", umigrerteTiltaksIder);
         }
     }
 
