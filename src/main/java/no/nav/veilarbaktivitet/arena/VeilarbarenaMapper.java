@@ -51,6 +51,9 @@ public class VeilarbarenaMapper {
 
         Optional.ofNullable(aktiviteter.getTiltaksaktiviteter()).ifPresent(tiltakList ->
                 result.addAll(tiltakList.stream()
+                        /* Fjern "historiserte" arena-aktiviteter ref
+                        * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
+                        .filter(aktivitet -> !aktivitet.getAktivitetId().id().startsWith("ARENATAH"))
                         .map(VeilarbarenaMapper::mapTilAktivitet)
                         .toList()));
         Optional.ofNullable(aktiviteter.getGruppeaktiviteter()).ifPresent(gruppeList ->
@@ -61,7 +64,13 @@ public class VeilarbarenaMapper {
                 result.addAll(utdanningList.stream()
                         .map(VeilarbarenaMapper::mapTilAktivitet)
                         .toList()));
-        return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).toList();
+        return result.stream().filter(aktivitet -> {
+            if (aktivitet.getType() == ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) {
+                return etterFilterDato(aktivitet.getStatusSistEndret());
+            } else {
+                return etterFilterDato(aktivitet.getTilDato());
+            }
+        }).toList();
     }
 
     private static boolean etterFilterDato(Date tilDato) {
