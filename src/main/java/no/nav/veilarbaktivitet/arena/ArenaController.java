@@ -6,8 +6,8 @@ import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
@@ -65,7 +65,8 @@ public class ArenaController {
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
-        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(IdMapping::getAktivitetId).toList());
+        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream()
+            .map(IdMappingWithAktivitetStatus::getAktivitetId).toList());
         var filtrerteArenaAktiviteter = arenaAktiviteter
             .stream()
                 // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
@@ -79,7 +80,7 @@ public class ArenaController {
                     return arenaAktivitet;
                 })
                 .toList();
-        migreringService.countArenaAktiviteter(arenaAktiviteter, filtrerteArenaAktiviteter);
+        migreringService.countArenaAktiviteter(arenaAktiviteter, idMappings);
         logUmigrerteIder(filtrerteArenaAktiviteter);
         return filtrerteArenaAktiviteter;
     }

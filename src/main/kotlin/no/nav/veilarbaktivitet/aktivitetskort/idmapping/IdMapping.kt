@@ -1,10 +1,18 @@
 package no.nav.veilarbaktivitet.aktivitetskort.idmapping
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import java.util.*
 
 data class IdMapping(
-    public val arenaId: ArenaId,
-    public val aktivitetId: Long,
-    public val funksjonellId: UUID
+    val arenaId: ArenaId,
+    val aktivitetId: Long,
+    val funksjonellId: UUID,
+)
+
+data class IdMappingWithAktivitetStatus (
+    val arenaId: ArenaId,
+    val aktivitetId: Long,
+    val funksjonellId: UUID,
+    val status: AktivitetStatus
 )
