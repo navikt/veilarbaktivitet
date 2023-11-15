@@ -61,11 +61,14 @@ public class VeilarbarenaMapper {
                 result.addAll(utdanningList.stream()
                         .map(VeilarbarenaMapper::mapTilAktivitet)
                         .toList()));
-        return result.stream().filter(aktivitet -> etterFilterDato(aktivitet.getTilDato())).toList();
+        return result.stream()
+            .filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()))
+            .filter(aktivitet -> etterFilterDato(aktivitet.getStatusSistEndret()))
+            .toList();
     }
 
-    private static boolean etterFilterDato(Date tilDato) {
-        return tilDato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(tilDato);
+    private static boolean etterFilterDato(Date dato) {
+        return dato == null || arenaAktivitetFilterDato == null || arenaAktivitetFilterDato.before(dato);
     }
 
     private static String getTittel(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet){

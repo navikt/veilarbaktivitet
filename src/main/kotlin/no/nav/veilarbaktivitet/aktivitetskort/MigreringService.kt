@@ -39,7 +39,14 @@ class MigreringService (
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): Predicate<ArenaAktivitetDTO> {
         return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             // Hvis migrert, skjul fra /tiltak endepunkt
-            Predicate { arenaAktivitetDTO: ArenaAktivitetDTO -> !arenaIds.contains(ArenaId(arenaAktivitetDTO.id)) }
+            Predicate { arenaAktivitetDTO: ArenaAktivitetDTO ->
+                /* Fjern "historiserte" arena-aktiviteter ref
+                * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
+                val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
+                val erMigrert = arenaIds.contains(ArenaId(arenaAktivitetDTO.id))
+                val skalVises = !erHistorisertTiltak && !erMigrert
+                skalVises
+            }
         } else {
             alleArenaAktiviteter
         }
