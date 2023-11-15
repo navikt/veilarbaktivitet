@@ -60,7 +60,8 @@ class ArenaAktivitetskortService (
         val idMapping = IdMapping(
             arenaId,
             opprettetAktivitet.getId(),
-            aktivitetskort.id
+            aktivitetskort.id,
+            AktivitetStatus.FULLFORT
         )
         idMappingDAO.insert(idMapping)
         forhaandsorienteringDAO.getFhoForArenaAktivitet(arenaId)

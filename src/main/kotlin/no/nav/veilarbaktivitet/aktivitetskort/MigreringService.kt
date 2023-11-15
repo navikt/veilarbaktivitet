@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import io.getunleash.Unleash
 import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
@@ -20,20 +21,39 @@ class MigreringService (
 ) {
 
     /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
-    fun countArenaAktiviteter(foer: MutableList<ArenaAktivitetDTO>, etter: MutableList<ArenaAktivitetDTO> ) {
+    fun countArenaAktiviteter(
+        foer: List<ArenaAktivitetDTO>,
+        idMappings: Map<ArenaId, IdMapping>
+    ) {
         if (foer.isEmpty()) return
         val antallFoer = foer.groupBy { it.type }.mapValues { it.value.size }
-        val antallEtter = etter.groupBy { it.type }.mapValues { it.value.size }
+
+        // Bruker status som indikator på om dataene er riktig
+        fun sjekkMigreringsStatus(aktivitet: ArenaAktivitetDTO): MigreringsStatus {
+            // VIKTIG: Arena id har blitt byttet ut med aktivitetsId på migrerte aktiviteter
+            return idMappings[ArenaId(aktivitet.id)]
+                ?.let { match -> if (match.status == aktivitet.status) MigreringsStatus.MigrertRiktigStatus else MigreringsStatus.MigrertFeilStatus  }
+                ?: MigreringsStatus.IkkeMigrert
+        }
+        val migrert = foer
+            .map { it to sjekkMigreringsStatus(it) }
+            .filter { it.second != MigreringsStatus.IkkeMigrert }
+
+        val (etterMedRiktigStatus, etterMedFeilStatus) = migrert.partition { it.second == MigreringsStatus.MigrertRiktigStatus }
+        val antallMigrertMedRiktigStatus = etterMedRiktigStatus.groupBy { it.first.type }.mapValues { it.value.size }
+        val antallMigrertMedFeilStatus = etterMedFeilStatus.groupBy { it.first.type }.mapValues { it.value.size }
         ArenaAktivitetTypeDTO.values()
             .map {
                 val totaltFoer = antallFoer[it] ?: 0
-                val totaltEtter = antallEtter[it] ?: 0
-                reportMetric(it, totaltFoer, totaltEtter)
+                val totaltMigrertRiktigStatus = antallMigrertMedRiktigStatus[it] ?: 0
+                val totaltMigrertFeilStatus = antallMigrertMedFeilStatus[it] ?: 0
+                val ikkeMigrert = totaltFoer - (totaltMigrertRiktigStatus + totaltMigrertFeilStatus)
+                reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert)
             }
     }
-    private fun reportMetric(type: ArenaAktivitetTypeDTO, foer: Int, etter: Int) {
-        if (foer == 0) return
-        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, foer, etter)
+    private fun reportMetric(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int) {
+        if (total == 0) return
+        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert)
     }
 
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): Predicate<ArenaAktivitetDTO> {
@@ -70,4 +90,10 @@ class MigreringService (
         const val VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter"
         private val alleArenaAktiviteter = Predicate { _: ArenaAktivitetDTO -> true }
     }
+}
+
+enum class MigreringsStatus {
+    IkkeMigrert,
+    MigrertRiktigStatus,
+    MigrertFeilStatus
 }

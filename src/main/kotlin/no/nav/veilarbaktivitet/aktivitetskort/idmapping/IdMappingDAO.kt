@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.idmapping
 
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -69,8 +70,9 @@ open class IdMappingDAO (
             .addValue("arenaIds", stringIds)
         val idList = db.query(
             """
-                SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.EKSTERN_REFERANSE_ID in (:arenaIds)
-                
+                SELECT ID_MAPPINGER.*, AKTIVITET.LIVSLOPSTATUS_KODE FROM ID_MAPPINGER 
+                LEFT JOIN AKTIVITET ON ID_MAPPINGER.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
+                WHERE ID_MAPPINGER.EKSTERN_REFERANSE_ID in (:arenaIds) AND AKTIVITET.GJELDENDE = 1
                 """.trimIndent(), params, rowmapper
         )
         return idList.stream()
@@ -85,11 +87,12 @@ open class IdMappingDAO (
             }
     }
 
-    var rowmapper = RowMapper { rs: ResultSet, _: Int ->
+    private var rowmapper = RowMapper { rs: ResultSet, _: Int ->
         IdMapping(
             ArenaId(rs.getString("EKSTERN_REFERANSE_ID")),
             rs.getLong("AKTIVITET_ID"),
-            UUID.fromString(rs.getString("FUNKSJONELL_ID"))
+            UUID.fromString(rs.getString("FUNKSJONELL_ID")),
+            AktivitetStatus.valueOf(rs.getString("LIVSLOPSTATUS_KODE"))
         )
     }
 }

@@ -65,7 +65,8 @@ public class ArenaController {
         var arenaAktiviteter = arenaService.hentAktiviteter(fnr);
         var ideer = arenaAktiviteter.stream().map(arenaAktivitetDTO -> new ArenaId(arenaAktivitetDTO.getId())).toList();
         var idMappings = idMappingDAO.getMappings(ideer);
-        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream().map(IdMapping::getAktivitetId).toList());
+        var aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(idMappings.values().stream()
+            .map(IdMapping::getAktivitetId).toList());
         var filtrerteArenaAktiviteter = arenaAktiviteter
             .stream()
                 // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
@@ -79,7 +80,7 @@ public class ArenaController {
                     return arenaAktivitet;
                 })
                 .toList();
-        migreringService.countArenaAktiviteter(arenaAktiviteter, filtrerteArenaAktiviteter);
+        migreringService.countArenaAktiviteter(arenaAktiviteter, idMappings);
         logUmigrerteIder(filtrerteArenaAktiviteter);
         return filtrerteArenaAktiviteter;
     }

@@ -11,23 +11,27 @@ import org.springframework.stereotype.Component
 @Component
 class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
 
-    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, foer: Int, etter: Int) {
-        val diff = foer - etter
+    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int) {
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "ikke_migrert")
             .register(meterRegistry)
-            .increment((foer - diff).toDouble())
+            .increment((ikkeMigrert).toDouble())
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "filtrert_bort")
             .register(meterRegistry)
-            .increment(diff.toDouble())
+            .increment(migrertRiktigStatus.toDouble())
+        Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
+            .tag("tiltakstype", type.name)
+            .tag("counter_type", "filtrert_bort_feil_status")
+            .register(meterRegistry)
+            .increment(migrertFeilStatus.toDouble())
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "total")
             .register(meterRegistry)
-            .increment(foer.toDouble())
+            .increment(total.toDouble())
     }
 
     fun countAktivitetskortUpsert(bestilling: AktivitetskortBestilling, upsertActionResult: UpsertActionResult) {
