@@ -2,8 +2,8 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import io.getunleash.Unleash
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
@@ -40,13 +40,13 @@ class MigreringServiceTest {
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter,
             idMappings = mapOf(
-                ArenaId("ARENATA101") to IdMapping(
+                ArenaId("ARENATA101") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA101"),
                     1,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT
                 ),
-                ArenaId("ARENATA102") to IdMapping(
+                ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
@@ -83,19 +83,19 @@ class MigreringServiceTest {
         migreringService.countArenaAktiviteter(
             foer = testAktiviteter,
             idMappings = mapOf(
-                ArenaId("ARENATA101") to IdMapping(
+                ArenaId("ARENATA101") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA101"),
                     1,
                     UUID.randomUUID(),
                     AktivitetStatus.FULLFORT
                 ),
-                ArenaId("ARENATA102") to IdMapping(
+                ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT // Feil status
                 ),
-                ArenaId("ARENATA103") to IdMapping(
+                ArenaId("ARENATA103") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA103"),
                     3,
                     UUID.randomUUID(),

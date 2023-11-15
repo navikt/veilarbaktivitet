@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import io.getunleash.Unleash
 import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
-import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
+import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
@@ -23,7 +23,7 @@ class MigreringService (
     /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
     fun countArenaAktiviteter(
         foer: List<ArenaAktivitetDTO>,
-        idMappings: Map<ArenaId, IdMapping>
+        idMappings: Map<ArenaId, IdMappingWithAktivitetStatus>
     ) {
         if (foer.isEmpty()) return
         val antallFoer = foer.groupBy { it.type }.mapValues { it.value.size }

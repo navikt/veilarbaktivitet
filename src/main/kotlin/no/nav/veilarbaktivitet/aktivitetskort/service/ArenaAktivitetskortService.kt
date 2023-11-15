@@ -61,7 +61,6 @@ class ArenaAktivitetskortService (
             arenaId,
             opprettetAktivitet.getId(),
             aktivitetskort.id,
-            AktivitetStatus.FULLFORT
         )
         idMappingDAO.insert(idMapping)
         forhaandsorienteringDAO.getFhoForArenaAktivitet(arenaId)

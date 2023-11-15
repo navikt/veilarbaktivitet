@@ -63,23 +63,23 @@ open class IdMappingDAO (
             }
     }
 
-    fun getMappings(ids: List<ArenaId>): Map<ArenaId, IdMapping> {
+    fun getMappings(ids: List<ArenaId>): Map<ArenaId, IdMappingWithAktivitetStatus> {
         if (ids.isEmpty()) return HashMap()
         val stringIds = ids.stream().map { obj: ArenaId -> obj.id() }.toList()
         val params = MapSqlParameterSource()
             .addValue("arenaIds", stringIds)
         val idList = db.query(
             """
-                SELECT ID_MAPPINGER.*, AKTIVITET.LIVSLOPSTATUS_KODE FROM ID_MAPPINGER 
+                SELECT ID_MAPPINGER.AKTIVITET_ID, ID_MAPPINGER.EKSTERN_REFERANSE_ID, ID_MAPPINGER.FUNKSJONELL_ID, AKTIVITET.LIVSLOPSTATUS_KODE AS STATUS FROM ID_MAPPINGER 
                 LEFT JOIN AKTIVITET ON ID_MAPPINGER.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
                 WHERE ID_MAPPINGER.EKSTERN_REFERANSE_ID in (:arenaIds) AND AKTIVITET.GJELDENDE = 1
-                """.trimIndent(), params, rowmapper
+                """.trimIndent(), params, rowmapperWithAktivitetStatus
         )
         return idList.stream()
-            .reduce(HashMap(), { mapping: HashMap<ArenaId, IdMapping>, singleIdMapping: IdMapping ->
+            .reduce(HashMap(), { mapping: HashMap<ArenaId, IdMappingWithAktivitetStatus>, singleIdMapping: IdMappingWithAktivitetStatus ->
                 mapping[singleIdMapping.arenaId] = singleIdMapping
                 mapping
-            }) { accumulatedMappings: HashMap<ArenaId, IdMapping>, nextSingleMapping: HashMap<ArenaId, IdMapping>? ->
+            }) { accumulatedMappings: HashMap<ArenaId, IdMappingWithAktivitetStatus>, nextSingleMapping: HashMap<ArenaId, IdMappingWithAktivitetStatus>? ->
                 accumulatedMappings.putAll(
                     nextSingleMapping!!
                 )
@@ -92,7 +92,15 @@ open class IdMappingDAO (
             ArenaId(rs.getString("EKSTERN_REFERANSE_ID")),
             rs.getLong("AKTIVITET_ID"),
             UUID.fromString(rs.getString("FUNKSJONELL_ID")),
-            AktivitetStatus.valueOf(rs.getString("LIVSLOPSTATUS_KODE"))
+        )
+    }
+
+    private var rowmapperWithAktivitetStatus = RowMapper { rs: ResultSet, _: Int ->
+        IdMappingWithAktivitetStatus(
+            ArenaId(rs.getString("EKSTERN_REFERANSE_ID")),
+            rs.getLong("AKTIVITET_ID"),
+            UUID.fromString(rs.getString("FUNKSJONELL_ID")),
+            AktivitetStatus.valueOf(rs.getString("STATUS"))
         )
     }
 }
