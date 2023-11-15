@@ -30,7 +30,6 @@ class MigreringService (
 
         // Bruker status som indikator på om dataene er riktig
         fun sjekkMigreringsStatus(aktivitet: ArenaAktivitetDTO): MigreringsStatus {
-            // VIKTIG: Arena id har blitt byttet ut med aktivitetsId på migrerte aktiviteter
             return idMappings[ArenaId(aktivitet.id)]
                 ?.let { match -> if (match.status == aktivitet.status) MigreringsStatus.MigrertRiktigStatus else MigreringsStatus.MigrertFeilStatus  }
                 ?: MigreringsStatus.IkkeMigrert
