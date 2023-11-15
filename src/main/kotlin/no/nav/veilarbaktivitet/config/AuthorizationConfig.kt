@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.config
 
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
+import no.nav.poao.dab.spring_a2_annotations.EnableAuthorization
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.poao_tilgang.client.PoaoTilgangCachedClient
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
+@EnableAuthorization
 open class AuthorizationConfig {
     @Bean
     open fun poaoTilgangClient(@Value("\${app.env.poao_tilgang.url}") baseUrl: String, tokenProvider: AzureAdMachineToMachineTokenClient, @Value("\${app.env.poao_tilgang.scope}") scope: String): PoaoTilgangClient {
