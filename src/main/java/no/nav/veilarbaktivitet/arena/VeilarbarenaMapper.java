@@ -63,7 +63,7 @@ public class VeilarbarenaMapper {
                         .toList()));
         return result.stream()
             .filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()))
-            .filter(aktivitet -> etterFilterDato(aktivitet.getStatusSistEndret()))
+//            .filter(aktivitet -> etterFilterDato(aktivitet.getStatusSistEndret()))
             .toList();
     }
 
