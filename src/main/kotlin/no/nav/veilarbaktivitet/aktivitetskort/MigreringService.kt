@@ -43,7 +43,10 @@ class MigreringService (
         val (etterMedRiktigStatus, etterMedFeilStatus) = migrert.partition { it.second == MigreringsStatus.MigrertRiktigStatus }
         val antallMigrertMedRiktigStatus = etterMedRiktigStatus.groupBy { it.first.type }.mapValues { it.value.size }
         val antallMigrertMedFeilStatus = etterMedFeilStatus.groupBy { it.first.type }.mapValues { it.value.size }
-        log.info("Migrerte aktiviteter med feil status: ${etterMedFeilStatus.joinToString(",") { it.first.id }}")
+        val feilStatusIdEr = etterMedFeilStatus.joinToString(",") { it.first.id }
+        if (feilStatusIdEr.isNotEmpty()) {
+            log.info("Migrerte aktiviteter med feil status: $feilStatusIdEr")
+        }
         ArenaAktivitetTypeDTO.values()
             .map {
                 val totaltFoer = antallFoer[it] ?: 0
