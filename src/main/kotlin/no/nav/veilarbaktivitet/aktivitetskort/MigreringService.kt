@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetSt
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
 import java.util.function.Predicate
@@ -19,6 +20,7 @@ class MigreringService (
     private val idMappingDAO: IdMappingDAO,
     private val aktivitetskortMetrikker: AktivitetskortMetrikker
 ) {
+    val log = LoggerFactory.getLogger(javaClass)
 
     /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
     fun countArenaAktiviteter(
@@ -41,6 +43,7 @@ class MigreringService (
         val (etterMedRiktigStatus, etterMedFeilStatus) = migrert.partition { it.second == MigreringsStatus.MigrertRiktigStatus }
         val antallMigrertMedRiktigStatus = etterMedRiktigStatus.groupBy { it.first.type }.mapValues { it.value.size }
         val antallMigrertMedFeilStatus = etterMedFeilStatus.groupBy { it.first.type }.mapValues { it.value.size }
+        log.info("Migrerte aktiviteter med feil status: ${etterMedFeilStatus.joinToString(",") { it.first.id }}")
         ArenaAktivitetTypeDTO.values()
             .map {
                 val totaltFoer = antallFoer[it] ?: 0
