@@ -145,6 +145,17 @@ class ArenaAktivitetskortService (
             gammelAktivitet.fhoId?.let { avtaltMedNavService.settVarselFerdig(it) }
         }
 
+        val aktivitetIder = idMappingDAO.getMappingsByFunksjonellId(listOf(bestilling.aktivitetskort.id))
+        if (aktivitetIder[bestilling.aktivitetskort.id] == null) {
+            val idMapping = IdMapping(
+                bestilling.eksternReferanseId,
+                aktivitetsData.id,
+                bestilling.aktivitetskort.id,
+            )
+            idMappingDAO.insert(idMapping)
+        }
+
+
         val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
         return opprettetAktivitetsData
     }

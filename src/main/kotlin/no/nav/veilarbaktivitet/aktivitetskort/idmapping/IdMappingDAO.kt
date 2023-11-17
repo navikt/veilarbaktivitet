@@ -55,10 +55,10 @@ open class IdMappingDAO (
         if (ids.isEmpty()) return emptyMap()
         val stringIds = ids.stream().map { obj: UUID -> obj.toString() }.toList()
         val params = MapSqlParameterSource()
-            .addValue("arenaIds", stringIds)
+            .addValue("funksjonelleIder", stringIds)
         val idList = db.query(
             """
-                SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.FUNKSJONELL_ID in (:arenaIds)
+                SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.FUNKSJONELL_ID in (:funksjonelleIder)
                 """.trimIndent(), params, rowmapper
         )
         return idList.stream()
