@@ -109,7 +109,7 @@ open class IdMappingDAO (
             rs.getLong("AKTIVITET_ID"),
             UUID.fromString(rs.getString("FUNKSJONELL_ID")),
             AktivitetStatus.valueOf(rs.getString("STATUS")),
-            rs.getTimestamp("STATUS")?.toLocalDateTime(),
+            rs.getTimestamp("HISTORISK_DATO")?.toLocalDateTime(),
         )
     }
 }
