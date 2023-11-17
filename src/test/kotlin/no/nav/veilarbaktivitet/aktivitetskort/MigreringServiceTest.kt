@@ -44,13 +44,15 @@ class MigreringServiceTest {
                     ArenaId("ARENATA101"),
                     1,
                     UUID.randomUUID(),
-                    AktivitetStatus.PLANLAGT
+                    AktivitetStatus.PLANLAGT,
+                    historiskDato = null
                 ),
                 ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
-                    AktivitetStatus.PLANLAGT // Feil status
+                    AktivitetStatus.PLANLAGT, // Feil status
+                    historiskDato = null
                 )
             )
         )
@@ -87,19 +89,22 @@ class MigreringServiceTest {
                     ArenaId("ARENATA101"),
                     1,
                     UUID.randomUUID(),
-                    AktivitetStatus.FULLFORT
+                    AktivitetStatus.FULLFORT,
+                    historiskDato = null
                 ),
                 ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
-                    AktivitetStatus.PLANLAGT // Feil status
+                    AktivitetStatus.PLANLAGT, // Feil status
+                    historiskDato = null
                 ),
                 ArenaId("ARENATA103") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA103"),
                     3,
                     UUID.randomUUID(),
-                    AktivitetStatus.PLANLAGT // Feil status
+                    AktivitetStatus.PLANLAGT, // Feil status
+                    historiskDato = null
                 )
             )
         )

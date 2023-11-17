@@ -123,7 +123,7 @@ public class ArenaService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Bruker kan ikke varsles");
         }
 
-        var aktivitetId = idMappingDAO.getAktivitetId(arenaaktivitetId);
+        var aktivitetId = idMappingDAO.getLatestAktivitetsId(arenaaktivitetId);
         brukernotifikasjonArenaAktivitetService.opprettVarselPaaArenaAktivitet(arenaaktivitetId, aktivitetId, fnr, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
 
         var nyForhaandsorientering = fhoDAO.insertForArenaAktivitet(forhaandsorientering, arenaaktivitetId, aktorId, opprettetAv, new Date(), aktivitetId);
