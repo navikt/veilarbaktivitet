@@ -28,14 +28,24 @@ open class IdMappingDAO (
         )
     }
 
-    fun getAktivitetId(arenaId: ArenaId): Optional<Long> {
+    fun getAktivitetIder(arenaId: ArenaId): List<IdMapping> {
         val params = MapSqlParameterSource().addValue("arenaId", arenaId.id())
-        return db.queryForList(
+        return db.query(
             """
                 SELECT AKTIVITET_ID FROM ID_MAPPINGER WHERE EKSTERN_REFERANSE_ID = :arenaId
-                
-                """.trimIndent(), params, Long::class.java
+            """.trimIndent(), params, rowmapper
         )
+    }
+
+    fun getLatestAktivitetsId(arenaId: ArenaId): Optional<Long> {
+        val params = MapSqlParameterSource().addValue("arenaId", arenaId.id())
+        return db.query(
+            """
+                SELECT ID_MAPPINGER.AKTIVITET_ID as AKTIVITET_ID 
+                FROM ID_MAPPINGER JOIN AKTIVITET ON ID_MAPPINGER.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
+                WHERE EKSTERN_REFERANSE_ID = :arenaId AND GJELDENDE = 1
+            """.trimIndent(), params,
+        ) { row, _ -> row.getLong("AKTIVITET_ID") }
             .stream()
             .findFirst()
     }
@@ -48,7 +58,6 @@ open class IdMappingDAO (
         val idList = db.query(
             """
                 SELECT * FROM ID_MAPPINGER where ID_MAPPINGER.FUNKSJONELL_ID in (:arenaIds)
-                
                 """.trimIndent(), params, rowmapper
         )
         return idList.stream()
