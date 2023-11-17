@@ -20,8 +20,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import java.time.ZoneOffset
-import java.time.ZonedDateTime
 
 @Slf4j
 @Service
@@ -128,11 +126,12 @@ class ArenaAktivitetskortService (
         bestilling: ArenaAktivitetskortBestilling,
         gammelAktivitet: AktivitetData
     ): AktivitetData {
-        val historiskTidspunkt = gammelAktivitet.eksternAktivitetData.oppfolgingsperiodeSlutt
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
         val oppfolgingsperiode = bestilling.oppfolgingsperiode
-        val aktivitetsData = bestilling.toAktivitet(opprettetDato, historiskTidspunkt
-            ?.let { ZonedDateTime.of(it, ZoneOffset.UTC) } )
+        val aktivitetsData = bestilling.toAktivitet(
+            opprettetDato,
+            bestilling.oppfolgingsperiodeSlutt
+        )
             .withId(gammelAktivitet.id)
             .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
             .withVersjon(gammelAktivitet.versjon)
