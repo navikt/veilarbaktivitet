@@ -32,7 +32,7 @@ open class IdMappingDAO (
         val params = MapSqlParameterSource().addValue("arenaId", arenaId.id())
         return db.query(
             """
-                SELECT AKTIVITET_ID FROM ID_MAPPINGER WHERE EKSTERN_REFERANSE_ID = :arenaId
+                SELECT AKTIVITET_ID, EKSTERN_REFERANSE_ID, FUNKSJONELL_ID FROM ID_MAPPINGER WHERE EKSTERN_REFERANSE_ID = :arenaId
             """.trimIndent(), params, rowmapper
         )
     }
