@@ -4,6 +4,8 @@ import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Service
+import java.time.ZoneOffset
+import java.util.*
 
 @Service
 open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
@@ -36,13 +38,19 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
 
     fun getByAktorId(aktorId: AktorId ): List<Oppfolgingsperiode> {
         val params = mapOf("aktorId" to aktorId.get())
-
         val sql = """
-            SELECT * FROM OPPFOLGINGSPERIODE WHERE AKTORID = :aktorId ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
+            SELECT * FROM OPPFOLGINGSPERIODE 
+            WHERE AKTORID = :aktorId 
+            ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
         """.trimIndent()
-
-        jdbc.query()
-        return
+        return jdbc.query(sql, params) {row, _ ->
+            Oppfolgingsperiode(
+                aktorId.get(),
+                UUID.fromString(row.getString("id")),
+                row.getTimestamp("fra").toLocalDateTime().atZone(ZoneOffset.systemDefault()),
+                row.getTimestamp("til")?.toLocalDateTime()?.atZone(ZoneOffset.systemDefault()),
+            )
+        }
     }
 
 }

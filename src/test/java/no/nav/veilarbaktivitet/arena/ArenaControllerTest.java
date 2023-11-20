@@ -26,6 +26,7 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -70,8 +71,9 @@ class ArenaControllerTest {
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
+    private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = new OppfolgingsperiodeDAO(new NamedParameterJdbcTemplate(jdbc));
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
-    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");

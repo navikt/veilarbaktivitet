@@ -17,7 +17,7 @@ class OppfolgingsperiodeConsumer {
     void opprettEllerOppdaterSistePeriode(ConsumerRecord<String, String> consumerRecord) {
         SisteOppfolgingsperiodeV1 sisteOppfolgingsperiodeV1 = JsonUtils.fromJson(consumerRecord.value(), SisteOppfolgingsperiodeV1.class);
         log.info("oppfølgingsperiode: {}", sisteOppfolgingsperiodeV1);
-        oppfolgingsperiodeService.uppsertOppfolgingsperiode(sisteOppfolgingsperiodeV1);
+        oppfolgingsperiodeService.upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1);
 
         if(sisteOppfolgingsperiodeV1.sluttDato != null) {
             oppfolgingsperiodeService.avsluttOppfolgingsperiode(sisteOppfolgingsperiodeV1.uuid, sisteOppfolgingsperiodeV1.sluttDato);

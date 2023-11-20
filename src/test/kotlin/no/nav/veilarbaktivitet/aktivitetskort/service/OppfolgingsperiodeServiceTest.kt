@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeDAO
 import no.nav.veilarbaktivitet.person.Person
@@ -21,6 +22,7 @@ class OppfolgingsperiodeServiceTest {
     private lateinit var aktivitetService: AktivitetService
     private lateinit var brukernotifikasjonService: BrukernotifikasjonService
     private lateinit var sistePeriodeDAO: SistePeriodeDAO
+    private lateinit var oppfolgingsperiodeDAO: OppfolgingsperiodeDAO
 
 
     private lateinit var oppfolgingsperiodeService: OppfolgingsperiodeService
@@ -36,7 +38,8 @@ class OppfolgingsperiodeServiceTest {
         aktivitetService = Mockito.mock(AktivitetService::class.java)
         brukernotifikasjonService = Mockito.mock(BrukernotifikasjonService::class.java)
         sistePeriodeDAO = Mockito.mock(SistePeriodeDAO::class.java)
-        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, brukernotifikasjonService, sistePeriodeDAO, oppfolgingClient)
+        oppfolgingsperiodeDAO = Mockito.mock(OppfolgingsperiodeDAO::class.java)
+        oppfolgingsperiodeService = OppfolgingsperiodeService(aktivitetService, brukernotifikasjonService, sistePeriodeDAO, oppfolgingsperiodeDAO, oppfolgingClient)
     }
 
     @Test

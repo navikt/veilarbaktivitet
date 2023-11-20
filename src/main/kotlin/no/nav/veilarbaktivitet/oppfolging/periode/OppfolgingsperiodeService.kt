@@ -22,6 +22,7 @@ class OppfolgingsperiodeService(
 	private val aktivitetService: AktivitetService,
 	private val brukernotifikasjonService: BrukernotifikasjonService,
 	private val sistePeriodeDAO: SistePeriodeDAO,
+	private val oppfolgingsperiodeDAO: OppfolgingsperiodeDAO,
 	private val oppfolgingClient: OppfolgingV2Client
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
@@ -35,15 +36,14 @@ class OppfolgingsperiodeService(
 		aktivitetService.settAktiviteterTilHistoriske(oppfolgingsperiode, sluttDato)
 	}
 
-	fun uppsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
-		sistePeriodeDAO.uppsertOppfolingsperide(
-			Oppfolgingsperiode(
-				sisteOppfolgingsperiodeV1.aktorId,
-				sisteOppfolgingsperiodeV1.uuid,
-				sisteOppfolgingsperiodeV1.startDato,
-				sisteOppfolgingsperiodeV1.sluttDato
-			)
-		)
+	fun upsertOppfolgingsperiode(sisteOppfolgingsperiodeV1: SisteOppfolgingsperiodeV1) {
+		val oppfolgingsperiode = Oppfolgingsperiode(
+			sisteOppfolgingsperiodeV1.aktorId,
+			sisteOppfolgingsperiodeV1.uuid,
+			sisteOppfolgingsperiodeV1.startDato,
+			sisteOppfolgingsperiodeV1.sluttDato)
+		oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolgingsperiode)
+		sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode)
 	}
 
 	fun hentOppfolgingsperiode(aktorId: AktorId, oppfolgingsperiode: UUID): OppfolgingPeriodeMinimalDTO? {
