@@ -39,8 +39,8 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     @Throws()
     fun `Skal oppdatere til på oppfølgingsperiode ved upsert på eksisterende åpen periode`() {
         val aktorId = Person.aktorId("12121231313")
-        val start = ZonedDateTime.now()
-        val slutt = ZonedDateTime.now().plusDays(2)
+        val start = ZonedDateTime.now().truncatedTo(ChronoUnit.MILLIS)
+        val slutt = ZonedDateTime.now().plusDays(2).truncatedTo(ChronoUnit.MILLIS)
         val id = UUID.randomUUID()
         val oppfolging = Oppfolgingsperiode(aktorId.get(), id, start, null)
         val nyOppfolging = Oppfolgingsperiode(aktorId.get(), id, start, slutt)
