@@ -52,5 +52,4 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
             )
         }
     }
-
 }
