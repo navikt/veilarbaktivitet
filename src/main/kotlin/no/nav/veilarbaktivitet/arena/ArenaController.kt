@@ -24,7 +24,6 @@ import java.util.*
 
 @Transactional
 @RestController
-//@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/arena")
 open class ArenaController(
