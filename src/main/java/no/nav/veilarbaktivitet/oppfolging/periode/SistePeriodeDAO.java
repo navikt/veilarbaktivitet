@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -59,11 +60,15 @@ public class SistePeriodeDAO {
             return;
         }
 
-        jdbc.update("""
+        try {
+            jdbc.update("""
                 insert into SISTE_OPPFOLGINGSPERIODE
                 (PERIODE_UUID, AKTORID, STARTDATO, SLUTTDATO)
                 VALUES (:periode, :aktorId, :startTid, :sluttTid)
                 """, params);
+        } catch (DuplicateKeyException e) {
+            log.warn("Insert på duplikat oppfolgingsperiode, ignorerer {}", oppfolgingsperiode.oppfolgingsperiode());
+        }
 
         log.info("opprettet oppfolgingsperiode {}", oppfolgingsperiode);
     }
