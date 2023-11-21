@@ -133,7 +133,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
 
     @Test
     fun skal_gi_ut_oppfolgingsperiode_i_riktig_rekkefolge() {
-        val aktorId = Person.aktorId("12121231313")
+        val aktorId = Person.aktorId("12345678901")
         val start = ZonedDateTime.now().minusMonths(12).truncatedTo(ChronoUnit.MILLIS)
         val slutt = ZonedDateTime.now().minusMonths(11).truncatedTo(ChronoUnit.MILLIS)
         val oppfolging1 = Oppfolgingsperiode(aktorId.get(), UUID.randomUUID(), start, slutt)
