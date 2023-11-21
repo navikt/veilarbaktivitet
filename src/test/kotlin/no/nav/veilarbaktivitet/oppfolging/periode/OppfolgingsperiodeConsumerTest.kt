@@ -117,7 +117,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
             .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .sluttDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
-        val sendResult = producer!!.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
+        val sendResult = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
         kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
         val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
         val skalVaereHistorisk = aktiviteter.stream().filter { a: AktivitetDTO -> a.id == skalBliHistorisk.id }
@@ -129,5 +129,20 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         assertEquals(skalIkkeBliHistorisk, skalIkkeVaereHistorisk)
         val skalIkkeVaereHistoriskMockBruker2 = aktivitetTestService.hentAktiviteterForFnr(mockBruker2).aktiviteter[0]
         assertEquals(skalIkkeBliHistoriskMockBruker2, skalIkkeVaereHistoriskMockBruker2)
+    }
+
+    @Test
+    fun skal_gi_ut_oppfolgingsperiode_i_riktig_rekkefolge() {
+        val aktorId = Person.aktorId("12121231313")
+        val start = ZonedDateTime.now().minusMonths(12).truncatedTo(ChronoUnit.MILLIS)
+        val slutt = ZonedDateTime.now().minusMonths(11).truncatedTo(ChronoUnit.MILLIS)
+        val oppfolging1 = Oppfolgingsperiode(aktorId.get(), UUID.randomUUID(), start, slutt)
+        val oppfolging2 = Oppfolgingsperiode(aktorId.get(), UUID.randomUUID(), slutt.plusMonths(1), slutt.plusMonths(5))
+        val oppfolging3 = Oppfolgingsperiode(aktorId.get(), UUID.randomUUID(), slutt.plusMonths(10), null)
+        oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolging1)
+        oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolging2)
+        oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolging3)
+        val output = oppfolgingsperiodeDAO.getByAktorId(aktorId)
+        assertThat(output).containsExactly(oppfolging3, oppfolging2, oppfolging1)
     }
 }
