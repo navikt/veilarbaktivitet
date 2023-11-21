@@ -10,6 +10,7 @@ import no.nav.common.kafka.util.KafkaPropertiesPreset
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -38,7 +39,7 @@ open class NavCommonKafkaConfig {
 
     @Bean
     open fun oppfolgingsperiodeConsumerClient(
-        topicConfig: AktivitetsKortConsumerConfig,
+        topicConfig: OppfolgingsperiodeConsumerConfig,
         meterRegistry: MeterRegistry,
         consumerProperties: Properties,
         unleash: Unleash
