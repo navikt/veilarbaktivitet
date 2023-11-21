@@ -25,7 +25,7 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
                 using (SELECT TO_CHAR(:id) AS id from DUAL) INPUTID 
                 on (INPUTID.id = OPPFOLGINGSPERIODE.id)
                 when matched then 
-                update set til = :til
+                update set til = :til, updated = current_timestamp
                 when not matched then
                 insert (aktorId, id, fra, til) 
                 values (:aktorId, :id, :fra, :til)
