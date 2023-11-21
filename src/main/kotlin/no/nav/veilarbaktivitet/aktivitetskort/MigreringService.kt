@@ -11,7 +11,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.function.Predicate
 
 @Service
 @Slf4j
@@ -61,10 +60,10 @@ class MigreringService (
         aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert)
     }
 
-    fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): Predicate<ArenaAktivitetDTO> {
+    fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): (ArenaAktivitetDTO) -> Boolean {
         return if (unleash.isEnabled(VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)) {
             // Hvis migrert, skjul fra /tiltak endepunkt
-            Predicate { arenaAktivitetDTO: ArenaAktivitetDTO ->
+            { arenaAktivitetDTO: ArenaAktivitetDTO ->
                 /* Fjern "historiserte" arena-aktiviteter ref
                 * https://confluence.adeo.no/pages/viewpage.action?pageId=414017745 */
                 val erHistorisertTiltak = arenaAktivitetDTO.id.startsWith("ARENATAH")
@@ -73,7 +72,7 @@ class MigreringService (
                 skalVises
             }
         } else {
-            alleArenaAktiviteter
+            { true }
         }
     }
 
@@ -93,7 +92,6 @@ class MigreringService (
 
     companion object {
         const val VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter"
-        private val alleArenaAktiviteter = Predicate { _: ArenaAktivitetDTO -> true }
     }
 }
 

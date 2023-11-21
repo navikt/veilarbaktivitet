@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.util;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.admin.Admin;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -122,6 +123,13 @@ public class KafkaTestService {
                 .with()
                 .conditionEvaluationListener(condition -> log.debug("Venter på melding med offset {} på topic {} for groupId {} - Tid brukt: {}ms Tid gjenstående: {}ms", producerOffset, topic, aivenGroupId, condition.getElapsedTimeInMS(), condition.getRemainingTimeInMS()))
                 .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> erKonsumert(topic, aivenGroupId, producerOffset));
+    }
+
+    public void assertErKonsumertNavCommon(String topic, long producerOffset) {
+        await()
+                .with()
+                .conditionEvaluationListener(condition -> log.debug("Venter på melding med offset {} på topic {} for groupId {} - Tid brukt: {}ms Tid gjenstående: {}ms", producerOffset, topic, aivenGroupId, condition.getElapsedTimeInMS(), condition.getRemainingTimeInMS()))
+                .atMost(DEFAULT_WAIT_TIMEOUT_DURATION).until(() -> erKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, producerOffset));
     }
 
     @SneakyThrows
