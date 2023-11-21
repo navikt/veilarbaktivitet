@@ -75,19 +75,23 @@ open class ArenaController(
         // Oppfolgingsperioder
 //        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
 
+        // Metrikker
+        migreringService.countArenaAktiviteter(
+            arenaAktiviteter.map { it to oppfolgingsperioder.finnPeriode(it) },
+            sisteIdMappinger)
+
         val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
             .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys))
-//            .map { it to oppfolgingsperioder.finnPeriode(it) }
-//            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
-            .map { arenaAktivitet: ArenaAktivitetDTO ->
+            .map { it to oppfolgingsperioder.finnPeriode(it) }
+            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
+            .map { (arenaAktivitet: ArenaAktivitetDTO) ->
                 val idMapping = sisteIdMappinger[ArenaId(arenaAktivitet.id)]
                 if (idMapping != null) return@map arenaAktivitet
                     .withId(idMapping.aktivitetId.toString())
                     .withVersjon(aktivitetsVersjoner[idMapping.aktivitetId]!!)
                 arenaAktivitet
             }
-        migreringService.countArenaAktiviteter(arenaAktiviteter, sisteIdMappinger)
         logUmigrerteIder(filtrerteArenaAktiviteter)
         return filtrerteArenaAktiviteter
     }
