@@ -73,7 +73,7 @@ open class ArenaController(
             sisteIdMappinger.values.map(IdMappingWithAktivitetStatus::aktivitetId))
 
         // Oppfolgingsperioder
-        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
+//        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
 
         val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
