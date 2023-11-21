@@ -54,6 +54,30 @@ public class NavCommonKafkaConfig {
     }
 
     @Bean
+    public KafkaConsumerClient oppfolgingsperiodeConsumerClient(
+            AktivitetsKortConsumerConfig topicConfig,
+            MeterRegistry meterRegistry,
+            Properties aktivitetskortConsumerProperties,
+            Unleash unleash
+    ) {
+        var clientBuilder = KafkaConsumerClientBuilder.builder()
+                .withProperties(aktivitetskortConsumerProperties)
+                .withToggle(() -> unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED))
+                .withTopicConfig(
+                        new TopicConfig<String, String>()
+                                .withConsumerConfig(topicConfig)
+                                .withMetrics(meterRegistry)
+                                .withLogging());
+
+        var client = clientBuilder.build();
+
+        client.start();
+
+        return client;
+    }
+
+
+    @Bean
     public KafkaConsumerClient kvpAvsluttetConsumerClient(
             KvpAvsluttetConsumerConfig topicConfig,
             MeterRegistry meterRegistry,
