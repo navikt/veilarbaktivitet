@@ -71,7 +71,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
             mockBruker.aktorId.get(),
             JsonUtils.toJson(startOppfolgiong)
         )[1, TimeUnit.SECONDS]
-        kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
+        kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
         val oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
         assertThat(oppfolgingsperiode.oppfolgingsperiode).isEqualTo(mockBruker.getOppfolgingsperiode())
         assertThat(oppfolgingsperiode.aktorid).isEqualTo(mockBruker.aktorId.get())
@@ -84,7 +84,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
             mockBruker.aktorId.get(),
             JsonUtils.toJson(avsluttetOppfolgingsperide)
         )[1, TimeUnit.SECONDS]
-        kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, avsluttetSendResult.recordMetadata.offset())
+        kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, avsluttetSendResult.recordMetadata.offset())
         val oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
         assertThat(oppfolgingsperiodeAvsluttet.oppfolgingsperiode)
             .isEqualTo(mockBruker.getOppfolgingsperiode())
@@ -118,7 +118,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
             .sluttDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
         val sendResult = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
-        kafkaTestService.assertErKonsumert(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
+        kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
         val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
         val skalVaereHistorisk = aktiviteter.stream().filter { a: AktivitetDTO -> a.id == skalBliHistorisk.id }
             .findAny().get()

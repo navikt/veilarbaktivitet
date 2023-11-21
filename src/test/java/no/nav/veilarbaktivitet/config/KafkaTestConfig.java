@@ -123,13 +123,13 @@ public class KafkaTestConfig {
     }
 
     @Bean
-    Properties kvpAvsluttetConsumerProperties(EmbeddedKafkaBroker embeddedKafka) {
+    Properties consumerProperties(@Value("${app.kafka.consumer-group-id}") String consumerGroupId, EmbeddedKafkaBroker embeddedKafka) {
         return KafkaPropertiesBuilder.consumerBuilder()
                 .withBaseProperties()
-                .withConsumerGroupId(NavCommonKafkaConfig.CONSUMER_GROUP_ID)
+                .withConsumerGroupId(consumerGroupId)
                 .withBrokerUrl(embeddedKafka.getBrokersAsString())
                 .withDeserializers(ByteArrayDeserializer.class, ByteArrayDeserializer.class)
-                .withPollProperties(10, 30_000)
+                .withPollProperties(1, 500)
                 .build();
     }
 
