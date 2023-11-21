@@ -26,6 +26,7 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
@@ -42,6 +43,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -71,7 +73,7 @@ class ArenaControllerTest {
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
-    private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = new OppfolgingsperiodeDAO(new NamedParameterJdbcTemplate(jdbc));
+    private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
     private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO);
 
@@ -113,10 +115,17 @@ class ArenaControllerTest {
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(personService.getAktorIdForPersonBruker(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
         when(context.getFnr()).thenReturn(Optional.of(fnr));
+        when(context.getAktorId()).thenReturn(aktorid);
         when(manuellStatusClient.get(aktorid)).thenReturn(Optional.of(new ManuellStatusV2DTO(false, new ManuellStatusV2DTO.KrrStatus(true, false))));
         when(nivaa4Client.get(aktorid)).thenReturn(Optional.of(Nivaa4DTO.builder().harbruktnivaa4(true).build()));
         when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
+        when(oppfolgingsperiodeDAO.getByAktorId(aktorid)).thenReturn(List.of(new Oppfolgingsperiode(
+            aktorid.get(),
+            UUID.randomUUID(),
+            ZonedDateTime.now().minusYears(12),
+            null
+        )));
     }
 
     @BeforeEach

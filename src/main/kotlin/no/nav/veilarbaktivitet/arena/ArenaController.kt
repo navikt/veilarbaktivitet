@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arena
 
-import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
@@ -25,7 +24,7 @@ import java.util.*
 
 @Transactional
 @RestController
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/arena")
 open class ArenaController(
