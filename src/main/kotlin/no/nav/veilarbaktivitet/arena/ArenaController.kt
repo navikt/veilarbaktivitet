@@ -78,7 +78,7 @@ open class ArenaController(
         val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
             .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys))
-            .map { it to oppfolgingsperioder.finnPeriode(it) }
+//            .map { it to oppfolgingsperioder.finnPeriode(it) }
 //            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
             .map { arenaAktivitet: ArenaAktivitetDTO ->
                 val idMapping = sisteIdMappinger[ArenaId(arenaAktivitet.id)]
