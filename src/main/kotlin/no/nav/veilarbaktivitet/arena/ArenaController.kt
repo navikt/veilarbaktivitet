@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
 import no.nav.veilarbaktivitet.person.UserInContext
@@ -92,6 +93,7 @@ open class ArenaController(
                 arenaAktivitet
             }
         logUmigrerteIder(filtrerteArenaAktiviteter)
+        loggArenaTiltakUtenOppfolging(arenaAktiviteterMedOppfolgingsperiode)
         return filtrerteArenaAktiviteter
     }
 
@@ -100,8 +102,15 @@ open class ArenaController(
             .filter { aktivitet: ArenaAktivitetDTO -> aktivitet.type == ArenaAktivitetTypeDTO.TILTAKSAKTIVITET }
             .joinToString(",") { obj: ArenaAktivitetDTO -> obj.id }
         if (umigrerteTiltaksIder.isNotEmpty()) {
-            log.info("Umigrerte tiltaksIdEr: {}", umigrerteTiltaksIder)
+            log.info("Umigrerte tiltaksIdEr: $umigrerteTiltaksIder")
         }
+    }
+
+    open fun loggArenaTiltakUtenOppfolging(aktiviteter: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>>) {
+        val tiltakIdErUtenOppfolgingsperiode = aktiviteter
+            .filter { it.second == null }
+            .joinToString(",") { it.first.id }
+        log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
     }
 
     @GetMapping("/harTiltak")
