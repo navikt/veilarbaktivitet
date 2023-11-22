@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arena
 
+import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
@@ -13,8 +14,8 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
 import no.nav.veilarbaktivitet.person.UserInContext
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.transaction.annotation.Transactional
@@ -24,6 +25,7 @@ import java.util.*
 
 @Transactional
 @RestController
+@RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/arena")
 open class ArenaController(
@@ -71,29 +73,22 @@ open class ArenaController(
             sisteIdMappinger.values.map(IdMappingWithAktivitetStatus::aktivitetId))
 
         // Oppfolgingsperioder
-        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
-        val arenaAktiviteterMedOppfolgingsperiode = arenaAktiviteter
-            .map { it to oppfolgingsperioder.finnOppfolgingsperiodeForArenaAktivitet(it) }
+//        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
 
-        // Metrikker
-        migreringService.countArenaAktiviteter(
-            arenaAktiviteterMedOppfolgingsperiode,
-            sisteIdMappinger)
-
-        val skalFiltreresBort = migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys)
-        val filtrerteArenaAktiviteter = arenaAktiviteterMedOppfolgingsperiode
+        val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
-            .filter { skalFiltreresBort(it.first) }
-            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
-            .map { (arenaAktivitet: ArenaAktivitetDTO) ->
+            .filter(migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys))
+//            .map { it to oppfolgingsperioder.finnPeriode(it) }
+//            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
+            .map { arenaAktivitet: ArenaAktivitetDTO ->
                 val idMapping = sisteIdMappinger[ArenaId(arenaAktivitet.id)]
                 if (idMapping != null) return@map arenaAktivitet
                     .withId(idMapping.aktivitetId.toString())
                     .withVersjon(aktivitetsVersjoner[idMapping.aktivitetId]!!)
                 arenaAktivitet
             }
+        migreringService.countArenaAktiviteter(arenaAktiviteter, sisteIdMappinger)
         logUmigrerteIder(filtrerteArenaAktiviteter)
-        loggArenaTiltakUtenOppfolging(arenaAktiviteterMedOppfolgingsperiode)
         return filtrerteArenaAktiviteter
     }
 
@@ -102,15 +97,8 @@ open class ArenaController(
             .filter { aktivitet: ArenaAktivitetDTO -> aktivitet.type == ArenaAktivitetTypeDTO.TILTAKSAKTIVITET }
             .joinToString(",") { obj: ArenaAktivitetDTO -> obj.id }
         if (umigrerteTiltaksIder.isNotEmpty()) {
-            log.info("Umigrerte tiltaksIdEr: $umigrerteTiltaksIder")
+            log.info("Umigrerte tiltaksIdEr: {}", umigrerteTiltaksIder)
         }
-    }
-
-    open fun loggArenaTiltakUtenOppfolging(aktiviteter: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>>) {
-        val tiltakIdErUtenOppfolgingsperiode = aktiviteter
-            .filter { it.second == null }
-            .joinToString(",") { it.first.id }
-        log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
     }
 
     @GetMapping("/harTiltak")
@@ -146,4 +134,9 @@ open class ArenaController(
             Optional.of("forhaandsorientering.tekst kan ikke være null eller tom")
         } else Optional.empty()
     }
+}
+
+fun List<Oppfolgingsperiode>.finnPeriode(aktivitet: ArenaAktivitetDTO): Oppfolgingsperiode? {
+    val aktivitetEndret = DateUtils.dateToZonedDateTime(aktivitet.statusSistEndret)
+    return this.firstOrNull { it.startTid <= aktivitetEndret && it.sluttTid?.let { slutt -> slutt >= aktivitetEndret } ?: true }
 }
