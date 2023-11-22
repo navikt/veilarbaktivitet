@@ -434,7 +434,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
-        var mockBruker = MockNavService.createHappyBruker();
+        var mockBruker = navMockService.createHappyBruker();
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet og avbryter den
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
