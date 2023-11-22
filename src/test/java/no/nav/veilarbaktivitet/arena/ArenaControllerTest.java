@@ -26,7 +26,6 @@ import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
 import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
-import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
@@ -43,7 +42,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -73,7 +71,7 @@ class ArenaControllerTest {
     private final MeterRegistry meterRegistry = new SimpleMeterRegistry();
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
-    private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
+    private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = new OppfolgingsperiodeDAO(new NamedParameterJdbcTemplate(jdbc));
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
     private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO);
 
@@ -115,17 +113,10 @@ class ArenaControllerTest {
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(personService.getAktorIdForPersonBruker(ikkeTilgangFnr)).thenReturn(Optional.of(ikkeTilgangAktorid));
         when(context.getFnr()).thenReturn(Optional.of(fnr));
-        when(context.getAktorId()).thenReturn(aktorid);
         when(manuellStatusClient.get(aktorid)).thenReturn(Optional.of(new ManuellStatusV2DTO(false, new ManuellStatusV2DTO.KrrStatus(true, false))));
         when(nivaa4Client.get(aktorid)).thenReturn(Optional.of(Nivaa4DTO.builder().harbruktnivaa4(true).build()));
         when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
-        when(oppfolgingsperiodeDAO.getByAktorId(aktorid)).thenReturn(List.of(new Oppfolgingsperiode(
-            aktorid.get(),
-            UUID.randomUUID(),
-            ZonedDateTime.now().minusYears(6),
-            null
-        )));
     }
 
     @BeforeEach
@@ -231,13 +222,18 @@ class ArenaControllerTest {
     @Test
     void sendForhaandsorienteringSkalOppdaterehentArenaAktiviteter() {
         AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
+
         AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
+
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()
                         .setGruppeaktiviteter(List.of(medFho))
                         .setTiltaksaktiviteter(List.of(utenFho))));
+
+
         controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId());
         List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
+
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
@@ -322,14 +318,6 @@ class ArenaControllerTest {
         return new AktiviteterDTO.Tiltaksaktivitet()
                 .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
                 .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
-                .setStatusSistEndret(LocalDate.now().minusYears(7))
-                .setDeltakelsePeriode(
-                        new AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode()
-                                // Dette er vanlig på VASV tiltakene, starter før aktivitetplanen, slutter
-                                // mange år frem i tid
-                                .setFom(LocalDate.now().minusYears(7))
-                                .setTom(LocalDate.now().plusYears(7))
-                )
                 .setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
     }
 

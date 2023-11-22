@@ -59,7 +59,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 
-open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
+internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Autowired
     var producerClient: KafkaProducerClient<String, String>? = null
@@ -1045,8 +1045,8 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-    private val mockBruker by lazy { navMockService.createHappyBruker() }
-    private val veileder by lazy { MockNavService.createVeileder(mockBruker) }
+    private val mockBruker = MockNavService.createHappyBruker()
+    private val veileder = MockNavService.createVeileder(mockBruker)
     private val endretDato = ZonedDateTime.now()
 }
 

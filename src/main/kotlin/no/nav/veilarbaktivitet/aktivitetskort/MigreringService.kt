@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetSt
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
-import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -24,31 +23,26 @@ class MigreringService (
 
     /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
     fun countArenaAktiviteter(
-        foer: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>>,
+        foer: List<ArenaAktivitetDTO>,
         idMappings: Map<ArenaId, IdMappingWithAktivitetStatus>
     ) {
         if (foer.isEmpty()) return
-        val antallFoer = foer.groupBy { it.first.type }.mapValues { it.value.size }
+        val antallFoer = foer.groupBy { it.type }.mapValues { it.value.size }
 
         // Bruker status som indikator på om dataene er riktig
-        fun sjekkMigreringsStatus(input: Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>): MigreringsStatus {
-            val (aktivitet, oppfolgingsperiode) = input
-            if (oppfolgingsperiode == null) return MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode
+        fun sjekkMigreringsStatus(aktivitet: ArenaAktivitetDTO): MigreringsStatus {
             return idMappings[ArenaId(aktivitet.id)]
                 ?.let { match -> if (match.status == aktivitet.status) MigreringsStatus.MigrertRiktigStatus else MigreringsStatus.MigrertFeilStatus }
                 ?: MigreringsStatus.IkkeMigrert
         }
-        val alleMigreringsStatuser = foer
-            .map { it.first to sjekkMigreringsStatus(it) }
-        val migrert = alleMigreringsStatuser
-            .filter { !listOf(MigreringsStatus.IkkeMigrert, MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode).contains(it.second) }
+        val migrert = foer
+            .map { it to sjekkMigreringsStatus(it) }
+            .filter { it.second != MigreringsStatus.IkkeMigrert }
 
         val (etterMedRiktigStatus, etterMedFeilStatus) = migrert.partition { it.second == MigreringsStatus.MigrertRiktigStatus }
         val antallMigrertMedRiktigStatus = etterMedRiktigStatus.groupBy { it.first.type }.mapValues { it.value.size }
         val antallMigrertMedFeilStatus = etterMedFeilStatus.groupBy { it.first.type }.mapValues { it.value.size }
         val feilStatusIdEr = etterMedFeilStatus.joinToString(",") { it.first.id }
-        val ikkeMigrertManglerOppfolg = alleMigreringsStatuser
-            .filter { it.second == MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode }.groupBy { it.first.type }.mapValues { it.value.size }
         if (feilStatusIdEr.isNotEmpty()) {
             log.info("Migrerte aktiviteter med feil status: $feilStatusIdEr")
         }
@@ -57,14 +51,13 @@ class MigreringService (
                 val totaltFoer = antallFoer[it] ?: 0
                 val totaltMigrertRiktigStatus = antallMigrertMedRiktigStatus[it] ?: 0
                 val totaltMigrertFeilStatus = antallMigrertMedFeilStatus[it] ?: 0
-                val ikkeMigrertManglerOppfolg = ikkeMigrertManglerOppfolg[it] ?: 0
-                val ikkeMigrert = totaltFoer - (totaltMigrertRiktigStatus + totaltMigrertFeilStatus + ikkeMigrertManglerOppfolg)
-                reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg)
+                val ikkeMigrert = totaltFoer - (totaltMigrertRiktigStatus + totaltMigrertFeilStatus)
+                reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert)
             }
     }
-    private fun reportMetric(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int) {
+    private fun reportMetric(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int) {
         if (total == 0) return
-        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg)
+        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert)
     }
 
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): (ArenaAktivitetDTO) -> Boolean {
@@ -105,6 +98,5 @@ class MigreringService (
 enum class MigreringsStatus {
     IkkeMigrert,
     MigrertRiktigStatus,
-    MigrertFeilStatus,
-    IkkeMigrertManglerOppfolgingsperiode
+    MigrertFeilStatus
 }

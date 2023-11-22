@@ -11,17 +11,12 @@ import org.springframework.stereotype.Component
 @Component
 class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
 
-    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int) {
+    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int) {
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "ikke_migrert")
             .register(meterRegistry)
             .increment((ikkeMigrert).toDouble())
-        Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
-            .tag("tiltakstype", type.name)
-            .tag("counter_type", "ikke_migrert_mangler_oppfolg")
-            .register(meterRegistry)
-            .increment((ikkeMigrertManglerOppfolg).toDouble())
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "filtrert_bort")
