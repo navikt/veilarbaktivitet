@@ -39,9 +39,7 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
     open fun getByAktorId(aktorId: AktorId ): List<Oppfolgingsperiode> {
         val params = mapOf("aktorId" to aktorId.get())
         val sql = """
-            SELECT * FROM OPPFOLGINGSPERIODE 
-            WHERE AKTORID = :aktorId 
-            ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
+            SELECT * FROM oppfolgingsperiode WHERE aktorId = :aktorId ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
         """.trimIndent()
         return jdbc.query(sql, params) {row, _ ->
             Oppfolgingsperiode(
