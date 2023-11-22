@@ -71,7 +71,8 @@ open class ArenaController(
 
         // Oppfolgingsperioder
         val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
-        val arenaAktiviteterMedOppfolgingsperiode = arenaAktiviteter.map { it to oppfolgingsperioder.finnOppfolgingsperiodeForArenaAktivitet(it) }
+        val arenaAktiviteterMedOppfolgingsperiode = arenaAktiviteter
+            .map { it to oppfolgingsperioder.finnOppfolgingsperiodeForArenaAktivitet(it) }
 
         // Metrikker
         migreringService.countArenaAktiviteter(

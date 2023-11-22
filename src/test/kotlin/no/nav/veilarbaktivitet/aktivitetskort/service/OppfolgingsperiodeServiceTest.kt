@@ -2,18 +2,13 @@ package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
-import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
-import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeDAO
+import no.nav.veilarbaktivitet.oppfolging.periode.*
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import java.time.ZonedDateTime
 import java.util.*
@@ -224,9 +219,7 @@ class OppfolgingsperiodeServiceTest {
         perioder: List<Oppfolgingsperiode>,
         opprettetTidspunkt: ZonedDateTime
     ): Oppfolgingsperiode? {
-        Mockito.`when`(oppfolgingClient.hentOppfolgingsperioder(any()))
-            .thenReturn(perioder.map { OppfolgingPeriodeMinimalDTO(it.oppfolgingsperiode, it.startTid, it.sluttTid) })
-        return oppfolgingsperiodeService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt.toLocalDateTime())
+        return perioder.finnOppfolgingsperiodeForTidspunkt(opprettetTidspunkt.toLocalDateTime())
     }
 
     private fun oppfperiodeDTO(startDato: ZonedDateTime, sluttDato: ZonedDateTime?): Oppfolgingsperiode {

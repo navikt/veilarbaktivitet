@@ -9,17 +9,22 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.chrono.ChronoZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.*
 import kotlin.math.abs
 
 val log = LoggerFactory.getLogger("no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtil")!!
 
+fun Date.toLocalDateTime(): LocalDateTime = DateUtils.dateToLocalDateTime(this)
 fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForArenaAktivitet(arenaAktivitetDTO: ArenaAktivitetDTO): Oppfolgingsperiode? {
-    return this.finnOppfolgingsperiodeForTidspunkt(DateUtils.dateToLocalDateTime(arenaAktivitetDTO.statusSistEndret))
-        ?: this.finnOppfolgingsperiodeForTidspunkt(DateUtils.dateToLocalDateTime(arenaAktivitetDTO.tilDato))
+    val sistEndret = arenaAktivitetDTO.statusSistEndret
+    val tilDato = arenaAktivitetDTO.tilDato
+    return sistEndret?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
+        ?: tilDato?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
 }
 
 fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForTidspunkt(tidspunkt: LocalDateTime): Oppfolgingsperiode? {
     val oppfolgingsperioder = this
+        .sortedByDescending { it.startTid }
     if (oppfolgingsperioder.isEmpty()) {
         log.info("Arenatiltak finn oppfølgingsperiode - bruker har ingen oppfølgingsperioder - tidspunkt=${tidspunkt}, oppfolgingsperioder=${listOf<OppfolgingPeriodeMinimalDTO>()}")
         return null
