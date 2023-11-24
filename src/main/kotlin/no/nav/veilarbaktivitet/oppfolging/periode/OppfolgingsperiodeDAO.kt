@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.periode
 
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 import java.time.ZoneOffset
@@ -37,7 +38,8 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
     }
 
     open fun getByAktorId(aktorId: AktorId ): List<Oppfolgingsperiode> {
-        val params = mapOf("aktorId" to aktorId.get())
+        val params = MapSqlParameterSource()
+            .addValue("aktorId", aktorId.get())
         val sql = """
             SELECT * FROM oppfolgingsperiode WHERE aktorId = :aktorId ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
         """.trimIndent()
