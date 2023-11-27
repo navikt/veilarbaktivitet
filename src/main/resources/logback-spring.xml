@@ -3,9 +3,9 @@
     <include resource="no/nav/common/log/logback-default.xml"/>
     <logger name="no.nav.veilarbaktivitet" level="DEBUG"/>
     <logger name="org.springframework.jdbc.core.JdbcTemplate">
-        <level value="debug" />
+        <level value="trace" />
     </logger>
     <logger name="org.springframework.jdbc.core.StatementCreatorUtils">
-        <level value="debug" />
+        <level value="trace" />
     </logger>
 </configuration>
