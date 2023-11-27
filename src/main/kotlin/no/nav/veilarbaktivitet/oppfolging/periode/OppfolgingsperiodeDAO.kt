@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.sql.Types
 import java.time.ZoneOffset
 import java.util.*
 
@@ -39,7 +40,7 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
 
     open fun getByAktorId(aktorId: AktorId ): List<Oppfolgingsperiode> {
         val params = MapSqlParameterSource()
-            .addValue("aktorId", aktorId.get())
+            .addValue("aktorId", aktorId.get(), Types.VARCHAR)
         val sql = """
             SELECT * FROM oppfolgingsperiode WHERE aktorId = :aktorId ORDER BY coalesce(til, TO_DATE('9999-12-31', 'YYYY-MM-DD')) DESC
         """.trimIndent()
