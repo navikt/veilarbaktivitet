@@ -95,6 +95,7 @@ public class EksternVarslingKvitteringConsumer {
         if (!inputBestillingsid.startsWith(oppgavePrefix) && !inputBestillingsid.startsWith(beskjedPrefix)) {
             return inputBestillingsid;
         } else {
+            //TODO kan vi slette dete?
            return inputBestillingsid.substring(oppgavePrefix.length()); // Fjerner O eller B + - + srv + - som legges til av brukernotifikajson
         }
     }

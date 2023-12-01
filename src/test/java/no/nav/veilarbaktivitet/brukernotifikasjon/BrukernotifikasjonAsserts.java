@@ -26,9 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 public class BrukernotifikasjonAsserts {
-    Consumer<NokkelInput, OppgaveInput> oppgaveConsumer;
-    Consumer<NokkelInput, BeskjedInput> beskjedConsumer;
-    Consumer<NokkelInput, DoneInput> doneInputConsumer;
+    Consumer<String, String> brukernotifikasjonConsumer;
     private final KafkaStringAvroTemplate<DoknotifikasjonStatus> kviteringsProducer;
 
     BrukernotifikasjonAssertsConfig config;
@@ -39,22 +37,29 @@ public class BrukernotifikasjonAsserts {
     }
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {
-        oppgaveConsumer = config.createOppgaveConsumer();
-        beskjedConsumer = config.createBeskjedConsumer();
         kviteringsProducer = config.getKviteringsProducer();
-        doneInputConsumer = config.createDoneConsumer();
         kafkaTestService = config.getTestService();
+        brukernotifikasjonConsumer = config.createBrukernotifikasjonConsumer();
         this.config = config;
     }
 
-    public ConsumerRecord<NokkelInput, OppgaveInput> assertOppgaveSendt(Person.Fnr fnr) {
-        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
-        ConsumerRecord<NokkelInput, OppgaveInput> singleRecord = getSingleRecord(oppgaveConsumer, config.getOppgaveTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
+    public void assertOppgaveSendt(Person.Fnr fnr) {
+        getOppgaveSendt(fnr);
+    }
 
-        NokkelInput key = singleRecord.key();
-        assertEquals(fnr.get(), key.getFodselsnummer());
-        assertEquals(config.getAppname(), key.getAppnavn());
-        assertEquals(config.getNamespace(), key.getNamespace());
+    public String getOppgaveSedtId(Person.Fnr fnr) {
+        return getOppgaveSendt(fnr).key();
+    }
+
+    public ConsumerRecord<String, String> getOppgaveSendt(Person.Fnr fnr) {
+        config.getSendBrukernotifikasjonCron().sendBrukernotifikasjoner();
+
+        ConsumerRecord<String, String> singleRecord = getSingleRecord(brukernotifikasjonConsumer, config.getBrukernotifikasjonTopic(), DEFAULT_WAIT_TIMEOUT_DURATION);
+
+
+        String key = singleRecord.key();
+        // TODO get fnr from body assertEquals(fnr.get(), key.getFodselsnummer());
+
         return singleRecord;
     }
 

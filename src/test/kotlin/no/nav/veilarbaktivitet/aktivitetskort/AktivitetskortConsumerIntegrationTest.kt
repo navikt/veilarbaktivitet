@@ -716,7 +716,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val arenaaktivitetId = ArenaId("ARENATA123")
         // Opprett FHO på aktivitet
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
-        val record = brukernotifikasjonAsserts!!.assertOppgaveSendt(mockBruker.fnrAsFnr)
+        val record = brukernotifikasjonAsserts!!.getOppgaveSendt(mockBruker.fnrAsFnr)
         // Migrer arenaaktivitet via topic
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)

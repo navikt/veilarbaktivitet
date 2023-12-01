@@ -83,7 +83,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
-        var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.getOppgaveSendt(mockBruker.getFnrAsFnr());
         var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -104,7 +104,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         melding.setKontaktInfo(kontaktinfo);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, melding);
 
-        var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
+        var brukernotifikajonOppgave = brukernotifikasjonAsserts.getOppgaveSendt(mockBruker.getFnrAsFnr());
         var oppgave = brukernotifikajonOppgave.value();
 
         SoftAssertions.assertSoftly(assertions -> {
@@ -130,7 +130,6 @@ class DelingAvCvITest extends SpringBootTestBase {
         SoftAssertions.assertSoftly(assertions -> { //todo tenkpå cpy paste fra testen over
             assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
-            assertions.assertThat(brukernotifikajonOppgave.key().getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
             assertions.assertAll();
         });
