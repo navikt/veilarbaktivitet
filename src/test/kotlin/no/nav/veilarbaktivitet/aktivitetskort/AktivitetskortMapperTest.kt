@@ -1,10 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
@@ -23,7 +23,7 @@ internal class AktivitetskortMapperTest {
             sluttDato = LocalDate.now().minusDays(30),
             tittel = "The Elder Scrolls: Arena",
             beskrivelse = "arenabeskrivelse",
-            aktivitetStatus = AktivitetStatus.GJENNOMFORES,
+            aktivitetStatus = AktivitetskortStatus.GJENNOMFORES,
             endretAv = Ident("arenaEndretav", Innsender.ARENAIDENT),
             endretTidspunkt = ZonedDateTime.now(),
             avtaltMedNav = false

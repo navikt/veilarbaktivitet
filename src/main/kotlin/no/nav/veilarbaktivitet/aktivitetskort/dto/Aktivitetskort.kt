@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitetskort.dto
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import lombok.Singular
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
@@ -23,7 +22,7 @@ data class Aktivitetskort(
     val tittel: String,
     val beskrivelse: String?,
     @JsonProperty(required = true)
-    val aktivitetStatus: AktivitetStatus,
+    val aktivitetStatus: AktivitetskortStatus,
     val startDato: LocalDate? = null,
     val sluttDato: LocalDate? = null,
     @JsonProperty(required = true)

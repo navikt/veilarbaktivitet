@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Sentiment
@@ -16,7 +16,7 @@ object AktivitetskortUtil {
     @JvmStatic
     fun ny(
         funksjonellId: UUID,
-        aktivitetStatus: AktivitetStatus,
+        aktivitetStatus: AktivitetskortStatus,
         endretTidspunkt: ZonedDateTime,
         mockBruker: MockBruker
     ): Aktivitetskort {
