@@ -74,7 +74,7 @@ object AktivitetskortMapper {
             .fraDato(DateUtils.toDate(startDato))
             .tilDato(DateUtils.toDate(sluttDato))
             .beskrivelse(beskrivelse)
-            .status(aktivitetStatus)
+            .status(aktivitetStatus.toAktivitetStatus())
             .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
             .endretAv(endretAv!!.ident)
             .endretAvType(endretAv.identType.toInnsender())
