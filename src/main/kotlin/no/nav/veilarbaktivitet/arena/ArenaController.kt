@@ -56,6 +56,14 @@ open class ArenaController(
         return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident.get())
     }
 
+    @GetMapping("/tiltak-raw")
+    @AuthorizeFnr
+    open fun hentAlleArenaAktiviteterRaw(): List<ArenaAktivitetDTO> {
+        val fnr = userInContext.getFnr()
+            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
+        return arenaService.hentAktiviteter(fnr)
+    }
+
     @GetMapping("/tiltak")
     @AuthorizeFnr
     open fun hentArenaAktiviteter(): List<ArenaAktivitetDTO> {
