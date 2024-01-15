@@ -20,7 +20,7 @@ import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Configuration
 @Profile("!dev")
-@EnableConfigurationProperties({EnvironmentProperties.class, no.nav.veilarbaktivitet.unleash.UnleashConfig.class})
+@EnableConfigurationProperties({EnvironmentProperties.class, no.nav.veilarbaktivitet.unleash.UnleashConfig.class, no.nav.veilarbaktivitet.arkivering.OrkivarConfig.class})
 public class ApplicationContext {
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
     public static final String VEILARBOPPFOLGINGAPI_URL_PROPERTY = "VEILARBOPPFOLGINGAPI_URL";

@@ -10,15 +10,13 @@ import org.springframework.web.bind.annotation.RestController
 @Slf4j
 @RestController
 @RequestMapping("/api/arkivering")
-class ArkiveringsController(private val userInContext: UserInContext) {
+class ArkiveringsController(private val userInContext: UserInContext, private val orkivarClient: OrkivarClient) {
 
     @PostMapping
     @AuthorizeFnr(auditlogMessage = "arkivere aktivitetsplan og dialog")
     fun arkiverAktivitetsplanOgDialog() {
         val fnr = userInContext.fnr
         val navn = "Navn Navnesesn"
-
-
-
+        orkivarClient.arkiver(fnr.get(), navn)
     }
 }
