@@ -4,8 +4,10 @@ import okhttp3.OkHttpClient
 import org.springframework.stereotype.Service
 
 @Service
-class OrkivarClient(private val httpClient: OkHttpClient) {
+class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
+    fun arkiver() {
 
+    }
 
 }
