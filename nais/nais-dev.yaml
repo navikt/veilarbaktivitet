@@ -3,7 +3,6 @@ apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarbaktivitet
   namespace: pto
-  cluster: dev-fss
   labels:
     team: pto
 spec:
