@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.person.Person
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.apache.avro.data.Json
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
@@ -17,7 +17,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
     fun arkiver(fnr: Person.Fnr, navn: String) {
         val uri = String.format("%s/arkiver", orkivarUrl)
-        val payload = Json.toString(ArkivPayload(metadata = Metadata(navn, fnr.get())))
+        val payload = JsonUtils.toJson(ArkivPayload(metadata = Metadata(navn, fnr.get())))
             .toRequestBody("application/json".toMediaTypeOrNull())
         val request: Request = Request.Builder()
             .post(payload)
