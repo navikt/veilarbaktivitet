@@ -88,6 +88,7 @@ spec:
     outbound:
       external:
         - host: dab-unleash-api.nav.cloud.nais.io
+        - host: orkivar.intern.nav.no
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
@@ -98,4 +99,4 @@ spec:
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
     - name: ORKIVAR_URL
-      value: "http://orkivar.dab"
+      value: "https://orkivar.intern.nav.no"
