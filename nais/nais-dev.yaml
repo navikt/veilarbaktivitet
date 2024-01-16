@@ -101,3 +101,5 @@ spec:
       value: 554a66fb-fbec-4b92-90c1-0d9c085c362c
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
+    - name: ORKIVAR_URL
+      value: "http://orkivar.dab"

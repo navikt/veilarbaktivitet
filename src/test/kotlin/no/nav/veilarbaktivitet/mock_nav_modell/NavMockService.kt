@@ -23,4 +23,11 @@ class NavMockService(
         return bruker
     }
 
+    fun createVeileder(vararg mockBruker: MockBruker): MockVeileder {
+        val veileder = MockNavService.createVeileder()
+        for (bruker in mockBruker) {
+            veileder.addBruker(bruker)
+        }
+        return veileder
+    }
 }

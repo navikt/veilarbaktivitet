@@ -33,6 +33,7 @@ public class WireMockUtil {
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
+        arkivering();
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
@@ -187,5 +188,10 @@ public class WireMockUtil {
                                 """.formatted(aktorId.get()))));
     }
 
+    private static void arkivering() {
+        stubFor(post("/orkivar/arkiver")
+            .willReturn(ok())
+        );
+    }
 
 }
