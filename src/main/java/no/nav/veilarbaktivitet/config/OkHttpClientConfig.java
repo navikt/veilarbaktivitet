@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.binder.okhttp3.OkHttpMetricsEventListener;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.rest.client.RestClient;
-import no.nav.common.token_client.builder.AzureAdTokenClientBuilder;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.poao.dab.spring_auth.IAuthService;
@@ -13,7 +12,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 
 import java.util.function.Supplier;
 
@@ -58,22 +56,6 @@ public class OkHttpClientConfig {
     private final String veilarbpersonScope = String.format("api://%s-fss.pto.veilarbperson/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String veilarbarenaScope = String.format("api://%s-fss.pto.veilarbarena/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String orkivarScope = String.format("api://%s-gcp.dab.orkivar/.default", isProduction().orElse(false) ? "prod" : "dev");
-
-    @Bean
-    @Profile("!dev")
-    public AzureAdMachineToMachineTokenClient machineToMachineTokenClient() {
-        return AzureAdTokenClientBuilder.builder()
-            .withNaisDefaults()
-            .buildMachineToMachineTokenClient();
-    }
-
-    @Bean
-    @Profile("!dev")
-    public AzureAdOnBehalfOfTokenClient onBehalfOfTokenClient() {
-        return AzureAdTokenClientBuilder.builder()
-                .withNaisDefaults()
-                .buildOnBehalfOfTokenClient();
-    }
 
     private Interceptor azureAdInterceptor(Supplier<String> getToken) {
         return chain -> {
