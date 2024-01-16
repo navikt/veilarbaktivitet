@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient, private val orkivarConfig: OrkivarConfig) {
     fun arkiver(fnr: Person.Fnr, navn: String) {
-        val uri = String.format("%s/v2/kvp", orkivarConfig.url)
+        val uri = String.format("%s/arkiver", orkivarConfig.url)
         val payload = Json.toString(ArkivPayload(metadata = Metadata(navn, fnr.get())))
             .toRequestBody("application/json".toMediaTypeOrNull())
         val request: Request = Request.Builder()
