@@ -6,12 +6,17 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.apache.avro.data.Json
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 
 @Service
-class OrkivarClient(private val orkivarHttpClient: OkHttpClient, private val orkivarConfig: OrkivarConfig) {
+class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
+
+    @Value("\${orkivar.url}")
+    lateinit var orkivarUrl: String
+
     fun arkiver(fnr: Person.Fnr, navn: String) {
-        val uri = String.format("%s/arkiver", orkivarConfig.url)
+        val uri = String.format("%s/arkiver", orkivarUrl)
         val payload = Json.toString(ArkivPayload(metadata = Metadata(navn, fnr.get())))
             .toRequestBody("application/json".toMediaTypeOrNull())
         val request: Request = Request.Builder()
