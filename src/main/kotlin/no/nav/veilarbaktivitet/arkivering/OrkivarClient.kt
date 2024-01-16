@@ -20,6 +20,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
         val payload = JsonUtils.toJson(ArkivPayload(metadata = Metadata(navn, fnr.get())))
             .toRequestBody("application/json".toMediaTypeOrNull())
         val request: Request = Request.Builder()
+            .addHeader("Accept", "application/json")
             .post(payload)
             .url(uri)
             .build()
