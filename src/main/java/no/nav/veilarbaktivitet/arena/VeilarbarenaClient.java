@@ -25,7 +25,7 @@ public class VeilarbarenaClient {
     private final OkHttpClient veilarbarenaHttpClient;
 
     @Value("${app.env.veilarena.serviceurl}")
-    private final String veilarbarenaServiceUrl;
+    private String veilarbarenaServiceUrl;
 
     public HealthStatus  ping() {
         String uri = String.format("%s/internal/selftest", veilarbarenaServiceUrl);
