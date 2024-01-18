@@ -1,7 +1,9 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.verify
 import org.springframework.http.HttpStatus
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
@@ -20,5 +22,18 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .assertThat()
             .statusCode(HttpStatus.OK.value())
 
+        verify(
+            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
+            .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+            .withRequestBody(
+                equalToJson("""
+                {
+                  "metadata": {
+                    "navn": "TRIVIELL SKILPADDE",
+                    "fnr": "01015450300"
+                  }
+                }
+            """.trimIndent())
+            ));
     }
 }
