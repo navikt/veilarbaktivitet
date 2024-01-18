@@ -8,7 +8,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
 
     @Test
-    fun `Når man arkvierer skal man samle inn data og sende til orkivar`() {
+    fun `Når man arkiverer skal man samle inn data og sende til orkivar`() {
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering"
         val bruker = navMockService.createHappyBruker()
         val veileder = navMockService.createVeileder(bruker)

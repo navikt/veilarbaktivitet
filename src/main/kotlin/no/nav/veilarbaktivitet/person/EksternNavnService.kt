@@ -23,6 +23,6 @@ data class QueryVariables(
 
 data class NavnResponse(
     val fornavn: String,
-    val mellomnavn: String,
+    val mellomnavn: String?,
     val etternavn: String
 )
