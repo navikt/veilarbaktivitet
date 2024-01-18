@@ -4,25 +4,6 @@ query($ident: ID! $historikk: Boolean!) {
             fornavn
             mellomnavn
             etternavn
-#            forkortetNavn
-#            originaltNavn {
-#                fornavn
-#                mellomnavn
-#                etternavn
-#            }
-#            gyldigFraOgMed
-#            metadata {
-#                endringer {
-#                    kilde
-#                    registrert
-#                    registrertAv
-#                    systemkilde
-#                    type
-#                }
-#                master
-#                opplysningsId
-#                historisk
-#            }
         }
     }
 }
