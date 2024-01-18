@@ -21,7 +21,7 @@ class ArkiveringsController(private val userInContext: UserInContext, private va
         val fnr = userInContext.fnr.get()
         val result = navnService.hentNavn(fnr)
         if(result.errors?.isNotEmpty() == true) { throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR) }
-        val navn = result.data.hentPerson.navn.first().let { "${it.fornavn} ${it.mellomnavn?.plus(" ")}${it.etternavn}" }
+        val navn = result.data.hentPerson.navn.first().tilFornavnMellomnavnEtternavn()
         orkivarClient.arkiver(fnr, navn)
     }
 }

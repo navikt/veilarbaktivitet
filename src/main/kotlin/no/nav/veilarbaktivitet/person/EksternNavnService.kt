@@ -39,6 +39,10 @@ data class Navn(
     val fornavn: String,
     val mellomnavn: String?,
     val etternavn: String
-)
+
+) {
+    fun tilFornavnMellomnavnEtternavn() = "${fornavn} ${mellomnavn?.plus(" ") ?: ""}${etternavn}"
+
+}
 
 class NavnResponse: GraphqlResponse<NavnResponseData>()
