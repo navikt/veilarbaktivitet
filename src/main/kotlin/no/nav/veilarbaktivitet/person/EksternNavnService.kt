@@ -15,7 +15,6 @@ class EksternNavnService(val pdlClient: PdlClient) {
     fun hentNavn(fnr: Person.Fnr): NavnResponse {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/navnQuery.graphql")
             .buildRequest(QueryVariables(ident = fnr.get(), historikk = false))
-        logger.info("requestbody: ${graphqlRequest.query}" )
         return pdlClient.request(graphqlRequest, NavnResponse::class.java)
             .also { GraphqlUtils.logWarningIfError(it) }
     }
