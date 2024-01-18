@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.person
 import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
+import no.nav.common.client.utils.graphql.GraphqlUtils
 import org.springframework.stereotype.Service
 
 @Service
@@ -12,6 +13,7 @@ class EksternNavnService(val pdlClient: PdlClient) {
         val graphqlRequest = GraphqlRequestBuilder<QueryVariables>("graphql/pdl/navnQuery.graphql")
             .buildRequest(QueryVariables(ident = fnr.get(), historikk = false))
         return pdlClient.request(graphqlRequest, NavnResponse::class.java)
+            .also { GraphqlUtils.logWarningIfError(it) }
     }
 
 }
