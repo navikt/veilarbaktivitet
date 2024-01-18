@@ -33,6 +33,7 @@ public class WireMockUtil {
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
+        hentPerson(fnr);
         arkivering();
     }
 
@@ -152,8 +153,8 @@ public class WireMockUtil {
         stubFor(post(urlEqualTo("/pdl/graphql"))
                 .withRequestBody(matching("^.*FOLKEREGISTERIDENT.*"))
                 .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(aktorId.get())))
-                        .willReturn(aResponse()
-                                .withBody("""
+                .willReturn(aResponse()
+                        .withBody("""
                                 {
                                   "data": {
                                     "hentIdenter": {
@@ -188,9 +189,31 @@ public class WireMockUtil {
                                 """.formatted(aktorId.get()))));
     }
 
+    private static void hentPerson(String fnr) {
+        stubFor(post(urlEqualTo("/pdl/graphql"))
+                .withRequestBody(matching("^.*hentPerson.*"))
+                .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(fnr)))
+                .willReturn(aResponse()
+                        .withBody("""
+                            {
+                              "data": {
+                                "hentPerson": {
+                                  "navn": [
+                                    {
+                                      "fornavn": "TRIVIELL",
+                                      "mellomnavn": null,
+                                      "etternavn": "SKILPADDE"
+                                    }
+                                  ]
+                                }
+                              }
+                            }
+                            """.formatted(fnr))));
+    }
+
     private static void arkivering() {
         stubFor(post("/orkivar/arkiver")
-            .willReturn(ok())
+                .willReturn(ok())
         );
     }
 
