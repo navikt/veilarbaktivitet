@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import lombok.Builder;
 import lombok.Getter;
+import no.nav.veilarbaktivitet.person.Navn;
 
 @Builder(toBuilder = true)
 @Getter
@@ -14,6 +15,7 @@ public class BrukerOptions {
     private boolean harBruktNivaa4;
 
     private boolean oppfolgingFeiler;
+    private Navn navn;
     /*
     @TODO
     private boolean manuellFeiler;
@@ -33,6 +35,7 @@ public class BrukerOptions {
                 .erReservertKrr(false)
                 .kanVarsles(true)
                 .erUnderKvp(false)
-                .harBruktNivaa4(true);
+                .harBruktNivaa4(true)
+                .navn(new Navn("Navn", null, "Navnesen"));
     }
 }

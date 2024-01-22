@@ -1,0 +1,2 @@
+schema: https://pdl-playground.intern.dev.nav.no/graphql
+documents: '**/*.graphql'

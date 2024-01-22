@@ -85,10 +85,14 @@ public class ApplicationTestConfig {
         return mock(AxsysClient.class);
     }
 
-    @Bean
+    @Bean(name = "pdlUrl")
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
     }
 
+    @Bean(name = "pdlTokenscope")
+    String pdlTokenscope() {
+        return "api://dev-fss.pdl.pdl-api/.default";
+    }
 
 }

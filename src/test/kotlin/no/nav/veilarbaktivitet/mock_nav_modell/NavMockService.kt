@@ -10,8 +10,8 @@ class NavMockService(
     val oppfolgingsperiodeService: OppfolgingsperiodeService,
 ) {
 
-    fun createHappyBruker(): MockBruker {
-        val bruker = MockNavService.createBruker(BrukerOptions.happyBruker())
+    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
+        val bruker = MockNavService.createBruker(brukerOptions)
         val oppfolgingsperiode = bruker.oppfolgingsperioder.first()
         oppfolgingsperiodeService.upsertOppfolgingsperiode(
             SisteOppfolgingsperiodeV1.builder()

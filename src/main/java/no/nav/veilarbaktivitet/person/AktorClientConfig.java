@@ -17,21 +17,25 @@ public class AktorClientConfig {
 
 
     @Bean
-    @Profile("!dev")
+    @Profile("!dev") // Dev is during tests, not q2
     public String pdlUrl() {
         return isProduction().orElse(false)
                 ? createProdInternalIngressUrl("pdl-api")
                 : createDevInternalIngressUrl("pdl-api");
     }
 
-    @Bean
-    public AktorOppslagClient aktorClient(String pdlUrl, MachineToMachineTokenClient tokenClient) {
-        String tokenScop = String.format("api://%s-fss.pdl.pdl-api/.default",
+    @Profile("!dev")
+    @Bean String pdlTokenscope() {
+        return String.format("api://%s-fss.pdl.pdl-api/.default",
                 isProduction().orElse(false) ? "prod" : "dev"
         );
+    }
+
+    @Bean
+    public AktorOppslagClient aktorClient(String pdlUrl, MachineToMachineTokenClient tokenClient, String pdlTokenscope) {
         return new CachedAktorOppslagClient(new PdlAktorOppslagClient(
                 pdlUrl,
-                () -> tokenClient.createMachineToMachineToken(tokenScop))
+                () -> tokenClient.createMachineToMachineToken(pdlTokenscope))
         );
     }
 }
