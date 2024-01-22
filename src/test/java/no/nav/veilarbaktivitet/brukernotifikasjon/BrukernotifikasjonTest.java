@@ -28,6 +28,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikas
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -435,7 +436,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
-        var mockBruker = navMockService.createHappyBruker();
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet og avbryter den
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
@@ -454,17 +455,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
         brukernotifikasjonAsserts.assertDone(oppgave.key());
-    }
-
-    private DoknotifikasjonStatus okStatus(String bestillingsId) {
-        return DoknotifikasjonStatus
-                .newBuilder()
-                .setStatus("FERDIGSTILT")
-                .setBestillingsId(bestillingsId)
-                .setBestillerId(credentials.username)
-                .setMelding("her er en melling")
-                .setDistribusjonId(null)
-                .build();
     }
 
     private ConsumerRecord<NokkelInput, OppgaveInput> opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {

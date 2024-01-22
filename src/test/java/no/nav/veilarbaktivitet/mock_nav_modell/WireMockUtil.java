@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.ZonedDateTime;
@@ -24,6 +25,7 @@ public class WireMockUtil {
         boolean kanVarsles = mockBruker.getBrukerOptions().isKanVarsles();
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
+        Navn navn = mockBruker.getBrukerOptions().getNavn();
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
 
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
@@ -33,7 +35,7 @@ public class WireMockUtil {
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
-        hentPerson(fnr);
+        hentPerson(fnr, navn);
         arkivering();
     }
 
@@ -189,7 +191,7 @@ public class WireMockUtil {
                                 """.formatted(aktorId.get()))));
     }
 
-    private static void hentPerson(String fnr) {
+    private static void hentPerson(String fnr, Navn navn) {
         stubFor(post(urlEqualTo("/pdl/graphql"))
                 .withRequestBody(matching("^.*hentPerson.*"))
                 .withRequestBody(matchingJsonPath("$.variables.ident", equalTo(fnr)))
@@ -200,15 +202,15 @@ public class WireMockUtil {
                                 "hentPerson": {
                                   "navn": [
                                     {
-                                      "fornavn": "TRIVIELL",
-                                      "mellomnavn": null,
-                                      "etternavn": "SKILPADDE"
+                                      "fornavn": "%s",
+                                      "mellomnavn": %s,
+                                      "etternavn": "%s"
                                     }
                                   ]
                                 }
                               }
                             }
-                            """.formatted(fnr))));
+                            """.formatted(navn.getFornavn(), navn.getMellomnavn(), navn.getEtternavn()))));
     }
 
     private static void arkivering() {
