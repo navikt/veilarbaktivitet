@@ -31,6 +31,13 @@ data class Detalj(
     val tekst: String
 )
 
+data class DetaljUtkast(
+    val stil: Stil,
+    val tittel: String,
+    val tekst: String?
+
+)
+
 data class Tag(
     val tekst: String,
     val type: String
