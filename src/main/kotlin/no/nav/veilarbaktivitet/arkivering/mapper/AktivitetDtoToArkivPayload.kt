@@ -5,6 +5,15 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
+import no.nav.veilarbaktivitet.arkivering.Detalj
+import no.nav.veilarbaktivitet.arkivering.Stil
+import no.nav.veilarbaktivitet.arkivering.Stil.PARAGRAF
+import no.nav.veilarbaktivitet.internapi.model.Mote.KanalEnum
+import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.*
+import java.text.DateFormat
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 fun AktivitetData.toArkivPayload(): ArkivAktivitet {
     return ArkivAktivitet(
@@ -60,3 +69,17 @@ fun AktivitetData.toArkivTypeTekst(): String {
         */
     }
 }
+
+fun AktivitetData.toDetaljer(): List<Detalj> {
+    return listOf(
+        Detalj(stil = Stil.HALV_LINJE, tittel = "Fra dato", tekst = dateToZonedDateTime(fraDato).format(datoFormat)),
+        Detalj(stil = Stil.HALV_LINJE, tittel = "Til dato", tekst = dateToZonedDateTime(tilDato).format(datoFormat)), // TODO: Trenger klokkeslett og varighet på møte med nav
+        Detalj(stil = Stil.HALV_LINJE, tittel = "Møteform", tekst = this.moteData.kanal.tekst),
+        Detalj(stil = Stil.HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = this.moteData.adresse),
+        Detalj(stil = Stil.HEL_LINJE, tittel = "Hensikt med møtet", tekst = this.beskrivelse),
+        Detalj(stil = Stil.HEL_LINJE, tittel = "Forberedelser til møtet", tekst = this.moteData.forberedelser),
+
+    )
+}
+
+private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu")
