@@ -22,7 +22,7 @@ enum class Stil {
     HEL_LINJE,
     HALV_LINJE,
     PARAGRAF,
-    LINK
+    LENKE
 }
 
 data class Detalj(

@@ -7,13 +7,10 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.Stil
+import no.nav.veilarbaktivitet.arkivering.Stil.HEL_LINJE
 import no.nav.veilarbaktivitet.arkivering.Stil.PARAGRAF
-import no.nav.veilarbaktivitet.internapi.model.Mote.KanalEnum
-import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.*
-import java.text.DateFormat
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 fun AktivitetData.toArkivPayload(): ArkivAktivitet {
     return ArkivAktivitet(
@@ -74,11 +71,18 @@ fun AktivitetData.toDetaljer(): List<Detalj> {
     return listOf(
         Detalj(stil = Stil.HALV_LINJE, tittel = "Fra dato", tekst = dateToZonedDateTime(fraDato).format(datoFormat)),
         Detalj(stil = Stil.HALV_LINJE, tittel = "Til dato", tekst = dateToZonedDateTime(tilDato).format(datoFormat)), // TODO: Trenger klokkeslett og varighet på møte med nav
+        Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = this.beskrivelse), // TODO: Har annen tittel i "Møte med NAV"
+        // Møte med NAV
         Detalj(stil = Stil.HALV_LINJE, tittel = "Møteform", tekst = this.moteData.kanal.tekst),
         Detalj(stil = Stil.HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = this.moteData.adresse),
         Detalj(stil = Stil.HEL_LINJE, tittel = "Hensikt med møtet", tekst = this.beskrivelse),
         Detalj(stil = Stil.HEL_LINJE, tittel = "Forberedelser til møtet", tekst = this.moteData.forberedelser),
-
+        // Jobbrettet egenaktivitet
+        Detalj(stil = HEL_LINJE, tittel = "Mål med aktiviteten", tekst = this.egenAktivitetData.hensikt),
+        Detalj(stil = Stil.LENKE, tittel = "Lenke", tekst = this.lenke),
+        // Jobbsøking
+        Detalj(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = this.sokeAvtaleAktivitetData.antallStillingerIUken.toString()),
+        Detalj(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = this.sokeAvtaleAktivitetData.antallStillingerSokes.toString()), // TODO: Ikke ta med hvis null
     )
 }
 
