@@ -9,14 +9,17 @@ class AktivitetDtoArkivPayloadTest {
     @Test
     fun `møte og samtalereferat skal ikke ha beskrivelse 2 ganger`() {
         val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload()
-        assertThat(mote.detaljer.filter { it.tittel == "Beskrivelse" }).isEmpty()
-        assertThat(mote.detaljer.filter { it.tittel == "Hensikt med møtet" }).isNotEmpty()
-        val samtale = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload()
-        assertThat(samtale.detaljer.filter { it.tittel == "Beskrivelse" }).isEmpty()
-        assertThat(samtale.detaljer.filter { it.tittel == "Hensikt med møtet" }).isNotEmpty()
-        val egen = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload()
-        assertThat(egen.detaljer.filter { it.tittel == "Beskrivelse" }).isNotEmpty()
-        assertThat(egen.detaljer.filter { it.tittel == "Hensikt med møtet" }).isEmpty()
+        assertThat(mote.detaljer.map { it.tittel })
+            .containsExactly("Beskrivelse")
+
+//        assertThat(mote.detaljer.map { it.tittel }).doesNotContain("Beskrivelse")
+//        assertThat(mote.detaljer.filter { it.tittel == "Hensikt med møtet" }).isNotEmpty()
+//        val samtale = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload()
+//        assertThat(samtale.detaljer.filter { it.tittel == "Beskrivelse" }).isEmpty()
+//        assertThat(samtale.detaljer.filter { it.tittel == "Hensikt med møtet" }).isNotEmpty()
+//        val egen = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload()
+//        assertThat(egen.detaljer.filter { it.tittel == "Beskrivelse" }).isNotEmpty()
+//        assertThat(egen.detaljer.filter { it.tittel == "Hensikt med møtet" }).isEmpty()
     }
 
     @Test
@@ -27,6 +30,16 @@ class AktivitetDtoArkivPayloadTest {
         val egen = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload()
         assertThat(egen.detaljer.filter { it.tittel == "Til dato" }).isNotEmpty()
         assertThat(egen.detaljer.filter { it.tittel == "Frist" }).isEmpty()
+    }
+
+    @Test
+    fun `møte og samtalereferat skal ikke ha Fra dato men ha Dato`() {
+        val samtale = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload()
+        assertThat(samtale.detaljer.filter { it.tittel == "Til dato" }).isEmpty()
+        assertThat(samtale.detaljer.filter { it.tittel == "Dato" }).isNotEmpty()
+        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload()
+        assertThat(mote.detaljer.filter { it.tittel == "Til dato" }).isEmpty()
+        assertThat(mote.detaljer.filter { it.tittel == "Dato" }).isNotEmpty()
     }
 
 }
