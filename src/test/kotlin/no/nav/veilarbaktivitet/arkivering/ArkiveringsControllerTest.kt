@@ -33,7 +33,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                   "metadata": {
                     "navn": "${navn.fornavn} ${navn.etternavn}",
                     "fnr": "${bruker.fnr}"
-                  }
+                  },
+                  "aktiviteter": []
                 }
             """.trimIndent())
             ))
