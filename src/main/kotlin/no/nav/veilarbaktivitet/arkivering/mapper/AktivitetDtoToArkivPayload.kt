@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.arkivering.DetaljUtkast
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
+import java.time.Duration
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -70,7 +71,31 @@ fun AktivitetData.toArkivTypeTekst(): String {
 }
 
 fun AktivitetData.erMoteEllerSamtaleReferat() = this.aktivitetType in listOf(AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT)
+fun AktivitetData.erMote() = this.aktivitetType in listOf(AktivitetTypeData.MOTE)
 fun AktivitetData.erStilling() = this.aktivitetType in listOf(AktivitetTypeData.JOBBSOEKING)
+
+fun AktivitetData.erSokeavtale() = this.aktivitetType in listOf(AktivitetTypeData.SOKEAVTALE)
+
+fun AktivitetData.beregnVarighet(): String {
+    val varighet = Duration.between(dateToZonedDateTime(fraDato), dateToZonedDateTime(tilDato))
+    val timer = varighet.toHours()
+    val minutter = varighet.toMinutesPart()
+    val timeString = when {
+        timer == 0L -> null
+        timer == 1L -> "$timer time"
+        else -> "$timer timer"
+    }
+    val minutterString = when {
+        minutter == 0 -> null
+        minutter == 1 -> "$minutter minutt"
+        else -> "$minutter minutter"
+    }
+    return listOfNotNull(timeString, minutterString).joinToString(", ")
+}
+
+fun AktivitetData.klokkeslett(): String {
+    return dateToZonedDateTime(fraDato).format(klokkeslettFormat)
+}
 
 fun AktivitetData.toDetaljer(): List<Detalj> {
     return listOfNotNull(
@@ -84,22 +109,24 @@ fun AktivitetData.toDetaljer(): List<Detalj> {
             DetaljUtkast(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse)
             else null,
         // Møte med NAV og Samtalereferat
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Er publisert", tekst = moteData?.isReferatPublisert ?.let { if (it) "Ja" else "Nei" } ),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
-        if (erMoteEllerSamtaleReferat())
-            DetaljUtkast(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse)
-            else null,
         if (erMoteEllerSamtaleReferat())
             DetaljUtkast(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) })
+        else null,
+        if (erMote()) DetaljUtkast(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett()) else null,
+        DetaljUtkast(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
+        if(erMote()) DetaljUtkast(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()) else null,
+        if (erMote()) DetaljUtkast(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse) else null,
+        if (erMote())
+            DetaljUtkast(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse)
             else null,
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
+        if(erMote()) DetaljUtkast(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser) else null,
+        if(erMoteEllerSamtaleReferat()) DetaljUtkast(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat) else null,
         // Jobbrettet egenaktivitet
         DetaljUtkast(stil = HEL_LINJE, tittel = "Mål med aktiviteten", tekst = egenAktivitetData?.hensikt),
-        DetaljUtkast(stil = LENKE, tittel = "Lenke", tekst = lenke),
+        if(!erMoteEllerSamtaleReferat()) DetaljUtkast(stil = LENKE, tittel = "Lenke", tekst = lenke) else null,
         // Jobbsøking
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()),
+        if(erSokeavtale()) DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()) else null,
+        if(erSokeavtale()) DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()) else null,
         // Stilling fra NAV
         DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
         DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
@@ -119,6 +146,7 @@ fun AktivitetData.toDetaljer(): List<Detalj> {
 }
 
 private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
+private val klokkeslettFormat = DateTimeFormatter.ofPattern("hh:mm", Locale.forLanguageTag("no"))
 
 fun StillingFraNavData.getStillingLenke(): String {
     return when (isProduction().orElse(false)) {

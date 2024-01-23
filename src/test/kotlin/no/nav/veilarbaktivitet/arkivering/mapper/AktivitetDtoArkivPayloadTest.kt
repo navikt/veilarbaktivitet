@@ -18,12 +18,13 @@ class AktivitetDtoArkivPayloadTest {
                 "Møtested eller annen praktisk informasjon",
                 "Hensikt med møtet",
                 "Forberedelser til møtet",
+                "Samtalereferat"
             )
     }
 
     @Test
     fun `Samtalereferat har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload()
+        val mote = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload()
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Dato",
