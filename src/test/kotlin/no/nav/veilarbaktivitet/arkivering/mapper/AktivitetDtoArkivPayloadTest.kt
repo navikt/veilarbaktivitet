@@ -123,24 +123,17 @@ class AktivitetDtoArkivPayloadTest {
             )
     }
 
-//    @Test
-//    fun `stilling skal ikke ha tilDato men ha frist`() {
-//        val mote = AktivitetDataTestBuilder.nyttStillingssok().toArkivPayload()
-//        assertThat(mote.detaljer.filter { it.tittel == "Til dato" }).isEmpty()
-//        assertThat(mote.detaljer.filter { it.tittel == "Frist" }).isNotEmpty()
-//        val egen = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload()
-//        assertThat(egen.detaljer.filter { it.tittel == "Til dato" }).isNotEmpty()
-//        assertThat(egen.detaljer.filter { it.tittel == "Frist" }).isEmpty()
-//    }
-//
-//    @Test
-//    fun `møte og samtalereferat skal ikke ha Fra dato men ha Dato`() {
-//        val samtale = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload()
-//        assertThat(samtale.detaljer.filter { it.tittel == "Til dato" }).isEmpty()
-//        assertThat(samtale.detaljer.filter { it.tittel == "Dato" }).isNotEmpty()
-//        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload()
-//        assertThat(mote.detaljer.filter { it.tittel == "Til dato" }).isEmpty()
-//        assertThat(mote.detaljer.filter { it.tittel == "Dato" }).isNotEmpty()
-//    }
-
+    @Test
+    fun `IJobb (jobb jeg har) skal ha riktige felt`() {
+        val ijobb = AktivitetDataTestBuilder.nyIJobbAktivitet().toArkivPayload()
+        assertThat(ijobb.detaljer.map { it.tittel })
+            .containsExactly(
+                "Fra dato",
+                "Til dato",
+                "Stillingsandel",
+                "Arbeidsgiver",
+                "Ansettelsesforhold",
+                "Beskrivelse",
+            )
+    }
 }

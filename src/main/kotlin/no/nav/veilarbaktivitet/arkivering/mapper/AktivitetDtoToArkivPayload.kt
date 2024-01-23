@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
-import no.nav.veilarbaktivitet.arkivering.DetaljUtkast
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
@@ -32,7 +31,6 @@ fun AktivitetStatus.toArkivTekst(): String {
         AktivitetStatus.FULLFORT -> "Fullført"
         AktivitetStatus.GJENNOMFORES -> "Gjennomføres"
         AktivitetStatus.PLANLAGT -> "Planlagt"
-        else -> throw IllegalArgumentException("Fant ingen status")
     }
 }
 
@@ -62,22 +60,8 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.GRUFAGYRKE -> "Fag- og yrkesopplæring (Gruppe)"
             }
         }
-        /* Arena aktiviteter - Ingen av disse er lagret hos oss, da er de Ekstern-aktivtietr
-        TILTAKSAKTIVITET -> 'Tiltak gjennom NAV',
-        GRUPPEAKTIVITET -> 'Gruppeaktivitet',
-        UTDANNINGSAKTIVITET -> 'Utdanning',
-        */
     }
 }
-
-fun AktivitetData.erMoteEllerSamtaleReferat() = this.aktivitetType in listOf(MOTE, SAMTALEREFERAT)
-fun AktivitetData.erMote() = this.aktivitetType == MOTE
-fun AktivitetData.erStilling() = this.aktivitetType == JOBBSOEKING
-
-fun AktivitetData.erSokeavtale() = this.aktivitetType == SOKEAVTALE
-fun AktivitetData.erStillingFraNAV() = this.aktivitetType == STILLING_FRA_NAV
-fun AktivitetData.erMedisinskBehandling() = this.aktivitetType == BEHANDLING
-fun AktivitetData.erEksternAktivitet() = this.aktivitetType == EKSTERNAKTIVITET
 
 fun AktivitetData.beregnVarighet(): String {
     val varighet = Duration.between(dateToZonedDateTime(fraDato), dateToZonedDateTime(tilDato))
@@ -100,22 +84,22 @@ fun AktivitetData.klokkeslett(): String {
     return dateToZonedDateTime(fraDato).format(klokkeslettFormat)
 }
 
-fun AktivitetData.hentEksterneDetaljer(): List<DetaljUtkast> = this.eksternAktivitetData
+fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetData
     ?.detaljer
-    ?.map { DetaljUtkast(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
+    ?.map { Detalj(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
 
 
-fun AktivitetData.toDetaljer2(): List<Detalj> =
+fun AktivitetData.toDetaljer(): List<Detalj> =
     when (aktivitetType) {
         MOTE -> toMoteDetaljer()
         EGENAKTIVITET -> toEgenaktivitetDetaljer()
         JOBBSOEKING -> toStillingDetaljer()
-        SOKEAVTALE -> TODO()
-        IJOBB -> TODO()
-        BEHANDLING -> TODO()
-        SAMTALEREFERAT -> TODO()
-        STILLING_FRA_NAV -> TODO()
-        EKSTERNAKTIVITET -> TODO()
+        SOKEAVTALE -> toSokeAvtaleDetaljer()
+        IJOBB -> toIJobbDetaljer()
+        BEHANDLING -> toBehandlingDetaljer()
+        SAMTALEREFERAT -> toSamtalereferatDetaljer()
+        STILLING_FRA_NAV -> toStillingFraNavDetaljer()
+        EKSTERNAKTIVITET -> toEksternAktivitetDetaljer()
     }
 
 fun AktivitetData.toMoteDetaljer() = listOf(
@@ -148,66 +132,51 @@ fun AktivitetData.toStillingDetaljer() = listOf(
     Detalj(stil = LENKE, tittel = "Lenke til stillingsannonsen", tekst = lenke),
 )
 
+fun AktivitetData.toStillingFraNavDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
+    Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
+    Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = stillingFraNavData?.svarfrist?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
+    Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke()),
+)
 
+fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()),
+    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()),
+    Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
+)
 
-fun AktivitetData.toDetaljer(): List<Detalj> {
-    return listOfNotNull(
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Type behandling", tekst = behandlingAktivitetData?.behandlingType),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Behandlingssted", tekst = behandlingAktivitetData?.behandlingSted),
-        if (!erMoteEllerSamtaleReferat() && !erStillingFraNAV())
-            DetaljUtkast(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) })
-            else null,
-        if (!erStilling() && !erMoteEllerSamtaleReferat() && !erStillingFraNAV())
-            DetaljUtkast(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }) // TODO: Trenger klokkeslett og varighet på møte med nav, skal hete til-data
-            else null,
-        if (erStilling())
-            DetaljUtkast(stil = HALV_LINJE, tittel = "Frist", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) })
-            else null,
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingsSoekAktivitetData?.arbeidsgiver),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Kontaktperson", tekst = stillingsSoekAktivitetData?.kontaktPerson),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingsSoekAktivitetData?.arbeidssted),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Mål med aktiviteten", tekst = egenAktivitetData?.hensikt),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Min huskeliste", tekst = egenAktivitetData?.oppfolging),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Mål for behandlingen", tekst = behandlingAktivitetData?.effekt),
-        DetaljUtkast(stil = HEL_LINJE, tittel = "Oppfølging fra NAV", tekst = behandlingAktivitetData?.behandlingOppfolging),
-        *arrayOf<DetaljUtkast>(hentEksterneDetaljer()),
-        if(erSokeavtale()) DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()) else null,
-        if(erSokeavtale()) DetaljUtkast(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()) else null,
-        if(!erMoteEllerSamtaleReferat() && !erStillingFraNAV())
-            DetaljUtkast(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse)
-            else null,
-        // Møte med NAV og Samtalereferat
-        if (erMoteEllerSamtaleReferat())
-            DetaljUtkast(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) })
-        else null,
-        if (erMote()) DetaljUtkast(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett()) else null,
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-        if(erMote()) DetaljUtkast(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()) else null,
-        if (erMote()) DetaljUtkast(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse) else null,
-        if (erMote())
-            DetaljUtkast(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse)
-            else null,
-        if(erMote()) DetaljUtkast(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser) else null,
-        if(erMoteEllerSamtaleReferat()) DetaljUtkast(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat) else null,
-        // Jobbrettet egenaktivitet
-        if(!erMoteEllerSamtaleReferat() && !erStilling() && !erStillingFraNAV() && !erSokeavtale() && !erMedisinskBehandling() && !erEksternAktivitet())
-            DetaljUtkast(stil = LENKE, tittel = "Lenke", tekst = lenke)
-            else null,
-        // Jobbsøking
-        // Stilling fra NAV
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Svarfrist", tekst = stillingFraNavData?.svarfrist?.let { dateToZonedDateTime(it).format(datoFormat) }),
-        DetaljUtkast(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
-        DetaljUtkast(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke()),
-        // Stilling - opprettes selv
-        if (erStilling())
-            DetaljUtkast(stil = HALV_LINJE, tittel = "Lenke til stillingsannonsen", tekst = lenke)
-            else null,
-    )
-        .filter { !it.tekst.isNullOrBlank() }
-        .map { Detalj(it.stil, it.tittel, it.tekst!!) }
-}
+fun AktivitetData.toBehandlingDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Type behandling", tekst = behandlingAktivitetData?.behandlingType),
+    Detalj(stil = HALV_LINJE, tittel = "Behandlingssted", tekst = behandlingAktivitetData?.behandlingSted),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HEL_LINJE, tittel = "Mål for behandlingen", tekst = behandlingAktivitetData?.effekt),
+    Detalj(stil = HEL_LINJE, tittel = "Oppfølging fra NAV", tekst = behandlingAktivitetData?.behandlingOppfolging),
+    Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
+)
+
+fun AktivitetData.toIJobbDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Stillingsandel", tekst = iJobbAktivitetData.jobbStatusType.toString()),
+    Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = iJobbAktivitetData.ansettelsesforhold),
+    Detalj(stil = HALV_LINJE, tittel = "Ansettelsesforhold", tekst = iJobbAktivitetData.arbeidstid),
+    Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
+)
+
+fun AktivitetData.toEksternAktivitetDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+) + hentEksterneDetaljer() + listOf(Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse))
+
+fun AktivitetData.toSamtalereferatDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
+    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+)
 
 private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
 private val klokkeslettFormat = DateTimeFormatter.ofPattern("hh:mm", Locale.forLanguageTag("no"))
