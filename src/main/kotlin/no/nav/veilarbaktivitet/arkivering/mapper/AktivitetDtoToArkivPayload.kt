@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.arkivering.mapper
 import no.nav.common.utils.EnvironmentUtils.isProduction
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
@@ -110,7 +109,7 @@ fun AktivitetData.toDetaljer2(): List<Detalj> =
     when (aktivitetType) {
         MOTE -> toMoteDetaljer()
         EGENAKTIVITET -> toEgenaktivitetDetaljer()
-        JOBBSOEKING -> TODO()
+        JOBBSOEKING -> toStillingDetaljer()
         SOKEAVTALE -> TODO()
         IJOBB -> TODO()
         BEHANDLING -> TODO()
@@ -137,6 +136,16 @@ fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
     Detalj(stil = HEL_LINJE, tittel = "Min huskeliste", tekst = egenAktivitetData?.oppfolging),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
     Detalj(stil = LENKE, tittel = "Lenke", tekst = lenke),
+)
+
+fun AktivitetData.toStillingDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Frist", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingsSoekAktivitetData?.arbeidsgiver),
+    Detalj(stil = HALV_LINJE, tittel = "Kontaktperson", tekst = stillingsSoekAktivitetData?.kontaktPerson),
+    Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingsSoekAktivitetData?.arbeidssted),
+    Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
+    Detalj(stil = LENKE, tittel = "Lenke til stillingsannonsen", tekst = lenke),
 )
 
 
