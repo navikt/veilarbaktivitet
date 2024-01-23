@@ -4,6 +4,7 @@ import no.nav.common.utils.EnvironmentUtils.isProduction
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
@@ -38,15 +39,15 @@ fun AktivitetStatus.toArkivTekst(): String {
 
 fun AktivitetData.toArkivTypeTekst(): String {
     return when (this.aktivitetType) {
-        AktivitetTypeData.EGENAKTIVITET -> "Jobbrettet egenaktivitet"
-        AktivitetTypeData.JOBBSOEKING -> "Stilling"
-        AktivitetTypeData.SOKEAVTALE -> "Jobbsøking"
-        AktivitetTypeData.IJOBB -> "Jobb jeg har nå"
-        AktivitetTypeData.BEHANDLING -> "Behandling"
-        AktivitetTypeData.MOTE -> "Møte med NAV"
-        AktivitetTypeData.SAMTALEREFERAT -> "Samtalereferat"
-        AktivitetTypeData.STILLING_FRA_NAV -> "Stilling fra NAV"
-        AktivitetTypeData.EKSTERNAKTIVITET -> {
+        EGENAKTIVITET -> "Jobbrettet egenaktivitet"
+        JOBBSOEKING -> "Stilling"
+        SOKEAVTALE -> "Jobbsøking"
+        IJOBB -> "Jobb jeg har nå"
+        BEHANDLING -> "Behandling"
+        MOTE -> "Møte med NAV"
+        SAMTALEREFERAT -> "Samtalereferat"
+        STILLING_FRA_NAV -> "Stilling fra NAV"
+        EKSTERNAKTIVITET -> {
             when (this.eksternAktivitetData.type!!) {
                 AktivitetskortType.ARENA_TILTAK -> "Tiltak gjennom NAV"
                 AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD -> "Avtale midlertidig lønnstilskudd"
@@ -70,14 +71,14 @@ fun AktivitetData.toArkivTypeTekst(): String {
     }
 }
 
-fun AktivitetData.erMoteEllerSamtaleReferat() = this.aktivitetType in listOf(AktivitetTypeData.MOTE, AktivitetTypeData.SAMTALEREFERAT)
-fun AktivitetData.erMote() = this.aktivitetType == AktivitetTypeData.MOTE
-fun AktivitetData.erStilling() = this.aktivitetType == AktivitetTypeData.JOBBSOEKING
+fun AktivitetData.erMoteEllerSamtaleReferat() = this.aktivitetType in listOf(MOTE, SAMTALEREFERAT)
+fun AktivitetData.erMote() = this.aktivitetType == MOTE
+fun AktivitetData.erStilling() = this.aktivitetType == JOBBSOEKING
 
-fun AktivitetData.erSokeavtale() = this.aktivitetType == AktivitetTypeData.SOKEAVTALE
-fun AktivitetData.erStillingFraNAV() = this.aktivitetType == AktivitetTypeData.STILLING_FRA_NAV
-fun AktivitetData.erMedisinskBehandling() = this.aktivitetType == AktivitetTypeData.BEHANDLING
-fun AktivitetData.erEksternAktivitet() = this.aktivitetType == AktivitetTypeData.EKSTERNAKTIVITET
+fun AktivitetData.erSokeavtale() = this.aktivitetType == SOKEAVTALE
+fun AktivitetData.erStillingFraNAV() = this.aktivitetType == STILLING_FRA_NAV
+fun AktivitetData.erMedisinskBehandling() = this.aktivitetType == BEHANDLING
+fun AktivitetData.erEksternAktivitet() = this.aktivitetType == EKSTERNAKTIVITET
 
 fun AktivitetData.beregnVarighet(): String {
     val varighet = Duration.between(dateToZonedDateTime(fraDato), dateToZonedDateTime(tilDato))
@@ -103,6 +104,41 @@ fun AktivitetData.klokkeslett(): String {
 fun AktivitetData.hentEksterneDetaljer(): List<DetaljUtkast> = this.eksternAktivitetData
     ?.detaljer
     ?.map { DetaljUtkast(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
+
+
+fun AktivitetData.toDetaljer2(): List<Detalj> =
+    when (aktivitetType) {
+        MOTE -> toMoteDetaljer()
+        EGENAKTIVITET -> toEgenaktivitetDetaljer()
+        JOBBSOEKING -> TODO()
+        SOKEAVTALE -> TODO()
+        IJOBB -> TODO()
+        BEHANDLING -> TODO()
+        SAMTALEREFERAT -> TODO()
+        STILLING_FRA_NAV -> TODO()
+        EKSTERNAKTIVITET -> TODO()
+    }
+
+fun AktivitetData.toMoteDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett()),
+    Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
+    Detalj(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
+    Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
+    Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
+    Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
+    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+)
+
+fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato?.let { dateToZonedDateTime(it).format(datoFormat) }),
+    Detalj(stil = HEL_LINJE, tittel = "Mål med aktiviteten", tekst = egenAktivitetData?.hensikt),
+    Detalj(stil = HEL_LINJE, tittel = "Min huskeliste", tekst = egenAktivitetData?.oppfolging),
+    Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
+    Detalj(stil = LENKE, tittel = "Lenke", tekst = lenke),
+)
+
 
 
 fun AktivitetData.toDetaljer(): List<Detalj> {

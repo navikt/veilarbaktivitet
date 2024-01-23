@@ -28,14 +28,13 @@ enum class Stil {
 data class Detalj(
     val stil: Stil,
     val tittel: String,
-    val tekst: String
+    val tekst: String?
 )
 
 data class DetaljUtkast(
     val stil: Stil,
     val tittel: String,
     val tekst: String?
-
 )
 
 data class Tag(
