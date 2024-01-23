@@ -10,7 +10,13 @@ class AktivitetDtoArkivPayloadTest {
     fun `møte og samtalereferat skal ikke ha beskrivelse 2 ganger`() {
         val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload()
         assertThat(mote.detaljer.map { it.tittel })
-            .containsExactly("Beskrivelse")
+            .containsExactly("Beskrivelse","Møteform",
+                "Er publisert",
+                "Møtested eller annen praktisk informasjon",
+                "Hensikt med møtet",
+                "Dato",
+                "Forberedelser til møtet",
+                "Lenke")
 
 //        assertThat(mote.detaljer.map { it.tittel }).doesNotContain("Beskrivelse")
 //        assertThat(mote.detaljer.filter { it.tittel == "Hensikt med møtet" }).isNotEmpty()
