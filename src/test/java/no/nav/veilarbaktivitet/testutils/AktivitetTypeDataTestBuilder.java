@@ -19,6 +19,7 @@ public class AktivitetTypeDataTestBuilder {
     public static StillingsoekAktivitetData nyttStillingssok() {
         return StillingsoekAktivitetData.builder()
                 .arbeidsgiver("arbeidsgiver")
+                .arbeidssted("arbeidssted")
                 .kontaktPerson("kontaktperson")
                 .stillingsTittel("stilingstittel")
                 .stillingsoekEtikett(StillingsoekEtikettData.values()[0])
