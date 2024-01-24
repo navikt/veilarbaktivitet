@@ -5,8 +5,10 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
+import no.nav.veilarbaktivitet.arkivering.mapper.toArkivTypeTekst
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.person.Navn
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
@@ -41,12 +43,12 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                 equalToJson("""
                     {
                       "metadata": {
-                        "navn": "${navn.fornavn} ${navn.etternavn}",
+                        "navn": "${navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}"
                       },
                       "aktiviteter": [
                         {
-                          "tittel": "Tittel",
+                          "tittel": "tittel",
                           "type": "Jobb jeg har nå",
                           "status": "Planlagt",
                           "detaljer": [
