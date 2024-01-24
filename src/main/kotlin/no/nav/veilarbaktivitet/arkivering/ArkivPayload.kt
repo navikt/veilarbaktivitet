@@ -15,7 +15,7 @@ data class ArkivAktivitet(
     val type: String,
     val status: String,
     val detaljer: List<Detalj>,
-    val tags: List<Tag>
+//    val tags: List<Tag>
 )
 
 enum class Stil {
@@ -31,13 +31,7 @@ data class Detalj(
     val tekst: String?
 )
 
-data class DetaljUtkast(
-    val stil: Stil,
-    val tittel: String,
-    val tekst: String?
-)
-
-data class Tag(
-    val tekst: String,
-    val type: String
-)
+//data class Tag(
+//    val tekst: String,
+//    val type: String
+//)

@@ -20,7 +20,7 @@ fun AktivitetData.toArkivPayload(): ArkivAktivitet {
         type = this.toArkivTypeTekst(),
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
-        tags = emptyList()
+//        tags = emptyList()
     )
 }
 
