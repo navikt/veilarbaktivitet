@@ -322,9 +322,9 @@ public class AktivitetService {
                         .withEndretAvType(Innsender.SYSTEM)
                         .withEndretAv("veilarbaktivitet")
                 )
-                .forEach(a -> {
-                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
-                    aktivitetDAO.oppdaterAktivitet(a);
+                .forEach(aktivitet -> {
+                    avtaltMedNavService.settVarselFerdig(aktivitet.getFhoId());
+                    aktivitetDAO.oppdaterAktivitet(aktivitet);
                 });
     }
 
