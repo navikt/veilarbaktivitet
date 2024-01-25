@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
@@ -102,33 +103,37 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(ExecutionException::class, InterruptedException::class)
     fun skal_avslutte_aktiviteter_for() {
-        val mockBruker = MockNavService.createHappyBruker()
-        val mockBruker2 = MockNavService.createHappyBruker()
-        val aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet()
-        val aktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false)
-        val skalIkkeBliHistoriskMockBruker2 = aktivitetTestService.opprettAktivitet(mockBruker2, aktivitetDTO)
-        val skalBliHistorisk = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO)
-        val oppfolgingsperiodeSkalAvsluttes = mockBruker.getOppfolgingsperiode()
-        MockNavService.newOppfolingsperiode(mockBruker)
-        val skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(mockBruker, aktivitetDTO)
+        val brukerUteAvOppfolging = MockNavService.createHappyBruker()
+        val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
+        val skalBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
+        val oppfolgingsperiodeSkalAvsluttes = brukerUteAvOppfolging.getOppfolgingsperiode()
+        MockNavService.newOppfolingsperiode(brukerUteAvOppfolging)
+        val skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
+
+        // Avslutt oppfølging
         val avsluttOppfolging = SisteOppfolgingsperiodeV1.builder()
             .uuid(oppfolgingsperiodeSkalAvsluttes)
-            .aktorId(mockBruker.aktorId.get())
-            .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
+            .aktorId(brukerUteAvOppfolging.aktorId.get())
+            .startDato(ZonedDateTime.now().minusHours(2).truncatedTo(ChronoUnit.MILLIS))
             .sluttDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
         val sendResult = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
-        val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
-        val skalVaereHistorisk = aktiviteter.stream().filter { a: AktivitetDTO -> a.id == skalBliHistorisk.id }
-            .findAny().get()
+
+        val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(brukerUteAvOppfolging).aktiviteter
+        val skalVaereHistoriskVersioner = aktivitetTestService.hentVersjoner(skalBliHistorisk.id, brukerUteAvOppfolging, brukerUteAvOppfolging)
+
+        // aktivitet som skal være historisk
+        val skalVaereHistorisk = aktiviteter.first { a: AktivitetDTO -> a.id == skalBliHistorisk.id }
         AktivitetAssertUtils.assertOppdatertAktivitet(skalBliHistorisk.setHistorisk(true), skalVaereHistorisk)
         assertEquals(AktivitetTransaksjonsType.BLE_HISTORISK, skalVaereHistorisk.transaksjonsType)
-        val skalIkkeVaereHistorisk = aktiviteter.stream().filter { a: AktivitetDTO -> a.id == skalIkkeBliHistorisk.id }
-            .findAny().get()
+        assertThat(skalVaereHistorisk.endretAvType).isEqualTo(Innsender.SYSTEM.name)
+        assertThat(skalVaereHistoriskVersioner).hasSize(2)
+        assertThat(skalVaereHistoriskVersioner.last().endretDato).isNotEqualTo(skalVaereHistoriskVersioner.first().endretDato)
+
+        // aktiviteter som ikke skal være historisk
+        val skalIkkeVaereHistorisk = aktiviteter.first { a: AktivitetDTO -> a.id == skalIkkeBliHistorisk.id }
         assertEquals(skalIkkeBliHistorisk, skalIkkeVaereHistorisk)
-        val skalIkkeVaereHistoriskMockBruker2 = aktivitetTestService.hentAktiviteterForFnr(mockBruker2).aktiviteter[0]
-        assertEquals(skalIkkeBliHistoriskMockBruker2, skalIkkeVaereHistoriskMockBruker2)
     }
 
     @Test

@@ -315,10 +315,16 @@ public class AktivitetService {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
         aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
                 .stream()
-                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
-                .forEach(a -> {
-                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
-                    aktivitetDAO.oppdaterAktivitet(a);
+                .map(aktivitet -> aktivitet
+                        .withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK)
+                        .withHistoriskDato(sluttDatoDate)
+                        .withEndretDato(new Date())
+                        .withEndretAvType(Innsender.SYSTEM)
+                        .withEndretAv("veilarbaktivitet")
+                )
+                .forEach(aktivitet -> {
+                    avtaltMedNavService.settVarselFerdig(aktivitet.getFhoId());
+                    aktivitetDAO.oppdaterAktivitet(aktivitet);
                 });
     }
 
