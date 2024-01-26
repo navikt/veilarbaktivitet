@@ -1,8 +1,10 @@
 package no.nav.veilarbaktivitet.arkivering
 
+typealias ArkivAktivitetStatus = String
+
 data class ArkivPayload(
     val metadata: Metadata,
-    val aktiviteter: List<ArkivAktivitet>
+    val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>
 )
 
 data class Metadata(
