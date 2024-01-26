@@ -21,6 +21,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
                 ArkivPayload(
                     metadata = Metadata(navn, fnr.get()),
                     aktiviteter = aktiviteterPayload
+                        .groupBy { it.status }
+
                 )
             )
             .toRequestBody("application/json".toMediaTypeOrNull())
