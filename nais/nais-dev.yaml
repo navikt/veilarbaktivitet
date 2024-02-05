@@ -103,3 +103,5 @@ spec:
       value: "2017-12-04"
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.dev.nav.no"
+    - name: VEILARBDIALOG_URL
+      value: api://dev-fss.pto.veilarbdialog/.default
