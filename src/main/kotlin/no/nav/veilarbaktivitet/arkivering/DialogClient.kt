@@ -1,22 +1,42 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.common.rest.client.RestUtils
 import no.nav.veilarbaktivitet.aktivitetskort.graphql.OppfolgingsPeriode
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @Service
 class DialogClient(private val dialogHttpClient: OkHttpClient) {
 
+    private val log = LoggerFactory.getLogger(this::class.java)
+
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialoger(oppfolgingsPeriode: OppfolgingsPeriode, fnr: Fnr) {
+    fun hentDialoger(oppfolgingsPeriode: OppfolgingsPeriode, fnr: Fnr): List<DialogDTO> {
+        val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}"
 
+        val request: Request = Request.Builder()
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Accept", "application/json")
+            .get()
+            .url(uri)
+            .build()
 
-
+        return try {
+            val response = dialogHttpClient.newCall(request).execute()
+            RestUtils.parseJsonResponseArrayOrThrow(response, DialogDTO::class.java)
+        } catch (e: Exception) {
+            log.error("Feil ved henting av dialoger fra veilarbdialog", e)
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved henting av dialoger")
+        }
     }
 
     data class DialogDTO(
