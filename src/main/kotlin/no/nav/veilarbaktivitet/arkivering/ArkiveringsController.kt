@@ -5,7 +5,6 @@ import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Person
@@ -48,30 +47,33 @@ class ArkiveringsController(
 
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
         val aktivitetDialoger = dialoger.groupBy { it.aktivitetId }
+        val løseTråder = aktivitetDialoger[null] ?: emptyList()
 
 
         val aktiviteterPayload = aktiviteter
             .map {
                 it.toArkivPayload(
-                    meldinger = aktivitetDialoger[it.oppfolgingsperiodeId].map { it.tilTråd().meldinger }
+                    meldinger = aktivitetDialoger[it.oppfolgingsperiodeId.toString()]?.firstOrNull()?.meldinger?.map { it.tilMelding() } ?: emptyList()
                 )
             }
-        orkivarClient.arkiver(fnr, navn, aktiviteterPayload, aktivitetDialoger[null].map {  })
+        orkivarClient.arkiver(fnr, navn, aktiviteterPayload, løseTråder.map { it.tilDialogTråd() })
     }
-}
 
-fun DialogClient.TrådDTO.tilTråd() =
-    Tråd(
-        overskrift = overskrift,
-        egenskaper = egenskaper.map { it.toString() },
-        meldinger =  meldinger.map { dialog ->
-            Melding(
-                avsender = dialog.avsender.toString(), // TODO: Gjør mapping annet sted og slå sammen ident hvis veileder
-                sendt = dialog.sendt.norskDato(), // TODO: Klokkeslett også
-                lest = dialog.lest,
-                viktig = dialog.viktig,
-                tekst = dialog.tekst
-            )
-        }
-    )
+    fun DialogClient.DialogTrådDTO.tilDialogTråd() =
+        DialogTråd(
+            overskrift = overskrift,
+            egenskaper = egenskaper.map { it.toString() },
+            meldinger =  meldinger.map { it.tilMelding()
+            }
+        )
+
+    fun DialogClient.MeldingDTO.tilMelding() =
+        Melding(
+            avsender = avsender.toString(), // TODO: Gjør mapping annet sted og slå sammen ident hvis veileder
+            sendt = sendt.norskDato(), // TODO: Klokkeslett også
+            lest = lest,
+            viktig = viktig,
+            tekst = tekst
+        )
+}
 

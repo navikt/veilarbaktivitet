@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.common.rest.client.RestUtils
-import no.nav.veilarbaktivitet.aktivitetskort.graphql.OppfolgingsPeriode
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -20,7 +19,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialoger(fnr: Fnr): List<TrådDTO> {
+    fun hentDialoger(fnr: Fnr): List<DialogTrådDTO> {
         val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}"
 
         val request: Request = Request.Builder()
@@ -32,14 +31,14 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
 
         return try {
             val response = dialogHttpClient.newCall(request).execute()
-            RestUtils.parseJsonResponseArrayOrThrow(response, TrådDTO::class.java)
+            RestUtils.parseJsonResponseArrayOrThrow(response, DialogTrådDTO::class.java)
         } catch (e: Exception) {
             log.error("Feil ved henting av dialoger fra veilarbdialog", e)
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved henting av dialoger")
         }
     }
 
-    data class TrådDTO(
+    data class DialogTrådDTO(
         val id: String,
         val aktivitetId: String?,
         val overskrift: String,

@@ -15,13 +15,14 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
-    fun arkiver(fnr: Person.Fnr, navn: String, aktiviteterPayload: List<ArkivAktivitet>, tråder: List<Tråd>) {
+    fun arkiver(fnr: Person.Fnr, navn: String, aktiviteterPayload: List<ArkivAktivitet>, dialogTråder: List<DialogTråd>) {
         val uri = String.format("%s/arkiver", orkivarUrl)
         val payload = JsonUtils.toJson(
                 ArkivPayload(
                     metadata = Metadata(navn, fnr.get()),
                     aktiviteter = aktiviteterPayload
-                        .groupBy { it.status }
+                        .groupBy { it.status },
+                    dialogTråder = dialogTråder
                 )
             )
             .toRequestBody("application/json".toMediaTypeOrNull())

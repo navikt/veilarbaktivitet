@@ -1,13 +1,11 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import java.util.*
-
 typealias ArkivAktivitetStatus = String
 
 data class ArkivPayload(
     val metadata: Metadata,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
-    val dialoger: List<Tråd>
+    val dialogTråder: List<DialogTråd>
 )
 
 data class Metadata(
@@ -24,7 +22,7 @@ data class ArkivAktivitet(
 //    val tags: List<Tag>
 )
 
-data class Tråd(
+data class DialogTråd(
     val overskrift: String,
     val meldinger: List<Melding>,
     val egenskaper: List<String>
