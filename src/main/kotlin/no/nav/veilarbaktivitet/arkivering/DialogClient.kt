@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import no.nav.common.rest.client.RestUtils
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import okhttp3.OkHttpClient
@@ -42,7 +43,8 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val id: String,
         val aktivitetId: String?,
         val overskrift: String,
-        val oppfolgingsPeriode: UUID,
+        val oppfolgingsperiode: UUID,
+        @JsonProperty("henvendelser")
         val meldinger: List<MeldingDTO>,
         val egenskaper: List<Egenskap>
     )

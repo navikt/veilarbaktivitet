@@ -43,7 +43,7 @@ class ArkiveringsController(
         val oppfølgingsperiodeUuid = sisteOppfølgingsperiodeService.hentGjeldendeOppfolgingsperiodeMedFallback(
             Person.AktorId(aktorId.get()))
         val aktiviteterIOppfølgingsperioden = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeUuid }
-        val dialogerIOppfølgingsperioden = dialogClient.hentDialoger(fnr).filter { it.oppfolgingsPeriode == oppfølgingsperiodeUuid }
+        val dialogerIOppfølgingsperioden = dialogClient.hentDialoger(fnr).filter { it.oppfolgingsperiode == oppfølgingsperiodeUuid }
 
         val aktivitetDialoger = dialogerIOppfølgingsperioden.groupBy { it.aktivitetId }
 
