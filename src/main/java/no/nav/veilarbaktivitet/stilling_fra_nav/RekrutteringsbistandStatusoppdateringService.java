@@ -13,8 +13,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-
 import static java.util.Arrays.asList;
 
 @Service
@@ -54,7 +52,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .endretAvType(endretAv.tilInnsenderType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
-                .endretDato(new Date())
+                .endretDato(aktivitet.getEndretDato())
                 .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
@@ -76,7 +74,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                         ? AktivitetTransaksjonsType.FATT_JOBBEN
                         : AktivitetTransaksjonsType.IKKE_FATT_JOBBEN)
                 .endretAv(endretAv.get())
-                .endretDato(new Date())
+                .endretDato(aktivitet.getEndretDato())
                 .status(nyStatus)
                 .build();
     }
