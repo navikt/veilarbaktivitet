@@ -20,7 +20,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialoger(oppfolgingsPeriode: OppfolgingsPeriode, fnr: Fnr): List<TrådDTO> {
+    fun hentDialoger(fnr: Fnr): List<TrådDTO> {
         val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}"
 
         val request: Request = Request.Builder()
