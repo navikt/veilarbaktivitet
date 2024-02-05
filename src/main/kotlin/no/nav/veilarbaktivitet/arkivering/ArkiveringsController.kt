@@ -42,21 +42,24 @@ class ArkiveringsController(
         // TODO: Ikke hardkod oppfølgingsperiode
         val oppfølgingsperiodeUuid = sisteOppfølgingsperiodeService.hentGjeldendeOppfolgingsperiodeMedFallback(
             Person.AktorId(aktorId.get()))
+        val aktiviteterIOppfølgingsperioden = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeUuid }
+        val dialogerIOppfølgingsperioden = dialogClient.hentDialoger(fnr).filter { it.oppfolgingsPeriode == oppfølgingsperiodeUuid }
 
-        val dialoger = dialogClient.hentDialoger(fnr)
+        val aktivitetDialoger = dialogerIOppfølgingsperioden.groupBy { it.aktivitetId }
 
-        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
-        val aktivitetDialoger = dialoger.groupBy { it.aktivitetId }
-        val løseTråder = aktivitetDialoger[null] ?: emptyList()
+        val aktiviteterPayload = aktiviteterIOppfølgingsperioden
+            .map { it ->
+                val meldingerTilhørendeAktiviteten = aktivitetDialoger[it.oppfolgingsperiodeId.toString()]?.map {
+                    it.meldinger.map { it.tilMelding() }
+                }?.flatten() ?: emptyList()
 
-
-        val aktiviteterPayload = aktiviteter
-            .map {
                 it.toArkivPayload(
-                    meldinger = aktivitetDialoger[it.oppfolgingsperiodeId.toString()]?.firstOrNull()?.meldinger?.map { it.tilMelding() } ?: emptyList()
+                    meldinger = meldingerTilhørendeAktiviteten
                 )
             }
-        orkivarClient.arkiver(fnr, navn, aktiviteterPayload, løseTråder.map { it.tilDialogTråd() })
+
+        val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
+        orkivarClient.arkiver(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
     }
 
     fun DialogClient.DialogTrådDTO.tilDialogTråd() =
