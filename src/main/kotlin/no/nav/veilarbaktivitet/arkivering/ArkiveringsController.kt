@@ -49,7 +49,7 @@ class ArkiveringsController(
 
         val aktiviteterPayload = aktiviteterIOppfølgingsperioden
             .map { it ->
-                val meldingerTilhørendeAktiviteten = aktivitetDialoger[it.oppfolgingsperiodeId.toString()]?.map {
+                val meldingerTilhørendeAktiviteten = aktivitetDialoger[it.id.toString()]?.map {
                     it.meldinger.map { it.tilMelding() }
                 }?.flatten() ?: emptyList()
 

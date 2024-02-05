@@ -36,7 +36,6 @@ public class WireMockUtil {
         aktor(fnr, aktorId);
         nivaa4(fnr, harBruktNivaa4);
         hentPerson(fnr, navn);
-        hentDialogTråder(fnr);
         arkivering();
     }
 
@@ -212,82 +211,6 @@ public class WireMockUtil {
                               }
                             }
                             """.formatted(navn.getFornavn(), navn.getMellomnavn(), navn.getEtternavn()))));
-    }
-
-    private static void hentDialogTråder(String fnr) {
-        stubFor(get(urlEqualTo("/veilarbdialog/api/dialog?fnr=" + fnr))
-                .willReturn(aResponse().withBody("""
-                            [
-                                {
-                                    "id": "618057",
-                                    "aktivitetId": "943688",
-                                    "overskrift": "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
-                                    "sisteTekst": "Jada",
-                                    "sisteDato": "2024-02-05T13:31:22.238+00:00",
-                                    "opprettetDato": "2024-02-05T13:31:11.564+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "2024-02-05T13:31:19.382+00:00",
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "dfb70832-485a-4f1b-a1e2-6a4d2c260983",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147416",
-                                            "dialogId": "618057",
-                                            "avsender": "VEILEDER",
-                                            "avsenderId": "Z994188",
-                                            "sendt": "2024-02-05T13:31:11.588+00:00",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "wehfuiehwf\\n\\nHilsen F_994188 E_994188"
-                                        },
-                                        {
-                                            "id": "1147417",
-                                            "dialogId": "618057",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "%s",
-                                            "sendt": "2024-02-05T13:31:22.238+00:00",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jada"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                },
-                                {
-                                    "id": "618056",
-                                    "aktivitetId": null,
-                                    "overskrift": "Penger",
-                                    "sisteTekst": "Jeg trenger penger, da blir jeg ikke trist lenger!",
-                                    "sisteDato": "2024-02-05T13:29:18.635+00:00",
-                                    "opprettetDato": "2024-02-05T13:29:18.616+00:00",
-                                    "historisk": false,
-                                    "lest": true,
-                                    "venterPaSvar": false,
-                                    "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": null,
-                                    "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "dfb70832-485a-4f1b-a1e2-6a4d2c260983",
-                                    "henvendelser": [
-                                        {
-                                            "id": "1147415",
-                                            "dialogId": "618056",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "%s",
-                                            "sendt": "2024-02-05T13:29:18.635+00:00",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jeg trenger penger, da blir jeg ikke trist lenger!"
-                                        }
-                                    ],
-                                    "egenskaper": []
-                                }
-                            ]
-                        """.formatted(fnr, fnr)
-                ))
-        );
     }
 
     private static void arkivering() {
