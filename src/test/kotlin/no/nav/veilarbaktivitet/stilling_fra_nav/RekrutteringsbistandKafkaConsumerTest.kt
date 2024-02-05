@@ -96,9 +96,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 .isNotEqualTo(tidspunkt)
             assertions.assertThat(aktivitetData_etter.versjon.toInt()).isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
+            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(tidspunkt)
             assertions.assertThat(aktivitetData_etter.endretAvType).isEqualTo(Innsender.NAV.name)
-            assertions.assertThat(aktivitetData_etter.status)
-                .isSameAs(aktivitetData_for.status)
+            assertions.assertThat(aktivitetData_etter.status).isSameAs(aktivitetData_for.status)
             assertions.assertThat(aktivitetData_etter.stillingFraNavData).isNotNull()
             assertions.assertThat(aktivitetData_etter.stillingFraNavData.getSoknadsstatus())
                 .isSameAs(Soknadsstatus.CV_DELT)
@@ -118,7 +118,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
 
     @Test
     @Throws(Exception::class)
-    fun behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv() {
+    fun behandle_ikke_fatt_jobben_uten_svar_om_deling_av_cv_skal_ikke_oppdatere_aktivitet_men_oppdatere_metrikk() {
         val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
         val detaljer = """
                 Vi har sett nærmere på CV-en din, dessverre passer ikke kompetansen din helt med behovene til arbeidsgiveren.
@@ -148,12 +148,13 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         val aktivitetData_for = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
         // Rekrutterings bistand sender fatt-jobben
         val detaljer = """KANDIDATLISTE_LUKKET""".trimIndent()
+        val nesteTidspunkt = tidspunkt.plusMinutes(2)
         aktivitetTestService.mottaOppdateringFraRekrutteringsbistand(
             bestillingsId,
             detaljer,
             RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN,
             navIdent,
-            tidspunkt
+            nesteTidspunkt
         )
         // Sjekk forventet tilstand
         val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
@@ -161,6 +162,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
           assertions.assertThat(aktivitetData_etter.versjon.toInt()).`as`("Forventer ny versjon av aktivitet")
                 .isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
+            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(nesteTidspunkt)
             assertions.assertThat(aktivitetData_etter.endretAvType).isEqualTo(Innsender.NAV.name)
             assertions.assertThat(aktivitetData_etter.status).isSameAs(AktivitetStatus.FULLFORT)
             assertions.assertThat(aktivitetData_etter.stillingFraNavData).isNotNull()
