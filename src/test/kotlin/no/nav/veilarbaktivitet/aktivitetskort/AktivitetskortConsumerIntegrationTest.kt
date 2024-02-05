@@ -308,10 +308,11 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun duplikat_melding_bare_1_opprettet_transaksjon() {
-        val funksjonellId = UUID.randomUUID()
-        val aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        // Given- 1 aktivitet
+        val aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val context = arenaMeldingHeaders(mockBruker)
+        // When - Sendt 2 ganger
         val producerRecord =
             aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context) as ProducerRecord<String, String>
         producerClient!!.sendSync(producerRecord)
@@ -321,8 +322,9 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             NavCommonKafkaConfig.CONSUMER_GROUP_ID,
             recordMetadataDuplicate.offset()
         )
+        // Then - Skal bare finnes 1 transaksjon
         val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
-            .filter { a: AktivitetDTO -> a.funksjonellId == funksjonellId }
+            .filter { a: AktivitetDTO -> a.funksjonellId == aktivitetskort.id }
             .toList()
         assertEquals(1, aktiviteter.size)
         assertEquals(

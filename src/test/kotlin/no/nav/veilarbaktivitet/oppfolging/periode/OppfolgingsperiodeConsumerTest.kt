@@ -102,7 +102,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
 
     @Test
     @Throws(ExecutionException::class, InterruptedException::class)
-    fun skal_avslutte_aktiviteter_for() {
+    fun skal_sette_aktiviteteter_til_hitorisk_naar_oppfolging_avsluttes() {
         val brukerUteAvOppfolging = MockNavService.createHappyBruker()
         val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
         val skalBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
@@ -119,6 +119,9 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
             .build()
         val sendResult = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
+        // Send 2 ganger for å teste idempotens
+        val sendResult2 = producer.send(oppfolgingSistePeriodeTopic, JsonUtils.toJson(avsluttOppfolging)).get()
+        kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult2.recordMetadata.offset())
 
         val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(brukerUteAvOppfolging).aktiviteter
         val skalVaereHistoriskVersioner = aktivitetTestService.hentVersjoner(skalBliHistorisk.id, brukerUteAvOppfolging, brukerUteAvOppfolging)
