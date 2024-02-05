@@ -20,7 +20,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialoger(oppfolgingsPeriode: OppfolgingsPeriode, fnr: Fnr): List<DialogDTO> {
+    fun hentDialoger(oppfolgingsPeriode: OppfolgingsPeriode, fnr: Fnr): List<TrådDTO> {
         val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}"
 
         val request: Request = Request.Builder()
@@ -32,23 +32,23 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
 
         return try {
             val response = dialogHttpClient.newCall(request).execute()
-            RestUtils.parseJsonResponseArrayOrThrow(response, DialogDTO::class.java)
+            RestUtils.parseJsonResponseArrayOrThrow(response, TrådDTO::class.java)
         } catch (e: Exception) {
             log.error("Feil ved henting av dialoger fra veilarbdialog", e)
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved henting av dialoger")
         }
     }
 
-    data class DialogDTO(
+    data class TrådDTO(
         val id: String,
-        val aktivitetId: String,
+        val aktivitetId: String?,
         val overskrift: String,
         val oppfolgingsPeriode: UUID,
-        val henvendelser: List<HenvendelseDTO>,
+        val meldinger: List<MeldingDTO>,
         val egenskaper: List<Egenskap>
     )
 
-    data class HenvendelseDTO(
+    data class MeldingDTO(
         val id: String,
         val dialogId: String,
         val avsender: Avsender,
@@ -61,7 +61,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
 
     enum class Egenskap {
         ESKALERINGSVARSEL,
-        PARAGRAF8
+        PARAGRAF8 // forhåndsorientering, e-forvaltningsforskriften 8, ikke i bruk i veilarbdialog
     }
 
     enum class Avsender {
