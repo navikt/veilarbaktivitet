@@ -3,7 +3,8 @@ package no.nav.veilarbaktivitet.arkivering
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
-import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
+import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
+import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
@@ -61,22 +62,5 @@ class ArkiveringsController(
         val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
         orkivarClient.arkiver(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
     }
-
-    fun DialogClient.DialogTrådDTO.tilDialogTråd() =
-        DialogTråd(
-            overskrift = overskrift,
-            egenskaper = egenskaper.map { it.toString() },
-            meldinger =  meldinger.map { it.tilMelding()
-            }
-        )
-
-    fun DialogClient.MeldingDTO.tilMelding() =
-        Melding(
-            avsender = avsender.toString(), // TODO: Gjør mapping annet sted og slå sammen ident hvis veileder
-            sendt = sendt.norskDato(), // TODO: Klokkeslett også
-            lest = lest,
-            viktig = viktig,
-            tekst = tekst
-        )
 }
 

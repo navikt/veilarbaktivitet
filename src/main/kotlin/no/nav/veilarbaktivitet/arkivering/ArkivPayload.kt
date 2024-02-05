@@ -53,3 +53,5 @@ data class Detalj(
 //    val tekst: String,
 //    val type: String
 //)
+
+

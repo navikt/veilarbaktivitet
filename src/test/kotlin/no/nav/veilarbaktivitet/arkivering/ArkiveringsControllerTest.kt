@@ -85,13 +85,13 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "05 februar 2024",
+                            "sendt" : "05 februar 2024 kl. 02:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }, {
                             "avsender" : "BRUKER",
-                            "sendt" : "05 februar 2024",
+                            "sendt" : "05 februar 2024 kl. 02:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "Jada"
@@ -133,10 +133,10 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "05 februar 2024",
+                          "sendt" : "05 februar 2024 kl. 02:29",
                           "lest" : true,
                           "viktig" : false,
-                          "tekst" : "Jeg trenger penger, da blir jeg ikke trist lenger!"
+                          "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
                         "egenskaper" : [ ]
                       } ]
@@ -198,7 +198,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                     "id": "618056",
                                     "aktivitetId": null,
                                     "overskrift": "Penger",
-                                    "sisteTekst": "Jeg trenger penger, da blir jeg ikke trist lenger!",
+                                    "sisteTekst": "Jeg liker NAV. NAV er snille!",
                                     "sisteDato": "2024-02-05T13:29:18.635+00:00",
                                     "opprettetDato": "2024-02-05T13:29:18.616+00:00",
                                     "historisk": false,
@@ -217,7 +217,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                             "sendt": "2024-02-05T13:29:18.635+00:00",
                                             "lest": true,
                                             "viktig": false,
-                                            "tekst": "Jeg trenger penger, da blir jeg ikke trist lenger!"
+                                            "tekst": "Jeg liker NAV. NAV er snille!"
                                         }
                                     ],
                                     "egenskaper": []
