@@ -85,13 +85,13 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "05 februar 2024 kl. 02:31",
+                            "sendt" : "05 februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf<br/><br/>Hilsen F_994188 E_994188"
                           }, {
                             "avsender" : "BRUKER",
-                            "sendt" : "05 februar 2024 kl. 02:31",
+                            "sendt" : "05 februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "Jada"
@@ -133,7 +133,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "05 februar 2024 kl. 02:29",
+                          "sendt" : "05 februar 2024 kl. 14:29",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"

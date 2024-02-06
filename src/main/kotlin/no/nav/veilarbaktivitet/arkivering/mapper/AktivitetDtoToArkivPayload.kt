@@ -85,12 +85,12 @@ fun AktivitetData.beregnVarighet(): String {
 
 fun Date?.klokkeslett(): String {
     return this?.let {
-        dateToZonedDateTime(it).format(klokkeslettFormat)
+        dateToZonedDateTime(it).format(DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no")))
     } ?: ""
 }
 
 fun Date?.norskDato() = this?.let {
-    dateToZonedDateTime(it).format(datoFormat)
+    dateToZonedDateTime(it).format(DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no")))
 } ?: ""
 
 fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetData
@@ -186,9 +186,6 @@ fun AktivitetData.toSamtalereferatDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
     Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlEscape()),
 )
-
-private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
-private val klokkeslettFormat = DateTimeFormatter.ofPattern("hh:mm", Locale.forLanguageTag("no"))
 
 fun StillingFraNavData.getStillingLenke(): String {
     return when (isProduction().orElse(false)) {
