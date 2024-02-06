@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.fail
 import org.assertj.core.api.SoftAssertions
@@ -91,12 +92,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
         )
         val aktivitetData_etter = aktivitetTestService.hentAktivitet(mockBruker, veileder, aktivitetDTO!!.id)
         SoftAssertions.assertSoftly { assertions: SoftAssertions ->
-            assertions.assertThat(aktivitetData_etter.endretDato)
-                .`as`("Tidspunkt for endring settes til det tidspunktet aktiviteten ble oppdatert, ikke til tidspunktet i Kafka-meldingen")
-                .isNotEqualTo(tidspunkt)
             assertions.assertThat(aktivitetData_etter.versjon.toInt()).isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
-            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(tidspunkt)
+            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(DateUtils.zonedDateTimeToDate(tidspunkt))
             assertions.assertThat(aktivitetData_etter.endretAvType).isEqualTo(Innsender.NAV.name)
             assertions.assertThat(aktivitetData_etter.status).isSameAs(aktivitetData_for.status)
             assertions.assertThat(aktivitetData_etter.stillingFraNavData).isNotNull()
@@ -162,7 +160,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
           assertions.assertThat(aktivitetData_etter.versjon.toInt()).`as`("Forventer ny versjon av aktivitet")
                 .isGreaterThan(aktivitetData_for.versjon.toInt())
             assertions.assertThat(aktivitetData_etter.endretAv).isEqualTo(navIdent)
-            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(nesteTidspunkt)
+            assertions.assertThat(aktivitetData_etter.endretDato).isEqualTo(DateUtils.zonedDateTimeToDate(nesteTidspunkt))
             assertions.assertThat(aktivitetData_etter.endretAvType).isEqualTo(Innsender.NAV.name)
             assertions.assertThat(aktivitetData_etter.status).isSameAs(AktivitetStatus.FULLFORT)
             assertions.assertThat(aktivitetData_etter.stillingFraNavData).isNotNull()

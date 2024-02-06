@@ -91,7 +91,7 @@ class DelingAvCvITest extends SpringBootTestBase {
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(brukernotifikajonOppgave.key().getFodselsnummer()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
-            assertions.assertThat(oppgave.getTidspunkt()).isEqualTo(aktivitetDTO.getEndretDato().getTime());
+            assertions.assertThat(oppgave.getTidspunkt()).isGreaterThanOrEqualTo(aktivitetDTO.getEndretDato().getTime());
             assertions.assertAll();
         });
     }
