@@ -311,10 +311,11 @@ public class AktivitetService {
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(UUID oppfolingsperiode, ZonedDateTime sluttDato) {
+    public void settAktiviteterTilHistoriske(UUID oppfolgingsperiodeId, ZonedDateTime sluttDato) {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
-        aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
+        aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId)
                 .stream()
+                .filter(it -> it.getHistoriskDato() == null)
                 .map(aktivitet -> aktivitet
                         .withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK)
                         .withHistoriskDato(sluttDatoDate)
