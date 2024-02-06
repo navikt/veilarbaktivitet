@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
-import io.micrometer.core.instrument.util.StringEscapeUtils
 import no.nav.veilarbaktivitet.arkivering.DialogClient
 import no.nav.veilarbaktivitet.arkivering.DialogTråd
 import no.nav.veilarbaktivitet.arkivering.Melding
@@ -19,10 +18,9 @@ fun DialogClient.MeldingDTO.tilMelding() =
         sendt = "${sendt.norskDato()} kl. ${sendt.klokkeslett()}",
         lest = lest,
         viktig = viktig,
-        tekst = tekst.htmlEscape()
+        tekst = tekst.htmlLinjeskift()
     )
 
 
-fun String.htmlEscape(): String =
+fun String.htmlLinjeskift(): String =
     replace("\n", "<br/>")
-        .let { StringEscapeUtils.escapeJson(it) }

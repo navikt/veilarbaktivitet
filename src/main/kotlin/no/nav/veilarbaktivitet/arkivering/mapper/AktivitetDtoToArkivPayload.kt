@@ -12,7 +12,6 @@ import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
 import java.time.Duration
-import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -119,7 +118,7 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlEscape()),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlLinjeskift()),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
@@ -184,7 +183,7 @@ fun AktivitetData.toEksternAktivitetDetaljer() = listOf(
 fun AktivitetData.toSamtalereferatDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.norskDato()),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlEscape()),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlLinjeskift()),
 )
 
 fun StillingFraNavData.getStillingLenke(): String {
