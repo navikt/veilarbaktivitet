@@ -119,7 +119,7 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlEscape()),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
@@ -184,7 +184,7 @@ fun AktivitetData.toEksternAktivitetDetaljer() = listOf(
 fun AktivitetData.toSamtalereferatDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.norskDato()),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat?.htmlEscape()),
 )
 
 private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
