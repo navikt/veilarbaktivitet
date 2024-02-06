@@ -52,6 +52,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                 .endretAvType(endretAv.tilInnsenderType())
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
+                .endretDato(aktivitet.getEndretDato())
                 .endretAv(endretAv.get())
                 .build();
         aktivitetDAO.oppdaterAktivitet(nyAktivitet);
@@ -73,6 +74,7 @@ public class RekrutteringsbistandStatusoppdateringService {
                         ? AktivitetTransaksjonsType.FATT_JOBBEN
                         : AktivitetTransaksjonsType.IKKE_FATT_JOBBEN)
                 .endretAv(endretAv.get())
+                .endretDato(aktivitet.getEndretDato())
                 .status(nyStatus)
                 .build();
     }
