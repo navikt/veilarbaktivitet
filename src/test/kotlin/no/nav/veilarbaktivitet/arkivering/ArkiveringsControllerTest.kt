@@ -14,10 +14,8 @@ import java.util.*
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
-
     @Test
     fun `Når man arkiverer skal man samle inn data og sende til orkivar`() {
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering"
         val navn = Navn("Sølvi", null, "Normalbakke")
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
@@ -34,7 +32,10 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         jobbAktivitetAvbrutt.status = AktivitetStatus.AVBRUTT
         aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = sisteOppfølgingsperiode.oppfolgingsperiode.toString(), aktivitetId = opprettetJobbAktivitet.id)
+        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiode.toString()
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
         veileder
             .createRequest(bruker)
@@ -143,6 +144,21 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                     }
                 """.trimIndent())
             ))
+    }
+
+    @Test
+    fun `Kall mot arkiveringsendepunkt kaster 400 når oppfølgingsperiodeId mangler`() {
+        val bruker = navMockService.createHappyBruker()
+        val veileder = navMockService.createVeileder(bruker)
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering"
+
+        veileder
+            .createRequest(bruker)
+            .post(arkiveringsUrl)
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.BAD_REQUEST.value())
     }
 
     private fun stubDialogTråder(fnr: String, oppfølgingsperiode: String, aktivitetId: String) {
