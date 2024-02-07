@@ -18,9 +18,5 @@ fun DialogClient.MeldingDTO.tilMelding() =
         sendt = "${sendt.norskDato()} kl. ${sendt.klokkeslett()}",
         lest = lest,
         viktig = viktig,
-        tekst = tekst.htmlLinjeskift()
+        tekst = tekst
     )
-
-
-fun String.htmlLinjeskift(): String =
-    replace("\n", "<br/>")

@@ -89,7 +89,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                             "sendt" : "05 februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
-                            "tekst" : "wehfuiehwf<br/><br/>Hilsen F_994188 E_994188"
+                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }, {
                             "avsender" : "BRUKER",
                             "sendt" : "05 februar 2024 kl. 14:31",
