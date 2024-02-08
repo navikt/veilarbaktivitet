@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import java.util.*
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
