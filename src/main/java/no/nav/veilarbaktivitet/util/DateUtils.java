@@ -68,11 +68,12 @@ public class DateUtils {
 
     public static LocalDateTime dateToLocalDateTime(Date date) {
         if (date == null) return null;
-        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime dateToZonedDateTime(Date date) {
         if (date == null) return null;
-        return dateToLocalDateTime(date).atZone(ZoneId.of("Europe/Oslo"));
+        return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
+
 }
