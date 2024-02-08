@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
+import java.time.ZonedDateTime
 import java.util.*
 
 @Service
@@ -54,7 +55,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val dialogId: String,
         val avsender: Avsender,
         val avsenderId: String,
-        val sendt: Date,
+        val sendt: ZonedDateTime,
         val lest: Boolean,
         val viktig: Boolean,
         val tekst: String,

@@ -75,5 +75,4 @@ public class DateUtils {
         if (date == null) return null;
         return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
-
 }

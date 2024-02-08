@@ -12,6 +12,8 @@ import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
 import java.time.Duration
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -81,16 +83,6 @@ fun AktivitetData.beregnVarighet(): String {
     }
     return listOfNotNull(timeString, minutterString).joinToString(", ")
 }
-
-fun Date?.klokkeslett(): String {
-    return this?.let {
-        dateToZonedDateTime(it).format(DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no")))
-    } ?: ""
-}
-
-fun Date?.norskDato() = this?.let {
-    dateToZonedDateTime(it).format(DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no")))
-} ?: ""
 
 fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetData
     ?.detaljer
@@ -192,3 +184,24 @@ fun StillingFraNavData.getStillingLenke(): String {
         false -> "https://vis-stilling.intern.dev.nav.no/arbeid/stilling/${this.stillingsId}"
     }
 }
+
+fun Date?.klokkeslett(): String {
+    return this?.let {
+        dateToZonedDateTime(it).format(norskKlokkeslettformat)
+    } ?: ""
+}
+
+fun ZonedDateTime.klokkeslett(): String =
+    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
+        .format(norskKlokkeslettformat)
+
+fun Date?.norskDato() = this?.let {
+    dateToZonedDateTime(it).format(norskDatoformat)
+} ?: ""
+
+fun ZonedDateTime.norskDato(): String =
+    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
+        .format(norskDatoformat)
+
+private val norskDatoformat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
+private val norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"))
