@@ -172,8 +172,8 @@ definitions:
         type: string
         format: date-time
         examples:
-          - '2022-09-17T21:00:14'
-        description: Dato-tid for opprettelse eller endring i kildesystemet
+          - '2022-09-17T21:00:14+01:00'
+        description: Dato-tid for opprettelse eller endring i kildesystemet i ISO8601 format (ZonedDateTime). Vær oppmerksom på at dersom du ikke oppgir sone, vil tidspunktet bli tolket som vår lokale tidssone, altså Europe/Oslo
       avtaltMedNav:
         type: boolean
         description: Hvorvidt aktiviteten skal bli markert som 'Avtalt med NAV'. Dette
