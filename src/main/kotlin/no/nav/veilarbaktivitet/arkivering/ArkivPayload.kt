@@ -4,7 +4,8 @@ typealias ArkivAktivitetStatus = String
 
 data class ArkivPayload(
     val metadata: Metadata,
-    val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>
+    val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
+    val dialogtråder: List<ArkivDialogtråd>
 )
 
 data class Metadata(
@@ -17,7 +18,22 @@ data class ArkivAktivitet(
     val type: String,
     val status: String,
     val detaljer: List<Detalj>,
+    val meldinger: List<Melding>,
 //    val tags: List<Tag>
+)
+
+data class ArkivDialogtråd(
+    val overskrift: String,
+    val meldinger: List<Melding>,
+    val egenskaper: List<String>
+)
+
+data class Melding(
+    val avsender: String,
+    val sendt: String,
+    val lest: Boolean,
+    val viktig: Boolean,
+    val tekst: String,
 )
 
 enum class Stil {
@@ -37,3 +53,5 @@ data class Detalj(
 //    val tekst: String,
 //    val type: String
 //)
+
+

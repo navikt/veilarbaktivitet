@@ -99,3 +99,5 @@ spec:
       value: "2017-12-04"
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.nav.no"
+    - name: VEILARBDIALOG_URL
+      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog

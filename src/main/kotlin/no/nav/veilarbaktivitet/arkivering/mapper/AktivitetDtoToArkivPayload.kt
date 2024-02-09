@@ -7,20 +7,23 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
+import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
 import java.time.Duration
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun AktivitetData.toArkivPayload(): ArkivAktivitet {
+fun AktivitetData.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet {
     return ArkivAktivitet(
         tittel = this.tittel,
         type = this.toArkivTypeTekst(),
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
+        meldinger = meldinger
 //        tags = emptyList()
     )
 }
@@ -81,16 +84,6 @@ fun AktivitetData.beregnVarighet(): String {
     return listOfNotNull(timeString, minutterString).joinToString(", ")
 }
 
-fun Date?.klokkeslett(): String {
-    return this?.let {
-        dateToZonedDateTime(it).format(klokkeslettFormat)
-    } ?: ""
-}
-
-fun Date?.norskDato() = this?.let {
-    dateToZonedDateTime(it).format(datoFormat)
-} ?: ""
-
 fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetData
     ?.detaljer
     ?.map { Detalj(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
@@ -117,7 +110,7 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
@@ -182,11 +175,8 @@ fun AktivitetData.toEksternAktivitetDetaljer() = listOf(
 fun AktivitetData.toSamtalereferatDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.norskDato()),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil = HEL_LINJE, tittel = "Samtalereferat", tekst = moteData?.referat),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat),
 )
-
-private val datoFormat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
-private val klokkeslettFormat = DateTimeFormatter.ofPattern("hh:mm", Locale.forLanguageTag("no"))
 
 fun StillingFraNavData.getStillingLenke(): String {
     return when (isProduction().orElse(false)) {
@@ -194,3 +184,24 @@ fun StillingFraNavData.getStillingLenke(): String {
         false -> "https://vis-stilling.intern.dev.nav.no/arbeid/stilling/${this.stillingsId}"
     }
 }
+
+fun Date?.klokkeslett(): String {
+    return this?.let {
+        dateToZonedDateTime(it).format(norskKlokkeslettformat)
+    } ?: ""
+}
+
+fun ZonedDateTime.klokkeslett(): String =
+    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
+        .format(norskKlokkeslettformat)
+
+fun Date?.norskDato() = this?.let {
+    dateToZonedDateTime(it).format(norskDatoformat)
+} ?: ""
+
+fun ZonedDateTime.norskDato(): String =
+    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
+        .format(norskDatoformat)
+
+private val norskDatoformat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
+private val norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"))
