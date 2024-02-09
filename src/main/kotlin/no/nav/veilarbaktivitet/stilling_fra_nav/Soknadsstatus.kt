@@ -1,6 +1,6 @@
-package no.nav.veilarbaktivitet.stilling_fra_nav;
+package no.nav.veilarbaktivitet.stilling_fra_nav
 
-public enum Soknadsstatus {
+enum class Soknadsstatus {
     VENTER,
     CV_DELT,
     SKAL_PAA_INTERVJU,
