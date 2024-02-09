@@ -60,9 +60,9 @@ internal class AktivitetsbestillingCreatorTest {
         val consumerRecord = ConsumerRecord("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json)
         val aktivitetskortBestilling =
             aktivitetsbestillingCreator!!.lagBestilling(consumerRecord, UUID.randomUUID()) as AktivitetskortBestilling
-        val expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("UTC"))
+        val expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 99000000, ZoneId.of("UTC"))
         assertThat(aktivitetskortBestilling.aktivitetskort.endretTidspunkt)
-            .isCloseTo(expected, within(100, ChronoUnit.MILLIS))
+            .isCloseTo(expected, within(1, ChronoUnit.MILLIS))
     }
 
     @Test
@@ -97,9 +97,9 @@ internal class AktivitetsbestillingCreatorTest {
         val consumerRecord = ConsumerRecord("topic", 0, 0, "56155242-6481-43b5-9eac-4d7af695bf9d", json)
         val aktivitetskortBestilling =
             aktivitetsbestillingCreator!!.lagBestilling(consumerRecord, UUID.randomUUID()) as AktivitetskortBestilling
-        val expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 0, ZoneId.of("UTC"))
+        val expected = ZonedDateTime.of(2022, 10, 19, 11, 0, 0, 99000000, ZoneId.of("UTC"))
         assertThat(aktivitetskortBestilling.aktivitetskort.endretTidspunkt)
-            .isCloseTo(expected, within(100, ChronoUnit.MILLIS))
+            .isCloseTo(expected, within(1, ChronoUnit.MILLIS))
     }
 
     @Test
@@ -111,8 +111,7 @@ internal class AktivitetsbestillingCreatorTest {
             aktivitetsbestillingCreator!!.lagBestilling(consumerRecord, UUID.randomUUID()) as AktivitetskortBestilling
         val expected = ZonedDateTime.of(2022, 10, 19, 12, 0, 0, 0, ZoneId.of("Europe/Oslo"))
         val endretTidspunkt = aktivitetskortBestilling.aktivitetskort.endretTidspunkt
-        assertThat(endretTidspunkt)
-            .isCloseTo(expected, within(100, ChronoUnit.MILLIS))
+        assertThat(endretTidspunkt).isCloseTo(expected, within(1, ChronoUnit.MILLIS))
     }
 
     @Test
