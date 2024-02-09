@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
+
 typealias ArkivAktivitetStatus = String
 
 data class ArkivPayload(
@@ -19,7 +21,7 @@ data class ArkivAktivitet(
     val status: String,
     val detaljer: List<Detalj>,
     val meldinger: List<Melding>,
-//    val tags: List<Tag>
+    val etiketter: List<ArkivEtikett>
 )
 
 data class ArkivDialogtråd(

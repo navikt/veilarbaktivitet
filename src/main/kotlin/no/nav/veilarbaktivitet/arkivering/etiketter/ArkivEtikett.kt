@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering.etiketter
 
-import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Sentiment
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
