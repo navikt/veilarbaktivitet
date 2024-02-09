@@ -130,7 +130,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                           "meldinger" : [ ]
                         } ]
                       },
-                      "dialogTråder" : [ {
+                      "dialogtråder" : [ {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
