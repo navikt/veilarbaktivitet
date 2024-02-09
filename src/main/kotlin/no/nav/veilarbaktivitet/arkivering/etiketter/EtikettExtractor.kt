@@ -27,6 +27,7 @@ fun AktivitetData.getArkivEtiketter(): List<ArkivEtikett> {
     ).flatten()
 }
 
+// TODO: Arena etiketter kan lages når man arena-aktiviteter er inkludert i jounalførte aktiviteter
 //    public static List<FilterTag> getFilterTags(ArenaAktivitetDTO aktivitet) {
 //        return Filters.listOf(
 //            Filters.of("status", aktivitet.getStatus().toString()),
