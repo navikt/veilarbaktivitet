@@ -50,6 +50,6 @@ class ArkiveringsController(
             }
 
         val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
-        return orkivarClient.arkiver(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
+        return orkivarClient.hentPdfForForhaandsvisning(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
     }
 }

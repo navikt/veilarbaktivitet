@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.common.json.JsonUtils
 import no.nav.common.rest.client.RestUtils
-import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO
 import no.nav.veilarbaktivitet.person.Person
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
@@ -11,8 +10,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
@@ -20,13 +17,13 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
-    fun arkiver(
+    fun hentPdfForForhaandsvisning(
         fnr: Person.Fnr,
         navn: String,
         aktiviteterPayload: List<ArkivAktivitet>,
         dialogTråder: List<ArkivDialogtråd>
     ): ForhaandsvisningResult {
-        val uri = String.format("%s/arkiver", orkivarUrl)
+        val uri = String.format("%s/forhaandsvisning", orkivarUrl)
         val payload = JsonUtils.toJson(
             ArkivPayload(
                 metadata = Metadata(navn, fnr.get()),
