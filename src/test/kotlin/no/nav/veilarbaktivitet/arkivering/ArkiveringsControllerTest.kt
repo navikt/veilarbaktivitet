@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
-import java.util.*
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
@@ -96,7 +95,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "Jada"
-                          } ]
+                          } ],
+                          "etiketter": []
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -127,7 +127,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
-                          "meldinger" : [ ]
+                          "meldinger" : [ ],
+                          "etiketter": []
                         } ]
                       },
                       "dialogtråder" : [ {

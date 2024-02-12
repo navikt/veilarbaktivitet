@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
+import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
 import java.time.Duration
@@ -23,8 +24,8 @@ fun AktivitetData.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet {
         type = this.toArkivTypeTekst(),
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
-        meldinger = meldinger
-//        tags = emptyList()
+        meldinger = meldinger,
+        etiketter = this.getArkivEtiketter()
     )
 }
 
