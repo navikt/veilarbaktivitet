@@ -14,7 +14,7 @@ import org.springframework.http.HttpStatus
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
     @Test
-    fun `Når man arkiverer skal man samle inn data og sende til orkivar`() {
+    fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
         val navn = Navn("Sølvi", null, "Normalbakke")
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
@@ -34,7 +34,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiode.toString()
         stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
         veileder
             .createRequest(bruker)
@@ -42,9 +42,12 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
+            .extract()
+            .response()
+            .`as`(OrkivarClient.ForhaandsvisningResult::class.java);
 
         verify(
-            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
+            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
             .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
             .withRequestBody(
                 equalToJson("""
@@ -152,7 +155,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val bruker = navMockService.createHappyBruker()
         val veileder = navMockService.createVeileder(bruker)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering"
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
 
         veileder
             .createRequest(bruker)
