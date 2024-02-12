@@ -24,9 +24,9 @@ class ArkiveringsController(
     private val navnService: EksternNavnService,
     private val appService: AktivitetAppService
 ) {
-    @PostMapping
+    @PostMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "arkivere aktivitetsplan og dialog")
-    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID) {
+    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): OrkivarClient.ForhaandsvisningResult {
         val fnr = userInContext.fnr.get()
         val result = navnService.hentNavn(fnr)
         if(result.errors?.isNotEmpty() == true) { throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR) }
@@ -50,6 +50,6 @@ class ArkiveringsController(
             }
 
         val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
-        orkivarClient.arkiver(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
+        return orkivarClient.arkiver(fnr, navn, aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
     }
 }
