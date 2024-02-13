@@ -117,6 +117,7 @@ class AktivitetskortService(
         if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
         if (gammelAktivitet.historiskDato != null) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
         if (gammelAktivitet.isAvtalt && !nyAktivitet.isAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
+        if (nyAktivitet.endretDato == null || nyAktivitet.opprettetDato == null) throw UlovligEndringFeil("Aktivitet må ha endretDato og opprettetDato")
         return gammelAktivitet
             .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }
             .let { aktivitet: AktivitetData -> oppdaterDetaljer(aktivitet, nyAktivitet) }

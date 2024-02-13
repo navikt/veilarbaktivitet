@@ -8,6 +8,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import java.time.LocalDateTime
+import java.time.ZonedDateTime
 
 data class EksternAktivitetData(
     val source: String? = null,
@@ -22,5 +23,6 @@ data class EksternAktivitetData(
     @Singular("detalj")
     val detaljer: List<Attributt>? = null,
     @Singular("etikett")
-    val etiketter: List<Etikett>? = null
+    val etiketter: List<Etikett>? = null,
+    val endretTidspunkt: ZonedDateTime
 ) {}

@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
@@ -128,7 +127,7 @@ class ArenaAktivitetskortService (
     ): AktivitetData {
         val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
         val oppfolgingsperiode = bestilling.oppfolgingsperiode
-        val aktivitetsData = bestilling.toAktivitet(
+        val aktivitetsData = bestilling.toAktivitetsDataInsert(
             opprettetDato,
             bestilling.oppfolgingsperiodeSlutt
         )

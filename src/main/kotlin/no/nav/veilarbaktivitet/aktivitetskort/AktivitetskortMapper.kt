@@ -32,7 +32,6 @@ object AktivitetskortMapper {
         }
     }
 
-    @JvmStatic
     fun AktivitetskortBestilling.toAktivitetsDataInsert(
         opprettet: ZonedDateTime,
         historiskTidspunkt: ZonedDateTime?
@@ -40,13 +39,12 @@ object AktivitetskortMapper {
         return this.toAktivitet(opprettet, historiskTidspunkt)
     }
 
-    @JvmStatic
     fun AktivitetskortBestilling.toAktivitetsDataUpdate(): AktivitetData {
         return this.toAktivitet(null, null)
     }
 
 
-    fun AktivitetskortBestilling.toAktivitet(
+    private fun AktivitetskortBestilling.toAktivitet(
         opprettetDato: ZonedDateTime?,
         historiskTidspunkt: ZonedDateTime?
     ): AktivitetData {
@@ -63,7 +61,8 @@ object AktivitetskortMapper {
                 etiketter
             ).orElse(listOf()),
             opprettetSomHistorisk = historiskTidspunkt != null,
-            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime()
+            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime(),
+            endretTidspunkt = endretTidspunkt
         )
 
         return AktivitetData.builder()
@@ -76,10 +75,10 @@ object AktivitetskortMapper {
             .beskrivelse(beskrivelse)
             .status(aktivitetStatus.toAktivitetStatus())
             .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
-            .endretAv(endretAv!!.ident)
+            .endretAv(endretAv.ident)
             .endretAvType(endretAv.identType.toInnsender())
             .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
-            .endretDato(DateUtils.zonedDateTimeToDate(endretTidspunkt))
+            .endretDato(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()))
             .eksternAktivitetData(eksternAktivitetData)
             .build()
     }
