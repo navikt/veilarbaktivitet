@@ -905,7 +905,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `skal lage flere versjoner av acl-aktiviteter som ikker er tatt over`() {
+    fun `skal lage flere versjoner av acl-aktiviteter som ikke er er tatt over`() {
         // Areneaktivitet med FHO før migrering
         val arenaaktivitetId = ArenaId("TA31212")
         val arenaAktivitetDTO =

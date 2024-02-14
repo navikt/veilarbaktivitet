@@ -8,10 +8,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataUpdate
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
-import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
@@ -33,40 +31,24 @@ class ArenaAktivitetskortService (
         // Opprett via AktivitetService
         val aktivitetsData = bestilling.toAktivitetsDataInsert()
         val opprettetAktivitetsData = aktivitetService.opprettAktivitet(aktivitetsData)
+        val idMapping = bestilling.idMapping(opprettetAktivitetsData.id)
 
         // Gjør arena-spesifikk migrering hvis ikke migrert allerede
-        val aktivitetIder = idMappingDAO.getAktivitetIder(bestilling.eksternReferanseId)
-        val erMigrertAllerede = aktivitetIder.map { it.funksjonellId }.contains(bestilling.aktivitetskort.id)
-        when {
-            erMigrertAllerede -> {}
-            aktivitetIder.isEmpty() -> {
-                arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
-            }
-            else -> {
-                // Aktivitet er migret men legger til splitt-kort i id-mapping
-                val idMapping = IdMapping(
-                    bestilling.eksternReferanseId,
-                    opprettetAktivitetsData.id,
-                    bestilling.aktivitetskort.id,
-                )
-                idMappingDAO.insert(idMapping)
-            }
+        when (bestilling.finnOpprettelseType()) {
+            OpprettelseType.ER_MIGRERT -> {}
+            OpprettelseType.IKKE_MIGRERT -> arenaspesifikkMigrering(opprettetAktivitetsData, idMapping)
+            // Aktivitet er migret men legger til splitt-kort i id-mapping
+            OpprettelseType.ER_MIGRERT_NY_PERIODE_SPLITT -> idMappingDAO.insert(idMapping)
         }
         return opprettetAktivitetsData
     }
 
     private fun arenaspesifikkMigrering(
-        aktivitetskort: Aktivitetskort,
         opprettetAktivitet: AktivitetData,
-        arenaId: ArenaId
+        idMapping: IdMapping,
     ) {
-        val idMapping = IdMapping(
-            arenaId,
-            opprettetAktivitet.getId(),
-            aktivitetskort.id,
-        )
         idMappingDAO.insert(idMapping)
-        forhaandsorienteringDAO.getFhoForArenaAktivitet(arenaId)
+        forhaandsorienteringDAO.getFhoForArenaAktivitet(idMapping.arenaId)
             ?.let {fho ->
                 val updated = forhaandsorienteringDAO.leggTilTekniskId(fho.id, opprettetAktivitet.getId())
                 if (updated == 0) return@let
@@ -85,7 +67,7 @@ class ArenaAktivitetskortService (
         brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(
             opprettetAktivitet.getId(),
             opprettetAktivitet.getVersjon(),
-            arenaId
+            idMapping.arenaId
         )
         // Send idmapping til dialog
         aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping)
@@ -94,20 +76,16 @@ class ArenaAktivitetskortService (
     fun dobbelsjekkMigrering(
         bestilling: ArenaAktivitetskortBestilling,
         opprettetAktivitet: AktivitetData): Boolean {
+        val idMapping = bestilling.idMapping(opprettetAktivitet.id)
         val aktivitetIder = idMappingDAO.getAktivitetIder(bestilling.eksternReferanseId)
         return when {
             aktivitetIder.map { it.funksjonellId }.contains(bestilling.aktivitetskort.id) -> false
             aktivitetIder.isEmpty() -> {
-                arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitet, bestilling.eksternReferanseId)
+                arenaspesifikkMigrering(opprettetAktivitet, idMapping)
                 true
             }
             else -> {
                 // Only insert mapping
-                val idMapping = IdMapping(
-                    bestilling.eksternReferanseId,
-                    opprettetAktivitet.id,
-                    bestilling.aktivitetskort.id,
-                )
                 idMappingDAO.insert(idMapping)
                 true
             }
@@ -154,10 +132,26 @@ class ArenaAktivitetskortService (
             idMappingDAO.insert(idMapping)
         }
     }
-    private fun ArenaAktivitetskortBestilling.erMigrert(): Boolean {
-        return idMappingDAO.getAktivitetIder(this.eksternReferanseId)
-            .map { it.funksjonellId }.contains(this.aktivitetskort.id)
+    private fun ArenaAktivitetskortBestilling.finnOpprettelseType(): OpprettelseType {
+        val ideer = idMappingDAO.getAktivitetIder(this.eksternReferanseId).map { it.funksjonellId }
+        return when {
+            ideer.contains(this.aktivitetskort.id) -> OpprettelseType.ER_MIGRERT
+            ideer.isEmpty() -> OpprettelseType.IKKE_MIGRERT
+            else -> OpprettelseType.ER_MIGRERT_NY_PERIODE_SPLITT
+        }
+
     }
 }
+
 fun garOverIFerdigStatus(gammelAktivitet: AktivitetData, aktivitetsData: AktivitetData) = !gammelAktivitet.erIFerdigStatus() && aktivitetsData.erIFerdigStatus()
 fun AktivitetData.erIFerdigStatus() = listOf(AktivitetStatus.AVBRUTT, AktivitetStatus.FULLFORT).contains(this.status)
+fun ArenaAktivitetskortBestilling.idMapping(aktivitetId: Long) = IdMapping(
+    this.eksternReferanseId,
+    aktivitetId,
+    this.aktivitetskort.id
+)
+enum class OpprettelseType {
+    ER_MIGRERT,
+    ER_MIGRERT_NY_PERIODE_SPLITT,
+    IKKE_MIGRERT
+}
