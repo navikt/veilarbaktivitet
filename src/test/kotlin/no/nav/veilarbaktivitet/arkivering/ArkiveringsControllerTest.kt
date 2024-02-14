@@ -8,8 +8,12 @@ import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
+import java.time.ZonedDateTime
+import java.time.temporal.ChronoUnit
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
@@ -36,7 +40,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
-        veileder
+        val forhaandsvisning = veileder
             .createRequest(bruker)
             .post(arkiveringsUrl)
             .then()
@@ -44,7 +48,9 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
             .extract()
             .response()
-            .`as`(OrkivarClient.ForhaandsvisningResult::class.java);
+            .`as`(ArkiveringsController.Forhaandsvisning::class.java)
+
+        assertThat(forhaandsvisning.dataHentet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
         verify(
             exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
