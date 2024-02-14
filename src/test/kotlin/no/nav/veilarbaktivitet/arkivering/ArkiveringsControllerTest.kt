@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
+import java.util.*
 
 internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
@@ -42,7 +43,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         val forhaandsvisning = veileder
             .createRequest(bruker)
-            .post(arkiveringsUrl)
+            .get(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
@@ -174,15 +175,17 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
+        val body = ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), ZonedDateTime.now())
         veileder
             .createRequest(bruker)
+            .body(body)
             .post(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.OK.value())
 
         verify(
-            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
+            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(
                     equalToJson("""
@@ -262,7 +265,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         veileder
             .createRequest(bruker)
-            .post(arkiveringsUrl)
+            .get(arkiveringsUrl)
             .then()
             .assertThat()
             .statusCode(HttpStatus.BAD_REQUEST.value())
