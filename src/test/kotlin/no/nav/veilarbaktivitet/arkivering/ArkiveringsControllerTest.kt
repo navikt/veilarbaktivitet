@@ -48,7 +48,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
             .extract()
             .response()
-            .`as`(ArkiveringsController.Forhaandsvisning::class.java)
+            .`as`(ArkiveringsController.ForhaandsvisningOutboundDTO::class.java)
 
         assertThat(forhaandsvisning.dataHentet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
@@ -154,6 +154,103 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                     }
                 """.trimIndent())
             ))
+    }
+
+    @Test
+    fun `Når man skal journalføre sender man data til orkivar`() {
+        val navn = Navn("Sølvi", null, "Normalbakke")
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val veileder = navMockService.createVeileder(bruker)
+        val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
+
+        val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiode).build()
+        jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
+        val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+
+        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiode.toString()
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
+
+        veileder
+            .createRequest(bruker)
+            .post(arkiveringsUrl)
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.OK.value())
+
+        verify(
+            exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(
+                    equalToJson("""
+                    {
+                      "metadata": {
+                        "navn": "${navn.tilFornavnMellomnavnEtternavn()}",
+                        "fnr": "${bruker.fnr}"
+                      },
+                      "aktiviteter" : {
+                        "Planlagt" : [ {
+                          "tittel" : "tittel",
+                          "type" : "Jobb jeg har nå",
+                          "status" : "Planlagt",
+                          "detaljer" : [ {
+                            "stil" : "HALV_LINJE",
+                            "tittel" : "Fra dato",
+                            "tekst": "${jobbAktivitetPlanlegger.fraDato.norskDato()}"
+                          }, {
+                            "stil" : "HALV_LINJE",
+                            "tittel" : "Til dato",
+                            "tekst": "${jobbAktivitetPlanlegger.tilDato.norskDato()}"
+                          }, {
+                            "stil" : "HALV_LINJE",
+                            "tittel" : "Stillingsandel",
+                            "tekst" : "HELTID"
+                          }, {
+                            "stil" : "HALV_LINJE",
+                            "tittel" : "Arbeidsgiver",
+                            "tekst" : "Vikar"
+                          }, {
+                            "stil" : "HALV_LINJE",
+                            "tittel" : "Ansettelsesforhold",
+                            "tekst" : "7,5 timer"
+                          }, {
+                            "stil" : "PARAGRAF",
+                            "tittel" : "Beskrivelse",
+                            "tekst" : "beskrivelse"
+                          } ],
+                          "meldinger" : [ {
+                            "avsender" : "VEILEDER",
+                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "lest" : true,
+                            "viktig" : false,
+                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                          }, {
+                            "avsender" : "BRUKER",
+                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "lest" : true,
+                            "viktig" : false,
+                            "tekst" : "Jada"
+                          } ],
+                          "etiketter": []
+                        } ]
+                      },
+                      "dialogtråder" : [ {
+                        "overskrift" : "Penger",
+                        "meldinger" : [ {
+                          "avsender" : "BRUKER",
+                          "sendt" : "05 februar 2024 kl. 14:29",
+                          "lest" : true,
+                          "viktig" : false,
+                          "tekst" : "Jeg liker NAV. NAV er snille!"
+                        } ],
+                        "egenskaper" : [ ]
+                      } ]
+                    }
+                """.trimIndent())
+                ))
     }
 
     @Test
