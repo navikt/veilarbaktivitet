@@ -203,16 +203,6 @@ public class ForhaandsorienteringDAO {
         }
     }
 
-    public int leggTilTekniskId(String fhoId, long aktivitetId) {
-        SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("fhoId", fhoId)
-                .addValue("aktivitetId", aktivitetId);
-        return template.update("""
-                UPDATE FORHAANDSORIENTERING SET AKTIVITET_ID = :aktivitetId
-                WHERE ID = :fhoId
-                """, params);
-    }
-
     public List<Forhaandsorientering> getAlleArenaFHO(Person.AktorId aktorId) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktorId", aktorId.get());

@@ -34,23 +34,19 @@ class AktivitetskortService(
     @Throws(AktivitetsKortFunksjonellException::class)
     fun upsertAktivitetskort(bestilling: AktivitetskortBestilling): UpsertActionResult {
         val (id) = bestilling.aktivitetskort
+        // Splittede aktiviteter bestilles på ny funksjonell-id
         val gammelAktivitetMaybe = aktivitetDAO.hentAktivitetByFunksjonellId(id)
         return when {
             gammelAktivitetMaybe.isPresent -> {
                 val gammelAktivitet = gammelAktivitetMaybe.get()
                 val nyAktivitet = bestilling.toAktivitetsDataUpdate()
-                // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
+                // Arenaaktiviteter blir vanlig "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
-                    bestilling is ArenaAktivitetskortBestilling -> {
-                        if(gammelAktivitet.erTattOverAvAnnetTeam()) {
-                            // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
-                            // hvor andre team behandler endringer fra arena raskere enn oss
-                            arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
-                            return UpsertActionResult.IGNORER
-                        } else {
-                            arenaAktivitetskortService.leggTilIIdMappingHvisIkkeFinnes(nyAktivitet, bestilling)
-                            oppdaterAktivitet(gammelAktivitet, nyAktivitet)
-                        }
+                    bestilling is ArenaAktivitetskortBestilling && gammelAktivitet.erTattOverAvAnnetTeam() -> {
+                        // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
+                        // hvor andre team behandler endringer fra arena raskere enn oss
+                        arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
+                        return UpsertActionResult.IGNORER
                     }
                     else -> oppdaterAktivitet(gammelAktivitet, nyAktivitet)
                 }

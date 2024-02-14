@@ -927,16 +927,14 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val versjoner = aktivitetTestService.hentVersjoner(initiellAktivitet.id, mockBruker, mockBruker)
         // Alle versjoner skal finnes
         assertThat(versjoner.map { it.transaksjonsType })
-            .containsExactlyInAnyOrder(AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.OPPRETTET)
-        versjoner.map { it.endretDato }
-        val sisteVersjon = versjoner.first()
-        assertThat(sisteVersjon.versjon.toLong()).isGreaterThan(initiellAktivitet.versjon.toLong())
+            .containsExactly(AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.OPPRETTET)
+        assertThat(versjoner.groupBy { it.endretDato }).hasSize(3)
         // Skal bruke første opprettet dato
-        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(tiDagerSiden, within(1, ChronoUnit.SECONDS))
-        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
-        // TODO: Vurder om nyeste periode er mer riktig enn gammel periode
-        assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
-        assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
+        val nyeste = versjoner.first()
+        assertThat(DateUtils.dateToZonedDateTime(nyeste.opprettetDato)).isCloseTo(tiDagerSiden, within(1, ChronoUnit.SECONDS))
+        assertThat(nyeste.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET)
+        assertThat(nyeste.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
+        assertThat(nyeste.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
         // Behold FHO
         val heleAktiviteten = hentAktivitet(funksjonellId)
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(heleAktiviteten.forhaandsorientering.id)
