@@ -39,6 +39,7 @@ public class WireMockUtil {
         nivaa4(fnr, harBruktNivaa4);
         hentPerson(fnr, navn);
         forhaandsvisning();
+        journalforing();
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
@@ -227,4 +228,8 @@ public class WireMockUtil {
                                 """.formatted(UUID.randomUUID(), pdfByteArray))));
     }
 
+    private static void journalforing() {
+        stubFor(post("/orkivar/arkiver")
+                .willReturn(aResponse().withStatus(200)));
+    }
 }
