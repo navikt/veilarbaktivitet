@@ -5,10 +5,9 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataUpdate
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
@@ -17,7 +16,6 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -119,6 +117,13 @@ class ArenaAktivitetskortService (
                 idMappingDAO.insert(idMapping)
                 true
             }
+        }.also { bleMigrert ->
+            val id = bestilling.aktivitetskort.id
+            if (bleMigrert) {
+                log.info("Aktivitet tatt over av annet team men var ikke migrert, gjorde arena-migrering og ignorerte data fra acl $id")
+            } else {
+                log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
+            }
         }
     }
 
@@ -126,24 +131,25 @@ class ArenaAktivitetskortService (
         bestilling: ArenaAktivitetskortBestilling,
         gammelAktivitet: AktivitetData
     ): AktivitetData {
-        val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
         val oppfolgingsperiode = bestilling.oppfolgingsperiode
-        val aktivitetsData = bestilling.toAktivitet(
-            opprettetDato,
-            bestilling.oppfolgingsperiodeSlutt
-        )
+        val aktivitetsData = bestilling.toAktivitetsDataUpdate()
             .withId(gammelAktivitet.id)
-            .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
             .withVersjon(gammelAktivitet.versjon)
             .withOppfolgingsperiodeId(oppfolgingsperiode)
             .withOpprettetDato(gammelAktivitet.opprettetDato)
             .withFhoId(gammelAktivitet.fhoId)
 
-        val ferdigstatus = listOf(AktivitetStatus.AVBRUTT, AktivitetStatus.FULLFORT)
-        if (!ferdigstatus.contains(gammelAktivitet.status) && ferdigstatus.contains(aktivitetsData.status)) {
+        ferdigstillFhoVarselHvisAktivitetFerdig(gammelAktivitet, aktivitetsData)
+        leggTilIIdMappingHvisIkkeFinnes(aktivitetsData, bestilling)
+        return aktivitetService.oppdaterAktivitet(gammelAktivitet, aktivitetsData)
+    }
+
+    fun ferdigstillFhoVarselHvisAktivitetFerdig(gammelAktivitet: AktivitetData, aktivitetsData: AktivitetData) {
+        if (garOverIFerdigStatus(gammelAktivitet, aktivitetsData)) {
             gammelAktivitet.fhoId?.let { avtaltMedNavService.settVarselFerdig(it) }
         }
-
+    }
+    fun leggTilIIdMappingHvisIkkeFinnes(aktivitetsData: AktivitetData, bestilling: ArenaAktivitetskortBestilling) {
         val aktivitetIder = idMappingDAO.getMappingsByFunksjonellId(listOf(bestilling.aktivitetskort.id))
         if (aktivitetIder[bestilling.aktivitetskort.id] == null) {
             val idMapping = IdMapping(
@@ -154,8 +160,7 @@ class ArenaAktivitetskortService (
             idMappingDAO.insert(idMapping)
         }
 
-
-        val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
-        return opprettetAktivitetsData
     }
 }
+fun garOverIFerdigStatus(gammelAktivitet: AktivitetData, aktivitetsData: AktivitetData) = !gammelAktivitet.erIFerdigStatus() && aktivitetsData.erIFerdigStatus()
+fun AktivitetData.erIFerdigStatus() = listOf(AktivitetStatus.AVBRUTT, AktivitetStatus.FULLFORT).contains(this.status)

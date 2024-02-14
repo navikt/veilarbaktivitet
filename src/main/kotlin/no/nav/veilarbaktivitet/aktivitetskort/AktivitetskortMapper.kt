@@ -46,7 +46,7 @@ object AktivitetskortMapper {
     }
 
 
-    fun AktivitetskortBestilling.toAktivitet(
+    private fun AktivitetskortBestilling.toAktivitet(
         opprettetDato: ZonedDateTime?,
         historiskTidspunkt: ZonedDateTime?
     ): AktivitetData {

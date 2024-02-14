@@ -905,34 +905,35 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `relast skal overskrive første feilede migrering`() {
+    fun `skal lage flere versjoner av acl-aktiviteter som ikker er tatt over`() {
+        // Areneaktivitet med FHO før migrering
         val arenaaktivitetId = ArenaId("TA31212")
         val arenaAktivitetDTO =
             aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
         val funksjonellId = UUID.randomUUID()
         val kontekst = arenaMeldingHeaders(mockBruker, arenaaktivitetId, "ARENA_TILTAK")
-        val opprettet = ZonedDateTime.now().minusDays(10)
+        val tiDagerSiden = ZonedDateTime.now().minusDays(10)
         val gammel = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
-            .copy(endretTidspunkt = opprettet)
+            .copy(endretTidspunkt = tiDagerSiden)
         val endaEnVersjon = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
-            .copy(endretTidspunkt = opprettet.plusDays(5))
+            .copy(endretTidspunkt = tiDagerSiden.plusDays(5))
         val ny = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now())
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(gammel, kontekst))
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(gammel, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(ny ,kontekst))
+
         val initiellAktivitet = hentAktivitet(funksjonellId)
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(ny ,kontekst))
         val versjoner = aktivitetTestService.hentVersjoner(initiellAktivitet.id, mockBruker, mockBruker)
-        // Skal bare finnes siste versjon, alle andre skal slettes
-        assertThat(versjoner).hasSize(1)
+        // Alle versjoner skal finnes
+        assertThat(versjoner.map { it.transaksjonsType })
+            .containsExactlyInAnyOrder(AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.OPPRETTET)
+        versjoner.map { it.endretDato }
         val sisteVersjon = versjoner.first()
         assertThat(sisteVersjon.versjon.toLong()).isGreaterThan(initiellAktivitet.versjon.toLong())
         // Skal bruke første opprettet dato
-        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(opprettet, within(1, ChronoUnit.SECONDS))
-        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
+        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(tiDagerSiden, within(1, ChronoUnit.SECONDS))
+        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
         // TODO: Vurder om nyeste periode er mer riktig enn gammel periode
         assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
         assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)

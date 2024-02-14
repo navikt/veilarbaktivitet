@@ -38,25 +38,22 @@ class AktivitetskortService(
         return when {
             gammelAktivitetMaybe.isPresent -> {
                 val gammelAktivitet = gammelAktivitetMaybe.get()
+                val nyAktivitet = bestilling.toAktivitetsDataUpdate()
                 // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
                     bestilling is ArenaAktivitetskortBestilling -> {
-                        if(gammelAktivitet.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name) {
+                        if(gammelAktivitet.erTattOverAvAnnetTeam()) {
                             // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
                             // hvor andre team behandler endringer fra arena raskere enn oss
-                            val bleMigrert = arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
-                            if (bleMigrert) {
-                                log.info("Aktivitet tatt over av annet team men var ikke migrert, gjorde arena-migrering og ignorerte data fra acl $id")
-                            } else {
-                                log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
-                            }
+                            arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
                             return UpsertActionResult.IGNORER
+                        } else {
+                            arenaAktivitetskortService.ferdigstillFhoVarselHvisAktivitetFerdig(gammelAktivitet, nyAktivitet)
+                            arenaAktivitetskortService.leggTilIIdMappingHvisIkkeFinnes(nyAktivitet, bestilling)
+                            oppdaterAktivitet(gammelAktivitet, nyAktivitet)
                         }
-                        arenaAktivitetskortService.oppdaterAktivitet(
-                            bestilling,
-                            gammelAktivitet)
                     }
-                    else -> oppdaterAktivitet(gammelAktivitet, bestilling.toAktivitetsDataUpdate())
+                    else -> oppdaterAktivitet(gammelAktivitet, nyAktivitet)
                 }
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
@@ -151,3 +148,5 @@ class AktivitetskortService(
         return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId).get()
     }
 }
+
+fun AktivitetData.erTattOverAvAnnetTeam() = this.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name
