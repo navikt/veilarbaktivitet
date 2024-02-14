@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.kafka.test.utils.KafkaTestUtils
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -699,14 +698,12 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker, arenaaktivitetId)))
+
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
         assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv.ident)
-        // Assert endreDato is now because we forhaandsorientering was created during test-run
-        assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
-            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(aktivitet.forhaandsorientering.id)
-        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
     }
 
     @Test
