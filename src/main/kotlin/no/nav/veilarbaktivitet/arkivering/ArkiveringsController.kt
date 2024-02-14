@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.collections.List
 
@@ -28,7 +29,8 @@ class ArkiveringsController(
 ) {
     @PostMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "arkivere aktivitetsplan og dialog")
-    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): OrkivarClient.ForhaandsvisningResult {
+    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): Forhaandsvisning {
+        val dataHentet = ZonedDateTime.now()
         val fnr = userInContext.fnr.get()
         val result = navnService.hentNavn(fnr)
         if(result.errors?.isNotEmpty() == true) { throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR) }
@@ -38,8 +40,20 @@ class ArkiveringsController(
         val dialoger = dialogClient.hentDialoger(fnr)
 
         val (aktiviteterPayload, dialogerPayload) = lagDataTilOrkivar(oppfølgingsperiodeId, aktiviteter, dialoger)
-        return orkivarClient.hentPdfForForhaandsvisning(fnr, navn, aktiviteterPayload, dialogerPayload)
+        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(fnr, navn, aktiviteterPayload, dialogerPayload)
+
+        return Forhaandsvisning(
+            forhaandsvisningResultat.uuid,
+            forhaandsvisningResultat.pdf,
+            dataHentet
+        )
     }
+
+    data class Forhaandsvisning(
+        val uuid: UUID,
+        val pdf: ByteArray,
+        val dataHentet: ZonedDateTime
+    )
 }
 
 fun lagDataTilOrkivar(oppfølgingsperiodeId: UUID, aktiviteter: List<AktivitetData>, dialoger: List<DialogClient.DialogTråd>): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
