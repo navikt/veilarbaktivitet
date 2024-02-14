@@ -66,7 +66,7 @@ class ArkiveringsController(
         val navn = result.data.hentPerson.navn.first().tilFornavnMellomnavnEtternavn()
 
         val (aktiviteterPayload, dialogerPayload) = lagDataTilOrkivar(oppfølgingsperiodeId, aktiviteter, dialoger)
-        // TODO: send til kall på orkivarclient
+        orkivarClient.journalfor(fnr, navn, aktiviteterPayload, dialogerPayload)
     }
 
 
