@@ -54,10 +54,10 @@ class ArkiveringsController(
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO) {
         val fnr = userInContext.fnr.get()
 
-        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
-        val dialoger = dialogClient.hentDialoger(fnr)
+        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        val dialoger = dialogClient.hentDialoger(fnr).filter { it.oppfolgingsperiode == oppfølgingsperiodeId }
 
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, oppfølgingsperiodeId, aktiviteter, dialoger)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, aktiviteter, dialoger)
 
         if(oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
@@ -80,32 +80,4 @@ class ArkiveringsController(
         val uuid: UUID,
         val forhaandsvisningOpprettet: ZonedDateTime
     )
-}
-
-fun lagDataTilOrkivar(oppfølgingsperiodeId: UUID, aktiviteter: List<AktivitetData>, dialoger: List<DialogClient.DialogTråd>): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
-    val aktiviteterIOppfølgingsperioden = aktiviteter.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-    val dialogerIOppfølgingsperioden = dialoger.filter { it.oppfolgingsperiode == oppfølgingsperiodeId }
-    val aktivitetDialoger = dialogerIOppfølgingsperioden.groupBy { it.aktivitetId }
-
-    val aktiviteterPayload = aktiviteterIOppfølgingsperioden
-        .map { it ->
-            val meldingerTilhørendeAktiviteten = aktivitetDialoger[it.id.toString()]?.map {
-                it.meldinger.map { it.tilMelding() }
-            }?.flatten() ?: emptyList()
-
-            it.toArkivPayload(
-                meldinger = meldingerTilhørendeAktiviteten
-            )
-        }
-
-    val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
-    return Pair(aktiviteterPayload, meldingerUtenAktivitet.map { it.tilDialogTråd() })
-}
-
-fun aktiviteterOgDialogerOppdatertEtter(tidspunkt: ZonedDateTime, oppfølgingsperiodeId: UUID, aktiviteter: List<AktivitetData>, dialoger: List<DialogClient.DialogTråd>): Boolean {
-    val aktiviteterTidspunkt = aktiviteter.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }.map { DateUtils.dateToZonedDateTime(it.endretDato) }
-    val dialogerTidspunkt = dialoger.filter { it.oppfolgingsperiode == oppfølgingsperiodeId }.map { it.meldinger }.flatten().map { it.sendt }
-    val sistOppdatert = (aktiviteterTidspunkt + dialogerTidspunkt).max()
-    return sistOppdatert > tidspunkt
-
 }
