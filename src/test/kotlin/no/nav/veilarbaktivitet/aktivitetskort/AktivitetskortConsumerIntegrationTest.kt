@@ -964,7 +964,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo("SYSTEM")
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -1000,7 +1000,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -1036,7 +1036,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)

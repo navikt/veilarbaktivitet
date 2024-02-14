@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import lombok.extern.slf4j.Slf4j
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
@@ -25,20 +24,15 @@ class ArenaAktivitetskortService (
     private val forhaandsorienteringDAO: ForhaandsorienteringDAO,
     private val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     private val idMappingDAO: IdMappingDAO,
-    private val aktivitetDAO: AktivitetDAO,
     private val aktivitetService: AktivitetService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
     private val avtaltMedNavService: AvtaltMedNavService
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
-        val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, bestilling.oppfolgingsperiodeSlutt)
-        val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            aktivitetsData.withOppfolgingsperiodeId(bestilling.oppfolgingsperiode)
-        )
+        val aktivitetsData = bestilling.toAktivitetsDataInsert()
+        val opprettetAktivitetsData = aktivitetService.opprettAktivitet(aktivitetsData)
 
         // Gjør arena-spesifikk migrering hvis ikke migrert allerede
         val aktivitetIder = idMappingDAO.getAktivitetIder(bestilling.eksternReferanseId)
@@ -159,7 +153,10 @@ class ArenaAktivitetskortService (
             )
             idMappingDAO.insert(idMapping)
         }
-
+    }
+    private fun ArenaAktivitetskortBestilling.erMigrert(): Boolean {
+        return idMappingDAO.getAktivitetIder(this.eksternReferanseId)
+            .map { it.funksjonellId }.contains(this.aktivitetskort.id)
     }
 }
 fun garOverIFerdigStatus(gammelAktivitet: AktivitetData, aktivitetsData: AktivitetData) = !gammelAktivitet.erIFerdigStatus() && aktivitetsData.erIFerdigStatus()

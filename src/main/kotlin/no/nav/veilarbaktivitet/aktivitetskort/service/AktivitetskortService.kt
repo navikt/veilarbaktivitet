@@ -48,7 +48,6 @@ class AktivitetskortService(
                             arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
                             return UpsertActionResult.IGNORER
                         } else {
-                            arenaAktivitetskortService.ferdigstillFhoVarselHvisAktivitetFerdig(gammelAktivitet, nyAktivitet)
                             arenaAktivitetskortService.leggTilIIdMappingHvisIkkeFinnes(nyAktivitet, bestilling)
                             oppdaterAktivitet(gammelAktivitet, nyAktivitet)
                         }
@@ -82,8 +81,7 @@ class AktivitetskortService(
         } catch (e: IngenGjeldendePeriodeException) {
             throw ManglerOppfolgingsperiodeFeil()
         }
-        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert(bestilling.aktivitetskort.endretTidspunkt, null)
-
+        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert()
         return aktivitetService.opprettAktivitet(
             aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
         )
@@ -144,8 +142,8 @@ class AktivitetskortService(
         aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason)
     }
 
-    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): AktivitetData {
-        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId).get()
+    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): Optional<AktivitetData> {
+        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId)
     }
 }
 
