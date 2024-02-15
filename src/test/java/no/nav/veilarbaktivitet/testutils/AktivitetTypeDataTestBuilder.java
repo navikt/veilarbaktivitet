@@ -120,7 +120,7 @@ public class AktivitetTypeDataTestBuilder {
                new Attributt("Dager per uke", "5")
            ),
            List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN")),
-           ZonedDateTime.now().withZoneSameInstant(ZoneId.of("Africa/Cairo"))
+           ZonedDateTime.now().withZoneSameInstant(ZoneId.systemDefault())
         );
     }
 }
