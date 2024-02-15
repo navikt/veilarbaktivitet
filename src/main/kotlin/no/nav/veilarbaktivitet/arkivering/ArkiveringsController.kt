@@ -36,7 +36,6 @@ class ArkiveringsController(
         val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(payload)
 
         return ForhaandsvisningOutboundDTO(
-            forhaandsvisningResultat.uuid,
             forhaandsvisningResultat.pdf,
             dataHentet
         )
@@ -65,13 +64,11 @@ class ArkiveringsController(
     }
 
     data class ForhaandsvisningOutboundDTO(
-        val uuid: UUID,
         val pdf: ByteArray,
-        val dataHentet: ZonedDateTime
+        val forhaandsvisningOpprettet: ZonedDateTime
     )
 
     data class ArkiverInboundDTO(
-        val uuid: UUID,
         val forhaandsvisningOpprettet: ZonedDateTime
     )
 }

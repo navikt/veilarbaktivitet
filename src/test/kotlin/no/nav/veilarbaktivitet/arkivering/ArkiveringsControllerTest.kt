@@ -51,7 +51,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .response()
             .`as`(ArkiveringsController.ForhaandsvisningOutboundDTO::class.java)
 
-        assertThat(forhaandsvisning.dataHentet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
+        assertThat(forhaandsvisning.forhaandsvisningOpprettet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
         verify(
             exactly(1 ), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -172,7 +172,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
-        val body = ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), ZonedDateTime.now())
+        val body = ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now())
         veileder
             .createRequest(bruker)
             .body(body)
@@ -287,7 +287,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), ZonedDateTime.now()))
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
             .post(arkiveringsUrl)
 
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
@@ -312,7 +312,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), forhaandsvisningstidspunkt))
+            .body(ArkiveringsController.ArkiverInboundDTO(forhaandsvisningstidspunkt))
             .post(arkiveringsUrl)
             .then()
             .assertThat()
