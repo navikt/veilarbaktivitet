@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
-import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 
@@ -27,7 +26,7 @@ internal class EksternaktivitetDAOTest {
         val innEkstern = opprettetAktivitetData.eksternAktivitetData
         assertThat(utEkstern.endretTidspunktKilde).isCloseTo(innEkstern.endretTidspunktKilde, within(1, ChronoUnit.MILLIS))
         assertThat(utEkstern)
-            .isEqualTo(innEkstern.copy(endretTidspunktKilde = innEkstern.endretTidspunktKilde.withZoneSameInstant(ZoneId.systemDefault())))
+            .isEqualTo(innEkstern.copy(endretTidspunktKilde = utEkstern.endretTidspunktKilde))
         assertThat(aktivitet.withEksternAktivitetData(null)).isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null))
     }
 }
