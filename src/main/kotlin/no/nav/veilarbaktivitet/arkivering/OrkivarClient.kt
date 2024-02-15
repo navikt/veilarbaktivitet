@@ -18,13 +18,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
-    fun hentPdfForForhaandsvisning(
-        fnr: Person.Fnr,
-        navn: String,
-        aktiviteterPayload: List<ArkivAktivitet>,
-        dialogTråder: List<ArkivDialogtråd>
-    ): ForhaandsvisningResult {
-        val payload = payload(fnr, navn, aktiviteterPayload, dialogTråder)
+    fun hentPdfForForhaandsvisning(arkivPayload: ArkivPayload): ForhaandsvisningResult {
+        val payload = payload(arkivPayload)
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
@@ -38,13 +33,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
             .orElseThrow { RuntimeException("Kunne ikke hente PDF for forhåndsvisning") }
     }
 
-    fun journalfor(
-        fnr: Person.Fnr,
-        navn: String,
-        aktiviteterPayload: List<ArkivAktivitet>,
-        dialogTråder: List<ArkivDialogtråd>
-    ) {
-        val payload = payload(fnr, navn, aktiviteterPayload, dialogTråder)
+    fun journalfor(arkivPayload: ArkivPayload) {
+        val payload = payload(arkivPayload)
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
@@ -59,20 +49,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
         }
     }
 
-    private fun payload(
-        fnr: Person.Fnr,
-        navn: String,
-        aktiviteterPayload: List<ArkivAktivitet>,
-        dialogTråder: List<ArkivDialogtråd>
-    ): RequestBody {
-        return JsonUtils.toJson(
-            ArkivPayload(
-                metadata = Metadata(navn, fnr.get()),
-                aktiviteter = aktiviteterPayload
-                    .groupBy { it.status },
-                dialogtråder = dialogTråder
-            )
-        ).toRequestBody("application/json".toMediaTypeOrNull())
+    private fun payload(arkivPayload: ArkivPayload): RequestBody {
+        return JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull())
     }
 
     data class ForhaandsvisningResult(

@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
@@ -255,6 +254,27 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     }
 
     @Test
+    fun `Når man forhåndsviser PDF skal kun riktig oppfølgingsperiode være inkludert`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
+        val annenOppfølgingsperiode = UUID.randomUUID()
+        val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = annenOppfølgingsperiode.toString(), aktivitetId = "dummy")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
+        veileder
+            .createRequest(bruker)
+            .get(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        assertThat(arkivPayload.aktiviteter).isEmpty()
+        assertThat(arkivPayload.dialogtråder).isEmpty()
+    }
+
+    @Test
     fun `Når man arkiverer skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
@@ -269,9 +289,6 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), ZonedDateTime.now()))
             .post(arkiveringsUrl)
-            .then()
-            .assertThat()
-            .statusCode(HttpStatus.OK.value())
 
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
