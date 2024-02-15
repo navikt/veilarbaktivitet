@@ -297,6 +297,29 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     }
 
     @Test
+    fun `Kast 409 Conflict når man arkiverer dersom ny data har kommet etter forhåndsvisningen`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
+        val forhaandsvisningstidspunkt = ZonedDateTime.now().minusSeconds(1)
+        val aktivitetSistEndret = Date()
+        val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder()
+            .endretDato(aktivitetSistEndret)
+            .oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, bruker, aktivitet)
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiode.toString(), aktivitetId = "dummy")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(UUID.randomUUID(), forhaandsvisningstidspunkt))
+            .post(arkiveringsUrl)
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.CONFLICT.value())
+    }
+
+    @Test
     fun `Kall mot arkiveringsendepunkt kaster 400 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createHappyBruker()
         val veileder = navMockService.createVeileder(bruker)
