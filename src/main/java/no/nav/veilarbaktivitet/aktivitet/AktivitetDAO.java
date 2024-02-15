@@ -455,13 +455,14 @@ public class AktivitetDAO {
                             .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
                             .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
                             .addValue("detaljer", JsonUtils.toJson(eksternAktivitetData.getDetaljer()))
+                            .addValue("endret_tidspunkt", eksternAktivitetData.getEndretTidspunkt())
                             .addValue("etiketter", JsonUtils.toJson(eksternAktivitetData.getEtiketter()));
                     // language=sql
                     namedParameterJdbcTemplate.update(
                     """
                         INSERT INTO EKSTERNAKTIVITET
-                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
-                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter, endret_tidspunkt) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter, :endret_tidspunkt)
                         """,
                     params
                     );

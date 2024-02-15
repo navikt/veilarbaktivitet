@@ -173,7 +173,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
             Database.hentObjectFromJsonString(rs, "OPPGAVE", Oppgaver.class),
             Database.hentListObjectFromJsonString(rs, "HANDLINGER", LenkeSeksjon.class),
             Database.hentListObjectFromJsonString(rs, "EKSTERNAKTIVITET.DETALJER", Attributt.class),
-            Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class)
+            Database.hentListObjectFromJsonString(rs, "ETIKETTER", Etikett.class),
+            Database.hentZonedDateTime(rs, "ENDRET_TIDSPUNKT")
         );
     }
 }
