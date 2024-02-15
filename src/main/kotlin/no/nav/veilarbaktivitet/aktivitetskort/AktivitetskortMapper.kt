@@ -64,7 +64,7 @@ object AktivitetskortMapper {
             ).orElse(listOf()),
             opprettetSomHistorisk = historiskTidspunkt != null,
             oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime(),
-            endretTidspunkt = endretTidspunkt
+            endretTidspunktKilde = endretTidspunkt
         )
 
         return AktivitetData.builder()

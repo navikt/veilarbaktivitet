@@ -24,5 +24,5 @@ data class EksternAktivitetData(
     val detaljer: List<Attributt>? = null,
     @Singular("etikett")
     val etiketter: List<Etikett>? = null,
-    val endretTidspunkt: ZonedDateTime
+    val endretTidspunktKilde: ZonedDateTime
 ) {}
