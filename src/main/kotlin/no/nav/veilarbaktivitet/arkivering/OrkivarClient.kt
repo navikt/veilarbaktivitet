@@ -54,7 +54,6 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     }
 
     data class ForhaandsvisningResult(
-        val uuid: UUID,
         val pdf: ByteArray
     )
 }

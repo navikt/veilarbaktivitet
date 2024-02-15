@@ -222,10 +222,9 @@ public class WireMockUtil {
                 .willReturn(aResponse()
                         .withBody("""
                                 {
-                                   "uuid": "%s",
                                    "pdf":"%s"
                                 }
-                                """.formatted(UUID.randomUUID(), pdfByteArray))));
+                                """.formatted(pdfByteArray))));
     }
 
     private static void journalforing() {
