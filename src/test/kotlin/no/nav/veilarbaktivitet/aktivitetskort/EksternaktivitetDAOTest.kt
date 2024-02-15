@@ -5,9 +5,9 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.config.database.Database
 import no.nav.veilarbaktivitet.mock.LocalH2Database
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
-import no.nav.veilarbaktivitet.util.DateUtils
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.ZoneId
 
 
 internal class EksternaktivitetDAOTest {
@@ -21,11 +21,11 @@ internal class EksternaktivitetDAOTest {
         val aktivitetData = AktivitetDataTestBuilder.nyEksternAktivitet()
         val opprettetAktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitetData)
         val aktivitet = aktivitetDAO.hentAktivitet(opprettetAktivitetData.id)
-        val endretTidspunktKildeWithOraclePrescision =
-            DateUtils.dateToZonedDateTime(DateUtils.zonedDateTimeToDate(opprettetAktivitetData.eksternAktivitetData.endretTidspunktKilde))
-        Assertions.assertThat(aktivitet.eksternAktivitetData)
-            .isEqualTo(opprettetAktivitetData.eksternAktivitetData.copy(endretTidspunktKilde = endretTidspunktKildeWithOraclePrescision))
-        Assertions.assertThat(aktivitet.withEksternAktivitetData(null))
-            .isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null))
+        val utEkstern = aktivitet.eksternAktivitetData
+        val innEkstern = opprettetAktivitetData.eksternAktivitetData
+        assertThat(utEkstern.endretTidspunktKilde).isEqualTo(innEkstern.endretTidspunktKilde)
+        assertThat(utEkstern)
+            .isEqualTo(innEkstern.copy(endretTidspunktKilde = innEkstern.endretTidspunktKilde.withZoneSameInstant(ZoneId.systemDefault())))
+        assertThat(aktivitet.withEksternAktivitetData(null)).isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null))
     }
 }

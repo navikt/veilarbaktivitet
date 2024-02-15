@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
 import java.net.URL;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -119,7 +120,7 @@ public class AktivitetTypeDataTestBuilder {
                new Attributt("Dager per uke", "5")
            ),
            List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN")),
-           ZonedDateTime.now()
+           ZonedDateTime.now().withZoneSameInstant(ZoneId.of("Africa/Cairo"))
         );
     }
 }
