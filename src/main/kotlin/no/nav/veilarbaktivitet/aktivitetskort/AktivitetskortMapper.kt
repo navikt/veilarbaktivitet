@@ -80,7 +80,7 @@ object AktivitetskortMapper {
             .endretAv(endretAv!!.ident)
             .endretAvType(endretAv.identType.toInnsender())
             .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
-            .endretDato(Date())
+            .endretDato(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()))
             .eksternAktivitetData(eksternAktivitetData)
             .build()
     }
