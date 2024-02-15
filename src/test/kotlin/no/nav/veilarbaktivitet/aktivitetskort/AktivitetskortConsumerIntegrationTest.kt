@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.kafka.test.utils.KafkaTestUtils
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -699,14 +698,12 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker, arenaaktivitetId)))
+
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
         assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv.ident)
-        // Assert endreDato is now because we forhaandsorientering was created during test-run
-        assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
-            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(aktivitet.forhaandsorientering.id)
-        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
     }
 
     @Test
@@ -905,37 +902,36 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `relast skal overskrive første feilede migrering`() {
+    fun `skal lage flere versjoner av acl-aktiviteter som ikke er er tatt over`() {
+        // Areneaktivitet med FHO før migrering
         val arenaaktivitetId = ArenaId("TA31212")
         val arenaAktivitetDTO =
             aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
         val funksjonellId = UUID.randomUUID()
         val kontekst = arenaMeldingHeaders(mockBruker, arenaaktivitetId, "ARENA_TILTAK")
-        val opprettet = ZonedDateTime.now().minusDays(10)
+        val tiDagerSiden = ZonedDateTime.now().minusDays(10)
         val gammel = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
-            .copy(endretTidspunkt = opprettet)
+            .copy(endretTidspunkt = tiDagerSiden)
         val endaEnVersjon = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
-            .copy(endretTidspunkt = opprettet.plusDays(5))
+            .copy(endretTidspunkt = tiDagerSiden.plusDays(5))
         val ny = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now())
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(gammel, kontekst))
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(gammel, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(ny ,kontekst))
+
         val initiellAktivitet = hentAktivitet(funksjonellId)
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(ny ,kontekst))
         val versjoner = aktivitetTestService.hentVersjoner(initiellAktivitet.id, mockBruker, mockBruker)
-        // Skal bare finnes siste versjon, alle andre skal slettes
-        assertThat(versjoner).hasSize(1)
-        val sisteVersjon = versjoner.first()
-        assertThat(sisteVersjon.versjon.toLong()).isGreaterThan(initiellAktivitet.versjon.toLong())
+        // Alle versjoner skal finnes
+        assertThat(versjoner.map { it.transaksjonsType })
+            .containsExactly(AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.OPPRETTET)
+        assertThat(versjoner.groupBy { it.endretDato }).hasSize(3)
         // Skal bruke første opprettet dato
-        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(opprettet, within(1, ChronoUnit.SECONDS))
-        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
-        // TODO: Vurder om nyeste periode er mer riktig enn gammel periode
-        assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
-        assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
+        val nyeste = versjoner.first()
+        assertThat(DateUtils.dateToZonedDateTime(nyeste.opprettetDato)).isCloseTo(tiDagerSiden, within(1, ChronoUnit.SECONDS))
+        assertThat(nyeste.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET)
+        assertThat(nyeste.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
+        assertThat(nyeste.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
         // Behold FHO
         val heleAktiviteten = hentAktivitet(funksjonellId)
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(heleAktiviteten.forhaandsorientering.id)
@@ -963,7 +959,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo("SYSTEM")
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -999,7 +995,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -1035,7 +1031,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)

@@ -34,29 +34,21 @@ class AktivitetskortService(
     @Throws(AktivitetsKortFunksjonellException::class)
     fun upsertAktivitetskort(bestilling: AktivitetskortBestilling): UpsertActionResult {
         val (id) = bestilling.aktivitetskort
+        // Splittede aktiviteter bestilles på ny funksjonell-id
         val gammelAktivitetMaybe = aktivitetDAO.hentAktivitetByFunksjonellId(id)
         return when {
             gammelAktivitetMaybe.isPresent -> {
                 val gammelAktivitet = gammelAktivitetMaybe.get()
-                // Arenaaktiviteter er blitt "ekstern"-aktivitet etter de har blitt opprettet
+                val nyAktivitet = bestilling.toAktivitetsDataUpdate()
+                // Arenaaktiviteter blir vanlig "ekstern"-aktivitet etter de har blitt opprettet
                 val oppdatertAktivitet = when  {
-                    bestilling is ArenaAktivitetskortBestilling -> {
-                        if(gammelAktivitet.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name) {
-                            // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
-                            // hvor andre team behandler endringer fra arena raskere enn oss
-                            val bleMigrert = arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
-                            if (bleMigrert) {
-                                log.info("Aktivitet tatt over av annet team men var ikke migrert, gjorde arena-migrering og ignorerte data fra acl $id")
-                            } else {
-                                log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
-                            }
-                            return UpsertActionResult.IGNORER
-                        }
-                        arenaAktivitetskortService.oppdaterAktivitet(
-                            bestilling,
-                            gammelAktivitet)
+                    bestilling is ArenaAktivitetskortBestilling && gammelAktivitet.erTattOverAvAnnetTeam() -> {
+                        // Vi gjør arena-migrering men beholder andre team sine data, ikke data fra ACL, dette er pga en race-condition
+                        // hvor andre team behandler endringer fra arena raskere enn oss
+                        arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
+                        return UpsertActionResult.IGNORER
                     }
-                    else -> oppdaterAktivitet(gammelAktivitet, bestilling.toAktivitetsDataUpdate())
+                    else -> oppdaterAktivitet(gammelAktivitet, nyAktivitet)
                 }
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
@@ -85,8 +77,7 @@ class AktivitetskortService(
         } catch (e: IngenGjeldendePeriodeException) {
             throw ManglerOppfolgingsperiodeFeil()
         }
-        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert(bestilling.aktivitetskort.endretTidspunkt, null)
-
+        val aktivitetData: AktivitetData = bestilling.toAktivitetsDataInsert()
         return aktivitetService.opprettAktivitet(
             aktivitetData.withOppfolgingsperiodeId(oppfolgingsperiode),
         )
@@ -147,7 +138,9 @@ class AktivitetskortService(
         aktivitetsMessageDAO.updateActionResult(messageId, upsertActionResult, reason)
     }
 
-    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): AktivitetData {
-        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId).get()
+    fun hentAktivitetskortByFunksjonellId(funksjonellId: UUID): Optional<AktivitetData> {
+        return aktivitetDAO.hentAktivitetByFunksjonellId(funksjonellId)
     }
 }
+
+fun AktivitetData.erTattOverAvAnnetTeam() = this.eksternAktivitetData.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL.name

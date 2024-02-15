@@ -36,13 +36,13 @@ internal class AktivitetskortMapperTest {
         val aktivitetskortWithNullFields = aktivitetskort()
             .copy(etiketter = emptyList(), handlinger = emptyList(), detaljer = emptyList())
         val result = EksternAktivitetskortBestilling(
-            aktivitetskortWithNullFields,
+            aktivitetskortWithNullFields.copy(endretTidspunkt = ZonedDateTime.now()),
             "test-source",
             AktivitetskortType.ARENA_TILTAK,
             UUID.randomUUID(),
             ActionType.UPSERT_AKTIVITETSKORT_V1,
             Person.aktorId("1234567890")
-        ).toAktivitetsDataInsert(ZonedDateTime.now(), null)
+        ).toAktivitetsDataInsert()
         result.withAktorId(Person.aktorId("adas"))
         Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()

@@ -32,21 +32,21 @@ object AktivitetskortMapper {
         }
     }
 
-    @JvmStatic
-    fun AktivitetskortBestilling.toAktivitetsDataInsert(
-        opprettet: ZonedDateTime,
-        historiskTidspunkt: ZonedDateTime?
-    ): AktivitetData {
-        return this.toAktivitet(opprettet, historiskTidspunkt)
+    fun ArenaAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, this.oppfolgingsperiodeSlutt)
+            .withOppfolgingsperiodeId(this.oppfolgingsperiode)
     }
 
-    @JvmStatic
+    fun EksternAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, null)
+    }
+
     fun AktivitetskortBestilling.toAktivitetsDataUpdate(): AktivitetData {
         return this.toAktivitet(null, null)
     }
 
 
-    fun AktivitetskortBestilling.toAktivitet(
+    private fun AktivitetskortBestilling.toAktivitet(
         opprettetDato: ZonedDateTime?,
         historiskTidspunkt: ZonedDateTime?
     ): AktivitetData {
