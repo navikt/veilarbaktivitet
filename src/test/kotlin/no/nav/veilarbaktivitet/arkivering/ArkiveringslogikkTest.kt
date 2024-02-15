@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
@@ -8,7 +9,7 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.*
 
-class ArkiveringsutilsTest {
+class ArkiveringslogikkTest {
 
     @Test
     fun `Skal returnere true når en aktivitet er endret etter tidspunktet for forhåndsvisning`() {
