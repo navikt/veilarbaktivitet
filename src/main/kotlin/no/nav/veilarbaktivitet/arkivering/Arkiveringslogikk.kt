@@ -20,14 +20,14 @@ object Arkiveringslogikk {
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>
     ): ArkivPayload {
-        val (aktiviteter, dialogtråder) = lagDataTilOrkivar(oppfølgingsperiodeId, aktiviteter, dialoger)
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiodeId, aktiviteter, dialoger)
         return ArkivPayload(
             metadata = ArkivMetadata(
                 navn = navn.tilFornavnMellomnavnEtternavn(),
                 fnr = fnr.get()
             ),
-            aktiviteter = aktiviteter.groupBy { it.status },
-            dialogtråder = dialogtråder
+            aktiviteter = arkivaktiviteter.groupBy { it.status },
+            dialogtråder = arkivdialoger
         )
     }
 
