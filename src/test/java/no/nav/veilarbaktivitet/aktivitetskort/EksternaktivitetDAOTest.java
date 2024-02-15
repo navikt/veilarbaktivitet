@@ -24,7 +24,8 @@ class EksternaktivitetDAOTest {
         AktivitetData opprettetAktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitetData);
 
         AktivitetData aktivitet = aktivitetDAO.hentAktivitet(opprettetAktivitetData.getId());
-        Assertions.assertThat(aktivitet).isEqualTo(opprettetAktivitetData);
+        Assertions.assertThat(aktivitet.getEksternAktivitetData()).isEqualTo(opprettetAktivitetData.getEksternAktivitetData());
+        Assertions.assertThat(aktivitet.withEksternAktivitetData(null)).isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null));
     }
 
 }
