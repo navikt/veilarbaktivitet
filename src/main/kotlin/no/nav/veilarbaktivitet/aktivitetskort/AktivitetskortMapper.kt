@@ -63,7 +63,8 @@ object AktivitetskortMapper {
                 etiketter
             ).orElse(listOf()),
             opprettetSomHistorisk = historiskTidspunkt != null,
-            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime()
+            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime(),
+            endretTidspunktKilde = endretTidspunkt
         )
 
         return AktivitetData.builder()
@@ -79,7 +80,7 @@ object AktivitetskortMapper {
             .endretAv(endretAv!!.ident)
             .endretAvType(endretAv.identType.toInnsender())
             .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
-            .endretDato(DateUtils.zonedDateTimeToDate(endretTidspunkt))
+            .endretDato(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()))
             .eksternAktivitetData(eksternAktivitetData)
             .build()
     }

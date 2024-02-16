@@ -236,9 +236,9 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun happy_case_upsert_status_existing_tiltaksaktivitet() {
         val serie = AktivitetskortSerie(mockBruker)
-        val tiltaksaktivitet = serie.ny(AktivitetskortStatus.PLANLAGT, ZonedDateTime.now())
+        val tiltaksaktivitet = serie.ny(AktivitetskortStatus.PLANLAGT, ZonedDateTime.now().minusHours(2))
         val annenVeileder = Ident("ANNEN_NAV_IDENT", Innsender.ARENAIDENT)
-        val tiltaksaktivitetUpdate = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now())
+        val tiltaksaktivitetUpdate = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now().minusHours(1))
             .let { it.copy(aktivitetskort = it.aktivitetskort.copy(endretAv = annenVeileder)) }
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
@@ -249,8 +249,8 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val aktivitet = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertNotNull(aktivitet)
-        assertThat(tiltaksaktivitet.aktivitetskort.endretTidspunkt)
-            .isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.endretDato), within(1, ChronoUnit.MILLIS))
+        assertThat(aktivitet.endretDato)
+            .isCloseTo(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()), 1000)
         assertThat(aktivitet.endretAv).isEqualTo(annenVeileder.ident)
         assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.status)
         assertEquals(
@@ -414,14 +414,12 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun endretTidspunkt_skal_settes_fra_melding() {
-        val funksjonellId = UUID.randomUUID()
         val context = arenaMeldingHeaders(mockBruker)
-        val aktivitetskort: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
-            .copy(endretTidspunkt = endretDato)
+        val aktivitetskort: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
+            .copy(endretTidspunkt = ZonedDateTime.now().minusDays(1))
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(aktivitetskort, context))
-        val aktivitet = hentAktivitet(funksjonellId)
-        val endretDatoInstant = endretDato.toInstant()
-        assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
+        val aktivitet = hentAktivitet(aktivitetskort.id)
+        assertThat(aktivitet.endretDato).isCloseTo(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()), 1000)
     }
 
 

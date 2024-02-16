@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 
 import java.net.URL;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.List;
@@ -117,7 +118,8 @@ public class AktivitetTypeDataTestBuilder {
                new Attributt("Arrangør", "NAV"),
                new Attributt("Dager per uke", "5")
            ),
-           List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN"))
+           List.of(new Etikett("Gjennomfører", Sentiment.POSITIVE, "GJENN")),
+           ZonedDateTime.now()
         );
     }
 }

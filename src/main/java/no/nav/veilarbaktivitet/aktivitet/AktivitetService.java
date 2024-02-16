@@ -306,7 +306,8 @@ public class AktivitetService {
                     newData.getOppgave(),
                     newData.getHandlinger(),
                     newData.getDetaljer(),
-                    newData.getEtiketter()
+                    newData.getEtiketter(),
+                    newData.getEndretTidspunktKilde()
                 );
     }
 
