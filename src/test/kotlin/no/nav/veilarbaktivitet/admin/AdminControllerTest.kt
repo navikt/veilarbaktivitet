@@ -54,7 +54,7 @@ internal class AdminControllerTest : SpringBootTestBase() {
         val oppfolgingsperiodeString = aktivitet.oppfolgingsperiodeId.toString()
         val fnr = mockBruker.fnr
 
-        sette_oppfolgingsperiode_til_avsluttet(mockBruker.oppfolgingsperiode, mockBruker.aktorId)
+        sette_oppfolgingsperiode_til_avsluttet(mockBruker.oppfolgingsperiodeId, mockBruker.aktorId)
 
         val response = veileder
             .createRequest()

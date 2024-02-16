@@ -239,7 +239,7 @@ class BrukernotifikasjonBeskjedKvitteringTest extends SpringBootTestBase {
         NokkelInput nokkel = oppgaveRecord.key();
         OppgaveInput oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), nokkel.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), nokkel.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), nokkel.getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;

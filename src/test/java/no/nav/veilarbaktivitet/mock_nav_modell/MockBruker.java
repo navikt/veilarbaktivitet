@@ -17,7 +17,9 @@ import java.util.UUID;
 public class MockBruker extends RestassuredUser {
     protected final PrivatBruker privatbruker;
     @Setter
-    public UUID oppfolgingsperiode;
+    public UUID oppfolgingsperiodeId;
+    @Setter
+    public Oppfolgingsperiode oppfolgingsperiode;
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
@@ -27,10 +29,10 @@ public class MockBruker extends RestassuredUser {
         super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
         if (brukerOptions.isUnderOppfolging()) {
-            oppfolgingsperiode = UUID.randomUUID();
+            oppfolgingsperiodeId = UUID.randomUUID();
             var oppfolgingsperiodeObject = new Oppfolgingsperiode(
                     getAktorId().get(),
-                    oppfolgingsperiode,
+                    oppfolgingsperiodeId,
                     // Aktiviteter fra arena-endepunkt er hardkodet til å ha start-dato 2021-11-18
                     // For at disse skal komme med må oppfolgingsperiode start før
                     ZonedDateTime.now().withYear(2021).withMonth(10),

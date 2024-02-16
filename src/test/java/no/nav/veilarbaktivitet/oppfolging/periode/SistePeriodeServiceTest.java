@@ -39,7 +39,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
         Oppfolgingsperiode avsluttet = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), ZonedDateTime.now());
         sistePeriodeDAO.uppsertOppfolingsperide(avsluttet);
         UUID fraVeilarbOppfolging = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(mockBruker.getAktorIdAsAktorId());
-        assertThat(fraVeilarbOppfolging).isEqualTo(mockBruker.getOppfolgingsperiode());
+        assertThat(fraVeilarbOppfolging).isEqualTo(mockBruker.getOppfolgingsperiodeId());
 
     }
 

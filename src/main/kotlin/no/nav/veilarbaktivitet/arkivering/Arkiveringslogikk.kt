@@ -1,10 +1,12 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.arkivering.Metadata as ArkivMetadata
 import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
 import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -16,15 +18,17 @@ object Arkiveringslogikk {
     fun lagArkivPayload(
         fnr: Fnr,
         navn: Navn,
-        oppfølgingsperiodeId: UUID,
+        oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>
     ): ArkivPayload {
-        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiodeId, aktiviteter, dialoger)
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger)
         return ArkivPayload(
             metadata = ArkivMetadata(
                 navn = navn.tilFornavnMellomnavnEtternavn(),
-                fnr = fnr.get()
+                fnr = fnr.get(),
+                oppfølgingsperiodeStart = oppfølgingsperiode.startDato.norskDato(),
+                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato()
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger

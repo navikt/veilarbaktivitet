@@ -1,11 +1,9 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.arkivering.OrkivarClient;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
-import wiremock.com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -16,7 +14,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class WireMockUtil {
 
-    public static final ZonedDateTime GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START = ZonedDateTime.now().minusDays(5);
 
     static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
@@ -29,10 +26,9 @@ public class WireMockUtil {
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
         Navn navn = mockBruker.getBrukerOptions().getNavn();
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
-
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
 
-        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
+        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiodeId());
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
@@ -60,7 +56,7 @@ public class WireMockUtil {
         if (underOppfolging) {
             OppfolgingPeriodeMinimalDTO oppfolgingsperiode = new OppfolgingPeriodeMinimalDTO(
                     periode,
-                    GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START,
+                    ,
                     null
             );
             OppfolgingPeriodeMinimalDTO gammelPeriode = new OppfolgingPeriodeMinimalDTO(

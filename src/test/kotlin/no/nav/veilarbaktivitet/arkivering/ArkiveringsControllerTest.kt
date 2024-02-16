@@ -193,7 +193,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": "${sisteOppfølgingsperiode.sluttTid.norskDato()}"
+                        "oppfølgingsperiodeSlutt": null
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {

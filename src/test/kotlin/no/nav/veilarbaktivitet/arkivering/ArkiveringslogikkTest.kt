@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
@@ -18,8 +19,7 @@ class ArkiveringslogikkTest {
 
     @Test
     fun `OppfølgingsperiodeSluttdato skal være null hvis oppfølgingsperiode er aktiv`() {
-        // TODO: Sett opp datoer
-        val oppfølgingsperiodeIdForArkivering = UUID.randomUUID()
+        val oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(UUID.randomUUID(), ZonedDateTime.now().minusDays(10), null)
         val annenOppfølgingsperiodeId = UUID.randomUUID()
         val aktivitetUtenforOppfølgingsperiode = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiodeId).build()
@@ -27,17 +27,17 @@ class ArkiveringslogikkTest {
         val arkivPayload = Arkiveringslogikk.lagArkivPayload(
             dummyFnr,
             dummyNavn,
-            oppfølgingsperiodeIdForArkivering,
+            oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
             dialoger = emptyList()
         )
 
-        // TODO: Assert
+        assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
     }
 
     @Test
     fun `Payload skal ikke inkludere aktiviteter utenfor oppfølgingsperiode`() {
-        val oppfølgingsperiodeIdForArkivering = UUID.randomUUID()
+        val oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(UUID.randomUUID(), ZonedDateTime.now().minusDays(10), ZonedDateTime.now())
         val annenOppfølgingsperiodeId = UUID.randomUUID()
         val aktivitetUtenforOppfølgingsperiode = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiodeId).build()
@@ -45,7 +45,7 @@ class ArkiveringslogikkTest {
         val arkivPayload = Arkiveringslogikk.lagArkivPayload(
             dummyFnr,
             dummyNavn,
-            oppfølgingsperiodeIdForArkivering,
+            oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
             dialoger = emptyList()
         )
@@ -55,7 +55,7 @@ class ArkiveringslogikkTest {
 
     @Test
     fun `Payload skal ikke inkludere dialoger utenfor oppfølgingsperiode`() {
-        val oppfølgingsperiodeIdForArkivering = UUID.randomUUID()
+        val oppfølgingsperiode = OppfolgingPeriodeMinimalDTO(UUID.randomUUID(), ZonedDateTime.now().minusDays(10), ZonedDateTime.now())
         val annenOppfølgingsperiodeId = UUID.randomUUID()
         val dialog = DialogClient.DialogTråd(
             id = "Id",
@@ -69,7 +69,7 @@ class ArkiveringslogikkTest {
         val arkivPayload = Arkiveringslogikk.lagArkivPayload(
             dummyFnr,
             dummyNavn,
-            oppfølgingsperiodeIdForArkivering,
+            oppfølgingsperiode,
             aktiviteter = emptyList(),
             dialoger = listOf(dialog)
         )

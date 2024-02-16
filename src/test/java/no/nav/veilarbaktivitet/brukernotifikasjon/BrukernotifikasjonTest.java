@@ -8,7 +8,6 @@ import no.nav.brukernotifikasjon.schemas.input.DoneInput;
 import no.nav.brukernotifikasjon.schemas.input.NokkelInput;
 import no.nav.brukernotifikasjon.schemas.input.OppgaveInput;
 import no.nav.common.utils.Credentials;
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
@@ -239,7 +238,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         NokkelInput nokkel = oppgaveRecord.key();
         BeskjedInput beskjed = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), nokkel.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), nokkel.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), nokkel.getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), beskjed.getLink());
     }
@@ -335,7 +334,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         assertEquals(oppgaveNokkel.getNamespace(), doneNokkel.getNamespace());
         assertEquals(oppgaveNokkel.getEventId(), doneNokkel.getEventId());
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), doneNokkel.getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), doneNokkel.getGrupperingsId());
         assertEquals(mockBruker.getFnr(), doneNokkel.getFodselsnummer());
     }
 
@@ -380,7 +379,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
                 AktivitetskortType.ARENA_TILTAK,
                 MessageSource.ARENA_TILTAK_AKTIVITET_ACL
         );
-        var headers = new ArenaMeldingHeaders(arenaId, "MIDL", mockBruker.oppfolgingsperiode, null);
+        var headers = new ArenaMeldingHeaders(arenaId, "MIDL", mockBruker.oppfolgingsperiodeId, null);
         aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(aktivitetskortMelding, headers));
         // Opprett fho når toggle er av
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
@@ -473,7 +472,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         final ConsumerRecord<NokkelInput, OppgaveInput> oppgaveRecord = getSingleRecord(oppgaveConsumer, oppgaveTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         OppgaveInput oppgave = oppgaveRecord.value();
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), oppgaveRecord.key().getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), oppgaveRecord.key().getGrupperingsId());
         assertEquals(mockBruker.getFnr(), oppgaveRecord.key().getFodselsnummer());
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
         return oppgaveRecord;
@@ -490,7 +489,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         assertEquals(oppgaveRecord.key().getAppnavn(), doneRecord.key().getAppnavn());
         assertEquals(oppgaveRecord.key().getEventId(), doneRecord.key().getEventId());
 
-        assertEquals(mockBruker.getOppfolgingsperiode().toString(), doneRecord.key().getGrupperingsId());
+        assertEquals(mockBruker.getOppfolgingsperiodeId().toString(), doneRecord.key().getGrupperingsId());
         assertEquals(mockBruker.getFnr(), doneRecord.key().getFodselsnummer());
     }
 
