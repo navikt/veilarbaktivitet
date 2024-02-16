@@ -21,7 +21,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     @Value("\${veilarbdialog.url}")
     lateinit var dialogUrl: String;
 
-    fun hentDialoger(fnr: Fnr): List<DialogTrådDTO> {
+    fun hentDialoger(fnr: Fnr): List<DialogTråd> {
         val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}"
 
         val request: Request = Request.Builder()
@@ -33,24 +33,24 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
 
         return try {
             val response = dialogHttpClient.newCall(request).execute()
-            RestUtils.parseJsonResponseArrayOrThrow(response, DialogTrådDTO::class.java)
+            RestUtils.parseJsonResponseArrayOrThrow(response, DialogTråd::class.java)
         } catch (e: Exception) {
             log.error("Feil ved henting av dialoger fra veilarbdialog", e)
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil ved henting av dialoger")
         }
     }
 
-    data class DialogTrådDTO(
+    data class DialogTråd(
         val id: String,
         val aktivitetId: String?,
         val overskrift: String,
         val oppfolgingsperiode: UUID,
         @JsonProperty("henvendelser")
-        val meldinger: List<MeldingDTO>,
+        val meldinger: List<Melding>,
         val egenskaper: List<Egenskap>
     )
 
-    data class MeldingDTO(
+    data class Melding(
         val id: String,
         val dialogId: String,
         val avsender: Avsender,

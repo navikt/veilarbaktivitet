@@ -4,7 +4,7 @@ import no.nav.veilarbaktivitet.arkivering.DialogClient
 import no.nav.veilarbaktivitet.arkivering.ArkivDialogtråd
 import no.nav.veilarbaktivitet.arkivering.Melding
 
-fun DialogClient.DialogTrådDTO.tilDialogTråd() =
+fun DialogClient.DialogTråd.tilDialogTråd() =
     ArkivDialogtråd(
         overskrift = overskrift,
         egenskaper = egenskaper.map { it.toString() },
@@ -12,7 +12,7 @@ fun DialogClient.DialogTrådDTO.tilDialogTråd() =
         }
     )
 
-fun DialogClient.MeldingDTO.tilMelding() =
+fun DialogClient.Melding.tilMelding() =
     Melding(
         avsender = avsender.toString(),
         sendt = "${sendt.norskDato()} kl. ${sendt.klokkeslett()}",

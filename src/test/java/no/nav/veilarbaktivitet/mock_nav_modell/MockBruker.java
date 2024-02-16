@@ -6,6 +6,7 @@ import lombok.Setter;
 import no.nav.common.auth.context.UserRole;
 import no.nav.poao_tilgang.poao_tilgang_test_core.PrivatBruker;
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
+import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.ZonedDateTime;
@@ -53,6 +54,8 @@ public class MockBruker extends RestassuredUser {
     public Person.Fnr getFnrAsFnr() {
         return Person.fnr(super.ident);
     }
+
+    public Navn getNavn() { return brukerOptions.getNavn();}
 
 
     public Person.AktorId getAktorIdAsAktorId() {
