@@ -61,7 +61,9 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                     {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                        "fnr": "${bruker.fnr}"
+                        "fnr": "${bruker.fnr}",
+                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
+                        "oppfølgingsperiodeSlutt": "${sisteOppfølgingsperiode.sluttTid.norskDato()}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -189,7 +191,9 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                     {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                        "fnr": "${bruker.fnr}"
+                        "fnr": "${bruker.fnr}",
+                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
+                        "oppfølgingsperiodeSlutt": "${sisteOppfølgingsperiode.sluttTid.norskDato()}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {

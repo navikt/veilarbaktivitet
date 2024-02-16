@@ -17,6 +17,25 @@ class ArkiveringslogikkTest {
     private val dummyNavn = Navn("Fornavn", null, "Etternavn")
 
     @Test
+    fun `OppfølgingsperiodeSluttdato skal være null hvis oppfølgingsperiode er aktiv`() {
+        // TODO: Sett opp datoer
+        val oppfølgingsperiodeIdForArkivering = UUID.randomUUID()
+        val annenOppfølgingsperiodeId = UUID.randomUUID()
+        val aktivitetUtenforOppfølgingsperiode = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiodeId).build()
+
+        val arkivPayload = Arkiveringslogikk.lagArkivPayload(
+            dummyFnr,
+            dummyNavn,
+            oppfølgingsperiodeIdForArkivering,
+            aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
+            dialoger = emptyList()
+        )
+
+        // TODO: Assert
+    }
+
+    @Test
     fun `Payload skal ikke inkludere aktiviteter utenfor oppfølgingsperiode`() {
         val oppfølgingsperiodeIdForArkivering = UUID.randomUUID()
         val annenOppfølgingsperiodeId = UUID.randomUUID()
