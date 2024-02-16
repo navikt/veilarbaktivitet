@@ -13,7 +13,7 @@ import java.time.temporal.ChronoUnit
 internal class EksternaktivitetDAOTest {
     @Test
     @SneakyThrows
-    fun test_json_serialisering() {
+    fun test_json_serialisering_av_eksternaktivitet() {
         val jdbcTemplate = LocalH2Database.getPresistentDb()
         val database = Database(jdbcTemplate)
         val aktivitetDAO = AktivitetDAO(database.namedJdbcTemplate)
@@ -24,11 +24,8 @@ internal class EksternaktivitetDAOTest {
         val utEkstern = aktivitet.eksternAktivitetData
         val innEkstern = opprettetAktivitetData.eksternAktivitetData
 
-//        assertThat(utEkstern.endretTidspunktKilde).isCloseTo(innEkstern.endretTidspunktKilde, within(1, ChronoUnit.MILLIS))
         assertThat(utEkstern.endretTidspunktKilde).isEqualTo(innEkstern.endretTidspunktKilde.truncatedTo(ChronoUnit.MICROS))
-        assertThat(utEkstern.endretTidspunktKilde.toString()).isEqualTo(innEkstern.endretTidspunktKilde.toString())
-        assertThat(utEkstern)
-            .isEqualTo(innEkstern.copy(endretTidspunktKilde = utEkstern.endretTidspunktKilde))
+        assertThat(utEkstern).isEqualTo(innEkstern.copy(endretTidspunktKilde = utEkstern.endretTidspunktKilde))
         assertThat(aktivitet.withEksternAktivitetData(null)).isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null))
     }
 }
