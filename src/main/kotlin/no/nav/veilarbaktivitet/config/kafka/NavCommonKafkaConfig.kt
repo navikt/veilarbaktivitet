@@ -91,16 +91,16 @@ open class NavCommonKafkaConfig {
     }
 
     @Bean
-    @Profile("!dev")
+    @Profile("!test")
     open fun aktivitetskortConsumerProperties(): Properties = KafkaPropertiesPreset.aivenDefaultConsumerProperties(AKTIVITETSKORT_CONSUMER_GROUP)
 
     @Bean
-    @Profile("!dev")
+    @Profile("!test")
     open fun consumerProperties(@Value("\${app.kafka.consumer-group-id}") consumerGroupId: String): Properties
         = KafkaPropertiesPreset.aivenDefaultConsumerProperties(consumerGroupId)
 
     @Bean
-    @Profile("!dev")
+    @Profile("!test")
     open fun aivenProducerProperties(): Properties = KafkaPropertiesPreset.aivenDefaultProducerProperties(PRODUCER_CLIENT_ID)
 
     companion object {

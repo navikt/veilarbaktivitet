@@ -17,14 +17,14 @@ public class AktorClientConfig {
 
 
     @Bean
-    @Profile("!dev") // Dev is during tests, not q2
+    @Profile("!test")
     public String pdlUrl() {
         return isProduction().orElse(false)
                 ? createProdInternalIngressUrl("pdl-api")
                 : createDevInternalIngressUrl("pdl-api");
     }
 
-    @Profile("!dev")
+    @Profile("!test")
     @Bean String pdlTokenscope() {
         return String.format("api://%s-fss.pdl.pdl-api/.default",
                 isProduction().orElse(false) ? "prod" : "dev"

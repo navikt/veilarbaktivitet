@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
 
 @Configuration
-@Profile("!dev")
+@Profile("!test")
 open class AxsysClientConfig {
 
     private val axsysScope = "api://%s-fss.org.axsys/.default".format(
