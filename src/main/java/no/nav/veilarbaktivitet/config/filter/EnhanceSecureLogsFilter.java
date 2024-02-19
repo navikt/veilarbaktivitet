@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
-@Profile("!dev")
+@Profile("!test")
 @Service
 @RequiredArgsConstructor
 public class EnhanceSecureLogsFilter implements Filter {
