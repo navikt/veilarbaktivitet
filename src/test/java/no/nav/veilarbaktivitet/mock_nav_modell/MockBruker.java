@@ -55,7 +55,9 @@ public class MockBruker extends RestassuredUser {
         return Person.fnr(super.ident);
     }
 
-    public Navn getNavn() { return brukerOptions.getNavn();}
+    public Navn getNavn() {
+        return brukerOptions.getNavn();
+    }
 
     public Person.AktorId getAktorIdAsAktorId() {
         return getAktorId();
@@ -85,15 +87,9 @@ public class MockBruker extends RestassuredUser {
         if (oppfolgingsperioder == null || oppfolgingsperioder.isEmpty()) {
             return null;
         } else {
-            return Collections.max(oppfolgingsperioder, ((o1, o2) -> {
-                if (o1.startTid().isAfter(o2.startTid())) {
-                    return 1;
-                } else if (o1.startTid().isBefore(o2.startTid())) {
-                    return -1;
-                } else {
-                    return 0;
-                }
-            }));
+            return Collections.max(oppfolgingsperioder, ((o1, o2) ->
+                    Math.toIntExact(o1.startTid().toEpochSecond() - o2.startTid().toEpochSecond())
+            ));
         }
     }
 }
