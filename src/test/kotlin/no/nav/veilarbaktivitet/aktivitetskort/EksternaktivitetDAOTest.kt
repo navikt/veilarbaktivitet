@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.mock.LocalH2Database
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.temporal.ChronoUnit
 
 
 internal class EksternaktivitetDAOTest {
@@ -23,8 +24,7 @@ internal class EksternaktivitetDAOTest {
         val utEkstern = aktivitet.eksternAktivitetData
         val innEkstern = opprettetAktivitetData.eksternAktivitetData
 
-//        assertThat(utEkstern.endretTidspunktKilde).isEqualTo(innEkstern.endretTidspunktKilde.truncatedTo(ChronoUnit.MICROS))
-        assertThat(utEkstern.endretTidspunktKilde).isEqualTo(innEkstern.endretTidspunktKilde)
+        assertThat(utEkstern.endretTidspunktKilde.truncatedTo(ChronoUnit.MICROS)).isEqualTo(innEkstern.endretTidspunktKilde)
         assertThat(utEkstern).isEqualTo(innEkstern.copy(endretTidspunktKilde = utEkstern.endretTidspunktKilde))
         assertThat(aktivitet.withEksternAktivitetData(null)).isEqualTo(opprettetAktivitetData.withEksternAktivitetData(null))
     }
