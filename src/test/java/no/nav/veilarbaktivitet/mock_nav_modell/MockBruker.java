@@ -82,12 +82,8 @@ public class MockBruker extends RestassuredUser {
     }
 
     public Oppfolgingsperiode getNyesteOppfølgingsperiode() {
-        if (oppfolgingsperioder == null) return null;
-
-        if (oppfolgingsperioder.isEmpty()) {
+        if (oppfolgingsperioder == null || oppfolgingsperioder.isEmpty()) {
             return null;
-        } else if (oppfolgingsperioder.size() == 1) {
-            return oppfolgingsperioder.get(0);
         } else {
             return Collections.max(oppfolgingsperioder, ((o1, o2) -> {
                 if (o1.startTid().isAfter(o2.startTid())) {
