@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
+import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
@@ -48,6 +49,25 @@ public class AktivitetAppService {
         return personService.getAktorIdForPersonBruker(ident)
                 .map(aktivitetService::hentAktiviteterForAktorId)
                 .orElseThrow(RuntimeException::new);
+    }
+
+    public List<AktivitetData> hentAktiviteterForIdentMedTilgangskontroll(Person ident) {
+        var enheterMedTilgang = new HashMap<EnhetId, Boolean>();
+        return hentAktiviteterForIdent(ident)
+                .stream().filter(aktivitet -> {
+                    var kontorsperreEnhetId = aktivitet.getKontorsperreEnhetId();
+                    if (kontorsperreEnhetId == null) {
+                        return true;
+                    } else if (enheterMedTilgang.get(EnhetId.of(kontorsperreEnhetId))) {
+                        return true;
+                    } else {
+                        var enhetId = EnhetId.of(kontorsperreEnhetId);
+                        var harTilgang = authService.harTilgangTilEnhet(EnhetId.of(kontorsperreEnhetId));
+                        enheterMedTilgang.put(enhetId, harTilgang);
+                        return harTilgang;
+                    }
+                }
+                ).toList();
     }
 
     public AktivitetData hentAktivitet(long id) {
@@ -156,7 +176,7 @@ public class AktivitetAppService {
     }
 
     private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
-        if(!orginalAktivitet.getAktorId().equals(aktorId)) {
+        if (!orginalAktivitet.getAktorId().equals(aktorId)) {
             secureLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
                     orginalAktivitet.getAktorId(), aktorId, orginalAktivitet.getId());
             throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
@@ -192,7 +212,7 @@ public class AktivitetAppService {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
-        if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())){
+        if (authService.erEksternBruker() && !TYPER_SOM_KAN_ENDRES_EKSTERNT.contains(originalAktivitet.getAktivitetType())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
 

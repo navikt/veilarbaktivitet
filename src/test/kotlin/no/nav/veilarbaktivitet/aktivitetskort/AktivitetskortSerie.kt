@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
@@ -24,7 +24,7 @@ open class AktivitetskortSerie(
     }
 
     fun ny(
-        status: AktivitetStatus = AktivitetStatus.GJENNOMFORES,
+        status: AktivitetskortStatus = AktivitetskortStatus.GJENNOMFORES,
         endretTidspunkt: ZonedDateTime = ZonedDateTime.now()
     ): KafkaAktivitetskortWrapperDTO {
         return KafkaAktivitetskortWrapperDTO(
@@ -46,8 +46,8 @@ class ArenaAktivitetskortSerie(val mockBruker: MockBruker, val tiltakskode: Stri
     private val serie = AktivitetskortSerie(mockBruker, AktivitetskortType.ARENA_TILTAK)
     val funksjonellId = serie.funksjonellId
     val arenaId = ArenaId("TA" + Random.nextInt(1000, 10000))
-    fun ny(status: AktivitetStatus, endretTidspunkt: ZonedDateTime): ArenaKort {
-        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode, periode?.id ?: mockBruker.oppfolgingsperiode, periode?.slutt))
+    fun ny(status: AktivitetskortStatus, endretTidspunkt: ZonedDateTime): ArenaKort {
+        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode, periode?.id ?: mockBruker.oppfolgingsperiodeId, periode?.slutt))
     }
 
     companion object {

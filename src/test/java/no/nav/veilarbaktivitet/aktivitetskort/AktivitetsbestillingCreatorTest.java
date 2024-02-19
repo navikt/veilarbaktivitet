@@ -1,11 +1,11 @@
 package no.nav.veilarbaktivitet.aktivitetskort;
 
 import lombok.SneakyThrows;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.AktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.aktivitetskort.feil.KeyErIkkeFunksjonellIdFeil;
@@ -120,7 +120,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskortBestilling.getSource()).isEqualTo(MessageSource.TEAM_TILTAK.name());
         assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
         var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
-        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetskortStatus.PLANLAGT);
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
         var oppgave = aktivitetskort.getOppgave();
@@ -141,7 +141,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskortBestilling.getSource()).isEqualTo("TEAM_UNKNOWN");
         assertThat(aktivitetskortBestilling.getAktivitetskortType()).isEqualTo(AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
         var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
-        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetskortStatus.PLANLAGT);
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
         var oppgave = aktivitetskort.getOppgave();
@@ -175,7 +175,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskortBestilling.getEksternReferanseId()).isEqualTo(new ArenaId(arenaId));
         assertThat(aktivitetskortBestilling.getArenaTiltakskode()).isEqualTo(tiltakskode);
         var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
-        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetskortStatus.PLANLAGT);
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
     }
@@ -204,7 +204,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskortBestilling.getOppfolgingsperiodeSlutt()).isEqualTo(oppfolgingsperiodeSlutt);
         assertThat(aktivitetskortBestilling.getArenaTiltakskode()).isEqualTo(tiltakskode);
         var aktivitetskort = aktivitetskortBestilling.getAktivitetskort();
-        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetStatus.PLANLAGT);
+        assertThat(aktivitetskort.getAktivitetStatus()).isEqualTo(AktivitetskortStatus.PLANLAGT);
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
     }

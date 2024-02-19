@@ -7,7 +7,8 @@ import no.nav.poao_tilgang.poao_tilgang_test_core.PrivatBruker;
 
 import java.util.UUID;
 
-
+// Gå over til NavMockService
+@Deprecated
 public class MockNavService {
     public static final NavContext NAV_CONTEXT = new NavContext();
 
@@ -28,7 +29,7 @@ public class MockNavService {
     }
 
     public static void newOppfolingsperiode(MockBruker mockBruker) {
-        mockBruker.setOppfolgingsperiode(UUID.randomUUID());
+        mockBruker.setOppfolgingsperiodeId(UUID.randomUUID());
         WireMockUtil.stubBruker(mockBruker);
     }
 

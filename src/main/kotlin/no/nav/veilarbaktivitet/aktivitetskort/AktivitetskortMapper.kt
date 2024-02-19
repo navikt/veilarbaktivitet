@@ -32,21 +32,21 @@ object AktivitetskortMapper {
         }
     }
 
-    @JvmStatic
-    fun AktivitetskortBestilling.toAktivitetsDataInsert(
-        opprettet: ZonedDateTime,
-        historiskTidspunkt: ZonedDateTime?
-    ): AktivitetData {
-        return this.toAktivitet(opprettet, historiskTidspunkt)
+    fun ArenaAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, this.oppfolgingsperiodeSlutt)
+            .withOppfolgingsperiodeId(this.oppfolgingsperiode)
     }
 
-    @JvmStatic
+    fun EksternAktivitetskortBestilling.toAktivitetsDataInsert(): AktivitetData {
+        return this.toAktivitet(this.aktivitetskort.endretTidspunkt, null)
+    }
+
     fun AktivitetskortBestilling.toAktivitetsDataUpdate(): AktivitetData {
         return this.toAktivitet(null, null)
     }
 
 
-    fun AktivitetskortBestilling.toAktivitet(
+    private fun AktivitetskortBestilling.toAktivitet(
         opprettetDato: ZonedDateTime?,
         historiskTidspunkt: ZonedDateTime?
     ): AktivitetData {
@@ -63,7 +63,8 @@ object AktivitetskortMapper {
                 etiketter
             ).orElse(listOf()),
             opprettetSomHistorisk = historiskTidspunkt != null,
-            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime()
+            oppfolgingsperiodeSlutt = historiskTidspunkt?.toLocalDateTime(),
+            endretTidspunktKilde = endretTidspunkt
         )
 
         return AktivitetData.builder()
@@ -74,12 +75,12 @@ object AktivitetskortMapper {
             .fraDato(DateUtils.toDate(startDato))
             .tilDato(DateUtils.toDate(sluttDato))
             .beskrivelse(beskrivelse)
-            .status(aktivitetStatus)
+            .status(aktivitetStatus.toAktivitetStatus())
             .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
             .endretAv(endretAv!!.ident)
             .endretAvType(endretAv.identType.toInnsender())
             .opprettetDato(DateUtils.zonedDateTimeToDate(opprettetDato))
-            .endretDato(DateUtils.zonedDateTimeToDate(endretTidspunkt))
+            .endretDato(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()))
             .eksternAktivitetData(eksternAktivitetData)
             .build()
     }

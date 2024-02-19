@@ -18,10 +18,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.invalid
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.kafkaArenaAktivitetWrapper
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortProducerUtil.missingFieldRecord
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
-import no.nav.veilarbaktivitet.aktivitetskort.dto.ErrorType
-import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
+import no.nav.veilarbaktivitet.aktivitetskort.dto.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDto
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService
@@ -53,13 +50,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
 import org.springframework.kafka.test.utils.KafkaTestUtils
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 
-internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
+open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Autowired
     var producerClient: KafkaProducerClient<String, String>? = null
@@ -101,7 +97,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
     }
 
-    fun aktivitetskort(funksjonellId: UUID, aktivitetStatus: AktivitetStatus, bruker: MockBruker = mockBruker): Aktivitetskort {
+    fun aktivitetskort(funksjonellId: UUID, aktivitetStatus: AktivitetskortStatus, bruker: MockBruker = mockBruker): Aktivitetskort {
         return AktivitetskortUtil.ny(
             funksjonellId,
             aktivitetStatus,
@@ -143,7 +139,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         //burde man endre på metrikkene her? kan man vite en fulstendig liste av aktiviteskort og skilde?
         meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).meters()
             .forEach(java.util.function.Consumer { it: Meter -> meterRegistry!!.remove(it) })
-        val actual = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val actual = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val arenaHeaders = arenaMeldingHeaders(mockBruker, ArenaId("ARENATA123"), "MIDL")
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(actual, arenaHeaders))
         val count = meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter()?.count()
@@ -168,7 +164,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun aktiviteter_opprettet_av_bruker_skal_ha_riktig_endretAv_verdi() {
         val brukerIdent = "12129312122"
-        val aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(endretAv = Ident(
                 brukerIdent,
                 IdentType.PERSONBRUKERIDENT
@@ -185,7 +181,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun ekstern_aktivitet_skal_ha_oppfolgingsperiode() {
         val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
             aktivitetskort = actual,
@@ -193,13 +189,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitet = hentAktivitet(funksjonellId)
-        assertEquals(mockBruker.oppfolgingsperiode, aktivitet.oppfolgingsperiodeId)
+        assertEquals(mockBruker.oppfolgingsperiodeId, aktivitet.oppfolgingsperiodeId)
     }
 
     @Test
     fun lonnstilskudd_på_bruker_som_ikke_er_under_oppfolging_skal_feile() {
         val serie = AktivitetskortSerie(brukerUtenOppfolging)
-        val actual = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now()).copy(source = MessageSource.TEAM_TILTAK.name)
+        val actual = serie.ny(AktivitetskortStatus.PLANLAGT, ZonedDateTime.now()).copy(source = MessageSource.TEAM_TILTAK.name)
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(actual))
         assertFeilmeldingPublished(
             serie.funksjonellId,
@@ -212,7 +208,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun historisk_arenatiltak_aktivitet_skal_ha_oppfolgingsperiode() {
         val gammelperiode = SerieOppfolgingsperiode(UUID.randomUUID(), ZonedDateTime.now().minusDays(1))
         val serie = ArenaAktivitetskortSerie(mockBruker, "MIDLONNTIL", gammelperiode)
-        val actual = serie.ny(AktivitetStatus.PLANLAGT, endretTidspunkt = ZonedDateTime.now().minusDays(75))
+        val actual = serie.ny(AktivitetskortStatus.PLANLAGT, endretTidspunkt = ZonedDateTime.now().minusDays(75))
         aktivitetTestService.opprettEksterntArenaKort(actual)
         val aktivitetFoer = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitetFoer.oppfolgingsperiodeId).isNotNull()
@@ -240,9 +236,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun happy_case_upsert_status_existing_tiltaksaktivitet() {
         val serie = AktivitetskortSerie(mockBruker)
-        val tiltaksaktivitet = serie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
+        val tiltaksaktivitet = serie.ny(AktivitetskortStatus.PLANLAGT, ZonedDateTime.now().minusHours(2))
         val annenVeileder = Ident("ANNEN_NAV_IDENT", Innsender.ARENAIDENT)
-        val tiltaksaktivitetUpdate = serie.ny(AktivitetStatus.GJENNOMFORES, ZonedDateTime.now())
+        val tiltaksaktivitetUpdate = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now().minusHours(1))
             .let { it.copy(aktivitetskort = it.aktivitetskort.copy(endretAv = annenVeileder)) }
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
@@ -253,8 +249,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val aktivitet = hentAktivitet(serie.funksjonellId)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
         assertNotNull(aktivitet)
-        assertThat(tiltaksaktivitet.aktivitetskort.endretTidspunkt)
-            .isCloseTo(DateUtils.dateToZonedDateTime(aktivitet.endretDato), within(1, ChronoUnit.MILLIS))
+        assertThat(aktivitet.endretDato)
+            .isCloseTo(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()), 1000)
         assertThat(aktivitet.endretAv).isEqualTo(annenVeileder.ident)
         assertEquals(AktivitetStatus.GJENNOMFORES, aktivitet.status)
         assertEquals(
@@ -266,12 +262,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdater_tiltaksaktivitet_fra_avtalt_til_ikke_avtalt_skal_throwe() {
         val funksjonellId = UUID.randomUUID()
-        val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(avtaltMedNav = true)
         val melding1 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitet, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
-        val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+        val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
             .copy(avtaltMedNav = false)
         val melding2 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitetUpdate, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
@@ -289,12 +285,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdater_tiltaksaktivitet_endre_bruker_skal_throwe() {
         val funksjonellId = UUID.randomUUID()
-        val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val lonnstilskuddAktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val melding1 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitet, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
         val mockBruker2 = MockNavService.createHappyBruker()
-        val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+        val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
             .copy(personIdent = mockBruker2.fnr)
         val melding2 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitetUpdate, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
@@ -311,10 +307,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun duplikat_melding_bare_1_opprettet_transaksjon() {
-        val funksjonellId = UUID.randomUUID()
-        val aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        // Given- 1 aktivitet
+        val aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val context = arenaMeldingHeaders(mockBruker)
+        // When - Sendt 2 ganger
         val producerRecord =
             aktivitetTestService.makeAktivitetskortProducerRecord(kafkaAktivitetskortWrapperDTO, context) as ProducerRecord<String, String>
         producerClient!!.sendSync(producerRecord)
@@ -324,8 +321,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             NavCommonKafkaConfig.CONSUMER_GROUP_ID,
             recordMetadataDuplicate.offset()
         )
+        // Then - Skal bare finnes 1 transaksjon
         val aktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter.stream()
-            .filter { a: AktivitetDTO -> a.funksjonellId == funksjonellId }
+            .filter { a: AktivitetDTO -> a.funksjonellId == aktivitetskort.id }
             .toList()
         assertEquals(1, aktiviteter.size)
         assertEquals(
@@ -338,9 +336,9 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun oppdatering_av_detaljer_gir_riktig_transaksjon() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
-            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val tiltaksaktivitetEndret = KafkaAktivitetskortWrapperDTO(
-            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
                     "Tiltaksnavn",
@@ -362,7 +360,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun skal_handtere_ukjent_source() {
         val funksjonellId = UUID.randomUUID()
         val tiltaksaktivitet = KafkaAktivitetskortWrapperDTO(
-            aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK).copy(source = "UKJENT_SOURCE")
+            aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK).copy(source = "UKJENT_SOURCE")
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
                 tiltaksaktivitet))
@@ -376,11 +374,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun oppdatering_status_og_detaljer_gir_4_transaksjoner() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet: KafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(avtaltMedNav = false), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         val etikett = Etikett("Fått plass", Sentiment.POSITIVE,"FATT_PLASS")
         val tiltaksaktivitetEndret = KafkaAktivitetskortWrapperDTO(
-            aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
+            aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
                 .copy(avtaltMedNav = true, etiketter = listOf(etikett)), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
         aktivitetTestService.opprettEksterntAktivitetsKort(
             listOf(
@@ -416,14 +414,12 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun endretTidspunkt_skal_settes_fra_melding() {
-        val funksjonellId = UUID.randomUUID()
         val context = arenaMeldingHeaders(mockBruker)
-        val aktivitetskort: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(endretTidspunkt = endretDato)
+        val aktivitetskort: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
+            .copy(endretTidspunkt = ZonedDateTime.now().minusDays(1))
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(aktivitetskort, context))
-        val aktivitet = hentAktivitet(funksjonellId)
-        val endretDatoInstant = endretDato.toInstant()
-        assertThat(aktivitet.endretDato).isEqualTo(endretDatoInstant)
+        val aktivitet = hentAktivitet(aktivitetskort.id)
+        assertThat(aktivitet.endretDato).isCloseTo(DateUtils.zonedDateTimeToDate(ZonedDateTime.now()), 1000)
     }
 
 
@@ -432,7 +428,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val funksjonellId = UUID.randomUUID()
         val nyesteNavn = "Nytt navn"
         val context = arenaMeldingHeaders(mockBruker)
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
                     "Tiltaksnavn",
@@ -440,7 +436,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 )
             ))
         val tiltaksMelding = KafkaAktivitetskortWrapperDTO(tiltaksaktivitet, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK)
-        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(detaljer = listOf(
                 Attributt(
                     "Tiltaksnavn",
@@ -475,8 +471,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun avbrutt_aktivitet_kan_endres() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)
-        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.AVBRUTT)
+        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val context = arenaMeldingHeaders(mockBruker)
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
@@ -490,8 +486,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun fullfort_aktivitet_kan_endres() {
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.FULLFORT)
-        val tiltaksaktivitetEndret = aktivitetskort(tiltaksaktivitet.id, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.FULLFORT)
+        val tiltaksaktivitetEndret = aktivitetskort(tiltaksaktivitet.id, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
                 ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)),
@@ -505,8 +501,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun aktivitet_kan_settes_til_avbrutt() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        val tiltaksaktivitetEndret = aktivitetskort(funksjonellId, AktivitetskortStatus.AVBRUTT)
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
                 ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)),
@@ -557,7 +553,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun should_catch_ugyldigident_error() {
         WireMockUtil.aktorUtenGjeldende(mockBruker.fnr, mockBruker.aktorId)
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)),)
         assertFeilmeldingPublished(
             funksjonellId,
@@ -630,7 +626,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun should_throw_exception_when_messageId_is_equal_to_funksjonell_id() {
         val funksjonellId = UUID.randomUUID()
-        val actual = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val actual = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         val wrapperDTO = KafkaAktivitetskortWrapperDTO(
             messageId = funksjonellId,
             aktivitetskortType = AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD,
@@ -646,8 +642,8 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun should_not_commit_database_transaction_if_runtimeException_is_thrown() {
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-        val tiltaksaktivitetOppdatert: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetStatus.AVBRUTT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+        val tiltaksaktivitetOppdatert: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.AVBRUTT)
             .copy(detaljer = listOf(
                 Attributt(
                     "Tiltaksnavn",
@@ -698,16 +694,14 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val arenaAktivitetDTO =
             aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker, arenaaktivitetId)))
+
         val aktivitet = hentAktivitet(funksjonellId)
         assertNotNull(aktivitet.forhaandsorientering)
         assertThat(aktivitet.endretAv).isEqualTo(tiltaksaktivitet.endretAv.ident)
-        // Assert endreDato is now because we forhaandsorientering was created during test-run
-        assertThat(DateUtils.dateToLocalDateTime(aktivitet.endretDato))
-            .isCloseTo(LocalDateTime.now(), within(1, ChronoUnit.SECONDS))
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(aktivitet.forhaandsorientering.id)
-        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET)
+        assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
     }
 
     @Test
@@ -719,7 +713,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         val record = brukernotifikasjonAsserts!!.assertOppgaveSendt(mockBruker.fnrAsFnr)
         // Migrer arenaaktivitet via topic
         val funksjonellId = UUID.randomUUID()
-        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(
             ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker, arenaaktivitetId)),
         )
@@ -733,7 +727,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun tiltak_endepunkt_skal_legge_pa_aktivitet_id_og_versjon_pa_migrerte_arena_aktiviteteter() {
         val arenaaktivitetId = ArenaId("ARENATA123")
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
@@ -757,7 +751,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun skal_alltid_vere_like_mange_aktiviteter_med_toggle_av_eller_pa() {
         val arenaaktivitetId = ArenaId("ARENATA3123")
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
 
         // Default toggle for testene er på
         Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
@@ -784,7 +778,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun skal_ikke_gi_ut_tiltakaktiviteter_pa_intern_api() {
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)),)
         val aktiviteter = aktivitetTestService.hentAktiviteterInternApi(veileder, mockBruker.aktorIdAsAktorId)
         assertThat(aktiviteter).isEmpty()
@@ -792,7 +786,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun skal_sette_nullable_felt_til_null() {
-        val tiltaksaktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(sluttDato = null, startDato = null, beskrivelse = null)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)))
         val aktivitet = hentAktivitet(tiltaksaktivitet.id)
@@ -804,13 +798,13 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun skal_lagre_riktig_identtype_pa_eksterne_aktiviteter() {
         val arbeidsgiverIdent = Ident("123456789", IdentType.ARBEIDSGIVER)
-        val arbeidgiverAktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val arbeidgiverAktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(endretAv = arbeidsgiverIdent)
         val tiltaksarragoerIdent = Ident("123456780", IdentType.TILTAKSARRANGOER)
-        val tiltaksarrangoerAktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksarrangoerAktivitet: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(endretAv = tiltaksarragoerIdent)
         val systemIdent = Ident("123456770", IdentType.SYSTEM)
-        val systemAktivitetsKort: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val systemAktivitetsKort: Aktivitetskort = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
             .copy(endretAv = systemIdent)
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(
@@ -833,11 +827,11 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun skal_vise_lonnstilskudd_men_ikke_migrerte_arena_aktiviteter_hvis_toggle_er_av() {
-        val arenaAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val arenaAktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val arenata123 = ArenaId("ARENATA123")
         val kontekst = arenaMeldingHeaders(mockBruker, arenata123, "MIDLONNTIL")
         aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(arenaAktivitet, kontekst)))
-        val midlertidigLonnstilskudd = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val midlertidigLonnstilskudd = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val kafkaAktivitetskortWrapperDTO = KafkaAktivitetskortWrapperDTO(
             midlertidigLonnstilskudd, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
@@ -855,7 +849,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun skal_kunne_kassere_aktiviteter() {
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)))
         val kassering = KasseringsBestilling(
             "team-tiltak",
@@ -906,37 +900,36 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `relast skal overskrive første feilede migrering`() {
+    fun `skal lage flere versjoner av acl-aktiviteter som ikke er er tatt over`() {
+        // Areneaktivitet med FHO før migrering
         val arenaaktivitetId = ArenaId("TA31212")
         val arenaAktivitetDTO =
             aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaaktivitetId, veileder)
         val funksjonellId = UUID.randomUUID()
         val kontekst = arenaMeldingHeaders(mockBruker, arenaaktivitetId, "ARENA_TILTAK")
-        val opprettet = ZonedDateTime.now().minusDays(10)
-        val gammel = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
-            .copy(endretTidspunkt = opprettet)
-        val endaEnVersjon = aktivitetskort(funksjonellId, AktivitetStatus.GJENNOMFORES)
-            .copy(endretTidspunkt = opprettet.plusDays(5))
-        val ny = aktivitetskort(funksjonellId, AktivitetStatus.PLANLAGT)
+        val tiDagerSiden = ZonedDateTime.now().minusDays(10)
+        val gammel = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
+            .copy(endretTidspunkt = tiDagerSiden)
+        val endaEnVersjon = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
+            .copy(endretTidspunkt = tiDagerSiden.plusDays(5))
+        val ny = aktivitetskort(funksjonellId, AktivitetskortStatus.PLANLAGT)
             .copy(endretTidspunkt = ZonedDateTime.now())
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(gammel, kontekst))
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(gammel, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(endaEnVersjon, kontekst))
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(ny ,kontekst))
+
         val initiellAktivitet = hentAktivitet(funksjonellId)
-        aktivitetTestService.opprettEksterntArenaKort(
-            ArenaKort(ny ,kontekst))
         val versjoner = aktivitetTestService.hentVersjoner(initiellAktivitet.id, mockBruker, mockBruker)
-        // Skal bare finnes siste versjon, alle andre skal slettes
-        assertThat(versjoner).hasSize(1)
-        val sisteVersjon = versjoner.first()
-        assertThat(sisteVersjon.versjon.toLong()).isGreaterThan(initiellAktivitet.versjon.toLong())
+        // Alle versjoner skal finnes
+        assertThat(versjoner.map { it.transaksjonsType })
+            .containsExactly(AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.STATUS_ENDRET, AktivitetTransaksjonsType.DETALJER_ENDRET, AktivitetTransaksjonsType.OPPRETTET)
+        assertThat(versjoner.groupBy { it.endretDato }).hasSize(3)
         // Skal bruke første opprettet dato
-        assertThat(DateUtils.dateToZonedDateTime(sisteVersjon.opprettetDato)).isCloseTo(opprettet, within(1, ChronoUnit.SECONDS))
-        assertThat(sisteVersjon.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET)
-        // TODO: Vurder om nyeste periode er mer riktig enn gammel periode
-        assertThat(sisteVersjon.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
-        assertThat(sisteVersjon.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
+        val nyeste = versjoner.first()
+        assertThat(DateUtils.dateToZonedDateTime(nyeste.opprettetDato)).isCloseTo(tiDagerSiden, within(1, ChronoUnit.SECONDS))
+        assertThat(nyeste.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET)
+        assertThat(nyeste.oppfolgingsperiodeId).isEqualTo(initiellAktivitet.oppfolgingsperiodeId)
+        assertThat(nyeste.isHistorisk).isEqualTo(initiellAktivitet.isHistorisk)
         // Behold FHO
         val heleAktiviteten = hentAktivitet(funksjonellId)
         assertThat(arenaAktivitetDTO.forhaandsorientering.id).isEqualTo(heleAktiviteten.forhaandsorientering.id)
@@ -944,7 +937,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 
     @Test
     fun komet_skal_kunne_ta_over_arenaaktivitet() {
-        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetStatus.PLANLAGT)
+        val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
 
         aktivitetTestService.opprettEksterntArenaKort(
             listOf(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker)))
@@ -964,7 +957,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo("SYSTEM")
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.DETALJER_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(tiltaksaktivitet.id).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -976,18 +969,18 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun acl_oppdateringer_skal_ignoreres_hvis_komet_har_tatt_over_aktivitet() {
         val arenaId = ArenaId("ARENATA9988")
         val arenaKortSerie = AktivitetskortSerie(mockBruker, AktivitetskortType.ARENA_TILTAK)
-        val arenaAktivitetskortwrapper = arenaKortSerie.ny(AktivitetStatus.PLANLAGT)
+        val arenaAktivitetskortwrapper = arenaKortSerie.ny(AktivitetskortStatus.PLANLAGT)
         aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(arenaAktivitetskortwrapper, arenaMeldingHeaders(mockBruker, arenaId))))
 
         val kometAktivitetskortWrapperDTO = arenaAktivitetskortwrapper
             .copy(
                 messageId = UUID.randomUUID(),
-                aktivitetskort = arenaAktivitetskortwrapper.aktivitetskort.copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetStatus.GJENNOMFORES),
+                aktivitetskort = arenaAktivitetskortwrapper.aktivitetskort.copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetskortStatus.GJENNOMFORES),
                 aktivitetskortType = AktivitetskortType.GRUPPEAMO,
                 source = MessageSource.TEAM_KOMET.name)
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kometAktivitetskortWrapperDTO))
 
-        val ignorertArenaAktivitetskort = arenaKortSerie.ny(AktivitetStatus.FULLFORT)
+        val ignorertArenaAktivitetskort = arenaKortSerie.ny(AktivitetskortStatus.FULLFORT)
         aktivitetTestService.opprettEksterntArenaKort(listOf(ArenaKort(ignorertArenaAktivitetskort, arenaMeldingHeaders(mockBruker, arenaId))))
 
         val aktivitet = hentAktivitet(arenaKortSerie.funksjonellId)
@@ -1000,7 +993,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.STATUS_ENDRET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -1011,19 +1004,19 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     @Test
     fun acl_oppdateringer_skal_migrere_hvis_komet_har_tatt_over_aktivitet_forst() {
         val arenaKortSerie = ArenaAktivitetskortSerie(mockBruker, "GRUPPEAMO")
-        val arenaKort = arenaKortSerie.ny(AktivitetStatus.PLANLAGT, ZonedDateTime.now())
+        val arenaKort = arenaKortSerie.ny(AktivitetskortStatus.PLANLAGT, ZonedDateTime.now())
         val kometAktivitetskortWrapperDTO = arenaKort.melding
             .copy(
                 messageId = UUID.randomUUID(),
                 aktivitetskort = arenaKort.melding.aktivitetskort
-                    .copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetStatus.GJENNOMFORES),
+                    .copy(endretAv = Ident("srvamt", IdentType.SYSTEM), aktivitetStatus = AktivitetskortStatus.GJENNOMFORES),
                 aktivitetskortType = AktivitetskortType.GRUPPEAMO,
                 source = MessageSource.TEAM_KOMET.name)
 
         // Opprett komet-kort, deretter opprett acl-kort
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(kometAktivitetskortWrapperDTO))
         aktivitetTestService.opprettEksterntArenaKort(listOf(arenaKort))
-        val ekstraArenaMelding = arenaKortSerie.ny(AktivitetStatus.FULLFORT, ZonedDateTime.now())
+        val ekstraArenaMelding = arenaKortSerie.ny(AktivitetskortStatus.FULLFORT, ZonedDateTime.now())
         aktivitetTestService.opprettEksterntArenaKort(listOf(ekstraArenaMelding))
 
         val aktivitet = hentAktivitet(arenaKortSerie.funksjonellId)
@@ -1036,7 +1029,7 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.endretAvType).isEqualTo(IdentType.SYSTEM.name)
         assertThat(aktivitet.transaksjonsType).isEqualTo(AktivitetTransaksjonsType.OPPRETTET) // TODO egen transaksjonstype for denne?
 
-        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId)
+        val aktivitetData = aktivitetskortService.hentAktivitetskortByFunksjonellId(arenaKortSerie.funksjonellId).get()
         assertThat(aktivitetData.oppfolgingsperiodeId).isEqualTo(oppfolgingsperiode)
         val eksternAktivitetData = aktivitetData.eksternAktivitetData!!
         assertThat(eksternAktivitetData.source).isEqualTo(MessageSource.TEAM_KOMET.name)
@@ -1045,19 +1038,19 @@ internal class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-    private val mockBruker = MockNavService.createHappyBruker()
-    private val veileder = MockNavService.createVeileder(mockBruker)
+    private val mockBruker by lazy { navMockService.createHappyBruker() }
+    private val veileder by lazy { MockNavService.createVeileder(mockBruker) }
     private val endretDato = ZonedDateTime.now()
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(ArenaId("ARENATA" + Random.nextInt(10000)), "MIDL", mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(ArenaId("ARENATA" + Random.nextInt(10000)), "MIDL", mockBruker.oppfolgingsperiodeId, null)
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker, eksternRefanseId: ArenaId?): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(eksternRefanseId, "MIDL", mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(eksternRefanseId, "MIDL", mockBruker.oppfolgingsperiodeId, null)
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker, eksternRefanseId: ArenaId?, arenaTiltakskode: String?): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode, mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode, mockBruker.oppfolgingsperiodeId, null)
 }

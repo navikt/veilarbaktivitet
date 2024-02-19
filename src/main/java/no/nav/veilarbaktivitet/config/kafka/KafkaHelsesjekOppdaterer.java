@@ -14,7 +14,7 @@ public class KafkaHelsesjekOppdaterer {
     private final KafkaHelsesjekk helsesjekk;
 
     @Value("${topic.ut.portefolje}")
-    private final String portefolgeTopic;
+    private String portefolgeTopic;
 
     @Scheduled(
             initialDelay = 1000,

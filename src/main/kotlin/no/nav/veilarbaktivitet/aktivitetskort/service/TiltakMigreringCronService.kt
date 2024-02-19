@@ -5,9 +5,11 @@ import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
+import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 open class TiltakMigreringCronService(
@@ -27,6 +29,9 @@ open class TiltakMigreringCronService(
             .map { aktivitet -> aktivitet
                     .withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK)
                     .withHistoriskDato(DateUtils.localDateTimeToDate(aktivitet.getEksternAktivitetData().oppfolgingsperiodeSlutt))
+                    .withEndretDato(Date())
+                    .withEndretAvType(Innsender.SYSTEM)
+                    .withEndretAv("veilarbaktivitet")
             }
             .forEach { aktivitet: AktivitetData? -> aktivitetDAO.oppdaterAktivitet(aktivitet) }
     }

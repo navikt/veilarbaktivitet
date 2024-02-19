@@ -3,7 +3,6 @@ apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarbaktivitet
   namespace: pto
-  cluster: prod-fss
   labels:
     team: pto
 spec:
@@ -88,6 +87,7 @@ spec:
     outbound:
       external:
         - host: dab-unleash-api.nav.cloud.nais.io
+        - host: orkivar.intern.nav.no
   env:
     - name: APP_ENVIRONMENT_NAME
       value: p
@@ -97,3 +97,7 @@ spec:
       value: dfc550d0-c5bf-4208-8b2b-3542bb8b5b15
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
+    - name: ORKIVAR_URL
+      value: "https://orkivar.intern.nav.no"
+    - name: VEILARBDIALOG_URL
+      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog

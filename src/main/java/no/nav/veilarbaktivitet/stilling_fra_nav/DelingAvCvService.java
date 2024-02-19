@@ -85,6 +85,7 @@ public class DelingAvCvService {
                 .stillingFraNavData(nyStillingFraNavData)
                 .transaksjonsType(AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET)
                 .endretAv(endretAv.get())
+                .endretDato(new Date())
                 .build();
 
         return aktivitetDAO.oppdaterAktivitet(nyAktivitet);

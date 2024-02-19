@@ -1,10 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.EksternAktivitetskortBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
@@ -23,7 +23,7 @@ internal class AktivitetskortMapperTest {
             sluttDato = LocalDate.now().minusDays(30),
             tittel = "The Elder Scrolls: Arena",
             beskrivelse = "arenabeskrivelse",
-            aktivitetStatus = AktivitetStatus.GJENNOMFORES,
+            aktivitetStatus = AktivitetskortStatus.GJENNOMFORES,
             endretAv = Ident("arenaEndretav", Innsender.ARENAIDENT),
             endretTidspunkt = ZonedDateTime.now(),
             avtaltMedNav = false
@@ -36,13 +36,13 @@ internal class AktivitetskortMapperTest {
         val aktivitetskortWithNullFields = aktivitetskort()
             .copy(etiketter = emptyList(), handlinger = emptyList(), detaljer = emptyList())
         val result = EksternAktivitetskortBestilling(
-            aktivitetskortWithNullFields,
+            aktivitetskortWithNullFields.copy(endretTidspunkt = ZonedDateTime.now()),
             "test-source",
             AktivitetskortType.ARENA_TILTAK,
             UUID.randomUUID(),
             ActionType.UPSERT_AKTIVITETSKORT_V1,
             Person.aktorId("1234567890")
-        ).toAktivitetsDataInsert(ZonedDateTime.now(), null)
+        ).toAktivitetsDataInsert()
         result.withAktorId(Person.aktorId("adas"))
         Assertions.assertThat(result.getEksternAktivitetData().detaljer).isEmpty()
         Assertions.assertThat(result.getEksternAktivitetData().etiketter).isEmpty()

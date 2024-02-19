@@ -2,17 +2,13 @@ package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
-import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeDAO
+import no.nav.veilarbaktivitet.oppfolging.periode.*
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import java.time.ZonedDateTime
 import java.util.*
@@ -51,7 +47,7 @@ class OppfolgingsperiodeServiceTest {
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(10), null)
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -65,34 +61,34 @@ class OppfolgingsperiodeServiceTest {
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
     fun `opprettetTidspunkt passer paa startDato`() { // skal være inklusiv med andre ord
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(10)
 
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.minusDays(10), null)
+        val riktigPeriode = oppfperiodeDTO(DATE_TIME_NOW.minusDays(10), null)
         val perioder = listOf(
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(30), DATE_TIME_NOW.minusDays(20)),
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
     fun `feil periode er naermere, men foer oppstart`() {
         val opprettetTidspunkt = DATE_TIME_NOW
 
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.plusDays(6), null)
+        val riktigPeriode = oppfperiodeDTO(DATE_TIME_NOW.plusDays(6), null)
         val perioder = listOf(
             riktigPeriode,
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(4), DATE_TIME_NOW.minusDays(2))
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -100,31 +96,31 @@ class OppfolgingsperiodeServiceTest {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(15)
 
         // Er riktig fordi den er "nyere" enn den andre perioden
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.minusDays(16), DATE_TIME_NOW.minusDays(5))
+        val riktigPeriode = oppfperiodeDTO(DATE_TIME_NOW.minusDays(16), DATE_TIME_NOW.minusDays(5))
         val perioder = listOf(
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(20), DATE_TIME_NOW.minusDays(10)),
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
     fun `opprettetTidspunkt i en gammel og en gjeldende periode`() {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(15)
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.minusDays(16), DATE_TIME_NOW)
+        val riktigPeriode = oppfperiodeDTO(DATE_TIME_NOW.minusDays(16), DATE_TIME_NOW)
         val perioder = listOf(
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(20), DATE_TIME_NOW.minusDays(10)),
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
     fun `opprettetTidspunkt mot en bruker som ikke har oppfolgingsperioder`() {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(15)
-        val perioder: List<OppfolgingPeriodeMinimalDTO> = listOf()
+        val perioder: List<Oppfolgingsperiode> = listOf()
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
         assertThat(oppfolgingsperiode).isNull()
     }
@@ -140,7 +136,7 @@ class OppfolgingsperiodeServiceTest {
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -194,17 +190,17 @@ class OppfolgingsperiodeServiceTest {
     fun ti_min_innen_en_gjeldende_periode() {
         val opprettetTidspunkt = DATE_TIME_NOW.minusDays(10)
 
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(DATE_TIME_NOW.minusDays(10).plusMinutes(5), null)
+        val riktigPeriode: Oppfolgingsperiode = oppfperiodeDTO(DATE_TIME_NOW.minusDays(10).plusMinutes(5), null)
         val perioder = listOf(riktigPeriode)
-        val oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? =
+        val oppfolgingsperiode: Oppfolgingsperiode? =
             stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
     fun test() {
         val opprettetTidspunkt = ZonedDateTime.parse("2022-03-28T08:20:00.586835+01")
-        val riktigPeriode: OppfolgingPeriodeMinimalDTO = oppfperiodeDTO(
+        val riktigPeriode = oppfperiodeDTO(
             ZonedDateTime.parse("2020-12-02T12:44:48.355676+01:00"),
             ZonedDateTime.parse("2022-09-06T00:01:04.457439+02:00")
         )
@@ -213,23 +209,21 @@ class OppfolgingsperiodeServiceTest {
             null
         )
         val perioder = listOf(riktigPeriode, feilPeriode)
-        val oppfolgingsperiode: OppfolgingPeriodeMinimalDTO? =
+        val oppfolgingsperiode =
             stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.uuid).isEqualTo(riktigPeriode.uuid)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
 
     private fun stubOgFinnOppgolgingsperiode(
-        perioder: List<OppfolgingPeriodeMinimalDTO>,
+        perioder: List<Oppfolgingsperiode>,
         opprettetTidspunkt: ZonedDateTime
-    ): OppfolgingPeriodeMinimalDTO? {
-        Mockito.`when`(oppfolgingClient.hentOppfolgingsperioder(any()))
-            .thenReturn(perioder)
-        return oppfolgingsperiodeService.finnOppfolgingsperiode(AKTOR_ID, opprettetTidspunkt.toLocalDateTime())
+    ): Oppfolgingsperiode? {
+        return perioder.finnOppfolgingsperiodeForTidspunkt(opprettetTidspunkt.toLocalDateTime())
     }
 
-    private fun oppfperiodeDTO(startDato: ZonedDateTime, sluttDato: ZonedDateTime?): OppfolgingPeriodeMinimalDTO {
-        return OppfolgingPeriodeMinimalDTO(UUID.randomUUID(), startDato, sluttDato)
+    private fun oppfperiodeDTO(startDato: ZonedDateTime, sluttDato: ZonedDateTime?): Oppfolgingsperiode {
+        return Oppfolgingsperiode(AKTOR_ID.get(), UUID.randomUUID(), startDato, sluttDato)
     }
 }
 

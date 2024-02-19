@@ -5,13 +5,13 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort;
 import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
@@ -111,14 +111,14 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     @Test
     void skal_ikke_sende_arena_tiltak_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-        Aktivitetskort actual = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
+        Aktivitetskort actual = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapperDTO = new KafkaAktivitetskortWrapperDTO(
                 AktivitetskortType.ARENA_TILTAK,
                 actual,
                 "source",
                 UUID.randomUUID()
                 );
-        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "tiltakskode", mockBruker.oppfolgingsperiode, null)));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapperDTO, new ArenaMeldingHeaders(new ArenaId("TA123123"), "tiltakskode", mockBruker.oppfolgingsperiodeId, null)));
         cronService.sendOppTil5000AktiviterTilPortefolje();
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));
     }
@@ -126,7 +126,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
     @Test
     void skal_sende_nye_lonnstilskudd_til_portefolje() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
-        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
+        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT, ZonedDateTime.now(), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapper = new KafkaAktivitetskortWrapperDTO(aktivitetskort, UUID.randomUUID(), MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK);
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(wrapper));
         cronService.sendOppTil5000AktiviterTilPortefolje();
@@ -143,11 +143,11 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         // Happy bruker har en gammel periode startDato nå-100 dager, sluttDato nå-50 dager
         UUID funksjonellId = UUID.randomUUID();
-        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(funksjonellId, AktivitetStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
+        Aktivitetskort aktivitetskort = AktivitetskortUtil.ny(funksjonellId, AktivitetskortStatus.PLANLAGT, ZonedDateTime.now().minusDays(75), mockBruker);
         KafkaAktivitetskortWrapperDTO wrapper = new KafkaAktivitetskortWrapperDTO(aktivitetskort, funksjonellId, AktivitetskortType.ARENA_TILTAK, MessageSource.ARENA_TILTAK_AKTIVITET_ACL);
         ArenaId arenaId = new ArenaId("ARENATA123");
         String tiltakskode = "MIDLONNTIL";
-        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapper, new ArenaMeldingHeaders(arenaId, tiltakskode, mockBruker.oppfolgingsperiode, null)));
+        aktivitetTestService.opprettEksterntArenaKort(new ArenaKort(wrapper, new ArenaMeldingHeaders(arenaId, tiltakskode, mockBruker.oppfolgingsperiodeId, null)));
         cronService.sendOppTil5000AktiviterTilPortefolje();
         // Ingen nye meldinger på porteføljetopic
         assertTrue(kafkaTestService.harKonsumertAlleMeldinger(portefoljeTopic, portefoljeConsumer));

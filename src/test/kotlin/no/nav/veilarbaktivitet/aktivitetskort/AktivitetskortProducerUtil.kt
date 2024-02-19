@@ -9,10 +9,10 @@ import lombok.SneakyThrows
 import no.nav.common.json.JsonUtils
 import no.nav.common.types.identer.NavIdent
 import no.nav.common.types.identer.NorskIdent
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.Ident
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*
@@ -136,7 +136,7 @@ object AktivitetskortProducerUtil {
             sluttDato = LocalDate.now().minusDays(30),
             tittel = "The Elder Scrolls: Arena",
             beskrivelse = "arenabeskrivelse",
-            aktivitetStatus = AktivitetStatus.PLANLAGT,
+            aktivitetStatus = AktivitetskortStatus.PLANLAGT,
             endretAv = Ident("arenaEndretav", Innsender.ARENAIDENT),
             endretTidspunkt = ZonedDateTime.of(2022, 1, 1, 0, 0, 0, 1000000, ZoneOffset.ofHours(1)),
             detaljer = listOf(

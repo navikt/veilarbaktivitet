@@ -1,23 +1,16 @@
 package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import lombok.extern.slf4j.Slf4j
-import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetIdMappingProducer
-import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitet
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMapper.toAktivitetsDataInsert
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.ArenaAktivitetskortBestilling
-import no.nav.veilarbaktivitet.aktivitetskort.dto.Aktivitetskort
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMapping
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
-import no.nav.veilarbaktivitet.arena.model.ArenaId
-import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService
+import no.nav.veilarbaktivitet.aktivitetskort.service.ArenaMigreringsStatus.*
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
@@ -27,73 +20,46 @@ class ArenaAktivitetskortService (
     private val forhaandsorienteringDAO: ForhaandsorienteringDAO,
     private val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
     private val idMappingDAO: IdMappingDAO,
-    private val aktivitetDAO: AktivitetDAO,
     private val aktivitetService: AktivitetService,
     private val aktivitetIdMappingProducer: AktivitetIdMappingProducer,
-    private val avtaltMedNavService: AvtaltMedNavService
+    private val tiltakMigreringDAO: TiltakMigreringDAO
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
     fun opprettAktivitet(bestilling: ArenaAktivitetskortBestilling): AktivitetData? {
-        val opprettetTidspunkt = bestilling.aktivitetskort.endretTidspunkt
-
         // Opprett via AktivitetService
-        val aktivitetsData = bestilling.toAktivitetsDataInsert(opprettetTidspunkt, bestilling.oppfolgingsperiodeSlutt)
-        val opprettetAktivitetsData = aktivitetService.opprettAktivitet(
-            aktivitetsData.withOppfolgingsperiodeId(bestilling.oppfolgingsperiode)
-        )
+        val aktivitetsData = bestilling.toAktivitetsDataInsert()
+        val opprettetAktivitetsData = aktivitetService.opprettAktivitet(aktivitetsData)
+        val idMapping = bestilling.idMapping(opprettetAktivitetsData.id)
 
         // Gjør arena-spesifikk migrering hvis ikke migrert allerede
-        val aktivitetIder = idMappingDAO.getAktivitetIder(bestilling.eksternReferanseId)
-        val erMigrertAllerede = aktivitetIder.map { it.funksjonellId }.contains(bestilling.aktivitetskort.id)
-        when {
-            erMigrertAllerede -> {}
-            aktivitetIder.isEmpty() -> {
-                arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitetsData, bestilling.eksternReferanseId)
-            }
-            else -> {
-                // Aktivitet er migret men legger til splitt-kort i id-mapping
-                val idMapping = IdMapping(
-                    bestilling.eksternReferanseId,
-                    opprettetAktivitetsData.id,
-                    bestilling.aktivitetskort.id,
-                )
-                idMappingDAO.insert(idMapping)
-            }
+        when (bestilling.finnMigreringsStatus()) {
+            ER_MIGRERT -> {}
+            IKKE_MIGRERT -> arenaspesifikkMigrering(opprettetAktivitetsData, idMapping)
+            // Aktivitet er migrert men legger til splitt-kort i id-mapping
+            ER_MIGRERT_NY_PERIODE_SPLITT -> idMappingDAO.insert(idMapping)
         }
         return opprettetAktivitetsData
     }
 
+    /** Gjør følgende:
+     * 1. Legger til i id-mapping
+     * 2. Flytter FHO fra arenaId hvis FHO finnes
+     * 3. Flytter brukernotifikasjoner hvis de finnes
+     * 4. Send id-mapping til dialog
+     * **/
     private fun arenaspesifikkMigrering(
-        aktivitetskort: Aktivitetskort,
         opprettetAktivitet: AktivitetData,
-        arenaId: ArenaId
+        idMapping: IdMapping,
     ) {
-        val idMapping = IdMapping(
-            arenaId,
-            opprettetAktivitet.getId(),
-            aktivitetskort.id,
-        )
         idMappingDAO.insert(idMapping)
-        forhaandsorienteringDAO.getFhoForArenaAktivitet(arenaId)
-            ?.let {fho ->
-                val updated = forhaandsorienteringDAO.leggTilTekniskId(fho.id, opprettetAktivitet.getId())
-                if (updated == 0) return@let
-                aktivitetService.oppdaterAktivitet(
-                    opprettetAktivitet,
-                    opprettetAktivitet.withFhoId(fho.id)
-                )
-                log.debug(
-                    "La til teknisk id på FHO med id={}, tekniskId={}",
-                    fho.id,
-                    opprettetAktivitet.getId()
-                )
-            }
+        forhaandsorienteringDAO.getFhoForArenaAktivitet(idMapping.arenaId)
+            ?.let { fho -> tiltakMigreringDAO.flyttFHOTilAktivitet(fho.id, opprettetAktivitet.id) }
 
         // oppdater alle brukernotifikasjoner med aktivitet arena-ider
         brukerNotifikasjonDAO.updateAktivitetIdForArenaBrukernotifikasjon(
-            opprettetAktivitet.getId(),
-            opprettetAktivitet.getVersjon(),
-            arenaId
+            opprettetAktivitet.id,
+            opprettetAktivitet.versjon,
+            idMapping.arenaId
         )
         // Send idmapping til dialog
         aktivitetIdMappingProducer.publishAktivitetskortIdMapping(idMapping)
@@ -102,60 +68,46 @@ class ArenaAktivitetskortService (
     fun dobbelsjekkMigrering(
         bestilling: ArenaAktivitetskortBestilling,
         opprettetAktivitet: AktivitetData): Boolean {
-        val aktivitetIder = idMappingDAO.getAktivitetIder(bestilling.eksternReferanseId)
-        return when {
-            aktivitetIder.map { it.funksjonellId }.contains(bestilling.aktivitetskort.id) -> false
-            aktivitetIder.isEmpty() -> {
-                arenaspesifikkMigrering(bestilling.aktivitetskort, opprettetAktivitet, bestilling.eksternReferanseId)
+        val idMapping = bestilling.idMapping(opprettetAktivitet.id)
+        return when (bestilling.finnMigreringsStatus()) {
+            ER_MIGRERT -> false
+            IKKE_MIGRERT -> {
+                arenaspesifikkMigrering(opprettetAktivitet, idMapping)
                 true
             }
-            else -> {
+            ER_MIGRERT_NY_PERIODE_SPLITT -> {
                 // Only insert mapping
-                val idMapping = IdMapping(
-                    bestilling.eksternReferanseId,
-                    opprettetAktivitet.id,
-                    bestilling.aktivitetskort.id,
-                )
                 idMappingDAO.insert(idMapping)
                 true
             }
+        }.also { bleMigrert ->
+            val id = bestilling.aktivitetskort.id
+            if (bleMigrert) {
+                log.info("Aktivitet tatt over av annet team men var ikke migrert, gjorde arena-migrering og ignorerte data fra acl $id")
+            } else {
+                log.info("Aktivitet tatt over av annet team. Ignorerer melding fra aktivitet arena acl $id")
+            }
         }
     }
 
-    fun oppdaterAktivitet(
-        bestilling: ArenaAktivitetskortBestilling,
-        gammelAktivitet: AktivitetData
-    ): AktivitetData {
-        val opprettetDato = DateUtils.dateToZonedDateTime(gammelAktivitet.opprettetDato)
-        val oppfolgingsperiode = bestilling.oppfolgingsperiode
-        val aktivitetsData = bestilling.toAktivitet(
-            opprettetDato,
-            bestilling.oppfolgingsperiodeSlutt
-        )
-            .withId(gammelAktivitet.id)
-            .withTransaksjonsType(AktivitetTransaksjonsType.OPPRETTET)
-            .withVersjon(gammelAktivitet.versjon)
-            .withOppfolgingsperiodeId(oppfolgingsperiode)
-            .withOpprettetDato(gammelAktivitet.opprettetDato)
-            .withFhoId(gammelAktivitet.fhoId)
-
-        val ferdigstatus = listOf(AktivitetStatus.AVBRUTT, AktivitetStatus.FULLFORT)
-        if (!ferdigstatus.contains(gammelAktivitet.status) && ferdigstatus.contains(aktivitetsData.status)) {
-            gammelAktivitet.fhoId?.let { avtaltMedNavService.settVarselFerdig(it) }
+    private fun ArenaAktivitetskortBestilling.finnMigreringsStatus(): ArenaMigreringsStatus {
+        val ideer = idMappingDAO.getAktivitetIder(this.eksternReferanseId).map { it.funksjonellId }
+        return when {
+            ideer.contains(this.aktivitetskort.id) -> ER_MIGRERT
+            ideer.isEmpty() -> IKKE_MIGRERT
+            else -> ER_MIGRERT_NY_PERIODE_SPLITT
         }
 
-        val aktivitetIder = idMappingDAO.getMappingsByFunksjonellId(listOf(bestilling.aktivitetskort.id))
-        if (aktivitetIder[bestilling.aktivitetskort.id] == null) {
-            val idMapping = IdMapping(
-                bestilling.eksternReferanseId,
-                aktivitetsData.id,
-                bestilling.aktivitetskort.id,
-            )
-            idMappingDAO.insert(idMapping)
-        }
-
-
-        val opprettetAktivitetsData = aktivitetDAO.overskrivMenMedNyVersjon(aktivitetsData)
-        return opprettetAktivitetsData
     }
+}
+
+fun ArenaAktivitetskortBestilling.idMapping(aktivitetId: Long) = IdMapping(
+    this.eksternReferanseId,
+    aktivitetId,
+    this.aktivitetskort.id
+)
+enum class ArenaMigreringsStatus {
+    ER_MIGRERT,
+    ER_MIGRERT_NY_PERIODE_SPLITT,
+    IKKE_MIGRERT
 }

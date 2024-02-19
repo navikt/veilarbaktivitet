@@ -158,43 +158,6 @@ public class AktivitetDAO {
         return nyAktivitetVersjon;
     }
 
-    public AktivitetData overskrivMenMedNyVersjon(AktivitetData aktivitet) {
-        long nyesteVersjon = nesteVersjon();
-        long gammelVersjon = aktivitet.getVersjon();
-        AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitet.getId(), nyesteVersjon);
-        settTilIkkeGjeldendeVersjon(aktivitet.getId(), gammelVersjon);
-        flyttBrukerNotifikasjonTilVersjon(aktivitet.getId(), gammelVersjon, nyesteVersjon);
-        // Ny versjon blir opprettet av insertAktivitetVersjon, trenger bare slette den gamle
-        SqlParameterSource slettParams = new MapSqlParameterSource()
-                .addValue(AKTIVITETID, aktivitet.getId())
-                .addValue("ny_versjon", nyesteVersjon);
-        // language=sql
-        namedParameterJdbcTemplate
-                .update("DELETE FROM EKSTERNAKTIVITET WHERE versjon != :ny_versjon AND aktivitet_id = :aktivitet_id", slettParams);
-        namedParameterJdbcTemplate
-                .update("DELETE FROM AKTIVITET WHERE gjeldende = 0 AND aktivitet_id = :aktivitet_id and versjon != :ny_versjon", slettParams);
-        return nyAktivitetVersjon;
-    }
-
-    public void flyttBrukerNotifikasjonTilVersjon(long aktivitetId, long ikkeLengerGjeldendeVersjon, long nyVersjon) {
-        var params = new MapSqlParameterSource()
-                .addValue(AKTIVITETID, aktivitetId)
-                .addValue("gammel_versjon", ikkeLengerGjeldendeVersjon)
-                .addValue("ny_versjon", nyVersjon);
-
-        // Mest sannsynlig bare 1 brukernotifikasjon
-        // language=sql
-        List<Long> brukernotifikasjoner = namedParameterJdbcTemplate.queryForList(
-                "SELECT BRUKERNOTIFIKASJON_ID FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE AKTIVITET_ID = :aktivitet_id",
-                params, Long.class);
-        brukernotifikasjoner.forEach(brukernotifikasjonId -> {
-            var paramsWithBrukernotifkasjonsId = params.addValue("brukernotifikasjon_id", brukernotifikasjonId);
-            namedParameterJdbcTemplate.update("DELETE FROM AKTIVITET_BRUKERNOTIFIKASJON WHERE BRUKERNOTIFIKASJON_ID = :brukernotifikasjon_id", paramsWithBrukernotifkasjonsId);
-            namedParameterJdbcTemplate.update("INSERT INTO AKTIVITET_BRUKERNOTIFIKASJON VALUES (:aktivitet_id, :ny_versjon, :brukernotifikasjon_id) ", paramsWithBrukernotifkasjonsId);
-        });
-
-    }
-
     private AktivitetData insertAktivitetVersjon(AktivitetData aktivitet, long aktivitetId, long versjon) {
         if (aktivitet.getOpprettetDato() == null || aktivitet.getEndretDato() == null) {
             throw new DataIntegrityViolationException("OpprettetDato og endretDato må være satt for aktivitetId: {}");
@@ -492,13 +455,14 @@ public class AktivitetDAO {
                             .addValue("oppgave", JsonUtils.toJson(eksternAktivitetData.getOppgave()))
                             .addValue("handlinger", JsonUtils.toJson(eksternAktivitetData.getHandlinger()))
                             .addValue("detaljer", JsonUtils.toJson(eksternAktivitetData.getDetaljer()))
+                            .addValue("endret_tidspunkt_kilde", eksternAktivitetData.getEndretTidspunktKilde())
                             .addValue("etiketter", JsonUtils.toJson(eksternAktivitetData.getEtiketter()));
                     // language=sql
                     namedParameterJdbcTemplate.update(
                     """
                         INSERT INTO EKSTERNAKTIVITET
-                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter) VALUES
-                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter)
+                        (aktivitet_id, versjon, source, tiltak_kode, arena_id, oppfolgingsperiode_slutt, opprettet_som_historisk, aktivitetkort_type, oppgave, handlinger, detaljer, etiketter, endret_tidspunkt_kilde) VALUES
+                        (:aktivitet_id, :versjon, :source, :tiltak_kode, :arena_id, :oppfolgingsperiode_slutt, :opprettet_som_historisk, :aktivitetkort_type, :oppgave, :handlinger, :detaljer, :etiketter, :endret_tidspunkt_kilde)
                         """,
                     params
                     );

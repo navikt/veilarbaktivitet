@@ -54,7 +54,7 @@ internal class AdminControllerTest : SpringBootTestBase() {
         val oppfolgingsperiodeString = aktivitet.oppfolgingsperiodeId.toString()
         val fnr = mockBruker.fnr
 
-        sette_oppfolgingsperiode_til_avsluttet(mockBruker.oppfolgingsperiode, mockBruker.aktorId)
+        sette_oppfolgingsperiode_til_avsluttet(mockBruker.oppfolgingsperiodeId, mockBruker.aktorId)
 
         val response = veileder
             .createRequest()
@@ -73,7 +73,8 @@ internal class AdminControllerTest : SpringBootTestBase() {
     fun sette_oppfolgingsperiode_til_avsluttet(oppfolgingsperiode: UUID, aktorId: AktorId ) {
         val oppfolgingsperiode = OppfolgingPeriodeMinimalDTO(
             oppfolgingsperiode,
-            WireMockUtil.GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START, ZonedDateTime.now()
+            ZonedDateTime.now().minusDays(5),
+            ZonedDateTime.now()
         )
 
         val oppfolgingsperioder = JsonUtils.toJson(List.of(oppfolgingsperiode))

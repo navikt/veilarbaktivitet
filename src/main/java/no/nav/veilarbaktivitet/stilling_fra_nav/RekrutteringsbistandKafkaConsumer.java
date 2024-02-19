@@ -7,6 +7,7 @@ import no.nav.common.client.aktorregister.IngenGjeldendeIdentException;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.util.DateUtils;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,8 @@ public class RekrutteringsbistandKafkaConsumer {
             return;
         }
 
-        AktivitetData forrigeAktivitetsdata = optionalAktivitetData.get();
+        AktivitetData forrigeAktivitetsdata = optionalAktivitetData.get()
+                .withEndretDato(DateUtils.zonedDateTimeToDate(rekrutteringsbistandStatusoppdatering.tidspunkt()));
         if (RekrutteringsbistandStatusoppdateringEventType.CV_DELT == type && service.sjekkCvIkkeAlleredeDelt(forrigeAktivitetsdata)) {
             service.behandleCvDelt(bestillingsId, navIdent, forrigeAktivitetsdata);
         } else if (RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN == type && service.sjekkKanSettesTilIkkeFattJobben(forrigeAktivitetsdata)) {

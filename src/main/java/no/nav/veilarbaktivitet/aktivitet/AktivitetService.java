@@ -306,19 +306,27 @@ public class AktivitetService {
                     newData.getOppgave(),
                     newData.getHandlinger(),
                     newData.getDetaljer(),
-                    newData.getEtiketter()
+                    newData.getEtiketter(),
+                    newData.getEndretTidspunktKilde()
                 );
     }
 
     @Transactional
-    public void settAktiviteterTilHistoriske(UUID oppfolingsperiode, ZonedDateTime sluttDato) {
+    public void settAktiviteterTilHistoriske(UUID oppfolgingsperiodeId, ZonedDateTime sluttDato) {
         Date sluttDatoDate = new Date(sluttDato.toInstant().toEpochMilli());
-        aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolingsperiode)
+        aktivitetDAO.hentAktiviteterForOppfolgingsperiodeId(oppfolgingsperiodeId)
                 .stream()
-                .map(a -> a.withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK).withHistoriskDato(sluttDatoDate))
-                .forEach(a -> {
-                    avtaltMedNavService.settVarselFerdig(a.getFhoId());
-                    aktivitetDAO.oppdaterAktivitet(a);
+                .filter(it -> it.getHistoriskDato() == null)
+                .map(aktivitet -> aktivitet
+                        .withTransaksjonsType(AktivitetTransaksjonsType.BLE_HISTORISK)
+                        .withHistoriskDato(sluttDatoDate)
+                        .withEndretDato(new Date())
+                        .withEndretAvType(Innsender.SYSTEM)
+                        .withEndretAv("veilarbaktivitet")
+                )
+                .forEach(aktivitet -> {
+                    avtaltMedNavService.settVarselFerdig(aktivitet.getFhoId());
+                    aktivitetDAO.oppdaterAktivitet(aktivitet);
                 });
     }
 

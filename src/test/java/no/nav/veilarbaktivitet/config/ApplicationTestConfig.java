@@ -8,6 +8,7 @@ import no.nav.common.client.axsys.AxsysClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
+import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
@@ -41,6 +42,14 @@ public class ApplicationTestConfig {
         Mockito.when(tokenClient.createMachineToMachineToken(any())).thenReturn("mockMachineToMachineToken");
         return tokenClient;
     }
+
+    @Bean
+    public AzureAdOnBehalfOfTokenClient oboTokenClient() {
+        AzureAdOnBehalfOfTokenClient tokenClient = mock(AzureAdOnBehalfOfTokenClient.class);
+        Mockito.when(tokenClient.exchangeOnBehalfOfToken(any(), any())).thenReturn("mockOnBehalfOfToken");
+        return tokenClient;
+    }
+
     @Bean
     EventListener metricListener() {
         return Mockito.mock(EventListener.class);
@@ -76,10 +85,14 @@ public class ApplicationTestConfig {
         return mock(AxsysClient.class);
     }
 
-    @Bean
+    @Bean(name = "pdlUrl")
     public String pdlUrl(Environment environment) {
         return environment.getProperty("app.env.pdl-url");
     }
 
+    @Bean(name = "pdlTokenscope")
+    String pdlTokenscope() {
+        return "api://dev-fss.pdl.pdl-api/.default";
+    }
 
 }
