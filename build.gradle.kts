@@ -45,7 +45,7 @@ application {
 
 sonar {
     properties {
-        property("sonar.projectKey", "navikt_vei    larbaktivitet")
+        property("sonar.projectKey", "navikt_veilarbaktivitet")
         property("sonar.organization", "navikt")
         property("sonar.host.url", "https://sonarcloud.io")
     }
