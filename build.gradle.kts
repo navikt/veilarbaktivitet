@@ -45,10 +45,9 @@ application {
 
 sonar {
     properties {
-        property("sonar.projectKey", "navikt_veilarbaktivitet")
+        property("sonar.projectKey", "navikt_vei    larbaktivitet")
         property("sonar.organization", "navikt")
         property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.junit.reportPaths", "build/test-results/test")
     }
 }
 
