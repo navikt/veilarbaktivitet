@@ -37,7 +37,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
@@ -170,7 +170,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
@@ -265,7 +265,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = annenOppfølgingsperiode.toString(), aktivitetId = "dummy")
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = annenOppfølgingsperiode.toString(), aktivitetId = "dummy")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
         veileder
@@ -286,7 +286,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, bruker, aktivititetIAnnenOppfolgingsperiode)
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = annenOppfølgingsperiode.toString(), aktivitetId = "dummy")
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = annenOppfølgingsperiode.toString(), aktivitetId = "dummy")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
         veileder
@@ -311,7 +311,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .endretDato(aktivitetSistEndret)
             .oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, bruker, aktivitet)
-        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiode.toString(), aktivitetId = "dummy")
+        stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiode.toString(), aktivitetId = "dummy")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -338,7 +338,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .statusCode(HttpStatus.BAD_REQUEST.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiode: String, aktivitetId: String) {
+    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String) {
         stubFor(
             get(
                 urlEqualTo(
@@ -362,7 +362,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                     "ferdigBehandlet": false,
                                     "lestAvBrukerTidspunkt": "2024-02-05T13:31:19.382+00:00",
                                     "erLestAvBruker": true,
-                                    "oppfolgingsperiodeId": "$oppfølgingsperiode",
+                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
                                     "henvendelser": [
                                         {
                                             "id": "1147416",
@@ -400,7 +400,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                     "ferdigBehandlet": false,
                                     "lestAvBrukerTidspunkt": null,
                                     "erLestAvBruker": true,
-                                    "oppfolgingsperiodeId": "$oppfølgingsperiode",
+                                    "oppfolgingsperiode": "$oppfølgingsperiodeId",
                                     "henvendelser": [
                                         {
                                             "id": "1147415",
