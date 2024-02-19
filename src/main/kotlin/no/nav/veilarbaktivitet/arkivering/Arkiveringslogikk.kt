@@ -41,7 +41,7 @@ object Arkiveringslogikk {
         dialoger: List<DialogClient.DialogTråd>
     ): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
         val aktiviteterIOppfølgingsperioden = aktiviteter.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-        val dialogerIOppfølgingsperioden = dialoger.filter { it.oppfolgingsperiode == oppfølgingsperiodeId }
+        val dialogerIOppfølgingsperioden = dialoger.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
 
         val aktivitetDialoger = dialogerIOppfølgingsperioden.groupBy { it.aktivitetId }
 

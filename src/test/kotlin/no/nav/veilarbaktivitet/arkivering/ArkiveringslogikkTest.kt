@@ -61,7 +61,7 @@ class ArkiveringslogikkTest {
             id = "Id",
             aktivitetId = null,
             overskrift = "Overskrift",
-            oppfolgingsperiode = annenOppfølgingsperiodeId,
+            oppfolgingsperiodeId = annenOppfølgingsperiodeId,
             meldinger = emptyList(),
             egenskaper = emptyList()
         )
