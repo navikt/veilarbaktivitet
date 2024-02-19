@@ -10,20 +10,19 @@ import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
 public class MockBruker extends RestassuredUser {
     protected final PrivatBruker privatbruker;
-    @Setter
     public UUID oppfolgingsperiodeId;
-    @Setter
-    public Oppfolgingsperiode oppfolgingsperiode;
     @Setter(AccessLevel.PACKAGE)
     private BrukerOptions brukerOptions;
 
-    private List<Oppfolgingsperiode> oppfolgingsperioder;
+    private List<Oppfolgingsperiode> oppfolgingsperioder = new ArrayList<>();
 
     MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
         super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
@@ -38,8 +37,7 @@ public class MockBruker extends RestassuredUser {
                     ZonedDateTime.now().withYear(2021).withMonth(10),
                     null
             );
-            oppfolgingsperioder = List.of(oppfolgingsperiodeObject);
-
+            oppfolgingsperioder.add(oppfolgingsperiodeObject);
         }
         this.privatbruker = privatBruker;
     }
@@ -59,12 +57,47 @@ public class MockBruker extends RestassuredUser {
 
     public Navn getNavn() { return brukerOptions.getNavn();}
 
-
     public Person.AktorId getAktorIdAsAktorId() {
         return getAktorId();
     }
 
+    public void setOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
+        this.oppfolgingsperiodeId = oppfolgingsperiodeId;
+
+        var sisteEksisterendeOppfølgingsperiode = getNyesteOppfølgingsperiode();
+        var startDatoNestePeriode = sisteEksisterendeOppfølgingsperiode != null ? sisteEksisterendeOppfølgingsperiode.startTid().plusDays(1) : ZonedDateTime.now().minusDays(1);
+
+        var nyOppfølgingsperiode = new Oppfolgingsperiode(
+                getAktorId().get(),
+                oppfolgingsperiodeId,
+                startDatoNestePeriode,
+                null
+        );
+
+        oppfolgingsperioder.add(nyOppfølgingsperiode);
+    }
+
     public String getOppfolgingsenhet() {
         return privatbruker.getOppfolgingsenhet();
+    }
+
+    public Oppfolgingsperiode getNyesteOppfølgingsperiode() {
+        if (oppfolgingsperioder == null) return null;
+
+        if (oppfolgingsperioder.isEmpty()) {
+            return null;
+        } else if (oppfolgingsperioder.size() == 1) {
+            return oppfolgingsperioder.get(0);
+        } else {
+            return Collections.max(oppfolgingsperioder, ((o1, o2) -> {
+                if (o1.startTid().isAfter(o2.startTid())) {
+                    return 1;
+                } else if (o1.startTid().isBefore(o2.startTid())) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }));
+        }
     }
 }

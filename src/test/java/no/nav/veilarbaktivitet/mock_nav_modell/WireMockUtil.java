@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
 
@@ -27,8 +28,9 @@ public class WireMockUtil {
         Navn navn = mockBruker.getBrukerOptions().getNavn();
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
+        Oppfolgingsperiode nyesteOppfølgingsperiode = mockBruker.getNyesteOppfølgingsperiode();
 
-        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiodeId());
+        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
@@ -38,7 +40,7 @@ public class WireMockUtil {
         journalforing();
     }
 
-    private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
+    private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
         if (oppfolgingFeiler) {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
@@ -55,9 +57,9 @@ public class WireMockUtil {
 
         if (underOppfolging) {
             OppfolgingPeriodeMinimalDTO oppfolgingsperiode = new OppfolgingPeriodeMinimalDTO(
-                    periode,
-                    ,
-                    null
+                    nyesteOppfølgingsperiode.oppfolgingsperiodeId(),
+                    nyesteOppfølgingsperiode.startTid(),
+                    nyesteOppfølgingsperiode.sluttTid()
             );
             OppfolgingPeriodeMinimalDTO gammelPeriode = new OppfolgingPeriodeMinimalDTO(
                     UUID.randomUUID(),

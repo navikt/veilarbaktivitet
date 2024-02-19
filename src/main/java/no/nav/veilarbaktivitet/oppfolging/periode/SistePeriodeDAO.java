@@ -43,7 +43,7 @@ public class SistePeriodeDAO {
     void uppsertOppfolingsperide(Oppfolgingsperiode oppfolgingsperiode) {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktorId", oppfolgingsperiode.aktorid())
-                .addValue("periode", oppfolgingsperiode.oppfolgingsperiode().toString())
+                .addValue("periode", oppfolgingsperiode.oppfolgingsperiodeId().toString())
                 .addValue("startTid", oppfolgingsperiode.startTid())
                 .addValue("sluttTid", oppfolgingsperiode.sluttTid());
 
@@ -67,7 +67,7 @@ public class SistePeriodeDAO {
                 VALUES (:periode, :aktorId, :startTid, :sluttTid)
                 """, params);
         } catch (DuplicateKeyException e) {
-            log.warn("Insert på duplikat oppfolgingsperiode, ignorerer {}", oppfolgingsperiode.oppfolgingsperiode());
+            log.warn("Insert på duplikat oppfolgingsperiode, ignorerer {}", oppfolgingsperiode.oppfolgingsperiodeId());
         }
 
         log.info("opprettet oppfolgingsperiode {}", oppfolgingsperiode);

@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record Oppfolgingsperiode(
         String aktorid,
-        UUID oppfolgingsperiode,
+        UUID oppfolgingsperiodeId,
         ZonedDateTime startTid,
         ZonedDateTime sluttTid) {
 }

@@ -27,16 +27,16 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiode).build()
+            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val jobbAktivitetAvbrutt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiode).build()
+            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetAvbrutt.status = AktivitetStatus.AVBRUTT
         aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
-        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiode.toString()
+        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
@@ -165,11 +165,11 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
-            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiode).build()
+            .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
-        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiode.toString()
+        val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiode = oppfølgingsperiodeId, aktivitetId = opprettetJobbAktivitet.id)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
@@ -260,7 +260,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     @Test
     fun `Når man forhåndsviser PDF skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
+        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val annenOppfølgingsperiode = UUID.randomUUID()
         val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
@@ -281,7 +281,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     @Test
     fun `Når man arkiverer skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
+        val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val annenOppfølgingsperiode = UUID.randomUUID()
         val aktivititetIAnnenOppfolgingsperiode = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiode).build()
@@ -303,7 +303,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     @Test
     fun `Kast 409 Conflict når man arkiverer dersom ny data har kommet etter forhåndsvisningen`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiode
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val forhaandsvisningstidspunkt = ZonedDateTime.now().minusSeconds(1)
         val aktivitetSistEndret = Date()
         val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -362,7 +362,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                     "ferdigBehandlet": false,
                                     "lestAvBrukerTidspunkt": "2024-02-05T13:31:19.382+00:00",
                                     "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiode",
+                                    "oppfolgingsperiodeId": "$oppfølgingsperiode",
                                     "henvendelser": [
                                         {
                                             "id": "1147416",
@@ -400,7 +400,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                                     "ferdigBehandlet": false,
                                     "lestAvBrukerTidspunkt": null,
                                     "erLestAvBruker": true,
-                                    "oppfolgingsperiode": "$oppfølgingsperiode",
+                                    "oppfolgingsperiodeId": "$oppfølgingsperiode",
                                     "henvendelser": [
                                         {
                                             "id": "1147415",
