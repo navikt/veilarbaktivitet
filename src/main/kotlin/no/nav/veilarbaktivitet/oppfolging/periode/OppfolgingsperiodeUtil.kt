@@ -56,7 +56,7 @@ fun Oppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCZDT: ZonedDateTime):
 fun Oppfolgingsperiode.erInnenforMedEkstraSlack(opprettetTidspunktCZDT: ZonedDateTime): Boolean {
     val utvidetOppfolgingsperiode = Oppfolgingsperiode(
         this.aktorid,
-        this.oppfolgingsperiode,
+        this.oppfolgingsperiodeId,
         this.startTid.minus(OppfolgingsperiodeService.SLACK_FOER),
         this.sluttTid
     )

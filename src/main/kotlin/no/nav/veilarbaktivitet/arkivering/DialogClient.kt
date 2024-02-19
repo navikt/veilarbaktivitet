@@ -44,7 +44,8 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val id: String,
         val aktivitetId: String?,
         val overskrift: String,
-        val oppfolgingsperiode: UUID,
+        @JsonProperty("oppfolgingsperiode")
+        val oppfolgingsperiodeId: UUID,
         @JsonProperty("henvendelser")
         val meldinger: List<Melding>,
         val egenskaper: List<Egenskap>

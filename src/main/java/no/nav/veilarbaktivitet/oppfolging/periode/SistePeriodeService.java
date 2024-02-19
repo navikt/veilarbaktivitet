@@ -29,7 +29,7 @@ public class SistePeriodeService {
                         )
                 ).orElseThrow(exceptionSupplier);
 
-        return oppfolgingsperiode.oppfolgingsperiode();
+        return oppfolgingsperiode.oppfolgingsperiodeId();
     }
 
 }

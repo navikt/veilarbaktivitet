@@ -1,11 +1,10 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.arkivering.OrkivarClient;
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO;
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.person.Navn;
 import no.nav.veilarbaktivitet.person.Person;
-import wiremock.com.fasterxml.jackson.core.util.ByteArrayBuilder;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -16,7 +15,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class WireMockUtil {
 
-    public static final ZonedDateTime GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START = ZonedDateTime.now().minusDays(5);
 
     static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
@@ -29,10 +27,10 @@ public class WireMockUtil {
         boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
         Navn navn = mockBruker.getBrukerOptions().getNavn();
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
-
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
+        Oppfolgingsperiode nyesteOppfølgingsperiode = mockBruker.getNyesteOppfølgingsperiode();
 
-        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, mockBruker.getOppfolgingsperiode());
+        oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
@@ -42,7 +40,7 @@ public class WireMockUtil {
         journalforing();
     }
 
-    private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, UUID periode) {
+    private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
         if (oppfolgingFeiler) {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
@@ -59,9 +57,9 @@ public class WireMockUtil {
 
         if (underOppfolging) {
             OppfolgingPeriodeMinimalDTO oppfolgingsperiode = new OppfolgingPeriodeMinimalDTO(
-                    periode,
-                    GJELDENDE_OPPFOLGINGSPERIODE_MOCK_START,
-                    null
+                    nyesteOppfølgingsperiode.oppfolgingsperiodeId(),
+                    nyesteOppfølgingsperiode.startTid(),
+                    nyesteOppfølgingsperiode.sluttTid()
             );
             OppfolgingPeriodeMinimalDTO gammelPeriode = new OppfolgingPeriodeMinimalDTO(
                     UUID.randomUUID(),

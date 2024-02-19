@@ -17,7 +17,7 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
     open fun upsertOppfolgingsperide(oppfolgingsperiode: Oppfolgingsperiode) {
         val params = mapOf(
             "aktorId" to oppfolgingsperiode.aktorid,
-            "id" to oppfolgingsperiode.oppfolgingsperiode.toString(),
+            "id" to oppfolgingsperiode.oppfolgingsperiodeId.toString(),
             "fra" to oppfolgingsperiode.startTid,
             "til" to oppfolgingsperiode.sluttTid
         )

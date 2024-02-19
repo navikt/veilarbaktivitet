@@ -47,7 +47,7 @@ class ArenaAktivitetskortSerie(val mockBruker: MockBruker, val tiltakskode: Stri
     val funksjonellId = serie.funksjonellId
     val arenaId = ArenaId("TA" + Random.nextInt(1000, 10000))
     fun ny(status: AktivitetskortStatus, endretTidspunkt: ZonedDateTime): ArenaKort {
-        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode, periode?.id ?: mockBruker.oppfolgingsperiode, periode?.slutt))
+        return ArenaKort(serie.ny(status, endretTidspunkt), ArenaMeldingHeaders(arenaId, tiltakskode, periode?.id ?: mockBruker.oppfolgingsperiodeId, periode?.slutt))
     }
 
     companion object {

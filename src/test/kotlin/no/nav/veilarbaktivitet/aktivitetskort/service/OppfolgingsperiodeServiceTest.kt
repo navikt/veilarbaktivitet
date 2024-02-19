@@ -47,7 +47,7 @@ class OppfolgingsperiodeServiceTest {
             oppfperiodeDTO(DATE_TIME_NOW.minusDays(10), null)
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -61,7 +61,7 @@ class OppfolgingsperiodeServiceTest {
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -74,7 +74,7 @@ class OppfolgingsperiodeServiceTest {
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -88,7 +88,7 @@ class OppfolgingsperiodeServiceTest {
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -102,7 +102,7 @@ class OppfolgingsperiodeServiceTest {
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -114,7 +114,7 @@ class OppfolgingsperiodeServiceTest {
             riktigPeriode
         )
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -136,7 +136,7 @@ class OppfolgingsperiodeServiceTest {
         )
 
         val oppfolgingsperiode = stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -194,7 +194,7 @@ class OppfolgingsperiodeServiceTest {
         val perioder = listOf(riktigPeriode)
         val oppfolgingsperiode: Oppfolgingsperiode? =
             stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
     @Test
@@ -211,7 +211,7 @@ class OppfolgingsperiodeServiceTest {
         val perioder = listOf(riktigPeriode, feilPeriode)
         val oppfolgingsperiode =
             stubOgFinnOppgolgingsperiode(perioder, opprettetTidspunkt)
-        assertThat(oppfolgingsperiode!!.oppfolgingsperiode).isEqualTo(riktigPeriode.oppfolgingsperiode)
+        assertThat(oppfolgingsperiode!!.oppfolgingsperiodeId).isEqualTo(riktigPeriode.oppfolgingsperiodeId)
     }
 
 

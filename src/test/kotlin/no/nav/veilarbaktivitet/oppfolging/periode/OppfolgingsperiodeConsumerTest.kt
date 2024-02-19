@@ -47,7 +47,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         val nyOppfolging = Oppfolgingsperiode(aktorId.get(), id, start, slutt)
         oppfolgingsperiodeDAO.upsertOppfolgingsperide(oppfolging)
         val output = oppfolgingsperiodeDAO.getByAktorId(aktorId).first()
-        assertThat(output.oppfolgingsperiode).isEqualTo(id)
+        assertThat(output.oppfolgingsperiodeId).isEqualTo(id)
         assertThat(output.aktorid).isEqualTo(aktorId.get())
         assertThat(output.startTid).isEqualTo(start)
         assertThat(output.sluttTid).isNull()
@@ -63,7 +63,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     fun skal_opprette_siste_oppfolgingsperiode() {
         val mockBruker = MockNavService.createHappyBruker()
         val startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
-            .uuid(mockBruker.getOppfolgingsperiode())
+            .uuid(mockBruker.getOppfolgingsperiodeId())
             .aktorId(mockBruker.aktorId.get())
             .startDato(ZonedDateTime.now().minusHours(1).truncatedTo(ChronoUnit.MILLIS))
             .build()
@@ -74,7 +74,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         )[1, TimeUnit.SECONDS]
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, sendResult.recordMetadata.offset())
         val oppfolgingsperiode = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
-        assertThat(oppfolgingsperiode.oppfolgingsperiode).isEqualTo(mockBruker.getOppfolgingsperiode())
+        assertThat(oppfolgingsperiode.oppfolgingsperiodeId).isEqualTo(mockBruker.getOppfolgingsperiodeId())
         assertThat(oppfolgingsperiode.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolgingsperiode.startTid).isEqualTo(startOppfolgiong.getStartDato())
         assertThat(oppfolgingsperiode.sluttTid).isNull()
@@ -87,14 +87,14 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         )[1, TimeUnit.SECONDS]
         kafkaTestService.assertErKonsumertNavCommon(oppfolgingSistePeriodeTopic, avsluttetSendResult.recordMetadata.offset())
         val oppfolgingsperiodeAvsluttet = sistePeriodeDAO.hentSisteOppfolgingsPeriode(mockBruker.aktorId).orElseThrow()
-        assertThat(oppfolgingsperiodeAvsluttet.oppfolgingsperiode)
-            .isEqualTo(mockBruker.getOppfolgingsperiode())
+        assertThat(oppfolgingsperiodeAvsluttet.oppfolgingsperiodeId)
+            .isEqualTo(mockBruker.getOppfolgingsperiodeId())
         assertThat(oppfolgingsperiodeAvsluttet.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolgingsperiodeAvsluttet.startTid).isEqualTo(avsluttetOppfolgingsperide.getStartDato())
         assertThat(oppfolgingsperiodeAvsluttet.sluttTid).isEqualTo(avsluttetOppfolgingsperide.getSluttDato())
         // Sjekk at ny DAO også gir samme svar
         val oppfolg = oppfolgingsperiodeDAO.getByAktorId(mockBruker.aktorId).first()
-        assertThat(oppfolg.oppfolgingsperiode).isEqualTo(mockBruker.getOppfolgingsperiode())
+        assertThat(oppfolg.oppfolgingsperiodeId).isEqualTo(mockBruker.getOppfolgingsperiodeId())
         assertThat(oppfolg.aktorid).isEqualTo(mockBruker.aktorId.get())
         assertThat(oppfolg.startTid).isEqualTo(avsluttetOppfolgingsperide.getStartDato())
         assertThat(oppfolg.sluttTid).isEqualTo(avsluttetOppfolgingsperide.getSluttDato())
@@ -106,7 +106,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         val brukerUteAvOppfolging = MockNavService.createHappyBruker()
         val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
         val skalBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
-        val oppfolgingsperiodeSkalAvsluttes = brukerUteAvOppfolging.getOppfolgingsperiode()
+        val oppfolgingsperiodeSkalAvsluttes = brukerUteAvOppfolging.getOppfolgingsperiodeId()
         MockNavService.newOppfolingsperiode(brukerUteAvOppfolging)
         val skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
 

@@ -16,7 +16,7 @@ class NavMockService(
         oppfolgingsperiodeService.upsertOppfolgingsperiode(
             SisteOppfolgingsperiodeV1.builder()
                 .aktorId(bruker.aktorId.get())
-                .uuid(oppfolgingsperiode.oppfolgingsperiode)
+                .uuid(oppfolgingsperiode.oppfolgingsperiodeId)
                 .startDato(oppfolgingsperiode.startTid)
                 .sluttDato(oppfolgingsperiode.sluttTid).build()
         )

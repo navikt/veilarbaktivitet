@@ -189,7 +189,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             messageId = UUID.randomUUID())
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(wrapperDTO))
         val aktivitet = hentAktivitet(funksjonellId)
-        assertEquals(mockBruker.oppfolgingsperiode, aktivitet.oppfolgingsperiodeId)
+        assertEquals(mockBruker.oppfolgingsperiodeId, aktivitet.oppfolgingsperiodeId)
     }
 
     @Test
@@ -1044,13 +1044,13 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(ArenaId("ARENATA" + Random.nextInt(10000)), "MIDL", mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(ArenaId("ARENATA" + Random.nextInt(10000)), "MIDL", mockBruker.oppfolgingsperiodeId, null)
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker, eksternRefanseId: ArenaId?): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(eksternRefanseId, "MIDL", mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(eksternRefanseId, "MIDL", mockBruker.oppfolgingsperiodeId, null)
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker, eksternRefanseId: ArenaId?, arenaTiltakskode: String?): ArenaMeldingHeaders {
-    return ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode, mockBruker.oppfolgingsperiode, null)
+    return ArenaMeldingHeaders(eksternRefanseId, arenaTiltakskode, mockBruker.oppfolgingsperiodeId, null)
 }

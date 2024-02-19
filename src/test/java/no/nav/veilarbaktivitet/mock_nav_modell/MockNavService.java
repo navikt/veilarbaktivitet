@@ -29,7 +29,7 @@ public class MockNavService {
     }
 
     public static void newOppfolingsperiode(MockBruker mockBruker) {
-        mockBruker.setOppfolgingsperiode(UUID.randomUUID());
+        mockBruker.setOppfolgingsperiodeId(UUID.randomUUID());
         WireMockUtil.stubBruker(mockBruker);
     }
 

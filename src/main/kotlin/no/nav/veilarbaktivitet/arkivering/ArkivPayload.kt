@@ -12,7 +12,9 @@ data class ArkivPayload(
 
 data class Metadata(
     val navn: String,
-    val fnr: String
+    val fnr: String,
+    val oppfølgingsperiodeStart: String,
+    val oppfølgingsperiodeSlutt: String?
 )
 
 data class ArkivAktivitet(
