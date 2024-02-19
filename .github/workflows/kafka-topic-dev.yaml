@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
       - name: List resource files
         run: echo "RESOURCE_FILES=$(find kafka-topic/dev -type f | tr '\n' ',' | sed 's/,$/\n/')" >> $GITHUB_ENV
       - name: Deploy kafka topics
