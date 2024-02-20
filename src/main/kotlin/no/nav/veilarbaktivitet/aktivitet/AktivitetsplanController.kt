@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
@@ -232,6 +233,12 @@ class AktivitetsplanController(
     @GetMapping("/kanaler")
     fun hentKanaler(): List<KanalDTO> {
         return Arrays.asList(*KanalDTO.values())
+    }
+
+    @ExceptionHandler(UlovligEndringFeil::class)
+    fun handleExceptions(e: Exception): ResponseEntity<String> {
+        val feilmelding = String.format("Funksjonell feil under behandling: %s - %s ", e.javaClass.simpleName, e.message)
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(feilmelding)
     }
 
     private fun filtrerKontorsperret(aktivitet: AktivitetData): Boolean {

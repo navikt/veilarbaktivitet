@@ -126,7 +126,7 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) {
+    public AktivitetData oppdaterAktivitet(AktivitetData aktivitet) throws UlovligEndringFeil {
         AktivitetData original = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(original, aktivitet.getVersjon(), aktivitet.getAktorId());
         if (original.getAktivitetType() == AktivitetTypeData.STILLING_FRA_NAV) {
@@ -175,32 +175,32 @@ public class AktivitetAppService {
         }
     }
 
-    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) {
+    private void kanEndreAktivitetGuard(AktivitetData orginalAktivitet, long sisteVersjon, Person.AktorId aktorId) throws UlovligEndringFeil {
         if (!orginalAktivitet.getAktorId().equals(aktorId)) {
             secureLog.error("kan ikke oppdatere aktorid på aktivitet: orginal aktorId: {}, aktorId fra context: {}, aktivitetsId: {}",
                     orginalAktivitet.getAktorId(), aktorId, orginalAktivitet.getId());
-            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
+            throw new UlovligEndringFeil("kan ikke oppdatere aktorid på aktivitet");
         }
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
-            throw new IllegalArgumentException(
+            throw new UlovligEndringFeil(
                     String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
                             orginalAktivitet.getId())
             );
         }
     }
 
-    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) {
+    private void kanEndreAktivitetEtikettGuard(AktivitetData orginalAktivitet, AktivitetData aktivitet) throws UlovligEndringFeil {
         if (!orginalAktivitet.getAktorId().equals(aktivitet.getAktorId())) {
-            throw new IllegalArgumentException("kan ikke oppdatere aktorid på aktivitet");
+            throw new UlovligEndringFeil("kan ikke oppdatere aktorid på aktivitet");
 
         }
         if (!Objects.equals(orginalAktivitet.getVersjon(), aktivitet.getVersjon())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
             // Etikett skal kunne endres selv om aktivitet er fullført eller avbrutt
-            throw new IllegalArgumentException(
+            throw new UlovligEndringFeil(
                     String.format("Kan ikke endre etikett på historisk aktivitet [%s]",
                             orginalAktivitet.getId())
             );
@@ -208,7 +208,7 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterStatus(AktivitetData aktivitet) {
+    public AktivitetData oppdaterStatus(AktivitetData aktivitet) throws UlovligEndringFeil {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
@@ -224,7 +224,7 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterEtikett(AktivitetData aktivitet) {
+    public AktivitetData oppdaterEtikett(AktivitetData aktivitet) throws UlovligEndringFeil {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetEtikettGuard(originalAktivitet, aktivitet);
         aktivitetService.oppdaterEtikett(originalAktivitet, aktivitet);
@@ -232,7 +232,7 @@ public class AktivitetAppService {
     }
 
     @Transactional
-    public AktivitetData oppdaterReferat(AktivitetData aktivitet) {
+    public AktivitetData oppdaterReferat(AktivitetData aktivitet) throws UlovligEndringFeil {
         val originalAktivitet = hentAktivitet(aktivitet.getId());
         kanEndreAktivitetGuard(originalAktivitet, aktivitet.getVersjon(), aktivitet.getAktorId());
 
