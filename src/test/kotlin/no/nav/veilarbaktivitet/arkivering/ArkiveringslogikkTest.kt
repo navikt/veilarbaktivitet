@@ -29,7 +29,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
-            dialoger = emptyList()
+            dialoger = emptyList(),
+            sakId = 1000L
         )
 
         assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
@@ -47,7 +48,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
-            dialoger = emptyList()
+            dialoger = emptyList(),
+            sakId = 1000L
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
@@ -71,7 +73,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = emptyList(),
-            dialoger = listOf(dialog)
+            dialoger = listOf(dialog),
+            sakId = 1000L
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()

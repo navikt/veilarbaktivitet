@@ -92,10 +92,8 @@ public class OppfolgingClientImpl implements OppfolgingClient {
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
-                gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(false);
                 return Optional.empty();
             }
-            gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(true);
             return RestUtils.parseJsonResponse(response, SakDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
