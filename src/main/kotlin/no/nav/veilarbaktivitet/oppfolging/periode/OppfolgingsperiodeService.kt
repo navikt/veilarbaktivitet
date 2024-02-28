@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.oppfolging.periode
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -17,7 +17,7 @@ class OppfolgingsperiodeService(
 	private val brukernotifikasjonService: BrukernotifikasjonService,
 	private val sistePeriodeDAO: SistePeriodeDAO,
 	private val oppfolgingsperiodeDAO: OppfolgingsperiodeDAO,
-	private val oppfolgingClient: OppfolgingV2Client
+	private val oppfolgingClient: OppfolgingClient
 ) {
 	private val log = LoggerFactory.getLogger(javaClass)
 

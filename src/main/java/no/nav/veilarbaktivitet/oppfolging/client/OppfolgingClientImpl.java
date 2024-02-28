@@ -17,11 +17,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
+public class OppfolgingClientImpl implements OppfolgingClient {
     private final OkHttpClient veilarboppfolgingHttpClient;
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
@@ -77,6 +78,25 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
            return RestUtils.parseJsonResponseArrayOrThrow(response, OppfolgingPeriodeMinimalDTO.class);
+        } catch (Exception e) {
+            throw internalServerError(e, request.url().toString());
+        }
+    }
+
+    @Override
+    public Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId) {
+        String uri = String.format("%s/oppfolging/sak/%s", baseUrl, oppfolgingsperiodeId );
+        Request request = new Request.Builder()
+                .url(uri)
+                .build();
+        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(false);
+                return Optional.empty();
+            }
+            gjeldendePeriodeMetrikk.tellKallTilEksternOppfolgingsperiode(true);
+            return RestUtils.parseJsonResponse(response, SakDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
         }
