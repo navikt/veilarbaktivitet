@@ -92,4 +92,8 @@ public class MockBruker extends RestassuredUser {
             ));
         }
     }
+
+    public Long getSakId() {
+        return brukerOptions.getSakId();
+    }
 }

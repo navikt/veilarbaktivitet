@@ -29,6 +29,7 @@ public class WireMockUtil {
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
         Oppfolgingsperiode nyesteOppfølgingsperiode = mockBruker.getNyesteOppfølgingsperiode();
+        Long sakId = mockBruker.getBrukerOptions().getSakId();
 
         oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
@@ -38,6 +39,7 @@ public class WireMockUtil {
         hentPerson(fnr, navn);
         forhaandsvisning();
         journalforing();
+        hentSak(sakId, nyesteOppfølgingsperiode.oppfolgingsperiodeId());
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
@@ -228,5 +230,17 @@ public class WireMockUtil {
     private static void journalforing() {
         stubFor(post("/orkivar/arkiver")
                 .willReturn(aResponse().withStatus(200)));
+    }
+
+    private static void hentSak(Long sakId, UUID oppfolgingsperiodeId) {
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("""
+                                {
+                                "oppfolgingsperiodeId": "%s",
+                                "sakId": %d
+                                }
+                                """.formatted(oppfolgingsperiodeId, sakId))));
     }
 }
