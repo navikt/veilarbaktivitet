@@ -39,7 +39,7 @@ public class WireMockUtil {
         hentPerson(fnr, navn);
         forhaandsvisning();
         journalforing();
-        hentSak(sakId, nyesteOppfølgingsperiode.oppfolgingsperiodeId());
+        hentSak(sakId, nyesteOppfølgingsperiode);
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
@@ -232,15 +232,19 @@ public class WireMockUtil {
                 .willReturn(aResponse().withStatus(200)));
     }
 
-    private static void hentSak(Long sakId, UUID oppfolgingsperiodeId) {
-        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("""
+    private static void hentSak(Long sakId, Oppfolgingsperiode oppfolgingsperiode) {
+        if (oppfolgingsperiode != null) {
+            var oppfolgingsperiodeId = oppfolgingsperiode.oppfolgingsperiodeId();
+
+            stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
+                    .willReturn(ok()
+                            .withHeader("Content-Type", "text/json")
+                            .withBody("""
                                 {
                                 "oppfolgingsperiodeId": "%s",
                                 "sakId": %d
                                 }
                                 """.formatted(oppfolgingsperiodeId, sakId))));
+        }
     }
 }
