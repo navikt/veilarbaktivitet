@@ -38,7 +38,7 @@ class OppfolgingClientTest {
         PersonService personService = Mockito.mock(PersonService.class);
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
-        oppfolgingClient = new OppfolgingClientImpl(okHttpClient, personService, gjeldendePeriodeMetrikk);
+        oppfolgingClient = new OppfolgingClientImpl(okHttpClient, okHttpClient, personService, gjeldendePeriodeMetrikk);
         wireMock.getBaseUri();
         oppfolgingClient.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
     }
