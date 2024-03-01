@@ -15,7 +15,6 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 public class WireMockUtil {
 
-
     static void stubBruker(MockBruker mockBruker) {
         String fnr = mockBruker.getFnr();
         Person.AktorId aktorId = mockBruker.getAktorId();
@@ -236,7 +235,7 @@ public class WireMockUtil {
         if (oppfolgingsperiode != null) {
             var oppfolgingsperiodeId = oppfolgingsperiode.oppfolgingsperiodeId();
 
-            stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
+            stubFor(post(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody("""

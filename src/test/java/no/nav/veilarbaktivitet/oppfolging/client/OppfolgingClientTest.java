@@ -70,7 +70,7 @@ class OppfolgingClientTest {
     void test_hentsak_ok_response() {
         var uuid = UUID.randomUUID();
         var sakId = 1000;
-        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + uuid))
+        wireMock.stubFor(post(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + uuid))
                 .willReturn(ok()
                         .withHeader("Content-Type", "text/json")
                         .withBody("""

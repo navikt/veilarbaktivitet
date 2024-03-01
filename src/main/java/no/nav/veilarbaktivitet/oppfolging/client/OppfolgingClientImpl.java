@@ -1,15 +1,15 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import io.micrometer.core.annotation.Timed;
+import jdk.jfr.ContentType;
+import kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -88,6 +88,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
         String uri = String.format("%s/oppfolging/sak/%s", baseUrl, oppfolgingsperiodeId );
         Request request = new Request.Builder()
                 .url(uri)
+                .post(RequestBody.create("", null))
                 .build();
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
