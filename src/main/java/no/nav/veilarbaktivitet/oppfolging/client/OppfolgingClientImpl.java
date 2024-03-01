@@ -24,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OppfolgingClientImpl implements OppfolgingClient {
     private final OkHttpClient veilarboppfolgingHttpClient;
+    private final OkHttpClient veilarboppfolgingOnBehalfOfHttpClient;
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
 
@@ -90,7 +91,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
                 .url(uri)
                 .post(RequestBody.create("", null))
                 .build();
-        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 return Optional.empty();
