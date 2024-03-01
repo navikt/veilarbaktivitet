@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -33,14 +34,9 @@ class ArkiveringsController(
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val fnr = userInContext.fnr.get()
-        val navn = hentNavn(fnr)
-        val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
-        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
-        val dialoger = dialogClient.hentDialoger(fnr)
-        val sakId = hentSakId(oppfølgingsperiodeId)
+        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId)
 
-        val payload = lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sakId)
-        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(payload)
+        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(arkivPayload)
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
@@ -52,18 +48,23 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO) {
         val fnr = userInContext.fnr.get()
+        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
+        orkivarClient.journalfor(arkivPayload)
+    }
 
+    private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
         val dialoger = dialogClient.hentDialoger(fnr)
         val navn = hentNavn(fnr)
         val sakId = hentSakId(oppfølgingsperiodeId)
 
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, aktiviteter, dialoger)
-        if(oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (forhaandsvisningTidspunkt != null) {
+            val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhaandsvisningTidspunkt, aktiviteter, dialoger)
+            if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+        }
 
-        val payload = lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sakId)
-        orkivarClient.journalfor(payload)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sakId)
     }
 
     private fun hentNavn(fnr: Fnr): Navn {
