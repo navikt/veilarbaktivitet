@@ -86,7 +86,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     @Override
     public Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId) {
-        String uri = String.format("%s/oppfolging/sak/%s", baseUrl, oppfolgingsperiodeId );
+        String uri = String.format("%s/v3/sak/%s", baseUrl, oppfolgingsperiodeId );
         Request request = new Request.Builder()
                 .url(uri)
                 .post(RequestBody.create("", null))

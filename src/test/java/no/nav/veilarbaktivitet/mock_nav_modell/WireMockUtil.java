@@ -235,7 +235,7 @@ public class WireMockUtil {
         if (oppfolgingsperiode != null) {
             var oppfolgingsperiodeId = oppfolgingsperiode.oppfolgingsperiodeId();
 
-            stubFor(post(urlMatching("/veilarboppfolging/api/oppfolging/sak/" + oppfolgingsperiodeId))
+            stubFor(post(urlMatching("/veilarboppfolging/api/v3/sak/" + oppfolgingsperiodeId))
                     .willReturn(ok()
                             .withHeader("Content-Type", "text/json")
                             .withBody("""
