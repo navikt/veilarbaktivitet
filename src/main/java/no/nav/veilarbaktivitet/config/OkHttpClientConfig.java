@@ -30,6 +30,13 @@ public class OkHttpClientConfig {
             .build();
     }
 
+    @Bean OkHttpClient veilarboppfolgingOnBehalfOfHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
+        return RestClient.baseClientBuilder()
+                .addInterceptor(azureAdInterceptor(() -> azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(veilarboppfolgingScope, authService.getInnloggetBrukerToken())))
+                .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
+                .build();
+    }
+
     @Bean OkHttpClient veilarbpersonHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
                 .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbpersonScope)))

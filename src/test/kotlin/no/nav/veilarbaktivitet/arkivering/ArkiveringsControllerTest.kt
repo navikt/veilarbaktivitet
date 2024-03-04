@@ -63,7 +63,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }} 
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "sakId": ${bruker.sakId}
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -193,7 +194,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }}
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "sakId": ${bruker.sakId}
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {

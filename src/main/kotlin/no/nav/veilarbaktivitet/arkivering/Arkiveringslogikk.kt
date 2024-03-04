@@ -20,7 +20,8 @@ object Arkiveringslogikk {
         navn: Navn,
         oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         aktiviteter: List<AktivitetData>,
-        dialoger: List<DialogClient.DialogTråd>
+        dialoger: List<DialogClient.DialogTråd>,
+        sakId: Long
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger)
         return ArkivPayload(
@@ -28,7 +29,8 @@ object Arkiveringslogikk {
                 navn = navn.tilFornavnMellomnavnEtternavn(),
                 fnr = fnr.get(),
                 oppfølgingsperiodeStart = oppfølgingsperiode.startDato.norskDato(),
-                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato()
+                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato(),
+                sakId = sakId
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger

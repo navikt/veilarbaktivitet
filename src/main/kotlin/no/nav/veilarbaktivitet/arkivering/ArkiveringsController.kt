@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
+import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
 import no.nav.veilarbaktivitet.person.Navn
@@ -14,6 +15,7 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -32,13 +34,9 @@ class ArkiveringsController(
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val fnr = userInContext.fnr.get()
-        val navn = hentNavn(fnr)
-        val oppfølgingsperiode = hentOppfølingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
-        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
-        val dialoger = dialogClient.hentDialoger(fnr)
+        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId)
 
-        val payload = lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger)
-        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(payload)
+        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(arkivPayload)
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
@@ -50,17 +48,23 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO) {
         val fnr = userInContext.fnr.get()
+        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
+        orkivarClient.journalfor(arkivPayload)
+    }
 
-        val oppfølgingsperiode = hentOppfølingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
+    private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
+        val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
         val dialoger = dialogClient.hentDialoger(fnr)
         val navn = hentNavn(fnr)
+        val sakId = hentSakId(oppfølgingsperiodeId)
 
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, aktiviteter, dialoger)
-        if(oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+        if (forhaandsvisningTidspunkt != null) {
+            val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhaandsvisningTidspunkt, aktiviteter, dialoger)
+            if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
+        }
 
-        val payload = lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger)
-        orkivarClient.journalfor(payload)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sakId)
     }
 
     private fun hentNavn(fnr: Fnr): Navn {
@@ -69,8 +73,12 @@ class ArkiveringsController(
         return result.data.hentPerson.navn.first()
     }
 
-    private fun hentOppfølingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
+    private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
         return oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+    }
+
+    private fun hentSakId(oppfølgingsperiodeId: UUID): Long {
+        return oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId)?.sakId ?: throw RuntimeException("Kunne ikke hente sakid på oppfølgingsperiode: $oppfølgingsperiodeId")
     }
 
     data class ForhaandsvisningOutboundDTO(
