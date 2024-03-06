@@ -57,14 +57,14 @@ class ArkiveringsController(
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
         val dialoger = dialogClient.hentDialoger(fnr)
         val navn = hentNavn(fnr)
-        val sakId = hentSakId(oppfølgingsperiodeId)
+        val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
 
         if (forhaandsvisningTidspunkt != null) {
             val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhaandsvisningTidspunkt, aktiviteter, dialoger)
             if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
         }
 
-        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sakId)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak)
     }
 
     private fun hentNavn(fnr: Fnr): Navn {
@@ -75,10 +75,6 @@ class ArkiveringsController(
 
     private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
         return oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
-    }
-
-    private fun hentSakId(oppfølgingsperiodeId: UUID): Long {
-        return oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId)?.sakId ?: throw RuntimeException("Kunne ikke hente sakid på oppfølgingsperiode: $oppfølgingsperiodeId")
     }
 
     data class ForhaandsvisningOutboundDTO(
