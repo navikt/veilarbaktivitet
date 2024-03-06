@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
 import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
+import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -21,7 +22,7 @@ object Arkiveringslogikk {
         oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>,
-        sakId: Long
+        sakDTO: SakDTO
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger)
         return ArkivPayload(
@@ -30,7 +31,8 @@ object Arkiveringslogikk {
                 fnr = fnr.get(),
                 oppfølgingsperiodeStart = oppfølgingsperiode.startDato.norskDato(),
                 oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato(),
-                sakId = sakId
+                sakId = sakDTO.sakId,
+                fagsaksystem = sakDTO.fagsaksystem
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger

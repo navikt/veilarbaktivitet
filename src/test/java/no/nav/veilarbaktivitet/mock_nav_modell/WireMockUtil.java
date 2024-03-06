@@ -241,7 +241,8 @@ public class WireMockUtil {
                             .withBody("""
                                 {
                                 "oppfolgingsperiodeId": "%s",
-                                "sakId": %d
+                                "sakId": %d,
+                                "fagsaksystem":  "ARBEIDSOPPFOLGING"
                                 }
                                 """.formatted(oppfolgingsperiodeId, sakId))));
         }
