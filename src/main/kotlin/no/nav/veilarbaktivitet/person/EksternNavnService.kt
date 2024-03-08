@@ -4,10 +4,10 @@ import no.nav.common.client.pdl.PdlClient
 import no.nav.common.client.utils.graphql.GraphqlRequestBuilder
 import no.nav.common.client.utils.graphql.GraphqlResponse
 import no.nav.common.client.utils.graphql.GraphqlUtils
+import no.nav.veilarbaktivitet.person.NavnMaster.FREG
+import no.nav.veilarbaktivitet.person.NavnMaster.PDL
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 
 @Service
 class EksternNavnService(val pdlClient: PdlClient) {
@@ -20,17 +20,8 @@ class EksternNavnService(val pdlClient: PdlClient) {
         val navnResult = pdlClient.request(graphqlRequest, NavnResponse::class.java)
             .also { GraphqlUtils.logWarningIfError(it) }
         if(navnResult.errors?.isNotEmpty() == true) { throw RuntimeException("Feil ved kall til pdl") }
-        val navnFraPdl = navnResult.data.hentPerson.navn
-        return when {
-            navnFraPdl.size == 1 -> navnFraPdl.first().tilNavn()
-            navnFraPdl.size > 1 ->
-                navnFraPdl.firstOrNull { it.metadata.master == NavnMaster.PDL }?.tilNavn() ?:
-                navnFraPdl.firstOrNull { it.metadata.master == NavnMaster.FREG }?.tilNavn() ?:
-                navnFraPdl.first().tilNavn()
-            else -> throw RuntimeException("Personen har ikke navn")
-        }
+        return navnResult.data.hentPerson.hentNavn()
     }
-
 }
 
 data class QueryVariables(
@@ -39,12 +30,20 @@ data class QueryVariables(
 )
 
 data class NavnResponseData(
-    val hentPerson: HentPerson
+    val hentPerson: PdlPerson
 )
 
-data class HentPerson(
-    val navn: List<PdlNavn>
-)
+data class PdlPerson(
+    private val navn: List<PdlNavn>
+) {
+    fun hentNavn(): Navn = when {
+        navn.size == 1 -> navn.first().tilNavn()
+        navn.size > 1 ->
+            navn.firstOrNull { it.metadata.master == PDL }?.tilNavn() ?:
+            navn.first { it.metadata.master == FREG }.tilNavn()
+            else -> throw IllegalStateException("Personen har ikke navn - dette skal aldri skje")
+        }
+}
 
 data class NavnMetadata(
     val master: NavnMaster
@@ -61,7 +60,6 @@ data class Navn(
     val etternavn: String
 ) {
     fun tilFornavnMellomnavnEtternavn() = "${fornavn} ${mellomnavn?.plus(" ") ?: ""}${etternavn}"
-
 }
 
 data class PdlNavn(
