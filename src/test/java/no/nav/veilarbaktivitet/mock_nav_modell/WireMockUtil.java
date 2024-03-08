@@ -206,7 +206,10 @@ public class WireMockUtil {
                                     {
                                       "fornavn": "%s",
                                       "mellomnavn": %s,
-                                      "etternavn": "%s"
+                                      "etternavn": "%s",
+                                      "metadata": {
+                                          "master": "FREG"
+                                      }
                                     }
                                   ]
                                 }

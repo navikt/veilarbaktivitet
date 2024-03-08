@@ -56,7 +56,7 @@ class ArkiveringsController(
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
         val dialoger = dialogClient.hentDialoger(fnr)
-        val navn = hentNavn(fnr)
+        val navn = navnService.hentNavn(fnr)
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
 
         if (forhaandsvisningTidspunkt != null) {
@@ -65,12 +65,6 @@ class ArkiveringsController(
         }
 
         return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak)
-    }
-
-    private fun hentNavn(fnr: Fnr): Navn {
-        val result = navnService.hentNavn(fnr)
-        if(result.errors?.isNotEmpty() == true) { throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR) }
-        return result.data.hentPerson.navn.first()
     }
 
     private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
