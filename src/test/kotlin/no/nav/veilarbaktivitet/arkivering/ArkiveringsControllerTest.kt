@@ -20,7 +20,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-internal class ArkiveringsControllerTest: SpringBootTestBase() {
+internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
@@ -377,6 +377,51 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .then()
             .assertThat()
             .statusCode(HttpStatus.BAD_REQUEST.value())
+    }
+
+    @Test
+    fun `Kall mot sistJournalført skal returnere responsen fra orkivar`() {
+        val oppfølgingsperiodeId = "141ab934-f2bf-4761-aeda-beb4304db3ea"
+        val tidspunkt = "2024-03-13T14:11:48.478662"
+        val responsFraOrkivar = """
+                    {
+                        "oppfølgingsperiodeId": "$oppfølgingsperiodeId",
+                        "sistJournalført": "$tidspunkt"
+                    }
+                """.trimIndent()
+        stubFor(get(urlEqualTo("/orkivar/sistJournalfort/$oppfølgingsperiodeId"))
+            .willReturn(aResponse().withBody(responsFraOrkivar)))
+        val bruker = navMockService.createHappyBruker()
+        val veileder = navMockService.createVeileder(bruker)
+
+        val respons = veileder
+            .createRequest(bruker)
+            .get("http://localhost:$port/veilarbaktivitet/api/arkivering/sistJournalfort/$oppfølgingsperiodeId")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.OK.value())
+            .extract()
+            .response()
+            .`as`(ArkiveringsController.SistJournalførtDTO::class.java)
+
+        assertThat(respons.sistJournalført.toString()).isEqualTo(tidspunkt)
+        assertThat(respons.oppfølgingsperiodeId).isEqualTo(oppfølgingsperiodeId)
+    }
+
+    @Test
+    fun `Kall mot sistJournalført skal returnere respons fra orkivar også når det er 404`() {
+        val oppfølgingsperiodeId = "141ab934-f2bf-4761-aeda-beb4304db3ea"
+        stubFor(get(urlEqualTo("/orkivar/$oppfølgingsperiodeId"))
+            .willReturn(aResponse().withStatus(404)))
+        val bruker = navMockService.createHappyBruker()
+        val veileder = navMockService.createVeileder(bruker)
+
+        veileder
+            .createRequest(bruker)
+            .get("http://localhost:$port/veilarbaktivitet/api/arkivering/sistJournalfort/$oppfølgingsperiodeId")
+            .then()
+            .assertThat()
+            .statusCode(HttpStatus.NOT_FOUND.value())
     }
 
     private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String) {

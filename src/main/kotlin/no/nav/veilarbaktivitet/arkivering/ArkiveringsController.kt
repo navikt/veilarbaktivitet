@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import jakarta.ws.rs.PathParam
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
@@ -14,6 +13,7 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -81,11 +81,6 @@ class ArkiveringsController(
 
     data class ArkiverInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime
-    )
-
-    data class SistJournalførtDTO(
-        val oppfølgingsperiodeId: String,
-        val sistJournalført: LocalDateTime
     )
 
     data class JournalførtOutboundDTO(
