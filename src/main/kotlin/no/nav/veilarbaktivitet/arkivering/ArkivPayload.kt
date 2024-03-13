@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
+import java.util.*
 
 typealias ArkivAktivitetStatus = String
 
@@ -17,6 +18,7 @@ data class Metadata(
     val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
+    val oppfølgingsperiode: UUID
 )
 
 data class ArkivAktivitet(

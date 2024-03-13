@@ -23,6 +23,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
+        // Given
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
@@ -41,6 +42,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
+        // When
         val forhaandsvisning = veileder
             .createRequest(bruker)
             .get(arkiveringsUrl)
@@ -51,6 +53,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
             .response()
             .`as`(ArkiveringsController.ForhaandsvisningOutboundDTO::class.java)
 
+        // Then
         assertThat(forhaandsvisning.forhaandsvisningOpprettet).isCloseTo(ZonedDateTime.now(), within(500, ChronoUnit.MILLIS))
 
         verify(
@@ -65,7 +68,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
                         "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
                         "sakId": ${bruker.sakId},
-                        "fagsaksystem": "ARBEIDSOPPFOLGING"
+                        "fagsaksystem": "ARBEIDSOPPFOLGING",
+                        "oppfølgingsperiode": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -157,10 +161,11 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "egenskaper" : [ ]
                       } ]
                     }
-                """.trimIndent())
+                """.trimIndent(), true, true)
             ))
     }
 
+    //             ).withRequestBody(matchingJsonPath("metadata.dataHentet", equalToDateTime(ZonedDateTime.now()))))
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
@@ -197,7 +202,8 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
                         "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
                         "sakId": ${bruker.sakId},
-                        "fagsaksystem": "ARBEIDSOPPFOLGING"
+                        "fagsaksystem": "ARBEIDSOPPFOLGING",
+                        "oppfølgingsperiode": "${oppfølgingsperiodeId}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -426,7 +432,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
         )
     }
 
-    fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
+    private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
         val navn = Navn(brukerFornavn, null, brukerEtternavn, )
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
