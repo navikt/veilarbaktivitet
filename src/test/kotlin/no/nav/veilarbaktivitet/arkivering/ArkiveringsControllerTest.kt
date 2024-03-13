@@ -20,7 +20,7 @@ import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-internal class ArkiveringsControllerTest : SpringBootTestBase() {
+internal class ArkiveringsControllerTest: SpringBootTestBase() {
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
