@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import jakarta.ws.rs.PathParam
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
@@ -13,6 +14,7 @@ import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -49,6 +51,16 @@ class ArkiveringsController(
         orkivarClient.journalfor(arkivPayload)
     }
 
+    @GetMapping("/sistJournalfort/{oppfølgingsperiodeId}")
+    @AuthorizeFnr(auditlogMessage = "Hente sistJournalført for aktivitetsplan og dialog")
+    fun hentSistJournalført(@PathVariable("oppfølgingsperiodeId") oppfølgingsperiodeId: UUID): SistJournalførtDTO {
+        val result = orkivarClient.hentSistJournalført(oppfølgingsperiodeId)
+        when (result) {
+            is OrkivarClient.SistJournalførtSuccess -> return result.data
+            is OrkivarClient.SistJournalførtFail -> throw ResponseStatusException(result.statuskode, null, null)
+        }
+    }
+
     private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
@@ -75,5 +87,10 @@ class ArkiveringsController(
 
     data class ArkiverInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime
+    )
+
+    data class SistJournalførtDTO(
+        val oppfølgingsperiodeId: String,
+        val sistJournalført: LocalDateTime
     )
 }

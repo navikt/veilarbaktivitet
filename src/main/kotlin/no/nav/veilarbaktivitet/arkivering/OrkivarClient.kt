@@ -9,6 +9,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
@@ -47,6 +48,21 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
         }
     }
 
+    fun hentSistJournalført(oppfølgingsperiodeId: UUID): SistJournalførtResult {
+        val request: Request = Request.Builder()
+            .addHeader("Accept", "application/json")
+            .url(String.format("%s/sistJournalfort/%s", orkivarUrl, oppfølgingsperiodeId))
+            .build()
+
+        val response = orkivarHttpClient.newCall(request).execute()
+
+        return if (response.isSuccessful) {
+            SistJournalførtSuccess(data = RestUtils.parseJsonResponse(response, ArkiveringsController.SistJournalførtDTO::class.java).get())
+        } else {
+            SistJournalførtFail(statuskode = response.code)
+        }
+    }
+
     private fun lagRequestBody(arkivPayload: ArkivPayload): RequestBody {
         return JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull())
     }
@@ -54,4 +70,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     data class ForhaandsvisningResult(
         val pdf: ByteArray
     )
+
+    sealed interface SistJournalførtResult
+    data class SistJournalførtSuccess(val data: ArkiveringsController.SistJournalførtDTO): SistJournalførtResult
+    data class SistJournalførtFail(val statuskode: Int): SistJournalførtResult
 }
