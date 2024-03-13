@@ -69,7 +69,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
-                        "oppfølgingsperiode": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
+                        "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -203,7 +203,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
-                        "oppfølgingsperiode": "${oppfølgingsperiodeId}"
+                        "oppfølgingsperiodeId": "${oppfølgingsperiodeId}"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {

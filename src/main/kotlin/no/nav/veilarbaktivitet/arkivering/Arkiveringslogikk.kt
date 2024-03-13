@@ -33,7 +33,7 @@ object Arkiveringslogikk {
                 oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato(),
                 sakId = sakDTO.sakId,
                 fagsaksystem = sakDTO.fagsaksystem,
-                oppfølgingsperiode = oppfølgingsperiode.uuid
+                oppfølgingsperiodeId = oppfølgingsperiode.uuid
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger
