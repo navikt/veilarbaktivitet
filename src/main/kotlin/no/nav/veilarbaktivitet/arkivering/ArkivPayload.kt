@@ -14,7 +14,9 @@ data class Metadata(
     val navn: String,
     val fnr: String,
     val oppfølgingsperiodeStart: String,
-    val oppfølgingsperiodeSlutt: String?
+    val oppfølgingsperiodeSlutt: String?,
+    val sakId: Long,
+    val fagsaksystem: String,
 )
 
 data class ArkivAktivitet(

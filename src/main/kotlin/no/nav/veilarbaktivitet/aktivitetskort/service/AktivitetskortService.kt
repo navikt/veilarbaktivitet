@@ -48,7 +48,8 @@ class AktivitetskortService(
                         arenaAktivitetskortService.dobbelsjekkMigrering(bestilling, gammelAktivitet)
                         return UpsertActionResult.IGNORER
                     }
-                    else -> oppdaterAktivitet(gammelAktivitet, nyAktivitet)
+                    bestilling is ArenaAktivitetskortBestilling -> oppdaterAktivitet(gammelAktivitet, nyAktivitet, true)
+                    else -> oppdaterAktivitet(gammelAktivitet, nyAktivitet, false)
                 }
                 log.info("Oppdaterte ekstern aktivitetskort {}", oppdatertAktivitet)
                 UpsertActionResult.OPPDATER
@@ -104,9 +105,10 @@ class AktivitetskortService(
     }
 
     @Throws(UlovligEndringFeil::class)
-    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData): AktivitetData {
+    private fun oppdaterAktivitet(gammelAktivitet: AktivitetData, nyAktivitet: AktivitetData, arenaAclOppdatering: Boolean): AktivitetData {
         if (gammelAktivitet.aktorId != nyAktivitet.aktorId) throw UlovligEndringFeil("Kan ikke endre bruker på samme aktivitetskort")
-        if (gammelAktivitet.historiskDato != null) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
+        // Arena-ACL kan foreløpig oppdatere historiske kort
+        if (gammelAktivitet.historiskDato != null && !arenaAclOppdatering) throw UlovligEndringFeil("Kan ikke endre aktiviteter som er historiske (avsluttet oppfølgingsperiode)")
         if (gammelAktivitet.isAvtalt && !nyAktivitet.isAvtalt) throw UlovligEndringFeil("Kan ikke oppdatere fra avtalt til ikke-avtalt")
         return gammelAktivitet
             .let { aktivitet: AktivitetData -> settAvtaltHvisAvtalt(aktivitet, nyAktivitet) }

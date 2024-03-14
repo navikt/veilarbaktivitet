@@ -35,7 +35,7 @@ open class AuthorizationConfig {
     }
 
     @Bean
-    @Profile("!dev")
+    @Profile("!test")
     open fun machineToMachineTokenClient(): AzureAdMachineToMachineTokenClient {
         return AzureAdTokenClientBuilder.builder()
             .withNaisDefaults()
@@ -43,7 +43,7 @@ open class AuthorizationConfig {
     }
 
     @Bean
-    @Profile("!dev")
+    @Profile("!test")
     open fun onBehalfOfTokenClient(): AzureAdOnBehalfOfTokenClient {
         return AzureAdTokenClientBuilder.builder()
             .withNaisDefaults()

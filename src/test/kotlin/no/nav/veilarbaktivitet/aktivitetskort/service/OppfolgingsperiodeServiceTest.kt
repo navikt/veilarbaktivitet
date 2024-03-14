@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort.service
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingV2Client
+import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.periode.*
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
@@ -14,7 +14,7 @@ import java.time.ZonedDateTime
 import java.util.*
 
 class OppfolgingsperiodeServiceTest {
-    private lateinit var oppfolgingClient: OppfolgingV2Client
+    private lateinit var oppfolgingClient: OppfolgingClient
     private lateinit var aktivitetService: AktivitetService
     private lateinit var brukernotifikasjonService: BrukernotifikasjonService
     private lateinit var sistePeriodeDAO: SistePeriodeDAO
@@ -30,7 +30,7 @@ class OppfolgingsperiodeServiceTest {
 
     @BeforeEach
     fun setup() {
-        oppfolgingClient = Mockito.mock(OppfolgingV2Client::class.java)
+        oppfolgingClient = Mockito.mock(OppfolgingClient::class.java)
         aktivitetService = Mockito.mock(AktivitetService::class.java)
         brukernotifikasjonService = Mockito.mock(BrukernotifikasjonService::class.java)
         sistePeriodeDAO = Mockito.mock(SistePeriodeDAO::class.java)

@@ -1,15 +1,15 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import io.micrometer.core.annotation.Timed;
+import jdk.jfr.ContentType;
+import kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -17,12 +17,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
+public class OppfolgingClientImpl implements OppfolgingClient {
     private final OkHttpClient veilarboppfolgingHttpClient;
+    private final OkHttpClient veilarboppfolgingOnBehalfOfHttpClient;
     private final PersonService personService;
     private final GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk;
 
@@ -77,6 +79,24 @@ public class OppfolgingV2ClientImpl implements OppfolgingV2Client {
         try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
            return RestUtils.parseJsonResponseArrayOrThrow(response, OppfolgingPeriodeMinimalDTO.class);
+        } catch (Exception e) {
+            throw internalServerError(e, request.url().toString());
+        }
+    }
+
+    @Override
+    public Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId) {
+        String uri = String.format("%s/v3/sak/%s", baseUrl, oppfolgingsperiodeId );
+        Request request = new Request.Builder()
+                .url(uri)
+                .post(RequestBody.create("", null))
+                .build();
+        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                return Optional.empty();
+            }
+            return RestUtils.parseJsonResponse(response, SakDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
         }

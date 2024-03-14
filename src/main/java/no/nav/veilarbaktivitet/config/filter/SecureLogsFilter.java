@@ -13,7 +13,7 @@ import java.io.IOException;
 import static java.lang.String.format;
 import static no.nav.veilarbaktivitet.config.filter.EnhanceSecureLogsFilter.*;
 
-@Profile("!dev")
+@Profile("!test")
 public class SecureLogsFilter implements Filter {
 
     private final Logger secureLog = LoggerFactory.getLogger("SecureLog");

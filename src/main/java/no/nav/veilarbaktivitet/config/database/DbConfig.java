@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 @EnableTransactionManagement
 @EnableConfigurationProperties(DbConfig.DatasourceProperties.class)
 @RequiredArgsConstructor
-@Profile("!dev")
+@Profile("!test")
 public class DbConfig {
 
     private final DatasourceProperties datasourceProperties;

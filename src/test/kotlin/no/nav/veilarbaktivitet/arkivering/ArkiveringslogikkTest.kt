@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arkivering
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
+import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
@@ -29,7 +30,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
-            dialoger = emptyList()
+            dialoger = emptyList(),
+            sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
         )
 
         assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
@@ -47,7 +49,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
-            dialoger = emptyList()
+            dialoger = emptyList(),
+            sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
@@ -71,7 +74,8 @@ class ArkiveringslogikkTest {
             dummyNavn,
             oppfølgingsperiode,
             aktiviteter = emptyList(),
-            dialoger = listOf(dialog)
+            dialoger = listOf(dialog),
+            sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()

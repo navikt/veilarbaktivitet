@@ -21,7 +21,7 @@ import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 
-@Profile("!dev")
+@Profile("!test")
 @Configuration
 public class FilterConfig {
 

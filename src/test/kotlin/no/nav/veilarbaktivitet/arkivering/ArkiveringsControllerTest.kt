@@ -63,7 +63,9 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }} 
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "sakId": ${bruker.sakId},
+                        "fagsaksystem": "ARBEIDSOPPFOLGING"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -193,7 +195,9 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }}
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "sakId": ${bruker.sakId},
+                        "fagsaksystem": "ARBEIDSOPPFOLGING"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -423,7 +427,7 @@ internal class ArkiveringsControllerTest: SpringBootTestBase() {
     }
 
     fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
-        val navn = Navn(brukerFornavn, null, brukerEtternavn)
+        val navn = Navn(brukerFornavn, null, brukerEtternavn, )
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
         val veileder = navMockService.createVeileder(bruker)

@@ -16,6 +16,8 @@ public class BrukerOptions {
 
     private boolean oppfolgingFeiler;
     private Navn navn;
+    private Long sakId;
+
     /*
     @TODO
     private boolean manuellFeiler;
@@ -36,6 +38,7 @@ public class BrukerOptions {
                 .kanVarsles(true)
                 .erUnderKvp(false)
                 .harBruktNivaa4(true)
-                .navn(new Navn("Navn", null, "Navnesen"));
+                .navn(new Navn("Navn", null, "Navnesen"))
+                .sakId(1000L);
     }
 }

@@ -19,7 +19,7 @@ import org.springframework.context.annotation.Profile;
 import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Configuration
-@Profile("!dev")
+@Profile("!test")
 @EnableConfigurationProperties({EnvironmentProperties.class, no.nav.veilarbaktivitet.unleash.UnleashConfig.class})
 public class ApplicationContext {
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
