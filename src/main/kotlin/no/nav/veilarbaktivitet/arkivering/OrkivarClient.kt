@@ -9,6 +9,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 import java.util.*
 
 @Service
@@ -32,7 +33,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
             .orElseThrow { RuntimeException("Kunne ikke hente PDF for forhåndsvisning") }
     }
 
-    fun journalfor(arkivPayload: ArkivPayload) {
+    fun journalfor(arkivPayload: ArkivPayload): JournalføringResult {
         val payload = lagRequestBody(arkivPayload)
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
@@ -43,24 +44,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
         val response = orkivarHttpClient.newCall(request).execute()
 
-        if (!response.isSuccessful) {
-            throw RuntimeException("Kunne ikke journalføre aktiviteter og dialog")
-        }
-    }
-
-    fun hentSistJournalført(oppfølgingsperiodeId: UUID): SistJournalførtResult {
-        val request: Request = Request.Builder()
-            .addHeader("Accept", "application/json")
-            .url(String.format("%s/sistJournalfort/%s", orkivarUrl, oppfølgingsperiodeId))
-            .build()
-
-        val response = orkivarHttpClient.newCall(request).execute()
-
-        return if (response.isSuccessful) {
-            SistJournalførtSuccess(data = RestUtils.parseJsonResponse(response, ArkiveringsController.SistJournalførtDTO::class.java).get())
-        } else {
-            SistJournalførtFail(statuskode = response.code)
-        }
+        return RestUtils.parseJsonResponse(response, JournalføringResult::class.java)
+            .orElseThrow { RuntimeException("Kunne ikke journalføre aktivitetsplan og dialog") }
     }
 
     private fun lagRequestBody(arkivPayload: ArkivPayload): RequestBody {
@@ -68,10 +53,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     }
 
     data class ForhaandsvisningResult(
-        val pdf: ByteArray
+        val pdf: ByteArray,
+        val sistJournalført: LocalDateTime?
     )
 
-    sealed interface SistJournalførtResult
-    data class SistJournalførtSuccess(val data: ArkiveringsController.SistJournalførtDTO): SistJournalførtResult
-    data class SistJournalførtFail(val statuskode: Int): SistJournalførtResult
+    data class JournalføringResult(
+        val sistJournalført: LocalDateTime
+    )
 }

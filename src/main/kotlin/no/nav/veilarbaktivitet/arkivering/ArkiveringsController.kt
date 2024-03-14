@@ -39,26 +39,20 @@ class ArkiveringsController(
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
-            dataHentet
+            dataHentet,
+            forhaandsvisningResultat.sistJournalført
         )
     }
 
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog")
-    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO) {
+    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
         val fnr = userInContext.fnr.get()
         val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
-        orkivarClient.journalfor(arkivPayload)
-    }
-
-    @GetMapping("/sistJournalfort/{oppfølgingsperiodeId}")
-    @AuthorizeFnr(auditlogMessage = "Hente sistJournalført for aktivitetsplan og dialog")
-    fun hentSistJournalført(@PathVariable("oppfølgingsperiodeId") oppfølgingsperiodeId: UUID): SistJournalførtDTO {
-        val result = orkivarClient.hentSistJournalført(oppfølgingsperiodeId)
-        when (result) {
-            is OrkivarClient.SistJournalførtSuccess -> return result.data
-            is OrkivarClient.SistJournalførtFail -> throw ResponseStatusException(result.statuskode, null, null)
-        }
+        val journalførtResult = orkivarClient.journalfor(arkivPayload)
+        return JournalførtOutboundDTO(
+            sistJournalført = journalførtResult.sistJournalført
+        )
     }
 
     private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
@@ -82,7 +76,8 @@ class ArkiveringsController(
 
     data class ForhaandsvisningOutboundDTO(
         val pdf: ByteArray,
-        val forhaandsvisningOpprettet: ZonedDateTime
+        val forhaandsvisningOpprettet: ZonedDateTime,
+        val sistJournalført: LocalDateTime?
     )
 
     data class ArkiverInboundDTO(
@@ -91,6 +86,10 @@ class ArkiveringsController(
 
     data class SistJournalførtDTO(
         val oppfølgingsperiodeId: String,
+        val sistJournalført: LocalDateTime
+    )
+
+    data class JournalførtOutboundDTO(
         val sistJournalført: LocalDateTime
     )
 }
