@@ -231,6 +231,39 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitetEtter.eksternAktivitet.detaljer).isNotEmpty
     }
 
+    @Test
+    fun `historisk aktivitet kan endres av ACL`() {
+        val avsluttetPeriode = SerieOppfolgingsperiode(UUID.randomUUID(), ZonedDateTime.now().minusDays(1))
+        val serie = ArenaAktivitetskortSerie(mockBruker, "VARIG", avsluttetPeriode)
+        val opprettMelding: ArenaKort = serie.ny(AktivitetskortStatus.GJENNOMFORES, avsluttetPeriode.slutt!!.minusDays(2))
+        val endretMelding: ArenaKort = serie.ny(AktivitetskortStatus.AVBRUTT, avsluttetPeriode.slutt!!.minusDays(1))
+        aktivitetTestService.opprettEksterntArenaKort(opprettMelding)
+        tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
+        aktivitetTestService.opprettEksterntArenaKort(endretMelding)
+        val aktivitet = hentAktivitet(serie.funksjonellId)
+        assertThat(aktivitet.status).isEqualTo(AktivitetStatus.AVBRUTT)
+    }
+
+    @Test
+    fun `historisk aktivitet kan ikke endres av Komet`() {
+        val avsluttetPeriode = SerieOppfolgingsperiode(UUID.randomUUID(), ZonedDateTime.now().minusDays(1))
+        val serie = ArenaAktivitetskortSerie(mockBruker, "AVKLARAG", avsluttetPeriode)
+        val opprettMelding: ArenaKort = serie.ny(AktivitetskortStatus.GJENNOMFORES, avsluttetPeriode.slutt!!.minusDays(2))
+        val endretMelding: ArenaKort = serie.ny(AktivitetskortStatus.AVBRUTT, avsluttetPeriode.slutt!!.minusDays(1))
+        aktivitetTestService.opprettEksterntArenaKort(opprettMelding)
+        tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            listOf(endretMelding.melding.copy(
+                source = MessageSource.TEAM_KOMET.name,
+                aktivitetskortType = AktivitetskortType.AVKLARAG
+            ))
+        )
+        assertFeilmeldingPublished(
+            serie.funksjonellId,
+            ErrorType.ULOVLIG_ENDRING,
+            MessageSource.TEAM_KOMET
+        )
+    }
 
 
     @Test
