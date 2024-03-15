@@ -59,6 +59,11 @@ class MigreringService (
                 val totaltMigrertFeilStatus = antallMigrertMedFeilStatus[it] ?: 0
                 val ikkeMigrertManglerOppfolg = ikkeMigrertManglerOppfolg[it] ?: 0
                 val ikkeMigrert = totaltFoer - (totaltMigrertRiktigStatus + totaltMigrertFeilStatus + ikkeMigrertManglerOppfolg)
+
+                if (antallMigrertMedFeilStatus.isNotEmpty()) {
+                    log.info("Migrerte tiltak med feil status ${etterMedFeilStatus.joinToString(",") { a -> a.first.id }}")
+                }
+
                 reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg)
             }
     }
