@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.idmapping
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import java.time.LocalDateTime
 import java.util.*
@@ -16,5 +17,6 @@ data class IdMappingWithAktivitetStatus (
     val aktivitetId: Long,
     val funksjonellId: UUID,
     val status: AktivitetStatus,
-    val historiskDato: LocalDateTime?
+    val historiskDato: LocalDateTime?,
+    val source: MessageSource
 )
