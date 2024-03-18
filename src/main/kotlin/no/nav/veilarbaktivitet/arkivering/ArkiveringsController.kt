@@ -5,10 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
-import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
-import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
@@ -40,16 +38,20 @@ class ArkiveringsController(
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
-            dataHentet
+            dataHentet,
+            forhaandsvisningResultat.sistJournalført
         )
     }
 
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog")
-    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO) {
+    fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
         val fnr = userInContext.fnr.get()
         val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
-        orkivarClient.journalfor(arkivPayload)
+        val journalførtResult = orkivarClient.journalfor(arkivPayload)
+        return JournalførtOutboundDTO(
+            sistJournalført = journalførtResult.sistJournalført
+        )
     }
 
     private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
@@ -73,10 +75,15 @@ class ArkiveringsController(
 
     data class ForhaandsvisningOutboundDTO(
         val pdf: ByteArray,
-        val forhaandsvisningOpprettet: ZonedDateTime
+        val forhaandsvisningOpprettet: ZonedDateTime,
+        val sistJournalført: LocalDateTime?
     )
 
     data class ArkiverInboundDTO(
         val forhaandsvisningOpprettet: ZonedDateTime
+    )
+
+    data class JournalførtOutboundDTO(
+        val sistJournalført: LocalDateTime
     )
 }

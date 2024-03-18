@@ -9,6 +9,7 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
@@ -31,7 +32,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
             .orElseThrow { RuntimeException("Kunne ikke hente PDF for forhåndsvisning") }
     }
 
-    fun journalfor(arkivPayload: ArkivPayload) {
+    fun journalfor(arkivPayload: ArkivPayload): JournalføringResult {
         val payload = lagRequestBody(arkivPayload)
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
@@ -42,9 +43,8 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
         val response = orkivarHttpClient.newCall(request).execute()
 
-        if (!response.isSuccessful) {
-            throw RuntimeException("Kunne ikke journalføre aktiviteter og dialog")
-        }
+        return RestUtils.parseJsonResponse(response, JournalføringResult::class.java)
+            .orElseThrow { RuntimeException("Kunne ikke journalføre aktivitetsplan og dialog") }
     }
 
     private fun lagRequestBody(arkivPayload: ArkivPayload): RequestBody {
@@ -52,6 +52,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     }
 
     data class ForhaandsvisningResult(
-        val pdf: ByteArray
+        val pdf: ByteArray,
+        val sistJournalført: LocalDateTime?
+    )
+
+    data class JournalføringResult(
+        val sistJournalført: LocalDateTime
     )
 }

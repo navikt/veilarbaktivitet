@@ -224,14 +224,19 @@ public class WireMockUtil {
                 .willReturn(aResponse()
                         .withBody("""
                                 {
-                                   "pdf":"%s"
+                                   "pdf":"%s",
+                                   "sistJournalført": "2024-03-13T14:11:48.478662"
                                 }
                                 """.formatted(pdfByteArray))));
     }
 
     private static void journalforing() {
         stubFor(post("/orkivar/arkiver")
-                .willReturn(aResponse().withStatus(200)));
+                .willReturn(aResponse().withStatus(200).withBody("""
+                            {
+                               "sistJournalført": "2024-03-13T14:11:48.478662"
+                            }
+                        """)));
     }
 
     private static void hentSak(Long sakId, Oppfolgingsperiode oppfolgingsperiode) {
