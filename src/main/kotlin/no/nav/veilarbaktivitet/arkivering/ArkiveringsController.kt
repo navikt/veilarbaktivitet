@@ -86,8 +86,4 @@ class ArkiveringsController(
     data class JournalførtOutboundDTO(
         val sistJournalført: LocalDateTime
     )
-
-    data class JournalførtOutboundDTO(
-        val sistJournalført: LocalDateTime
-    )
 }
