@@ -58,7 +58,7 @@ public class AktivitetAppService {
                     var kontorsperreEnhetId = aktivitet.getKontorsperreEnhetId();
                     if (kontorsperreEnhetId == null) {
                         return true;
-                    } else if (enheterMedTilgang.get(EnhetId.of(kontorsperreEnhetId))) {
+                    } else if (enheterMedTilgang.getOrDefault(EnhetId.of(kontorsperreEnhetId), false)) {
                         return true;
                     } else {
                         var enhetId = EnhetId.of(kontorsperreEnhetId);

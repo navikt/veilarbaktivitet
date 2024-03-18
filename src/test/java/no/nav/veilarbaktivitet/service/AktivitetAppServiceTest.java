@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
+import no.nav.common.types.identer.Fnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -10,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.person.PersonService;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -24,10 +26,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
 
 import static no.nav.veilarbaktivitet.person.Innsender.BRUKER;
 import static no.nav.veilarbaktivitet.person.Innsender.NAV;
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -42,6 +47,9 @@ public class AktivitetAppServiceTest {
 
     @Mock
     AktivitetService aktivitetService;
+
+    @Mock
+    PersonService personService;
 
     @InjectMocks
     private AktivitetAppService appService;
@@ -234,6 +242,19 @@ public class AktivitetAppServiceTest {
                 .aktorId(Person.aktorId("haha")).historiskDato(new Date()).build();
         when(aktivitetService.hentAktivitetMedForhaandsorientering(AKTIVITET_ID)).thenReturn(aktivitet);
         testAlleOppdateringsmetoder(aktivitet);
+    }
+
+    @Test
+    void skal_ikke_kaste_feil_selv_om_første_aktivitet_har_kontorsperre() {
+        val aktorId = Person.aktorId("haha");
+        val aktivitetMedKontorsperre = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
+                .aktorId(Person.aktorId("haha")).kontorsperreEnhetId("EnhetId").build();
+        when(personService.getAktorIdForPersonBruker(any(Person.class))).thenReturn(Optional.of(aktorId));
+        when(aktivitetService.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitetMedKontorsperre));
+
+        assertDoesNotThrow(() -> {
+            appService.hentAktiviteterForIdentMedTilgangskontroll(aktorId);
+        });
     }
 
     private void testAlleOppdateringsmetoder(final AktivitetData aktivitet) {
