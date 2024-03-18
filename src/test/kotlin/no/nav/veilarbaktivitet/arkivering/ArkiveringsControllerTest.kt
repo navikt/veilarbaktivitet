@@ -1,16 +1,19 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import kafka.utils.Json
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -314,7 +317,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man arkiverer skal kun riktig oppfølgingsperiode være inkludert`() {
+    fun `Når man journalfører skal kun riktig oppfølgingsperiode være inkludert`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiodeForArkivering = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val annenOppfølgingsperiode = UUID.randomUUID()
@@ -338,6 +341,29 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
+    }
+
+    // Må veileder og enhetsperre være samme for at det skal bli reelt?
+    @Test
+    fun `Når man journalfører skal ikke aktiviteter med kontorsperre inkluderes`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val kvpAktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.SAMTALEREFERAT)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).kontorsperreEnhetId("Enhet").build()
+        val kvpAktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(kvpAktivitet, false)
+        aktivitetTestService.opprettAktivitet(bruker, veileder, kvpAktivitetDTO)
+
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        assertThat(arkivPayload.aktiviteter).isEmpty()
     }
 
     @Test
