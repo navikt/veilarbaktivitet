@@ -67,7 +67,7 @@ class MigreringServiceTest {
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 1,1,1, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 1,1,1, 0, 0)
     }
 
     @Test
@@ -82,7 +82,7 @@ class MigreringServiceTest {
             foer = testAktiviteter,
             idMappings = mapOf()
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,0,3, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,0,3, 0, 0)
     }
 
     @Test
@@ -122,7 +122,7 @@ class MigreringServiceTest {
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,3,0, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,3,0, 0, 0)
     }
 
     @Test
@@ -168,7 +168,7 @@ class MigreringServiceTest {
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,2,0, 1)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,2,0, 1, 0)
     }
 }
 
