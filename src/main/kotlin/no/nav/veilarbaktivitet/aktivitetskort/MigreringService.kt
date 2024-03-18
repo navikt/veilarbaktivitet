@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import io.getunleash.Unleash
 import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
@@ -35,11 +36,16 @@ class MigreringService (
             val (aktivitet, oppfolgingsperiode) = input
             if (oppfolgingsperiode == null) return MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode
             return idMappings[ArenaId(aktivitet.id)]
-                ?.let { match -> if (match.status == aktivitet.status) MigreringsStatus.MigrertRiktigStatus else MigreringsStatus.MigrertFeilStatus }
-                ?: MigreringsStatus.IkkeMigrert
+                ?.let { match -> when {
+                    match.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL -> MigreringsStatus.MigrertAvAnnetTeam
+                    match.status == aktivitet.status -> MigreringsStatus.MigrertRiktigStatus
+                    else -> MigreringsStatus.MigrertFeilStatus
+                } } ?: MigreringsStatus.IkkeMigrert
         }
-        val alleMigreringsStatuser = foer
+        val alleInklMigrertAvAndreTeam = foer
             .map { it.first to sjekkMigreringsStatus(it) }
+        val (alleMigreringsStatuser, alleMigrertAvAndreTeam) = alleInklMigrertAvAndreTeam
+            .partition { it.second != MigreringsStatus.MigrertAvAnnetTeam }
         val migrert = alleMigreringsStatuser
             .filter { !listOf(MigreringsStatus.IkkeMigrert, MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode).contains(it.second) }
 
@@ -49,6 +55,7 @@ class MigreringService (
         val feilStatusIdEr = etterMedFeilStatus.joinToString(",") { it.first.id }
         val ikkeMigrertManglerOppfolg = alleMigreringsStatuser
             .filter { it.second == MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode }.groupBy { it.first.type }.mapValues { it.value.size }
+        val antallMigrertAvAndreTeam = alleMigrertAvAndreTeam.groupBy { it.first.type }.mapValues { it.value.size }
         if (feilStatusIdEr.isNotEmpty()) {
             log.info("Migrerte aktiviteter med feil status: $feilStatusIdEr")
         }
@@ -59,17 +66,18 @@ class MigreringService (
                 val totaltMigrertFeilStatus = antallMigrertMedFeilStatus[it] ?: 0
                 val ikkeMigrertManglerOppfolg = ikkeMigrertManglerOppfolg[it] ?: 0
                 val ikkeMigrert = totaltFoer - (totaltMigrertRiktigStatus + totaltMigrertFeilStatus + ikkeMigrertManglerOppfolg)
+                val migrertAvAndreTeam = antallMigrertAvAndreTeam[it] ?: 0
 
                 if (antallMigrertMedFeilStatus.isNotEmpty()) {
                     log.info("Migrerte tiltak med feil status ${etterMedFeilStatus.joinToString(",") { a -> a.first.id }}")
                 }
 
-                reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg)
+                reportMetric(it, totaltFoer, totaltMigrertRiktigStatus, totaltMigrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg, migrertAvAndreTeam)
             }
     }
-    private fun reportMetric(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int) {
+    private fun reportMetric(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int, migrertAvAndreTeam: Int) {
         if (total == 0) return
-        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg)
+        aktivitetskortMetrikker.countMigrerteArenaAktiviteter(type, total, migrertRiktigStatus, migrertFeilStatus, ikkeMigrert, ikkeMigrertManglerOppfolg, migrertAvAndreTeam)
     }
 
     fun filtrerBortArenaTiltakHvisToggleAktiv(arenaIds: Set<ArenaId?>): (ArenaAktivitetDTO) -> Boolean {
@@ -111,5 +119,6 @@ enum class MigreringsStatus {
     IkkeMigrert,
     MigrertRiktigStatus,
     MigrertFeilStatus,
-    IkkeMigrertManglerOppfolgingsperiode
+    IkkeMigrertManglerOppfolgingsperiode,
+    MigrertAvAnnetTeam
 }

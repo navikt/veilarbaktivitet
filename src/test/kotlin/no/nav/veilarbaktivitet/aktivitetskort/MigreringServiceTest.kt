@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 
 import io.getunleash.Unleash
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
@@ -53,18 +54,20 @@ class MigreringServiceTest {
                     1,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT,
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 ),
                 ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT, // Feil status
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 1,1,1, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 1,1,1, 0, 0)
     }
 
     @Test
@@ -79,7 +82,7 @@ class MigreringServiceTest {
             foer = testAktiviteter,
             idMappings = mapOf()
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,0,3, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,0,3, 0, 0)
     }
 
     @Test
@@ -98,25 +101,28 @@ class MigreringServiceTest {
                     1,
                     UUID.randomUUID(),
                     AktivitetStatus.FULLFORT,
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 ),
                 ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT, // Feil status
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 ),
                 ArenaId("ARENATA103") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA103"),
                     3,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT, // Feil status
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,3,0, 0)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,3,0, 0, 0)
     }
 
     @Test
@@ -141,25 +147,28 @@ class MigreringServiceTest {
                     1,
                     UUID.randomUUID(),
                     AktivitetStatus.FULLFORT,
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 ),
                 ArenaId("ARENATA102") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA102"),
                     2,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT, // Feil status
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 ),
                 ArenaId("ARENATA103") to IdMappingWithAktivitetStatus(
                     ArenaId("ARENATA103"),
                     3,
                     UUID.randomUUID(),
                     AktivitetStatus.PLANLAGT, // Feil status
-                    historiskDato = null
+                    historiskDato = null,
+                    source = MessageSource.ARENA_TILTAK_AKTIVITET_ACL
                 )
             )
         )
-        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,2,0, 1)
+        verify(metrikker).countMigrerteArenaAktiviteter(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET, 3, 0,2,0, 1, 0)
     }
 }
 

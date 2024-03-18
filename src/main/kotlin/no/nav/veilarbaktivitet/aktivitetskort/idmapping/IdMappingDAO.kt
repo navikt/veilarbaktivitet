@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.aktivitetskort.idmapping
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
@@ -80,8 +81,10 @@ open class IdMappingDAO (
             .addValue("arenaIds", stringIds)
         val idList = db.query(
             """
-                SELECT ID_MAPPINGER.AKTIVITET_ID, ID_MAPPINGER.EKSTERN_REFERANSE_ID, ID_MAPPINGER.FUNKSJONELL_ID, AKTIVITET.LIVSLOPSTATUS_KODE AS STATUS, HISTORISK_DATO 
-                FROM ID_MAPPINGER LEFT JOIN AKTIVITET ON ID_MAPPINGER.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
+                SELECT ID_MAPPINGER.AKTIVITET_ID, ID_MAPPINGER.EKSTERN_REFERANSE_ID, ID_MAPPINGER.FUNKSJONELL_ID, AKTIVITET.LIVSLOPSTATUS_KODE AS STATUS, HISTORISK_DATO, EKSTERNAKTIVITET.SOURCE 
+                FROM ID_MAPPINGER 
+                LEFT JOIN AKTIVITET ON ID_MAPPINGER.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
+                LEFT JOIN EKSTERNAKTIVITET ON EKSTERNAKTIVITET.AKTIVITET_ID = AKTIVITET.AKTIVITET_ID
                 WHERE ID_MAPPINGER.EKSTERN_REFERANSE_ID in (:arenaIds) AND AKTIVITET.GJELDENDE = 1
                 """.trimIndent(), params, rowmapperWithAktivitetStatus
         )
@@ -110,6 +113,7 @@ open class IdMappingDAO (
             UUID.fromString(rs.getString("FUNKSJONELL_ID")),
             AktivitetStatus.valueOf(rs.getString("STATUS")),
             rs.getTimestamp("HISTORISK_DATO")?.toLocalDateTime(),
+            MessageSource.valueOf(rs.getString("SOURCE"))
         )
     }
 }
