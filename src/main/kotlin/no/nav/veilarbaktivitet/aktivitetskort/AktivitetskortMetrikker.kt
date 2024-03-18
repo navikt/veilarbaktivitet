@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 @Component
 class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
 
-    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int) {
+    fun countMigrerteArenaAktiviteter(type: ArenaAktivitetTypeDTO, total: Int, migrertRiktigStatus: Int, migrertFeilStatus: Int, ikkeMigrert: Int, ikkeMigrertManglerOppfolg: Int, migrertAvAndreTeam: Int) {
         Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
             .tag("tiltakstype", type.name)
             .tag("counter_type", "ikke_migrert")
@@ -37,6 +37,11 @@ class AktivitetskortMetrikker(private val meterRegistry: MeterRegistry) {
             .tag("counter_type", "total")
             .register(meterRegistry)
             .increment(total.toDouble())
+        Counter.builder(VISTE_MIGRERTE_ARENA_AKTIVITETER)
+            .tag("tiltakstype", type.name)
+            .tag("counter_type", "migrert_av_andre_team")
+            .register(meterRegistry)
+            .increment(migrertAvAndreTeam.toDouble())
     }
 
     fun countAktivitetskortUpsert(bestilling: AktivitetskortBestilling, upsertActionResult: UpsertActionResult) {
