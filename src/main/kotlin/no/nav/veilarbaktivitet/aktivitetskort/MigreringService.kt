@@ -47,7 +47,7 @@ class MigreringService (
         val (alleMigreringsStatuser, alleMigrertAvAndreTeam) = alleInklMigrertAvAndreTeam
             .partition { it.second != MigreringsStatus.MigrertAvAnnetTeam }
         val migrert = alleMigreringsStatuser
-            .filter { !listOf(MigreringsStatus.IkkeMigrert, MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode).contains(it.second) }
+            .filter { listOf(MigreringsStatus.MigrertFeilStatus, MigreringsStatus.MigrertRiktigStatus).contains(it.second) }
 
         val (etterMedRiktigStatus, etterMedFeilStatus) = migrert.partition { it.second == MigreringsStatus.MigrertRiktigStatus }
         val antallMigrertMedRiktigStatus = etterMedRiktigStatus.groupBy { it.first.type }.mapValues { it.value.size }
