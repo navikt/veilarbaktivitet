@@ -9,6 +9,9 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders
+import no.nav.veilarbaktivitet.aktivitetskort.arenaMeldingHeaders
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
@@ -437,20 +440,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man journalfører skal Arena-aktiviteter inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        aktivitetTestService.opprettEksterntAktivitetsKort(
-            AktivitetskortType.values().map { aktivitetskortType ->
-                KafkaAktivitetskortWrapperDTO(
-                    aktivitetskortType = aktivitetskortType,
-                    aktivitetskort = AktivitetskortUtil.ny(
-                        UUID.randomUUID(),
-                        AktivitetskortStatus.PLANLAGT,
-                        ZonedDateTime.now(),
-                        bruker
-                    ),
-                    source = "source",
-                    messageId = UUID.randomUUID())
-            }
-        )
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(
+            KafkaAktivitetskortWrapperDTO(
+                aktivitetskortType = ARENA_TILTAK,
+                aktivitetskort = AktivitetskortUtil.ny(
+                    UUID.randomUUID(),
+                    AktivitetskortStatus.PLANLAGT,
+                    ZonedDateTime.now(),
+                    bruker
+                ),
+                source = "source",
+                messageId = UUID.randomUUID()), arenaMeldingHeaders(bruker)
+        ))
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
@@ -462,7 +463,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
-        assertThat(aktiviteterSendtTilArkiv).hasSize(AktivitetskortType.values().size)
+        assertThat(aktiviteterSendtTilArkiv).hasSize(1)
     }
 
     @Test
