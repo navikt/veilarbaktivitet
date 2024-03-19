@@ -2,10 +2,12 @@ package no.nav.veilarbaktivitet.oppfolging.periode
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
+import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingClient
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Person.AktorId
+import no.nav.veilarbaktivitet.person.Person.Fnr
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -48,5 +50,9 @@ class OppfolgingsperiodeService(
 
     fun hentSak(oppfolgingsperiodeId: UUID): SakDTO? {
         return oppfolgingClient.hentSak(oppfolgingsperiodeId).orElseGet(null)
+    }
+
+    fun hentMål(fnr: Fnr): MålDTO {
+        return oppfolgingClient.hentMål(fnr).orElseGet(null)
     }
 }

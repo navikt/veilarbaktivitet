@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
+import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Navn
@@ -32,6 +33,7 @@ class ArkiveringslogikkTest {
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
             dialoger = emptyList(),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
+            mål = MålDTO("Å få jobb")
         )
 
         assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
@@ -51,6 +53,7 @@ class ArkiveringslogikkTest {
             aktiviteter = listOf(aktivitetUtenforOppfølgingsperiode),
             dialoger = emptyList(),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
+            mål = MålDTO("Å få jobb")
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
@@ -76,6 +79,7 @@ class ArkiveringslogikkTest {
             aktiviteter = emptyList(),
             dialoger = listOf(dialog),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
+            mål = MålDTO("Å få jobb")
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
