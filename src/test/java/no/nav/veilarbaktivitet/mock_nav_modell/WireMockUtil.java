@@ -29,6 +29,7 @@ public class WireMockUtil {
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
         Oppfolgingsperiode nyesteOppfølgingsperiode = mockBruker.getNyesteOppfølgingsperiode();
         Long sakId = mockBruker.getBrukerOptions().getSakId();
+        String mål = mockBruker.getBrukerOptions().getMål();
 
         oppfolging(fnr, aktorId, underOppfolging, oppfolgingFeiler, nyesteOppfølgingsperiode);
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
@@ -39,13 +40,15 @@ public class WireMockUtil {
         forhaandsvisning();
         journalforing();
         hentSak(sakId, nyesteOppfølgingsperiode);
+        hentMål(mål);
     }
 
     private static void oppfolging(String fnr, Person.AktorId aktorId, boolean underOppfolging, boolean oppfolgingFeiler, Oppfolgingsperiode nyesteOppfølgingsperiode) {
         if (oppfolgingFeiler) {
             stubFor(get("/veilarboppfolging/api/v2/oppfolging?fnr=" + fnr)
                     .willReturn(aResponse().withStatus(500)));
-            stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=" + fnr)
+            stubFor(get("/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr="
+                    + fnr)
                     .willReturn(aResponse().withStatus(500)));
             stubFor(get("/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=" + aktorId.get())
                     .willReturn(aResponse().withStatus(500)));
@@ -254,5 +257,18 @@ public class WireMockUtil {
                                 }
                                 """.formatted(oppfolgingsperiodeId, sakId))));
         }
+    }
+
+    private static void hentMål(String mål) {
+        stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/mal\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                                {
+                                    "mal": "%s",
+                                    "endretAv": "VEILEDER",
+                                    "dato": "2024-03-18T14:22:17.442331+01:00"
+                                }
+                                """.formatted(mål))));
     }
 }

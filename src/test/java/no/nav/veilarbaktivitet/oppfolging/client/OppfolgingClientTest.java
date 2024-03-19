@@ -85,4 +85,23 @@ class OppfolgingClientTest {
         assertThat(sak.get().oppfolgingsperiodeId()).isEqualTo(uuid);
         assertThat(sak.get().sakId()).isEqualTo(sakId);
     }
+
+    @Test
+    void test_hentmål_ok_response() {
+        var mål = "Å få meg jobb";
+        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/mal\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("""
+                                {
+                                "mal": "%s",
+                                "endretAv": "VEILEDER",
+                                "dato": "2024-03-18T14:22:17.442331+01:00"
+                                }
+                                """.formatted(mål))));
+        Optional<MålDTO> hentetMål = oppfolgingClient.hentMål(FNR);
+
+        assertThat(hentetMål).isPresent();
+        assertThat(hentetMål.get().mal()).isEqualTo(mål);
+    }
 }

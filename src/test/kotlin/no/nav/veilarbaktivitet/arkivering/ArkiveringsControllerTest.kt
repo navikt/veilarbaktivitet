@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import com.github.tomakehurst.wiremock.client.WireMock.*
-import kafka.utils.Json
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
@@ -24,8 +23,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
+
         // Given
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -169,7 +170,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
                         "egenskaper" : [ ]
-                      } ]
+                      } ],
+                      "mål": "${bruker.brukerOptions.mål}"
                     }
                 """.trimIndent(), true, true
                     )
@@ -278,7 +280,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
                         "egenskaper" : [ ]
-                      } ]
+                      } ],
+                      "mål": "${bruker.brukerOptions.mål}"
                     }
                 """.trimIndent()
                     )

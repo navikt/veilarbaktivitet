@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
 import io.micrometer.core.annotation.Timed;
-import jdk.jfr.ContentType;
-import kotlin.reflect.jvm.internal.impl.util.ModuleVisibilityHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.rest.client.RestUtils;
@@ -97,6 +95,24 @@ public class OppfolgingClientImpl implements OppfolgingClient {
                 return Optional.empty();
             }
             return RestUtils.parseJsonResponse(response, SakDTO.class);
+        } catch (Exception e) {
+            throw internalServerError(e, request.url().toString());
+        }
+    }
+
+    @Override
+    public Optional<MålDTO> hentMål(Person.Fnr fnr) {
+        String uri = String.format("%s/oppfolging/mal?fnr=%s", baseUrl, fnr.get());
+        Request request = new Request.Builder()
+                .url(uri)
+                .get()
+                .build();
+        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                return Optional.empty();
+            }
+            return RestUtils.parseJsonResponse(response, MålDTO.class);
         } catch (Exception e) {
             throw internalServerError(e, request.url().toString());
         }
