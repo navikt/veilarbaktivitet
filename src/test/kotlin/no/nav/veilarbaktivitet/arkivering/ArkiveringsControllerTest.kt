@@ -8,8 +8,11 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
@@ -398,14 +401,56 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører skal alle eksterne aktiviteter inkluderes`() {
+    fun `Når man journalfører skal eksterne aktiviteter inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        AktivitetskortType.values().forEach {
-//            val aktivitetDto = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEksternAktivitet(it), true)
-//            aktivitetDto.oppfolgingsperiodeId = oppfølgingsperiode
-            aktivitetDAO.opprettNyAktivitet(AktivitetDataTestBuilder.nyEksternAktivitet(it))
-        }
+        val eksternaAktiviteterTyper = AktivitetskortType.values().filter { it != ARENA_TILTAK }
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            eksternaAktiviteterTyper.map { aktivitetskortType ->
+                KafkaAktivitetskortWrapperDTO(
+                    aktivitetskortType = aktivitetskortType,
+                    aktivitetskort = AktivitetskortUtil.ny(
+                        UUID.randomUUID(),
+                        AktivitetskortStatus.PLANLAGT,
+                        ZonedDateTime.now(),
+                        bruker
+                    ),
+                    source = "source",
+                    messageId = UUID.randomUUID())
+            }
+        )
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
+    }
+
+    @Test
+    fun `Når man journalfører skal Arena-aktiviteter inkluderes`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            AktivitetskortType.values().map { aktivitetskortType ->
+                KafkaAktivitetskortWrapperDTO(
+                    aktivitetskortType = aktivitetskortType,
+                    aktivitetskort = AktivitetskortUtil.ny(
+                        UUID.randomUUID(),
+                        AktivitetskortStatus.PLANLAGT,
+                        ZonedDateTime.now(),
+                        bruker
+                    ),
+                    source = "source",
+                    messageId = UUID.randomUUID())
+            }
+        )
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
