@@ -107,7 +107,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
                 .url(uri)
                 .get()
                 .build();
-        try (Response response = veilarboppfolgingHttpClient.newCall(request).execute()) {
+        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
             RestUtils.throwIfNotSuccessful(response);
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 return Optional.empty();
