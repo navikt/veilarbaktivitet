@@ -23,6 +23,11 @@ class NavMockService(
         return bruker
     }
 
+    fun updateBruker(mockBruker: MockBruker, brukerOptions: BrukerOptions) {
+        mockBruker.brukerOptions = brukerOptions
+        WireMockUtil.stubBruker(mockBruker)
+    }
+
     fun createVeileder(vararg mockBruker: MockBruker): MockVeileder {
         val veileder = MockNavService.createVeileder()
         for (bruker in mockBruker) {
