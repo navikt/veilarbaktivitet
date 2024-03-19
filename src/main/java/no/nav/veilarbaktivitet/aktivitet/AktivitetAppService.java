@@ -51,23 +51,12 @@ public class AktivitetAppService {
                 .orElseThrow(RuntimeException::new);
     }
 
-    public List<AktivitetData> hentAktiviteterForIdentMedTilgangskontroll(Person ident) {
-        var enheterMedTilgang = new HashMap<EnhetId, Boolean>();
+    public List<AktivitetData> hentAktiviteterUtenKontorsperre(Person ident) {
         return hentAktiviteterForIdent(ident)
                 .stream().filter(aktivitet -> {
                     var kontorsperreEnhetId = aktivitet.getKontorsperreEnhetId();
-                    if (kontorsperreEnhetId == null) {
-                        return true;
-                    } else if (enheterMedTilgang.getOrDefault(EnhetId.of(kontorsperreEnhetId), false)) {
-                        return true;
-                    } else {
-                        var enhetId = EnhetId.of(kontorsperreEnhetId);
-                        var harTilgang = authService.harTilgangTilEnhet(EnhetId.of(kontorsperreEnhetId));
-                        enheterMedTilgang.put(enhetId, harTilgang);
-                        return harTilgang;
-                    }
-                }
-                ).toList();
+                    return kontorsperreEnhetId == null || kontorsperreEnhetId.isBlank();
+                }).toList();
     }
 
     public AktivitetData hentAktivitet(long id) {

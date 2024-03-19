@@ -56,7 +56,7 @@ class ArkiveringsController(
 
     private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
-        val aktiviteter = appService.hentAktiviteterForIdentMedTilgangskontroll(fnr)
+        val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
         val dialoger = dialogClient.hentDialoger(fnr)
         val navn = navnService.hentNavn(fnr)
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")

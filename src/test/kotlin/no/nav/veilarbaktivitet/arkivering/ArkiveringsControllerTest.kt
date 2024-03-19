@@ -4,16 +4,12 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
-import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
-import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -343,19 +339,45 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         assertThat(arkivPayload.dialogtråder).isEmpty()
     }
 
-    // Må veileder og enhetsperre være samme for at det skal bli reelt?
     @Test
-    fun `Når man journalfører skal ikke aktiviteter med kontorsperre inkluderes`() {
-        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val kvpAktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.SAMTALEREFERAT)
-            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).kontorsperreEnhetId("Enhet").build()
-        val kvpAktivitetDTO = AktivitetDTOMapper.mapTilAktivitetDTO(kvpAktivitet, false)
-        aktivitetTestService.opprettAktivitet(bruker, veileder, kvpAktivitetDTO)
+    fun `Når man journalfører på bruker i KVP skal aktiviteter og dialoger med kontorsperre ekskluderes`() {
+        val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        // Aktiviteten vil få satt kontorsperre fordi bruker er under KVP
+        val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
 
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
 
+        veileder
+            .createRequest(kvpBruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        assertThat(arkivPayload.aktiviteter).isEmpty()
+        assertThat(arkivPayload.dialogtråder).isEmpty()
+    }
+
+    // TODO: Legg til dialoger i test
+    @Test
+    fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter og dialoger etter KVP-perioden inkluderes`() {
+        val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, kvpAktivitet)
+        navMockService.updateBruker(bruker, bruker.getBrukerOptions().toBuilder().erUnderKvp(false).build())
+        val ikkeKvpAktivitetTittel = "IkkeKvpAktivitet"
+        val ikkeKvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
@@ -363,7 +385,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        assertThat(arkivPayload.aktiviteter).isEmpty()
+        assertThat(arkivPayload.aktiviteter).hasSize(1)
+        assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
+//        assertThat(arkivPayload.dialogtråder).isEmpty()
     }
 
     @Test
@@ -492,6 +516,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val veileder = navMockService.createVeileder(bruker)
+        return Pair(bruker, veileder)
+    }
+
+    private fun hentKvpBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
+        val navn = Navn(brukerFornavn, null, brukerEtternavn)
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
         val veileder = navMockService.createVeileder(bruker)
         return Pair(bruker, veileder)
