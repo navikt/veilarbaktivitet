@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.arkivering.Metadata as ArkivMetadata
 import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
 import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
+import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Navn
@@ -22,7 +23,8 @@ object Arkiveringslogikk {
         oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>,
-        sakDTO: SakDTO
+        sakDTO: SakDTO,
+        mål: MålDTO,
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger)
         return ArkivPayload(
@@ -36,14 +38,15 @@ object Arkiveringslogikk {
                 oppfølgingsperiodeId = oppfølgingsperiode.uuid
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
-            dialogtråder = arkivdialoger
+            dialogtråder = arkivdialoger,
+            mål = mål.mal
         )
     }
 
     private fun lagDataTilOrkivar(
         oppfølgingsperiodeId: UUID,
         aktiviteter: List<AktivitetData>,
-        dialoger: List<DialogClient.DialogTråd>
+        dialoger: List<DialogClient.DialogTråd>,
     ): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
         val aktiviteterIOppfølgingsperioden = aktiviteter.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
         val dialogerIOppfølgingsperioden = dialoger.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }

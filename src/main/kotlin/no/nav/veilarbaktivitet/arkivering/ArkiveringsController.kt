@@ -7,8 +7,10 @@ import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
+import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.Person.Fnr
+import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -16,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
+import kotlin.jvm.optionals.getOrElse
+import kotlin.jvm.optionals.getOrNull
 
 @RestController
 @RequestMapping("/api/arkivering")
@@ -26,6 +30,7 @@ class ArkiveringsController(
     private val navnService: EksternNavnService,
     private val appService: AktivitetAppService,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
+    private val personService: PersonService
 ) {
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog")
@@ -60,13 +65,14 @@ class ArkiveringsController(
         val dialoger = dialogClient.hentDialogerUtenKontorsperre(fnr)
         val navn = navnService.hentNavn(fnr)
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
+        val mål = oppfølgingsperiodeService.hentMål(fnr)
 
         if (forhaandsvisningTidspunkt != null) {
             val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhaandsvisningTidspunkt, aktiviteter, dialoger)
             if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
         }
 
-        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål)
     }
 
     private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
