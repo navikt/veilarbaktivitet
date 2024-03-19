@@ -340,7 +340,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører på bruker i KVP skal aktiviteter og dialoger med kontorsperre ekskluderes`() {
+    fun `Når man journalfører på bruker i KVP skal aktiviteter med kontorsperre ekskluderes`() {
         val (kvpBruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = kvpBruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         // Aktiviteten vil få satt kontorsperre fordi bruker er under KVP
@@ -359,12 +359,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
-        assertThat(arkivPayload.dialogtråder).isEmpty()
     }
 
-    // TODO: Legg til dialoger i test
     @Test
-    fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter og dialoger etter KVP-perioden inkluderes`() {
+    fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter KVP-perioden inkluderes`() {
         val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
@@ -387,7 +385,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).hasSize(1)
         assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
-//        assertThat(arkivPayload.dialogtråder).isEmpty()
     }
 
     @Test
@@ -433,7 +430,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         stubFor(
             get(
                 urlEqualTo(
-                    "/veilarbdialog/api/dialog?fnr=$fnr"
+                    "/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"
                 )
             )
                 .willReturn(
