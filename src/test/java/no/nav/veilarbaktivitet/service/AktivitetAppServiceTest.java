@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.service;
 
 import lombok.val;
-import no.nav.common.types.identer.Fnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
@@ -245,7 +244,7 @@ public class AktivitetAppServiceTest {
     }
 
     @Test
-    void skal_ikke_kaste_feil_selv_om_første_aktivitet_har_kontorsperre() {
+    void skal_ikke_kaste_feil_selv_om_en_aktivitet_har_kontorsperre() {
         val aktorId = Person.aktorId("haha");
         val aktivitetMedKontorsperre = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
                 .aktorId(Person.aktorId("haha")).kontorsperreEnhetId("EnhetId").build();
@@ -253,7 +252,7 @@ public class AktivitetAppServiceTest {
         when(aktivitetService.hentAktiviteterForAktorId(aktorId)).thenReturn(List.of(aktivitetMedKontorsperre));
 
         assertDoesNotThrow(() -> {
-            appService.hentAktiviteterForIdentMedTilgangskontroll(aktorId);
+            appService.hentAktiviteterUtenKontorsperre(aktorId);
         });
     }
 
