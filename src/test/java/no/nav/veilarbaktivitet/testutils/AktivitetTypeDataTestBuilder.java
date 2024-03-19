@@ -104,14 +104,14 @@ public class AktivitetTypeDataTestBuilder {
     }
 
     @SneakyThrows
-    public static EksternAktivitetData eksternAktivitetData() {
+    public static EksternAktivitetData eksternAktivitetData(AktivitetskortType aktivitetskortType) {
         return new EksternAktivitetData(
             "AKTIVITET_ARENA_ACL",
             "ABIST",
             false,
             null,
             null,
-            AktivitetskortType.ARENA_TILTAK,
+                aktivitetskortType,
             new Oppgaver(new Oppgave("tekst", "subtekst", new URL("https://www.nav.no")), null),
             List.of(),
             List.of(

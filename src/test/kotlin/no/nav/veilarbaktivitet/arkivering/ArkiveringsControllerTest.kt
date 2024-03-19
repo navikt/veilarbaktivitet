@@ -4,12 +4,24 @@ import com.github.tomakehurst.wiremock.client.WireMock.*
 import no.nav.common.json.JsonUtils
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
+import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortUtil
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
+import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders
+import no.nav.veilarbaktivitet.aktivitetskort.arenaMeldingHeaders
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
+import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -389,6 +401,69 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).hasSize(1)
         assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
+    }
+
+    @Test
+    fun `Når man journalfører skal eksterne aktiviteter inkluderes`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val eksternaAktiviteterTyper = AktivitetskortType.values().filter { it != ARENA_TILTAK }
+        aktivitetTestService.opprettEksterntAktivitetsKort(
+            eksternaAktiviteterTyper.map { aktivitetskortType ->
+                KafkaAktivitetskortWrapperDTO(
+                    aktivitetskortType = aktivitetskortType,
+                    aktivitetskort = AktivitetskortUtil.ny(
+                        UUID.randomUUID(),
+                        AktivitetskortStatus.PLANLAGT,
+                        ZonedDateTime.now(),
+                        bruker
+                    ),
+                    source = "source",
+                    messageId = UUID.randomUUID())
+            }
+        )
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
+    }
+
+    @Test
+    fun `Når man journalfører skal Arena-aktiviteter inkluderes`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(
+            KafkaAktivitetskortWrapperDTO(
+                aktivitetskortType = ARENA_TILTAK,
+                aktivitetskort = AktivitetskortUtil.ny(
+                    UUID.randomUUID(),
+                    AktivitetskortStatus.PLANLAGT,
+                    ZonedDateTime.now(),
+                    bruker
+                ),
+                source = "source",
+                messageId = UUID.randomUUID()), arenaMeldingHeaders(bruker)
+        ))
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now()))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
+        assertThat(aktiviteterSendtTilArkiv).hasSize(1)
     }
 
     @Test
