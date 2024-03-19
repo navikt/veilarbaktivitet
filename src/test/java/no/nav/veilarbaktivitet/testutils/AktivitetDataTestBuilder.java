@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.mock.TestData;
@@ -138,7 +139,15 @@ public class AktivitetDataTestBuilder {
         return AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
                 .funksjonellId(UUID.randomUUID())
-                .eksternAktivitetData(AktivitetTypeDataTestBuilder.eksternAktivitetData())
+                .eksternAktivitetData(AktivitetTypeDataTestBuilder.eksternAktivitetData(AktivitetskortType.ARENA_TILTAK))
+                .build();
+    }
+
+    public static AktivitetData nyEksternAktivitet(AktivitetskortType aktivitetskortType) {
+        return AktivitetDataTestBuilder.nyAktivitet()
+                .aktivitetType(AktivitetTypeData.EKSTERNAKTIVITET)
+                .funksjonellId(UUID.randomUUID())
+                .eksternAktivitetData(AktivitetTypeDataTestBuilder.eksternAktivitetData(aktivitetskortType))
                 .build();
     }
 
