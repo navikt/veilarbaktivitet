@@ -8,7 +8,8 @@ typealias ArkivAktivitetStatus = String
 data class ArkivPayload(
     val metadata: Metadata,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
-    val dialogtråder: List<ArkivDialogtråd>
+    val dialogtråder: List<ArkivDialogtråd>,
+    val mål: String?,
 )
 
 data class Metadata(

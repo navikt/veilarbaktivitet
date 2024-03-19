@@ -17,6 +17,7 @@ public class BrukerOptions {
     private boolean oppfolgingFeiler;
     private Navn navn;
     private Long sakId;
+    private String mål;
 
     /*
     @TODO
@@ -39,6 +40,7 @@ public class BrukerOptions {
                 .erUnderKvp(false)
                 .harBruktNivaa4(true)
                 .navn(new Navn("Navn", null, "Navnesen"))
-                .sakId(1000L);
+                .sakId(1000L)
+                .mål("Å få meg jobb");
     }
 }
