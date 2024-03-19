@@ -90,7 +90,7 @@ class AktivitetsplanController(
     }
 
     @PostMapping("/ny")
-    @AuthorizeFnr(auditlogMessage = "oppret aktivitet", allowlist = ["pto:veilarbdirigent"])
+    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"])
     fun opprettNyAktivitet(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean

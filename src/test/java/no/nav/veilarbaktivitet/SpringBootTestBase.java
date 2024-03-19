@@ -6,6 +6,7 @@ import io.restassured.RestAssured;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -59,6 +60,9 @@ public abstract class SpringBootTestBase {
 
     @Autowired
     protected NavMockService navMockService;
+
+    @Autowired
+    protected AktivitetDAO aktivitetDAO;
 
     @Value("${topic.inn.aktivitetskort}")
     private String aktivitetskortTopic;

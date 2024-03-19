@@ -7,6 +7,7 @@ import no.nav.common.types.identer.*;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
+import no.nav.veilarbaktivitet.aktivitet.dto.EksternAktivitetDTO;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.UserInContext;
@@ -135,4 +136,5 @@ public class AktivitetDataMapperService {
                 .referatPublisert(aktivitetDTO.isErReferatPublisert())
                 .build();
     }
+
 }

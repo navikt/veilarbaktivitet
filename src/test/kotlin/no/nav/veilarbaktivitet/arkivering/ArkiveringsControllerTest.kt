@@ -402,9 +402,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         AktivitetskortType.values().forEach {
-            val aktivitetDto = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEksternAktivitet(it), true)
-            aktivitetDto.oppfolgingsperiodeId = oppfølgingsperiode
-            aktivitetTestService.opprettAktivitet(bruker, aktivitetDto)
+//            val aktivitetDto = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEksternAktivitet(it), true)
+//            aktivitetDto.oppfolgingsperiodeId = oppfølgingsperiode
+            aktivitetDAO.opprettNyAktivitet(AktivitetDataTestBuilder.nyEksternAktivitet(it))
         }
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
 
