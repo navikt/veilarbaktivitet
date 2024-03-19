@@ -362,7 +362,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter KVP-perioden inkluderes`() {
+    fun `Når man journalfører på bruker som har vært i KVP skal aktiviteter utenom KVP-perioden inkluderes`() {
         val (bruker, veileder) = hentKvpBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val kvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
