@@ -63,16 +63,8 @@ data class Detalj(
 data class EksternHandling(
     val tekst: String,
     val subtekst: String?,
-    val url: String,
-    val klikkbar: Boolean = false,
+    val url: String
 )
-
-// TODO: Klikkbare lenker? Trenger vi logikk?
-enum class EksternLenkeType {
-    EKSTERN,
-    INTERN,
-    FELLES
-}
 
 //data class Tag(
 //    val tekst: String,

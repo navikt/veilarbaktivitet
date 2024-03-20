@@ -4,7 +4,6 @@ import no.nav.common.utils.EnvironmentUtils.isProduction
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
-import no.nav.veilarbaktivitet.aktivitet.domain.EksternAktivitetData
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
