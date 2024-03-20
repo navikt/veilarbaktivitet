@@ -28,7 +28,8 @@ data class ArkivAktivitet(
     val status: String,
     val detaljer: List<Detalj>,
     val meldinger: List<Melding>,
-    val etiketter: List<ArkivEtikett>
+    val etiketter: List<ArkivEtikett>,
+    val eksterneHandlinger: List<EksternHandling>
 )
 
 data class ArkivDialogtråd(
@@ -49,7 +50,8 @@ enum class Stil {
     HEL_LINJE,
     HALV_LINJE,
     PARAGRAF,
-    LENKE
+    LENKE,
+    EKSTERN_AKTIVITET_HANDLING
 }
 
 data class Detalj(
@@ -57,6 +59,20 @@ data class Detalj(
     val tittel: String,
     val tekst: String?
 )
+
+data class EksternHandling(
+    val tekst: String,
+    val subtekst: String?,
+    val url: String,
+    val klikkbar: Boolean = false,
+)
+
+// TODO: Klikkbare lenker? Trenger vi logikk?
+enum class EksternLenkeType {
+    EKSTERN,
+    INTERN,
+    FELLES
+}
 
 //data class Tag(
 //    val tekst: String,
