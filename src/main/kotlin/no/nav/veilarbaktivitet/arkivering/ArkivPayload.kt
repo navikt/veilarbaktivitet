@@ -28,7 +28,8 @@ data class ArkivAktivitet(
     val status: String,
     val detaljer: List<Detalj>,
     val meldinger: List<Melding>,
-    val etiketter: List<ArkivEtikett>
+    val etiketter: List<ArkivEtikett>,
+    val eksterneHandlinger: List<EksternHandling>
 )
 
 data class ArkivDialogtråd(
@@ -49,13 +50,20 @@ enum class Stil {
     HEL_LINJE,
     HALV_LINJE,
     PARAGRAF,
-    LENKE
+    LENKE,
+    EKSTERN_AKTIVITET_HANDLING
 }
 
 data class Detalj(
     val stil: Stil,
     val tittel: String,
     val tekst: String?
+)
+
+data class EksternHandling(
+    val tekst: String,
+    val subtekst: String?,
+    val url: String
 )
 
 //data class Tag(

@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
+import no.nav.veilarbaktivitet.arkivering.EksternHandling
 import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
@@ -25,7 +26,8 @@ fun AktivitetData.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet {
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
         meldinger = meldinger,
-        etiketter = this.getArkivEtiketter()
+        etiketter = this.getArkivEtiketter(),
+        eksterneHandlinger = this.getEksterneHandlinger(),
     )
 }
 
@@ -89,6 +91,15 @@ fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetDa
     ?.detaljer
     ?.map { Detalj(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
 
+
+fun AktivitetData.getEksterneHandlinger(): List<EksternHandling> =
+    this.eksternAktivitetData?.handlinger?.map {
+        EksternHandling(
+            tekst = it.tekst,
+            subtekst = it.subtekst,
+            url = it.url.toString(),
+        )
+    } ?: emptyList()
 
 fun AktivitetData.toDetaljer(): List<Detalj> =
     when (aktivitetType) {
