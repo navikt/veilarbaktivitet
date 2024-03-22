@@ -127,6 +127,66 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på at aktivitet NAV ble opprettet`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV opprettet aktiviteten",
+            "${oppdatertAktivitet.endretAv} opprettet aktiviteten"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at aktivitet avtalt med NAV ble opprettet`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET, avtaltMedNav = true)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\"",
+            "${oppdatertAktivitet.endretAv} opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at aktivitet ble avtalt med NAV`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV merket aktiviteten som \"Avtalt med NAV\"",
+            "${oppdatertAktivitet.endretAv} merket aktiviteten som \"Avtalt med NAV\""
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at aktivitet ble avtalt med NAV når forrige aktivitet også var avtalt`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV sendte forhåndsorientering",
+            "${oppdatertAktivitet.endretAv} sendte forhåndsorientering"
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
@@ -147,7 +207,8 @@ class HistorikkServiceTest {
         transaksjonsType: AktivitetTransaksjonsType,
         endretAvType: Innsender = Innsender.NAV,
         endretDato: Date = Date(),
-        endretAv: String = "Z12345"
+        endretAv: String = "Z12345",
+        avtaltMedNav: Boolean = false
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
@@ -168,6 +229,7 @@ class HistorikkServiceTest {
             .historiskDato(aktivitet.historiskDato)
             .endretDato(endretDato)
             .endretAv(endretAv)
+            .avtalt(avtaltMedNav)
             .malid("2").build()
     }
 }

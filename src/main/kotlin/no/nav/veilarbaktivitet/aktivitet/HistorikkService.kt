@@ -52,12 +52,30 @@ private fun endretAvTekstTilBruker(innsender: Innsender, endretAv: String?) = wh
     Innsender.NAV, Innsender.ARENAIDENT, Innsender.SYSTEM -> "NAV"
 }
 
+/*
+            if (forrigeAktivitet?.avtalt) {
+                return <>{brukeravhengigTekst} sendte forhåndsorientering </>;
+            } else {
+                return <>{brukeravhengigTekst} merket aktiviteten som "Avtalt med NAV"</>;
+            }
+
+ */
 private fun hentEndringstekst(endretAvTekst: String, forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData): String {
     return when(oppdatertVersjon.transaksjonsType) {
-        AktivitetTransaksjonsType.OPPRETTET -> ""
+        AktivitetTransaksjonsType.OPPRETTET -> {
+            if (oppdatertVersjon.isAvtalt)
+                "$endretAvTekst opprettet aktiviteten. Den er automatisk merket som \"Avtalt med NAV\""
+            else
+                "$endretAvTekst opprettet aktiviteten"
+        }
         AktivitetTransaksjonsType.STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status} til ${oppdatertVersjon.status}"
         AktivitetTransaksjonsType.DETALJER_ENDRET -> "$endretAvTekst endret detaljer på aktiviteten"
-        AktivitetTransaksjonsType.AVTALT -> ""
+        AktivitetTransaksjonsType.AVTALT -> {
+            if (forrigeVersjon?.isAvtalt ?: false)
+                "$endretAvTekst sendte forhåndsorientering"
+             else
+                "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
+        }
         AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> ""
         AktivitetTransaksjonsType.ETIKETT_ENDRET -> ""
         AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET -> "$endretAvTekst endret tid eller sted for møtet"
