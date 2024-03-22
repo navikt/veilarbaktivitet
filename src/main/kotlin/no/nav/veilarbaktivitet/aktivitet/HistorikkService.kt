@@ -15,21 +15,21 @@ class HistorikkService(
     fun hentHistorikk(aktivitetIder: List<AktivitetId>): Map<AktivitetId, Historikk> {
         val aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>> = aktivitetDAO.hentAktivitetVersjoner(aktivitetIder)
 
-        return lagHistorikk(aktivitetVersjoner)
+        return lagHistorikkForAktiviteter(aktivitetVersjoner)
     }
 
 }
 
-fun lagHistorikk(aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>>): Map<AktivitetId, Historikk> {
+fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>>): Map<AktivitetId, Historikk> {
     return aktivitetVersjoner.map { (aktivitetId, aktivitetVersjoner) ->
         val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
-        val endringer = sorterteAktivitetVersjoner.map { aktivitetData ->
+        val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
                 Endring(
                     endretAvType = aktivitetData.endretAvType,
                     endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                    beskrivelseForVeileder = hentEndringstekst(aktivitetData.transaksjonsType, endretAvTekstTilVeileder(aktivitetData.endretAvType, aktivitetData.endretAv)),
-                    beskrivelseForBruker = hentEndringstekst(aktivitetData.transaksjonsType, endretAvTekstTilBruker(aktivitetData.endretAvType, aktivitetData.endretAv))
+                    beskrivelseForVeileder = hentEndringstekst(aktivitetData.transaksjonsType, endretAvTekstTilVeileder(aktivitetData.endretAvType, aktivitetData.endretAv), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData),
+                    beskrivelseForBruker = hentEndringstekst(aktivitetData.transaksjonsType, endretAvTekstTilBruker(aktivitetData.endretAvType, aktivitetData.endretAv), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData)
                 )
         }
         val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
@@ -52,10 +52,10 @@ private fun endretAvTekstTilBruker(innsender: Innsender, endretAv: String?) = wh
     Innsender.NAV, Innsender.ARENAIDENT, Innsender.SYSTEM -> "NAV"
 }
 
-private fun hentEndringstekst(transaksjonsType: AktivitetTransaksjonsType, endretAvTekst: String): String {
+private fun hentEndringstekst(transaksjonsType: AktivitetTransaksjonsType, endretAvTekst: String, forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData): String {
     return when(transaksjonsType) {
         AktivitetTransaksjonsType.OPPRETTET -> ""
-        AktivitetTransaksjonsType.STATUS_ENDRET -> ""
+        AktivitetTransaksjonsType.STATUS_ENDRET -> "$endretAvTekst flyttet aktiviteten fra ${forrigeVersjon?.status} til ${oppdatertVersjon.status}"
         AktivitetTransaksjonsType.DETALJER_ENDRET -> ""
         AktivitetTransaksjonsType.AVTALT -> ""
         AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> ""
