@@ -389,7 +389,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val ikkeKvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+       stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
