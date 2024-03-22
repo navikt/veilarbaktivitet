@@ -25,13 +25,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på endret møtetid og sted`() {
         val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet = endreAktivitet(
-            aktivitet,
-            Innsender.NAV,
-            AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET,
-            Date(),
-            "Z12345"
-        )
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -46,8 +40,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på status endret`() {
         val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
-        val oppdatertAktivitet =
-            endreAktivitet(aktivitet, Innsender.NAV, AktivitetTransaksjonsType.STATUS_ENDRET, Date(), "Z12345")
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
@@ -56,6 +49,81 @@ class HistorikkServiceTest {
             oppdatertAktivitet,
             "NAV flyttet aktiviteten fra ${oppdatertAktivitet.status} til ${oppdatertAktivitet.status}",
             "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${oppdatertAktivitet.status} til ${oppdatertAktivitet.status}"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på opprettet referat på møte`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_OPPRETTET)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV opprettet referat",
+            "${oppdatertAktivitet.endretAv} opprettet referat"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på referat endret`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_ENDRET)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret referatet",
+            "${oppdatertAktivitet.endretAv} endret referatet"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på referat publisert`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_PUBLISERT)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV delte referatet",
+            "${oppdatertAktivitet.endretAv} delte referatet"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at aktivitet ble historisk`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.BLE_HISTORISK)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "Aktiviteten ble automatisk arkivert",
+            "Aktiviteten ble automatisk arkivert"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på at detaljer ble endret`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DETALJER_ENDRET)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret detaljer på aktiviteten",
+            "${oppdatertAktivitet.endretAv} endret detaljer på aktiviteten"
         )
     }
 
@@ -76,10 +144,10 @@ class HistorikkServiceTest {
 
     private fun endreAktivitet(
         aktivitet: AktivitetData,
-        endretAvType: Innsender,
         transaksjonsType: AktivitetTransaksjonsType,
-        endretDato: Date,
-        endretAv: String
+        endretAvType: Innsender = Innsender.NAV,
+        endretDato: Date = Date(),
+        endretAv: String = "Z12345"
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
