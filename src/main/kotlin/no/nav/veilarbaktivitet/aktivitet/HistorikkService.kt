@@ -28,8 +28,8 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     endretAvType = aktivitetData.endretAvType,
                     endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                    beskrivelseForVeileder = hentEndringstekst(endretAvTekstTilVeileder(aktivitetData.endretAvType, aktivitetData.endretAv), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData),
-                    beskrivelseForBruker = hentEndringstekst(endretAvTekstTilBruker(aktivitetData.endretAvType), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData)
+                    beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = false),
+                    beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = true)
                 )
         }
         val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
@@ -37,22 +37,14 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     }.toMap()
 }
 
-private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
-    Innsender.BRUKER -> "Bruker"
-    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
-    Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
-    Innsender.NAV, Innsender.ARENAIDENT -> endretAv?.let { "$endretAv" } ?: "NAV"
-    Innsender.SYSTEM -> "NAV"
-}
+private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData, tilBruker: Boolean): String {
+    val sittEllerDitt = if (tilBruker) "ditt" else "sitt"
+    val endretAvTekst = if (tilBruker) {
+        endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
+    } else {
+        endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
+    }
 
-private fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
-    Innsender.BRUKER -> "Du"
-    Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
-    Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør"
-    Innsender.NAV, Innsender.ARENAIDENT, Innsender.SYSTEM -> "NAV"
-}
-
-private fun hentEndringstekst(endretAvTekst: String, forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData): String {
     return when(oppdatertVersjon.transaksjonsType) {
         AktivitetTransaksjonsType.OPPRETTET -> {
             if (oppdatertVersjon.isAvtalt)
@@ -75,12 +67,27 @@ private fun hentEndringstekst(endretAvTekst: String, forrigeVersjon: AktivitetDa
         AktivitetTransaksjonsType.REFERAT_ENDRET -> "$endretAvTekst endret referatet"
         AktivitetTransaksjonsType.REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
         AktivitetTransaksjonsType.BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
-        AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> ""
+        AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
         AktivitetTransaksjonsType.DEL_CV_SVART -> ""
         AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET -> ""
         AktivitetTransaksjonsType.IKKE_FATT_JOBBEN -> ""
         AktivitetTransaksjonsType.FATT_JOBBEN -> ""
     }
+}
+
+private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
+    Innsender.BRUKER -> "Bruker"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
+    Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
+    Innsender.NAV, Innsender.ARENAIDENT -> endretAv?.let { "$endretAv" } ?: "NAV"
+    Innsender.SYSTEM -> "NAV"
+}
+
+private fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
+    Innsender.BRUKER -> "Du"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
+    Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør"
+    Innsender.NAV, Innsender.ARENAIDENT, Innsender.SYSTEM -> "NAV"
 }
 
 typealias AktivitetId = Long

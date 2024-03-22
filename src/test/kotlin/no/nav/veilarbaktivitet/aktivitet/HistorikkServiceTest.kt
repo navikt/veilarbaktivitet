@@ -187,6 +187,21 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på forhåndsorientering lest`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, endretAvType = Innsender.BRUKER, endretAv = "Per Persen")
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "Du bekreftet å ha lest informasjon om ansvaret ditt",
+            "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
