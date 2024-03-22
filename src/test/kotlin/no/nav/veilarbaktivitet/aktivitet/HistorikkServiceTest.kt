@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -12,7 +13,17 @@ import java.util.*
 class HistorikkServiceTest {
 
     @Test
-    fun `skal lage historikk på endret møtetid og sted`(){
+    fun `Skal lage historikk av kun én aktivitet-versjon`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+
+        val historikk = lagHistorikk(mapOf(aktivitet.id to listOf(aktivitet)))
+
+        assertThat(historikk.size).isEqualTo(1)
+        assertThat(historikk[aktivitet.id]!!.endringer).hasSize(1)
+    }
+
+    @Test
+    fun `Skal lage historikk på endret møtetid og sted`(){
         val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, Innsender.NAV, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET, Date(), "Z12345")
 
@@ -20,13 +31,13 @@ class HistorikkServiceTest {
 
         assertThat(historikk.size).isEqualTo(1)
         val historikkPåAktiviteten = historikk[aktivitet.id]!!
-        assertThat(historikkPåAktiviteten.endringer).hasSize(1)
+        assertThat(historikkPåAktiviteten.endringer).hasSize(2)
         val endring = historikkPåAktiviteten.endringer.first()
+        assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
         assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
         assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)
-        assertThat(endring.tidspunkt).isEqualTo(oppdatertAktivitet.endretDato)
         assertThat(endring.beskrivelseForBruker).isEqualTo("NAV endret tid eller sted for møtet")
-        assertThat(endring.beskrivelseForVeileder).isEqualTo("NAV endret tid eller sted for møtet")
+        assertThat(endring.beskrivelseForVeileder).isEqualTo("${oppdatertAktivitet.endretAv} endret tid eller sted for møtet")
     }
 
     private fun endreAktivitet(aktivitet: AktivitetData, endretAvType: Innsender, transaksjonsType: AktivitetTransaksjonsType, endretDato: Date, endretAv: String): AktivitetData {
