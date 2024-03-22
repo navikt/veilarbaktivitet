@@ -16,7 +16,7 @@ class HistorikkServiceTest {
         val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, Innsender.NAV, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET, Date(), "Z12345")
 
-        val historikk = lagHistorikk(mapOf(1L to listOf(aktivitet, oppdatertAktivitet)))
+        val historikk = lagHistorikk(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
 
         assertThat(historikk.size).isEqualTo(1)
         val historikkPåAktiviteten = historikk[aktivitet.id]!!
