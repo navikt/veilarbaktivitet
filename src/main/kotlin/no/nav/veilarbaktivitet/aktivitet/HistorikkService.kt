@@ -52,14 +52,6 @@ private fun endretAvTekstTilBruker(innsender: Innsender, endretAv: String?) = wh
     Innsender.NAV, Innsender.ARENAIDENT, Innsender.SYSTEM -> "NAV"
 }
 
-/*
-            if (forrigeAktivitet?.avtalt) {
-                return <>{brukeravhengigTekst} sendte forhåndsorientering </>;
-            } else {
-                return <>{brukeravhengigTekst} merket aktiviteten som "Avtalt med NAV"</>;
-            }
-
- */
 private fun hentEndringstekst(endretAvTekst: String, forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData): String {
     return when(oppdatertVersjon.transaksjonsType) {
         AktivitetTransaksjonsType.OPPRETTET -> {
