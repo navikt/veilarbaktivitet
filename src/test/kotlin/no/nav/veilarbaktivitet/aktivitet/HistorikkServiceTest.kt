@@ -202,6 +202,21 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på svar på spørsmål om deling av CV`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DEL_CV_SVART, endretAvType = Innsender.BRUKER)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "Du svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\"",
+            "Bruker svarte 'Nei' på spørsmålet \"Er du interessert i denne stillingen?\""
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,

@@ -38,7 +38,6 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
 }
 
 private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData, tilBruker: Boolean): String {
-    val sittEllerDitt = if (tilBruker) "ditt" else "sitt"
     val endretAvTekst = if (tilBruker) {
         endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
     } else {
@@ -67,8 +66,14 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
         AktivitetTransaksjonsType.REFERAT_ENDRET -> "$endretAvTekst endret referatet"
         AktivitetTransaksjonsType.REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
         AktivitetTransaksjonsType.BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
-        AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
-        AktivitetTransaksjonsType.DEL_CV_SVART -> ""
+        AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> {
+            val sittEllerDitt = if (tilBruker) "ditt" else "sitt"
+            "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
+        }
+        AktivitetTransaksjonsType.DEL_CV_SVART -> {
+            val svar = if (oppdatertVersjon.stillingFraNavData?.cvKanDelesData?.kanDeles ?: false) "Ja" else "Nei"
+            "$endretAvTekst svarte '$svar' på spørsmålet \"Er du interessert i denne stillingen?\""
+        }
         AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET -> ""
         AktivitetTransaksjonsType.IKKE_FATT_JOBBEN -> ""
         AktivitetTransaksjonsType.FATT_JOBBEN -> ""
