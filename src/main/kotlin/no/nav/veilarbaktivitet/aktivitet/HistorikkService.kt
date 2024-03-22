@@ -29,7 +29,8 @@ fun lagHistorikk(aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>>): Map
                     endretAvType = aktivitetData.endretAvType,
                     endretAv = "",
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                    beskrivelse = ""
+                    beskrivelseForVeileder = "",
+                    beskrivelseForBruker = ""
                 )
             } else {
                 null
@@ -49,5 +50,6 @@ data class Endring(
     val endretAvType: Innsender,
     val endretAv: String?,
     val tidspunkt: ZonedDateTime,
-    val beskrivelse: String,
+    val beskrivelseForVeileder: String,
+    val beskrivelseForBruker: String,
 )
