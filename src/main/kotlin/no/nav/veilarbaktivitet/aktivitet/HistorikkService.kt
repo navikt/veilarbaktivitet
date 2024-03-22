@@ -29,7 +29,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
                     beskrivelseForVeileder = hentEndringstekst(endretAvTekstTilVeileder(aktivitetData.endretAvType, aktivitetData.endretAv), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData),
-                    beskrivelseForBruker = hentEndringstekst(endretAvTekstTilBruker(aktivitetData.endretAvType, aktivitetData.endretAv), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData)
+                    beskrivelseForBruker = hentEndringstekst(endretAvTekstTilBruker(aktivitetData.endretAvType), sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData)
                 )
         }
         val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
@@ -45,7 +45,7 @@ private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = 
     Innsender.SYSTEM -> "NAV"
 }
 
-private fun endretAvTekstTilBruker(innsender: Innsender, endretAv: String?) = when(innsender) {
+private fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
     Innsender.BRUKER -> "Du"
     Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør"
