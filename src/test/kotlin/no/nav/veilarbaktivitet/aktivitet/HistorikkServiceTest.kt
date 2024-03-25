@@ -13,9 +13,12 @@ import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraN
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.springframework.data.convert.Jsr310Converters.InstantToDateConverter
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -304,6 +307,16 @@ class HistorikkServiceTest {
             "NAV endret tilstand til Søknaden er sendt",
             "${oppdatertAktivitet.endretAv} endret tilstand til Søknaden er sendt"
         )
+    }
+
+    @Test
+    fun `Skal formattere tidspunkt til ønsket format`() {
+        val dato = LocalDateTime.of(2022, 6,7,14,0)
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().endretDato(localDateTimeToDate(dato)).build()
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
+
+        assertThat(historikk[aktivitet.id]!!.endringer.first().formattertTidspunkt).isEqualTo("7. juni 2022 kl. 14:00")
     }
 
     private fun assert(

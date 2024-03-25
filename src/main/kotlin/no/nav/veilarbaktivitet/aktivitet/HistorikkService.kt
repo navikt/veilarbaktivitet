@@ -34,6 +34,7 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     endretAvType = aktivitetData.endretAvType,
                     endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
+                    formattertTidspunkt = "${norskDato(aktivitetData.endretDato)} kl. ${ DateUtils.klokkeslett(aktivitetData.endretDato) }",
                     beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = false),
                     beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = true)
                 )
@@ -113,6 +114,7 @@ data class Endring(
     val endretAvType: Innsender,
     val endretAv: String?,
     val tidspunkt: ZonedDateTime,
+    val formattertTidspunkt: String,
     val beskrivelseForVeileder: String,
     val beskrivelseForBruker: String,
 )

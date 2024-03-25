@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.veilarbaktivitet.aktivitet.AktivitetId
+import no.nav.veilarbaktivitet.aktivitet.Endring
+import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.arkivering.Metadata as ArkivMetadata
 import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
@@ -25,8 +28,9 @@ object Arkiveringslogikk {
         dialoger: List<DialogClient.DialogTråd>,
         sakDTO: SakDTO,
         mål: MålDTO,
+        historikkForAktiviteter: Map<AktivitetId, Historikk>
     ): ArkivPayload {
-        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger)
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger, historikkForAktiviteter)
         return ArkivPayload(
             metadata = ArkivMetadata(
                 navn = navn.tilFornavnMellomnavnEtternavn(),
@@ -47,6 +51,7 @@ object Arkiveringslogikk {
         oppfølgingsperiodeId: UUID,
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>,
+        historikkForAktiviteter: Map<AktivitetId, Historikk>
     ): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
         val aktiviteterIOppfølgingsperioden = aktiviteter.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
         val dialogerIOppfølgingsperioden = dialoger.filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -60,7 +65,8 @@ object Arkiveringslogikk {
                 }?.flatten() ?: emptyList()
 
                 it.toArkivPayload(
-                    meldinger = meldingerTilhørendeAktiviteten
+                    meldinger = meldingerTilhørendeAktiviteten,
+                    historikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
                 )
             }
 

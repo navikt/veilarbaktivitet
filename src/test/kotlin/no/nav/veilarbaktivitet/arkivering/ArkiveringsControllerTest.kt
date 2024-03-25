@@ -168,7 +168,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ ],
                           "etiketter": [],
-                          "eksterneHandlinger" : []
+                          "eksterneHandlinger" : [],
+                          "historikk" : {
+                            "endringer" : [ {
+                              "endretAvType" : "BRUKER",
+                              "endretAv" : "43705451010",
+                              "tidspunkt" : "2024-03-25T15:16:24.639+01:00",
+                              "formattertTidspunkt" : "25. mars 2024 kl. 15:16",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                            } ]
+                         }
                         } ]
                       },
                       "dialogtråder" : [ {
@@ -184,7 +194,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
-                """.trimIndent(), true, true
+                """.trimIndent()
                     )
                 )
         )
@@ -280,7 +290,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tekst" : "Jada"
                           } ],
                           "etiketter": [],
-                          "eksterneHandlinger" : [ ]
+                          "eksterneHandlinger" : [ ],
+                          "historikk" : {
+                            "endringer" : [ {
+                              "endretAvType" : "BRUKER",
+                              "endretAv" : "43705451010",
+                              "tidspunkt" : "2024-03-25T15:16:24.639+01:00",
+                              "formattertTidspunkt" : "25. mars 2024 kl. 15:16",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                            } ]
+                          }
                         } ]
                       },
                       "dialogtråder" : [ {

@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
 import no.nav.common.utils.EnvironmentUtils.isProduction
+import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
@@ -19,7 +20,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-fun AktivitetData.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet {
+fun AktivitetData.toArkivPayload(meldinger: List<Melding>, historikk: Historikk): ArkivAktivitet {
     return ArkivAktivitet(
         tittel = this.tittel,
         type = this.toArkivTypeTekst(),
@@ -28,6 +29,7 @@ fun AktivitetData.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet {
         meldinger = meldinger,
         etiketter = this.getArkivEtiketter(),
         eksterneHandlinger = this.getEksterneHandlinger(),
+        historikk = historikk
     )
 }
 

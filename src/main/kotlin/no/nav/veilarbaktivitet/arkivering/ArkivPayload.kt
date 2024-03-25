@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import java.util.*
 
@@ -29,7 +30,8 @@ data class ArkivAktivitet(
     val detaljer: List<Detalj>,
     val meldinger: List<Melding>,
     val etiketter: List<ArkivEtikett>,
-    val eksterneHandlinger: List<EksternHandling>
+    val eksterneHandlinger: List<EksternHandling>,
+    val historikk: Historikk
 )
 
 data class ArkivDialogtråd(
