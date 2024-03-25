@@ -19,7 +19,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
-import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.DateUtils.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
@@ -135,7 +135,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "viktig" : false,
                             "tekst" : "Jada"
                           } ],
-                          "etiketter": []
+                          "etiketter": [],
+                            "eksterneHandlinger" : [ ],
+                            "historikk" : {
+                              "endringer" : [ {
+                                "endretAvType" : "BRUKER",
+                                "endretAv" : "00305451010",
+                              "tidspunkt" : "${dateToZonedDateTime(opprettetJobbAktivitet.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                                "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                                "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              } ]  
+                            }
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -173,8 +184,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "endringer" : [ {
                               "endretAvType" : "BRUKER",
                               "endretAv" : "43705451010",
-                              "tidspunkt" : "2024-03-25T15:16:24.639+01:00",
-                              "formattertTidspunkt" : "25. mars 2024 kl. 15:16",
+                              "tidspunkt" : "${dateToZonedDateTime(jobbAktivitetAvbrutt.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(jobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
                               "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
                               "beskrivelseForBruker" : "Du opprettet aktiviteten"
                             } ]
@@ -295,8 +306,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "endringer" : [ {
                               "endretAvType" : "BRUKER",
                               "endretAv" : "43705451010",
-                              "tidspunkt" : "2024-03-25T15:16:24.639+01:00",
-                              "formattertTidspunkt" : "25. mars 2024 kl. 15:16",
+                              "tidspunkt" : "${dateToZonedDateTime(opprettetJobbAktivitet.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
                               "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
                               "beskrivelseForBruker" : "Du opprettet aktiviteten"
                             } ]

@@ -2,16 +2,11 @@ package no.nav.veilarbaktivitet.aktivitet
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
-import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.springframework.stereotype.Service
-import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 @Service
 class HistorikkService(
@@ -19,8 +14,9 @@ class HistorikkService(
 ) {
 
     fun hentHistorikk(aktivitetIder: List<AktivitetId>): Map<AktivitetId, Historikk> {
-        val aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>> = aktivitetDAO.hentAktivitetVersjoner(aktivitetIder)
+        if (aktivitetIder.isEmpty()) return emptyMap()
 
+        val aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>> = aktivitetDAO.hentAktivitetVersjoner(aktivitetIder)
         return lagHistorikkForAktiviteter(aktivitetVersjoner)
     }
 
