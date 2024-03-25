@@ -3,11 +3,14 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
@@ -288,6 +291,21 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på etikett endret`() {
+        val aktivitet = nyttStillingssok()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.ETIKETT_ENDRET, endretAvType = Innsender.NAV, oppdatertStillingsoekAktivitetData = AktivitetTypeDataTestBuilder.nyttStillingssok().withStillingsoekEtikett(StillingsoekEtikettData.SOKNAD_SENDT))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret tilstand til Søknaden er sendt",
+            "${oppdatertAktivitet.endretAv} endret tilstand til Søknaden er sendt"
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
@@ -311,7 +329,8 @@ class HistorikkServiceTest {
         endretAv: String = "Z12345",
         avtaltMedNav: Boolean = false,
         tilDato: Date? = aktivitet.tilDato,
-        oppdatertSoknadsstatus: Soknadsstatus? = null
+        oppdatertSoknadsstatus: Soknadsstatus? = null,
+        oppdatertStillingsoekAktivitetData: StillingsoekAktivitetData? = null
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
@@ -334,6 +353,7 @@ class HistorikkServiceTest {
             .endretAv(endretAv)
             .avtalt(avtaltMedNav)
             .stillingFraNavData(aktivitet.stillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
+            .stillingsSoekAktivitetData(oppdatertStillingsoekAktivitetData)
             .malid("2").build()
     }
 }
