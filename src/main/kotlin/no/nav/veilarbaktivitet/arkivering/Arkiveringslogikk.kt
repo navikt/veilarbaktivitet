@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.arkivering.Metadata as ArkivMetadata
 import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
 import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
@@ -12,6 +11,7 @@ import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -31,8 +31,8 @@ object Arkiveringslogikk {
             metadata = ArkivMetadata(
                 navn = navn.tilFornavnMellomnavnEtternavn(),
                 fnr = fnr.get(),
-                oppfølgingsperiodeStart = oppfølgingsperiode.startDato.norskDato(),
-                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.norskDato(),
+                oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
+                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
                 sakId = sakDTO.sakId,
                 fagsaksystem = sakDTO.fagsaksystem,
                 oppfølgingsperiodeId = oppfølgingsperiode.uuid

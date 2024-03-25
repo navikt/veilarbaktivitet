@@ -14,12 +14,12 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
-import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
@@ -86,8 +86,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { norskDato(sisteOppfølgingsperiode.sluttTid) }},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
@@ -100,11 +100,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetPlanlegger.fraDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetPlanlegger.tilDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -144,11 +144,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetAvbrutt.fraDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetAvbrutt.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetAvbrutt.tilDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetAvbrutt.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -229,8 +229,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${norskDato(sisteOppfølgingsperiode.sluttTid)}" } ?: "null"},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${oppfølgingsperiodeId}"
@@ -243,11 +243,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetPlanlegger.fraDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetPlanlegger.tilDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",

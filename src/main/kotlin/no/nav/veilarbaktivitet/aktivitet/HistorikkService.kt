@@ -2,10 +2,16 @@ package no.nav.veilarbaktivitet.aktivitet
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
+import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import org.springframework.stereotype.Service
+import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 @Service
 class HistorikkService(
@@ -59,7 +65,8 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
              else
                 "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
         }
-        AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> ""
+        //TODO: formatter dato
+        AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> "$endretAvTekst endret til dato på aktiviteten fra ${if(forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"} til ${norskDato(oppdatertVersjon.tilDato)}"
         AktivitetTransaksjonsType.ETIKETT_ENDRET -> ""
         AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET -> "$endretAvTekst endret tid eller sted for møtet"
         AktivitetTransaksjonsType.REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
@@ -74,11 +81,22 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
             val svar = if (oppdatertVersjon.stillingFraNavData?.cvKanDelesData?.kanDeles ?: false) "Ja" else "Nei"
             "$endretAvTekst svarte '$svar' på spørsmålet \"Er du interessert i denne stillingen?\""
         }
-        AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET -> ""
+        AktivitetTransaksjonsType.SOKNADSSTATUS_ENDRET -> {
+            val status = if(oppdatertVersjon.stillingFraNavData?.soknadsstatus !== null) oppdatertVersjon.stillingFraNavData.soknadsstatus.text else "Ingen"
+            "$endretAvTekst endret tilstand til $status"
+        }
         AktivitetTransaksjonsType.IKKE_FATT_JOBBEN -> ""
         AktivitetTransaksjonsType.FATT_JOBBEN -> ""
     }
 }
+
+//    const tilStatus = aktivitet.stillingFraNavData?.soknadsstatus
+//    ? stillingFraNavSoknadsstatusMapper[aktivitet.stillingFraNavData.soknadsstatus]
+//    : 'Ingen';
+//    return (
+//    <>
+//    {brukeravhengigTekst} endret tilstand til {tilStatus}
+//    </>
 
 private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"

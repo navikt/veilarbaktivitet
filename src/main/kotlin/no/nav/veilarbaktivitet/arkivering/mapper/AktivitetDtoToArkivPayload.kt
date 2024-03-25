@@ -12,7 +12,7 @@ import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
-import no.nav.veilarbaktivitet.util.DateUtils.dateToZonedDateTime
+import no.nav.veilarbaktivitet.util.DateUtils.*
 import java.time.Duration
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -115,8 +115,8 @@ fun AktivitetData.toDetaljer(): List<Detalj> =
     }
 
 fun AktivitetData.toMoteDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = fraDato.klokkeslett()),
+    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
     Detalj(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
@@ -126,8 +126,8 @@ fun AktivitetData.toMoteDetaljer() = listOf(
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
     Detalj(stil = HEL_LINJE, tittel = "Mål med aktiviteten", tekst = egenAktivitetData?.hensikt),
     Detalj(stil = HEL_LINJE, tittel = "Min huskeliste", tekst = egenAktivitetData?.oppfolging),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
@@ -135,8 +135,8 @@ fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
 )
 
 fun AktivitetData.toStillingDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Frist", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Frist", tekst = norskDato(tilDato)),
     Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingsSoekAktivitetData?.arbeidsgiver),
     Detalj(stil = HALV_LINJE, tittel = "Kontaktperson", tekst = stillingsSoekAktivitetData?.kontaktPerson),
     Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingsSoekAktivitetData?.arbeidssted),
@@ -147,14 +147,14 @@ fun AktivitetData.toStillingDetaljer() = listOf(
 fun AktivitetData.toStillingFraNavDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
     Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
-    Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = stillingFraNavData?.svarfrist?.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = norskDato(stillingFraNavData?.svarfrist)),
     Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
     Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke()),
 )
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
     Detalj(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()),
     Detalj(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
@@ -163,16 +163,16 @@ fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
 fun AktivitetData.toBehandlingDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Type behandling", tekst = behandlingAktivitetData?.behandlingType),
     Detalj(stil = HALV_LINJE, tittel = "Behandlingssted", tekst = behandlingAktivitetData?.behandlingSted),
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
     Detalj(stil = HEL_LINJE, tittel = "Mål for behandlingen", tekst = behandlingAktivitetData?.effekt),
     Detalj(stil = HEL_LINJE, tittel = "Oppfølging fra NAV", tekst = behandlingAktivitetData?.behandlingOppfolging),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
 )
 
 fun AktivitetData.toIJobbDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
     Detalj(stil = HALV_LINJE, tittel = "Stillingsandel", tekst = iJobbAktivitetData.jobbStatusType.toString()),
     Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = iJobbAktivitetData.ansettelsesforhold),
     Detalj(stil = HALV_LINJE, tittel = "Ansettelsesforhold", tekst = iJobbAktivitetData.arbeidstid),
@@ -180,12 +180,12 @@ fun AktivitetData.toIJobbDetaljer() = listOf(
 )
 
 fun AktivitetData.toEksternAktivitetDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = fraDato.norskDato()),
-    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = tilDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
+    Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
 ) + hentEksterneDetaljer() + listOf(Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse))
 
 fun AktivitetData.toSamtalereferatDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = fraDato.norskDato()),
+    Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
     Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat),
 )
@@ -196,24 +196,3 @@ fun StillingFraNavData.getStillingLenke(): String {
         false -> "https://vis-stilling.intern.dev.nav.no/arbeid/stilling/${this.stillingsId}"
     }
 }
-
-fun Date?.klokkeslett(): String {
-    return this?.let {
-        dateToZonedDateTime(it).format(norskKlokkeslettformat)
-    } ?: ""
-}
-
-fun ZonedDateTime.klokkeslett(): String =
-    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
-        .format(norskKlokkeslettformat)
-
-fun Date?.norskDato() = this?.let {
-    dateToZonedDateTime(it).format(norskDatoformat)
-} ?: ""
-
-fun ZonedDateTime.norskDato(): String =
-    withZoneSameInstant(ZoneId.of("Europe/Oslo"))
-        .format(norskDatoformat)
-
-private val norskDatoformat = DateTimeFormatter.ofPattern("dd MMMM uuuu", Locale.forLanguageTag("no"))
-private val norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"))

@@ -6,8 +6,12 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
 import java.util.*
 
 class HistorikkServiceTest {
@@ -47,8 +51,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra ${oppdatertAktivitet.status} til ${oppdatertAktivitet.status}",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${oppdatertAktivitet.status} til ${oppdatertAktivitet.status}"
+            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
         )
     }
 
@@ -217,6 +221,40 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på at avtalt dato ble endret`() {
+        val aktivitetTilDato = ZonedDateTime.of(2022, 8, 30, 10, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).tilDato(
+            zonedDateTimeToDate(aktivitetTilDato)).build()
+        val oppdatertAktivitetTilDato = ZonedDateTime.of(2022, 9, 2, 11, 0,0, 0, ZoneId.of("Europe/Oslo"))
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT_DATO_ENDRET, endretAvType = Innsender.NAV, tilDato = zonedDateTimeToDate(oppdatertAktivitetTilDato))
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022",
+            "${oppdatertAktivitet.endretAv} endret til dato på aktiviteten fra 30. august 2022 til 2. september 2022"
+        )
+        println("NAV endret til dato på aktiviteten fra ${aktivitet.tilDato} til ${oppdatertAktivitet.tilDato}")
+    }
+
+    @Test
+    fun `Skal lage historikk på søknadsstatus endret`() {
+        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().avtalt(true).build()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET, endretAvType = Innsender.NAV)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
@@ -238,14 +276,15 @@ class HistorikkServiceTest {
         endretAvType: Innsender = Innsender.NAV,
         endretDato: Date = Date(),
         endretAv: String = "Z12345",
-        avtaltMedNav: Boolean = false
+        avtaltMedNav: Boolean = false,
+        tilDato: Date? = aktivitet.tilDato
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
             .aktorId(aktivitet.aktorId)
             .versjon(aktivitet.versjon + 1) // Hvis denne persisteres vil den få en ny versjon fra sekvens
             .fraDato(aktivitet.fraDato)
-            .tilDato(aktivitet.tilDato)
+            .tilDato(tilDato)
             .tittel(aktivitet.tittel)
             .beskrivelse(aktivitet.beskrivelse)
             .versjon(aktivitet.versjon + 1)

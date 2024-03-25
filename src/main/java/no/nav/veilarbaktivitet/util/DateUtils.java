@@ -5,7 +5,9 @@ import lombok.NonNull;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Locale;
 
 public class DateUtils {
 
@@ -75,4 +77,27 @@ public class DateUtils {
         if (date == null) return null;
         return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
+
+    public static String klokkeslett(Date date) {
+        if (date == null) return "";
+        return dateToZonedDateTime(date).format(norskKlokkeslettformat);
+    }
+
+    public static String klokkeslett(ZonedDateTime date) {
+        if (date == null) return "";
+        return date.format(norskKlokkeslettformat);
+    }
+
+    public static String norskDato(Date date) {
+        if (date == null) return "";
+        return dateToZonedDateTime(date).format(norskDatoformat);
+    }
+
+    public static String norskDato(ZonedDateTime date) {
+        if (date == null) return "";
+        return date.format(norskDatoformat);
+    }
+
+    private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));
+    private static DateTimeFormatter norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"));
 }
