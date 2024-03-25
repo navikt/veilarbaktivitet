@@ -124,13 +124,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "sendt" : "5. februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }, {
                             "avsender" : "BRUKER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "sendt" : "5. februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "Jada"
@@ -175,7 +175,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "05 februar 2024 kl. 14:29",
+                          "sendt" : "5. februar 2024 kl. 14:29",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -194,6 +194,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
+
 
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
