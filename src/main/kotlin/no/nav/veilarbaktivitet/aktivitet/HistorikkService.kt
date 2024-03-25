@@ -84,18 +84,9 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
             val status = if(oppdatertVersjon.stillingFraNavData?.soknadsstatus !== null) oppdatertVersjon.stillingFraNavData.soknadsstatus.text else "Ingen"
             "$endretAvTekst endret tilstand til $status"
         }
-        AktivitetTransaksjonsType.IKKE_FATT_JOBBEN -> ""
-        AktivitetTransaksjonsType.FATT_JOBBEN -> ""
+        AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, AktivitetTransaksjonsType.FATT_JOBBEN -> "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
     }
 }
-
-//    const tilStatus = aktivitet.stillingFraNavData?.soknadsstatus
-//    ? stillingFraNavSoknadsstatusMapper[aktivitet.stillingFraNavData.soknadsstatus]
-//    : 'Ingen';
-//    return (
-//    <>
-//    {brukeravhengigTekst} endret tilstand til {tilStatus}
-//    </>
 
 private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"

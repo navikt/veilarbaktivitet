@@ -4,7 +4,11 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
+import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav
+import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
@@ -254,6 +258,36 @@ class HistorikkServiceTest {
         )
     }
 
+    @Test
+    fun `Skal lage historikk på ikke fått jobben`() {
+        val aktivitet = nyStillingFraNav()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, endretAvType = Innsender.NAV, oppdatertSoknadsstatus = Soknadsstatus.IKKE_FATT_JOBBEN)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV avsluttet aktiviteten fordi kandidaten har Ikke fått jobben",
+            "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Ikke fått jobben"
+        )
+    }
+
+    @Test
+    fun `Skal lage historikk på fått jobben`() {
+        val aktivitet = nyStillingFraNav()
+        val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.FATT_JOBBEN, endretAvType = Innsender.NAV, oppdatertSoknadsstatus = Soknadsstatus.FATT_JOBBEN)
+
+        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
+
+        assert(
+            historikk[aktivitet.id]!!,
+            oppdatertAktivitet,
+            "NAV avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89",
+            "${oppdatertAktivitet.endretAv} avsluttet aktiviteten fordi kandidaten har Fått jobben \uD83C\uDF89"
+        )
+    }
+
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,
@@ -276,7 +310,8 @@ class HistorikkServiceTest {
         endretDato: Date = Date(),
         endretAv: String = "Z12345",
         avtaltMedNav: Boolean = false,
-        tilDato: Date? = aktivitet.tilDato
+        tilDato: Date? = aktivitet.tilDato,
+        oppdatertSoknadsstatus: Soknadsstatus? = null
     ): AktivitetData {
         return AktivitetData.builder()
             .id(aktivitet.id) // Hvis denne persisteres, vil den få en ny id fra sekvens
@@ -298,6 +333,7 @@ class HistorikkServiceTest {
             .endretDato(endretDato)
             .endretAv(endretAv)
             .avtalt(avtaltMedNav)
+            .stillingFraNavData(aktivitet.stillingFraNavData?.also { it.soknadsstatus = oppdatertSoknadsstatus })
             .malid("2").build()
     }
 }
