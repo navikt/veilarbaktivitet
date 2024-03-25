@@ -87,7 +87,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
                         "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { norskDato(sisteOppfølgingsperiode.sluttTid) }},
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) } ?: null},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
@@ -267,13 +267,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "5. februar 2024 kl. 13:31",
+                            "sendt" : "5. februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }, {
                             "avsender" : "BRUKER",
-                            "sendt" : "5. februar 2024 kl. 13:31",
+                            "sendt" : "5. februar 2024 kl. 14:31",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "Jada"
@@ -286,7 +286,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "5. februar 2024 kl. 13:29",
+                          "sendt" : "5. februar 2024 kl. 14:29",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"

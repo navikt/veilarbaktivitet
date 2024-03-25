@@ -65,7 +65,6 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
              else
                 "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
         }
-        //TODO: formatter dato
         AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> "$endretAvTekst endret til dato på aktiviteten fra ${if(forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"} til ${norskDato(oppdatertVersjon.tilDato)}"
         AktivitetTransaksjonsType.ETIKETT_ENDRET -> ""
         AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET -> "$endretAvTekst endret tid eller sted for møtet"

@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
