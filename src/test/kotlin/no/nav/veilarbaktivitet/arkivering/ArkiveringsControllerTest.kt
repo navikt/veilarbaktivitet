@@ -487,11 +487,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører eksterne aktiviteter skal kun handlinger med INTERN lenketype inkluderes`() {
+    fun `Når man journalfører eksterne aktiviteter skal kun handlinger med INTERN og FELLES lenketype inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val eksternHandling = LenkeSeksjon("EksternHandlingTekst", "EksternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.EKSTERN)
         val internHandling = LenkeSeksjon("InternHandlingTekst", "InternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.INTERN)
+        val fellesHandling = LenkeSeksjon("FellesHandlingTekst", "FellesHandlingSubTekst", URL("http://localhost:8080"), LenkeType.FELLES)
 
         val eksternAktivitetskort = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = MIDLERTIDIG_LONNSTILSKUDD,
@@ -500,7 +501,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 AktivitetskortStatus.PLANLAGT,
                 ZonedDateTime.now(),
                 bruker
-            ).copy(handlinger = listOf(eksternHandling, internHandling)),
+            ).copy(handlinger = listOf(eksternHandling, internHandling, fellesHandling)),
             source = "source",
             messageId = UUID.randomUUID(),
         )
@@ -516,10 +517,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktivitetSendtTilArkiv = arkivPayload.aktiviteter.values.flatten().first()
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(1)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().tekst).isEqualTo(internHandling.tekst)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().subtekst).isEqualTo(internHandling.subtekst)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().url).isEqualTo(internHandling.url.toString())
+        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(2)
+        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).containsExactlyInAnyOrder(
+            EksternHandling(internHandling.tekst, internHandling.subtekst, internHandling.url.toString()),
+            EksternHandling(fellesHandling.tekst, fellesHandling.subtekst, fellesHandling.url.toString())
+        )
     }
 
     @Test
