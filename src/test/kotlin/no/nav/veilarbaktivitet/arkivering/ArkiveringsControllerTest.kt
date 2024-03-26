@@ -50,10 +50,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val opprettetJobbAktivitetAvbrutt = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
+        val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
-            aktivitetId = opprettetJobbAktivitetPlanlegger.id
+            aktivitetId = opprettetJobbAktivitetPlanlegger.id,
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
 
         val arkiveringsUrl =
@@ -75,6 +77,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             ZonedDateTime.now(),
             within(500, ChronoUnit.MILLIS)
         )
+
+        val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
 
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -124,16 +129,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "5. februar 2024 kl. 14:31",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }, {
-                            "avsender" : "BRUKER",
-                            "sendt" : "5. februar 2024 kl. 14:31",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "Jada"
                           } ],
                           "etiketter": [],
                             "eksterneHandlinger" : [ ],
@@ -190,7 +189,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "5. februar 2024 kl. 14:29",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -210,17 +209,19 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
-
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
+
+        val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
-            aktivitetId = opprettetJobbAktivitet.id
+            aktivitetId = opprettetJobbAktivitet.id,
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
 
         val arkiveringsUrl =
@@ -235,6 +236,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .assertThat()
             .statusCode(HttpStatus.OK.value())
 
+        val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -283,17 +286,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "5. februar 2024 kl. 14:31",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }, {
-                            "avsender" : "BRUKER",
-                            "sendt" : "5. februar 2024 kl. 14:31",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "Jada"
-                          } ],
+                          }],
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],
                           "historikk" : {
@@ -309,7 +306,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "5. februar 2024 kl. 14:29",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -562,7 +559,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.BAD_REQUEST.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String) {
+    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00") {
         stubFor(
             get(
                 urlEqualTo(
@@ -593,20 +590,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                             "dialogId": "618057",
                                             "avsender": "VEILEDER",
                                             "avsenderId": "Z994188",
-                                            "sendt": "2024-02-05T13:31:11.588+00:00",
+                                            "sendt": "$meldingerSendtTidspunkt",
                                             "lest": true,
                                             "viktig": false,
                                             "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                                        },
-                                        {
-                                            "id": "1147417",
-                                            "dialogId": "618057",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "$fnr",
-                                            "sendt": "2024-02-05T13:31:22.238+00:00",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jada"
                                         }
                                     ],
                                     "egenskaper": []
@@ -631,7 +618,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                             "dialogId": "618056",
                                             "avsender": "BRUKER",
                                             "avsenderId": "$fnr",
-                                            "sendt": "2024-02-05T13:29:18.635+00:00",
+                                            "sendt": "$meldingerSendtTidspunkt",
                                             "lest": true,
                                             "viktig": false,
                                             "tekst": "Jeg liker NAV. NAV er snille!"
