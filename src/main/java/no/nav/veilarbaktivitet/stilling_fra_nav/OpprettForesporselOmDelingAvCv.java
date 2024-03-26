@@ -31,6 +31,7 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import static no.nav.veilarbaktivitet.stilling_fra_nav.DelingAvCvService.utledArbeidstedtekst;
+import static no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo;
 
 @Slf4j
 @Service
@@ -104,7 +105,7 @@ public class OpprettForesporselOmDelingAvCv {
         Instant opprettet = melding.getOpprettet();
 
         //nye kolonner
-        Date svarfrist = new Date(melding.getSvarfrist().atZone(ZoneId.systemDefault()).toInstant().toEpochMilli());
+        Date svarfrist = new Date(melding.getSvarfrist().atZone(zoneIdEuropeOslo()).toInstant().toEpochMilli());
         String arbeidsgiver = melding.getArbeidsgiver();
         String soknadsfrist = melding.getSoknadsfrist();
         String bestillingsId = melding.getBestillingsId();

@@ -15,6 +15,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
+import static no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -33,8 +34,8 @@ class ArenaServiceTest {
         var arenaAktivitet = ArenaAktivitetDTO.builder()
                 .id("LOL")
                 .build();
-        var nyesteDato = Date.from(LocalDate.now().minusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
-        var gamlesteDato = Date.from(LocalDate.now().minusDays(2).atStartOfDay(ZoneId.systemDefault()).toInstant());
+        var nyesteDato = Date.from(LocalDate.now().minusDays(1).atStartOfDay(zoneIdEuropeOslo()).toInstant());
+        var gamlesteDato = Date.from(LocalDate.now().minusDays(2).atStartOfDay(zoneIdEuropeOslo()).toInstant());
         var fhos = List.of(
             Forhaandsorientering.builder()
                 .type(Type.SEND_FORHAANDSORIENTERING)

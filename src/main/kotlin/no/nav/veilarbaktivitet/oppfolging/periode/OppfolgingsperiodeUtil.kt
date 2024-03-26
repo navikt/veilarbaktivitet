@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.oppfolging.periode
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.util.DateUtils
+import no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -30,7 +31,7 @@ fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForTidspunkt(tidspunkt: Local
         return null
     }
 
-    val opprettetTidspunktCZDT = tidspunkt.atZone(ZoneId.systemDefault())
+    val opprettetTidspunktCZDT = tidspunkt.atZone(zoneIdEuropeOslo())
     val match = oppfolgingsperioder
         .firstOrNull { oppfolgingsperiode -> oppfolgingsperiode.erInnenforPeriode(opprettetTidspunktCZDT) }
         ?: oppfolgingsperioder

@@ -13,7 +13,7 @@ public class KafkaConsumerOnpremServiceTest {
         KVPAvsluttetService kvpAvsluttetService = mock(KVPAvsluttetService.class);
         KafkaConsumerOnpremService consumerService = new KafkaConsumerOnpremService(aktivitetService, kvpAvsluttetService);
 
-        ZonedDateTime sluttdato = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault());
+        ZonedDateTime sluttdato = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, zoneIdEuropeOslo());
         Date expectedSluttdato = new Date(sluttdato.toInstant().toEpochMilli());
 
         KvpAvsluttetKafkaDTO kvpAvsluttetDto = new KvpAvsluttetKafkaDTO();

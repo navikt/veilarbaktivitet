@@ -13,6 +13,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.feil.*
 import no.nav.veilarbaktivitet.aktivitetskort.service.AktivitetskortService
 import no.nav.veilarbaktivitet.aktivitetskort.service.UpsertActionResult
 import no.nav.veilarbaktivitet.aktivitetskort.util.JsonUtil
+import no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo
 import org.apache.commons.lang3.NotImplementedException
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
@@ -150,4 +151,4 @@ data class TraceFields(
             : this(messageId, MessageSource.values().find { it.name == source } ?: MessageSource.UNKNOWN)
 }
 
-fun Long.toLocalDateTimeDefaultZone() = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneId.systemDefault())
+fun Long.toLocalDateTimeDefaultZone() = LocalDateTime.ofInstant(Instant.ofEpochMilli(this), zoneIdEuropeOslo())
