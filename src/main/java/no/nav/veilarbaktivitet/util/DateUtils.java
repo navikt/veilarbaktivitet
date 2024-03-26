@@ -85,7 +85,7 @@ public class DateUtils {
 
     public static String klokkeslett(ZonedDateTime date) {
         if (date == null) return "";
-        return date.withZoneSameInstant(ZoneId.of("Europe/Oslo")).format(norskKlokkeslettformat);
+        return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskKlokkeslettformat);
     }
 
     public static String norskDato(Date date) {
@@ -95,7 +95,7 @@ public class DateUtils {
 
     public static String norskDato(ZonedDateTime date) {
         if (date == null) return "";
-        return date.withZoneSameInstant(ZoneId.of("Europe/Oslo")).format(norskDatoformat);
+        return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskDatoformat);
     }
 
     private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));
