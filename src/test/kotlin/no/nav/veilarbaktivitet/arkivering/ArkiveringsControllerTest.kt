@@ -79,7 +79,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendt = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
 
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -129,7 +129,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendt",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
@@ -189,7 +189,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "$expectedMeldingerSendt",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -237,7 +237,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendt = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -286,7 +286,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendt",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
@@ -306,7 +306,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "$expectedMeldingerSendt",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
