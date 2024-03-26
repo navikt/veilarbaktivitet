@@ -15,7 +15,7 @@ public class DateUtils {
 
     public static Date toDate(LocalDate localDate) {
         if (localDate == null) return null;
-        return Date.from(localDate.atStartOfDay().atZone(ZoneId.of("Europe/Oslo")).toInstant());
+        return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static Date dateFromISO8601(String date) {
@@ -60,7 +60,7 @@ public class DateUtils {
 
     public static Date localDateTimeToDate(LocalDateTime localDateTime) {
         if (localDateTime == null) return null;
-        return Date.from(localDateTime.atZone(ZoneId.of("Europe/Oslo")).toInstant());
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static Date zonedDateTimeToDate(ZonedDateTime zonedDateTime) {
@@ -70,12 +70,12 @@ public class DateUtils {
 
     public static LocalDateTime dateToLocalDateTime(Date date) {
         if (date == null) return null;
-        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.of("Europe/Oslo"));
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime dateToZonedDateTime(Date date) {
         if (date == null) return null;
-        return dateToLocalDateTime(date).atZone(ZoneId.of("Europe/Oslo"));
+        return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
 
     public static String klokkeslett(Date date) {
