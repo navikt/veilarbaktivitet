@@ -1,24 +1,16 @@
 package no.nav.veilarbaktivitet.aktivitet
 
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
-import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekAktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.StillingsoekEtikettData
+import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
-import no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.springframework.data.convert.Jsr310Converters.InstantToDateConverter
-import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
@@ -60,8 +52,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
+            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
         )
     }
 
@@ -259,8 +251,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
+            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
         )
     }
 
