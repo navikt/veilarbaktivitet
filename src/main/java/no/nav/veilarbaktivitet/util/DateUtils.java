@@ -13,12 +13,9 @@ public class DateUtils {
 
     private DateUtils() {}
 
-    public static ZoneId zoneIdEuropeOslo() {
-        return ZoneId.of("Europe/Oslo");
-    }
     public static Date toDate(LocalDate localDate) {
         if (localDate == null) return null;
-        return Date.from(localDate.atStartOfDay().atZone(zoneIdEuropeOslo()).toInstant());
+        return Date.from(localDate.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static Date dateFromISO8601(String date) {
@@ -63,7 +60,7 @@ public class DateUtils {
 
     public static Date localDateTimeToDate(LocalDateTime localDateTime) {
         if (localDateTime == null) return null;
-        return Date.from(localDateTime.atZone(zoneIdEuropeOslo()).toInstant());
+        return Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
     }
 
     public static Date zonedDateTimeToDate(ZonedDateTime zonedDateTime) {
@@ -73,12 +70,12 @@ public class DateUtils {
 
     public static LocalDateTime dateToLocalDateTime(Date date) {
         if (date == null) return null;
-        return LocalDateTime.ofInstant(date.toInstant(),  zoneIdEuropeOslo());
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
     public static ZonedDateTime dateToZonedDateTime(Date date) {
         if (date == null) return null;
-        return dateToLocalDateTime(date).atZone(zoneIdEuropeOslo());
+        return dateToLocalDateTime(date).atZone(ZoneId.systemDefault());
     }
 
     public static String klokkeslett(Date date) {
@@ -88,7 +85,7 @@ public class DateUtils {
 
     public static String klokkeslett(ZonedDateTime date) {
         if (date == null) return "";
-        return date.withZoneSameInstant(zoneIdEuropeOslo()).format(norskKlokkeslettformat);
+        return date.withZoneSameInstant(ZoneId.of("Europe/Oslo")).format(norskKlokkeslettformat);
     }
 
     public static String norskDato(Date date) {
@@ -98,7 +95,7 @@ public class DateUtils {
 
     public static String norskDato(ZonedDateTime date) {
         if (date == null) return "";
-        return date.withZoneSameInstant(zoneIdEuropeOslo()).format(norskDatoformat);
+        return date.withZoneSameInstant(ZoneId.of("Europe/Oslo")).format(norskDatoformat);
     }
 
     private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));

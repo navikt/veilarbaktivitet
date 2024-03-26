@@ -47,7 +47,6 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
-import static no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -338,15 +337,15 @@ class ArenaControllerTest {
         return new AktiviteterDTO.Gruppeaktivitet()
                 .setMoteplanListe(List.of(
                                 new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), zoneIdEuropeOslo()))
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
                                         .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), zoneIdEuropeOslo()))
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
                                         .setSluttKlokkeslett("12:00:00")
                                 ,
                                 new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), zoneIdEuropeOslo()))
+                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
                                         .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), zoneIdEuropeOslo()))
+                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
                                         .setSluttKlokkeslett("12:00:00")
                         )
 
@@ -356,8 +355,8 @@ class ArenaControllerTest {
 
     private AktiviteterDTO.Utdanningsaktivitet createUtdanningsaktivitet() {
         AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode periode = new AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode()
-                .setFom(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), zoneIdEuropeOslo()))
-                .setTom(LocalDate.ofInstant(Instant.now().plus(4, ChronoUnit.DAYS), zoneIdEuropeOslo()));
+                .setFom(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                .setTom(LocalDate.ofInstant(Instant.now().plus(4, ChronoUnit.DAYS), ZoneId.systemDefault()));
 
         return new AktiviteterDTO.Utdanningsaktivitet()
                 .setAktivitetId(new ArenaId("ARENAUA" + getRandomString()))

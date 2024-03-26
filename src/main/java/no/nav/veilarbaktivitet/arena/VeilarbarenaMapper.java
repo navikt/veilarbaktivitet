@@ -24,7 +24,6 @@ import static java.time.ZonedDateTime.ofInstant;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
-import static no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo;
 
 @Slf4j
 public class VeilarbarenaMapper {
@@ -182,8 +181,8 @@ public class VeilarbarenaMapper {
     private static AktivitetStatus mapTilAktivitetsStatus(Date startDato, Date sluttDato) {
         LocalDateTime now = LocalDateTime.now();
 
-        LocalDateTime startDatoStart = ofInstant(startDato.toInstant(), zoneIdEuropeOslo()).toLocalDate().atStartOfDay();
-        LocalDateTime sluttDatoSlutt = ofInstant(sluttDato.toInstant(), zoneIdEuropeOslo()).toLocalDate().plusDays(1).atStartOfDay();
+        LocalDateTime startDatoStart = ofInstant(startDato.toInstant(), systemDefault()).toLocalDate().atStartOfDay();
+        LocalDateTime sluttDatoSlutt = ofInstant(sluttDato.toInstant(), systemDefault()).toLocalDate().plusDays(1).atStartOfDay();
 
         AktivitetStatus gjennomforesEllerFullfort = now.isBefore(sluttDatoSlutt) ? GJENNOMFORES : FULLFORT;
         return now.isBefore(startDatoStart) ? PLANLAGT : gjennomforesEllerFullfort;

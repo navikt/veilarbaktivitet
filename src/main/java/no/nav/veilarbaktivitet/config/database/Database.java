@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.UUID;
 
 import static java.util.Optional.ofNullable;
-import static no.nav.veilarbaktivitet.util.DateUtils.zoneIdEuropeOslo;
 
 @Component
 @Getter
@@ -70,14 +69,14 @@ public class Database {
     public static ZonedDateTime hentZonedDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
         return  ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(java.sql.Timestamp::toInstant)
-                .map(instant -> ZonedDateTime.ofInstant(instant, zoneIdEuropeOslo()))
+                .map(instant -> ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()))
                 .orElse(null);
     }
 
     public static LocalDateTime hentLocalDateTime(ResultSet rs, String kolonneNavn) throws SQLException {
         return  ofNullable(rs.getTimestamp(kolonneNavn))
                 .map(java.sql.Timestamp::toInstant)
-                .map(instant ->  LocalDateTime.ofInstant(instant, zoneIdEuropeOslo()))
+                .map(instant ->  LocalDateTime.ofInstant(instant, ZoneId.systemDefault()))
                 .orElse(null);
     }
 
