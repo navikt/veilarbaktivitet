@@ -487,10 +487,12 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører eksterne aktiviteter skal handlinger inkluderes`() {
+    fun `Når man journalfører eksterne aktiviteter skal kun handlinger med INTERN lenketype inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val handling = LenkeSeksjon("EksternHandlingTekst", "EksternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.EKSTERN)
+        val eksternHandling = LenkeSeksjon("EksternHandlingTekst", "EksternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.EKSTERN)
+        val internHandling = LenkeSeksjon("InternHandlingTekst", "InternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.INTERN)
+
         val eksternAktivitetskort = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = MIDLERTIDIG_LONNSTILSKUDD,
             aktivitetskort = AktivitetskortUtil.ny(
@@ -498,7 +500,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 AktivitetskortStatus.PLANLAGT,
                 ZonedDateTime.now(),
                 bruker
-            ).copy(handlinger = listOf(handling)),
+            ).copy(handlinger = listOf(eksternHandling, internHandling)),
             source = "source",
             messageId = UUID.randomUUID(),
         )
@@ -515,9 +517,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktivitetSendtTilArkiv = arkivPayload.aktiviteter.values.flatten().first()
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(1)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().tekst).isEqualTo(handling.tekst)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().subtekst).isEqualTo(handling.subtekst)
-        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().url).isEqualTo(handling.url.toString())
+        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().tekst).isEqualTo(internHandling.tekst)
+        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().subtekst).isEqualTo(internHandling.subtekst)
+        assertThat(aktivitetSendtTilArkiv.eksterneHandlinger.first().url).isEqualTo(internHandling.url.toString())
     }
 
     @Test
