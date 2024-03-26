@@ -309,16 +309,6 @@ class HistorikkServiceTest {
         )
     }
 
-    @Test
-    fun `Skal formattere tidspunkt til ønsket format`() {
-        val dato = LocalDateTime.of(2022, 6,7,14,0)
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().endretDato(localDateTimeToDate(dato)).build()
-
-        val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
-
-        assertThat(historikk[aktivitet.id]!!.endringer.first().formattertTidspunkt).isEqualTo("7. juni 2022 kl. 14:00")
-    }
-
     private fun assert(
         historikk: Historikk,
         oppdatertAktivitet: AktivitetData,

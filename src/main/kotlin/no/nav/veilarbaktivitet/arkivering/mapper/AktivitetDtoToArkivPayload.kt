@@ -29,7 +29,7 @@ fun AktivitetData.toArkivPayload(meldinger: List<Melding>, historikk: Historikk)
         meldinger = meldinger,
         etiketter = this.getArkivEtiketter(),
         eksterneHandlinger = this.getEksterneHandlinger(),
-        historikk = historikk
+        historikk = historikk.tilAktivitetHistorikk()
     )
 }
 

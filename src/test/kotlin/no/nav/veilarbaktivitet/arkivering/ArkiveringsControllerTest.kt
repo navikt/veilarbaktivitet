@@ -42,18 +42,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
-        val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+        val opprettetJobbAktivitetPlanlegger = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val jobbAktivitetAvbrutt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetAvbrutt.status = AktivitetStatus.AVBRUTT
-        aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
+        val opprettetJobbAktivitetAvbrutt = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
-            aktivitetId = opprettetJobbAktivitet.id
+            aktivitetId = opprettetJobbAktivitetPlanlegger.id
         )
 
         val arkiveringsUrl =
@@ -139,12 +139,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "eksterneHandlinger" : [ ],
                             "historikk" : {
                               "endringer" : [ {
-                                "endretAvType" : "BRUKER",
-                                "endretAv" : "00305451010",
-                              "tidspunkt" : "${dateToZonedDateTime(opprettetJobbAktivitet.endretDato)}",
-                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
-                                "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
-                                "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
                               } ]  
                             }
                         } ],
@@ -155,11 +152,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${norskDato(jobbAktivitetAvbrutt.fraDato)}"
+                            "tekst": "${norskDato(opprettetJobbAktivitetAvbrutt.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${norskDato(jobbAktivitetAvbrutt.tilDato)}"
+                            "tekst": "${norskDato(opprettetJobbAktivitetAvbrutt.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -182,10 +179,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "eksterneHandlinger" : [],
                           "historikk" : {
                             "endringer" : [ {
-                              "endretAvType" : "BRUKER",
-                              "endretAv" : "43705451010",
-                              "tidspunkt" : "${dateToZonedDateTime(jobbAktivitetAvbrutt.endretDato)}",
-                              "formattertTidspunkt" : "${norskDato(jobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
                               "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
                               "beskrivelseForBruker" : "Du opprettet aktiviteten"
                             } ]
@@ -304,9 +298,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "eksterneHandlinger" : [ ],
                           "historikk" : {
                             "endringer" : [ {
-                              "endretAvType" : "BRUKER",
-                              "endretAv" : "43705451010",
-                              "tidspunkt" : "${dateToZonedDateTime(opprettetJobbAktivitet.endretDato)}",
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
                               "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
                               "beskrivelseForBruker" : "Du opprettet aktiviteten"
