@@ -183,7 +183,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
                               "beskrivelseForBruker" : "Du opprettet aktiviteten"
                             } ]
-                         }
+                          }
                         } ]
                       },
                       "dialogtråder" : [ {
