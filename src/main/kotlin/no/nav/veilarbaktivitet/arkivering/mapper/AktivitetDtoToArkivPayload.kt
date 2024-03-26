@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
 import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
 import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.EksternHandling
@@ -95,7 +96,7 @@ fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetDa
 
 
 fun AktivitetData.getEksterneHandlinger(): List<EksternHandling> =
-    this.eksternAktivitetData?.handlinger?.map {
+    this.eksternAktivitetData?.handlinger?.filter { it.lenkeType == LenkeType.INTERN || it.lenkeType == LenkeType.FELLES }?.map {
         EksternHandling(
             tekst = it.tekst,
             subtekst = it.subtekst,
