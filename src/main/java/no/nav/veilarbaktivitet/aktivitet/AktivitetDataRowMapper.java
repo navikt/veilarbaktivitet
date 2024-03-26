@@ -94,8 +94,7 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .arbeidssted(rs.getString("STILLINGSSOK.ARBEIDSSTED"))
                 .kontaktPerson(rs.getString("kontaktperson"))
                 .stillingsoekEtikett(EnumUtils.valueOf(StillingsoekEtikettData.class, rs.getString("etikett")))
-                .build()
-                ;
+                .build();
     }
 
     private static EgenAktivitetData mapEgenAktivitet(ResultSet rs) throws SQLException {

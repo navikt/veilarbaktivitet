@@ -24,6 +24,8 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
@@ -480,6 +482,20 @@ public class AktivitetDAO {
                         """;
         return namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
     }
+
+    public Map<Long, List<AktivitetData>> hentAktivitetVersjoner(List<Long> aktivitetIder) {
+        var params = new MapSqlParameterSource()
+                .addValue("aktivitetIder",  aktivitetIder);
+        // language=sql
+        String sql = SELECT_AKTIVITET +
+                """
+                            WHERE A.aktivitet_id in (:aktivitetIder)
+                            ORDER BY A.versjon desc
+                        """;
+        var aktiviteter = namedParameterJdbcTemplate.query(sql, params, aktivitetsDataRowMapper);
+        return aktiviteter.stream().collect(Collectors.groupingBy(AktivitetData::getId));
+    }
+
 
     public Map<Long, Long> getAktivitetsVersjoner(List<Long> aktiviteter) {
         if (aktiviteter.isEmpty()) return Map.of();

@@ -14,12 +14,12 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
-import no.nav.veilarbaktivitet.arkivering.mapper.norskDato
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.util.DateUtils.*
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
@@ -42,18 +42,20 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
-        val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+        val opprettetJobbAktivitetPlanlegger = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val jobbAktivitetAvbrutt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetAvbrutt.status = AktivitetStatus.AVBRUTT
-        aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
+        val opprettetJobbAktivitetAvbrutt = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetAvbrutt)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
+        val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
-            aktivitetId = opprettetJobbAktivitet.id
+            aktivitetId = opprettetJobbAktivitetPlanlegger.id,
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
 
         val arkiveringsUrl =
@@ -76,6 +78,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             within(500, ChronoUnit.MILLIS)
         )
 
+        val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -86,8 +91,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) } ?: null},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}"
@@ -100,11 +105,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetPlanlegger.fraDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetPlanlegger.tilDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -124,18 +129,20 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }, {
-                            "avsender" : "BRUKER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "Jada"
                           } ],
-                          "etiketter": []
+                          "etiketter": [],
+                            "eksterneHandlinger" : [ ],
+                            "historikk" : {
+                              "endringer" : [ {
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              } ]  
+                            }
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -144,11 +151,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetAvbrutt.fraDato.norskDato()}"
+                            "tekst": "${norskDato(opprettetJobbAktivitetAvbrutt.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetAvbrutt.tilDato.norskDato()}"
+                            "tekst": "${norskDato(opprettetJobbAktivitetAvbrutt.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -168,14 +175,21 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ ],
                           "etiketter": [],
-                          "eksterneHandlinger" : []
+                          "eksterneHandlinger" : [],
+                          "historikk" : {
+                            "endringer" : [ {
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                            } ]
+                          }
                         } ]
                       },
                       "dialogtråder" : [ {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "05 februar 2024 kl. 14:29",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -184,7 +198,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
-                """.trimIndent(), true, true
+                """.trimIndent()
                     )
                 )
         )
@@ -201,10 +215,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
+
+        val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
-            aktivitetId = opprettetJobbAktivitet.id
+            aktivitetId = opprettetJobbAktivitet.id,
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
 
         val arkiveringsUrl =
@@ -219,6 +236,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .assertThat()
             .statusCode(HttpStatus.OK.value())
 
+        val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
+        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -229,8 +248,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "metadata": {
                         "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                         "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${sisteOppfølgingsperiode.startTid.norskDato()}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.let { "${sisteOppfølgingsperiode.sluttTid?.norskDato()}" }},
+                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${oppfølgingsperiodeId}"
@@ -243,11 +262,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "detaljer" : [ {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Fra dato",
-                            "tekst": "${jobbAktivitetPlanlegger.fraDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.fraDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Til dato",
-                            "tekst": "${jobbAktivitetPlanlegger.tilDato.norskDato()}"
+                            "tekst": "${norskDato(jobbAktivitetPlanlegger.tilDato)}"
                           }, {
                             "stil" : "HALV_LINJE",
                             "tittel" : "Stillingsandel",
@@ -267,26 +286,27 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           } ],
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
+                            "sendt" : "$expectedMeldingerSendtNorskTid",
                             "lest" : true,
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          }, {
-                            "avsender" : "BRUKER",
-                            "sendt" : "05 februar 2024 kl. 14:31",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "Jada"
-                          } ],
+                          }],
                           "etiketter": [],
-                          "eksterneHandlinger" : [ ]
+                          "eksterneHandlinger" : [ ],
+                          "historikk" : {
+                            "endringer" : [ {
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
+                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                            } ]
+                          }
                         } ]
                       },
                       "dialogtråder" : [ {
                         "overskrift" : "Penger",
                         "meldinger" : [ {
                           "avsender" : "BRUKER",
-                          "sendt" : "05 februar 2024 kl. 14:29",
+                          "sendt" : "$expectedMeldingerSendtNorskTid",
                           "lest" : true,
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
@@ -389,7 +409,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val ikkeKvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+       stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -539,7 +559,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.BAD_REQUEST.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String) {
+    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00") {
         stubFor(
             get(
                 urlEqualTo(
@@ -570,20 +590,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                             "dialogId": "618057",
                                             "avsender": "VEILEDER",
                                             "avsenderId": "Z994188",
-                                            "sendt": "2024-02-05T13:31:11.588+00:00",
+                                            "sendt": "$meldingerSendtTidspunkt",
                                             "lest": true,
                                             "viktig": false,
                                             "tekst": "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                                        },
-                                        {
-                                            "id": "1147417",
-                                            "dialogId": "618057",
-                                            "avsender": "BRUKER",
-                                            "avsenderId": "$fnr",
-                                            "sendt": "2024-02-05T13:31:22.238+00:00",
-                                            "lest": true,
-                                            "viktig": false,
-                                            "tekst": "Jada"
                                         }
                                     ],
                                     "egenskaper": []
@@ -608,7 +618,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                             "dialogId": "618056",
                                             "avsender": "BRUKER",
                                             "avsenderId": "$fnr",
-                                            "sendt": "2024-02-05T13:29:18.635+00:00",
+                                            "sendt": "$meldingerSendtTidspunkt",
                                             "lest": true,
                                             "viktig": false,
                                             "tekst": "Jeg liker NAV. NAV er snille!"

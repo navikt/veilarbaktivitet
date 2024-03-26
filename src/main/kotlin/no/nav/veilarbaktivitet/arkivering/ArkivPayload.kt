@@ -29,8 +29,20 @@ data class ArkivAktivitet(
     val detaljer: List<Detalj>,
     val meldinger: List<Melding>,
     val etiketter: List<ArkivEtikett>,
-    val eksterneHandlinger: List<EksternHandling>
+    val eksterneHandlinger: List<EksternHandling>,
+    val historikk: AktivitetHistorikk
 )
+
+data class AktivitetHistorikk(
+    val endringer: List<AktivitetEndring>
+)
+
+data class AktivitetEndring(
+    val formattertTidspunkt: String,
+    val beskrivelseForVeileder: String,
+    val beskrivelseForBruker: String,
+)
+
 
 data class ArkivDialogtråd(
     val overskrift: String,

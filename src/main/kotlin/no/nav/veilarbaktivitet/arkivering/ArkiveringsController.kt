@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
+import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -30,7 +31,7 @@ class ArkiveringsController(
     private val navnService: EksternNavnService,
     private val appService: AktivitetAppService,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
-    private val personService: PersonService
+    private val historikkService: HistorikkService,
 ) {
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog")
@@ -66,13 +67,14 @@ class ArkiveringsController(
         val navn = navnService.hentNavn(fnr)
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
         val mål = oppfølgingsperiodeService.hentMål(fnr)
+        val historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
 
         if (forhaandsvisningTidspunkt != null) {
             val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(forhaandsvisningTidspunkt, aktiviteter, dialoger)
             if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
         }
 
-        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål, historikkForAktiviteter)
     }
 
     private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
