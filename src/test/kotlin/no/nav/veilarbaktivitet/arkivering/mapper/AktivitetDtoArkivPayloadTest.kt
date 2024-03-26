@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
+import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Attributt
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -9,7 +10,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Møte har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nyMoteAktivitet().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Dato",
@@ -25,7 +26,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Samtalereferat har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nySamtaleReferat().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Dato",
@@ -36,7 +37,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Stilling har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyttStillingssok().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nyttStillingssok().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",
@@ -51,7 +52,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Stilling fra NAV har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyStillingFraNav().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nyStillingFraNav().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Arbeidsgiver",
@@ -64,7 +65,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Jobbrettet egenaktivitet har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nyEgenaktivitet().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",
@@ -78,7 +79,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Jobbsøking (sokeavtale) egenaktivitet har riktige felt`() {
-        val mote = AktivitetDataTestBuilder.nySokeAvtaleAktivitet().toArkivPayload(emptyList())
+        val mote = AktivitetDataTestBuilder.nySokeAvtaleAktivitet().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(mote.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",
@@ -91,7 +92,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `Behandling skal ha riktige felt`() {
-        val behandling = AktivitetDataTestBuilder.nyBehandlingAktivitet().toArkivPayload(emptyList())
+        val behandling = AktivitetDataTestBuilder.nyBehandlingAktivitet().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(behandling.detaljer.map { it.tittel })
             .containsExactly(
                 "Type behandling",
@@ -113,7 +114,7 @@ class AktivitetDtoArkivPayloadTest {
                     Attributt("Detail label", "Detail value")
                 ),
             )) }
-            .toArkivPayload(emptyList())
+            .toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(eksternAktivitet.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",
@@ -125,7 +126,7 @@ class AktivitetDtoArkivPayloadTest {
 
     @Test
     fun `IJobb (jobb jeg har) skal ha riktige felt`() {
-        val ijobb = AktivitetDataTestBuilder.nyIJobbAktivitet().toArkivPayload(emptyList())
+        val ijobb = AktivitetDataTestBuilder.nyIJobbAktivitet().toArkivPayload(emptyList(), Historikk(emptyList()))
         assertThat(ijobb.detaljer.map { it.tittel })
             .containsExactly(
                 "Fra dato",

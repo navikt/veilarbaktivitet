@@ -1,10 +1,11 @@
 package no.nav.veilarbaktivitet.aktivitet.domain;
 
+
 public enum StillingsoekEtikettData {
-    SOKNAD_SENDT("Sendt søknad og venter på svar"),
-    INNKALT_TIL_INTERVJU("Ikke fått jobben"),
-    AVSLAG("Fått jobbtilbud \uD83C\uDF89"),
-    JOBBTILBUD("Fått jobben");
+    SOKNAD_SENDT("Søknaden er sendt"),
+    INNKALT_TIL_INTERVJU("Skal på intervju"),
+    AVSLAG("Ikke fått jobben"),
+    JOBBTILBUD("Fått jobbtilbud");
 
     public final String text;
 
