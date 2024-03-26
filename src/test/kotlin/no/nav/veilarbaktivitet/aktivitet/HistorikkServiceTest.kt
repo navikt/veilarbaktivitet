@@ -4,8 +4,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyStillingFraNav
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.nyttStillingssok
+import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.zonedDateTimeToDate
@@ -299,6 +298,27 @@ class HistorikkServiceTest {
             "NAV endret tilstand til Søknaden er sendt",
             "${oppdatertAktivitet.endretAv} endret tilstand til Søknaden er sendt"
         )
+    }
+
+    @Test
+    fun `Skal mappe innsender riktig`() {
+        assertThat(endretAvTekstTilBruker(Innsender.BRUKER)).isEqualTo("Du")
+        assertThat(endretAvTekstTilVeileder(Innsender.BRUKER, "")).isEqualTo("Bruker")
+
+        assertThat(endretAvTekstTilBruker(Innsender.ARBEIDSGIVER)).isEqualTo("Arbeidsgiver")
+        assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
+
+        assertThat(endretAvTekstTilBruker(Innsender.TILTAKSARRANGOER)).isEqualTo("Tiltaksarrangør")
+        assertThat(endretAvTekstTilVeileder(Innsender.TILTAKSARRANGOER, "Bedrift")).isEqualTo("Tiltaksarrangør Bedrift")
+
+        assertThat(endretAvTekstTilBruker(Innsender.NAV)).isEqualTo("NAV")
+        assertThat(endretAvTekstTilVeileder(Innsender.NAV, "Z12345")).isEqualTo("Z12345")
+
+        assertThat(endretAvTekstTilBruker(Innsender.ARENAIDENT)).isEqualTo("NAV")
+        assertThat(endretAvTekstTilVeileder(Innsender.ARENAIDENT, null)).isEqualTo("NAV")
+
+        assertThat(endretAvTekstTilBruker(Innsender.SYSTEM)).isEqualTo("NAV")
+        assertThat(endretAvTekstTilVeileder(Innsender.SYSTEM, "")).isEqualTo("NAV")
     }
 
     private fun assert(

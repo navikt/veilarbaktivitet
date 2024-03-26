@@ -84,7 +84,7 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
     }
 }
 
-private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
+fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
     Innsender.BRUKER -> "Bruker"
     Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
@@ -92,7 +92,7 @@ private fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = 
     Innsender.SYSTEM -> "NAV"
 }
 
-private fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
+fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
     Innsender.BRUKER -> "Du"
     Innsender.ARBEIDSGIVER -> "Arbeidsgiver"
     Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør"
