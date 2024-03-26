@@ -60,8 +60,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
+            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
         )
     }
 
@@ -259,8 +259,8 @@ class HistorikkServiceTest {
         assert(
             historikk[aktivitet.id]!!,
             oppdatertAktivitet,
-            "NAV flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}",
-            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra ${aktivitet.status} til ${oppdatertAktivitet.status}"
+            "NAV flyttet aktiviteten fra Planlagt til Planlagt",
+            "${oppdatertAktivitet.endretAv} flyttet aktiviteten fra Planlagt til Planlagt"
         )
     }
 
