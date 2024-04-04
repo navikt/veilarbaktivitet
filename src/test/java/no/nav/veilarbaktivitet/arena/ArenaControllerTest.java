@@ -283,24 +283,19 @@ class ArenaControllerTest {
 
     @Test
     void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
+        when(authService.erEksternBruker()).thenReturn(true);
         Date start = new Date();
-
         AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet = createUtdanningsaktivitet();
-
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO().setUtdanningsaktiviteter(List.of(utdanningsaktivitet))));
-
         ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, utdanningsaktivitet.getAktivitetId());
-
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
-
         ArenaAktivitetDTO lestAktivitet = controller.lest(new ArenaId(sendtAktivitet.getId()));
 
         Date stopp = new Date();
         Date lest = lestAktivitet.getForhaandsorientering().getLestDato();
 
         assertNotNull(lest);
-
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));
     }

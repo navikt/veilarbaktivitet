@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
+import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
@@ -149,10 +150,11 @@ open class ArenaController(
     }
 
     @PutMapping("/forhaandsorientering/lest")
-    @AuthorizeFnr
+    @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
     open fun lest(@RequestParam aktivitetId: ArenaId?): ArenaAktivitetDTO {
+        if (!authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Bare eksterne-brukere kan lese FHO")
         val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
+            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker") }
         return arenaService.markerSomLest(fnr, aktivitetId)
     }
 
