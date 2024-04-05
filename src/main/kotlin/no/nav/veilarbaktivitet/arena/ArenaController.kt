@@ -69,7 +69,7 @@ open class ArenaController(
     data class FnrDto (val fnr: String)
 
     @PostMapping("/tiltak")
-    fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
+    open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
         val fnr = Person.fnr(fnrDto.fnr)
         authService.sjekkTilgangTilPerson(fnr.otherFnr())
         return innerHentArenaAktiviteter(fnr)
