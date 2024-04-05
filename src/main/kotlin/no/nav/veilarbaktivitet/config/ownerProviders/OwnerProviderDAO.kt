@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
+import java.util.UUID
 
 @Repository
 open class OwnerProviderDAO(private val template: NamedParameterJdbcTemplate) {
@@ -24,6 +25,16 @@ open class OwnerProviderDAO(private val template: NamedParameterJdbcTemplate) {
         """.trimIndent()
         return template.query(sql, mapOf("arenaIdSomLiggerIFHO" to arenaIdSomLiggerIFHO))
             { row, _ -> row.getString("AKTOR_ID") }
+            .firstOrNull()
+            .let { AktorId.aktorId(it) }
+    }
+
+    open fun getOppfolgingsperiodeOwner(uuid: UUID): AktorId? {
+        val sql = """
+            SELECT AKTORID FROM OPPFOLGINGSPERIODE WHERE id = :uuid
+        """.trimIndent()
+        return template.query(sql, mapOf("uuid" to uuid))
+            { row, _ -> row.getString("AKTORID") }
             .firstOrNull()
             .let { AktorId.aktorId(it) }
     }

@@ -5,6 +5,8 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
+import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
+import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
@@ -34,7 +36,7 @@ class ArkiveringsController(
     private val historikkService: HistorikkService,
 ) {
     @GetMapping("/forhaandsvisning")
-    @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog")
+    @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
         val fnr = userInContext.fnr.get()
@@ -50,7 +52,7 @@ class ArkiveringsController(
     }
 
     @PostMapping("/journalfor")
-    @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog")
+    @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
         val fnr = userInContext.fnr.get()
         val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
