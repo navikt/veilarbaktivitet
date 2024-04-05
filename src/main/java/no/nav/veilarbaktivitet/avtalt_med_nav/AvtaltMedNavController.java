@@ -51,6 +51,7 @@ public class AvtaltMedNavController {
 
     }
 
+    // TODO: Fiks slik at man forhindrer at interne brukere gjør kall hit
     @PutMapping("/lest")
     public AktivitetDTO lest(@RequestBody LestDTO lestDTO) {
 
