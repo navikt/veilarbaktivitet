@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arena
 
 import lombok.extern.slf4j.Slf4j
 import no.nav.common.client.aktoroppslag.AktorOppslagClient
+import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
@@ -68,13 +69,18 @@ open class ArenaController(
         return arenaService.hentAktiviteter(fnr)
     }
 
-    data class FnrDto (val fnr: String)
+    data class FnrDto (val fnr: String?)
 
     @PostMapping("/tiltak")
     open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
-        val fnr = Person.fnr(fnrDto.fnr)
-        authService.sjekkTilgangTilPerson(fnr.otherFnr())
-        return innerHentArenaAktiviteter(fnr)
+        val fnr: Fnr = if (authService.erEksternBruker()) {
+            authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Klarte ikke å hente ut fnr fra token")
+        } else {
+            if (fnrDto.fnr == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr kan ikke være null")
+            Fnr.of(fnrDto.fnr)
+        }
+        authService.sjekkTilgangTilPerson(fnr)
+        return innerHentArenaAktiviteter(Person.fnr(fnr.get()))
     }
 
 
