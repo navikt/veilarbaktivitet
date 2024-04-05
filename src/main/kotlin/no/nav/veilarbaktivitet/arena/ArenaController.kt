@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arena
 
 import lombok.extern.slf4j.Slf4j
+import no.nav.common.client.aktoroppslag.AktorOppslagClient
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
@@ -36,6 +37,7 @@ open class ArenaController(
     private val aktivitetDAO: AktivitetDAO,
     private val migreringService: MigreringService,
     private val oppfolgingsperiodeDAO: OppfolgingsperiodeDAO,
+    private val aktorOppslagClient: AktorOppslagClient
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
@@ -97,7 +99,8 @@ open class ArenaController(
         )
 
         // Oppfolgingsperioder
-        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
+        val aktorId = aktorOppslagClient.hentAktorId(fnr.otherFnr())
+        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(Person.aktorId(aktorId.get()))
         val arenaAktiviteterMedOppfolgingsperiode = arenaAktiviteter
             .map { it to oppfolgingsperioder.finnOppfolgingsperiodeForArenaAktivitet(it) }
 
