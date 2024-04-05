@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IAuthService;
@@ -75,7 +76,9 @@ class ArenaControllerTest {
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
     private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
     private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
-    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO);
+
+    private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO, aktorOppslagClient);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
@@ -126,6 +129,7 @@ class ArenaControllerTest {
             ZonedDateTime.now().minusYears(6),
             null
         )));
+        when(aktorOppslagClient.hentAktorId(fnr.otherFnr())).thenReturn(aktorid.otherAktorId());
     }
 
     @BeforeEach
@@ -283,24 +287,19 @@ class ArenaControllerTest {
 
     @Test
     void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
+        when(authService.erEksternBruker()).thenReturn(true);
         Date start = new Date();
-
         AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet = createUtdanningsaktivitet();
-
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO().setUtdanningsaktiviteter(List.of(utdanningsaktivitet))));
-
         ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, utdanningsaktivitet.getAktivitetId());
-
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
-
         ArenaAktivitetDTO lestAktivitet = controller.lest(new ArenaId(sendtAktivitet.getId()));
 
         Date stopp = new Date();
         Date lest = lestAktivitet.getForhaandsorientering().getLestDato();
 
         assertNotNull(lest);
-
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
