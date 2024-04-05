@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
+import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
@@ -59,6 +60,22 @@ open class ArenaController(
         }
         val ident = authService.getInnloggetVeilederIdent()
         return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident.get())
+    }
+
+    @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
+    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
+    open fun opprettFHOMedTilgangsKontroll(
+        @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
+        @RequestParam arenaaktivitetId: ArenaId?,
+        @RequestAttribute(name="fnr") fnr: Fnr
+    ): ArenaAktivitetDTO {
+        if (!authService.erInternBruker()) {
+            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
+        }
+        getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
+            .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
+        val ident = authService.getInnloggetVeilederIdent()
+        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr), forhaandsorientering, ident.get())
     }
 
     @GetMapping("/tiltak-raw")
