@@ -81,7 +81,6 @@ class AktivitetsplanController(
     fun hentAktivitetVersjoner(@PathVariable("id") aktivitetId: Long): List<AktivitetDTO> {
         return appService.hentAktivitetVersjoner(aktivitetId)
             .stream()
-            .filter { it: AktivitetData -> it.aktorId == userInContext.getAktorId() }
             .map { a: AktivitetData? ->
                 AktivitetDTOMapper.mapTilAktivitetDTO(
                     a,
