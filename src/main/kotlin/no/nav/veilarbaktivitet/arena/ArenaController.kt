@@ -167,14 +167,6 @@ open class ArenaController(
         log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
     }
 
-    @GetMapping("/harTiltak")
-    @AuthorizeFnr
-    open fun hentHarTiltak(): Boolean {
-        val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
-        return arenaService.harAktiveTiltak(fnr)
-    }
-
     @PutMapping("/forhaandsorientering/lest")
     @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
     open fun lest(@RequestParam aktivitetId: ArenaId?): ArenaAktivitetDTO {
