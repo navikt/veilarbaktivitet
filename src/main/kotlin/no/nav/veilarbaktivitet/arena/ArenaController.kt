@@ -43,6 +43,7 @@ open class ArenaController(
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
+    @Deprecated("Ikke bruk denne, bruk versjon med oppfolgingsId i URL for innebygd tilgangskontroll")
     @PutMapping("/forhaandsorientering")
     open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
@@ -53,7 +54,7 @@ open class ArenaController(
         }
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
             .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
-        val fnr = userInContext?.getFnr()
+        val fnr = userInContext.getFnr()
             ?.orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr") }
         if (fnr != null) {
             authService.sjekkTilgangTilPerson(fnr.eksternBrukerId())
@@ -69,13 +70,11 @@ open class ArenaController(
         @RequestParam arenaaktivitetId: ArenaId?,
         @RequestAttribute(name="fnr") fnr: Fnr
     ): ArenaAktivitetDTO {
-        if (!authService.erInternBruker()) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
-        }
+        if (!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
             .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
         val ident = authService.getInnloggetVeilederIdent()
-        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr), forhaandsorientering, ident.get())
+        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr.get()), forhaandsorientering, ident.get())
     }
 
     @GetMapping("/tiltak-raw")
@@ -101,6 +100,7 @@ open class ArenaController(
     }
 
 
+    @Deprecated("Ikke bruk denne, bruk POST versjon uten fnr i URL")
     @GetMapping("/tiltak")
     @AuthorizeFnr
     open fun hentArenaAktiviteter(): List<ArenaAktivitetDTO> {
@@ -179,8 +179,7 @@ open class ArenaController(
     @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
     open fun lest(@RequestParam aktivitetId: ArenaId?): ArenaAktivitetDTO {
         if (!authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Bare eksterne-brukere kan lese FHO")
-        val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker") }
+        val fnr = authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker")
         return arenaService.markerSomLest(fnr, aktivitetId)
     }
 
