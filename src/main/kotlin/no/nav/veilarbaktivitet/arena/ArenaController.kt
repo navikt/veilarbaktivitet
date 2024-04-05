@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
+import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -65,11 +66,26 @@ open class ArenaController(
         return arenaService.hentAktiviteter(fnr)
     }
 
+    data class FnrDto (val fnr: String)
+
+    @PostMapping("/tiltak")
+    fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
+        val fnr = Person.fnr(fnrDto.fnr)
+        authService.sjekkTilgangTilPerson(fnr.otherFnr())
+        return innerHentArenaAktiviteter(fnr)
+    }
+
+
     @GetMapping("/tiltak")
     @AuthorizeFnr
     open fun hentArenaAktiviteter(): List<ArenaAktivitetDTO> {
         val fnr = userInContext.getFnr()
             .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
+        return innerHentArenaAktiviteter(fnr)
+    }
+
+    fun innerHentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
+
         val arenaAktiviteter = arenaService.hentAktiviteter(fnr)
 
         // Id-er og versjoner
@@ -77,7 +93,8 @@ open class ArenaController(
         val idMappings = idMappingDAO.getMappings(ideer)
         val sisteIdMappinger = idMappingDAO.onlyLatestMappings(idMappings)
         val aktivitetsVersjoner = aktivitetDAO.getAktivitetsVersjoner(
-            sisteIdMappinger.values.map(IdMappingWithAktivitetStatus::aktivitetId))
+            sisteIdMappinger.values.map(IdMappingWithAktivitetStatus::aktivitetId)
+        )
 
         // Oppfolgingsperioder
         val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(userInContext.aktorId)
@@ -87,7 +104,8 @@ open class ArenaController(
         // Metrikker
         migreringService.countArenaAktiviteter(
             arenaAktiviteterMedOppfolgingsperiode,
-            sisteIdMappinger)
+            sisteIdMappinger
+        )
 
         val skalFiltreresBort = migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys)
         val filtrerteArenaAktiviteter = arenaAktiviteterMedOppfolgingsperiode
@@ -105,6 +123,7 @@ open class ArenaController(
         loggArenaTiltakUtenOppfolging(arenaAktiviteterMedOppfolgingsperiode)
         return filtrerteArenaAktiviteter
     }
+
 
     open fun logUmigrerteIder(arenaAktiviteter: List<ArenaAktivitetDTO>) {
         val umigrerteTiltaksIder = arenaAktiviteter

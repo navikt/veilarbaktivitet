@@ -260,6 +260,19 @@ class ArenaControllerTest {
     }
 
     @Test
+    void postHentArenaAktiviteterSkalFunke() {
+        when(veilarbarenaClient.hentAktiviteter(fnr))
+                .thenReturn(Optional.of(new AktiviteterDTO()
+                        .setGruppeaktiviteter(List.of(
+                                createGruppeaktivitet(),
+                                createGruppeaktivitet()
+                        ))));
+
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
+        Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
+    }
+
+    @Test
     void hentArenaAktiviteterSkalReturnereTomListeNarArenaGirTomListe() {
         when(veilarbarenaClient.hentAktiviteter(fnr)).thenReturn(Optional.empty());
 
