@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDataMapperService
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.config.AktivitetResource
+import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -90,36 +91,31 @@ class AktivitetsplanController(
             .toList()
     }
 
+    @PostMapping("/{oppfolgingsperiodeId}/ny")
+    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"], resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
+    fun opprettNyAktivitetPaOppfolgingsPeriode(
+        @RequestBody aktivitet: AktivitetDTO,
+        @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
+    ): AktivitetDTO {
+        return internOpprettAktivitet(aktivitet, automatisk)
+    }
+
+
+    @Deprecated("Bruk opprett på oppfolgingsperiode for innebygd tilgangskontroll")
     @PostMapping("/ny")
     @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"])
     fun opprettNyAktivitet(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
     ): AktivitetDTO {
-        val erEksternBruker = authService.erEksternBruker()
-        return Optional.of(aktivitet)
-            .map { aktivitetDTO: AktivitetDTO? ->
-                aktivitetDataMapperService.mapTilAktivitetData(
-                    aktivitetDTO
-                )
-            }
-            .map { aktivitetData: AktivitetData ->
-                aktivitetData.withAutomatiskOpprettet(
-                    automatisk
-                )
-            }
-            .map { aktivitetData: AktivitetData? ->
-                appService.opprettNyAktivitet(
-                    aktivitetData
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
-            .orElseThrow { RuntimeException() }
+        return internOpprettAktivitet(aktivitet, automatisk)
+    }
+
+    fun internOpprettAktivitet(aktivitet: AktivitetDTO, automatisk: Boolean): AktivitetDTO {
+        return aktivitetDataMapperService.mapTilAktivitetData(aktivitet)
+            .withAutomatiskOpprettet(automatisk)
+            .let { aktivitetData -> appService.opprettNyAktivitet(aktivitetData) }
+            .let { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()) }
     }
 
     @PutMapping("/{id}")
