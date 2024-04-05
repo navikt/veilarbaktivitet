@@ -5,15 +5,11 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
-import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
-import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.Person.AktorId
-import no.nav.veilarbaktivitet.person.Person.Fnr
-import no.nav.veilarbaktivitet.person.PersonService
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -21,8 +17,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
-import kotlin.jvm.optionals.getOrElse
-import kotlin.jvm.optionals.getOrNull
 
 @RestController
 @RequestMapping("/api/arkivering")
@@ -39,8 +33,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val fnr = userInContext.fnr.get()
-        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId)
+        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId)
 
         val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(arkivPayload)
 
@@ -54,15 +47,15 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val fnr = userInContext.fnr.get()
-        val arkivPayload = hentArkivPayload(fnr, oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
+        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
         val journalførtResult = orkivarClient.journalfor(arkivPayload)
         return JournalførtOutboundDTO(
             sistJournalført = journalførtResult.sistJournalført
         )
     }
 
-    private fun hentArkivPayload(fnr: Fnr, oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
+    private fun hentArkivPayload(oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
+        val fnr = userInContext.fnr.get()
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
         val dialoger = dialogClient.hentDialogerUtenKontorsperre(fnr)

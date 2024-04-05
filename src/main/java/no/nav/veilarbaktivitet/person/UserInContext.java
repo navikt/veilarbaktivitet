@@ -24,7 +24,12 @@ public class UserInContext {
             return Optional.of(Person.fnr(user.get()));
         }
 
-        Optional<Person> fnr = Optional
+        Optional<Person.Fnr> fnrFromRequestAttribute = Optional
+                .ofNullable(requestProvider.getAttribute("fnr"))
+                .map((it) -> (Fnr) it )
+                .map((it) -> Person.fnr(it.get()));
+
+        Optional<Person.Fnr> fnr = Optional
                 .ofNullable(requestProvider.getParameter("fnr"))
                 .map(Person::fnr);
 
@@ -32,8 +37,7 @@ public class UserInContext {
                 .ofNullable(requestProvider.getParameter("aktorId"))
                 .map(Person::aktorId);
 
-        return fnr.or(() -> aktorId)
-                .flatMap(personService::getFnrForPersonbruker);
+        return fnrFromRequestAttribute.or(() -> fnr.or(() -> aktorId.flatMap(personService::getFnrForPersonbruker)));
     }
 
     public Person.AktorId getAktorId() {
