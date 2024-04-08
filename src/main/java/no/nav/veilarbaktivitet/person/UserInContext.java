@@ -45,6 +45,11 @@ public class UserInContext {
         if (user instanceof Fnr || user instanceof NorskIdent) {
             return Person.aktorId(aktorOppslagClient.hentAktorId(Fnr.of(user.get())).get());
         }
+        Optional<Person.AktorId> aktorIdFromRequestAttribute = Optional
+                .ofNullable(requestProvider.getAttribute("fnr"))
+                .map((it) -> (Fnr) it )
+                .map(aktorOppslagClient::hentAktorId)
+                .map(aktorId -> Person.aktorId(aktorId.get()));
         Optional<Person.AktorId> aktorIdFromFnr = Optional
                 .ofNullable(requestProvider.getParameter("fnr"))
                 .map(fnr -> aktorOppslagClient.hentAktorId(Fnr.of(fnr)))
@@ -52,7 +57,8 @@ public class UserInContext {
         Optional<Person.AktorId> aktorId = Optional
                 .ofNullable(requestProvider.getParameter("aktorId"))
                 .map(Person::aktorId);
-        return aktorId.or(() -> aktorIdFromFnr)
+        return aktorIdFromRequestAttribute
+                .or(() -> aktorId.or(() -> aktorIdFromFnr))
                 .orElseThrow();
     }
 }
