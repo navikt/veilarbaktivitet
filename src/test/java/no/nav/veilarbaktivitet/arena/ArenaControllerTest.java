@@ -136,20 +136,6 @@ class ArenaControllerTest {
     void cleanupBetweenTests() {
         DbTestUtils.cleanupTestDb(jdbc);
         when(authService.getInnloggetVeilederIdent()).thenReturn(veilederIdent);
-
-    }
-
-    @Test
-    void harTiltakSkalReturnereFalseUtenTiltak() {
-        assertFalse(controller.hentHarTiltak());
-    }
-
-    @Test
-    void harTiltakSkalReturnereTrueMedTiltak() {
-        when(veilarbarenaClient.hentAktiviteter(fnr))
-                .thenReturn(Optional.of(new AktiviteterDTO().setGruppeaktiviteter(List.of(createGruppeaktivitet()))));
-
-        assertTrue(controller.hentHarTiltak());
     }
 
     @Test
@@ -288,6 +274,7 @@ class ArenaControllerTest {
     @Test
     void markerForhaandsorienteringSomLestSkalOppdatereArenaAktivitet() {
         when(authService.erEksternBruker()).thenReturn(true);
+        when(authService.getLoggedInnUser()).thenReturn(fnr.otherFnr());
         Date start = new Date();
         AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet = createUtdanningsaktivitet();
         when(veilarbarenaClient.hentAktiviteter(fnr))
