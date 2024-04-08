@@ -62,7 +62,9 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
                 "$endretAvTekst merket aktiviteten som \"Avtalt med NAV\""
         }
         AktivitetTransaksjonsType.AVTALT_DATO_ENDRET -> "$endretAvTekst endret til dato på aktiviteten fra ${if(forrigeVersjon?.tilDato !== null) norskDato(forrigeVersjon.tilDato) else "ingen dato"} til ${norskDato(oppdatertVersjon.tilDato)}"
-        AktivitetTransaksjonsType.ETIKETT_ENDRET -> "$endretAvTekst endret tilstand til ${oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett.text}"
+        AktivitetTransaksjonsType.ETIKETT_ENDRET -> {
+            val nyEtikett =  oppdatertVersjon.stillingsSoekAktivitetData.stillingsoekEtikett?.text ?: "Ingen"
+            "$endretAvTekst endret tilstand til $nyEtikett"  }
         AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET -> "$endretAvTekst endret tid eller sted for møtet"
         AktivitetTransaksjonsType.REFERAT_OPPRETTET -> "$endretAvTekst opprettet referat"
         AktivitetTransaksjonsType.REFERAT_ENDRET -> "$endretAvTekst endret referatet"
