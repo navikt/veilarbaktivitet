@@ -31,6 +31,7 @@ class AktivitetsplanController(
     private val userInContext: UserInContext,
     private val migreringService: MigreringService
 ) {
+    @Deprecated("Bruk graphql endepunkt")
     @GetMapping
     @AuthorizeFnr(auditlogMessage = "hent aktivitesplan")
     fun hentAktivitetsplan(): AktivitetsplanDTO {
@@ -39,17 +40,8 @@ class AktivitetsplanController(
         val aktiviter = appService
             .hentAktiviteterForIdent(userFnr)
             .stream()
-            .filter { aktivitet: AktivitetData ->
-                filtrerKontorsperret(
-                    aktivitet
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
+            .filter { aktivitet -> filtrerKontorsperret(aktivitet) }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .toList()
         val filtrerteAktiviter = migreringService.visMigrerteArenaAktiviteterHvisToggleAktiv(aktiviter)
         return AktivitetsplanDTO().setAktiviteter(filtrerteAktiviter)
@@ -60,20 +52,13 @@ class AktivitetsplanController(
     fun hentAktivitet(@PathVariable("id") aktivitetId: Long): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(appService.hentAktivitet(aktivitetId))
-            .filter { it: AktivitetData ->
+            .filter {
                 authService.sjekkTilgangTilPerson(it.aktorId.eksternBrukerId())
                 true
             }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow {
-                ResponseStatusException(
-                    HttpStatus.NOT_FOUND
-                )
+                ResponseStatusException(HttpStatus.NOT_FOUND)
             }
     }
 
@@ -82,12 +67,7 @@ class AktivitetsplanController(
     fun hentAktivitetVersjoner(@PathVariable("id") aktivitetId: Long): List<AktivitetDTO> {
         return appService.hentAktivitetVersjoner(aktivitetId)
             .stream()
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    authService.erEksternBruker()
-                )
-            }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()) }
             .toList()
     }
 
@@ -123,22 +103,9 @@ class AktivitetsplanController(
     fun oppdaterAktivitet(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO: AktivitetDTO? ->
-                aktivitetDataMapperService.mapTilAktivitetData(
-                    aktivitetDTO
-                )
-            }
-            .map { aktivitet: AktivitetData? ->
-                appService.oppdaterAktivitet(
-                    aktivitet
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitet -> appService.oppdaterAktivitet(aktivitet) }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
     }
 
@@ -147,22 +114,9 @@ class AktivitetsplanController(
     fun oppdaterEtikett(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO: AktivitetDTO? ->
-                aktivitetDataMapperService.mapTilAktivitetData(
-                    aktivitetDTO
-                )
-            }
-            .map { aktivitet: AktivitetData? ->
-                appService.oppdaterEtikett(
-                    aktivitet
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitet -> appService.oppdaterEtikett(aktivitet) }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
     }
 
@@ -171,22 +125,9 @@ class AktivitetsplanController(
     fun oppdaterStatus(@RequestBody aktivitet: AktivitetDTO): AktivitetDTO {
         val erEksternBruker = authService.erEksternBruker()
         return Optional.of(aktivitet)
-            .map { aktivitetDTO: AktivitetDTO? ->
-                aktivitetDataMapperService.mapTilAktivitetData(
-                    aktivitetDTO
-                )
-            }
-            .map { aktivitet: AktivitetData? ->
-                appService.oppdaterStatus(
-                    aktivitet
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    erEksternBruker
-                )
-            }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitet -> appService.oppdaterStatus(aktivitet) }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, erEksternBruker) }
             .orElseThrow { RuntimeException() }
     }
 
@@ -195,22 +136,9 @@ class AktivitetsplanController(
     @OnlyInternBruker
     fun oppdaterReferat(@RequestBody aktivitetDTO: AktivitetDTO): AktivitetDTO {
         return Optional.of(aktivitetDTO)
-            .map { aktivitetDTO: AktivitetDTO? ->
-                aktivitetDataMapperService.mapTilAktivitetData(
-                    aktivitetDTO
-                )
-            }
-            .map { aktivitet: AktivitetData? ->
-                appService.oppdaterReferat(
-                    aktivitet
-                )
-            }
-            .map { a: AktivitetData? ->
-                AktivitetDTOMapper.mapTilAktivitetDTO(
-                    a,
-                    false
-                )
-            }
+            .map { aktivitetDTO -> aktivitetDataMapperService.mapTilAktivitetData(aktivitetDTO) }
+            .map { aktivitet -> appService.oppdaterReferat(aktivitet) }
+            .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, false) }
             .orElseThrow { RuntimeException() }
     }
 
