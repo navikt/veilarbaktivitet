@@ -549,7 +549,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Kall mot arkiveringsendepunkt kaster 400 når oppfølgingsperiodeId mangler`() {
+    fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createHappyBruker()
         val veileder = navMockService.createVeileder(bruker)
 
@@ -560,7 +560,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .get(arkiveringsUrl)
             .then()
             .assertThat()
-            .statusCode(HttpStatus.BAD_REQUEST.value())
+            .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
     private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00") {

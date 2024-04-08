@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.config.ForhaandsorienteringResource
+import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
 import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
@@ -42,6 +43,7 @@ open class ArenaController(
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
+    @Deprecated("Ikke bruk denne, bruk versjon med oppfolgingsId i URL for innebygd tilgangskontroll")
     @PutMapping("/forhaandsorientering")
     open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
@@ -52,13 +54,27 @@ open class ArenaController(
         }
         getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
             .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
-        val fnr = userInContext?.getFnr()
+        val fnr = userInContext.getFnr()
             ?.orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr") }
         if (fnr != null) {
             authService.sjekkTilgangTilPerson(fnr.eksternBrukerId())
         }
         val ident = authService.getInnloggetVeilederIdent()
         return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident.get())
+    }
+
+    @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
+    @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
+    open fun opprettFHOMedTilgangsKontroll(
+        @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
+        @RequestParam arenaaktivitetId: ArenaId?,
+        @RequestAttribute(name="fnr") fnr: Fnr
+    ): ArenaAktivitetDTO {
+        if (!authService.erInternBruker()) throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
+        getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
+            .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
+        val ident = authService.getInnloggetVeilederIdent()
+        return arenaService.opprettFHO(arenaaktivitetId, Person.fnr(fnr.get()), forhaandsorientering, ident.get())
     }
 
     @GetMapping("/tiltak-raw")
@@ -84,6 +100,7 @@ open class ArenaController(
     }
 
 
+    @Deprecated("Ikke bruk denne, bruk POST versjon uten fnr i URL")
     @GetMapping("/tiltak")
     @AuthorizeFnr
     open fun hentArenaAktiviteter(): List<ArenaAktivitetDTO> {
@@ -150,20 +167,11 @@ open class ArenaController(
         log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
     }
 
-    @GetMapping("/harTiltak")
-    @AuthorizeFnr
-    open fun hentHarTiltak(): Boolean {
-        val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
-        return arenaService.harAktiveTiltak(fnr)
-    }
-
     @PutMapping("/forhaandsorientering/lest")
     @AuthorizeFnr(auditlogMessage = "leste forhåndsorientering", resourceType = ForhaandsorienteringResource::class, resourceIdParamName = "aktivitetId")
     open fun lest(@RequestParam aktivitetId: ArenaId?): ArenaAktivitetDTO {
         if (!authService.erEksternBruker()) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Bare eksterne-brukere kan lese FHO")
-        val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker") }
+        val fnr = authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fant ikke innlogget ekstern-bruker")
         return arenaService.markerSomLest(fnr, aktivitetId)
     }
 

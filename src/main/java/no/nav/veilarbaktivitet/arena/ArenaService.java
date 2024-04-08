@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.common.types.identer.Fnr;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO;
@@ -132,7 +133,7 @@ public class ArenaService {
     }
 
     @Transactional
-    public ArenaAktivitetDTO markerSomLest(Person.Fnr fnr, ArenaId aktivitetId) {
+    public ArenaAktivitetDTO markerSomLest(Fnr fnr, ArenaId aktivitetId) {
         var fho = fhoDAO.getFhoForArenaAktivitet(aktivitetId);
 
         if(fho == null) {
@@ -149,7 +150,7 @@ public class ArenaService {
 
         fhoDAO.markerSomLest(fho.getId(), new Date(), null);
 
-        return hentAktivitet(fnr, aktivitetId)
+        return hentAktivitet(Person.fnr(fnr.get()), aktivitetId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kunne ikke hente aktiviteten"));
 
     }
