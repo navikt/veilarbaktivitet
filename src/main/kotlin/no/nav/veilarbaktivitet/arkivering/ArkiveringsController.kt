@@ -38,7 +38,6 @@ class ArkiveringsController(
     private val historikkService: HistorikkService,
     private val authContextHolder: AuthContextHolder,
 ) {
-    private val logger = LoggerFactory.getLogger(this::class.java)
     private val executor: Executor = Executors.newFixedThreadPool(10)
 
     @GetMapping("/forhaandsvisning")
@@ -71,11 +70,11 @@ class ArkiveringsController(
         val aktorId = userInContext.aktorId
         val authContext = authContextHolder.context.get()
 
-        val oppfølgingsperiodeFuture = asyncGet(authContext) { hentOppfølgingsperiode(aktorId, oppfølgingsperiodeId) }.also { logger.info("Henter oppfølgingsperiode") }
-        val dialogerFuture = asyncGet(authContext) { dialogClient.hentDialogerUtenKontorsperre(fnr) }.also { logger.info("Henter dialoger") }
-        val navnFuture = asyncGet(authContext) { navnService.hentNavn(fnr)}.also { logger.info("Henter navn") }
-        val sakFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) }.also { logger.info("Henter sak") }
-        val målFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentMål(fnr) }.also { logger.info("Henter måø") }
+        val oppfølgingsperiodeFuture = asyncGet(authContext) { hentOppfølgingsperiode(aktorId, oppfølgingsperiodeId) }
+        val dialogerFuture = asyncGet(authContext) { dialogClient.hentDialogerUtenKontorsperre(fnr) }
+        val navnFuture = asyncGet(authContext) { navnService.hentNavn(fnr)}
+        val sakFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) }
+        val målFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentMål(fnr) }
 
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
         val historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
