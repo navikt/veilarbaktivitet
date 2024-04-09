@@ -74,11 +74,14 @@ class ArkiveringsController(
 
     private fun hentArkivPayload(oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val fnr = userInContext.fnr.get()
-        val oppfølgingsperiodeFuture = asyncGet{ hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) }
-        val dialogerFuture = asyncGet { dialogClient.hentDialogerUtenKontorsperre(fnr) }
-        val navnFuture = asyncGet { navnService.hentNavn(fnr)}
-        val sakFuture = asyncGet { oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) }
-        val målFuture = asyncGet { oppfølgingsperiodeService.hentMål(fnr) }
+        val aktorId = userInContext.aktorId
+
+        val authContext = authContextHolder.context.get()
+        val oppfølgingsperiodeFuture = asyncGet(authContext) { hentOppfølgingsperiode(aktorId, oppfølgingsperiodeId) }
+        val dialogerFuture = asyncGet(authContext) { dialogClient.hentDialogerUtenKontorsperre(fnr) }
+        val navnFuture = asyncGet(authContext) { navnService.hentNavn(fnr)}
+        val sakFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) }
+        val målFuture = asyncGet(authContext) { oppfølgingsperiodeService.hentMål(fnr) }
 
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
         val historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
@@ -93,6 +96,7 @@ class ArkiveringsController(
             if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
         }
 
+        // TODO: Clean up auth context in threads
         return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål, historikkForAktiviteter)
     }
 
@@ -100,11 +104,11 @@ class ArkiveringsController(
         return oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
     }
 
-    private fun <T> asyncGet(supplier: () -> T): CompletableFuture<T> {
+    private fun <T> asyncGet(authContext: AuthContext, supplier: () -> T): CompletableFuture<T> {
         return CompletableFuture.supplyAsync (
             {
-                val authContext = AuthContextHolderThreadLocal.instance()
-                authContext.setContext(authContextHolder.context.get())
+                val threadAuthContext = AuthContextHolderThreadLocal.instance()
+                threadAuthContext.setContext(authContext)
                 supplier.invoke()
             },
             executor
