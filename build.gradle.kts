@@ -157,7 +157,7 @@ dependencies {
     implementation("no.nav.common:types:$common_version")
     implementation("net.sourceforge.collections:collections-generic:4.01")
     implementation("com.github.navikt:brukernotifikasjon-schemas:v2.5.2")
-    implementation("no.nav.poao.dab:spring-auth:unspecified") // TODO: use new version
+    implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
     //spring managed runtime/compile dependencies

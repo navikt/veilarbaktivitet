@@ -75,8 +75,8 @@ class ArkiveringsController(
     private fun hentArkivPayload(oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val fnr = userInContext.fnr.get()
         val aktorId = userInContext.aktorId
-
         val authContext = authContextHolder.context.get()
+
         val oppfølgingsperiodeFuture = asyncGet(authContext) { hentOppfølgingsperiode(aktorId, oppfølgingsperiodeId) }
         val dialogerFuture = asyncGet(authContext) { dialogClient.hentDialogerUtenKontorsperre(fnr) }
         val navnFuture = asyncGet(authContext) { navnService.hentNavn(fnr)}
