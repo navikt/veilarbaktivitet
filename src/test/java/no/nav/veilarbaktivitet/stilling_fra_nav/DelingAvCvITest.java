@@ -263,6 +263,28 @@ class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
+    void bruker_som_ikke_kan_varsles_skal_fa_tilstand_kan_ikke_varsle() {
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
+        MockBruker mockBruker = MockNavService.createBruker(options);
+
+        String bestillingsId = UUID.randomUUID().toString();
+        ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
+        foresporselOmDelingAvCvProducer.send(stillingFraNavForespurtTopic, melding.getBestillingsId(), melding);
+
+        final ConsumerRecord<String, DelingAvCvRespons> record = getSingleRecord(delingAvCvResponsConsumer, stillingFraNavOppdatertTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
+        DelingAvCvRespons value = record.value();
+
+        SoftAssertions.assertSoftly(assertions -> {
+            assertions.assertThat(value.getBestillingsId()).isEqualTo(bestillingsId);
+            assertions.assertThat(value.getAktorId()).isEqualTo(mockBruker.getAktorId().get());
+            assertions.assertThat(value.getAktivitetId()).isNotEmpty();
+            assertions.assertThat(value.getTilstand()).isEqualTo(TilstandEnum.KAN_IKKE_VARSLE);
+            assertions.assertThat(value.getSvar()).isNull();
+            assertions.assertAll();
+        });
+    }
+
+    @Test
     @SneakyThrows
     void duplikat_bestillingsId_ignoreres() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
