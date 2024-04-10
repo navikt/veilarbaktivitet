@@ -263,8 +263,8 @@ class DelingAvCvITest extends SpringBootTestBase {
     }
 
     @Test
-    void mangler_nivaa4() {
-        BrukerOptions options = BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build();
+    void bruker_som_ikke_kan_varsles_skal_fa_tilstand_kan_ikke_varsle() {
+        BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
         MockBruker mockBruker = MockNavService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
@@ -282,7 +282,6 @@ class DelingAvCvITest extends SpringBootTestBase {
             assertions.assertThat(value.getSvar()).isNull();
             assertions.assertAll();
         });
-
     }
 
     @Test

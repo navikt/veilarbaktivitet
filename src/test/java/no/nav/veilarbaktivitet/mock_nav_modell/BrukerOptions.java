@@ -12,7 +12,6 @@ public class BrukerOptions {
     private boolean erReservertKrr;
     private boolean kanVarsles;
     private boolean erUnderKvp;
-    private boolean harBruktNivaa4;
 
     private boolean oppfolgingFeiler;
     private Navn navn;
@@ -38,7 +37,6 @@ public class BrukerOptions {
                 .erReservertKrr(false)
                 .kanVarsles(true)
                 .erUnderKvp(false)
-                .harBruktNivaa4(true)
                 .navn(new Navn("Navn", null, "Navnesen"))
                 .sakId(1000L)
                 .mål("Å få meg jobb");
