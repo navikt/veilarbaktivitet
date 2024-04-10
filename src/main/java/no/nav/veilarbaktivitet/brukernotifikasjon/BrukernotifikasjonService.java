@@ -6,8 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -32,16 +30,14 @@ public class BrukernotifikasjonService {
     private final SistePeriodeService sistePeriodeService;
     private final BrukerNotifikasjonDAO dao;
 
-    private final Nivaa4Client nivaa4Client;
     private final ManuellStatusV2Client manuellStatusClient;
     private final String aktivitetsplanBasepath;
     private final AktivitetDAO aktivitetDAO;
 
-    public BrukernotifikasjonService(PersonService personService, SistePeriodeService sistePeriodeService, BrukerNotifikasjonDAO dao, Nivaa4Client nivaa4Client, ManuellStatusV2Client manuellStatusClient, @Value("${app.env.aktivitetsplan.basepath}") String aktivitetsplanBasepath,AktivitetDAO aktivitetDAO) {
+    public BrukernotifikasjonService(PersonService personService, SistePeriodeService sistePeriodeService, BrukerNotifikasjonDAO dao, ManuellStatusV2Client manuellStatusClient, @Value("${app.env.aktivitetsplan.basepath}") String aktivitetsplanBasepath,AktivitetDAO aktivitetDAO) {
         this.personService = personService;
         this.sistePeriodeService = sistePeriodeService;
         this.dao = dao;
-        this.nivaa4Client = nivaa4Client;
         this.manuellStatusClient = manuellStatusClient;
         this.aktivitetsplanBasepath = aktivitetsplanBasepath;
         this.aktivitetDAO = aktivitetDAO;
@@ -66,16 +62,14 @@ public class BrukernotifikasjonService {
             Person.AktorId aktorId
     ) {
         Optional<ManuellStatusV2DTO> manuellStatusResponse = manuellStatusClient.get(aktorId);
-        Optional<Nivaa4DTO> nivaa4DTO = nivaa4Client.get(aktorId);
 
         boolean erManuell = manuellStatusResponse.map(ManuellStatusV2DTO::isErUnderManuellOppfolging).orElse(true);
         boolean erReservertIKrr = manuellStatusResponse.map(ManuellStatusV2DTO::getKrrStatus).map(ManuellStatusV2DTO.KrrStatus::isErReservert).orElse(true);
-        boolean harBruktNivaa4 = nivaa4DTO.map(Nivaa4DTO::isHarbruktnivaa4).orElse(false);
 
 
-        boolean kanVarsles = !erManuell && !erReservertIKrr && harBruktNivaa4;
+        boolean kanVarsles = !erManuell && !erReservertIKrr;
         if(!kanVarsles) {
-            secureLogs.info("bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}, harBruktNivaa4: {}", aktorId.get(), erManuell, erReservertIKrr, harBruktNivaa4);
+            secureLogs.info("bruker kan ikke varsles aktorId: {}, erManuell: {}, erReservertIKrr: {}", aktorId.get(), erManuell, erReservertIKrr);
         }
 
         return kanVarsles;

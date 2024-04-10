@@ -35,7 +35,7 @@ public class BrukernotifikasjonAsserts {
     KafkaTestService kafkaTestService;
 
     public static MockBruker getBrukerSomIkkeKanVarsles() {
-        return MockNavService.createBruker(BrukerOptions.happyBrukerBuilder().harBruktNivaa4(false).build());
+        return MockNavService.createBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
     }
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {
