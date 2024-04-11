@@ -7,8 +7,8 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -68,7 +68,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Test
     void happy_case() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
@@ -79,7 +79,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
                 .and()
                 .body(skalBehandles.toBuilder().status(AktivitetStatus.AVBRUTT).avsluttetKommentar("Kake").build())
                 .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + skalBehandles.getId() + "/status", mockBruker)
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + skalBehandles.getId() + "/status")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

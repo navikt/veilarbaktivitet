@@ -109,7 +109,7 @@ public class AktivitetTestService {
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
         Response response = user
                 .createRequest()
-                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetId + "/versjoner", mockBruker)
+                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetId + "/versjoner")
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())

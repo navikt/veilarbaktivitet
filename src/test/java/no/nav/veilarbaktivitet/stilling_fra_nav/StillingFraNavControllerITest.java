@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikas
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -168,7 +169,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void historikk_del_cv_transaksjoner() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
@@ -192,7 +193,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
         if (typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET))
             return;
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 
@@ -207,10 +208,10 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
         int statusCode = veileder
                 .createRequest()
                 .and()
-                .param("aktivitetId", oppretetDto.getId())
+                .queryParam("aktivitetId", oppretetDto.getId())
                 .body(delingAvCvDTO)
                 .when()
-                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV?fnr=" + mockBruker.getFnr())
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/stillingFraNav/kanDeleCV")
                 .then()
                 .extract()
                 .statusCode();

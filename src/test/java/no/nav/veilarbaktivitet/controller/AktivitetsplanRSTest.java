@@ -19,6 +19,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavService;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -72,7 +73,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @BeforeEach
     void moreSettup() {
-        mockBruker = MockNavService.createHappyBruker();
+        mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         mockBrukersVeileder = MockNavService.createVeileder(mockBruker);
         annenMockVeilederMedNasjonalTilgang = MockNavService.createVeilederMedNasjonalTilgang();
         aktivVeileder = mockBrukersVeileder;
