@@ -83,7 +83,8 @@ class ArkiveringsController(
     )
 
     data class ArkiverInboundDTO(
-        val forhaandsvisningOpprettet: ZonedDateTime
+        val forhaandsvisningOpprettet: ZonedDateTime,
+        val journalforendeEnhet: String
     )
 
     data class JournalførtOutboundDTO(
