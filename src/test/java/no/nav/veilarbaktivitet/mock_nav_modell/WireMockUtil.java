@@ -23,7 +23,6 @@ public class WireMockUtil {
         boolean erUnderKvp = mockBruker.getBrukerOptions().isErUnderKvp();
         boolean kanVarsles = mockBruker.getBrukerOptions().isKanVarsles();
         boolean underOppfolging = mockBruker.getBrukerOptions().isUnderOppfolging();
-        boolean harBruktNivaa4 = mockBruker.getBrukerOptions().isHarBruktNivaa4();
         Navn navn = mockBruker.getBrukerOptions().getNavn();
         String kontorsperreEnhet = mockBruker.getOppfolgingsenhet();
         boolean oppfolgingFeiler = mockBruker.getBrukerOptions().isOppfolgingFeiler();
@@ -35,7 +34,6 @@ public class WireMockUtil {
         manuell(fnr, erManuell, erReservertKrr, kanVarsles);
         kvp(aktorId, erUnderKvp, kontorsperreEnhet);
         aktor(fnr, aktorId);
-        nivaa4(fnr, harBruktNivaa4);
         hentPerson(fnr, navn);
         forhaandsvisning();
         journalforing();
@@ -91,13 +89,6 @@ public class WireMockUtil {
                             .withHeader("Content-Type", "text/json")
                             .withBody(JsonUtils.toJson(Collections.emptyList()))));
         }
-    }
-
-    private static void nivaa4(String fnr, boolean harBruktNivaa4) {
-        stubFor(get("/veilarbperson/api/person/" + fnr + "/harNivaa4")
-                .willReturn(ok()
-                        .withHeader("Content-Type", "text/json")
-                        .withBody("{\"harbruktnivaa4\":" + harBruktNivaa4 + "}")));
     }
 
     private static void manuell(String fnr, boolean erManuell, boolean erReservertKrr, boolean kanVarsles) {

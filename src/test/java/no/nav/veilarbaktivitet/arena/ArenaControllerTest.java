@@ -25,8 +25,6 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
 import no.nav.veilarbaktivitet.mock.LocalH2Database;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4Client;
-import no.nav.veilarbaktivitet.nivaa4.Nivaa4DTO;
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
@@ -58,7 +56,6 @@ class ArenaControllerTest {
     private final PersonService personService = mock(PersonService.class);
     private final AktivitetDAO aktivitetDAO = mock(AktivitetDAO.class);
     private final SistePeriodeService sistePeriodeService = mock(SistePeriodeService.class);
-    private final Nivaa4Client nivaa4Client = mock(Nivaa4Client.class);
     private final ManuellStatusV2Client manuellStatusClient = mock(ManuellStatusV2Client.class);
 
     private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
@@ -67,7 +64,7 @@ class ArenaControllerTest {
     private final JdbcTemplate jdbc = LocalH2Database.getDb();
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, nivaa4Client, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
+    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
     private final Unleash unleash = mock(Unleash.class);
@@ -120,7 +117,6 @@ class ArenaControllerTest {
         when(context.getFnr()).thenReturn(Optional.of(fnr));
         when(context.getAktorId()).thenReturn(aktorid);
         when(manuellStatusClient.get(aktorid)).thenReturn(Optional.of(new ManuellStatusV2DTO(false, new ManuellStatusV2DTO.KrrStatus(true, false))));
-        when(nivaa4Client.get(aktorid)).thenReturn(Optional.of(Nivaa4DTO.builder().harbruktnivaa4(true).build()));
         when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(oppfolgingsperiodeDAO.getByAktorId(aktorid)).thenReturn(List.of(new Oppfolgingsperiode(

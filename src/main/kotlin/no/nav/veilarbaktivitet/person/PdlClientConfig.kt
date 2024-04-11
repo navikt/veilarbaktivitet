@@ -12,7 +12,6 @@ open class PdlClientConfig(val authService: IAuthService) {
 
     @Bean
     open fun pdlClient(pdlUrl: String?, tokenClient: AzureAdOnBehalfOfTokenClient, pdlTokenscope: String): PdlClient {
-        return PdlClientImpl(pdlUrl)
-            { tokenClient.exchangeOnBehalfOfToken(pdlTokenscope, authService.getInnloggetBrukerToken()) }
+        return PdlClientImpl(pdlUrl, {tokenClient.exchangeOnBehalfOfToken(pdlTokenscope, authService.getInnloggetBrukerToken())}, "B579" )
     }
 }
