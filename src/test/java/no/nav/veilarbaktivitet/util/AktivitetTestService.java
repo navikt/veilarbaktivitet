@@ -5,6 +5,7 @@ import io.restassured.response.ValidatableResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.aktivitet.DefaultGraphqlQuery;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
@@ -15,6 +16,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.ArenaMeldingHeaders;
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.graphql.GraphqlResult;
+import no.nav.veilarbaktivitet.arena.ArenaController;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -82,26 +84,21 @@ public class AktivitetTestService {
         return hentAktiviteterForFnr(mockBruker, mockBruker);
     }
 
-
     public AktivitetsplanDTO hentAktiviteterForFnr(MockBruker mockBruker, RestassuredUser user) {
-        Response response = user
-                .createRequest()
-                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet", mockBruker))
-                .then()
-                .assertThat()
-                .statusCode(HttpStatus.OK.value())
-                .extract()
-                .response();
-
-        return response.as(AktivitetsplanDTO.class);
+        List<AktivitetDTO> aktiviteter = queryAktivitetskort(mockBruker, user, DefaultGraphqlQuery.INSTANCE.getQuery())
+                .getData().getPerioder()
+                .stream().flatMap(periode -> periode.getAktiviteter().stream())
+                .toList();
+        return new AktivitetsplanDTO().setAktiviteter(aktiviteter);
     }
 
     public GraphqlResult queryAktivitetskort(MockBruker mockBruker, RestassuredUser user, String query) {
-        Response response = user
+        var validatableResponse = user
                 .createRequest()
                 .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\" } }")
-                .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/graphql", mockBruker))
-                .then()
+                .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
+                .then();
+        var response = validatableResponse
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
                 .extract()
@@ -112,7 +109,7 @@ public class AktivitetTestService {
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
         Response response = user
                 .createRequest()
-                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetId + "/versjoner", mockBruker))
+                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetId + "/versjoner")
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -141,7 +138,8 @@ public class AktivitetTestService {
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .post(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/ny", mockBruker))
+                .pathParam("oppfolgingsperiodeId", mockBruker.oppfolgingsperiodeId.toString())
+                .post("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/{oppfolgingsperiodeId}/ny")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -162,7 +160,7 @@ public class AktivitetTestService {
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId(), mockBruker))
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId())
                 .then();
     }
     public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
@@ -195,7 +193,7 @@ public class AktivitetTestService {
     public AktivitetDTO hentAktivitet(MockBruker mockBruker, RestassuredUser user, String id) {
         Response response = user
                 .createRequest()
-                .get(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + id, mockBruker))
+                .get("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + id)
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())
@@ -272,7 +270,7 @@ public class AktivitetTestService {
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status", mockBruker))
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/status")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -294,7 +292,7 @@ public class AktivitetTestService {
                 .and()
                 .body(aktivitetPayloadJson)
                 .when()
-                .put(user.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/etikett", mockBruker))
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId() + "/etikett")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -324,7 +322,8 @@ public class AktivitetTestService {
                 .param("arenaaktivitetId", arenaaktivitetId.id())
                 .body(forhaandsorienteringDTO)
                 .when()
-                .put(veileder.getUrl("/veilarbaktivitet/api/arena/forhaandsorientering", mockBruker))
+                .pathParam("oppfolgingsperiodeId", mockBruker.oppfolgingsperiodeId)
+                .put("/veilarbaktivitet/api/arena/{oppfolgingsperiodeId}/forhaandsorientering")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -393,7 +392,7 @@ public class AktivitetTestService {
                     versjon
                 )))
                 .when()
-                .put(mockBruker.getUrl("/veilarbaktivitet/api/avtaltMedNav/lest", mockBruker))
+                .put("/veilarbaktivitet/api/avtaltMedNav/lest")
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
@@ -405,7 +404,8 @@ public class AktivitetTestService {
         stub_hent_arenaaktiviteter_fra_veilarbarena(bruker.getFnrAsFnr(), arenaId.id());
         return bruker
                 .createRequest()
-                .get(bruker.getUrl("/veilarbaktivitet/api/arena/tiltak", bruker))
+                .body(new ArenaController.FnrDto(bruker.getFnr()))
+                .post("/veilarbaktivitet/api/arena/tiltak")
                 .then()
                 .assertThat()
                 .statusCode(HttpStatus.OK.value())

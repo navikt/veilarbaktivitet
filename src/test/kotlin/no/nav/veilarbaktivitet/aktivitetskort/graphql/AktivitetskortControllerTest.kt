@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -11,8 +12,8 @@ import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
 
-    private val mockBruker = MockNavService.createHappyBruker()
-    private val mockVeileder = MockNavService.createVeileder(mockBruker)
+    private val mockBruker by lazy { navMockService.createHappyBruker() }
+    private val mockVeileder: MockVeileder by lazy { MockNavService.createVeileder(mockBruker) }
 
     @Test
     fun `skal gruppere pa oppfolgingsperiode (bruker)`() {

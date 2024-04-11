@@ -43,29 +43,10 @@ open class ArenaController(
 ) {
 
     private val log = LoggerFactory.getLogger(javaClass)
-    @Deprecated("Ikke bruk denne, bruk versjon med oppfolgingsId i URL for innebygd tilgangskontroll")
-    @PutMapping("/forhaandsorientering")
-    open fun opprettFHO(
-        @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
-        @RequestParam arenaaktivitetId: ArenaId?
-    ): ArenaAktivitetDTO {
-        if (!authService.erInternBruker()) {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN, "Må være internbruker")
-        }
-        getInputFeilmelding(forhaandsorientering, arenaaktivitetId)
-            .ifPresent { feilmelding: String? -> throw ResponseStatusException(HttpStatus.BAD_REQUEST, feilmelding) }
-        val fnr = userInContext.getFnr()
-            ?.orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Finner ikke fnr") }
-        if (fnr != null) {
-            authService.sjekkTilgangTilPerson(fnr.eksternBrukerId())
-        }
-        val ident = authService.getInnloggetVeilederIdent()
-        return arenaService.opprettFHO(arenaaktivitetId, fnr, forhaandsorientering, ident.get())
-    }
 
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
     @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
-    open fun opprettFHOMedTilgangsKontroll(
+    open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
         @RequestParam arenaaktivitetId: ArenaId?,
         @RequestAttribute(name="fnr") fnr: Fnr
@@ -97,16 +78,6 @@ open class ArenaController(
         }
         authService.sjekkTilgangTilPerson(fnr)
         return innerHentArenaAktiviteter(Person.fnr(fnr.get()))
-    }
-
-
-    @Deprecated("Ikke bruk denne, bruk POST versjon uten fnr i URL")
-    @GetMapping("/tiltak")
-    @AuthorizeFnr
-    open fun hentArenaAktiviteter(): List<ArenaAktivitetDTO> {
-        val fnr = userInContext.getFnr()
-            .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
-        return innerHentArenaAktiviteter(fnr)
     }
 
     fun innerHentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
