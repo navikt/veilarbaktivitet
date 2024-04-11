@@ -9,8 +9,9 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 
 internal class KasserControllerTest : SpringBootTestBase() {
-    private val mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker())
-    private val veileder = MockNavService.createVeileder(mockBruker)
+    private val mockBruker by lazy { navMockService.createHappyBruker(BrukerOptions.happyBruker()) }
+    private val veileder by lazy { MockNavService.createVeileder(mockBruker) }
+
     @Test
     fun skal_ikke_kunne_kassere_aktivitet_uten_tilgang() {
         val aktivitet = aktivitetTestService.opprettAktivitet(
@@ -21,7 +22,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest()
-            .put("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.getId(), mockBruker)
+            .put("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.id)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())
