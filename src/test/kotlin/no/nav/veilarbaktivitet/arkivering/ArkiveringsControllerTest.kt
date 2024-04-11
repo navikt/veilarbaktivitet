@@ -96,7 +96,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
-                        "journalforendeEnhet": "$journalførendeEnhet"
+                        "journalførendeEnhet": "$journalførendeEnhet"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -255,7 +255,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         "sakId": ${bruker.sakId},
                         "fagsaksystem": "ARBEIDSOPPFOLGING",
                         "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
-                        "journalforendeEnhet": "$journalførendeEnhet"
+                        "journalførendeEnhet": "$journalførendeEnhet"
                       },
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -544,7 +544,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
-            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .body(ArkiveringsController.ArkiverInboundDTO(forhaandsvisningstidspunkt, "dummyEnhet"))
             .post(arkiveringsUrl)
             .then()
             .assertThat()
