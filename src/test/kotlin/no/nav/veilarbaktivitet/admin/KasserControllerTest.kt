@@ -20,7 +20,7 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest()
-            .put(veileder.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.getId(), mockBruker))
+            .put("http://localhost:" + port + "/veilarbaktivitet/api/kassering/" + aktivitet.getId(), mockBruker)
             .then()
             .assertThat()
             .statusCode(HttpStatus.FORBIDDEN.value())

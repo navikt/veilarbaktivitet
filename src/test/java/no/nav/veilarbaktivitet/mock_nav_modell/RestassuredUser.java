@@ -21,11 +21,4 @@ public class RestassuredUser {
                 .header(TestAuthContextFilter.identHeder, ident)
                 .header(TestAuthContextFilter.typeHeder, userRole);
     }
-
-    public String getUrl(String baseUrl, MockBruker mockBruker) {
-        if (userRole.equals(UserRole.EKSTERN)) {
-            return baseUrl;
-        }
-        return baseUrl + "?fnr=" + mockBruker.getFnr();
-    }
 }

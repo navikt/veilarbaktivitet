@@ -141,7 +141,7 @@ class ArenaControllerTest {
     @Test
     void sendForhaandsorienteringSkalFeileUtenForhaandsorientering() {
         ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, arenaId));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, arenaId, fnr.otherFnr()));
         assertEquals("forhaandsorientering kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
@@ -150,14 +150,14 @@ class ArenaControllerTest {
     void sendForhaandsorienteringSkalFeileUtenForhaandsorienteringsType() {
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
         ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId, fnr.otherFnr()));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     @Test
     void sendForhaandsorienteringSkalFeileUtenArenaAktivitet() {
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, null));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, null, fnr.otherFnr()));
         assertEquals("arenaaktivitetId kan ikke være null eller tom", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
@@ -168,7 +168,7 @@ class ArenaControllerTest {
                 .thenReturn(Optional.of(new AktiviteterDTO()));
 
         ArenaId arenaId = new ArenaId("ARENAGA123");
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaId));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaId, fnr.otherFnr()));
         assertEquals("Aktiviteten finnes ikke", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
@@ -186,9 +186,9 @@ class ArenaControllerTest {
 
         ArenaId medFhoId = medFho.getAktivitetId();
 
-        controller.opprettFHO(forhaandsorientering, medFhoId);
+        controller.opprettFHO(forhaandsorientering, medFhoId, fnr.otherFnr());
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFhoId));
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFhoId, fnr.otherFnr()));
         assertEquals("Det er allerede sendt forhaandsorientering på aktiviteten", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
@@ -205,7 +205,7 @@ class ArenaControllerTest {
                         .setGruppeaktiviteter(List.of(medFho))
                         .setTiltaksaktiviteter(List.of(utenFho))));
 
-        ArenaAktivitetDTO arenaAktivitetDTO = controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId());
+        ArenaAktivitetDTO arenaAktivitetDTO = controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
         Optional<ArenaAktivitetDTO> gruppeAktivitet = arenaService.hentAktiviteter(fnr).stream().filter(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)).findAny();
         assertTrue(gruppeAktivitet.isPresent());
         ArenaAktivitetDTO gr = gruppeAktivitet.get();
@@ -226,8 +226,8 @@ class ArenaControllerTest {
                 .thenReturn(Optional.of(new AktiviteterDTO()
                         .setGruppeaktiviteter(List.of(medFho))
                         .setTiltaksaktiviteter(List.of(utenFho))));
-        controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId());
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
+        controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
@@ -244,7 +244,7 @@ class ArenaControllerTest {
                                 createGruppeaktivitet()
                         ))));
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
 
         Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
     }
@@ -266,7 +266,7 @@ class ArenaControllerTest {
     void hentArenaAktiviteterSkalReturnereTomListeNarArenaGirTomListe() {
         when(veilarbarenaClient.hentAktiviteter(fnr)).thenReturn(Optional.empty());
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.hentArenaAktiviteter();
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
 
         Assertions.assertThat(arenaAktivitetDTOS).isEmpty();
     }
@@ -279,7 +279,7 @@ class ArenaControllerTest {
         AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet = createUtdanningsaktivitet();
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO().setUtdanningsaktiviteter(List.of(utdanningsaktivitet))));
-        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, utdanningsaktivitet.getAktivitetId());
+        ArenaAktivitetDTO sendtAktivitet = controller.opprettFHO(forhaandsorientering, utdanningsaktivitet.getAktivitetId(), fnr.otherFnr());
         assertNull(sendtAktivitet.getForhaandsorientering().getLestDato());
         ArenaAktivitetDTO lestAktivitet = controller.lest(new ArenaId(sendtAktivitet.getId()));
 
@@ -299,9 +299,8 @@ class ArenaControllerTest {
 
     @Test
     void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
-        AktiviteterDTO.Gruppeaktivitet medFho = new AktiviteterDTO.Gruppeaktivitet().setAktivitetId(new ArenaId("ARENAGA" + getRandomString()));
-
-        AktiviteterDTO.Tiltaksaktivitet utenFho = new AktiviteterDTO.Tiltaksaktivitet().setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
+        var medFho = new AktiviteterDTO.Gruppeaktivitet().setAktivitetId(new ArenaId("ARENAGA" + getRandomString()));
+        var utenFho = new AktiviteterDTO.Tiltaksaktivitet().setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
 
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()
@@ -310,11 +309,10 @@ class ArenaControllerTest {
 
         when(context.getFnr()).thenReturn(Optional.of(ikkeTilgangFnr));
 
-
-        ArenaId arenaAktivitetId = medFho.getAktivitetId();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, arenaAktivitetId));
-
-        assertEquals(HttpStatus.FORBIDDEN, exception.getStatusCode());
+        var exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), ikkeTilgangFnr.otherFnr()));
+        // Feiler med 400 når man henter aktiviteter på feil fnr men det vil ikke skje pga tilgangsjekk i annotasjon
+        // men det er vanskelig å teste annotasjonen uten integrasjonstest
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
     private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {

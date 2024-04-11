@@ -46,7 +46,7 @@ open class ArenaController(
 
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
     @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
-    open fun opprettFHOMedTilgangsKontroll(
+    open fun opprettFHO(
         @RequestBody forhaandsorientering: ForhaandsorienteringDTO?,
         @RequestParam arenaaktivitetId: ArenaId?,
         @RequestAttribute(name="fnr") fnr: Fnr

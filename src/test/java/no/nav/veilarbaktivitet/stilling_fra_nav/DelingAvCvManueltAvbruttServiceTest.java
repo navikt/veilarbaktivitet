@@ -79,7 +79,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
                 .and()
                 .body(skalBehandles.toBuilder().status(AktivitetStatus.AVBRUTT).avsluttetKommentar("Kake").build())
                 .when()
-                .put(mockBruker.getUrl("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + skalBehandles.getId() + "/status", mockBruker))
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + skalBehandles.getId() + "/status", mockBruker)
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();

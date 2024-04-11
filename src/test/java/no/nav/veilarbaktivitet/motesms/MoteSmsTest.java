@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfi
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -73,7 +74,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalSendeServiceMelding() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -109,7 +110,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalSendeForAlleMoteTyper() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime fraDato = ZonedDateTime.now().plusHours(4);
@@ -127,7 +128,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void bareSendeForMote() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
@@ -149,7 +150,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalFjereneGamleMoter() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
@@ -168,7 +169,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleHistorisk() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -187,7 +188,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleFulfort() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -204,7 +205,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleAvbrutt() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
