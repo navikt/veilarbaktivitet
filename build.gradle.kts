@@ -63,6 +63,7 @@ tasks.sonar {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 
     maven {
