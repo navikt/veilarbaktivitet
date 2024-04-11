@@ -80,17 +80,6 @@ class AktivitetsplanController(
         return internOpprettAktivitet(aktivitet, automatisk)
     }
 
-
-    @Deprecated("Bruk opprett på oppfolgingsperiode for innebygd tilgangskontroll")
-    @PostMapping("/ny")
-    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"])
-    fun opprettNyAktivitet(
-        @RequestBody aktivitet: AktivitetDTO,
-        @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
-    ): AktivitetDTO {
-        return internOpprettAktivitet(aktivitet, automatisk)
-    }
-
     fun internOpprettAktivitet(aktivitet: AktivitetDTO, automatisk: Boolean): AktivitetDTO {
         return aktivitetDataMapperService.mapTilAktivitetData(aktivitet)
             .withAutomatiskOpprettet(automatisk)
