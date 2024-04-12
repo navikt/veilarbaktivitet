@@ -59,7 +59,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
 
         val arkiveringsUrl =
-            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId&journalforendeEnhet=$journalførendeEnhet"
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
         // When
         val forhaandsvisning = veileder
@@ -88,16 +88,11 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                     {
-                      "metadata": {
-                        "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                        "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) } ?: null},
-                        "sakId": ${bruker.sakId},
-                        "fagsaksystem": "ARBEIDSOPPFOLGING",
-                        "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
-                        "journalførendeEnhet": "$journalførendeEnhet"
-                      },
+                      "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
+                      "fnr": "${bruker.fnr}",
+                      "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) } ?: null},
+                      "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
                       "aktiviteter" : {
                         "Planlagt" : [ {
                           "tittel" : "tittel",
@@ -247,16 +242,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     equalToJson(
                         """
                     {
-                      "metadata": {
-                        "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
-                        "fnr": "${bruker.fnr}",
-                        "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                        "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
-                        "sakId": ${bruker.sakId},
-                        "fagsaksystem": "ARBEIDSOPPFOLGING",
-                        "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
-                        "journalførendeEnhet": "$journalførendeEnhet"
-                      },
+                      "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
+                      "fnr": "${bruker.fnr}",
+                      "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
+                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode?.sluttTid?.let { norskDato(it) } ?: null},
+                      "sakId": ${bruker.sakId},
+                      "fagsaksystem": "ARBEIDSOPPFOLGING",
+                      "oppfølgingsperiodeId": "${oppfølgingsperiodeId}",
+                      "journalførendeEnhet": "$journalførendeEnhet",
                       "aktiviteter" : {
                         "Planlagt" : [ {
                           "tittel" : "tittel",
@@ -346,7 +339,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
     }

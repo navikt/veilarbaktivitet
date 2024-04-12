@@ -1,10 +1,8 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
-import no.nav.veilarbaktivitet.aktivitet.Endring
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.arkivering.Metadata as ArkivMetadata
 import no.nav.veilarbaktivitet.arkivering.mapper.tilDialogTråd
 import no.nav.veilarbaktivitet.arkivering.mapper.tilMelding
 import no.nav.veilarbaktivitet.arkivering.mapper.toArkivPayload
@@ -33,16 +31,37 @@ object Arkiveringslogikk {
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger, historikkForAktiviteter)
         return ArkivPayload(
-            metadata = ArkivMetadata(
-                navn = navn.tilFornavnMellomnavnEtternavn(),
-                fnr = fnr.get(),
-                oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
-                oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
-                sakId = sakDTO.sakId,
-                fagsaksystem = sakDTO.fagsaksystem,
-                oppfølgingsperiodeId = oppfølgingsperiode.uuid,
-                journalførendeEnhet = journalførendeEnhet
-            ),
+            navn = navn.tilFornavnMellomnavnEtternavn(),
+            fnr = fnr.get(),
+            oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
+            sakId = sakDTO.sakId,
+            fagsaksystem = sakDTO.fagsaksystem,
+            oppfølgingsperiodeId = oppfølgingsperiode.uuid,
+            journalførendeEnhet = journalførendeEnhet,
+            aktiviteter = arkivaktiviteter.groupBy { it.status },
+            dialogtråder = arkivdialoger,
+            mål = mål.mal
+        )
+    }
+
+    fun lagForhåndsvisningPayload(
+        fnr: Fnr,
+        navn: Navn,
+        oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
+        aktiviteter: List<AktivitetData>,
+        dialoger: List<DialogClient.DialogTråd>,
+        mål: MålDTO,
+        historikkForAktiviteter: Map<AktivitetId, Historikk>,
+    ): ForhåndsvisningPayload {
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger, historikkForAktiviteter)
+
+        return ForhåndsvisningPayload(
+            navn = navn.tilFornavnMellomnavnEtternavn(),
+            fnr = fnr.get(),
+            oppfølgingsperiodeStart = norskDato(oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
+            oppfølgingsperiodeId = oppfølgingsperiode.uuid,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
             mål = mål.mal
