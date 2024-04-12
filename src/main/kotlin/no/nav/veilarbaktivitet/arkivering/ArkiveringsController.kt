@@ -5,11 +5,10 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagArkivPayload
+import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.lagForhåndsvisningPayload
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.person.EksternNavnService
-import no.nav.veilarbaktivitet.person.Person.AktorId
 import no.nav.veilarbaktivitet.person.UserInContext
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -31,11 +30,11 @@ class ArkiveringsController(
 ) {
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestParam("journalforendeEnhet") journalførendeEnhet: String): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId, journalførendeEnhet)
+        val forhåndsvisningPayload = hentForhåndsvisningPayload(oppfølgingsperiodeId)
 
-        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(arkivPayload)
+        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
@@ -54,9 +53,9 @@ class ArkiveringsController(
         )
     }
 
-    private fun hentArkivPayload(oppfølgingsperiodeId: UUID, journalførendeEnhet: String, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
+    private fun hentArkivPayload(oppfølgingsperiodeId: UUID, journalførendeEnhet: String, forhaandsvisningTidspunkt: ZonedDateTime): ArkivPayload {
         val fnr = userInContext.fnr.get()
-        val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
+        val oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
         val dialoger = dialogClient.hentDialogerUtenKontorsperre(fnr)
         val navn = navnService.hentNavn(fnr)
@@ -72,8 +71,16 @@ class ArkiveringsController(
         return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål, historikkForAktiviteter, journalførendeEnhet)
     }
 
-    private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
-        return oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+    private fun hentForhåndsvisningPayload(oppfølgingsperiodeId: UUID): ForhåndsvisningPayload {
+        val fnr = userInContext.fnr.get()
+        val oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+        val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
+        val dialoger = dialogClient.hentDialogerUtenKontorsperre(fnr)
+        val navn = navnService.hentNavn(fnr)
+        val mål = oppfølgingsperiodeService.hentMål(fnr)
+        val historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
+
+        return lagForhåndsvisningPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, mål, historikkForAktiviteter)
     }
 
     data class ForhaandsvisningOutboundDTO(

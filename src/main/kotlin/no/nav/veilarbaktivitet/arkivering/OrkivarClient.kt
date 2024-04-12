@@ -17,12 +17,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
-    fun hentPdfForForhaandsvisning(arkivPayload: ArkivPayload): ForhaandsvisningResult {
-        val payload = lagRequestBody(arkivPayload)
+    fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(payload)
+            .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url(String.format("%s/forhaandsvisning", orkivarUrl))
             .build()
 
@@ -33,11 +32,10 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     }
 
     fun journalfor(arkivPayload: ArkivPayload): JournalføringResult {
-        val payload = lagRequestBody(arkivPayload)
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(payload)
+            .post(JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url(String.format("%s/arkiver", orkivarUrl))
             .build()
 
@@ -45,10 +43,6 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
         return RestUtils.parseJsonResponse(response, JournalføringResult::class.java)
             .orElseThrow { RuntimeException("Kunne ikke journalføre aktivitetsplan og dialog") }
-    }
-
-    private fun lagRequestBody(arkivPayload: ArkivPayload): RequestBody {
-        return JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull())
     }
 
     data class ForhaandsvisningResult(

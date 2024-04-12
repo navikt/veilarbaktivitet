@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
@@ -39,7 +38,7 @@ class ArkiveringslogikkTest {
             journalførendeEnhet = "dummyEnhet",
         )
 
-        assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
+        assertThat(arkivPayload.oppfølgingsperiodeSlutt).isNull()
     }
 
     @Test
