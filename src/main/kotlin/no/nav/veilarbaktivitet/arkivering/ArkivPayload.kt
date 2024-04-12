@@ -19,7 +19,8 @@ data class Metadata(
     val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
-    val oppfølgingsperiodeId: UUID
+    val oppfølgingsperiodeId: UUID,
+    val journalførendeEnhet: String,
 )
 
 data class ArkivAktivitet(

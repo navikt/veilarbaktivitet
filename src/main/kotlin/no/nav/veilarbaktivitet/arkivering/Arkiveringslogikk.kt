@@ -28,7 +28,8 @@ object Arkiveringslogikk {
         dialoger: List<DialogClient.DialogTråd>,
         sakDTO: SakDTO,
         mål: MålDTO,
-        historikkForAktiviteter: Map<AktivitetId, Historikk>
+        historikkForAktiviteter: Map<AktivitetId, Historikk>,
+        journalførendeEnhet: String,
     ): ArkivPayload {
         val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(oppfølgingsperiode.uuid, aktiviteter, dialoger, historikkForAktiviteter)
         return ArkivPayload(
@@ -39,7 +40,8 @@ object Arkiveringslogikk {
                 oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
                 sakId = sakDTO.sakId,
                 fagsaksystem = sakDTO.fagsaksystem,
-                oppfølgingsperiodeId = oppfølgingsperiode.uuid
+                oppfølgingsperiodeId = oppfølgingsperiode.uuid,
+                journalførendeEnhet = journalførendeEnhet
             ),
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,

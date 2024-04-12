@@ -31,9 +31,9 @@ class ArkiveringsController(
 ) {
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
-    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
+    fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestParam("journalforendeEnhet") journalførendeEnhet: String): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId)
+        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId, journalførendeEnhet)
 
         val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(arkivPayload)
 
@@ -47,14 +47,14 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId, arkiverInboundDTO.forhaandsvisningOpprettet)
+        val arkivPayload = hentArkivPayload(oppfølgingsperiodeId, arkiverInboundDTO.journalforendeEnhet, arkiverInboundDTO.forhaandsvisningOpprettet)
         val journalførtResult = orkivarClient.journalfor(arkivPayload)
         return JournalførtOutboundDTO(
             sistJournalført = journalførtResult.sistJournalført
         )
     }
 
-    private fun hentArkivPayload(oppfølgingsperiodeId: UUID, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
+    private fun hentArkivPayload(oppfølgingsperiodeId: UUID, journalførendeEnhet: String, forhaandsvisningTidspunkt: ZonedDateTime? = null): ArkivPayload {
         val fnr = userInContext.fnr.get()
         val oppfølgingsperiode = hentOppfølgingsperiode(userInContext.aktorId, oppfølgingsperiodeId)
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
@@ -69,7 +69,7 @@ class ArkiveringsController(
             if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
         }
 
-        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål, historikkForAktiviteter)
+        return lagArkivPayload(fnr, navn, oppfølgingsperiode, aktiviteter, dialoger, sak, mål, historikkForAktiviteter, journalførendeEnhet)
     }
 
     private fun hentOppfølgingsperiode(aktorId: AktorId, oppfølgingsperiodeId: UUID): OppfolgingPeriodeMinimalDTO {
@@ -83,7 +83,8 @@ class ArkiveringsController(
     )
 
     data class ArkiverInboundDTO(
-        val forhaandsvisningOpprettet: ZonedDateTime
+        val forhaandsvisningOpprettet: ZonedDateTime,
+        val journalforendeEnhet: String
     )
 
     data class JournalførtOutboundDTO(
