@@ -6,7 +6,25 @@ import java.util.*
 typealias ArkivAktivitetStatus = String
 
 data class ArkivPayload(
-    val metadata: Metadata,
+    val navn: String,
+    val fnr: String,
+    val oppfølgingsperiodeStart: String,
+    val oppfølgingsperiodeSlutt: String?,
+    val sakId: Long,
+    val fagsaksystem: String,
+    val oppfølgingsperiodeId: UUID,
+    val journalførendeEnhet: String,
+    val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
+    val dialogtråder: List<ArkivDialogtråd>,
+    val mål: String?,
+)
+
+data class ForhåndsvisningPayload(
+    val navn: String,
+    val fnr: String,
+    val oppfølgingsperiodeStart: String,
+    val oppfølgingsperiodeSlutt: String?,
+    val oppfølgingsperiodeId: UUID,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
     val dialogtråder: List<ArkivDialogtråd>,
     val mål: String?,
@@ -19,7 +37,8 @@ data class Metadata(
     val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
-    val oppfølgingsperiodeId: UUID
+    val oppfølgingsperiodeId: UUID,
+    val journalførendeEnhet: String,
 )
 
 data class ArkivAktivitet(

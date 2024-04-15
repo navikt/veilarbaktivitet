@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
 import no.nav.veilarbaktivitet.arkivering.Arkiveringslogikk.aktiviteterOgDialogerOppdatertEtter
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
@@ -35,10 +34,11 @@ class ArkiveringslogikkTest {
             dialoger = emptyList(),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
             mål = MålDTO("Å få jobb"),
-            historikkForAktiviteter = mapOf()
+            historikkForAktiviteter = mapOf(),
+            journalførendeEnhet = "dummyEnhet",
         )
 
-        assertThat(arkivPayload.metadata.oppfølgingsperiodeSlutt).isNull()
+        assertThat(arkivPayload.oppfølgingsperiodeSlutt).isNull()
     }
 
     @Test
@@ -56,7 +56,8 @@ class ArkiveringslogikkTest {
             dialoger = emptyList(),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
             mål = MålDTO("Å få jobb"),
-            historikkForAktiviteter = mapOf()
+            historikkForAktiviteter = mapOf(),
+            journalførendeEnhet = "dummyEnhet",
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
@@ -83,7 +84,8 @@ class ArkiveringslogikkTest {
             dialoger = listOf(dialog),
             sakDTO = SakDTO(oppfølgingsperiode.uuid, 1000L, "ARBEIDSOPPFOLGING"),
             mål = MålDTO("Å få jobb"),
-            historikkForAktiviteter = mapOf()
+            historikkForAktiviteter = mapOf(),
+            journalførendeEnhet = "dummyEnhet",
         )
 
         assertThat(arkivPayload.aktiviteter).isEmpty()
