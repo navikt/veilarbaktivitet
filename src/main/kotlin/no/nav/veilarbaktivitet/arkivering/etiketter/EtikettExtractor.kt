@@ -37,15 +37,14 @@ private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
 
         AktivitetTypeData.EKSTERNAKTIVITET -> {
             if (this.eksternAktivitetData.type == AktivitetskortType.ARENA_TILTAK) {
-                eksternAktivitetData.etiketter?.map {
+                eksternAktivitetData.etiketter?.mapNotNull {
                     it.mapTilArenaEtikett()
                 } ?: emptyList()
-            }
+            } else {
             this.eksternAktivitetData?.etiketter?.map {
                 ArkivEtikett(it.sentiment.toArkivEtikettStil(), it.tekst)
-            } ?: emptyList()
+            } ?: emptyList() }
         }
-
         else -> emptyList()
     }
 }
