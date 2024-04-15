@@ -23,10 +23,3 @@ fun Sentiment?.toArkivEtikettStil(): ArkivEtikettStil {
         else -> ArkivEtikettStil.NEUTRAL
     }
 }
-
-fun toArkivEtikettStil(fraArenaStilVariant: String): ArkivEtikettStil {
-    return when(fraArenaStilVariant) {
-        "warning" -> ArkivEtikettStil.NEGATIVE
-        else -> ArkivEtikettStil.NEUTRAL
-    }
-}
