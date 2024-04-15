@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("EtikettExtractor.kt")
 
-private fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
+fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
     return when (this.kode) {
         "SOKT_INN" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
         "AVSLAG" -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
