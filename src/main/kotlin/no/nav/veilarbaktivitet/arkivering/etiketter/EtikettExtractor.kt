@@ -2,22 +2,56 @@ package no.nav.veilarbaktivitet.arkivering.etiketter
 
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Etikett
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("EtikettExtractor.kt")
+
+private fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
+    return when (this.kode) {
+        "SOKT_INN" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
+        "AVSLAG" -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
+        "IKKE_AKTUELL" -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket")
+        "IKKE_MOETT" -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket")
+        "INFOMOETE" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket")
+        "TAKKET_JA" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud")
+        "TAKKET_NEI" -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
+        "FATT_PLASS" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
+        "VENTELISTE" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
+        else -> {
+            logger.error("Fant ukjent arena-etikettkode")
+            return null
+        }
+    }
+}
 
 
 private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
     return when (this.aktivitetType) {
         AktivitetTypeData.JOBBSOEKING -> this.stillingsSoekAktivitetData?.stillingsoekEtikett
             ?.text?.let { ArkivEtikett(ArkivEtikettStil.POSITIVE, it) }.wrapInList()
+
         AktivitetTypeData.STILLING_FRA_NAV -> this.stillingFraNavData.soknadsstatus
             ?.text?.let { ArkivEtikett(ArkivEtikettStil.POSITIVE, it) }.wrapInList()
-        AktivitetTypeData.EKSTERNAKTIVITET -> this.eksternAktivitetData?.etiketter?.map {
-            ArkivEtikett(it.sentiment.toArkivEtikettStil(), it.tekst) } ?: emptyList()
+
+        AktivitetTypeData.EKSTERNAKTIVITET -> {
+            if (this.eksternAktivitetData.type == AktivitetskortType.ARENA_TILTAK) {
+                eksternAktivitetData.etiketter?.map {
+                    it.mapTilArenaEtikett()
+                } ?: emptyList()
+            }
+            this.eksternAktivitetData?.etiketter?.map {
+                ArkivEtikett(it.sentiment.toArkivEtikettStil(), it.tekst)
+            } ?: emptyList()
+        }
+
         else -> emptyList()
     }
 }
 
 private fun AktivitetData.avtaltEtikett(): ArkivEtikett? {
-    return if (this.isAvtalt) ArkivEtikett(ArkivEtikettStil.AVTALT , "Avtalt med NAV") else null
+    return if (this.isAvtalt) ArkivEtikett(ArkivEtikettStil.AVTALT, "Avtalt med NAV") else null
 }
 
 fun AktivitetData.getArkivEtiketter(): List<ArkivEtikett> {
