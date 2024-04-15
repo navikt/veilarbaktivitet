@@ -15,10 +15,18 @@ enum class ArkivEtikettStil {
     NEUTRAL,
 }
 
-fun Sentiment.toArkivEtikettStil(): ArkivEtikettStil {
+fun Sentiment?.toArkivEtikettStil(): ArkivEtikettStil {
     return when(this) {
         Sentiment.NEUTRAL -> ArkivEtikettStil.NEUTRAL
         Sentiment.NEGATIVE -> ArkivEtikettStil.NEGATIVE
         Sentiment.POSITIVE -> ArkivEtikettStil.POSITIVE
+        else -> ArkivEtikettStil.NEUTRAL
+    }
+}
+
+fun toArkivEtikettStil(fraArenaStilVariant: String): ArkivEtikettStil {
+    return when(fraArenaStilVariant) {
+        "warning" -> ArkivEtikettStil.NEGATIVE
+        else -> ArkivEtikettStil.NEUTRAL
     }
 }
