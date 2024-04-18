@@ -37,6 +37,7 @@ object Arkiveringslogikk {
             oppfølgingsperiodeSlutt = oppfølgingsperiode.sluttDato?.let { norskDato(oppfølgingsperiode.sluttDato) },
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
+            tema = sakDTO.tema,
             oppfølgingsperiodeId = oppfølgingsperiode.uuid,
             journalførendeEnhet = journalførendeEnhet,
             aktiviteter = arkivaktiviteter.groupBy { it.status },

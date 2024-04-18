@@ -12,6 +12,7 @@ data class ArkivPayload(
     val oppfølgingsperiodeSlutt: String?,
     val sakId: Long,
     val fagsaksystem: String,
+    val tema: String,
     val oppfølgingsperiodeId: UUID,
     val journalførendeEnhet: String,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,

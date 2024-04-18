@@ -244,7 +244,8 @@ public class WireMockUtil {
                                 {
                                 "oppfolgingsperiodeId": "%s",
                                 "sakId": %d,
-                                "fagsaksystem":  "ARBEIDSOPPFOLGING"
+                                "fagsaksystem":  "ARBEIDSOPPFOLGING",
+                                "tema": "OPP"
                                 }
                                 """.formatted(oppfolgingsperiodeId, sakId))));
         }

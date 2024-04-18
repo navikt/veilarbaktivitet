@@ -4,5 +4,6 @@ import java.util.UUID;
 public record SakDTO(
         UUID oppfolgingsperiodeId,
         Long sakId,
-        String fagsaksystem
+        String fagsaksystem,
+        String tema
 ){}
