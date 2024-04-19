@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @With
@@ -28,6 +29,7 @@ public class ArenaAktivitetDTO {
     ForhaandsorienteringDTO forhaandsorientering;
     ArenaStatusDTO etikett;
     long versjon;
+    UUID oppfolgingsperiodeId;
 
     // Tiltaksaktivitet
     Float deltakelseProsent;

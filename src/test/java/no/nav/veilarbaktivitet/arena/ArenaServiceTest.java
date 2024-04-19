@@ -1,12 +1,15 @@
 package no.nav.veilarbaktivitet.arena;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
+import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Forhaandsorientering;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +31,10 @@ class ArenaServiceTest {
                 mock(BrukernotifikasjonService.class),
                 mock(VeilarbarenaClient.class),
                 mock(IdMappingDAO.class),
-                mock(PersonService.class)
+                mock(PersonService.class),
+                mock(AktivitetDAO.class),
+                mock(OppfolgingsperiodeDAO.class),
+                mock(MigreringService.class)
         );
         var arenaAktivitet = ArenaAktivitetDTO.builder()
                 .id("LOL")
