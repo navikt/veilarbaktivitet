@@ -32,7 +32,6 @@ public abstract class SpringBootTestBase {
     @Autowired
     protected KafkaTestService kafkaTestService;
 
-
     private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", MockNavService.NAV_CONTEXT);
 
 
