@@ -54,10 +54,7 @@ open class ArenaService(
 
     open fun hentAktiviteter(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
         val aktiviteterFraArena = veilarbarenaClient.hentAktiviteter(fnr)
-
         if (aktiviteterFraArena.isEmpty) return listOf()
-
-        val aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get())
 
         val aktorId = personService.getAktorIdForPersonBruker(fnr)
             .orElseThrow {
@@ -66,6 +63,9 @@ open class ArenaService(
                     "Fant ikke aktorId"
                 )
             }
+
+        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(aktorId)
+        val aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get(), oppfolgingsperioder)
 
         val forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId)
 
