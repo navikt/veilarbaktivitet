@@ -4,6 +4,7 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
@@ -20,6 +21,11 @@ fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForArenaAktivitet(arenaAktivi
     val tilDato = arenaAktivitetDTO.tilDato
     return sistEndret?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
         ?: tilDato?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
+}
+
+fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, sistEndret: LocalDate?, tilDato: LocalDate): Oppfolgingsperiode? {
+    return sistEndret?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
+        ?: tilDato?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
 }
 
 fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForTidspunkt(tidspunkt: LocalDateTime): Oppfolgingsperiode? {

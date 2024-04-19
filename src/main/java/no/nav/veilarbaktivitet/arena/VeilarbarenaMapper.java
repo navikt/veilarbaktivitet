@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.arena.model.*;
+import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -24,6 +25,8 @@ import static java.time.ZonedDateTime.ofInstant;
 import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
+import static no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtilKt.finnOppfolgingsperiodeForArenaAktivitet;
+import static no.nav.veilarbaktivitet.util.DateUtils.toLocalDate;
 
 @Slf4j
 public class VeilarbarenaMapper {
@@ -46,20 +49,20 @@ public class VeilarbarenaMapper {
         }
     }
 
-    public static List<ArenaAktivitetDTO> map(AktiviteterDTO aktiviteter) {
+    public static List<ArenaAktivitetDTO> map(AktiviteterDTO aktiviteter, List<Oppfolgingsperiode> oppfolgingsperioder) {
         List<ArenaAktivitetDTO> result = new ArrayList<>();
 
         Optional.ofNullable(aktiviteter.getTiltaksaktiviteter()).ifPresent(tiltakList ->
                 result.addAll(tiltakList.stream()
-                        .map(VeilarbarenaMapper::mapTilAktivitet)
+                        .map(aktivitet -> VeilarbarenaMapper.mapTilAktivitet(aktivitet, oppfolgingsperioder))
                         .toList()));
         Optional.ofNullable(aktiviteter.getGruppeaktiviteter()).ifPresent(gruppeList ->
                 result.addAll(gruppeList.stream()
-                        .map(VeilarbarenaMapper::mapTilAktivitet)
+                        .map(aktivitet -> VeilarbarenaMapper.mapTilAktivitet(aktivitet, oppfolgingsperioder))
                         .toList()));
         Optional.ofNullable(aktiviteter.getUtdanningsaktiviteter()).ifPresent(utdanningList ->
                 result.addAll(utdanningList.stream()
-                        .map(VeilarbarenaMapper::mapTilAktivitet)
+                        .map(aktivitet -> VeilarbarenaMapper.mapTilAktivitet(aktivitet, oppfolgingsperioder))
                         .toList()));
         return result.stream()
             .filter(aktivitet -> etterFilterDato(aktivitet.getTilDato()))
@@ -93,7 +96,12 @@ public class VeilarbarenaMapper {
         return tiltaksaktivitet.getTiltaksnavn();
     }
 
-    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet) {
+    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
+        val sistEndret = tiltaksaktivitet.getStatusSistEndret();
+        val tilDato = tiltaksaktivitet.getDeltakelsePeriode().getTom();
+        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, sistEndret, tilDato);
+        val oppfolgingsperiodeId = oppfolgingsperiode != null ? oppfolgingsperiode.oppfolgingsperiodeId() : null;
+
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
                 .setId(tiltaksaktivitet.getAktivitetId().id())
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
@@ -107,8 +115,9 @@ public class VeilarbarenaMapper {
                 .setArrangoer(tiltaksaktivitet.getArrangor())
                 .setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
                 .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
-                .setStatusSistEndret(mapToDate(tiltaksaktivitet.getStatusSistEndret()))
-                .setOpprettetDato(mapToDate(tiltaksaktivitet.getStatusSistEndret()));
+                .setStatusSistEndret(mapToDate(sistEndret))
+                .setOpprettetDato(mapToDate(tiltaksaktivitet.getStatusSistEndret()))
+                .setOppfolgingsperiodeId(oppfolgingsperiodeId);
 
         val erVanligAmo = tiltaksaktivitet.getTiltaksnavn().trim()
                 .equalsIgnoreCase(VANLIG_AMO_NAVN);
@@ -136,7 +145,7 @@ public class VeilarbarenaMapper {
         return arenaAktivitetDTO;
     }
 
-    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Gruppeaktivitet gruppeaktivitet) {
+    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Gruppeaktivitet gruppeaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
         List<MoteplanDTO> motePlan = new ArrayList<>();
         Optional.ofNullable(gruppeaktivitet.getMoteplanListe())
                 .ifPresent(moeteplanListe -> moeteplanListe.stream()
@@ -148,6 +157,10 @@ public class VeilarbarenaMapper {
         Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
         AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
+
+        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, null, toLocalDate(sluttDato));
+        val oppfolgingsperiodeId = oppfolgingsperiode != null ? oppfolgingsperiode.oppfolgingsperiodeId() : null;
+
         return new ArenaAktivitetDTO()
                 .setId(gruppeaktivitet.getAktivitetId().id())
                 .setStatus(status)
@@ -158,12 +171,16 @@ public class VeilarbarenaMapper {
                 .setTilDato(sluttDato)
                 .setAvtalt(true)
                 .setOpprettetDato(startDato)
+                .setOppfolgingsperiodeId(oppfolgingsperiodeId)
                 .setMoeteplanListe(motePlan);
     }
 
-    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet) {
+    private static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Utdanningsaktivitet utdanningsaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
         Date startDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getFom());
         Date sluttDato = mapToDate(utdanningsaktivitet.getAktivitetPeriode().getTom());
+
+        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, null, toLocalDate(sluttDato));
+        val oppfolgingsperiodeId = oppfolgingsperiode != null ? oppfolgingsperiode.oppfolgingsperiodeId() : null;
 
         return new ArenaAktivitetDTO()
                 .setId(utdanningsaktivitet.getAktivitetId().id())
@@ -174,6 +191,7 @@ public class VeilarbarenaMapper {
                 .setFraDato(startDato)
                 .setTilDato(sluttDato)
                 .setOpprettetDato(startDato)
+                .setOppfolgingsperiodeId(oppfolgingsperiodeId)
                 .setAvtalt(true);
     }
 
