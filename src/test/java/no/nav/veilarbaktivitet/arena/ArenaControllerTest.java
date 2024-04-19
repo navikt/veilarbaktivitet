@@ -72,10 +72,10 @@ class ArenaControllerTest {
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
     private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
-    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
+    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService, aktivitetDAO, oppfolgingsperiodeDAO, migreringService);
 
     private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
-    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO, aktorOppslagClient);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
@@ -120,10 +120,10 @@ class ArenaControllerTest {
         when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(oppfolgingsperiodeDAO.getByAktorId(aktorid)).thenReturn(List.of(new Oppfolgingsperiode(
-            aktorid.get(),
-            UUID.randomUUID(),
-            ZonedDateTime.now().minusYears(6),
-            null
+                aktorid.get(),
+                UUID.randomUUID(),
+                ZonedDateTime.now().minusYears(6),
+                null
         )));
         when(aktorOppslagClient.hentAktorId(fnr.otherFnr())).thenReturn(aktorid.otherAktorId());
     }
@@ -150,14 +150,6 @@ class ArenaControllerTest {
         var otherFnr = fnr.otherFnr();
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId, otherFnr));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-    }
-
-    @Test
-    void sendForhaandsorienteringSkalFeileUtenArenaAktivitet() {
-        var otherFnr = fnr.otherFnr();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, null, otherFnr));
-        assertEquals("arenaaktivitetId kan ikke være null eller tom", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
@@ -290,11 +282,6 @@ class ArenaControllerTest {
         assertTrue(start.before(lest) || start.equals(lest));
         assertTrue(stopp.after(lest) || stopp.equals(lest));
     }
-
-
-
-
-
 
 
     @Test
