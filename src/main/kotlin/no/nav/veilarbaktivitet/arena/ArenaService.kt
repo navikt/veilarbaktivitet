@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.arena
 
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
-import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
@@ -32,7 +31,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.util.*
 import java.util.function.Function
 
-@Slf4j
 @Service
 open class ArenaService(
     private val fhoDAO: ForhaandsorienteringDAO,
@@ -54,7 +52,7 @@ open class ArenaService(
 
     val log = LoggerFactory.getLogger(javaClass)
 
-    fun hentAktiviteter(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
+    open fun hentAktiviteter(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
         val aktiviteterFraArena = veilarbarenaClient.hentAktiviteter(fnr)
 
         if (aktiviteterFraArena.isEmpty) return listOf()
@@ -77,20 +75,20 @@ open class ArenaService(
             .toList()
     }
 
-    fun harAktiveTiltak(ident: Person.Fnr?): Boolean {
+    open fun harAktiveTiltak(ident: Person.Fnr?): Boolean {
         return hentAktiviteter(ident)
             .stream()
             .map { obj: ArenaAktivitetDTO -> obj.status }
             .anyMatch { status: AktivitetStatus -> status != AktivitetStatus.AVBRUTT && status != AktivitetStatus.FULLFORT }
     }
 
-    fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): Optional<ArenaAktivitetDTO> {
+    open fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): Optional<ArenaAktivitetDTO> {
         return hentAktiviteter(ident).stream()
             .filter { arenaAktivitetDTO: ArenaAktivitetDTO -> aktivitetId.id() == arenaAktivitetDTO.id }
             .findAny()
     }
 
-    fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>): Function<ArenaAktivitetDTO, ArenaAktivitetDTO> {
+    open fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>): Function<ArenaAktivitetDTO, ArenaAktivitetDTO> {
         return Function { arenaAktivitetDTO: ArenaAktivitetDTO ->
             arenaAktivitetDTO.setForhaandsorientering(
                 forhaandsorienteringData
@@ -171,11 +169,11 @@ open class ArenaService(
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO())
     }
 
-    fun hentArenaAktiviteter(fnr: Person.Fnr, oppfolgingsperiodeId: UUID): List<ArenaAktivitetDTO> {
+    open fun hentArenaAktiviteter(fnr: Person.Fnr, oppfolgingsperiodeId: UUID): List<ArenaAktivitetDTO> {
         return hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfolgingsperiodeId}
     }
 
-    fun hentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
+    open fun hentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
 
         val arenaAktiviteter = hentAktiviteter(fnr)
 
