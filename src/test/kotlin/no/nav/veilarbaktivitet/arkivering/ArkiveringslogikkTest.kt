@@ -26,7 +26,7 @@ class ArkiveringslogikkTest {
         val aktivitetUtenforOppfølgingsperiode = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiodeId).build()
 
-        val arkivPayload = Arkiveringslogikk.lagArkivPayload(
+        val arkivPayload = Arkiveringslogikk.mapTilArkivPayload(
             dummyFnr,
             dummyNavn,
             oppfølgingsperiode,
@@ -48,7 +48,7 @@ class ArkiveringslogikkTest {
         val aktivitetUtenforOppfølgingsperiode = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.IJOBB)
             .toBuilder().oppfolgingsperiodeId(annenOppfølgingsperiodeId).build()
 
-        val arkivPayload = Arkiveringslogikk.lagArkivPayload(
+        val arkivPayload = Arkiveringslogikk.mapTilArkivPayload(
             dummyFnr,
             dummyNavn,
             oppfølgingsperiode,
@@ -76,7 +76,7 @@ class ArkiveringslogikkTest {
             egenskaper = emptyList()
         )
 
-        val arkivPayload = Arkiveringslogikk.lagArkivPayload(
+        val arkivPayload = Arkiveringslogikk.mapTilArkivPayload(
             dummyFnr,
             dummyNavn,
             oppfølgingsperiode,
