@@ -169,10 +169,6 @@ open class ArenaService(
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO())
     }
 
-    open fun hentArenaAktiviteter(fnr: Person.Fnr, oppfolgingsperiodeId: UUID): List<ArenaAktivitetDTO> {
-        return hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfolgingsperiodeId}
-    }
-
     open fun hentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
 
         val arenaAktiviteter = hentAktiviteter(fnr)
@@ -185,24 +181,18 @@ open class ArenaService(
             sisteIdMappinger.values.map(IdMappingWithAktivitetStatus::aktivitetId)
         )
 
-        // Oppfolgingsperioder
-        val aktorId = personService.getAktorIdForPersonBruker(fnr)
-        val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(aktorId.get())
-        val arenaAktiviteterMedOppfolgingsperiode = arenaAktiviteter
-            .map { it to oppfolgingsperioder.finnOppfolgingsperiodeForArenaAktivitet(it) }
-
         // Metrikker
         migreringService.countArenaAktiviteter(
-            arenaAktiviteterMedOppfolgingsperiode,
+            arenaAktiviteter,
             sisteIdMappinger
         )
 
         val skalFiltreresBort = migreringService.filtrerBortArenaTiltakHvisToggleAktiv(idMappings.keys)
-        val filtrerteArenaAktiviteter = arenaAktiviteterMedOppfolgingsperiode
+        val filtrerteArenaAktiviteter = arenaAktiviteter
             // Bare vis arena aktiviteter som mangler id, dvs ikke er migrert
-            .filter { skalFiltreresBort(it.first) }
-            .filter { it.second != null } // Ikke vis arena-tiltak som ikke har oppfolgingsperiode
-            .map { (arenaAktivitet: ArenaAktivitetDTO) ->
+            .filter { skalFiltreresBort(it) }
+            .filter { it.oppfolgingsperiodeId != null }
+            .map { arenaAktivitet: ArenaAktivitetDTO ->
                 val idMapping = sisteIdMappinger[ArenaId(arenaAktivitet.id)]
                 if (idMapping != null) return@map arenaAktivitet
                     .withId(idMapping.aktivitetId.toString())
@@ -210,7 +200,7 @@ open class ArenaService(
                 arenaAktivitet
             }
         logUmigrerteIder(filtrerteArenaAktiviteter)
-        loggArenaTiltakUtenOppfolging(arenaAktiviteterMedOppfolgingsperiode)
+        loggArenaTiltakUtenOppfolging(arenaAktiviteter)
         return filtrerteArenaAktiviteter
     }
 
@@ -223,10 +213,10 @@ open class ArenaService(
         }
     }
 
-    open fun loggArenaTiltakUtenOppfolging(aktiviteter: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>>) {
+    open fun loggArenaTiltakUtenOppfolging(aktiviteter: List<ArenaAktivitetDTO>) {
         val tiltakIdErUtenOppfolgingsperiode = aktiviteter
-            .filter { it.second == null }
-            .joinToString(",") { it.first.id }
+            .filter { it.oppfolgingsperiodeId == null }
+            .joinToString(",") { it.id }
         log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
     }
 
