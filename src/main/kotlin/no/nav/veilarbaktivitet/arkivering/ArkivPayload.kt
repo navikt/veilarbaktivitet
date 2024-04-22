@@ -31,17 +31,6 @@ data class ForhåndsvisningPayload(
     val mål: String?,
 )
 
-data class Metadata(
-    val navn: String,
-    val fnr: String,
-    val oppfølgingsperiodeStart: String,
-    val oppfølgingsperiodeSlutt: String?,
-    val sakId: Long,
-    val fagsaksystem: String,
-    val oppfølgingsperiodeId: UUID,
-    val journalførendeEnhet: String,
-)
-
 data class ArkivAktivitet(
     val tittel: String,
     val type: String,
