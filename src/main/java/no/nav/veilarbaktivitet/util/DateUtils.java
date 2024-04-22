@@ -68,6 +68,11 @@ public class DateUtils {
         return localDateTimeToDate(zonedDateTime.toLocalDateTime());
     }
 
+    public static LocalDate dateToLocalDate(Date date) {
+        if (date == null) return null;
+        return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
     public static LocalDateTime dateToLocalDateTime(Date date) {
         if (date == null) return null;
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
