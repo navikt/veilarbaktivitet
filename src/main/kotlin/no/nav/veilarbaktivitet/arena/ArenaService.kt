@@ -18,9 +18,7 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType
-import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO
-import no.nav.veilarbaktivitet.oppfolging.periode.finnOppfolgingsperiodeForArenaAktivitet
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.person.PersonService
 import org.slf4j.LoggerFactory

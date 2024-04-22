@@ -23,19 +23,22 @@ class MigreringServiceTest {
         ZonedDateTime.now(),
         ZonedDateTime.now()
     )
-    val testAktiviteter: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>> = listOf(
+    val testAktiviteter: List<ArenaAktivitetDTO> = listOf(
         ArenaAktivitetDTO.builder()
             .type(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
             .id("ARENATA101")
-            .status(AktivitetStatus.PLANLAGT).build() to oppfolgingsperiode,
+            .oppfolgingsperiodeId(oppfolgingsperiode.oppfolgingsperiodeId)
+            .status(AktivitetStatus.PLANLAGT).build(),
         ArenaAktivitetDTO.builder()
             .type(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
             .id("ARENATA102")
-            .status(AktivitetStatus.GJENNOMFORES).build() to oppfolgingsperiode,
+            .oppfolgingsperiodeId(oppfolgingsperiode.oppfolgingsperiodeId)
+            .status(AktivitetStatus.GJENNOMFORES).build(),
         ArenaAktivitetDTO.builder()
             .type(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
             .id("ARENATA103")
-            .status(AktivitetStatus.FULLFORT).build() to oppfolgingsperiode
+            .oppfolgingsperiodeId(oppfolgingsperiode.oppfolgingsperiodeId)
+            .status(AktivitetStatus.FULLFORT).build()
     )
 
     @Test
@@ -138,7 +141,7 @@ class MigreringServiceTest {
                listOf(
                    it[0],
                    it[1],
-                   it[2].copy(second = null)
+                   it[2].apply { this.oppfolgingsperiodeId = null }
                )
             },
             idMappings = mapOf(

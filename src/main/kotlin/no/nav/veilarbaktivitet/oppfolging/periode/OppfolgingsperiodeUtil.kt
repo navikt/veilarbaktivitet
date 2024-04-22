@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.periode
 
-import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
-import no.nav.veilarbaktivitet.util.DateUtils
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -10,18 +8,10 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.chrono.ChronoZonedDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 import kotlin.math.abs
 
 val log = LoggerFactory.getLogger("no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtil")!!
 
-fun Date.toLocalDateTime(): LocalDateTime = DateUtils.dateToLocalDateTime(this)
-fun List<Oppfolgingsperiode>.finnOppfolgingsperiodeForArenaAktivitet(arenaAktivitetDTO: ArenaAktivitetDTO): Oppfolgingsperiode? {
-    val sistEndret = arenaAktivitetDTO.statusSistEndret
-    val tilDato = arenaAktivitetDTO.tilDato
-    return sistEndret?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
-        ?: tilDato?.let { this.finnOppfolgingsperiodeForTidspunkt(it.toLocalDateTime()) }
-}
 
 fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, sistEndret: LocalDate?, tilDato: LocalDate): Oppfolgingsperiode? {
     return sistEndret?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
