@@ -125,7 +125,7 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = moteData?.referat),
+    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(

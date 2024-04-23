@@ -35,7 +35,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
         // Given
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
-        val journalførendeEnhet = "0909"
 
         val sisteOppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
 
@@ -519,6 +518,76 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             EksternHandling(internHandling.tekst, internHandling.subtekst, internHandling.url.toString()),
             EksternHandling(fellesHandling.tekst, fellesHandling.subtekst, fellesHandling.url.toString())
         )
+    }
+
+    @Test
+    fun `SamtalereferatAktivitet som ikke er delt med bruker ignoreres`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val referatPublisertTittel = "Referat er publisert"
+        val samtalereferatIkkeDelt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, samtalereferatIkkeDelt)
+        val samtaleReferatDelt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true)
+            .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, samtaleReferatDelt)
+            .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val aktiviteter = arkivPayload.aktiviteter.flatMap { it.value }
+        assertThat(aktiviteter).hasSize(1)
+        assertThat(aktiviteter.first().tittel).isEqualTo(referatPublisertTittel)
+    }
+
+    @Test
+    fun `Journalfør MøteAktivitet men ikke referatet når det ikke er delt med bruker`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false)
+            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEmpty()
+    }
+
+    @Test
+    fun `Journalfør MøteAktivitet-kort med referatet når det er delt med bruker`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
+        val referat = "Dette er et referat"
+        val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(true)
+            .setReferat(referat).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEqualTo(referat)
     }
 
     @Test

@@ -5,6 +5,10 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.MOTE
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
+import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
@@ -68,17 +72,21 @@ class ArkiveringsController(
     }
 
     private fun hentArkiveringsData(fnr: Fnr, oppfølgingsperiodeId: UUID): ArkiveringsData {
-        val aktiviteterIPerioden = appService.hentAktiviteterUtenKontorsperre(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
+            .asSequence()
+            .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+            .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
+            .toList()
         val dialogerIPerioden = dialogClient.hentDialogerUtenKontorsperre(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
 
         return ArkiveringsData(
             fnr = fnr,
             navn = navnService.hentNavn(fnr),
             oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId"),
-            aktiviteter = aktiviteterIPerioden,
+            aktiviteter = aktiviteter,
             dialoger = dialogerIPerioden,
             mål = oppfølgingsperiodeService.hentMål(fnr),
-            historikkForAktiviteter = historikkService.hentHistorikk(aktiviteterIPerioden.map { it.id })
+            historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
         )
     }
 
