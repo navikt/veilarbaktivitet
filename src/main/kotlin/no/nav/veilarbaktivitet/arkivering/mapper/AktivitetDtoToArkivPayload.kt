@@ -147,13 +147,17 @@ fun AktivitetData.toStillingDetaljer() = listOf(
     Detalj(stil = LENKE, tittel = "Lenke til stillingsannonsen", tekst = lenke),
 )
 
-fun AktivitetData.toStillingFraNavDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
-    Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
-    Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = norskDato(stillingFraNavData?.svarfrist)),
-    Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
-    Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke()),
-)
+fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
+    val detaljer = listOf(
+        Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
+        Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
+        Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = norskDato(stillingFraNavData?.svarfrist)),
+        Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
+        Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke())
+    )
+    val harSvart = stillingFraNavData.cvKanDelesData != null
+
+}
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
