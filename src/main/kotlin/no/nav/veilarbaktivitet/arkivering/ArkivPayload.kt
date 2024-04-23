@@ -48,8 +48,7 @@ data class AktivitetHistorikk(
 
 data class AktivitetEndring(
     val formattertTidspunkt: String,
-    val beskrivelseForVeileder: String,
-    val beskrivelseForBruker: String,
+    val beskrivelse: String
 )
 
 

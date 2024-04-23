@@ -134,8 +134,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "historikk" : {
                               "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
-                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
-                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              "beskrivelse" : "Bruker opprettet aktiviteten"
                               } ]  
                             }
                         } ],
@@ -174,8 +173,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "historikk" : {
                             "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
-                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
-                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              "beskrivelse" : "Bruker opprettet aktiviteten"
                             } ]
                           }
                         } ]
@@ -292,8 +290,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "historikk" : {
                             "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
-                              "beskrivelseForVeileder" : "Bruker opprettet aktiviteten",
-                              "beskrivelseForBruker" : "Du opprettet aktiviteten"
+                              "beskrivelse" : "Bruker opprettet aktiviteten"
                             } ]
                           }
                         } ]
