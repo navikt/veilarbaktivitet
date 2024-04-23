@@ -18,10 +18,6 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import java.time.Duration
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 fun AktivitetData.toArkivPayload(meldinger: List<Melding>, historikk: Historikk): ArkivAktivitet {
     return ArkivAktivitet(
@@ -164,36 +160,31 @@ fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
     )
     val harSvart = stillingFraNavData.cvKanDelesData != null
     if (harSvart) {
+        val cvKanDelesData = stillingFraNavData.cvKanDelesData
         val tittel = if (stillingFraNavData.cvKanDelesData.kanDeles) "Du svarte at du er interessert" else "Du svarte at du ikke er interessert"
-        val tekst = if(stillingFraNavData.cvKanDelesData.endretAvType == Innsender.BRUKER) stillingFraNavData.cvKanDelesData.svarOgEndretTekstBruker() else stillingFraNavData.cvKanDelesData.svarOgEndretTekstVeileder()
-        val oppfolgingsTekst = if(stillingFraNavData.cvKanDelesData.kanDeles) "Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen" else ""
-        val svarDetalj = Detalj(stil = PARAGRAF, tittel = tittel, tekst = "$tekst \n\n $oppfolgingsTekst")
+        val svarOgEndretTekst = if(stillingFraNavData.cvKanDelesData.endretAvType == Innsender.BRUKER) cvKanDelesData.svarOgEndretTekstBruker() else cvKanDelesData.svarOgEndretTekstVeileder()
+        val oppfolgingsTekst = if(cvKanDelesData.kanDeles) "Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen." else null
+        val fullTekst = oppfolgingsTekst?.let { "$svarOgEndretTekst\n\n$it" } ?: svarOgEndretTekst
+
+        val svarDetalj = Detalj(stil = PARAGRAF, tittel = tittel, tekst = fullTekst)
         return detaljer + svarDetalj
     } else {
         return detaljer
     }
 }
 
-fun CvKanDelesData.svarOgEndretTekstBruker(): String {
+private fun CvKanDelesData.svarOgEndretTekstBruker(): String {
     val svarTekst = if (this.kanDeles) {
-        "Ja, og NAV kan dele CV-en min med denne arbeidsgiveren"
+        "Ja, og NAV kan dele CV-en min med denne arbeidsgiveren."
     } else {
-        "Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren"
+        "Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren."
     }
-    return """
-        $svarTekst 
-        
-        Du svarte ${this.endretTidspunkt}
-    """.trimMargin()
+    return "$svarTekst\n\nDu svarte ${norskDato(this.endretTidspunkt)}."
 }
 
-fun CvKanDelesData.svarOgEndretTekstVeileder(): String {
-    val svarTekst = "NAV var i kontakt med deg ${this.avtaltDato}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
-    return """
-        $svarTekst 
-        
-        NAV svarte på vegne av deg ${this.endretTidspunkt}.
-    """.trimMargin()
+private fun CvKanDelesData.svarOgEndretTekstVeileder(): String {
+    val svarTekst = "NAV var i kontakt med deg ${norskDato(this.avtaltDato)}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
+    return "$svarTekst\n\nNAV svarte på vegne av deg ${norskDato(this.endretTidspunkt)}."
 }
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
