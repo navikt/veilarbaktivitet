@@ -13,6 +13,8 @@ import no.nav.veilarbaktivitet.arkivering.EksternHandling
 import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
+import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import java.time.Duration
@@ -96,13 +98,14 @@ fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetDa
 
 
 fun AktivitetData.getEksterneHandlinger(): List<EksternHandling> =
-    this.eksternAktivitetData?.handlinger?.filter { it.lenkeType == LenkeType.INTERN || it.lenkeType == LenkeType.FELLES }?.map {
-        EksternHandling(
-            tekst = it.tekst,
-            subtekst = it.subtekst,
-            url = it.url.toString(),
-        )
-    } ?: emptyList()
+    this.eksternAktivitetData?.handlinger?.filter { it.lenkeType == LenkeType.INTERN || it.lenkeType == LenkeType.FELLES }
+        ?.map {
+            EksternHandling(
+                tekst = it.tekst,
+                subtekst = it.subtekst,
+                url = it.url.toString(),
+            )
+        } ?: emptyList()
 
 fun AktivitetData.toDetaljer(): List<Detalj> =
     when (aktivitetType) {
@@ -121,11 +124,15 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
+    Detalj(stil = HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""),
+    Detalj(
+        stil = PARAGRAF,
+        tittel = "Samtalereferat",
+        tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""
+    ),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
@@ -156,14 +163,52 @@ fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
         Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke())
     )
     val harSvart = stillingFraNavData.cvKanDelesData != null
+    if (harSvart) {
+        val tittel = if (stillingFraNavData.cvKanDelesData.kanDeles) "Du svarte at du er interessert" else "Du svarte at du ikke er interessert"
+        val tekst = if(stillingFraNavData.cvKanDelesData.endretAvType == Innsender.BRUKER) stillingFraNavData.cvKanDelesData.svarOgEndretTekstBruker() else stillingFraNavData.cvKanDelesData.svarOgEndretTekstVeileder()
+        val oppfolgingsTekst = if(stillingFraNavData.cvKanDelesData.kanDeles) "Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen" else ""
+        val svarDetalj = Detalj(stil = PARAGRAF, tittel = tittel, tekst = "$tekst \n\n $oppfolgingsTekst")
+        return detaljer + svarDetalj
+    } else {
+        return detaljer
+    }
+}
 
+fun CvKanDelesData.svarOgEndretTekstBruker(): String {
+    val svarTekst = if (this.kanDeles) {
+        "Ja, og NAV kan dele CV-en min med denne arbeidsgiveren"
+    } else {
+        "Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren"
+    }
+    return """
+        $svarTekst 
+        
+        Du svarte ${this.endretTidspunkt}
+    """.trimMargin()
+}
+
+fun CvKanDelesData.svarOgEndretTekstVeileder(): String {
+    val svarTekst = "NAV var i kontakt med deg ${this.avtaltDato}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
+    return """
+        $svarTekst 
+        
+        NAV svarte på vegne av deg ${this.endretTidspunkt}.
+    """.trimMargin()
 }
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
-    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()),
-    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()),
+    Detalj(
+        stil = HEL_LINJE,
+        tittel = "Antall søknader i perioden",
+        tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()
+    ),
+    Detalj(
+        stil = HEL_LINJE,
+        tittel = "Antall søknader i uka",
+        tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()
+    ),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
 )
 
