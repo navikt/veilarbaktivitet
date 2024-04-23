@@ -13,13 +13,11 @@ import no.nav.veilarbaktivitet.arkivering.EksternHandling
 import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
+import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import java.time.Duration
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-import java.util.*
 
 fun AktivitetData.toArkivPayload(meldinger: List<Melding>, historikk: Historikk): ArkivAktivitet {
     return ArkivAktivitet(
@@ -96,13 +94,14 @@ fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetDa
 
 
 fun AktivitetData.getEksterneHandlinger(): List<EksternHandling> =
-    this.eksternAktivitetData?.handlinger?.filter { it.lenkeType == LenkeType.INTERN || it.lenkeType == LenkeType.FELLES }?.map {
-        EksternHandling(
-            tekst = it.tekst,
-            subtekst = it.subtekst,
-            url = it.url.toString(),
-        )
-    } ?: emptyList()
+    this.eksternAktivitetData?.handlinger?.filter { it.lenkeType == LenkeType.INTERN || it.lenkeType == LenkeType.FELLES }
+        ?.map {
+            EksternHandling(
+                tekst = it.tekst,
+                subtekst = it.subtekst,
+                url = it.url.toString(),
+            )
+        } ?: emptyList()
 
 fun AktivitetData.toDetaljer(): List<Detalj> =
     when (aktivitetType) {
@@ -121,11 +120,15 @@ fun AktivitetData.toMoteDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Klokkeslett", tekst = klokkeslett(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Møteform", tekst = moteData?.kanal?.tekst),
-    Detalj(stil= HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
+    Detalj(stil = HALV_LINJE, tittel = "Varighet", tekst = beregnVarighet()),
     Detalj(stil = HEL_LINJE, tittel = "Møtested eller annen praktisk informasjon", tekst = moteData?.adresse),
     Detalj(stil = HEL_LINJE, tittel = "Hensikt med møtet", tekst = beskrivelse),
     Detalj(stil = HEL_LINJE, tittel = "Forberedelser til møtet", tekst = moteData?.forberedelser),
-    Detalj(stil = PARAGRAF, tittel = "Samtalereferat", tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""),
+    Detalj(
+        stil = PARAGRAF,
+        tittel = "Samtalereferat",
+        tekst = if (moteData?.isReferatPublisert == true) moteData?.referat else ""
+    ),
 )
 
 fun AktivitetData.toEgenaktivitetDetaljer() = listOf(
@@ -147,19 +150,56 @@ fun AktivitetData.toStillingDetaljer() = listOf(
     Detalj(stil = LENKE, tittel = "Lenke til stillingsannonsen", tekst = lenke),
 )
 
-fun AktivitetData.toStillingFraNavDetaljer() = listOf(
-    Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
-    Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
-    Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = norskDato(stillingFraNavData?.svarfrist)),
-    Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
-    Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke()),
-)
+fun AktivitetData.toStillingFraNavDetaljer(): List<Detalj> {
+    val detaljer = listOf(
+        Detalj(stil = HALV_LINJE, tittel = "Arbeidsgiver", tekst = stillingFraNavData?.arbeidsgiver),
+        Detalj(stil = HALV_LINJE, tittel = "Arbeidssted", tekst = stillingFraNavData?.arbeidssted),
+        Detalj(stil = HALV_LINJE, tittel = "Svarfrist", tekst = norskDato(stillingFraNavData?.svarfrist)),
+        Detalj(stil = HALV_LINJE, tittel = "Søknadsfrist", tekst = stillingFraNavData?.soknadsfrist),
+        Detalj(stil = LENKE, tittel = "Les mer om stillingen", tekst = stillingFraNavData?.getStillingLenke())
+    )
+    val harSvart = stillingFraNavData.cvKanDelesData != null
+    if (harSvart) {
+        val cvKanDelesData = stillingFraNavData.cvKanDelesData
+        val tittel = if (stillingFraNavData.cvKanDelesData.kanDeles) "Du svarte at du er interessert" else "Du svarte at du ikke er interessert"
+        val svarOgEndretTekst = if(stillingFraNavData.cvKanDelesData.endretAvType == Innsender.BRUKER) cvKanDelesData.svarOgEndretTekstBruker() else cvKanDelesData.svarOgEndretTekstVeileder()
+        val oppfolgingsTekst = if(cvKanDelesData.kanDeles) "Arbeidsgiveren eller NAV vil kontakte deg hvis du er aktuell for stillingen." else null
+        val fullTekst = oppfolgingsTekst?.let { "$svarOgEndretTekst\n\n$it" } ?: svarOgEndretTekst
+
+        val svarDetalj = Detalj(stil = PARAGRAF, tittel = tittel, tekst = fullTekst)
+        return detaljer + svarDetalj
+    } else {
+        return detaljer
+    }
+}
+
+private fun CvKanDelesData.svarOgEndretTekstBruker(): String {
+    val svarTekst = if (this.kanDeles) {
+        "Ja, og NAV kan dele CV-en min med denne arbeidsgiveren."
+    } else {
+        "Nei, og jeg vil ikke at NAV skal dele CV-en min med arbeidsgiveren."
+    }
+    return "$svarTekst\n\nDu svarte ${norskDato(this.endretTidspunkt)}."
+}
+
+private fun CvKanDelesData.svarOgEndretTekstVeileder(): String {
+    val svarTekst = "NAV var i kontakt med deg ${norskDato(this.avtaltDato)}. Du sa ${if (this.kanDeles) "Ja" else "Nei"} til at CV-en din deles med arbeidsgiver."
+    return "$svarTekst\n\nNAV svarte på vegne av deg ${norskDato(this.endretTidspunkt)}."
+}
 
 fun AktivitetData.toSokeAvtaleDetaljer() = listOf(
     Detalj(stil = HALV_LINJE, tittel = "Fra dato", tekst = norskDato(fraDato)),
     Detalj(stil = HALV_LINJE, tittel = "Til dato", tekst = norskDato(tilDato)),
-    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i perioden", tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()),
-    Detalj(stil = HEL_LINJE, tittel = "Antall søknader i uka", tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()),
+    Detalj(
+        stil = HEL_LINJE,
+        tittel = "Antall søknader i perioden",
+        tekst = sokeAvtaleAktivitetData?.antallStillingerSokes.toString()
+    ),
+    Detalj(
+        stil = HEL_LINJE,
+        tittel = "Antall søknader i uka",
+        tekst = sokeAvtaleAktivitetData?.antallStillingerIUken.toString()
+    ),
     Detalj(stil = PARAGRAF, tittel = "Beskrivelse", tekst = beskrivelse),
 )
 
