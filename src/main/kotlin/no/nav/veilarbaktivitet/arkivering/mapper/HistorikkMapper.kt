@@ -9,8 +9,7 @@ fun Historikk.tilAktivitetHistorikk(): AktivitetHistorikk {
     return AktivitetHistorikk(
         endringer = this.endringer.map { AktivitetEndring(
             formattertTidspunkt = "${DateUtils.norskDato(it.tidspunkt)} kl. ${ DateUtils.klokkeslett(it.tidspunkt) }",
-            beskrivelseForBruker = it.beskrivelseForBruker,
-            beskrivelseForVeileder = it.beskrivelseForVeileder
+            beskrivelse = it.beskrivelseForArkiv
         ) }
     )
 }

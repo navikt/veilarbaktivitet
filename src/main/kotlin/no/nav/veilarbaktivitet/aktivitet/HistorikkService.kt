@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitet
 
+import no.nav.veilarbaktivitet.aktivitet.Målgruppe.*
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.person.Innsender
@@ -30,8 +31,9 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
                     endretAvType = aktivitetData.endretAvType,
                     endretAv = aktivitetData.endretAv,
                     tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                    beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = false),
-                    beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, tilBruker = true)
+                    beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, VEILEDER),
+                    beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, BRUKER),
+                    beskrivelseForArkiv = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, ARKIV),
                 )
         }
         val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
@@ -39,11 +41,11 @@ fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<Aktivit
     }.toMap()
 }
 
-private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData, tilBruker: Boolean): String {
-    val endretAvTekst = if (tilBruker) {
-        endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
-    } else {
-        endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
+private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData, målgruppe: Målgruppe): String {
+    val endretAvTekst = when (målgruppe) {
+        VEILEDER -> endretAvTekstTilVeileder(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
+        BRUKER -> endretAvTekstTilBruker(oppdatertVersjon.endretAvType)
+        ARKIV -> endretAvTekstTilArkiv(oppdatertVersjon.endretAvType, oppdatertVersjon.endretAv)
     }
 
     return when(oppdatertVersjon.transaksjonsType) {
@@ -71,7 +73,7 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
         AktivitetTransaksjonsType.REFERAT_PUBLISERT -> "$endretAvTekst delte referatet"
         AktivitetTransaksjonsType.BLE_HISTORISK -> "Aktiviteten ble automatisk arkivert"
         AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST -> {
-            val sittEllerDitt = if (tilBruker) "ditt" else "sitt"
+            val sittEllerDitt = if (målgruppe == BRUKER) "ditt" else "sitt"
             "$endretAvTekst bekreftet å ha lest informasjon om ansvaret $sittEllerDitt"
         }
         AktivitetTransaksjonsType.DEL_CV_SVART -> {
@@ -84,6 +86,14 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
         }
         AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, AktivitetTransaksjonsType.FATT_JOBBEN -> "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
     }
+}
+
+fun endretAvTekstTilArkiv(innsender: Innsender, endretAv: String?) = when(innsender) {
+    Innsender.BRUKER -> "Bruker"
+    Innsender.ARBEIDSGIVER -> "Arbeidsgiver${endretAv?.let { " $it" } ?: ""}"
+    Innsender.TILTAKSARRANGOER -> "Tiltaksarrangør${endretAv?.let { " $it" } ?: ""}"
+    Innsender.NAV, Innsender.ARENAIDENT -> "NAV"
+    Innsender.SYSTEM -> "NAV"
 }
 
 fun endretAvTekstTilVeileder(innsender: Innsender, endretAv: String?) = when(innsender) {
@@ -113,4 +123,11 @@ data class Endring(
     val tidspunkt: ZonedDateTime,
     val beskrivelseForVeileder: String,
     val beskrivelseForBruker: String,
+    val beskrivelseForArkiv: String,
 )
+
+private enum class Målgruppe {
+    VEILEDER,
+    BRUKER,
+    ARKIV
+}

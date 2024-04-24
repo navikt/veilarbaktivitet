@@ -18,7 +18,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk av kun én aktivitet-versjon`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet)))
 
@@ -28,7 +28,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på endret møtetid og sted`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.MOTE_TID_OG_STED_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -43,7 +43,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på status endret`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -58,7 +58,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på opprettet referat på møte`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_OPPRETTET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -73,7 +73,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på referat endret`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -88,7 +88,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på referat publisert`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.REFERAT_PUBLISERT)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -103,7 +103,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at aktivitet ble historisk`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.BLE_HISTORISK)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -118,7 +118,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at detaljer ble endret`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DETALJER_ENDRET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -133,7 +133,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at aktivitet NAV ble opprettet`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -148,7 +148,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at aktivitet avtalt med NAV ble opprettet`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.OPPRETTET, avtaltMedNav = true)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -163,7 +163,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at aktivitet ble avtalt med NAV`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -178,7 +178,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på at aktivitet ble avtalt med NAV når forrige aktivitet også var avtalt`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT, avtaltMedNav = true)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -193,7 +193,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på forhåndsorientering lest`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.FORHAANDSORIENTERING_LEST, endretAvType = Innsender.BRUKER, endretAv = "Per Persen")
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -208,7 +208,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på svar på spørsmål om deling av CV`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.DEL_CV_SVART, endretAvType = Innsender.BRUKER)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -224,7 +224,7 @@ class HistorikkServiceTest {
     @Test
     fun `Skal lage historikk på at avtalt dato ble endret`() {
         val aktivitetTilDato = ZonedDateTime.of(2022, 8, 30, 10, 0,0, 0, ZoneId.of("Europe/Oslo"))
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).tilDato(
+        val aktivitet = nyAktivitet(AktivitetTypeData.MOTE).toBuilder().avtalt(true).tilDato(
             zonedDateTimeToDate(aktivitetTilDato)).build()
         val oppdatertAktivitetTilDato = ZonedDateTime.of(2022, 9, 2, 11, 0,0, 0, ZoneId.of("Europe/Oslo"))
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.AVTALT_DATO_ENDRET, endretAvType = Innsender.NAV, tilDato = zonedDateTimeToDate(oppdatertAktivitetTilDato))
@@ -242,7 +242,7 @@ class HistorikkServiceTest {
 
     @Test
     fun `Skal lage historikk på søknadsstatus endret`() {
-        val aktivitet = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().avtalt(true).build()
+        val aktivitet = nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV).toBuilder().avtalt(true).build()
         val oppdatertAktivitet = endreAktivitet(aktivitet, AktivitetTransaksjonsType.STATUS_ENDRET, endretAvType = Innsender.NAV)
 
         val historikk = lagHistorikkForAktiviteter(mapOf(aktivitet.id to listOf(aktivitet, oppdatertAktivitet)))
@@ -304,21 +304,27 @@ class HistorikkServiceTest {
     fun `Skal mappe innsender riktig`() {
         assertThat(endretAvTekstTilBruker(Innsender.BRUKER)).isEqualTo("Du")
         assertThat(endretAvTekstTilVeileder(Innsender.BRUKER, "")).isEqualTo("Bruker")
+        assertThat(endretAvTekstTilArkiv(Innsender.BRUKER, "")).isEqualTo("Bruker")
 
         assertThat(endretAvTekstTilBruker(Innsender.ARBEIDSGIVER)).isEqualTo("Arbeidsgiver")
         assertThat(endretAvTekstTilVeileder(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
+        assertThat(endretAvTekstTilArkiv(Innsender.ARBEIDSGIVER, "Bedrift")).isEqualTo("Arbeidsgiver Bedrift")
 
         assertThat(endretAvTekstTilBruker(Innsender.TILTAKSARRANGOER)).isEqualTo("Tiltaksarrangør")
         assertThat(endretAvTekstTilVeileder(Innsender.TILTAKSARRANGOER, "Bedrift")).isEqualTo("Tiltaksarrangør Bedrift")
+        assertThat(endretAvTekstTilArkiv(Innsender.TILTAKSARRANGOER, "Bedrift")).isEqualTo("Tiltaksarrangør Bedrift")
 
         assertThat(endretAvTekstTilBruker(Innsender.NAV)).isEqualTo("NAV")
         assertThat(endretAvTekstTilVeileder(Innsender.NAV, "Z12345")).isEqualTo("Z12345")
+        assertThat(endretAvTekstTilArkiv(Innsender.NAV, "Z12345")).isEqualTo("NAV")
 
         assertThat(endretAvTekstTilBruker(Innsender.ARENAIDENT)).isEqualTo("NAV")
         assertThat(endretAvTekstTilVeileder(Innsender.ARENAIDENT, null)).isEqualTo("NAV")
+        assertThat(endretAvTekstTilArkiv(Innsender.ARENAIDENT, null)).isEqualTo("NAV")
 
         assertThat(endretAvTekstTilBruker(Innsender.SYSTEM)).isEqualTo("NAV")
         assertThat(endretAvTekstTilVeileder(Innsender.SYSTEM, "")).isEqualTo("NAV")
+        assertThat(endretAvTekstTilArkiv(Innsender.SYSTEM, "")).isEqualTo("NAV")
     }
 
     private fun assert(
