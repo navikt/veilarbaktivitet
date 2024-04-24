@@ -214,17 +214,16 @@ class ArenaControllerTest {
     @Test
     void sendForhaandsorienteringSkalOppdaterehentArenaAktiviteter() {
         AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
-        AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
+        AktiviteterDTO.Gruppeaktivitet utenFho = createGruppeaktivitet();
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()
-                        .setGruppeaktiviteter(List.of(medFho))
-                        .setTiltaksaktiviteter(List.of(utenFho))));
+                        .setGruppeaktiviteter(List.of(medFho, utenFho))));
         controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
         List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
-                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getAktivitetId().id()));
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(utenFho.getAktivitetId().id()));
     }
 
     @Test
