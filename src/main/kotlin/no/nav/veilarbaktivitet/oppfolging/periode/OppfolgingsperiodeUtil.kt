@@ -13,7 +13,7 @@ import kotlin.math.abs
 val log = LoggerFactory.getLogger("no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtil")!!
 
 
-fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, primærDato: LocalDate): Oppfolgingsperiode? {
+fun finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder: List<Oppfolgingsperiode>, primærDato: LocalDate?): Oppfolgingsperiode? {
     return primærDato?.let { oppfolgingsperioder.finnOppfolgingsperiodeForTidspunkt(it.atStartOfDay()) }
 }
 
