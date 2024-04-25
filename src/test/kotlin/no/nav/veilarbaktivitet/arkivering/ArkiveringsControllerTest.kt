@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.net.URL
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -588,6 +589,28 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Arena-aktiviteter skal bli journalført`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
+        val arenaAktivitetEndretDato = iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1),  ZoneId.systemDefault())
+        val arenaAktivitetId = "123"
+        val tiltaksnavn = "Et tiltaksnavn fra Arena!"
+        stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .post(arkiveringsUrl)
+
+        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
+        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
+        assertThat(journalførtAktivitet.tittel).isEqualTo(tiltaksnavn)
+    }
+
+    @Test
     fun `Kast 409 Conflict når man arkiverer dersom ny data har kommet etter forhåndsvisningen`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
@@ -698,6 +721,36 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     )
                 )
         )
+    }
+
+    private fun stubHentArenaAktiviteter(fnr: String, arenaAktivitetId: String, sistEndret: String, tiltaksnavn: String) {
+        stubFor(get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
+            aResponse().withStatus(200)
+                .withBody("""
+                    {
+                      "tiltaksaktiviteter": [
+                          {
+                            "tiltaksnavn": "$tiltaksnavn",
+                            "aktivitetId": "$arenaAktivitetId",
+                            "tiltakLokaltNavn": "lokaltnavn",
+                            "arrangor": "arrangor",
+                            "bedriftsnummer": "asd",
+                            "deltakelsePeriode": {
+                                "fom": "2021-11-18",
+                                "tom": "2021-11-25"
+                            },
+                            "deltakelseProsent": 60,
+                            "deltakerStatus": "GJENN",
+                            "statusSistEndret": "$sistEndret",
+                            "begrunnelseInnsoking": "asd",
+                            "antallDagerPerUke": 3.0
+                          }
+                      ],
+                      "gruppeaktiviteter": [],
+                      "utdanningsaktiviteter": []
+                    }
+                """.trimIndent())
+        ))
     }
 
     private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {

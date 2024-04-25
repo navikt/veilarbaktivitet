@@ -27,6 +27,10 @@ public class DateUtils {
         return OffsetDateTime.ofInstant(date.toInstant(), zoneId).toString();
     }
 
+    public static String iso8601DateFromZonedDateTime(ZonedDateTime date, ZoneId zoneId) {
+        return OffsetDateTime.ofInstant(date.toInstant(), zoneId).format(iso8601DatoFormat);
+    }
+
     /**
      *
      * @param dateString dato-streng
@@ -105,4 +109,5 @@ public class DateUtils {
 
     private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));
     private static DateTimeFormatter norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"));
+    private static DateTimeFormatter iso8601DatoFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd");
 }
