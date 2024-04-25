@@ -4,8 +4,7 @@ import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
-import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
+import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper.mapForhaandsorientering
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetStatus
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
-import java.util.function.Function
 
 @Service
 open class ArenaService(
@@ -63,44 +61,21 @@ open class ArenaService(
             }
 
         val oppfolgingsperioder = oppfolgingsperiodeDAO.getByAktorId(aktorId)
-        val aktiviteter = VeilarbarenaMapper.map(aktiviteterFraArena.get(), oppfolgingsperioder)
-
+        val aktiviteter: List<ArenaAktivitetDTO> = VeilarbarenaMapper.map(aktiviteterFraArena.get(), oppfolgingsperioder)
         val forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId)
-
-        return aktiviteter
-            .stream()
-            .map(mergeMedForhaandsorientering(forhaandsorienteringData))
-            .toList()
+        return mergeMedForhaandsorientering(forhaandsorienteringData, aktiviteter)
     }
 
-    open fun harAktiveTiltak(ident: Person.Fnr?): Boolean {
+    open fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): ArenaAktivitetDTO? {
         return hentAktiviteter(ident)
-            .stream()
-            .map { obj: ArenaAktivitetDTO -> obj.status }
-            .anyMatch { status: AktivitetStatus -> status != AktivitetStatus.AVBRUTT && status != AktivitetStatus.FULLFORT }
+            .firstOrNull { arenaAktivitetDTO: ArenaAktivitetDTO -> aktivitetId.id() == arenaAktivitetDTO.id }
     }
 
-    open fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): Optional<ArenaAktivitetDTO> {
-        return hentAktiviteter(ident).stream()
-            .filter { arenaAktivitetDTO: ArenaAktivitetDTO -> aktivitetId.id() == arenaAktivitetDTO.id }
-            .findAny()
-    }
-
-    open fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>): Function<ArenaAktivitetDTO, ArenaAktivitetDTO> {
-        return Function { arenaAktivitetDTO: ArenaAktivitetDTO ->
-            arenaAktivitetDTO.setForhaandsorientering(
-                forhaandsorienteringData
-                    .stream()
-                    .filter { arenaForhaandsorienteringData: Forhaandsorientering -> arenaForhaandsorienteringData.arenaAktivitetId == arenaAktivitetDTO.id }
-                    .max(Comparator.comparing { obj: Forhaandsorientering -> obj.opprettetDato })
-                    .map { forhaandsorientering: Forhaandsorientering? ->
-                        AktivitetDTOMapper.mapForhaandsorientering(
-                            forhaandsorientering
-                        )
-                    }
-                    .orElse(null)
-            )
-        }
+    open fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>, aktiviteter: List<ArenaAktivitetDTO>): List<ArenaAktivitetDTO> {
+        val fhos = forhaandsorienteringData.groupBy { it.arenaAktivitetId }
+            .mapValues { entry -> entry.value.maxByOrNull { it.opprettetDato } }
+        return aktiviteter
+            .map { it.setForhaandsorientering((fhos[it.id]?.let(::mapForhaandsorientering)) ) }
     }
 
     @Transactional
@@ -112,12 +87,10 @@ open class ArenaService(
         opprettetAv: String?
     ): ArenaAktivitetDTO {
         val arenaAktivitetDTO = hentAktivitet(fnr, arenaaktivitetId)
-            .orElseThrow {
-                ResponseStatusException(
+            ?: throw ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Aktiviteten finnes ikke"
-                )
-            }
+            )
 
         val aktorId = personService.getAktorIdForPersonBruker(fnr)
             .orElseThrow {
@@ -237,12 +210,10 @@ open class ArenaService(
         fhoDAO.markerSomLest(fho.id, Date(), null)
 
         return hentAktivitet(Person.fnr(fnr.get()), aktivitetId)
-            .orElseThrow {
-                ResponseStatusException(
+            ?: throw ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Kunne ikke hente aktiviteten"
                 )
-            }
     }
 
     companion object {

@@ -18,7 +18,7 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 
 class ArenaServiceTest {
@@ -55,9 +55,7 @@ class ArenaServiceTest {
                 .arenaAktivitetId(arenaAktivitet.getId())
                 .build()
         );
-        var merged = arenaService.mergeMedForhaandsorientering(
-                fhos
-        ).apply(arenaAktivitet);
+        var merged = arenaService.mergeMedForhaandsorientering(fhos,  List.of(arenaAktivitet)).get(0);
         assertEquals(merged.getForhaandsorientering().getId(), fhos.get(0).getId());
     }
 }
