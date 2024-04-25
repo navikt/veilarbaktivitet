@@ -25,18 +25,6 @@ fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
         }
     }
 }
-
-ArenaStatusDTO.AKTUELL -> TODO()
-ArenaStatusDTO.AVSLAG -> TODO()
-ArenaStatusDTO.IKKAKTUELL -> TODO()
-ArenaStatusDTO.IKKEM -> TODO()
-ArenaStatusDTO.INFOMOETE -> TODO()
-ArenaStatusDTO.JATAKK -> TODO()
-ArenaStatusDTO.NEITAKK -> TODO()
-ArenaStatusDTO.TILBUD -> TODO()
-ArenaStatusDTO.VENTELISTE -> TODO()
-
-
 private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
     return when (this.aktivitetType) {
         AktivitetTypeData.JOBBSOEKING -> this.stillingsSoekAktivitetData?.stillingsoekEtikett
