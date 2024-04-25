@@ -27,6 +27,8 @@ fun ArenaAktivitetDTO.toArkivTypeTekst() =
         ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET -> "Utdanning"
     }
 
+// Kan dette være riktig?
+//
 //fun ArenaAktivitetDTO.toArkivEtikett() =
 //    when (this.etikett) {
 //        ArenaStatusDTO.AKTUELL -> TODO()
