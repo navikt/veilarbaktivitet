@@ -55,9 +55,7 @@ class ArenaServiceTest {
                 .arenaAktivitetId(arenaAktivitet.getId())
                 .build()
         );
-        var merged = arenaService.mergeMedForhaandsorientering(
-                fhos
-        ).apply(arenaAktivitet);
+        var merged = arenaService.mergeMedForhaandsorientering(fhos).invoke(arenaAktivitet);
         assertEquals(merged.getForhaandsorientering().getId(), fhos.get(0).getId());
     }
 }

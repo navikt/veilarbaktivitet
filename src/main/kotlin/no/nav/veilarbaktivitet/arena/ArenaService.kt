@@ -67,17 +67,7 @@ open class ArenaService(
 
         val forhaandsorienteringData = fhoDAO.getAlleArenaFHO(aktorId)
 
-        return aktiviteter
-            .stream()
-            .map(mergeMedForhaandsorientering(forhaandsorienteringData))
-            .toList()
-    }
-
-    open fun harAktiveTiltak(ident: Person.Fnr?): Boolean {
-        return hentAktiviteter(ident)
-            .stream()
-            .map { obj: ArenaAktivitetDTO -> obj.status }
-            .anyMatch { status: AktivitetStatus -> status != AktivitetStatus.AVBRUTT && status != AktivitetStatus.FULLFORT }
+        return aktiviteter.map(mergeMedForhaandsorientering(forhaandsorienteringData)).toList()
     }
 
     open fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): Optional<ArenaAktivitetDTO> {
@@ -86,8 +76,8 @@ open class ArenaService(
             .findAny()
     }
 
-    open fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>): Function<ArenaAktivitetDTO, ArenaAktivitetDTO> {
-        return Function { arenaAktivitetDTO: ArenaAktivitetDTO ->
+    open fun mergeMedForhaandsorientering(forhaandsorienteringData: List<Forhaandsorientering>): (a: ArenaAktivitetDTO) -> ArenaAktivitetDTO {
+        return { arenaAktivitetDTO: ArenaAktivitetDTO ->
             arenaAktivitetDTO.setForhaandsorientering(
                 forhaandsorienteringData
                     .stream()
