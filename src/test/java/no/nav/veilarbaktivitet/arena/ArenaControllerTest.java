@@ -39,11 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static no.nav.veilarbaktivitet.testutils.ArenaAktivitetUtils.*;
@@ -199,7 +195,7 @@ class ArenaControllerTest {
                         .setTiltaksaktiviteter(List.of(utenFho))));
 
         ArenaAktivitetDTO arenaAktivitetDTO = controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
-        Optional<ArenaAktivitetDTO> gruppeAktivitet = arenaService.hentAktiviteter(fnr).stream().filter(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)).findAny();
+        Optional<ArenaAktivitetDTO> gruppeAktivitet = arenaService.hentAktiviteterRaw(fnr).stream().filter(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET)).findAny();
         assertTrue(gruppeAktivitet.isPresent());
         ArenaAktivitetDTO gr = gruppeAktivitet.get();
 

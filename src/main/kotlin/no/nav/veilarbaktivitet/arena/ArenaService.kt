@@ -4,7 +4,6 @@ import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
 import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService
 import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingDAO
@@ -27,7 +26,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 import java.util.*
-import java.util.function.Function
 
 @Service
 open class ArenaService(
@@ -50,7 +48,7 @@ open class ArenaService(
 
     val log = LoggerFactory.getLogger(javaClass)
 
-    open fun hentAktiviteter(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
+    open fun hentAktiviteterRaw(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
         val aktiviteterFraArena = veilarbarenaClient.hentAktiviteter(fnr)
         if (aktiviteterFraArena.isEmpty) return listOf()
 
@@ -71,7 +69,7 @@ open class ArenaService(
     }
 
     open fun hentAktivitet(ident: Person.Fnr?, aktivitetId: ArenaId): Optional<ArenaAktivitetDTO> {
-        return hentAktiviteter(ident).stream()
+        return hentAktiviteterRaw(ident).stream()
             .filter { arenaAktivitetDTO: ArenaAktivitetDTO -> aktivitetId.id() == arenaAktivitetDTO.id }
             .findAny()
     }
@@ -159,7 +157,7 @@ open class ArenaService(
 
     open fun hentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
 
-        val arenaAktiviteter = hentAktiviteter(fnr)
+        val arenaAktiviteter = hentAktiviteterRaw(fnr)
 
         // Id-er og versjoner
         val ideer = arenaAktiviteter.map { arenaAktivitetDTO: ArenaAktivitetDTO -> ArenaId(arenaAktivitetDTO.id) }

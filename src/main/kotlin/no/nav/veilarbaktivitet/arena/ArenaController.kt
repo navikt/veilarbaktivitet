@@ -49,7 +49,7 @@ open class ArenaController(
     open fun hentAlleArenaAktiviteterRaw(): List<ArenaAktivitetDTO> {
         val fnr = userInContext.getFnr()
             .orElseThrow { ResponseStatusException(HttpStatus.BAD_REQUEST, "Må være på en bruker") }
-        return arenaService.hentAktiviteter(fnr)
+        return arenaService.hentAktiviteterRaw(fnr)
     }
 
     data class FnrDto (val fnr: String?)
