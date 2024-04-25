@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.aktivitetskort.idmapping.IdMappingWithAktivitetSt
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
-import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -25,16 +24,15 @@ class MigreringService (
 
     /* Hører kanskje ikke til her men var lettere å gjøre groupBy i kotlin vs java */
     fun countArenaAktiviteter(
-        foer: List<Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>>,
+        foer: List<ArenaAktivitetDTO>,
         idMappings: Map<ArenaId, IdMappingWithAktivitetStatus>
     ) {
         if (foer.isEmpty()) return
-        val antallFoer = foer.groupBy { it.first.type }.mapValues { it.value.size }
+        val antallFoer = foer.groupBy { it.type }.mapValues { it.value.size }
 
         // Bruker status som indikator på om dataene er riktig
-        fun sjekkMigreringsStatus(input: Pair<ArenaAktivitetDTO, Oppfolgingsperiode?>): MigreringsStatus {
-            val (aktivitet, oppfolgingsperiode) = input
-            if (oppfolgingsperiode == null) return MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode
+        fun sjekkMigreringsStatus(aktivitet: ArenaAktivitetDTO): MigreringsStatus {
+            if (aktivitet.oppfolgingsperiodeId == null) return MigreringsStatus.IkkeMigrertManglerOppfolgingsperiode
             return idMappings[ArenaId(aktivitet.id)]
                 ?.let { match -> when {
                     match.source != MessageSource.ARENA_TILTAK_AKTIVITET_ACL -> MigreringsStatus.MigrertAvAnnetTeam
@@ -43,7 +41,7 @@ class MigreringService (
                 } } ?: MigreringsStatus.IkkeMigrert
         }
         val alleInklMigrertAvAndreTeam = foer
-            .map { it.first to sjekkMigreringsStatus(it) }
+            .map { it to sjekkMigreringsStatus(it) }
         val (alleMigreringsStatuser, alleMigrertAvAndreTeam) = alleInklMigrertAvAndreTeam
             .partition { it.second != MigreringsStatus.MigrertAvAnnetTeam }
         val migrert = alleMigreringsStatuser
@@ -114,6 +112,8 @@ class MigreringService (
         const val VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE = "veilarbaktivitet.vis_migrerte_arena_aktiviteter"
     }
 }
+
+typealias OppfolgingsperiodeId = UUID
 
 enum class MigreringsStatus {
     IkkeMigrert,

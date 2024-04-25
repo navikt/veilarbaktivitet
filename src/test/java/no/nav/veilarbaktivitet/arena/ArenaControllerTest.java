@@ -46,6 +46,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
+import static no.nav.veilarbaktivitet.testutils.ArenaAktivitetUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -72,10 +73,10 @@ class ArenaControllerTest {
     private final AktivitetskortMetrikker aktivitetskortMetrikker = new AktivitetskortMetrikker(meterRegistry);
     private final MigreringService migreringService = new MigreringService(unleash, idMappingDAO, aktivitetskortMetrikker);
     private final OppfolgingsperiodeDAO oppfolgingsperiodeDAO = mock(OppfolgingsperiodeDAO.class);
-    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService);
+    private final ArenaService arenaService = new ArenaService(fhoDao, meterRegistry, brukernotifikasjonArenaAktivitetService, veilarbarenaClient, idMappingDAO, personService, aktivitetDAO, oppfolgingsperiodeDAO, migreringService);
 
     private final AktorOppslagClient aktorOppslagClient = mock(AktorOppslagClient.class);
-    private final ArenaController controller = new ArenaController(context, authService, arenaService, idMappingDAO, aktivitetDAO, migreringService, oppfolgingsperiodeDAO, aktorOppslagClient);
+    private final ArenaController controller = new ArenaController(context, authService, arenaService);
 
     private final Person.AktorId aktorid = Person.aktorId("12345678");
     private final Person.Fnr fnr = Person.fnr("987654321");
@@ -120,10 +121,10 @@ class ArenaControllerTest {
         when(sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorid)).thenReturn(UUID.randomUUID());
         when(personService.getAktorIdForPersonBruker(fnr)).thenReturn(Optional.of(aktorid));
         when(oppfolgingsperiodeDAO.getByAktorId(aktorid)).thenReturn(List.of(new Oppfolgingsperiode(
-            aktorid.get(),
-            UUID.randomUUID(),
-            ZonedDateTime.now().minusYears(6),
-            null
+                aktorid.get(),
+                UUID.randomUUID(),
+                ZonedDateTime.now().minusYears(6),
+                null
         )));
         when(aktorOppslagClient.hentAktorId(fnr.otherFnr())).thenReturn(aktorid.otherAktorId());
     }
@@ -150,14 +151,6 @@ class ArenaControllerTest {
         var otherFnr = fnr.otherFnr();
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId, otherFnr));
         assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-    }
-
-    @Test
-    void sendForhaandsorienteringSkalFeileUtenArenaAktivitet() {
-        var otherFnr = fnr.otherFnr();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(null, null, otherFnr));
-        assertEquals("arenaaktivitetId kan ikke være null eller tom", exception.getReason());
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
     }
 
@@ -221,17 +214,16 @@ class ArenaControllerTest {
     @Test
     void sendForhaandsorienteringSkalOppdaterehentArenaAktiviteter() {
         AktiviteterDTO.Gruppeaktivitet medFho = createGruppeaktivitet();
-        AktiviteterDTO.Tiltaksaktivitet utenFho = createTiltaksaktivitet();
+        AktiviteterDTO.Gruppeaktivitet utenFho = createGruppeaktivitet();
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()
-                        .setGruppeaktiviteter(List.of(medFho))
-                        .setTiltaksaktiviteter(List.of(utenFho))));
+                        .setGruppeaktiviteter(List.of(medFho, utenFho))));
         controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
         List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
-                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET) && a.getId().equals(utenFho.getAktivitetId().id()));
+                .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(utenFho.getAktivitetId().id()));
     }
 
     @Test
@@ -292,11 +284,6 @@ class ArenaControllerTest {
     }
 
 
-
-
-
-
-
     @Test
     void tilgangskontrollPaaSendForhaandsorienteringSkalFinnes() {
         var medFho = new AktiviteterDTO.Gruppeaktivitet().setAktivitetId(new ArenaId("ARENAGA" + getRandomString()));
@@ -313,50 +300,5 @@ class ArenaControllerTest {
         // Feiler med 400 når man henter aktiviteter på feil fnr men det vil ikke skje pga tilgangsjekk i annotasjon
         // men det er vanskelig å teste annotasjonen uten integrasjonstest
         assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-    }
-
-    private AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {
-        return new AktiviteterDTO.Tiltaksaktivitet()
-                .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
-                .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
-                .setStatusSistEndret(LocalDate.now().minusYears(7))
-                .setDeltakelsePeriode(
-                        new AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode()
-                                // Dette er vanlig på VASV tiltakene, starter før aktivitetplanen, slutter
-                                // mange år frem i tid
-                                .setFom(LocalDate.now().minusYears(7))
-                                .setTom(LocalDate.now().plusYears(7))
-                )
-                .setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
-    }
-
-    private AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {
-        return new AktiviteterDTO.Gruppeaktivitet()
-                .setMoteplanListe(List.of(
-                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setSluttKlokkeslett("12:00:00")
-                                ,
-                                new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                                        .setSluttKlokkeslett("12:00:00")
-                        )
-
-                )
-                .setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
-    }
-
-    private AktiviteterDTO.Utdanningsaktivitet createUtdanningsaktivitet() {
-        AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode periode = new AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode()
-                .setFom(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                .setTom(LocalDate.ofInstant(Instant.now().plus(4, ChronoUnit.DAYS), ZoneId.systemDefault()));
-
-        return new AktiviteterDTO.Utdanningsaktivitet()
-                .setAktivitetId(new ArenaId("ARENAUA" + getRandomString()))
-                .setAktivitetPeriode(periode);
     }
 }

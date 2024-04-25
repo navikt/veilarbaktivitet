@@ -19,6 +19,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.MessageSource;
+import no.nav.veilarbaktivitet.arena.VeilarbarenaClient;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
