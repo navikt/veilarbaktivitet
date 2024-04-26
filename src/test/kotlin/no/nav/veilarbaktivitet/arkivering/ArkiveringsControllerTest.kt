@@ -616,7 +616,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .post(arkiveringsUrl)
 
         verify(
-            exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
+            exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
                 .withRequestBody(
                     equalToJson(
