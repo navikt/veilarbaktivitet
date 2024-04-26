@@ -74,6 +74,7 @@ fun ArenaAktivitetDTO.toArkivEtikett(): List<ArkivEtikett> {
         ArenaStatusDTO.NEITAKK -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
         ArenaStatusDTO.TILBUD -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
         ArenaStatusDTO.VENTELISTE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
+        else -> null
     }
     return listOfNotNull(avtaltEtikett, statusEtikett)
 }
