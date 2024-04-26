@@ -457,7 +457,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører skal Arena-aktiviteter inkluderes`() {
+    fun `Når man journalfører skal migrerte Arena-aktiviteter inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(
@@ -600,7 +600,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Arena-aktiviteter skal bli journalført`() {
+    fun `Ikke-migrerte Arena-aktiviteter skal bli journalført`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
         val arenaAktivitetEndretDato = iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1),  ZoneId.systemDefault())
@@ -672,17 +672,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                   }
                                 } ]
                               },
-                              "dialogtråder" : [ {
-                                "overskrift" : "Penger",
-                                "meldinger" : [ {
-                                  "avsender" : "BRUKER",
-                                  "sendt" : "5. februar 2024 kl. 14:31",
-                                  "lest" : true,
-                                  "viktig" : false,
-                                  "tekst" : "Jeg liker NAV. NAV er snille!"
-                                } ],
-                                "egenskaper" : [ ]
-                              } ],
+                              "dialogtråder" : [],
                               "mål" : "Å få meg jobb"
                             }
                         """.trimIndent()
@@ -802,6 +792,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         """.trimIndent()
                     )
                 )
+        )
+    }
+
+    private fun stubIngenDialogTråder(fnr: String) {
+        stubFor(get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
+                .willReturn(aResponse().withBody(
+                        """
+                            []
+                        """.trimIndent()
+                )
+            )
         )
     }
 
