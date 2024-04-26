@@ -615,10 +615,80 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
-        val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
-        assertThat(journalførtAktivitet.tittel).isEqualTo(tiltaksnavn)
+        verify(
+            exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(
+                    equalToJson(
+                        """
+                            {
+                              "navn" : "Sølvi Normalbakke",
+                              "fnr" : "01015450300",
+                              "oppfølgingsperiodeStart" : "26. oktober 2021",
+                              "oppfølgingsperiodeSlutt" : null,
+                              "sakId" : 1000,
+                              "fagsaksystem" : "ARBEIDSOPPFOLGING",
+                              "tema" : "OPP",
+                              "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
+                              "journalførendeEnhet" : "dummyEnhet",
+                              "aktiviteter" : {
+                                "Gjennomføres" : [ {
+                                  "tittel" : "Et tiltaksnavn fra Arena!",
+                                  "type" : "Tiltak gjennom NAV",
+                                  "status" : "Gjennomføres",
+                                  "detaljer" : [ {
+                                    "stil" : "PARAGRAF",
+                                    "tittel" : "Fullført / Tiltak gjennom NAV",
+                                    "tekst" : null
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Fra dato",
+                                    "tekst" : "18. november 2021"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Til dato",
+                                    "tekst" : "25. november 2021"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Deltakelsesprosent",
+                                    "tekst" : "60%"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Arrangør",
+                                    "tekst" : "arrangor"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Dager per uke",
+                                    "tekst" : "3"
+                                  } ],
+                                  "meldinger" : [ ],
+                                  "etiketter" : [ {
+                                    "stil" : "AVTALT",
+                                    "tekst" : "Avtalt med NAV"
+                                  } ],
+                                  "eksterneHandlinger" : [ ],
+                                  "historikk" : {
+                                    "endringer" : [ ]
+                                  }
+                                } ]
+                              },
+                              "dialogtråder" : [ {
+                                "overskrift" : "Penger",
+                                "meldinger" : [ {
+                                  "avsender" : "BRUKER",
+                                  "sendt" : "5. februar 2024 kl. 14:31",
+                                  "lest" : true,
+                                  "viktig" : false,
+                                  "tekst" : "Jeg liker NAV. NAV er snille!"
+                                } ],
+                                "egenskaper" : [ ]
+                              } ],
+                              "mål" : "Å få meg jobb"
+                            }
+                        """.trimIndent()
+                    )
+                )
+        )
     }
 
     @Test

@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.toStringWithoutNullDecimals
 
 fun ArenaAktivitetDTO.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet =
     ArkivAktivitet(
@@ -42,9 +43,9 @@ fun ArenaAktivitetDTO.toDetaljer(): List<Detalj> {
 
 fun ArenaAktivitetDTO.toTiltaksaktivitetDetaljer(): List<Detalj> {
     return listOfNotNull(
-        Detalj(Stil.HALV_LINJE, "Deltakelsesprosent", tekst = "${this.deltakelseProsent}%"),
+        Detalj(Stil.HALV_LINJE, "Deltakelsesprosent", tekst = "${this.deltakelseProsent.toStringWithoutNullDecimals()}%"),
         Detalj(Stil.HALV_LINJE, "Arrangør", tekst = this.arrangoer),
-        if(this.antallDagerPerUke != null) Detalj(Stil.HALV_LINJE, "Dager per uke", tekst = "${this.antallDagerPerUke} dager") else null,
+        if(this.antallDagerPerUke != null) Detalj(Stil.HALV_LINJE, "Dager per uke", tekst = "${this.antallDagerPerUke.toStringWithoutNullDecimals()}") else null,
         )
 }
 
