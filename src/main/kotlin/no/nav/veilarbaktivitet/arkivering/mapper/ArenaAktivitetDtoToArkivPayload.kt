@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.arkivering.mapper
 
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO
+import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO
 import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
@@ -14,7 +15,7 @@ fun ArenaAktivitetDTO.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet =
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
         meldinger = meldinger,
-        etiketter = listOf(ArkivEtikett(ArkivEtikettStil.AVTALT, "Avtalt med NAV")), // TODO: Usikker på om dette er riktig
+        etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
         historikk = AktivitetHistorikk(emptyList())
     )
@@ -31,7 +32,6 @@ fun ArenaAktivitetDTO.toDetaljer(): List<Detalj> {
         Detalj(Stil.PARAGRAF, "Fullført / Tiltak gjennom NAV", tekst = this.beskrivelse),
         Detalj(Stil.HALV_LINJE, "Fra dato", tekst = norskDato(this.fraDato) ),
         Detalj(Stil.HALV_LINJE, "Til dato", tekst = norskDato(this.tilDato) ))
-//    val forhaandsorienteringDetalj = Detalj(Stil.PARAGRAF, "Forhåndsorientering", tekst = this.forhaandsorientering) TODO
 
     return when (type) {
         ArenaAktivitetTypeDTO.TILTAKSAKTIVITET -> fellesDetaljer + toTiltaksaktivitetDetaljer()
@@ -62,18 +62,18 @@ fun ArenaAktivitetDTO.toGruppeaktivitetDetaljer(): List<Detalj> {
     )
 }
 
-// Skal vi se på avtalt feltet?
-// Kan dette være riktig?
-//
-//fun ArenaAktivitetDTO.toArkivEtikett() =
-//    when (this.etikett) {
-//        ArenaStatusDTO.AKTUELL -> TODO()
-//        ArenaStatusDTO.AVSLAG -> TODO()
-//        ArenaStatusDTO.IKKAKTUELL -> TODO()
-//        ArenaStatusDTO.IKKEM -> TODO()
-//        ArenaStatusDTO.INFOMOETE -> TODO()
-//        ArenaStatusDTO.JATAKK -> TODO()
-//        ArenaStatusDTO.NEITAKK -> TODO()
-//        ArenaStatusDTO.TILBUD -> TODO()
-//        ArenaStatusDTO.VENTELISTE -> TODO()
-//    }
+fun ArenaAktivitetDTO.toArkivEtikett(): List<ArkivEtikett> {
+    val avtaltEtikett = if(this.isAvtalt) ArkivEtikett(ArkivEtikettStil.AVTALT, "Avtalt med NAV") else null
+    val statusEtikett = when (this.etikett) {
+        ArenaStatusDTO.AKTUELL -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søkt inn på tiltaket")
+        ArenaStatusDTO.AVSLAG -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Fått avslag")
+        ArenaStatusDTO.IKKAKTUELL -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Ikke aktuell for tiltaket")
+        ArenaStatusDTO.IKKEM -> ArkivEtikett(ArkivEtikettStil.NEGATIVE, "Ikke møtt på tiltaket")
+        ArenaStatusDTO.INFOMOETE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Infomøte før tiltaket")
+        ArenaStatusDTO.JATAKK -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Takket ja til tilbud")
+        ArenaStatusDTO.NEITAKK -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
+        ArenaStatusDTO.TILBUD -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
+        ArenaStatusDTO.VENTELISTE -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
+    }
+    return listOfNotNull(avtaltEtikett, statusEtikett)
+}
