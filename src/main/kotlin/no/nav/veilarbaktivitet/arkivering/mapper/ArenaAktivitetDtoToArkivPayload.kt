@@ -41,11 +41,10 @@ fun ArenaAktivitetDTO.toDetaljer(): List<Detalj> {
 }
 
 fun ArenaAktivitetDTO.toTiltaksaktivitetDetaljer(): List<Detalj> {
-    return listOf(
+    return listOfNotNull(
         Detalj(Stil.HALV_LINJE, "Deltakelsesprosent", tekst = "${this.deltakelseProsent}%"),
         Detalj(Stil.HALV_LINJE, "Arrangør", tekst = this.arrangoer),
-        Detalj(Stil.HALV_LINJE, "Dager per uke", tekst = "${this.antallDagerPerUke} dager"),
-
+        if(this.antallDagerPerUke != null) Detalj(Stil.HALV_LINJE, "Dager per uke", tekst = "${this.antallDagerPerUke} dager") else null,
         )
 }
 
