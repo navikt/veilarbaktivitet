@@ -607,8 +607,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val arenaAktivitetId = "ARENATA123"
         val tiltaksnavn = "Et tiltaksnavn fra Arena!"
         stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.oppfolgingsperiodeId.toString(),"dummyAktivitetId")
-
+        stubIngenDialogTråder(bruker.fnr)
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
         veileder
             .createRequest(bruker)
