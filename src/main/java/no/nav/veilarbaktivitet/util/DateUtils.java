@@ -109,5 +109,5 @@ public class DateUtils {
 
     private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));
     private static DateTimeFormatter norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH:mm", Locale.forLanguageTag("no"));
-    private static DateTimeFormatter iso8601DatoFormat = DateTimeFormatter.ofPattern("YYYY-MM-dd");
+    private static DateTimeFormatter iso8601DatoFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 }
