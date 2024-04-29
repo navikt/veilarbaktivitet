@@ -623,7 +623,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             {
                               "navn" : "Sølvi Normalbakke",
                               "fnr" : "${bruker.fnr}",
-                              "oppfølgingsperiodeStart" : "26. oktober 2021",
+                              "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
                               "oppfølgingsperiodeSlutt" : null,
                               "sakId" : 1000,
                               "fagsaksystem" : "ARBEIDSOPPFOLGING",
