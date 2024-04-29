@@ -1,10 +1,12 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
-import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO.Gruppeaktivitet.Moteplan
+import no.nav.veilarbaktivitet.arena.model.AktiviteterDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaStatusDTO.*
 import no.nav.veilarbaktivitet.arena.model.MoteplanDTO
+import no.nav.veilarbaktivitet.arkivering.Detalj
+import no.nav.veilarbaktivitet.arkivering.Stil
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
 import org.assertj.core.api.Assertions.assertThat
@@ -13,7 +15,7 @@ import java.sql.Date
 import java.time.LocalDate
 import java.time.Month
 
-class ArenaAktivitetDtoToArkivPayloadKtTest {
+class ArenaAktivitetDtoToArkivPayloadTest {
 
     @Test
     fun `Skal mappe avtaltMedNav til riktig etikett`() {
@@ -67,7 +69,11 @@ class ArenaAktivitetDtoToArkivPayloadKtTest {
                 this.sted = "Oslo"
             }
         )
-        val
+        val aktivitetMedMøteplan = ArenaAktivitetDTO().apply { moeteplanListe = møteplaner }
+
+        val gruppeaktivitetDetaljer = aktivitetMedMøteplan.toGruppeaktivitetDetaljer()
+
+        assertThat(gruppeaktivitetDetaljer).containsExactly(Detalj(Stil.PARAGRAF, "Tidspunkt og sted", tekst = ""))
     }
 
     /*

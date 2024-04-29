@@ -99,7 +99,7 @@ public class DateUtils {
 
     public static String norskDato(Date date) {
         if (date == null) return "";
-        return dateToZonedDateTime(date).format(norskDatoformat);
+        return dateToLocalDateTime(date).format(norskDatoformat);
     }
 
     public static String norskDato(ZonedDateTime date) {
