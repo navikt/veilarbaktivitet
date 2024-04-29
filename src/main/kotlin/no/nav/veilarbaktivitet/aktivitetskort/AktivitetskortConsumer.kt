@@ -65,7 +65,7 @@ open class AktivitetskortConsumer (
         } catch (e: DuplikatMeldingFeil) {
             ConsumeStatus.OK
         } catch (e: AktivitetsKortFunksjonellException) {
-            log.error(
+            log.warn(
                 "Funksjonell feil {} i aktivitetkortConumer for aktivitetskort_v1 offset={} partition={}",
                 e.message,
                 consumerRecord.offset(),
