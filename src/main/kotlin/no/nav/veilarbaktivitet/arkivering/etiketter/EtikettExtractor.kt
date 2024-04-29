@@ -25,8 +25,6 @@ fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
         }
     }
 }
-
-
 private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
     return when (this.aktivitetType) {
         AktivitetTypeData.JOBBSOEKING -> this.stillingsSoekAktivitetData?.stillingsoekEtikett

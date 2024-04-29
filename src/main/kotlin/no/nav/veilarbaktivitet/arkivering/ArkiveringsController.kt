@@ -5,10 +5,9 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData
-import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.MOTE
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
-import no.nav.veilarbaktivitet.aktivitet.domain.MoteData
+import no.nav.veilarbaktivitet.arena.ArenaService
+import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
@@ -37,6 +36,7 @@ class ArkiveringsController(
     private val appService: AktivitetAppService,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val historikkService: HistorikkService,
+    private val arenaService: ArenaService
 ) {
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
@@ -78,6 +78,7 @@ class ArkiveringsController(
             .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
             .toList()
         val dialogerIPerioden = dialogClient.hentDialogerUtenKontorsperre(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        val arenaAktiviteter = arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
 
         return ArkiveringsData(
             fnr = fnr,
@@ -86,7 +87,8 @@ class ArkiveringsController(
             aktiviteter = aktiviteter,
             dialoger = dialogerIPerioden,
             mål = oppfølgingsperiodeService.hentMål(fnr),
-            historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id })
+            historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id }),
+            arenaAktiviteter = arenaAktiviteter
         )
     }
 
@@ -109,7 +111,8 @@ class ArkiveringsController(
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
         val mål: MålDTO,
-        val historikkForAktiviteter: Map<Long, Historikk>
+        val historikkForAktiviteter: Map<Long, Historikk>,
+        val arenaAktiviteter: List<ArenaAktivitetDTO>
     )
 
     data class ForhaandsvisningOutboundDTO(

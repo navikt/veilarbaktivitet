@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.net.URL
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -56,6 +57,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             aktivitetId = opprettetJobbAktivitetPlanlegger.id,
             meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeId"
@@ -217,7 +219,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             aktivitetId = opprettetJobbAktivitet.id,
             meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
         )
-
+        stubIngenArenaAktiviteter(bruker.fnr)
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeId"
 
@@ -327,6 +329,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             oppfølgingsperiodeId = annenOppfølgingsperiode.toString(),
             aktivitetId = "dummy"
         )
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering&journalforendeEnhet=0909"
@@ -354,6 +357,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             oppfølgingsperiodeId = annenOppfølgingsperiode.toString(),
             aktivitetId = "dummy"
         )
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiodeForArkivering"
@@ -378,6 +382,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
 
         stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubIngenArenaAktiviteter(kvpBruker.fnr)
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
 
         veileder
@@ -402,6 +407,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val ikkeKvpAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
+        stubIngenArenaAktiviteter(bruker.fnr)
        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
@@ -436,6 +442,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             }
         )
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -450,7 +457,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `Når man journalfører skal Arena-aktiviteter inkluderes`() {
+    fun `Når man journalfører skal migrerte Arena-aktiviteter inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(
@@ -466,6 +473,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                 messageId = UUID.randomUUID()), arenaMeldingHeaders(bruker)
         ))
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -500,6 +508,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(eksternAktivitetskort))
         stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -530,6 +539,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         aktivitetTestService.opprettAktivitet(bruker, veileder, samtaleReferatDelt)
             .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -552,6 +562,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -574,6 +585,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .setReferat(referat).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
         stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
@@ -588,6 +600,87 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     @Test
+    fun `Ikke-migrerte Arena-aktiviteter skal bli journalført`() {
+        val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
+        val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
+        val arenaAktivitetEndretDato = iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1),  ZoneId.systemDefault())
+        val arenaAktivitetId = "ARENATA123"
+        val tiltaksnavn = "Et tiltaksnavn fra Arena!"
+        stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
+        stubIngenDialogTråder(bruker.fnr)
+        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
+        veileder
+            .createRequest(bruker)
+            .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
+            .post(arkiveringsUrl)
+
+        verify(
+            exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
+                .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
+                .withRequestBody(
+                    equalToJson(
+                        """
+                            {
+                              "navn" : "Sølvi Normalbakke",
+                              "fnr" : "${bruker.fnr}",
+                              "oppfølgingsperiodeStart" : "${norskDato(oppfølgingsperiode.startTid)}",
+                              "oppfølgingsperiodeSlutt" : null,
+                              "sakId" : 1000,
+                              "fagsaksystem" : "ARBEIDSOPPFOLGING",
+                              "tema" : "OPP",
+                              "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
+                              "journalførendeEnhet" : "dummyEnhet",
+                              "aktiviteter" : {
+                                "Gjennomføres" : [ {
+                                  "tittel" : "Et tiltaksnavn fra Arena!",
+                                  "type" : "Tiltak gjennom NAV",
+                                  "status" : "Gjennomføres",
+                                  "detaljer" : [ {
+                                    "stil" : "PARAGRAF",
+                                    "tittel" : "Fullført / Tiltak gjennom NAV",
+                                    "tekst" : null
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Fra dato",
+                                    "tekst" : "18. november 2021"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Til dato",
+                                    "tekst" : "25. november 2021"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Deltakelsesprosent",
+                                    "tekst" : "60%"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Arrangør",
+                                    "tekst" : "arrangor"
+                                  }, {
+                                    "stil" : "HALV_LINJE",
+                                    "tittel" : "Dager per uke",
+                                    "tekst" : "3"
+                                  } ],
+                                  "meldinger" : [ ],
+                                  "etiketter" : [ {
+                                    "stil" : "AVTALT",
+                                    "tekst" : "Avtalt med NAV"
+                                  } ],
+                                  "eksterneHandlinger" : [ ],
+                                  "historikk" : {
+                                    "endringer" : [ ]
+                                  }
+                                } ]
+                              },
+                              "dialogtråder" : [],
+                              "mål" : "Å få meg jobb"
+                            }
+                        """.trimIndent()
+                    )
+                )
+        )
+    }
+
+    @Test
     fun `Kast 409 Conflict når man arkiverer dersom ny data har kommet etter forhåndsvisningen`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
@@ -599,6 +692,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, bruker, aktivitet)
         stubDialogTråder(fnr = bruker.fnr, oppfølgingsperiodeId = oppfølgingsperiode.toString(), aktivitetId = "dummy")
+        stubIngenArenaAktiviteter(bruker.fnr)
 
         val arkiveringsUrl =
             "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
@@ -698,6 +792,60 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     )
                 )
         )
+    }
+
+    private fun stubIngenDialogTråder(fnr: String) {
+        stubFor(get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
+                .willReturn(aResponse().withBody(
+                        """
+                            []
+                        """.trimIndent()
+                )
+            )
+        )
+    }
+
+    private fun stubIngenArenaAktiviteter(fnr: String) {
+        stubFor(get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
+            aResponse().withStatus(200)
+                .withBody("""
+                    {
+                      "tiltaksaktiviteter": [],
+                      "gruppeaktiviteter": [],
+                      "utdanningsaktiviteter": []
+                    }
+                """.trimIndent())
+        ))
+    }
+
+    private fun stubHentArenaAktiviteter(fnr: String, arenaAktivitetId: String, sistEndret: String, tiltaksnavn: String) {
+        stubFor(get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
+            aResponse().withStatus(200)
+                .withBody("""
+                    {
+                      "tiltaksaktiviteter": [
+                          {
+                            "tiltaksnavn": "$tiltaksnavn",
+                            "aktivitetId": "$arenaAktivitetId",
+                            "tiltakLokaltNavn": "lokaltnavn",
+                            "arrangor": "arrangor",
+                            "bedriftsnummer": "asd",
+                            "deltakelsePeriode": {
+                                "fom": "2021-11-18",
+                                "tom": "2021-11-25"
+                            },
+                            "deltakelseProsent": 60,
+                            "deltakerStatus": "GJENN",
+                            "statusSistEndret": "$sistEndret",
+                            "begrunnelseInnsoking": "asd",
+                            "antallDagerPerUke": 3.0
+                          }
+                      ],
+                      "gruppeaktiviteter": [],
+                      "utdanningsaktiviteter": []
+                    }
+                """.trimIndent())
+        ))
     }
 
     private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
