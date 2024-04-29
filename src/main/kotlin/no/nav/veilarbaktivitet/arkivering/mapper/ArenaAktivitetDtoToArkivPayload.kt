@@ -51,7 +51,7 @@ fun ArenaAktivitetDTO.toTiltaksaktivitetDetaljer(): List<Detalj> {
 
 fun ArenaAktivitetDTO.toGruppeaktivitetDetaljer(): List<Detalj> {
     val møteplanTekst = this.moeteplanListe.map {
-        if(it.sluttDato.equals(it.startDato) ) {
+        if(!it.startDato.equals(it.sluttDato) ) {
             " - ${norskDato(it.startDato)} - ${norskDato(it.sluttDato)} ${it.sted}"
     } else {
             " - ${norskDato(it.startDato)} ${it.sted}"

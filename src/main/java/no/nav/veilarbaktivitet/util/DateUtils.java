@@ -77,7 +77,7 @@ public class DateUtils {
         return LocalDate.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }
 
-    public static LocalDateTime dateToLocalDateTime(Date date) {
+    public static LocalDateTime dateToLocalDateTime(java.util.Date date) {
         if (date == null) return null;
         return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
     }

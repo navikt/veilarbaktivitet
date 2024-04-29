@@ -9,11 +9,13 @@ import no.nav.veilarbaktivitet.arkivering.Detalj
 import no.nav.veilarbaktivitet.arkivering.Stil
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
+import no.nav.veilarbaktivitet.util.DateUtils.localDateTimeToDate
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.sql.Date
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.Month
+import java.util.*
 
 class ArenaAktivitetDtoToArkivPayloadTest {
 
@@ -54,17 +56,18 @@ class ArenaAktivitetDtoToArkivPayloadTest {
     fun `Skal mappe gruppeaktivitetdetaljer riktig`() {
         val møteplaner = listOf(
             MoteplanDTO().apply {
-                this.startDato = Date.valueOf(LocalDate.of(2022, Month.JANUARY, 1))
-                this.sluttDato = Date.valueOf(LocalDate.of(2022, Month.JANUARY, 2))
+                this.startDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 1, 0,0,0))
+                this.startDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 1, 0,0,0))
+                this.sluttDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 2, 0,0,0))
                 this.sted = "Oslo"
             },
             MoteplanDTO().apply {
-                this.startDato = Date.valueOf(LocalDate.of(2022, Month.JANUARY, 1))
-                this.sluttDato = Date.valueOf(LocalDate.of(2022, Month.JANUARY, 1))
+                this.startDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 1, 0,0,0))
+                this.sluttDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 1, 0,0,0))
                 this.sted = "Oslo"
             },
             MoteplanDTO().apply {
-                this.startDato = Date.valueOf(LocalDate.of(2022, Month.JANUARY, 1))
+                this.startDato = localDateTimeToDate(LocalDateTime.of(2022, Month.JANUARY, 1, 0,0,0))
                 this.sluttDato = null
                 this.sted = "Oslo"
             }
@@ -73,7 +76,9 @@ class ArenaAktivitetDtoToArkivPayloadTest {
 
         val gruppeaktivitetDetaljer = aktivitetMedMøteplan.toGruppeaktivitetDetaljer()
 
-        assertThat(gruppeaktivitetDetaljer).containsExactly(Detalj(Stil.PARAGRAF, "Tidspunkt og sted", tekst = ""))
+        assertThat(gruppeaktivitetDetaljer).containsExactly(Detalj(Stil.PARAGRAF, "Tidspunkt og sted", tekst = " - 1. januar 2022 - 2. januar 2022 Oslo\n" +
+                " - 1. januar 2022 Oslo\n" +
+                " - 1. januar 2022 -  Oslo"))
     }
 
     /*
