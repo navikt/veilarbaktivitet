@@ -1,10 +1,12 @@
 package no.nav.veilarbaktivitet.service;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetService;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
+import no.nav.veilarbaktivitet.aktivitet.UlovligEndringFeil;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
@@ -57,6 +59,7 @@ public class AktivitetAppServiceTest {
     @SuppressWarnings("unused") // Blir faktisk brukt
     private MetricService metricService;
 
+    @SneakyThrows
     @Test
     void eksternbruker_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withId(AKTIVITET_ID).withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
@@ -85,6 +88,7 @@ public class AktivitetAppServiceTest {
 
     }
 
+    @SneakyThrows
     @Test
     void eksternbruker_skal_kunne_endre_flere_ting_nar_ikke_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet()
@@ -122,6 +126,8 @@ public class AktivitetAppServiceTest {
         });
     }
 
+
+    @SneakyThrows
     @Test
     void nav_skal_kunne_endre_sluttdato_selv_om_avtalt_medisinsk_behandling() {
         AktivitetData gammelAktivitet = nyBehandlingAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2022-12-10"));
@@ -148,6 +154,7 @@ public class AktivitetAppServiceTest {
         });
     }
 
+    @SneakyThrows
     @Test
     void nav_skal_kunne_endre_noen_ting_selv_om_avtalt_mote() {
         AktivitetData gammelAktivitet = nyMoteAktivitet().withAvtalt(true).withTilDato(toJavaUtilDate("2000-01-01"));
@@ -208,6 +215,7 @@ public class AktivitetAppServiceTest {
         testAlleOppdateringsmetoderUnntattEtikett(aktivitet);
     }
 
+    @SneakyThrows
     @Test
     void skal_kunne_endre_etikett_nar_aktivitet_avbrutt_eller_fullfort() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
@@ -235,6 +243,8 @@ public class AktivitetAppServiceTest {
         Assertions.assertThat(aktivitetData.getKontorsperreEnhetId()).isEqualTo(KONTORSPERRE_ENHET_ID);
     }
 
+
+    @SneakyThrows
     @Test
     void skal_ikke_kunne_endre_aktivitet_nar_den_er_historisk() {
         val aktivitet = nyttStillingssok().toBuilder().id(AKTIVITET_ID)
@@ -260,22 +270,22 @@ public class AktivitetAppServiceTest {
         try {
             appService.oppdaterStatus(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (UlovligEndringFeil ignored) {
         }
         try {
             appService.oppdaterEtikett(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (UlovligEndringFeil ignored) {
         }
         try {
             appService.oppdaterReferat(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (UlovligEndringFeil ignored) {
         }
         try {
             appService.oppdaterAktivitet(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (UlovligEndringFeil ignored) {
         }
 
         verify(aktivitetService, never()).oppdaterStatus(any(), any());
@@ -290,19 +300,13 @@ public class AktivitetAppServiceTest {
     private void testAlleOppdateringsmetoderUnntattEtikett(final AktivitetData aktivitet) {
         try {
             appService.oppdaterStatus(aktivitet);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        } catch (UlovligEndringFeil ignored) {}
         try {
             appService.oppdaterReferat(aktivitet);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        } catch (UlovligEndringFeil ignored) {}
         try {
             appService.oppdaterAktivitet(aktivitet);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        } catch (UlovligEndringFeil ignored) {}
 
         verify(aktivitetService, never()).oppdaterStatus(any(), any());
         verify(aktivitetService, never()).oppdaterAktivitet(any(), any());
