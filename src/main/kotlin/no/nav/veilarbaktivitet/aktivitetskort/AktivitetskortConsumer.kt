@@ -65,7 +65,12 @@ open class AktivitetskortConsumer (
         } catch (e: DuplikatMeldingFeil) {
             ConsumeStatus.OK
         } catch (e: AktivitetsKortFunksjonellException) {
-            log.error(
+            val logMedPassendeNivå: (String, String?, Long, Int) -> Unit = when(e) {
+                is ManglerOppfolgingsperiodeFeil -> log::warn
+                is UlovligEndringFeil -> log::warn
+                else -> log::error
+            }
+            logMedPassendeNivå(
                 "Funksjonell feil {} i aktivitetkortConumer for aktivitetskort_v1 offset={} partition={}",
                 e.message,
                 consumerRecord.offset(),

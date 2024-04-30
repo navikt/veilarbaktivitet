@@ -2,11 +2,12 @@ package no.nav.veilarbaktivitet.aktivitet;
 
 import lombok.RequiredArgsConstructor;
 import lombok.val;
-import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import java.util.*;
 public class AktivitetAppService {
 
     private final Logger secureLog = LoggerFactory.getLogger("SecureLog");
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
     private final IAuthService authService;
     private final AktivitetService aktivitetService;
     private final MetricService metricService;
@@ -173,10 +175,9 @@ public class AktivitetAppService {
         if (orginalAktivitet.getVersjon() != sisteVersjon) {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (!orginalAktivitet.endringTillatt()) {
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
-                            orginalAktivitet.getId())
-            );
+            log.warn(String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
+                    orginalAktivitet.getId()));
+            throw new EndringAvFerdigAktivitetException("Kan ikke endre aktivitet i en ferdig status");
         }
     }
 
@@ -189,10 +190,8 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
             // Etikett skal kunne endres selv om aktivitet er fullført eller avbrutt
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre etikett på historisk aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
+            log.warn(String.format("Kan ikke endre etikett på historisk aktivitet [%s]", orginalAktivitet.getId()));
+            throw new EndringAvHistoriskAktivitetException("Kan ikke endre etikett på historisk aktivitet");
         }
     }
 

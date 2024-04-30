@@ -63,7 +63,7 @@ public class EksternVarslingKvitteringConsumer {
             case OVERSENDT:
                 break;
             case FEILET:
-                log.error("varsel feilet for notifikasjon bestillingsId={} med melding {}", brukernotifikasjonBestillingsId, melding.getMelding());
+                log.warn("varsel feilet for notifikasjon bestillingsId={} med melding {}", brukernotifikasjonBestillingsId, melding.getMelding());
                 kvitteringDAO.setFeilet(bestillingsId);
                 break;
             case FERDIGSTILT:

@@ -8,6 +8,8 @@ import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -260,22 +262,22 @@ public class AktivitetAppServiceTest {
         try {
             appService.oppdaterStatus(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
         try {
             appService.oppdaterEtikett(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvHistoriskAktivitetException ignored) {
         }
         try {
             appService.oppdaterReferat(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
         try {
             appService.oppdaterAktivitet(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
 
         verify(aktivitetService, never()).oppdaterStatus(any(), any());
@@ -291,17 +293,17 @@ public class AktivitetAppServiceTest {
         try {
             appService.oppdaterStatus(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
         try {
             appService.oppdaterReferat(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
         try {
             appService.oppdaterAktivitet(aktivitet);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (EndringAvFerdigAktivitetException ignored) {
         }
 
         verify(aktivitetService, never()).oppdaterStatus(any(), any());

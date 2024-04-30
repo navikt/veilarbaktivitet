@@ -1,13 +1,17 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
+import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanController
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
+import no.nav.veilarbaktivitet.arkivering.ArkiveringsController
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.ZonedDateTime
 import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
@@ -123,6 +127,22 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(result.errors?.get(0)?.message?.contains("Field 'lol' in type 'Query' is undefined")).isTrue()
         assertThat(result.errors?.get(1)?.message?.contains("Validation error (UnusedVariable) : Unused variable 'fnr'")).isTrue()
         assertThat(result.data).isNull()
+    }
+
+    @Test
+    fun `Skal gi bad request når man endrer status på en fullført aktivitet`() {
+        val aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setStatus(AktivitetStatus.FULLFORT)
+        val opprettetAktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockVeileder, aktivitet)
+
+        val result = mockVeileder
+            .createRequest(mockBruker)
+            .body(opprettetAktivitet)
+            .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${opprettetAktivitet.id}/status")
+
+        assertThat(result.statusCode).isEqualTo(400)
+        assertThat(result.body.asString()).isEqualTo("""
+            {"message":"Kan ikke endre aktivitet i en ferdig status","statusCode":400}
+        """.trimIndent())
     }
 
 }

@@ -57,10 +57,9 @@ public class VeilarbarenaClient {
             if (response.code() == HttpStatus.NO_CONTENT.value()) {
                 return Optional.empty();
             }
-
             return RestUtils.parseJsonResponse(response, AktiviteterDTO.class);
         } catch (Exception e) {
-            log.error("Feil under deserialisering av veilarbarena response", e);
+            log.error("Feil ved henting av aktiviteter fra veilarbarena", e);
             throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "Feil ved kall mot veilarbarena", e);
         }
     }
