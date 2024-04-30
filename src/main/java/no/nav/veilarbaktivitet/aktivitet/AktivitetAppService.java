@@ -6,6 +6,7 @@ import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -175,7 +176,7 @@ public class AktivitetAppService {
         } else if (!orginalAktivitet.endringTillatt()) {
             log.warn(String.format("Kan ikke endre aktivitet [%s] i en ferdig status",
                     orginalAktivitet.getId()));
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Kan ikke endre aktivitet i en ferdig status");
+            throw new EndringAvFerdigAktivitetException("Kan ikke endre aktivitet i en ferdig status");
         }
     }
 
