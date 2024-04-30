@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import org.slf4j.Logger;
@@ -189,10 +190,8 @@ public class AktivitetAppService {
             throw new ResponseStatusException(HttpStatus.CONFLICT);
         } else if (orginalAktivitet.getHistoriskDato() != null) {
             // Etikett skal kunne endres selv om aktivitet er fullført eller avbrutt
-            throw new IllegalArgumentException(
-                    String.format("Kan ikke endre etikett på historisk aktivitet [%s]",
-                            orginalAktivitet.getId())
-            );
+            log.warn(String.format("Kan ikke endre etikett på historisk aktivitet [%s]", orginalAktivitet.getId()));
+            throw new EndringAvHistoriskAktivitetException("Kan ikke endre etikett på historisk aktivitet");
         }
     }
 

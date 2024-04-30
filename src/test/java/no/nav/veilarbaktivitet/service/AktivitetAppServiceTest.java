@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.BehandlingAktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -266,7 +267,7 @@ public class AktivitetAppServiceTest {
         try {
             appService.oppdaterEtikett(aktivitet);
             fail();
-        } catch (EndringAvFerdigAktivitetException ignored) {
+        } catch (EndringAvHistoriskAktivitetException ignored) {
         }
         try {
             appService.oppdaterReferat(aktivitet);
