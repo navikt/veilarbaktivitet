@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvAktivitetException
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -13,11 +15,14 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 
 @ControllerAdvice
-class HttpExceptionHandler: ResponseEntityExceptionHandler() {
+class HttpExceptionHandler : ResponseEntityExceptionHandler() {
 
     @ExceptionHandler(value = [EndringAvAktivitetException::class])
     fun handleException(e: EndringAvAktivitetException, request: WebRequest): ResponseEntity<Response> {
-        val statusKode = 400
+        val statusKode = when (e) {
+            is EndringAvFerdigAktivitetException, is EndringAvHistoriskAktivitetException -> HttpStatus.BAD_REQUEST.value()
+            is EndringAvUtdatertVersjonException -> HttpStatus.CONFLICT.value()
+        }
         return ResponseEntity
             .status(statusKode)
             .body(Response(statusCode = statusKode, message = e.message))
