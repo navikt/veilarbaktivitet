@@ -7,6 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
@@ -187,9 +188,9 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
         Person.AktorId aktorIdAsAktorId = bruker.getAktorIdAsAktorId();
         NavIdent navIdentAsNavident = veileder.getNavIdentAsNavident();
         transactionTemplate.executeWithoutResult((transactionStatus) -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident));
-        Assertions.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(EndringAvUtdatertVersjonException.class,
                 () -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident),
-                "java.lang.IllegalStateException: Forsøker å oppdatere en utdatert aktivitetsversjon."
+                "no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException: Forsøker å oppdatere en utdatert aktivitetsversjon."
         );
 
     }
