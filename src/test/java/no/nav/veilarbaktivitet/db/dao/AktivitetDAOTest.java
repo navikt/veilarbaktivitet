@@ -9,6 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.MoteData;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.TestData;
 import no.nav.veilarbaktivitet.person.Person;
@@ -173,7 +174,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
         AktivitetData nyAktivitetVersjon = naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon);
         assertThat(nyAktivitetVersjon.getVersjon()).isGreaterThan(originalAktivitetVersjon.getVersjon());
         // Kan jeg ikke oppdatere den originale aktivitetVersjonen lenger
-        Assertions.assertThrows(IllegalStateException.class,
+        Assertions.assertThrows(EndringAvUtdatertVersjonException.class,
                 () -> naar_jeg_oppdaterer_en_aktivitet(originalAktivitetVersjon));
     }
 

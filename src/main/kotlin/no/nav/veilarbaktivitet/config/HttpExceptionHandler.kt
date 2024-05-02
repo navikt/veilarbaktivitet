@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 class HttpExceptionHandler: ResponseEntityExceptionHandler() {
 
-    @ExceptionHandler(value = [EndringAvFerdigAktivitetException::class, EndringAvHistoriskAktivitetException::class])
+    @ExceptionHandler(value = [EndringAvAktivitetException::class])
     fun handleException(e: EndringAvAktivitetException, request: WebRequest): ResponseEntity<Response> {
         val statusKode = 400
         return ResponseEntity
