@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
@@ -151,8 +152,8 @@ public class AktivitetDAO {
         //language=SQL
         long gjeldendeVersjon = namedParameterJdbcTemplate.queryForObject("SELECT VERSJON FROM AKTIVITET where aktivitet_id = :aktivitet_id AND gjeldende=1 FOR UPDATE NOWAIT", selectGjeldendeParams, Long.class);
         if (aktivitet.getVersjon() != gjeldendeVersjon) {
-            log.error("Forsøker å oppdatere en gammel aktivitet! aktitetsversjon: {} - gjeldende versjon: {}", aktivitet.getVersjon(), gjeldendeVersjon);
-            throw new IllegalStateException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
+            log.warn("Forsøker å oppdatere en utdatert aktivitet! aktitetsversjon: {} - gjeldende versjon: {}", aktivitet.getVersjon(), gjeldendeVersjon);
+            throw new EndringAvUtdatertVersjonException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
         }
         long versjon = nesteVersjon();
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
