@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -39,7 +38,7 @@ class OppfolgingClientTest {
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingClient = new OppfolgingClientImpl(okHttpClient, okHttpClient, personService, gjeldendePeriodeMetrikk);
-        wireMock.getBaseUri();
+        WireMock.getBaseUri();
         oppfolgingClient.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
     }
 

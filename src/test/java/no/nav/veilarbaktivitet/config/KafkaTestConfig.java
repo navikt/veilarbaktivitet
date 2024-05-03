@@ -17,6 +17,7 @@ import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
@@ -28,6 +29,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
+import org.springframework.kafka.test.EmbeddedKafkaZKBroker;
 import org.springframework.kafka.test.core.BrokerAddress;
 
 import java.util.Arrays;
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
 })
 public class KafkaTestConfig {
     @Bean
-    public EmbeddedKafkaBroker embeddedKafka(
+    public EmbeddedKafkaZKBroker embeddedKafka(
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
             @Value("${topic.inn.kvpAvsluttet}") String kvpAvsluttetTopic,
@@ -54,7 +56,7 @@ public class KafkaTestConfig {
             @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode,
             @Value("${topic.inn.aktivitetskort}") String aktivitetskortTopic) {
         // TODO config
-        return new EmbeddedKafkaBroker(
+        return new EmbeddedKafkaZKBroker(
                 1,
                 false,
                 1,
@@ -70,14 +72,14 @@ public class KafkaTestConfig {
 
     @Bean
     @Primary
-    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafkaBroker) {
+    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaZKBroker embeddedKafkaBroker) {
         kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokerAddresses()).map(BrokerAddress::toString).collect(Collectors.toList()));
         return kafkaProperties;
     }
 
     @Bean
-    <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
+    <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaZKBroker embeddedKafka) {
+        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties(new DefaultSslBundleRegistry());
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
@@ -88,7 +90,7 @@ public class KafkaTestConfig {
  // Denne er opprettet spesifikt for å støtte JsonSerialiseren fra nav.common.kafka
     @Bean
     <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
+        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties(new DefaultSslBundleRegistry());
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, no.nav.common.kafka.producer.serializer.JsonSerializer.class);
@@ -106,7 +108,7 @@ public class KafkaTestConfig {
 
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
-        Map<String, Object> config = properties.buildAdminProperties();
+        Map<String, Object> config = properties.buildAdminProperties(new DefaultSslBundleRegistry());
         config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
         return Admin.create(config);
     }

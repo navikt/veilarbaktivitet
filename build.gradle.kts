@@ -2,7 +2,7 @@
 val spring_boot_version = "3.2.5"
 val common_version = "3.2024.02.21_11.18-8f9b43befae1"
 val dab_common_version = "2024.04.05-15.01.4a82af932963"
-val poao_tilgang_version = "2023.10.09_13.45-b5ace74e861a"
+val poao_tilgang_version = "1-SNAPSHOT"
 val shedlock_version = "5.9.0"
 val _version: String by project
 
@@ -31,9 +31,9 @@ kotlin {
     jvmToolchain(17)
 }
 
-configurations.all {
-    resolutionStrategy.failOnNonReproducibleResolution()
-}
+//configurations.all {
+//    resolutionStrategy.failOnNonReproducibleResolution()
+//}
 
 tasks.test {
     useJUnitPlatform()
@@ -63,6 +63,7 @@ tasks.sonar {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
 
     maven {
@@ -175,7 +176,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("com.oracle.database.jdbc:ojdbc11")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
@@ -188,7 +189,7 @@ dependencies {
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
-    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
+    testImplementation("org.wiremock:wiremock-jetty12:3.5.4")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
