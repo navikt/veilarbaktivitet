@@ -13,32 +13,37 @@ import java.time.ZonedDateTime
 class HistorikkService(
     private val aktivitetDAO: AktivitetDAO
 ) {
+    fun hentHistorikk(id: AktivitetId): AktivitetHistorikk {
+        val aktivitetVersjoner: List<AktivitetData> = aktivitetDAO.hentAktivitetVersjoner(id)
+        return lagHistorikkForAktivitet(aktivitetVersjoner)
+    }
 
-    fun hentHistorikk(aktivitetIder: List<AktivitetId>): Map<AktivitetId, Historikk> {
+    fun hentHistorikk(aktivitetIder: List<AktivitetId>): Map<AktivitetId, AktivitetHistorikk> {
         if (aktivitetIder.isEmpty()) return emptyMap()
-
         val aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>> = aktivitetDAO.hentAktivitetVersjoner(aktivitetIder)
         return lagHistorikkForAktiviteter(aktivitetVersjoner)
     }
-
 }
 
-fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>>): Map<AktivitetId, Historikk> {
+fun lagHistorikkForAktiviteter(aktivitetVersjoner: Map<AktivitetId, List<AktivitetData>>): Map<AktivitetId, AktivitetHistorikk> {
     return aktivitetVersjoner.map { (aktivitetId, aktivitetVersjoner) ->
-        val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
-        val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
-                Endring(
-                    endretAvType = aktivitetData.endretAvType,
-                    endretAv = aktivitetData.endretAv,
-                    tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
-                    beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, VEILEDER),
-                    beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, BRUKER),
-                    beskrivelseForArkiv = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, ARKIV),
-                )
-        }
-        val endringerSortertMedNyesteEndringFørst = endringer.sortedByDescending { it.tidspunkt }
-        aktivitetId to Historikk(endringer = endringerSortertMedNyesteEndringFørst)
+        aktivitetId to lagHistorikkForAktivitet(aktivitetVersjoner)
     }.toMap()
+}
+
+private fun lagHistorikkForAktivitet(aktivitetVersjoner: List<AktivitetData>): AktivitetHistorikk {
+    val sorterteAktivitetVersjoner = aktivitetVersjoner.sortedBy { it.versjon }
+    val endringer = sorterteAktivitetVersjoner.mapIndexed { index, aktivitetData ->
+        Endring(
+            endretAvType = aktivitetData.endretAvType,
+            endretAv = aktivitetData.endretAv,
+            tidspunkt = DateUtils.dateToZonedDateTime(aktivitetData.endretDato),
+            beskrivelseForVeileder = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, VEILEDER),
+            beskrivelseForBruker = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, BRUKER),
+            beskrivelseForArkiv = hentEndringstekst(sorterteAktivitetVersjoner.getOrNull(index-1), aktivitetData, ARKIV),
+        )
+    }
+    return AktivitetHistorikk(endringer.sortedByDescending { it.tidspunkt })
 }
 
 private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: AktivitetData, målgruppe: Målgruppe): String {
@@ -113,7 +118,7 @@ fun endretAvTekstTilBruker(innsender: Innsender) = when(innsender) {
 
 typealias AktivitetId = Long
 
-data class Historikk(
+data class AktivitetHistorikk(
     val endringer: List<Endring>
 )
 

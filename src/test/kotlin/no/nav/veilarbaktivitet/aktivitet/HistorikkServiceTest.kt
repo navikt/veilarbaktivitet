@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.aktivitet
 import no.nav.veilarbaktivitet.aktivitet.domain.*
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.stilling_fra_nav.Soknadsstatus
-import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*
 import no.nav.veilarbaktivitet.testutils.AktivitetTypeDataTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -328,13 +327,13 @@ class HistorikkServiceTest {
     }
 
     private fun assert(
-        historikk: Historikk,
+        aktivitetHistorikk: AktivitetHistorikk,
         oppdatertAktivitet: AktivitetData,
         beskrivelseForBruker: String,
         beskrivelseForVeileder: String
     ) {
-        assertThat(historikk.endringer).hasSize(2)
-        val endring = historikk.endringer.first()
+        assertThat(aktivitetHistorikk.endringer).hasSize(2)
+        val endring = aktivitetHistorikk.endringer.first()
         assertThat(endring.tidspunkt).isEqualTo(DateUtils.dateToZonedDateTime(oppdatertAktivitet.endretDato))
         assertThat(endring.endretAv).isEqualTo(oppdatertAktivitet.endretAv)
         assertThat(endring.endretAvType).isEqualTo(oppdatertAktivitet.endretAvType)

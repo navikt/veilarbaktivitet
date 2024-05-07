@@ -287,7 +287,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
         orignalAktivitet = aktivitet.toBuilder().build();
 
-        ValidatableResponse validatableResponse = aktivitetTestService.oppdatterAktivitet(mockBruker, mockBrukersVeileder,
+        ValidatableResponse validatableResponse = aktivitetTestService.oppdaterAktivitet(mockBruker, mockBrukersVeileder,
                 aktivitet.setBeskrivelse("noe tull")
                         .setArbeidsgiver("Justice league")
                         .setEtikett(EtikettTypeDTO.AVSLAG)

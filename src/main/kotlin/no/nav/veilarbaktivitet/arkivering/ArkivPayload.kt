@@ -39,10 +39,10 @@ data class ArkivAktivitet(
     val meldinger: List<Melding>,
     val etiketter: List<ArkivEtikett>,
     val eksterneHandlinger: List<EksternHandling>,
-    val historikk: AktivitetHistorikk
+    val historikk: ArkivAktivitetHistorikk
 )
 
-data class AktivitetHistorikk(
+data class ArkivAktivitetHistorikk(
     val endringer: List<AktivitetEndring>
 )
 
