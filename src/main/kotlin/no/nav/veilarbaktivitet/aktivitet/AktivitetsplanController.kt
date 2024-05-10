@@ -29,7 +29,8 @@ class AktivitetsplanController(
     private val appService: AktivitetAppService,
     private val aktivitetDataMapperService: AktivitetDataMapperService,
     private val userInContext: UserInContext,
-    private val migreringService: MigreringService
+    private val migreringService: MigreringService,
+    private val historikkService: HistorikkService,
 ) {
     @Deprecated("Bruk graphql endepunkt")
     @GetMapping
@@ -62,6 +63,7 @@ class AktivitetsplanController(
             }
     }
 
+    // TODO: Slett når frontend begynner å bruke historikk
     @GetMapping("/{id}/versjoner")
     @AuthorizeFnr(auditlogMessage = "hent aktivitet historikk", resourceIdParamName = "id", resourceType = AktivitetResource::class)
     fun hentAktivitetVersjoner(@PathVariable("id") aktivitetId: Long): List<AktivitetDTO> {
@@ -69,6 +71,12 @@ class AktivitetsplanController(
             .stream()
             .map { a -> AktivitetDTOMapper.mapTilAktivitetDTO(a, authService.erEksternBruker()) }
             .toList()
+    }
+
+    @GetMapping("/{id}/historikk")
+    @AuthorizeFnr(auditlogMessage = "hent aktivitet historikk", resourceIdParamName = "id", resourceType = AktivitetResource::class)
+    fun hentAktivitetHistorikk(@PathVariable("id") aktivitetId: Long): AktivitetHistorikk {
+        return historikkService.hentHistorikk(aktivitetId)
     }
 
     @PostMapping("/{oppfolgingsperiodeId}/ny")
