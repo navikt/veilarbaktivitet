@@ -57,6 +57,15 @@ jobs:
           CLUSTER: dev-fss
           RESOURCE: nais/nais-dev.yaml
           VAR: version=${{ env.IMAGE_TAG }},namespace=q1
+      - name: Slack Notification (deploy failure)
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: danger
+          SLACK_USERNAME: Github Actions
+          SLACK_ICON: https://github.com/github.png?size=48
+          SLACK_TITLE: 'Veilarbaktivitet: Mads tester aram!'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
 
   deploy-prod:
     name: Deploy application to prod
@@ -72,3 +81,13 @@ jobs:
           CLUSTER: prod-fss
           RESOURCE: nais/nais.yaml
           VAR: version=${{ env.IMAGE_TAG }}
+      - name: Slack Notification (deploy failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: danger
+          SLACK_USERNAME: Github Actions
+          SLACK_ICON: https://github.com/github.png?size=48
+          SLACK_TITLE: 'Veilarbaktivitet: deploy til prod feilet'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
