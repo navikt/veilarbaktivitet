@@ -53,6 +53,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         assertThat(output.sluttTid).isNull()
         oppfolgingsperiodeDAO.upsertOppfolgingsperide(nyOppfolging)
         assertThat(oppfolgingsperiodeDAO.getByAktorId(aktorId).first().sluttTid).isEqualTo(slutt)
+        assertThat(2).isEqualTo(1)
     }
     @Test
     @Throws(
