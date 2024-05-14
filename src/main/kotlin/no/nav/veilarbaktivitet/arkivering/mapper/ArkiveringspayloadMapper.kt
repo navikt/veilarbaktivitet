@@ -1,7 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering.mapper
 
 import no.nav.veilarbaktivitet.aktivitet.AktivitetId
-import no.nav.veilarbaktivitet.aktivitet.Historikk
+import no.nav.veilarbaktivitet.aktivitet.AktivitetHistorikk
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.*
@@ -51,7 +51,7 @@ object ArkiveringspayloadMapper {
     private fun lagDataTilOrkivar(
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>,
-        historikkForAktiviteter: Map<AktivitetId, Historikk>,
+        historikkForAktiviteter: Map<AktivitetId, AktivitetHistorikk>,
         arenaAktiviteter: List<ArenaAktivitetDTO>
     ): Pair<List<ArkivAktivitet>, List<ArkivDialogtråd>> {
         val aktivitetDialoger = dialoger.groupBy { it.aktivitetId }
@@ -59,7 +59,7 @@ object ArkiveringspayloadMapper {
         val arkivAktiviteter = aktiviteter.map {
             it.toArkivPayload(
                 meldinger = meldingerTilhørendeAktivitet(aktivitetDialoger, it.id.toString()),
-                historikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
+                aktivitetHistorikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
             )
         }
 

@@ -18,7 +18,7 @@ fun ArenaAktivitetDTO.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet =
         meldinger = meldinger,
         etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
-        historikk = AktivitetHistorikk(emptyList())
+        historikk = ArkivAktivitetHistorikk(emptyList())
     )
 
 fun ArenaAktivitetDTO.toArkivTypeTekst() =

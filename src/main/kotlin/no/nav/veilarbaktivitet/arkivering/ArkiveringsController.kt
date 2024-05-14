@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
-import no.nav.veilarbaktivitet.aktivitet.Historikk
+import no.nav.veilarbaktivitet.aktivitet.AktivitetHistorikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.SAMTALEREFERAT
@@ -111,7 +111,7 @@ class ArkiveringsController(
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
         val mål: MålDTO,
-        val historikkForAktiviteter: Map<Long, Historikk>,
+        val historikkForAktiviteter: Map<Long, AktivitetHistorikk>,
         val arenaAktiviteter: List<ArenaAktivitetDTO>
     )
 

@@ -152,7 +152,7 @@ public class AktivitetTestService {
         return aktivitet;
     }
 
-    public ValidatableResponse oppdatterAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
+    public ValidatableResponse oppdaterAktivitet(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
         String aktivitetPayloadJson = JsonUtils.toJson(aktivitetDTO);
 
         return user
@@ -163,8 +163,9 @@ public class AktivitetTestService {
                 .put("http://localhost:" + port + "/veilarbaktivitet/api/aktivitet/" + aktivitetDTO.getId())
                 .then();
     }
+
     public AktivitetDTO oppdaterAktivitetOk(MockBruker mockBruker, RestassuredUser user, AktivitetDTO aktivitetDTO) {
-        Response response = oppdatterAktivitet(mockBruker, user, aktivitetDTO)
+        Response response = oppdaterAktivitet(mockBruker, user, aktivitetDTO)
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract()
                 .response();
