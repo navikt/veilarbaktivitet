@@ -7,6 +7,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -14,15 +15,20 @@ import java.time.LocalDateTime
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
 
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
+        val forhaandsvisningUrl = "$orkivarUrl/forhaandsvisning"
+        logger.info("URL til forhaandsvisning er: $forhaandsvisningUrl")
+
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
-            .url(String.format("%s/forhaandsvisning", orkivarUrl))
+            .url(forhaandsvisningUrl)
             .build()
 
         val response = orkivarHttpClient.newCall(request).execute()
