@@ -23,6 +23,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
         val forhaandsvisningUrl = "$orkivarUrl/forhaandsvisning"
         logger.info("URL til forhaandsvisning er: $forhaandsvisningUrl")
+        logger.info("Body til forhaandsvisning er: ${JsonUtils.toJson(forhåndsvisningPayload)}")
 
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
