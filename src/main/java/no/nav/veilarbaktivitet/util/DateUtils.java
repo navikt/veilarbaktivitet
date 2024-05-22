@@ -107,6 +107,12 @@ public class DateUtils {
         return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskDatoformat);
     }
 
+    public static String norskDatoOgKlokkeslett(ZonedDateTime date) {
+        if (date == null) return "";
+        return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskDatoOgKlokkeslettFormat);
+    }
+
+    private static DateTimeFormatter norskDatoOgKlokkeslettFormat = DateTimeFormatter.ofPattern("d. MMMM uuuu 'kl.' HH.mm", Locale.forLanguageTag("no"));
     private static DateTimeFormatter norskDatoformat = DateTimeFormatter.ofPattern("d. MMMM uuuu", Locale.forLanguageTag("no"));
     private static DateTimeFormatter norskKlokkeslettformat = DateTimeFormatter.ofPattern("HH.mm", Locale.forLanguageTag("no"));
     private static DateTimeFormatter iso8601DatoFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd");

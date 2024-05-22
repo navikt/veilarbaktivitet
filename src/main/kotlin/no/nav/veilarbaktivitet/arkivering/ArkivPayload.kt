@@ -56,8 +56,8 @@ data class ArkivDialogtråd(
     val overskrift: String,
     val meldinger: List<Melding>,
     val egenskaper: List<String>,
-    val indeksSistMeldingLestAvBruker: Int?,
-    val tidspunktSistLestAvBruker: String,
+    val indexSisteMeldingLestAvBruker: Int?,
+    val tidspunktSistLestAvBruker: String?,
 )
 
 data class Melding(

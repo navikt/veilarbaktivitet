@@ -68,7 +68,7 @@ object ArkiveringspayloadMapper {
         }
 
         val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
-        return Pair(arkivAktiviteter + arenaArkivAktiviteter, meldingerUtenAktivitet.map { it.tilDialogTråd() })
+        return Pair(arkivAktiviteter + arenaArkivAktiviteter, meldingerUtenAktivitet.map { it.tilArkivDialogTråd() })
     }
 
     private fun meldingerTilhørendeAktivitet(dialoger: Map<String?, List<DialogClient. DialogTråd>>, aktivitetId: String) =

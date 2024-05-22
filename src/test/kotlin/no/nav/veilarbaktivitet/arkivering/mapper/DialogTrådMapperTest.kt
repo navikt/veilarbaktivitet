@@ -3,6 +3,9 @@ package no.nav.veilarbaktivitet.arkivering.mapper
 import no.nav.veilarbaktivitet.arkivering.DialogClient
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.*
 
@@ -22,9 +25,9 @@ class DialogTrådMapperTest {
                 meldingFraBruker(dialogTrådId))
         )
 
-        val arkivDialogTråd = dialogTråd.tilDialogTråd()
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
 
-        assertThat(arkivDialogTråd.indeksSistMeldingLestAvBruker).isEqualTo(4)
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(4)
     }
 
     @Test
@@ -41,9 +44,9 @@ class DialogTrådMapperTest {
                 meldingFraBruker(dialogTrådId))
         )
 
-        val arkivDialogTråd = dialogTråd.tilDialogTråd()
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
 
-        assertThat(arkivDialogTråd.indeksSistMeldingLestAvBruker).isEqualTo(1)
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(1)
     }
 
     @Test
@@ -60,9 +63,9 @@ class DialogTrådMapperTest {
                 meldingFraBruker(dialogTrådId))
         )
 
-        val arkivDialogTråd = dialogTråd.tilDialogTråd()
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
 
-        assertThat(arkivDialogTråd.indeksSistMeldingLestAvBruker).isEqualTo(3)
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(3)
     }
 
     @Test
@@ -79,9 +82,25 @@ class DialogTrådMapperTest {
                 meldingFraBruker(dialogTrådId))
         )
 
-        val arkivDialogTråd = dialogTråd.tilDialogTråd()
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
 
-        assertThat(arkivDialogTråd.indeksSistMeldingLestAvBruker).isNull()
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isNull()
+    }
+
+    @Test
+    fun `Tidspunkt for indexSisteMeldingLestAvBruker skal være  riktig`() {
+        val dialogTrådId = "random"
+        val tidspunktLest = ZonedDateTime.of(LocalDate.of(2023, 2, 2), LocalTime.of(14, 12, 12, 12), ZoneId.systemDefault())
+        val dialogTråd = dialogTråd(
+            id = dialogTrådId,
+            meldinger = listOf(
+                meldingFraVeileder(dialogTrådId, lestAvBruker = true).copy(lestAvBrukerTidspunkt = tidspunktLest)
+            )
+        )
+
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
+
+        assertThat(arkivDialogTråd.tidspunktSistLestAvBruker).isEqualTo("2. februar 2023 kl. 14.12")
     }
 
     private fun dialogTråd(id: String, meldinger: List<DialogClient.Melding>) = DialogClient.DialogTråd(

@@ -3,16 +3,25 @@ package no.nav.veilarbaktivitet.arkivering.mapper
 import no.nav.veilarbaktivitet.arkivering.DialogClient
 import no.nav.veilarbaktivitet.arkivering.ArkivDialogtråd
 import no.nav.veilarbaktivitet.arkivering.Melding
+import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.klokkeslett
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 
-fun DialogClient.DialogTråd.tilDialogTråd() =
-    ArkivDialogtråd(
+fun DialogClient.DialogTråd.tilArkivDialogTråd(): ArkivDialogtråd {
+    val indeksSistLestMelding = meldinger.indexSisteMeldingFraVeilederSomErLestAvBruker()
+    val tidspunktSistLestAvBruker = indeksSistLestMelding?.let {
+        val tidspunkt = meldinger[indeksSistLestMelding].lestAvBrukerTidspunkt
+        DateUtils.norskDatoOgKlokkeslett(tidspunkt)
+    }
+
+    return ArkivDialogtråd(
         overskrift = overskrift,
         egenskaper = egenskaper.map { it.toString() },
-        r meldinger =  meldinger.map { it.tilMelding()
-        }
+        meldinger =  meldinger.map { it.tilMelding() },
+        indexSisteMeldingLestAvBruker = indeksSistLestMelding,
+        tidspunktSistLestAvBruker =  tidspunktSistLestAvBruker,
     )
+}
 
 fun DialogClient.Melding.tilMelding() =
     Melding(
@@ -22,3 +31,8 @@ fun DialogClient.Melding.tilMelding() =
         viktig = viktig,
         tekst = tekst
     )
+
+private fun List<DialogClient.Melding>.indexSisteMeldingFraVeilederSomErLestAvBruker(): Int? {
+    val index = indexOfLast { it.avsender == DialogClient.Avsender.VEILEDER && it.lestAvBruker }
+    return if (index == -1) null else index
+}
