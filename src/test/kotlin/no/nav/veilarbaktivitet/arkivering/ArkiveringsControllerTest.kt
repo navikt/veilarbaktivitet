@@ -51,11 +51,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
+        val meldingerSistLestTidspunkt = "2024-03-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             aktivitetId = opprettetJobbAktivitetPlanlegger.id,
-            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc,
+            sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
 
@@ -81,6 +83,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
         val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
+        val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
+        val expectedDialogSistLestTidspunkt = norskDatoOgKlokkeslett(dialogSistLestTidspunkt)
 
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -135,7 +139,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               } ],
                               "egenskaper" : [ ],
                               "indexSisteMeldingLestAvBruker" : 0,
-                              "tidspunktSistLestAvBruker" : "5. mars 2024 kl. 14.31"
+                              "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
                           },
                           "etiketter": [],
                             "eksterneHandlinger" : [ ],
@@ -221,11 +225,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
 
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
+        val meldingerSistLestTidspunkt = "2024-03-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             aktivitetId = opprettetJobbAktivitet.id,
-            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc,
+            sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
         val arkiveringsUrl =
@@ -242,6 +248,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
         val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
+        val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
+        val expectedDialogSistLestTidspunkt = norskDatoOgKlokkeslett(dialogSistLestTidspunkt)
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -299,7 +307,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           }],
                           "egenskaper" : [ ],
                           "indexSisteMeldingLestAvBruker" : 0,
-                          "tidspunktSistLestAvBruker" : "5. mars 2024 kl. 14.31"
+                          "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
                         },
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],
@@ -736,7 +744,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00") {
+    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00", sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00") {
         stubFor(
             get(
                 urlEqualTo(
@@ -758,7 +766,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "lest": true,
                                     "venterPaSvar": false,
                                     "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "2024-03-05T13:31:19.382+00:00",
+                                    "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
                                     "erLestAvBruker": true,
                                     "oppfolgingsperiode": "$oppfølgingsperiodeId",
                                     "henvendelser": [
