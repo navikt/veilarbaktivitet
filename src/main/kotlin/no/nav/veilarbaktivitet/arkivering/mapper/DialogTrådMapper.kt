@@ -34,6 +34,6 @@ fun DialogClient.Melding.tilMelding() =
     )
 
 private fun DialogClient.DialogTråd.indexSisteMeldingFraVeilederSomErLestAvBruker(): Int? {
-    if (!lestAvBruker || lestAvBrukerTidspunkt == null) return null
+    if (!erLestAvBruker || lestAvBrukerTidspunkt == null) return null
     return meldinger.indexOfLast { melding -> melding.sendt.isBefore(lestAvBrukerTidspunkt) }
 }

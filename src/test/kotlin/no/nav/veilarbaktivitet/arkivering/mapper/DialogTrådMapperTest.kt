@@ -113,7 +113,7 @@ class DialogTrådMapperTest {
         oppfolgingsperiodeId = UUID.randomUUID(),
         meldinger = meldinger,
         egenskaper = emptyList(),
-        lestAvBruker = lestAvBruker,
+        erLestAvBruker = lestAvBruker,
         lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
     )
 

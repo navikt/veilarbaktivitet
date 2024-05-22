@@ -134,8 +134,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                 "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                               } ],
                               "egenskaper" : [ ],
-                              "indexSisteMeldingLestAvBruker" : null,
-                              "tidspunktSistLestAvBruker" : null
+                              "indexSisteMeldingLestAvBruker" : 0,
+                              "tidspunktSistLestAvBruker" : "5. mars 2024 kl. 14.31"
                           },
                           "etiketter": [],
                             "eksterneHandlinger" : [ ],
@@ -298,8 +298,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }],
                           "egenskaper" : [ ],
-                          "indexSisteMeldingLestAvBruker" : null,
-                          "tidspunktSistLestAvBruker" : null
+                          "indexSisteMeldingLestAvBruker" : 0,
+                          "tidspunktSistLestAvBruker" : "5. mars 2024 kl. 14.31"
                         },
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],

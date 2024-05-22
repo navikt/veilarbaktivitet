@@ -49,7 +49,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         @JsonProperty("henvendelser")
         val meldinger: List<Melding>,
         val egenskaper: List<Egenskap>,
-        val lestAvBruker: Boolean,
+        val erLestAvBruker: Boolean,
         val lestAvBrukerTidspunkt: ZonedDateTime?,
     )
 
