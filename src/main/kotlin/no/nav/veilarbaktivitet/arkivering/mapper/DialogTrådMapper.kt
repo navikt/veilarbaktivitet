@@ -4,8 +4,7 @@ import no.nav.veilarbaktivitet.arkivering.DialogClient
 import no.nav.veilarbaktivitet.arkivering.ArkivDialogtråd
 import no.nav.veilarbaktivitet.arkivering.Melding
 import no.nav.veilarbaktivitet.util.DateUtils
-import no.nav.veilarbaktivitet.util.DateUtils.klokkeslett
-import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import no.nav.veilarbaktivitet.util.DateUtils.*
 
 
 fun DialogClient.DialogTråd.tilArkivDialogTråd(): ArkivDialogtråd {
@@ -27,7 +26,7 @@ fun DialogClient.DialogTråd.tilArkivDialogTråd(): ArkivDialogtråd {
 fun DialogClient.Melding.tilMelding() =
     Melding(
         avsender = avsender.toString(),
-        sendt = "${norskDato(sendt)} kl. ${klokkeslett(sendt)}",
+        sendt = norskDatoOgKlokkeslett(sendt),
         lest = lest,
         viktig = viktig,
         tekst = tekst

@@ -80,7 +80,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
 
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -241,7 +241,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))

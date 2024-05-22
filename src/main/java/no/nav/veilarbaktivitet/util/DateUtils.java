@@ -92,11 +92,6 @@ public class DateUtils {
         return dateToZonedDateTime(date).format(norskKlokkeslettformat);
     }
 
-    public static String klokkeslett(ZonedDateTime date) {
-        if (date == null) return "";
-        return date.withZoneSameInstant(ZoneId.systemDefault()).format(norskKlokkeslettformat);
-    }
-
     public static String norskDato(Date date) {
         if (date == null) return "";
         return dateToLocalDateTime(date).format(norskDatoformat);
