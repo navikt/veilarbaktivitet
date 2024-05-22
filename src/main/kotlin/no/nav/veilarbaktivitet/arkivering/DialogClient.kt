@@ -60,6 +60,8 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val lest: Boolean,
         val viktig: Boolean,
         val tekst: String,
+        val lestAvBruker: Boolean,
+        val lestAvBrukerTidspunkt: ZonedDateTime?,
     )
 
     enum class Egenskap {

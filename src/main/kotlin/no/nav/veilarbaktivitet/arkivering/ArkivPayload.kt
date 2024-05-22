@@ -55,7 +55,9 @@ data class AktivitetEndring(
 data class ArkivDialogtråd(
     val overskrift: String,
     val meldinger: List<Melding>,
-    val egenskaper: List<String>
+    val egenskaper: List<String>,
+    val indeksSistMeldingLestAvBruker: Int?,
+    val tidspunktSistLestAvBruker: String,
 )
 
 data class Melding(

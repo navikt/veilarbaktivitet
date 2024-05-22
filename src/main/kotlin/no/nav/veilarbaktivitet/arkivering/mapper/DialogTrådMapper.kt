@@ -10,7 +10,7 @@ fun DialogClient.DialogTråd.tilDialogTråd() =
     ArkivDialogtråd(
         overskrift = overskrift,
         egenskaper = egenskaper.map { it.toString() },
-        meldinger =  meldinger.map { it.tilMelding()
+        r meldinger =  meldinger.map { it.tilMelding()
         }
     )
 
