@@ -9,13 +9,13 @@ import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 import no.nav.veilarbaktivitet.util.toStringWithoutNullDecimals
 
-fun ArenaAktivitetDTO.toArkivPayload(meldinger: List<Melding>): ArkivAktivitet =
+fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktivitet =
     ArkivAktivitet(
         tittel = this.tittel,
         type = this.toArkivTypeTekst(),
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
-        meldinger = meldinger,
+        dialogtråd = dialogtråd,
         etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
         historikk = AktivitetHistorikk(emptyList())

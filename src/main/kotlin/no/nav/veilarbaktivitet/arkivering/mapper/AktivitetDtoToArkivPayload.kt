@@ -7,10 +7,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData.*
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
-import no.nav.veilarbaktivitet.arkivering.ArkivAktivitet
-import no.nav.veilarbaktivitet.arkivering.Detalj
-import no.nav.veilarbaktivitet.arkivering.EksternHandling
-import no.nav.veilarbaktivitet.arkivering.Melding
+import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.Stil.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.getArkivEtiketter
 import no.nav.veilarbaktivitet.person.Innsender
@@ -19,13 +16,13 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData
 import no.nav.veilarbaktivitet.util.DateUtils.*
 import java.time.Duration
 
-fun AktivitetData.toArkivPayload(meldinger: List<Melding>, historikk: Historikk): ArkivAktivitet {
+fun AktivitetData.toArkivPayload(dialogtråd: ArkivDialogtråd?, historikk: Historikk): ArkivAktivitet {
     return ArkivAktivitet(
         tittel = this.tittel,
         type = this.toArkivTypeTekst(),
         status = this.status.toArkivTekst(),
         detaljer = this.toDetaljer(),
-        meldinger = meldinger,
+        dialogtråd = dialogtråd,
         etiketter = this.getArkivEtiketter(),
         eksterneHandlinger = this.getEksterneHandlinger(),
         historikk = historikk.tilAktivitetHistorikk()

@@ -48,7 +48,9 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val oppfolgingsperiodeId: UUID,
         @JsonProperty("henvendelser")
         val meldinger: List<Melding>,
-        val egenskaper: List<Egenskap>
+        val egenskaper: List<Egenskap>,
+        val lestAvBruker: Boolean,
+        val lestAvBrukerTidspunkt: ZonedDateTime?,
     )
 
     data class Melding(
@@ -59,9 +61,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
         val sendt: ZonedDateTime,
         val lest: Boolean,
         val viktig: Boolean,
-        val tekst: String,
-        val lestAvBruker: Boolean,
-        val lestAvBrukerTidspunkt: ZonedDateTime?,
+        val tekst: String
     )
 
     enum class Egenskap {

@@ -124,13 +124,19 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
-                          "meldinger" : [ {
-                            "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendtNorskTid",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          } ],
+                          "dialogtråd": {
+                              "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                              "meldinger" : [ {
+                                "avsender" : "VEILEDER",
+                                "sendt" : "$expectedMeldingerSendtNorskTid",
+                                "lest" : true,
+                                "viktig" : false,
+                                "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                              } ],
+                              "egenskaper" : [ ],
+                              "indexSisteMeldingLestAvBruker" : null,
+                              "tidspunktSistLestAvBruker" : null
+                          },
                           "etiketter": [],
                             "eksterneHandlinger" : [ ],
                             "historikk" : {
@@ -169,7 +175,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
-                          "meldinger" : [ ],
+                          "dialogtråd" : null,
                           "etiketter": [],
                           "eksterneHandlinger" : [],
                           "historikk" : {
@@ -189,7 +195,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
-                        "egenskaper" : [ ]
+                        "egenskaper" : [ ],
+                        "indexSisteMeldingLestAvBruker" : null,
+                        "tidspunktSistLestAvBruker" : null
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
@@ -280,6 +288,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
+                        "dialogtråd" : {
+                          "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
                             "sendt" : "$expectedMeldingerSendtNorskTid",
@@ -287,6 +297,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }],
+                          "egenskaper" : [ ],
+                          "indexSisteMeldingLestAvBruker" : null,
+                          "tidspunktSistLestAvBruker" : null
+                        },
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],
                           "historikk" : {
@@ -306,7 +320,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
-                        "egenskaper" : [ ]
+                        "egenskaper" : [ ],
+                        "indexSisteMeldingLestAvBruker" : null,
+                        "tidspunktSistLestAvBruker" : null
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
@@ -660,7 +676,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "tittel" : "Dager per uke",
                                     "tekst" : "3"
                                   } ],
-                                  "meldinger" : [ ],
+                                  "dialogtråd" : null,
                                   "etiketter" : [ {
                                     "stil" : "AVTALT",
                                     "tekst" : "Avtalt med NAV"
@@ -742,7 +758,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "lest": true,
                                     "venterPaSvar": false,
                                     "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "2024-02-05T13:31:19.382+00:00",
+                                    "lestAvBrukerTidspunkt": "2024-03-05T13:31:19.382+00:00",
                                     "erLestAvBruker": true,
                                     "oppfolgingsperiode": "$oppfølgingsperiodeId",
                                     "henvendelser": [

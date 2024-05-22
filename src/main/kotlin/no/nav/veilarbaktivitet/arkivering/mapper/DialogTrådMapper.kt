@@ -7,10 +7,11 @@ import no.nav.veilarbaktivitet.util.DateUtils
 import no.nav.veilarbaktivitet.util.DateUtils.klokkeslett
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
 
+
 fun DialogClient.DialogTråd.tilArkivDialogTråd(): ArkivDialogtråd {
-    val indeksSistLestMelding = meldinger.indexSisteMeldingFraVeilederSomErLestAvBruker()
+    val indeksSistLestMelding = this.indexSisteMeldingFraVeilederSomErLestAvBruker()
     val tidspunktSistLestAvBruker = indeksSistLestMelding?.let {
-        val tidspunkt = meldinger[indeksSistLestMelding].lestAvBrukerTidspunkt
+        val tidspunkt = lestAvBrukerTidspunkt
         DateUtils.norskDatoOgKlokkeslett(tidspunkt)
     }
 
@@ -32,7 +33,7 @@ fun DialogClient.Melding.tilMelding() =
         tekst = tekst
     )
 
-private fun List<DialogClient.Melding>.indexSisteMeldingFraVeilederSomErLestAvBruker(): Int? {
-    val index = indexOfLast { it.avsender == DialogClient.Avsender.VEILEDER && it.lestAvBruker }
-    return if (index == -1) null else index
+private fun DialogClient.DialogTråd.indexSisteMeldingFraVeilederSomErLestAvBruker(): Int? {
+    if (!lestAvBruker || lestAvBrukerTidspunkt == null) return null
+    return meldinger.indexOfLast { melding -> melding.sendt.isBefore(lestAvBrukerTidspunkt) }
 }

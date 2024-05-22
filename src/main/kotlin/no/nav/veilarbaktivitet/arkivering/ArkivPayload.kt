@@ -36,7 +36,7 @@ data class ArkivAktivitet(
     val type: String,
     val status: String,
     val detaljer: List<Detalj>,
-    val meldinger: List<Melding>,
+    val dialogtråd: ArkivDialogtråd?,
     val etiketter: List<ArkivEtikett>,
     val eksterneHandlinger: List<EksternHandling>,
     val historikk: AktivitetHistorikk

@@ -13,16 +13,17 @@ class DialogTrådMapperTest {
 
     @Test
     fun `Alle meldinger er lest av bruker så indeks peker på siste melding fra veileder`() {
-        val dialogTrådId = "random"
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
         val dialogTråd = dialogTråd(
-            id = dialogTrådId,
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
             meldinger = listOf(
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraBruker(dialogTrådId))
+                meldingFraBruker(),
+                meldingFraVeileder(lestAvBrukerTidspunkt.minusDays(10)),
+                meldingFraBruker(),
+                meldingFraVeileder(lestAvBrukerTidspunkt.minusDays(9)),
+                meldingFraVeileder(lestAvBrukerTidspunkt.minusDays(8)),
+                meldingFraBruker())
         )
 
         val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
@@ -32,16 +33,17 @@ class DialogTrådMapperTest {
 
     @Test
     fun `Kun første melding fra veileder er lest av bruker`() {
-        val dialogTrådId = "random"
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
         val dialogTråd = dialogTråd(
-            id = dialogTrådId,
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
             meldinger = listOf(
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraBruker(dialogTrådId))
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(1)),
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.plusHours(1)),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.plusHours(2)),
+                meldingFraBruker())
         )
 
         val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
@@ -51,16 +53,17 @@ class DialogTrådMapperTest {
 
     @Test
     fun `Den andre av tre meldinger fra veileder er lest av bruker`() {
-        val dialogTrådId = "random"
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
         val dialogTråd = dialogTråd(
-            id = dialogTrådId,
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
             meldinger = listOf(
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraBruker(dialogTrådId))
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(3)),
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(2)),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.plusHours(1)),
+                meldingFraBruker())
         )
 
         val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
@@ -70,16 +73,16 @@ class DialogTrådMapperTest {
 
     @Test
     fun `Ingen meldinger er lest av bruker så indeks er null`() {
-        val dialogTrådId = "random"
         val dialogTråd = dialogTråd(
-            id = dialogTrådId,
+            lestAvBruker = false,
+            lestAvBrukerTidspunkt = null,
             meldinger = listOf(
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraBruker(dialogTrådId),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraVeileder(dialogTrådId, lestAvBruker = false),
-                meldingFraBruker(dialogTrådId))
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1)),
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1)),
+                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1)),
+                meldingFraBruker())
         )
 
         val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
@@ -89,12 +92,12 @@ class DialogTrådMapperTest {
 
     @Test
     fun `Tidspunkt for indexSisteMeldingLestAvBruker skal være  riktig`() {
-        val dialogTrådId = "random"
         val tidspunktLest = ZonedDateTime.of(LocalDate.of(2023, 2, 2), LocalTime.of(14, 12, 12, 12), ZoneId.systemDefault())
         val dialogTråd = dialogTråd(
-            id = dialogTrådId,
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = tidspunktLest,
             meldinger = listOf(
-                meldingFraVeileder(dialogTrådId, lestAvBruker = true).copy(lestAvBrukerTidspunkt = tidspunktLest)
+                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1))
             )
         )
 
@@ -103,37 +106,35 @@ class DialogTrådMapperTest {
         assertThat(arkivDialogTråd.tidspunktSistLestAvBruker).isEqualTo("2. februar 2023 kl. 14.12")
     }
 
-    private fun dialogTråd(id: String, meldinger: List<DialogClient.Melding>) = DialogClient.DialogTråd(
-        id = id,
+    private fun dialogTråd(meldinger: List<DialogClient.Melding>, lestAvBruker: Boolean, lestAvBrukerTidspunkt: ZonedDateTime?) = DialogClient.DialogTråd(
+        id = "random",
         aktivitetId = null,
         overskrift = "Dummy",
         oppfolgingsperiodeId = UUID.randomUUID(),
         meldinger = meldinger,
-        egenskaper = emptyList()
-    )
-
-    private fun meldingFraBruker(dialogId: String) = melding(
-        dialogId = dialogId,
-        sendtAv = DialogClient.Avsender.BRUKER,
-        lestAvBruker = true,
-    )
-
-    private fun meldingFraVeileder(dialogId: String, lestAvBruker: Boolean) = melding(
-        dialogId = dialogId,
-        sendtAv = DialogClient.Avsender.VEILEDER,
+        egenskaper = emptyList(),
         lestAvBruker = lestAvBruker,
+        lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
     )
 
-    private fun melding(dialogId: String, sendtAv: DialogClient.Avsender, lestAvBruker: Boolean) = DialogClient.Melding(
+    private fun meldingFraBruker() = melding(
+        sendtAv = DialogClient.Avsender.BRUKER,
+        sendt = ZonedDateTime.now()
+    )
+
+    private fun meldingFraVeileder(sendt: ZonedDateTime) = melding(
+        sendtAv = DialogClient.Avsender.VEILEDER,
+        sendt = sendt
+    )
+
+    private fun melding(sendtAv: DialogClient.Avsender, sendt: ZonedDateTime) = DialogClient.Melding(
         id = UUID.randomUUID().toString(),
-        dialogId = dialogId,
+        dialogId = "random",
         avsender = sendtAv,
         avsenderId = "DummyId",
-        sendt = ZonedDateTime.now(),
+        sendt = sendt,
         lest = true,
         viktig = false,
         tekst = "DummyTekst",
-        lestAvBruker = lestAvBruker,
-        lestAvBrukerTidspunkt = if (lestAvBruker) ZonedDateTime.now() else null,
     )
 }
