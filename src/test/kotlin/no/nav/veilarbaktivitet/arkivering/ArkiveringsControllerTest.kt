@@ -51,11 +51,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
+        val meldingerSistLestTidspunkt = "2024-03-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             aktivitetId = opprettetJobbAktivitetPlanlegger.id,
-            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc,
+            sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
 
@@ -80,7 +82,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
+        val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
+        val expectedDialogSistLestTidspunkt = norskDatoOgKlokkeslett(dialogSistLestTidspunkt)
 
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/forhaandsvisning"))
@@ -124,13 +128,19 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
-                          "meldinger" : [ {
-                            "avsender" : "VEILEDER",
-                            "sendt" : "$expectedMeldingerSendtNorskTid",
-                            "lest" : true,
-                            "viktig" : false,
-                            "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
-                          } ],
+                          "dialogtråd": {
+                              "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
+                              "meldinger" : [ {
+                                "avsender" : "VEILEDER",
+                                "sendt" : "$expectedMeldingerSendtNorskTid",
+                                "lest" : true,
+                                "viktig" : false,
+                                "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
+                              } ],
+                              "egenskaper" : [ ],
+                              "indexSisteMeldingLestAvBruker" : 0,
+                              "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
+                          },
                           "etiketter": [],
                             "eksterneHandlinger" : [ ],
                             "historikk" : {
@@ -169,7 +179,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
-                          "meldinger" : [ ],
+                          "dialogtråd" : null,
                           "etiketter": [],
                           "eksterneHandlinger" : [],
                           "historikk" : {
@@ -189,7 +199,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
-                        "egenskaper" : [ ]
+                        "egenskaper" : [ ],
+                        "indexSisteMeldingLestAvBruker" : null,
+                        "tidspunktSistLestAvBruker" : null
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
@@ -213,11 +225,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
 
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
+        val meldingerSistLestTidspunkt = "2024-03-05T13:31:22.238+00:00"
         stubDialogTråder(
             fnr = bruker.fnr,
             oppfølgingsperiodeId = oppfølgingsperiodeId,
             aktivitetId = opprettetJobbAktivitet.id,
-            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc
+            meldingerSendtTidspunkt = meldingerSendtTidspunktUtc,
+            sistLestTidspunkt = meldingerSistLestTidspunkt
         )
         stubIngenArenaAktiviteter(bruker.fnr)
         val arkiveringsUrl =
@@ -233,7 +247,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
 
         val meldingerSendtTidspunkt = ZonedDateTime.parse(meldingerSendtTidspunktUtc)
-        val expectedMeldingerSendtNorskTid = "${norskDato(meldingerSendtTidspunkt)} kl. ${klokkeslett(meldingerSendtTidspunkt)}"
+        val expectedMeldingerSendtNorskTid = norskDatoOgKlokkeslett(meldingerSendtTidspunkt)
+        val dialogSistLestTidspunkt = ZonedDateTime.parse(meldingerSistLestTidspunkt)
+        val expectedDialogSistLestTidspunkt = norskDatoOgKlokkeslett(dialogSistLestTidspunkt)
         verify(
             exactly(1), postRequestedFor(urlEqualTo("/orkivar/arkiver"))
                 .withHeader("Content-Type", equalTo("application/json; charset=UTF-8"))
@@ -280,6 +296,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "tittel" : "Beskrivelse",
                             "tekst" : "beskrivelse"
                           } ],
+                        "dialogtråd" : {
+                          "overskrift" : "Arbeidsmarkedsopplæring (Gruppe): Kurs: Speiderkurs gruppe-AMO",
                           "meldinger" : [ {
                             "avsender" : "VEILEDER",
                             "sendt" : "$expectedMeldingerSendtNorskTid",
@@ -287,6 +305,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "viktig" : false,
                             "tekst" : "wehfuiehwf\n\nHilsen F_994188 E_994188"
                           }],
+                          "egenskaper" : [ ],
+                          "indexSisteMeldingLestAvBruker" : 0,
+                          "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
+                        },
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],
                           "historikk" : {
@@ -306,7 +328,9 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "viktig" : false,
                           "tekst" : "Jeg liker NAV. NAV er snille!"
                         } ],
-                        "egenskaper" : [ ]
+                        "egenskaper" : [ ],
+                        "indexSisteMeldingLestAvBruker" : null,
+                        "tidspunktSistLestAvBruker" : null
                       } ],
                       "mål": "${bruker.brukerOptions.mål}"
                     }
@@ -660,7 +684,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "tittel" : "Dager per uke",
                                     "tekst" : "3"
                                   } ],
-                                  "meldinger" : [ ],
+                                  "dialogtråd" : null,
                                   "etiketter" : [ {
                                     "stil" : "AVTALT",
                                     "tekst" : "Avtalt med NAV"
@@ -720,7 +744,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00") {
+    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00", sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00") {
         stubFor(
             get(
                 urlEqualTo(
@@ -742,7 +766,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "lest": true,
                                     "venterPaSvar": false,
                                     "ferdigBehandlet": false,
-                                    "lestAvBrukerTidspunkt": "2024-02-05T13:31:19.382+00:00",
+                                    "lestAvBrukerTidspunkt": "$sistLestTidspunkt",
                                     "erLestAvBruker": true,
                                     "oppfolgingsperiode": "$oppfølgingsperiodeId",
                                     "henvendelser": [

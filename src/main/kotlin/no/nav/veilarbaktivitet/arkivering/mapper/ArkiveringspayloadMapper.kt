@@ -7,8 +7,11 @@ import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.oppfolging.client.SakDTO
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
+import org.slf4j.LoggerFactory
 
 object ArkiveringspayloadMapper {
+
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun mapTilArkivPayload(
         arkiveringsData: ArkiveringsController.ArkiveringsData,
@@ -58,21 +61,27 @@ object ArkiveringspayloadMapper {
 
         val arkivAktiviteter = aktiviteter.map {
             it.toArkivPayload(
-                meldinger = meldingerTilhørendeAktivitet(aktivitetDialoger, it.id.toString()),
+                dialogtråd = dialogTilhørendeAktiviteten(aktivitetDialoger, it.id.toString()),
                 historikk = historikkForAktiviteter[it.id] ?: throw RuntimeException("Fant ikke historikk på aktivitet med id ${it.id}")
             )
         }
 
         val arenaArkivAktiviteter = arenaAktiviteter.map {
-            it.toArkivPayload(meldingerTilhørendeAktivitet(aktivitetDialoger, it.id))
+            it.toArkivPayload(dialogTilhørendeAktiviteten(aktivitetDialoger, it.id))
         }
 
         val meldingerUtenAktivitet = aktivitetDialoger[null] ?: emptyList()
-        return Pair(arkivAktiviteter + arenaArkivAktiviteter, meldingerUtenAktivitet.map { it.tilDialogTråd() })
+        return Pair(arkivAktiviteter + arenaArkivAktiviteter, meldingerUtenAktivitet.map { it.tilArkivDialogTråd() })
     }
 
-    private fun meldingerTilhørendeAktivitet(dialoger: Map<String?, List<DialogClient. DialogTråd>>, aktivitetId: String) =
-        dialoger[aktivitetId]
-            ?.map { it.meldinger.map { it.tilMelding() } }
-            ?.flatten() ?: emptyList()
+    private fun dialogTilhørendeAktiviteten(dialoger: Map<String?, List<DialogClient. DialogTråd>>, aktivitetId: String): ArkivDialogtråd? {
+        val dialogerTilhørendeAktiviteten = dialoger[aktivitetId] ?: return null
+
+        return if (dialogerTilhørendeAktiviteten.size == 1) {
+            dialogerTilhørendeAktiviteten.first().tilArkivDialogTråd()
+        } else {
+            if (dialogerTilhørendeAktiviteten.size > 1) logger.info("Finnes ${dialogerTilhørendeAktiviteten.size} dialogtråder til aktivitet $aktivitetId. Det skal kun være maks én.")
+            null
+        }
+    }
 }
