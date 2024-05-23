@@ -72,6 +72,23 @@ class DialogTrådMapperTest {
     }
 
     @Test
+    fun `Alle meldinger lest, nest siste er fra veileder, siste er fra bruker, indeks peker på veileders melding`() {
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
+        val dialogTråd = dialogTråd(
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
+            meldinger = listOf(
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(3)),
+                meldingFraBruker(sendt = lestAvBrukerTidspunkt.minusDays(2))
+             )
+        )
+
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
+
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(0)
+    }
+
+    @Test
     fun `Ingen meldinger er lest av bruker så indeks er null`() {
         val dialogTråd = dialogTråd(
             lestAvBruker = false,
@@ -117,9 +134,9 @@ class DialogTrådMapperTest {
         lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
     )
 
-    private fun meldingFraBruker() = melding(
+    private fun meldingFraBruker(sendt: ZonedDateTime = ZonedDateTime.now()) = melding(
         sendtAv = DialogClient.Avsender.BRUKER,
-        sendt = ZonedDateTime.now()
+        sendt = sendt
     )
 
     private fun meldingFraVeileder(sendt: ZonedDateTime) = melding(
