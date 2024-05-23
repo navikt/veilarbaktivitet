@@ -153,7 +153,7 @@ class DialogTrådMapperTest {
             lestAvBruker = true,
             lestAvBrukerTidspunkt = tidspunktLest,
             meldinger = listOf(
-                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1))
+                meldingFraVeileder(sendt = tidspunktLest.minusDays(1))
             )
         )
 
