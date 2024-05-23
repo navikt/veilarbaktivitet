@@ -52,6 +52,24 @@ class DialogTrådMapperTest {
     }
 
     @Test
+    fun `Første melding er fra veileder og kun denne er lest av bruker`() {
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusMonths(2)
+        val dialogTråd = dialogTråd(
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
+            meldinger = listOf(
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusHours(2)),
+                meldingFraBruker(sendt = lestAvBrukerTidspunkt.minusSeconds(5)),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.plusHours(1)),
+            )
+        )
+
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
+
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(0)
+    }
+
+    @Test
     fun `Den andre av tre meldinger fra veileder er lest av bruker`() {
         val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
         val dialogTråd = dialogTråd(
@@ -89,6 +107,27 @@ class DialogTrådMapperTest {
     }
 
     @Test
+    fun `Ikke se på lestAvBruker-feltet for beregning av sist lest av bruker`() {
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
+
+        val dialogTråd = dialogTråd(
+            lestAvBruker = false,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
+            meldinger = listOf(
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(1)),
+                meldingFraBruker(),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(1)),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusDays(1)),
+                meldingFraBruker())
+        )
+
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
+
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isNotNull()
+    }
+
+    @Test
     fun `Ingen meldinger er lest av bruker så indeks er null`() {
         val dialogTråd = dialogTråd(
             lestAvBruker = false,
@@ -114,7 +153,7 @@ class DialogTrådMapperTest {
             lestAvBruker = true,
             lestAvBrukerTidspunkt = tidspunktLest,
             meldinger = listOf(
-                meldingFraVeileder(sendt = ZonedDateTime.now().minusDays(1))
+                meldingFraVeileder(sendt = tidspunktLest.minusDays(1))
             )
         )
 
