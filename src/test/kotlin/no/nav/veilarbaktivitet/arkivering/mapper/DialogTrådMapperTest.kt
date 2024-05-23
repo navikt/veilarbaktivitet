@@ -52,6 +52,24 @@ class DialogTrådMapperTest {
     }
 
     @Test
+    fun `Første melding er fra veileder og kun denne er lest av bruker`() {
+        val lestAvBrukerTidspunkt = ZonedDateTime.now().minusMonths(2)
+        val dialogTråd = dialogTråd(
+            lestAvBruker = true,
+            lestAvBrukerTidspunkt = lestAvBrukerTidspunkt,
+            meldinger = listOf(
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.minusHours(2)),
+                meldingFraBruker(sendt = lestAvBrukerTidspunkt.minusSeconds(5)),
+                meldingFraVeileder(sendt = lestAvBrukerTidspunkt.plusHours(1)),
+            )
+        )
+
+        val arkivDialogTråd = dialogTråd.tilArkivDialogTråd()
+
+        assertThat(arkivDialogTråd.indexSisteMeldingLestAvBruker).isEqualTo(0)
+    }
+
+    @Test
     fun `Den andre av tre meldinger fra veileder er lest av bruker`() {
         val lestAvBrukerTidspunkt = ZonedDateTime.now().minusDays(1)
         val dialogTråd = dialogTråd(
