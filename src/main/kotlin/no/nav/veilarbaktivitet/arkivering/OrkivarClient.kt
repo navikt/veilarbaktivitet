@@ -19,19 +19,11 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
     @Value("\${orkivar.url}")
     lateinit var orkivarUrl: String
 
-    private val logger = LoggerFactory.getLogger(this::class.java)
-
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
-        val body = JsonUtils.toJson(forhåndsvisningPayload)
-
-        if (isDevelopment().orElse(false)) {
-            logger.info("Payload til Orkivar for forhaandsvisning: $body")
-        }
-
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
-            .post(body.toRequestBody("application/json".toMediaTypeOrNull()))
+            .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
             .url(String.format("%s/forhaandsvisning", orkivarUrl))
             .build()
 
