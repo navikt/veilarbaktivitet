@@ -2,13 +2,10 @@ package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.common.json.JsonUtils
 import no.nav.common.rest.client.RestUtils
-import no.nav.common.utils.EnvironmentUtils
-import no.nav.common.utils.EnvironmentUtils.isDevelopment
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
