@@ -16,4 +16,6 @@ public interface OppfolgingClient {
     Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId);
 
     Optional<MålDTO> hentMål(Person.Fnr fnr);
+
+    Optional<List<MålDTO>> hentMålListe(Person.Fnr fnr);
 }

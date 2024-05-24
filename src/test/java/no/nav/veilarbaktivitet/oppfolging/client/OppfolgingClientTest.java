@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -103,5 +104,24 @@ class OppfolgingClientTest {
 
         assertThat(hentetMål).isPresent();
         assertThat(hentetMål.get().mal()).isEqualTo(mål);
+    }
+
+    @Test
+    void test_hentmålliste_ok_response() {
+        var mål = "Å få meg jobb";
+        wireMock.stubFor(get(urlMatching("/veilarboppfolging/api/oppfolging/malListe\\?fnr=([0-9]*)"))
+                .willReturn(ok()
+                        .withHeader("Content-Type", "text/json")
+                        .withBody("""
+                                [{
+                                "mal": "%s",
+                                "endretAv": "VEILEDER",
+                                "dato": "2024-03-18T14:22:17.442331+01:00"
+                                }]
+                                """.formatted(mål))));
+        Optional< List<MålDTO>> hentetMål = oppfolgingClient.hentMålListe(FNR);
+
+        assertThat(hentetMål).isPresent();
+        assertThat(hentetMål.get().get(0).mal()).isEqualTo(mål);
     }
 }

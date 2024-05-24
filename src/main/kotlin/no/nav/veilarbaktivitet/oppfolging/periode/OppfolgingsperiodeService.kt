@@ -55,4 +55,8 @@ class OppfolgingsperiodeService(
     fun hentMål(fnr: Fnr): MålDTO {
         return oppfolgingClient.hentMål(fnr).orElseGet(null)
     }
+
+    fun hentMålListe(fnr: Fnr): List<MålDTO> {
+        return oppfolgingClient.hentMålListe(fnr).orElseGet(null)
+    }
 }

@@ -118,10 +118,29 @@ public class OppfolgingClientImpl implements OppfolgingClient {
         }
     }
 
+    @Override
+    public Optional<List<MålDTO>> hentMålListe(Person.Fnr fnr) {
+        String uri = String.format("%s/oppfolging/malListe?fnr=%s", baseUrl, fnr.get());
+        Request request = new Request.Builder()
+                .url(uri)
+                .get()
+                .build();
+        try (Response response = veilarboppfolgingOnBehalfOfHttpClient.newCall(request).execute()) {
+            RestUtils.throwIfNotSuccessful(response);
+            if (response.code() == HttpStatus.NO_CONTENT.value()) {
+                return Optional.empty();
+            }
+            return RestUtils.parseJsonArrayResponse(response, MålDTO.class);
+        } catch (Exception e) {
+            throw internalServerError(e, request.url().toString());
+        }
+    }
+
     private ResponseStatusException internalServerError(Exception cause, String url) {
         throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, String.format("Feil ved kall mot %s - %s", url, cause.getMessage()), cause);
     }
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
+
 }

@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import no.nav.veilarbaktivitet.person.Navn;
 
+import java.util.List;
+
 @Builder(toBuilder = true)
 @Getter
 public class BrukerOptions {
@@ -17,6 +19,7 @@ public class BrukerOptions {
     private Navn navn;
     private Long sakId;
     private String mål;
+    private List målListe;
 
     /*
     @TODO
@@ -39,6 +42,7 @@ public class BrukerOptions {
                 .erUnderKvp(false)
                 .navn(new Navn("Navn", null, "Navnesen"))
                 .sakId(1000L)
-                .mål("Å få meg jobb");
+                .mål("Å få meg jobb")
+                .målListe(List.of());
     }
 }

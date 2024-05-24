@@ -87,6 +87,7 @@ class ArkiveringsController(
             aktiviteter = aktiviteter,
             dialoger = dialogerIPerioden,
             mål = oppfølgingsperiodeService.hentMål(fnr),
+            målHistorikk = oppfølgingsperiodeService.hentMålListe(fnr),
             historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id }),
             arenaAktiviteter = arenaAktiviteter
         )
@@ -111,6 +112,7 @@ class ArkiveringsController(
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
         val mål: MålDTO,
+        val målHistorikk: List<MålDTO>,
         val historikkForAktiviteter: Map<Long, Historikk>,
         val arenaAktiviteter: List<ArenaAktivitetDTO>
     )
