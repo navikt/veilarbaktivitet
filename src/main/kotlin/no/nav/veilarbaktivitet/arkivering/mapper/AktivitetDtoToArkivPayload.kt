@@ -87,7 +87,7 @@ fun AktivitetData.beregnVarighet(): String {
 
 fun AktivitetData.hentEksterneDetaljer(): List<Detalj> = this.eksternAktivitetData
     ?.detaljer
-    ?.map { Detalj(HALV_LINJE, it.label, it.verdi) } ?: emptyList()
+    ?.map { Detalj(HEL_LINJE, it.label, it.verdi) } ?: emptyList()
 
 
 fun AktivitetData.getEksterneHandlinger(): List<EksternHandling> =
