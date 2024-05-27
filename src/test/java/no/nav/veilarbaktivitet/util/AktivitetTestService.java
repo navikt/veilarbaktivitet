@@ -106,6 +106,20 @@ public class AktivitetTestService {
         return response.as(GraphqlResult.class);
     }
 
+    public GraphqlResult queryHistorikk(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
+        var validatableResponse = user
+                .createRequest()
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": " + aktivitetId + " } }")
+                .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
+                .then();
+        var response = validatableResponse
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response();
+        return response.as(GraphqlResult.class);
+    }
+
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
         Response response = user
                 .createRequest()
