@@ -20,8 +20,7 @@ class Location(val line: String, val column: Int)
 class Extension(val classification: String)
 
 class QueryAktivitetsPerioder(
-    val perioder: List<OppfolgingsPeriode>? = emptyList(),
-    val aktivitet: AktivitetDTO? = null
+    val perioder: List<OppfolgingsPeriode>? = emptyList()
 )
 
 class GraphqlResult(

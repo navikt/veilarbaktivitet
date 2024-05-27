@@ -6,7 +6,6 @@ import graphql.schema.CoercingParseValueException
 import graphql.schema.GraphQLScalarType
 import no.nav.veilarbaktivitet.util.DateUtils
 import java.time.ZoneOffset
-import java.time.ZonedDateTime
 import java.util.*
 
 object DateScalar {
@@ -40,7 +39,6 @@ object DateScalar {
     fun serializeDate(dataFetcherResult: Any): String {
         return when (dataFetcherResult) {
             is Date -> DateUtils.iso8601Fromdate(dataFetcherResult, ZoneOffset.systemDefault())
-            is ZonedDateTime -> dataFetcherResult.toString()
             else -> throw CoercingParseValueException("Failed to parse input in serializeDate")
         }
     }
