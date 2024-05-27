@@ -1,17 +1,14 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
-import no.nav.veilarbaktivitet.aktivitet.AktivitetsplanController
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
-import no.nav.veilarbaktivitet.arkivering.ArkiveringsController
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.time.ZonedDateTime
 import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
@@ -140,9 +137,41 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             .put("http://localhost:$port/veilarbaktivitet/api/aktivitet/${opprettetAktivitet.id}/status")
 
         assertThat(result.statusCode).isEqualTo(400)
-        assertThat(result.body.asString()).isEqualTo("""
+        assertThat(result.body.asString()).isEqualTo(
+            """
             {"message":"Kan ikke endre aktivitet i en ferdig status","statusCode":400}
-        """.trimIndent())
+        """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `skal kunne hente historikk`() {
+        val nyPeriode = UUID.randomUUID()
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(nyPeriode).build()
+        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($aktivitetIdParam: String) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                    historikk {
+                        endringer {
+                            endretAvType,
+                            endretAv,
+                            tidspunkt,
+                            beskrivelseForVeileder,
+                            beskrivelseForBruker,
+                            beskrivelseForArkiv,
+                        }
+                    }
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryHistorikk(mockBruker, mockBruker, query, aktivitet.id.toLong())
+        assertThat(result.errors).isNull()
+        assertThat(result.data?.aktivitet?.historikk).isNotNull()
+        assertThat(result.data?.aktivitet?.historikk?.endringer).hasSize(2)
     }
 
 }

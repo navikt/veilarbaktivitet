@@ -1,9 +1,25 @@
 type Query {
     perioder(fnr: String!): [OppfolgingsPeriode]
+    aktivitet(aktivitetId: String): AktivitetDTO
+}
+
+type Historikk {
+    endringer: [Endring]
+}
+
+type Endring {
+    endretAvType: Innsender
+    endretAv: String
+    tidspunkt: Date
+    beskrivelseForVeileder: String!
+    beskrivelseForBruker: String!
+    beskrivelseForArkiv: String!
 }
 
 type OppfolgingsPeriode {
     id: String
+    start: Date
+    slutt: Date
     aktiviteter: [AktivitetDTO]
 }
 
@@ -70,6 +86,8 @@ type AktivitetDTO {
     stillingFraNavData: StillingFraNavData
 
     eksternAktivitet: EksternAktivitetDTO
+
+    historikk: Historikk
 }
 
 type EksternAktivitetDTO {
