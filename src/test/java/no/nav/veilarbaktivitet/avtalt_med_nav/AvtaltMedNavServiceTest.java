@@ -75,9 +75,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
     void opprettFHO_medTomTekst_setterTekstenTilNull() {
         var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID);
 
-        var fhoDTO = ForhaandsorienteringDTO.builder()
-                .type(defaultType)
-                .tekst("").build();
+        var fhoDTO = new ForhaandsorienteringInboundDTO(defaultType, "");
 
         var aktivitetDTO = opprettAktivitetMedFHO(aktivitetData, fhoDTO);
         var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
@@ -88,9 +86,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     @Test
     void opprettFHO_maaHaMatchendeAktivitet() {
-        var fhoDTO = ForhaandsorienteringDTO.builder()
-                .type(defaultType)
-                .tekst(defaultTekst).lestDato(null).build();
+        var fhoDTO = new ForhaandsorienteringInboundDTO(defaultType, defaultTekst);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO()
                 .setForhaandsorientering(fhoDTO)
@@ -164,9 +160,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
         var avtaltDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
-                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
-                        .type(defaultType)
-                        .tekst(defaultTekst).lestDato(null).build());
+                .setForhaandsorientering(new ForhaandsorienteringInboundDTO(defaultType, defaultTekst));
         aktivitetTestService.opprettFHOForInternAktivitet(bruker, veileder, avtaltDTO, aktivitetId);
         aktivitetTestService.opprettFHOForInternAktivitetRequest(bruker, veileder, avtaltDTO, aktivitetId)
                 .body("message", equalTo("Feil aktivitetversjon"))
@@ -182,9 +176,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
         var avtaltDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
-                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
-                        .type(defaultType)
-                        .tekst(defaultTekst).lestDato(null).build());
+                .setForhaandsorientering(new ForhaandsorienteringInboundDTO(defaultType, defaultTekst));
         Person.AktorId aktorIdAsAktorId = bruker.getAktorIdAsAktorId();
         NavIdent navIdentAsNavident = veileder.getNavIdentAsNavident();
         transactionTemplate.executeWithoutResult((transactionStatus) -> avtaltMedNavService.opprettFHO(avtaltDTO, aktivitetId, aktorIdAsAktorId, navIdentAsNavident));
@@ -203,9 +195,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
         var aktivitetId = Long.parseLong(opprettetAktivitet.getId());
         var avtaltDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
-                .setForhaandsorientering(ForhaandsorienteringDTO.builder()
-                        .type(defaultType)
-                        .tekst(defaultTekst).lestDato(null).build());
+                .setForhaandsorientering(new ForhaandsorienteringInboundDTO(defaultType, defaultTekst));
         var oppdatertAktivitet = aktivitetTestService.opprettFHOForInternAktivitet(bruker, veileder, avtaltDTO, aktivitetId);
         var oppdaterAvtaltDto = avtaltDTO.setAktivitetVersjon(Long.parseLong(oppdatertAktivitet.getVersjon()));
         aktivitetTestService.opprettFHOForInternAktivitetRequest(bruker, veileder, oppdaterAvtaltDto, aktivitetId)
@@ -215,14 +205,11 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     private AktivitetDTO opprettAktivitetMedDefaultFHO(AktivitetData aktivitetData) {
 
-        var fhoDTO = ForhaandsorienteringDTO.builder()
-                .type(defaultType)
-                .tekst(defaultTekst).lestDato(null).build();
-
+        var fhoDTO = new ForhaandsorienteringInboundDTO(defaultType, defaultTekst);
         return opprettAktivitetMedFHO(aktivitetData, fhoDTO);
     }
 
-    private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData, ForhaandsorienteringDTO forhaandsorienteringDTO) {
+    private AktivitetDTO opprettAktivitetMedFHO(AktivitetData aktivitetData, ForhaandsorienteringInboundDTO forhaandsorienteringDTO) {
         AktivitetData nyAktivitet = aktivitetDAO.opprettNyAktivitet(aktivitetData);
 
         AvtaltMedNavDTO avtaltDTO = new AvtaltMedNavDTO()

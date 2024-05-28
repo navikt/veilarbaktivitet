@@ -8,3 +8,8 @@ data class ForhaandsorienteringDTO(
     val tekst: String,
     val lestDato: Date?,
 )
+
+data class ForhaandsorienteringInboundDTO(
+    val type: Type,
+    val tekst: String,
+)

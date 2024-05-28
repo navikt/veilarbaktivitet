@@ -142,16 +142,6 @@ class ArenaControllerTest {
     }
 
     @Test
-    void sendForhaandsorienteringSkalFeileUtenForhaandsorienteringsType() {
-        ForhaandsorienteringDTO fho = ForhaandsorienteringDTO.builder().build();
-        ArenaId arenaId = new ArenaId("ARENATAAktivitetId");
-        var otherFnr = fnr.otherFnr();
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> controller.opprettFHO(fho, arenaId, otherFnr));
-        assertEquals("forhaandsorientering.type kan ikke være null", exception.getReason());
-        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatusCode());
-    }
-
-    @Test
     void sendForhaandsorienteringSkalFeileHvisArenaAktivitetenIkkeFinnes() {
         when(veilarbarenaClient.hentAktiviteter(fnr))
                 .thenReturn(Optional.of(new AktiviteterDTO()));

@@ -7,5 +7,5 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 public class AvtaltMedNavDTO {
     private long aktivitetVersjon;
-    private ForhaandsorienteringDTO forhaandsorientering;
+    private ForhaandsorienteringInboundDTO forhaandsorientering;
 }
