@@ -149,10 +149,6 @@ public class OpprettForesporselOmDelingAvCv {
         }
         String orginalNavn = kontaktInfo.getNavn();
         String navnUnder250 = orginalNavn == null ? null : orginalNavn.substring(0, Math.min(orginalNavn.length(), 240));
-        return KontaktpersonData.builder()
-                .navn(navnUnder250)
-                .tittel(kontaktInfo.getTittel())
-                .mobil(kontaktInfo.getMobil())
-                .build();
+        return new KontaktpersonData(navnUnder250, kontaktInfo.getTittel(), kontaktInfo.getMobil());
     }
 }

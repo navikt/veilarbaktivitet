@@ -42,6 +42,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import static no.nav.veilarbaktivitet.avtalt_med_nav.Type.SEND_FORHAANDSORIENTERING;
 import static no.nav.veilarbaktivitet.testutils.ArenaAktivitetUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,7 +82,7 @@ class ArenaControllerTest {
 
     private final NavIdent veilederIdent = NavIdent.of("Z123456");
 
-    private final ForhaandsorienteringDTO forhaandsorientering = ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
+    private final ForhaandsorienteringDTO forhaandsorientering = new ForhaandsorienteringDTO("id", SEND_FORHAANDSORIENTERING, "kake", null);
 
     @BeforeEach
     void cleanup() {

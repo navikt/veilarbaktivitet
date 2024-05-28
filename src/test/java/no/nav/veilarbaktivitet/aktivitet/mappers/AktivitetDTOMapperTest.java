@@ -52,6 +52,8 @@ class AktivitetDTOMapperTest {
     void skalMappeForhaandsorientering() {
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet()
                 .aktivitetType(AktivitetTypeData.MOTE)
+                .forhaandsorientering(For
+                ())
                 .forhaandsorientering(Forhaandsorientering
                         .builder()
                         .id("1234")

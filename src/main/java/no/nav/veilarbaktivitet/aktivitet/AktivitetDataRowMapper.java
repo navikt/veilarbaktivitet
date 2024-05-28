@@ -138,11 +138,11 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .endretAvType(EnumUtils.valueOf(Innsender.class, rs.getString("cv_kan_deles_av_type")))
                 .build();
 
-        var kontaktpersonData = KontaktpersonData.builder()
-                .navn(rs.getString("kontaktperson_navn"))
-                .tittel(rs.getString("kontaktperson_tittel"))
-                .mobil(rs.getString("kontaktperson_mobil"))
-                .build();
+        var kontaktpersonData = new KontaktpersonData(
+                rs.getString("kontaktperson_navn"),
+                rs.getString("kontaktperson_tittel"),
+                rs.getString("kontaktperson_mobil")
+        );
 
         return StillingFraNavData.builder()
                 .cvKanDelesData(cvKanDelesData.getKanDeles() == null ? null : cvKanDelesData)

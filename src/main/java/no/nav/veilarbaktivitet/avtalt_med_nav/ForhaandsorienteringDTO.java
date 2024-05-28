@@ -6,11 +6,11 @@ import lombok.Data;
 import java.util.Date;
 
 
-@Data
-@Builder(toBuilder = true)
-public class ForhaandsorienteringDTO {
-    private String id;
-    private Type type;
-    private String tekst;
-    private Date lestDato;
-}
+//@Data
+//@Builder(toBuilder = true)
+//public class ForhaandsorienteringDTO {
+//    private String id;
+//    private Type type;
+//    private String tekst;
+//    private Date lestDato;
+//}

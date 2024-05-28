@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
-import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
@@ -25,7 +24,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -413,7 +411,7 @@ public class AktivitetDAO {
         ofNullable(stillingFraNavData)
                 .ifPresent(stilling -> {
                             var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
-                            var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
+                            var kontaktpersonData = stilling.getKontaktpersonData();
                             SqlParameterSource parms = new MapSqlParameterSource()
                                     .addValue(AKTIVITETID, aktivitetId)
                                     .addValue(VERSJON, versjon)
@@ -429,9 +427,9 @@ public class AktivitetDAO {
                                     .addValue("stillingsId", stilling.getStillingsId())
                                     .addValue("arbeidssted", stilling.getArbeidssted())
                                     .addValue("varselid", stilling.getVarselId())
-                                    .addValue("kontaktperson_navn", kontaktpersonData.map(KontaktpersonData::getNavn).orElse(null))
-                                    .addValue("kontaktperson_tittel", kontaktpersonData.map(KontaktpersonData::getTittel).orElse(null))
-                                    .addValue("kontaktperson_mobil", kontaktpersonData.map(KontaktpersonData::getMobil).orElse(null))
+                                    .addValue("kontaktperson_navn", kontaktpersonData.getNavn())
+                                    .addValue("kontaktperson_tittel", kontaktpersonData.getTittel())
+                                    .addValue("kontaktperson_mobil", kontaktpersonData.getMobil())
                                     .addValue("soknadsstatus", EnumUtils.getName(stilling.getSoknadsstatus()))
                                     .addValue("livslopsstatus", EnumUtils.getName(stilling.getLivslopsStatus()))
                                     .addValue("detaljer", stilling.getDetaljer());

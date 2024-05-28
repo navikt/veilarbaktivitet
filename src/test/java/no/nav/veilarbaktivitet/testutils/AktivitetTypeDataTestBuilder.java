@@ -83,11 +83,7 @@ public class AktivitetTypeDataTestBuilder {
                     .build();
         }
 
-        KontaktpersonData kontaktpersonData = KontaktpersonData.builder()
-                .navn("Ola Nordmann")
-                .tittel("NAV-ansatt")
-                .mobil("10203040")
-                .build();
+        KontaktpersonData kontaktpersonData = new KontaktpersonData("Ola Nordmann", "NAV-ansatt", "10203040");
 
         return StillingFraNavData.builder()
                 .bestillingsId("123")
