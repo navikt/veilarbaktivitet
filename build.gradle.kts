@@ -93,19 +93,21 @@ tasks.compileTestKotlin {
 
 openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/AktivitetsplanV1.yaml")
-    generatorName.set("spring")
+    generatorName.set("kotlin-spring")
     packageName.set("no.nav.veilarbaktivitet.internapi")
     apiPackage.set("no.nav.veilarbaktivitet.internapi.api")
     modelPackage.set("no.nav.veilarbaktivitet.internapi.model")
     configOptions.put("useSpringBoot3", "true")
-    configOptions.put("openApiNullable", "false")
-    configOptions.put("interfaceOnly", "true")
-    configOptions.put("skipDefaultInterface", "true")
-    configOptions.put("additionalModelTypeAnnotations", "@lombok.experimental.SuperBuilder @lombok.NoArgsConstructor")
+    configOptions.put("delegatePattern", "true")
+//    configOptions.put("openApiNullable", "false")
+//    configOptions.put("interfaceOnly", "true")
+//    configOptions.put("skipDefaultInterface", "true")
+//    configOptions.put("additionalModelTypeAnnotations", "@lombok.experimental.SuperBuilder @lombok.NoArgsConstructor")
     outputDir.set("$buildDir/generated")
 }
 
 java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
+kotlin.sourceSets["main"].kotlin.srcDir("$buildDir/generated/src/main/kotlin")
 
 group = "no.nav"
 description = "veilarbaktivitet"
