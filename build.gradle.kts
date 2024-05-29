@@ -37,6 +37,14 @@ kotlin {
 
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
+    resolutionStrategy {
+        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-core:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
+
+    }
 }
 
 tasks.test {
@@ -160,7 +168,13 @@ dependencies {
     implementation("no.nav.common:feature-toggle:$common_version")
     implementation("no.nav.common:metrics:$common_version")
     implementation("no.nav.common:job:$common_version")
-    implementation("no.nav.common:rest:$common_version")
+    implementation("no.nav.common:rest:$common_version") {
+        exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
+        exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
+        exclude(group = "com.fasterxml.jackson.core", module = "jackson-datatype-jdk8")
+        exclude(group = "com.fasterxml.jackson.core", module = "jackson-annotations")
+        exclude(group = "com.fasterxml.jackson.module", module = "jackson-module-scala")
+    }
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
