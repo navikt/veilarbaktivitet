@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.periode
 
-import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
+import no.nav.veilarbaktivitet.oppfolging.OppfolgingPeriodeMinimalDTO
 import org.slf4j.LoggerFactory
 import java.time.LocalDate
 import java.time.LocalDateTime

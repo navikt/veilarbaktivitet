@@ -486,7 +486,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         )
         val aktivitet = hentAktivitet(funksjonellId)
         val detaljer = aktivitet.eksternAktivitet.detaljer
-        assertThat(detaljer.stream().filter { it: Attributt -> it.label == "Tiltaksnavn" }).hasSize(1)
+        assertThat(detaljer!!.stream().filter { it: Attributt -> it.label == "Tiltaksnavn" }).hasSize(1)
         assertThat(detaljer).containsOnlyOnceElementsOf(listOf(
             Attributt(
                 "Tiltaksnavn",
@@ -715,7 +715,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId!!))
             .isFalse()
         val aktivitet = hentAktivitet(funksjonellId)
-        assertThat(aktivitet.eksternAktivitet.detaljer[0].verdi).isEqualTo(
+        assertThat(aktivitet.eksternAktivitet.detaljer!!.first().verdi).isEqualTo(
             tiltaksaktivitet.detaljer!![0].verdi
         )
         assertThat(aktivitet.status).isEqualTo(AktivitetStatus.PLANLAGT)

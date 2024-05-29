@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
+import no.nav.veilarbaktivitet.oppfolging.OppfolgingPeriodeMinimalDTO;
 import no.nav.veilarbaktivitet.person.Person;
 
 import java.util.List;

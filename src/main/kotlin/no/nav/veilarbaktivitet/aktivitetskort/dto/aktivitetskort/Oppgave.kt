@@ -1,10 +1,9 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort
 
-import java.net.URL;
+import java.net.URL
 
-public record Oppgave(
-    String tekst,
-    String subtekst,
-    URL url
-) {
-}
+data class Oppgave(
+    val tekst: String,
+    val subtekst: String,
+    val url: URL
+)

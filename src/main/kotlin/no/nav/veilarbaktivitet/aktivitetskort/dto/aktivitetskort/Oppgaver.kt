@@ -1,6 +1,6 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort
 
-public record Oppgaver(
-    Oppgave ekstern,
-    Oppgave intern
-) {}
+data class Oppgaver(
+    val ekstern: Oppgave,
+    val intern: Oppgave?
+)

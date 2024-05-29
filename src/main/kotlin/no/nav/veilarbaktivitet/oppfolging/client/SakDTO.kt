@@ -1,9 +1,10 @@
-package no.nav.veilarbaktivitet.oppfolging.client;
+package no.nav.veilarbaktivitet.oppfolging.client
 
-import java.util.UUID;
-public record SakDTO(
-        UUID oppfolgingsperiodeId,
-        Long sakId,
-        String fagsaksystem,
-        String tema
-){}
+import java.util.*
+
+data class SakDTO(
+    val oppfolgingsperiodeId: UUID,
+    val sakId: Long,
+    val fagsaksystem: String,
+    val tema: String
+)

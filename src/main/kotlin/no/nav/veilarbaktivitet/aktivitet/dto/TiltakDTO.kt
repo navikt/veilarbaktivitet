@@ -1,9 +1,9 @@
-package no.nav.veilarbaktivitet.aktivitet.dto;
+package no.nav.veilarbaktivitet.aktivitet.dto
 
-public record TiltakDTO (
-    String tiltaksnavn,
-    String arrangornavn,
-    String deltakelseStatus,
-    Integer dagerPerUke,
-    Integer deltakelsesprosent
-){}
+data class TiltakDTO(
+    val tiltaksnavn: String,
+    val arrangornavn: String,
+    val deltakelseStatus: String,
+    val dagerPerUke: Int,
+    val deltakelsesprosent: Int
+)

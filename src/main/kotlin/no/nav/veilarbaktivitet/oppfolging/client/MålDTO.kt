@@ -1,6 +1,6 @@
-package no.nav.veilarbaktivitet.oppfolging.client;
+package no.nav.veilarbaktivitet.oppfolging.client
 
-public record MålDTO(
-        String mal
-) {
-}
+@JvmRecord
+data class MålDTO(
+    @JvmField val mal: String
+) 

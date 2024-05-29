@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.testutils;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
+import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.Oppgaver;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.*;
 import no.nav.veilarbaktivitet.person.Innsender;

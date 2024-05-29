@@ -1,14 +1,21 @@
-package no.nav.veilarbaktivitet.veilarbportefolje;
+package no.nav.veilarbaktivitet.veilarbportefolje
 
-import java.sql.Date;
-import java.util.Objects;
+import java.sql.Date
+import java.util.*
 
-public record StillingFraNavPortefoljeData(CvKanDelesStatus cvKanDelesStatus, Date svarfrist) {
-    public static StillingFraNavPortefoljeData hvisStillingFraNavDataFinnes(Object id, Boolean cvKanDelesBoolean, Date svarfrist){
-        if (Objects.isNull(id)) return null;
+data class StillingFraNavPortefoljeData(val cvKanDelesStatus: CvKanDelesStatus, val svarfrist: Date) {
+    companion object {
+        @JvmStatic
+        fun hvisStillingFraNavDataFinnes(
+            id: Any?,
+            cvKanDelesBoolean: Boolean?,
+            svarfrist: Date
+        ): StillingFraNavPortefoljeData? {
+            if (Objects.isNull(id)) return null
 
-        CvKanDelesStatus cvKanDeles = CvKanDelesStatus.valueOf(cvKanDelesBoolean);
+            val cvKanDeles = CvKanDelesStatus.valueOf(cvKanDelesBoolean)
 
-        return new StillingFraNavPortefoljeData(cvKanDeles, svarfrist);
+            return StillingFraNavPortefoljeData(cvKanDeles, svarfrist)
+        }
     }
 }

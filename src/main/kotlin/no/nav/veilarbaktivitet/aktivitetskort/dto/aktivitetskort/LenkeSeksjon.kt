@@ -1,11 +1,10 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort
 
-import java.net.URL;
+import java.net.URL
 
-public record LenkeSeksjon(
-        String tekst,
-        String subtekst,
-        URL url,
-        LenkeType lenkeType
-) {
-}
+data class LenkeSeksjon(
+    val tekst: String,
+    val subtekst: String,
+    val url: URL,
+    val lenkeType: LenkeType
+)

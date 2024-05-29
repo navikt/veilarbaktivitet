@@ -66,7 +66,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         KafkaAktivitetMeldingV4 melding = getMelding();
 
         Assertions.assertThat(melding).isNotNull();
-        Assertions.assertThat(melding.getStillingFraNavData().cvKanDelesStatus()).isEqualTo(CvKanDelesStatus.IKKE_SVART);
+        Assertions.assertThat(melding.getStillingFraNavData().getCvKanDelesStatus()).isEqualTo(CvKanDelesStatus.IKKE_SVART);
     }
 
     @Test
@@ -79,7 +79,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
         var melding = getMelding();
 
-        Assertions.assertThat(melding.getStillingFraNavData().cvKanDelesStatus()).isSameAs(CvKanDelesStatus.NEI);
+        Assertions.assertThat(melding.getStillingFraNavData().getCvKanDelesStatus()).isSameAs(CvKanDelesStatus.NEI);
     }
 
     @Test
@@ -92,7 +92,7 @@ class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
         aktiviteterTilKafkaService.sendOppTil5000AktiviterTilPortefolje();
         var melding = getMelding();
 
-        Assertions.assertThat(melding.getStillingFraNavData().cvKanDelesStatus()).isSameAs(CvKanDelesStatus.JA);
+        Assertions.assertThat(melding.getStillingFraNavData().getCvKanDelesStatus()).isSameAs(CvKanDelesStatus.JA);
     }
 
     @Test

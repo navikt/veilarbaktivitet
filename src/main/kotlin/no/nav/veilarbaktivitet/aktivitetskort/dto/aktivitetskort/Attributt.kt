@@ -1,6 +1,6 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort
 
-public record Attributt(
-    String label,
-    String verdi
-) {}
+data class Attributt(
+    val label: String,
+    val verdi: String
+)

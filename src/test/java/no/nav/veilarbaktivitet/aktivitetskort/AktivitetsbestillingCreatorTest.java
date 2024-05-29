@@ -124,7 +124,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
         var oppgave = aktivitetskort.getOppgave();
-        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        assertThat(oppgave.getEkstern().getUrl()).isEqualTo(new URL("http://localhost:8080/ekstern"));
         var handlinger = aktivitetskort.getHandlinger();
         assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
         var etiketter = aktivitetskort.getEtiketter();
@@ -145,7 +145,7 @@ class AktivitetsbestillingCreatorTest {
         assertThat(aktivitetskort.getTittel()).isEqualTo("The Elder Scrolls");
         assertThat(aktivitetskort.getBeskrivelse()).isEqualTo("aktivitetsbeskrivelse");
         var oppgave = aktivitetskort.getOppgave();
-        assertThat(oppgave.ekstern().url()).isEqualTo(new URL("http://localhost:8080/ekstern"));
+        assertThat(oppgave.getEkstern().getUrl()).isEqualTo(new URL("http://localhost:8080/ekstern"));
         var handlinger = aktivitetskort.getHandlinger();
         assertThat(handlinger).contains(new LenkeSeksjon("tekst", "subtekst", new URL("http://localhost:8080/ekstern"), LenkeType.EKSTERN));
     }

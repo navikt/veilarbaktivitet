@@ -1,8 +1,7 @@
-package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort;
+package no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort
 
-public record Etikett(
-        String tekst,
-        Sentiment sentiment,
-        String kode
-) {
-}
+data class Etikett(
+    val tekst: String,
+    val sentiment: Sentiment?,
+    val kode: String
+)

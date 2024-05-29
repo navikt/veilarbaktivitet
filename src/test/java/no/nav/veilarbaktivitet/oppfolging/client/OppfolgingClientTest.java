@@ -82,8 +82,8 @@ class OppfolgingClientTest {
         Optional<SakDTO> sak = oppfolgingClient.hentSak(uuid);
 
         assertThat(sak).isPresent();
-        assertThat(sak.get().oppfolgingsperiodeId()).isEqualTo(uuid);
-        assertThat(sak.get().sakId()).isEqualTo(sakId);
+        assertThat(sak.get().getOppfolgingsperiodeId()).isEqualTo(uuid);
+        assertThat(sak.get().getSakId()).isEqualTo(sakId);
     }
 
     @Test
@@ -102,6 +102,6 @@ class OppfolgingClientTest {
         Optional<MålDTO> hentetMål = oppfolgingClient.hentMål(FNR);
 
         assertThat(hentetMål).isPresent();
-        assertThat(hentetMål.get().mal()).isEqualTo(mål);
+        assertThat(hentetMål.get().mal).isEqualTo(mål);
     }
 }
