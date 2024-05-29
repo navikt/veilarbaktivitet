@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.0.2"
+val spring_boot_version = "3.1.4"
 val common_version = "3.2024.02.21_11.18-8f9b43befae1"
 val dab_common_version = "2024.04.05-15.01.4a82af932963"
 val poao_tilgang_version = "2023.10.09_13.45-b5ace74e861a"
@@ -17,7 +17,7 @@ plugins {
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
     id("org.springframework.boot") version "3.0.2"
-    kotlin("plugin.lombok") version "1.9.0"
+    kotlin("plugin.lombok") version "2.0.0"
     id("io.freefair.lombok") version "8.1.0"
 }
 
@@ -30,6 +30,10 @@ java {
 kotlin {
     jvmToolchain(21)
 }
+
+//kotlinLombok {
+//    lombokConfigurationFile(file("lombok.config"))
+//}
 
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
@@ -111,7 +115,6 @@ openApiGenerate {
     outputDir.set("$buildDir/generated")
 }
 
-java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
 kotlin.sourceSets["main"].kotlin.srcDir("$buildDir/generated/src/main/kotlin")
 
 group = "no.nav"
@@ -136,11 +139,11 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    // Lombok stuff
-//    compileOnly("org.projectlombok:lombok:1.18.28")
-//    annotationProcessor("org.projectlombok:lombok:1.18.28")
-//    testCompileOnly("org.projectlombok:lombok:1.18.28")
-//    testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
+// Lombok stuff
+//    compileOnly("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
+//    testCompileOnly("org.projectlombok:lombok:1.18.32")
+//    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -166,7 +169,7 @@ dependencies {
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
-    //spring managed runtime/compile dependencies
+//spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -184,14 +187,14 @@ dependencies {
     implementation("com.oracle.database.jdbc:ojdbc11")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
-    // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
+// Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
 
     implementation("io.getunleash:unleash-client-java:8.2.1")
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
-    //test dependencys
+//test dependencys
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
@@ -201,7 +204,7 @@ dependencies {
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
-    //spring managed test dependencies
+//spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
