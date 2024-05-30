@@ -33,6 +33,7 @@ kotlin {
 
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
+    // Kan mest sannsynlig fjernes når vi oppgrader poao-tilgang og springboot
     resolutionStrategy {
         force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
         force("com.fasterxml.jackson.core:jackson-core:2.16.0")
@@ -189,7 +190,7 @@ dependencies {
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
-//test dependencys
+//test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
