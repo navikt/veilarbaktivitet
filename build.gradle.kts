@@ -43,6 +43,15 @@ configurations.all {
         force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
         force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
         force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-parameter-names:2.16.0")
+        force("com.fasterxml.jackson.dataformat:csv:2.16.0")
+        force("com.fasterxml.jackson.dataformat:toml:2.16.0")
+        force("com.fasterxml.jackson.dataformat:yaml:2.16.0")
+        force("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.16.0")
+        force("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
+        force("com.fasterxml.jackson.dataformat:yaml:2.16.0")
 
     }
 }
@@ -168,13 +177,6 @@ dependencies {
     implementation("no.nav.common:feature-toggle:$common_version")
     implementation("no.nav.common:metrics:$common_version")
     implementation("no.nav.common:job:$common_version")
-    implementation("no.nav.common:rest:$common_version") {
-        exclude(group = "com.fasterxml.jackson.core", module = "jackson-core")
-        exclude(group = "com.fasterxml.jackson.core", module = "jackson-databind")
-        exclude(group = "com.fasterxml.jackson.core", module = "jackson-datatype-jdk8")
-        exclude(group = "com.fasterxml.jackson.core", module = "jackson-annotations")
-        exclude(group = "com.fasterxml.jackson.module", module = "jackson-module-scala")
-    }
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
@@ -199,7 +201,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("com.oracle.database.jdbc:ojdbc11")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
 
 // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")

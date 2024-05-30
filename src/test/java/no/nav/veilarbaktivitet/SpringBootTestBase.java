@@ -1,8 +1,12 @@
 package no.nav.veilarbaktivitet;
 
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.getunleash.Unleash;
 import io.restassured.RestAssured;
+import io.restassured.config.ObjectMapperConfig;
+import io.restassured.config.RestAssuredConfig;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
@@ -25,6 +29,8 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+
+import java.lang.reflect.Type;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
@@ -76,6 +82,14 @@ public abstract class SpringBootTestBase {
         JdbcTemplateLockProvider l = (JdbcTemplateLockProvider) lockProvider;
         l.clearCache();
         aktivitetTestService = new AktivitetTestService(stillingFraNavTestService, port, innRekrutteringsbistandStatusoppdateringTopic, kafkaTestService, stringStringKafkaTemplate, navCommonKafkaJsonTemplate, aktivitetskortTopic);
+
+        RestAssured.config = RestAssuredConfig.config().objectMapperConfig(new ObjectMapperConfig().jackson2ObjectMapperFactory(
+                (cls, charset) -> {
+                    ObjectMapper om = new ObjectMapper().findAndRegisterModules();
+                    om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    return om;
+                }
+        ));
     }
 
     @DynamicPropertySource
