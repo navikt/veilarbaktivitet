@@ -11,6 +11,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.Optional;
 
+import static no.nav.veilarbaktivitet.internapi.InternAktivitetMapperKt.mapTilAktivitet;
+
 @Controller
 @RequiredArgsConstructor
 public class InternApiController implements InternalApi {
@@ -22,7 +24,7 @@ public class InternApiController implements InternalApi {
         List<Aktivitet> aktiviteter = Optional.of(internApiService.hentAktiviteter(aktorId))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NO_CONTENT))
                 .stream()
-                .map(InternAktivitetMapper::mapTilAktivitet)
+                .map(it -> mapTilAktivitet(it))
                 .toList();
         return ResponseEntity.of(Optional.of(aktiviteter));
     }

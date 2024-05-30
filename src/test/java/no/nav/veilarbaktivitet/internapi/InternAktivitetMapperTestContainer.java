@@ -12,6 +12,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static no.nav.veilarbaktivitet.internapi.InternAktivitetMapperKt.mapTilAktivitet;
+
 class InternAktivitetMapperTestContainer {
     static class StillingFraNavMapperTest {
         static Stream<Soknadsstatus> soknadsstatuser() {
@@ -23,7 +25,7 @@ class InternAktivitetMapperTestContainer {
         void stillingFraNavSoknadsstatuser(Soknadsstatus soknadsstatus) {
             AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.STILLING_FRA_NAV);
             aktivitetData.getStillingFraNavData().setSoknadsstatus(soknadsstatus);
-            Aktivitet aktivitet = InternAktivitetMapper.mapTilAktivitet(aktivitetData);
+            Aktivitet aktivitet = mapTilAktivitet(aktivitetData);
             Assertions.assertThat(aktivitet).isNotNull();
         }
     }
@@ -38,7 +40,7 @@ class InternAktivitetMapperTestContainer {
         void jobbsoekingEtiketter(StillingsoekEtikettData stillingsoekEtikett) {
             AktivitetData aktivitetData = AktivitetDataTestBuilder.nyAktivitet(AktivitetTypeData.JOBBSOEKING);
             aktivitetData.getStillingsSoekAktivitetData().withStillingsoekEtikett(stillingsoekEtikett);
-            Aktivitet aktivitet = InternAktivitetMapper.mapTilAktivitet(aktivitetData);
+            Aktivitet aktivitet = mapTilAktivitet(aktivitetData);
             Assertions.assertThat(aktivitet).isNotNull();
         }
     }
