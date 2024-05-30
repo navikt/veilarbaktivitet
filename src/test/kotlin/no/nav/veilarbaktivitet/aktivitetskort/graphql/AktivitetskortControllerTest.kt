@@ -153,7 +153,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
-            query($aktivitetIdParam: String) {
+            query($aktivitetIdParam: String!) {
                 aktivitet(aktivitetId: $aktivitetIdParam) {
                     historikk {
                         endringer {
@@ -168,7 +168,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 }
             }
         """.trimIndent().replace("\n", "")
-        val result = aktivitetTestService.queryHistorikk(mockBruker, mockBruker, query, aktivitet.id.toLong())
+        val result = aktivitetTestService.queryHistorikk(mockBruker, mockBruker, query, aktivitet.id)
         assertThat(result.errors).isNull()
         assertThat(result.data?.aktivitet?.historikk).isNotNull()
         assertThat(result.data?.aktivitet?.historikk?.endringer).hasSize(2)

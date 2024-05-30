@@ -106,10 +106,10 @@ public class AktivitetTestService {
         return response.as(GraphqlResult.class);
     }
 
-    public GraphqlResult queryHistorikk(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
+    public GraphqlResult queryHistorikk(MockBruker mockBruker, RestassuredUser user, String query, String aktivitetId) {
         var validatableResponse = user
                 .createRequest()
-                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": " + aktivitetId + " } }")
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": \"" + aktivitetId + "\" } }")
                 .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
                 .then();
         var response = validatableResponse
