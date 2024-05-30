@@ -31,7 +31,7 @@ private fun mapTilTiltak(aktivitetData: AktivitetData): Aktivitet {
 private fun mapTilEgenaktivitet(aktivitetData: AktivitetData): Egenaktivitet {
     val egenAktivitetData = aktivitetData.egenAktivitetData
     return Egenaktivitet(
-        aktivitetType = AktivitetType.egenaktivitet,
+        aktivitetType = AktivitetType.EGENAKTIVITET,
         avtaltMedNav = aktivitetData.isAvtalt(),
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -53,7 +53,7 @@ private fun mapTilJobbsoeking(aktivitetData: AktivitetData): Jobbsoeking {
     val stillingsSoekAktivitetData = aktivitetData.stillingsSoekAktivitetData
     val stillingsoekEtikett = stillingsSoekAktivitetData.stillingsoekEtikett
     return Jobbsoeking(
-        aktivitetType = AktivitetType.jobbsoeking,
+        aktivitetType = AktivitetType.JOBBSOEKING,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -80,7 +80,7 @@ private fun mapTilJobbsoeking(aktivitetData: AktivitetData): Jobbsoeking {
 private fun mapTilSokeavtale(aktivitetData: AktivitetData): Sokeavtale {
     val sokeAvtaleAktivitetData = aktivitetData.sokeAvtaleAktivitetData
     return Sokeavtale(
-        aktivitetType = AktivitetType.sokeavtale,
+        aktivitetType = AktivitetType.SOKEAVTALE,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -104,7 +104,7 @@ private fun mapTilIjobb(aktivitetData: AktivitetData): Ijobb {
     val iJobbAktivitetData: IJobbAktivitetData? = aktivitetData.iJobbAktivitetData
     val jobbStatusType: JobbStatusTypeData? = iJobbAktivitetData?.jobbStatusType
     return Ijobb(
-        aktivitetType = AktivitetType.ijobb,
+        aktivitetType = AktivitetType.IJOBB,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -126,7 +126,7 @@ private fun mapTilIjobb(aktivitetData: AktivitetData): Ijobb {
 private fun mapTilBehandling(aktivitetData: AktivitetData): Behandling {
     val behandlingAktivitetData = aktivitetData.behandlingAktivitetData
     return Behandling(
-        aktivitetType = AktivitetType.behandling,
+        aktivitetType = AktivitetType.BEHANDLING,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -149,7 +149,7 @@ private fun mapTilBehandling(aktivitetData: AktivitetData): Behandling {
 private fun mapTilMote(aktivitetData: AktivitetData): Mote {
     val moteData = aktivitetData.moteData
     return Mote(
-        aktivitetType = AktivitetType.mote,
+        aktivitetType = AktivitetType.MOTE,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -173,7 +173,7 @@ private fun mapTilMote(aktivitetData: AktivitetData): Mote {
 private fun mapTilSamtalereferat(aktivitetData: AktivitetData): Samtalereferat {
     val moteData = aktivitetData.moteData
     return Samtalereferat(
-        aktivitetType = AktivitetType.samtalereferat,
+        aktivitetType = AktivitetType.SAMTALEREFERAT,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,
@@ -200,7 +200,7 @@ private fun mapTilStillingFraNav(aktivitetData: AktivitetData): StillingFraNav {
         ?.let { it.name }?.let { StillingFraNav.Soknadsstatus.valueOf(it) }
 
     return StillingFraNav(
-        aktivitetType = AktivitetType.stillingFraNav,
+        aktivitetType = AktivitetType.STILLING_FRA_NAV,
         avtaltMedNav = aktivitetData.isAvtalt,
         aktivitetId = aktivitetData.id.toString(),
         kontorsperreEnhetId = aktivitetData.kontorsperreEnhetId,

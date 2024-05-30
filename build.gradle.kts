@@ -31,10 +31,6 @@ kotlin {
     jvmToolchain(21)
 }
 
-//kotlinLombok {
-//    lombokConfigurationFile(file("lombok.config"))
-//}
-
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
     resolutionStrategy {
@@ -44,15 +40,6 @@ configurations.all {
         force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
         force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
         force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
-        force("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
-        force("com.fasterxml.jackson.module:jackson-module-parameter-names:2.16.0")
-        force("com.fasterxml.jackson.dataformat:csv:2.16.0")
-        force("com.fasterxml.jackson.dataformat:toml:2.16.0")
-        force("com.fasterxml.jackson.dataformat:yaml:2.16.0")
-        force("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.16.0")
-        force("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0")
-        force("com.fasterxml.jackson.dataformat:yaml:2.16.0")
-
     }
 }
 
@@ -119,16 +106,11 @@ openApiGenerate {
     packageName.set("no.nav.veilarbaktivitet.internapi")
     apiPackage.set("no.nav.veilarbaktivitet.internapi.api")
     modelPackage.set("no.nav.veilarbaktivitet.internapi.model")
-//    configOptions.put("useSpringBoot3", "true")
-//    configOptions.put("delegatePattern", "true")
-//    configOptions.put("openApiNullable", "false")
     configOptions.put("interfaceOnly", "true")
     configOptions.put("useSpringBoot3", "true")
     configOptions.put("annotationLibrary", "none")
     configOptions.put("documentationProvider", "none")
-//    configOptions.put("modelMutable", "true")
-//    configOptions.put("skipDefaultInterface", "true")
-//    configOptions.put("additionalModelTypeAnnotations", "@lombok.experimental.SuperBuilder @lombok.NoArgsConstructor")
+    configOptions.put("enumPropertyNaming", "UPPERCASE")
     outputDir.set("$buildDir/generated")
 }
 
@@ -156,10 +138,7 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-// Lombok stuff
-//    compileOnly("org.projectlombok:lombok:1.18.32")
     annotationProcessor("org.projectlombok:lombok:1.18.32")
-//    testCompileOnly("org.projectlombok:lombok:1.18.32")
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
