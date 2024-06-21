@@ -1,8 +1,9 @@
-name: Build and deploy
+name: Build and deploy dev-gcp
 on:
   push:
     branches:
       - gcp-premigrering
+  workflow_dispatch:
 permissions:
   contents: read
   id-token: write
