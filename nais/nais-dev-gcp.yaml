@@ -23,6 +23,9 @@ spec:
     sqlInstances:
       - name: veilarbaktivitet
         type: POSTGRES_14
+        tier: db-custom-1-3840
+        diskType: SSD
+        diskAutoresize: true
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
