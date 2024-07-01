@@ -24,7 +24,6 @@ import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2DTO;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.oppfolging.periode.Oppfolgingsperiode;
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeDAO;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
