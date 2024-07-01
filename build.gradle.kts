@@ -196,8 +196,9 @@ dependencies {
 
     //spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
-    testImplementation("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
     testImplementation("org.mockito:mockito-core")
+    testImplementation("io.zonky.test:embedded-database-spring-test:2.5.1")
+    testImplementation("io.zonky.test:embedded-postgres:2.0.7")
 }

@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.db;
 
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

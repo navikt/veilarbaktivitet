@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet;
 
 import io.getunleash.Unleash;
 import io.restassured.RestAssured;
+import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
@@ -28,6 +29,7 @@ import org.springframework.test.context.DynamicPropertySource;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWireMock(port = 0)
+@AutoConfigureEmbeddedDatabase
 public abstract class SpringBootTestBase {
     @Autowired
     protected KafkaTestService kafkaTestService;
