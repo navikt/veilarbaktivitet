@@ -3,6 +3,8 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
+import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
@@ -15,7 +17,6 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -49,10 +50,13 @@ class ForhaandsorienteringDTOControllerTest {
     private MetricService metricService;
 
 
-    private final JdbcTemplate jdbc = LocalH2Database.getDb();
 
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(new Database(jdbc).getNamedJdbcTemplate());
+    public SingleInstancePostgresRule postgres = EmbeddedPostgresRules.singleInstance();
+
+    NamedParameterJdbcTemplate jdbc = new NamedParameterJdbcTemplate(postgres.getEmbeddedPostgres().getPostgresDatabase());
+
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(jdbc);
+    private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(jdbc);
 
     @Mock
     private IAuthService authService;
@@ -69,7 +73,7 @@ class ForhaandsorienteringDTOControllerTest {
     void setup() {
         AvtaltMedNavService avtaltMedNavService = new AvtaltMedNavService(metricService, aktivitetDAO, fhoDao, meterRegistry, brukernotifikasjonService);
         avtaltMedNavController = new AvtaltMedNavController(authService, avtaltMedNavService);
-        DbTestUtils.cleanupTestDb(jdbc);
+        DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
     }
 
     @Test

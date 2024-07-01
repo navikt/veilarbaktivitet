@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.db;
 
-import no.nav.veilarbaktivitet.db.testdriver.TestDriver;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -37,13 +36,13 @@ public class DbTestUtils {
         ALL_TABLES.forEach((table) -> deleteAllFromTable(db, table));
     }
 
-    public static DataSource createTestDataSource(String dbUrl) {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(TestDriver.class.getName());
-        dataSource.setUrl(dbUrl);
-        return dataSource;
-    }
-
+//    public static DataSource createTestDataSource(String dbUrl) {
+//        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+//        dataSource.setDriverClassName(TestDriver.class.getName());
+//        dataSource.setUrl(dbUrl);
+//        return dataSource;
+//    }
+//
     public static void initDb(DataSource dataSource) {
         Properties properties = new Properties();
         properties.put("flyway.cleanDisabled", false);
@@ -62,5 +61,4 @@ public class DbTestUtils {
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
         db.execute("DELETE FROM " + tableName);
     }
-
 }
