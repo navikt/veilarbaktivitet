@@ -106,6 +106,19 @@ public class AktivitetTestService {
         return response.as(GraphqlResult.class);
     }
 
+    public String queryAllRaw(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
+        var validatableResponse = user
+                .createRequest()
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\", \"aktivitetId\": " + aktivitetId + " } }")
+                .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
+                .then();
+        return validatableResponse
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response().asString();
+    }
+
     public GraphqlResult queryHistorikk(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
         var validatableResponse = user
                 .createRequest()
@@ -118,6 +131,19 @@ public class AktivitetTestService {
                 .extract()
                 .response();
         return response.as(GraphqlResult.class);
+    }
+
+    public String queryHistorikkRaw(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
+        var validatableResponse = user
+                .createRequest()
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"aktivitetId\": " + aktivitetId + " } }")
+                .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
+                .then();
+        return validatableResponse
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response().asString();
     }
 
     public List<AktivitetDTO> hentVersjoner(String aktivitetId, MockBruker mockBruker, RestassuredUser user) {
