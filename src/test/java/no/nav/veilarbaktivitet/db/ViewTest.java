@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.db;
 
+import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import org.json.JSONArray;
@@ -37,7 +38,7 @@ class ViewTest {
     }
 
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(EmbeddedPostgresRules.singleInstance().getEmbeddedPostgres().getPostgresDatabase());
 
     private static final long antallViews = views().count();
 

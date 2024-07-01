@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.arena;
 import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
@@ -57,7 +58,7 @@ class ArenaControllerTest {
     private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
     private final String aktivitetsplanBasepath = "http://localhost:3000";
 
-    private final JdbcTemplate jdbc = LocalH2Database.getDb();
+    private final JdbcTemplate jdbc = new JdbcTemplate(EmbeddedPostgresRules.singleInstance().getEmbeddedPostgres().getPostgresDatabase());
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);

@@ -2,6 +2,7 @@
 package no.nav.veilarbaktivitet.config;
 
 import io.getunleash.Unleash;
+import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.axsys.AxsysClient;
@@ -71,7 +72,7 @@ public class ApplicationTestConfig {
 
     @Bean
     public DataSource dataSource() {
-        return LocalH2Database.getPresistentDb().getDataSource();
+        return EmbeddedPostgresRules.singleInstance().getEmbeddedPostgres().getPostgresDatabase();
     }
 
     @Bean
