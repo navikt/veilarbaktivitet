@@ -43,20 +43,20 @@ public class DbTestUtils {
 //        return dataSource;
 //    }
 //
-//    public static void initDb(DataSource dataSource) {
-//        Properties properties = new Properties();
-//        properties.put("flyway.cleanDisabled", false);
-//        FluentConfiguration config = Flyway
-//                .configure()
-//                .dataSource(dataSource)
-//                .table("schema_version")
-//                .configuration(properties)
-//                .cleanOnValidationError(true)
-//                .validateMigrationNaming(true);
-//        Flyway flyway = new Flyway(config);
-//        flyway.clean();
-//        flyway.migrate();
-//    }
+    public static void initDb(DataSource dataSource) {
+        Properties properties = new Properties();
+        properties.put("flyway.cleanDisabled", false);
+        FluentConfiguration config = Flyway
+                .configure()
+                .dataSource(dataSource)
+                .table("schema_version")
+                .configuration(properties)
+                .cleanOnValidationError(true)
+                .validateMigrationNaming(true);
+        Flyway flyway = new Flyway(config);
+        flyway.clean();
+        flyway.migrate();
+    }
 
     private static void deleteAllFromTable(JdbcTemplate db, String tableName) {
         db.execute("DELETE FROM " + tableName);

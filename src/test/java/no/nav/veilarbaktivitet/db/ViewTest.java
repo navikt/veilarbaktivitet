@@ -1,9 +1,9 @@
 package no.nav.veilarbaktivitet.db;
 
-import io.zonky.test.db.postgres.junit5.EmbeddedPostgresExtension;
-import io.zonky.test.db.postgres.junit5.SingleInstancePostgresExtension;
+import io.zonky.test.db.postgres.junit5.PreparedDbExtension;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -40,13 +40,13 @@ class ViewTest {
     }
 
     @RegisterExtension
-    static public SingleInstancePostgresExtension postgresExtension = EmbeddedPostgresExtension.singleInstance();
+    static public PreparedDbExtension localdataBase = LocalDatabaseSingleton.INSTANCE.getPostgres();
 
     private static final long antallViews = views().count();
 
     @Test
-    void database_skal_ha_riktig_antall_views(SingleInstancePostgresExtension dbExtension) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(postgresExtension.getEmbeddedPostgres().getPostgresDatabase());
+    void database_skal_ha_riktig_antall_views() {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
         long count = (long) jdbcTemplate.queryForList("" +
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
@@ -60,7 +60,7 @@ class ViewTest {
     @ParameterizedTest
     @MethodSource("views")
     void view_eksisterer(String viewName) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(postgresExtension.getEmbeddedPostgres().getPostgresDatabase());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
         List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
@@ -76,7 +76,7 @@ class ViewTest {
     }
 
     private List<Map<String, Object>> hentKolonneDataForView(String view) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(postgresExtension.getEmbeddedPostgres().getPostgresDatabase());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
         return jdbcTemplate.queryForList(
                 "SELECT " +
                 "COLUMN_NAME, " +
