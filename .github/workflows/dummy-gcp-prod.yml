@@ -1,4 +1,4 @@
-name: Build and deploy dev-gcp
+name: Build and deploy prod-gcp
 on:
   workflow_dispatch:
   push:
