@@ -1,0 +1,33 @@
+name: Build and deploy dev-gcp
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - gcp-premigrering
+
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  build_and_deploy:
+    name: Build, push and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push docker image to GAR
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: dab
+          owner: dab
+          dockerfile: dummy-app/Dockerfile
+          image_suffix: dummy
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+      - name: Deploy to NAIS
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-gcp
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          RESOURCE: nais/nais-dev-gcp.yaml
+          VAR: image=${{ steps.docker-build-push.outputs.image }}
