@@ -18,19 +18,15 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
         val params = mapOf(
             "aktorId" to oppfolgingsperiode.aktorid,
             "id" to oppfolgingsperiode.oppfolgingsperiodeId.toString(),
-            "fra" to oppfolgingsperiode.startTid,
-            "til" to oppfolgingsperiode.sluttTid
+            "fra" to oppfolgingsperiode.startTid.toOffsetDateTime(),
+            "til" to oppfolgingsperiode.sluttTid?.toOffsetDateTime()
         )
         jdbc.update(
             """
-                merge into OPPFOLGINGSPERIODE
-                using (SELECT TO_CHAR(:id) AS id from DUAL) INPUTID 
-                on (INPUTID.id = OPPFOLGINGSPERIODE.id)
-                when matched then 
-                update set til = :til, updated = current_timestamp
-                when not matched then
-                insert (aktorId, id, fra, til) 
-                values (:aktorId, :id, :fra, :til)
+                INSERT INTO OPPFOLGINGSPERIODE (aktorId, id, fra, til)
+                VALUES (:aktorId, :id, :fra, :til)
+                ON CONFLICT (id) 
+                DO UPDATE SET til = :til, updated = current_timestamp;
                 """.trimIndent(), params
         )
 

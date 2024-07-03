@@ -128,11 +128,11 @@ public class AktivitetDAO {
     }
 
     public Long nesteAktivitetId() {
-        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_ID_SEQ.nextval from dual", Long.class)).orElseThrow();
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select nextval('AKTIVITET_ID_SEQ')", Long.class)).orElseThrow();
     }
 
     public Long nesteVersjon() {
-        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_VERSJON_SEQ.nextval from dual", Long.class)).orElseThrow();
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select nextval('AKTIVITET_VERSJON_SEQ')", Long.class)).orElseThrow();
     }
 
 
@@ -193,7 +193,6 @@ public class AktivitetDAO {
                 .addValue("funksjonell_id", Optional.ofNullable(aktivitet.getFunksjonellId()).map(UUID::toString).orElse(null))
                 .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
                         ? aktivitet.getOppfolgingsperiodeId().toString() : null);
-        //language=SQL
         namedParameterJdbcTemplate.update(
                 """
                         INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
@@ -203,9 +202,9 @@ public class AktivitetDAO {
                         automatisk_opprettet, mal_id, fho_id, oppfolgingsperiode_uuid, FUNKSJONELL_ID)
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
-                        :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
-                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
-                        :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid, :funksjonell_id)
+                        :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt::int,
+                        :gjeldende::int, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
+                        :automatisk_opprettet::int, :mal_id, :fho_id, :oppfolgingsperiode_uuid, :funksjonell_id)
                         """, params);
 
 

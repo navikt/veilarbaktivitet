@@ -44,8 +44,8 @@ public class SistePeriodeDAO {
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("aktorId", oppfolgingsperiode.aktorid())
                 .addValue("periode", oppfolgingsperiode.oppfolgingsperiodeId().toString())
-                .addValue("startTid", oppfolgingsperiode.startTid())
-                .addValue("sluttTid", oppfolgingsperiode.sluttTid());
+                .addValue("startTid", oppfolgingsperiode.startTid().toOffsetDateTime())
+                .addValue("sluttTid", Optional.ofNullable(oppfolgingsperiode.sluttTid()).map(sluttTid -> sluttTid.toOffsetDateTime()).orElse(null));
 
         int antallOppdatert = jdbc.update("""
                 update SISTE_OPPFOLGINGSPERIODE
