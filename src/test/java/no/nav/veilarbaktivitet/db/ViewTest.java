@@ -47,11 +47,11 @@ class ViewTest {
     @Test
     void database_skal_ha_riktig_antall_views() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
-        long count = (long) jdbcTemplate.queryForList("" +
+        var count = jdbcTemplate.queryForList(
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
                 "FROM INFORMATION_SCHEMA.VIEWS " +
-                "where TABLE_SCHEMA = 'PUBLIC';"
+                "where TABLE_SCHEMA = 'public';"
         ).get(0).get("VIEW_COUNT");
 
         assertThat(count).isEqualTo(antallViews);
