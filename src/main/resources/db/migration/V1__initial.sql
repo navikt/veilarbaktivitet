@@ -197,28 +197,6 @@ create table oppfolgingsperiode
 alter table oppfolgingsperiode
     owner to veilarbaktivitet;
 
-create table schema_version
-(
-    installed_rank numeric                                                               not null
-        constraint schema_version_pk
-            primary key,
-    version        varchar(50),
-    description    varchar(200)                                                          not null,
-    type           varchar(20)                                                           not null,
-    script         varchar(1000)                                                         not null,
-    checksum       numeric,
-    installed_by   varchar(100)                                                          not null,
-    installed_on   timestamp(6) default (CURRENT_TIMESTAMP)::timestamp without time zone not null,
-    execution_time numeric                                                               not null,
-    success        smallint                                                              not null
-);
-
-alter table schema_version
-    owner to veilarbaktivitet;
-
-create index schema_version_s_idx
-    on schema_version ((success::numeric(1, 0)));
-
 create table shedlock
 (
     name       varchar(64) not null
