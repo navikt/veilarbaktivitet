@@ -5,6 +5,7 @@ import no.nav.veilarbaktivitet.db.DbTestUtils
 
 object LocalDatabaseSingleton {
     val postgres = EmbeddedPostgresExtension.preparedDatabase {
+        it.connection.schema = "veilarbaktivitet"
         DbTestUtils.initDb(it)
     }
 }
