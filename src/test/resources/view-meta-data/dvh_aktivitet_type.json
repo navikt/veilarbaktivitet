@@ -1,27 +1,27 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_TYPE_KODE",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "opprettet_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "OPPRETTET_DATO",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "endret_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "OPPRETTET_AV",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "aktivitet_type_kode",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ENDRET_DATO",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "opprettet_av",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ENDRET_AV",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "endret_av",
+    "data_type": "character varying",
+    "character_maximum_length": null
   }
 ]

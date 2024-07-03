@@ -1,27 +1,27 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_ID",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "aktivitet_id",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "VERSJON",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "versjon",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "JOBB_STATUS",
-    "CHARACTER_MAXIMUM_LENGTH": 255,
-    "DATA_TYPE": "CHARACTER VARYING"
+    "column_name": "jobb_status",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ANSETTELSESFORHOLD",
-    "CHARACTER_MAXIMUM_LENGTH": 255,
-    "DATA_TYPE": "CHARACTER VARYING"
+    "column_name": "ansettelsesforhold",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ARBEIDSTID",
-    "CHARACTER_MAXIMUM_LENGTH": 255,
-    "DATA_TYPE": "CHARACTER VARYING"
+    "column_name": "arbeidstid",
+    "data_type": "character varying",
+    "character_maximum_length": null
   }
 ]

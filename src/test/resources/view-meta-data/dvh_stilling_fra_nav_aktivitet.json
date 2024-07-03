@@ -1,97 +1,97 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_ID",
-    "DATA_TYPE": "NUMERIC",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "cv_kan_deles",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "VERSJON",
-    "DATA_TYPE": "NUMERIC",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "cv_kan_deles_tidspunkt",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "CV_KAN_DELES",
-    "DATA_TYPE": "NUMERIC",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "svarfrist",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "CV_KAN_DELES_TIDSPUNKT",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "versjon",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "CV_KAN_DELES_AV",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "cv_kan_deles_avtalt_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "CV_KAN_DELES_AV_TYPE",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "aktivitet_id",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "SOKNADSFRIST",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "stillingsid",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "SVARFRIST",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "arbeidssted",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "ARBEIDSGIVER",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "varselid",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "BESTILLINGSID",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "kontaktperson_navn",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "STILLINGSID",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "kontaktperson_tittel",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "ARBEIDSSTED",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "kontaktperson_mobil",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "VARSELID",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "soknadsstatus",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "KONTAKTPERSON_NAVN",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "livslopsstatus",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "KONTAKTPERSON_TITTEL",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "cv_kan_deles_av",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "KONTAKTPERSON_MOBIL",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "cv_kan_deles_av_type",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "SOKNADSSTATUS",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "soknadsfrist",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "CV_KAN_DELES_AVTALT_DATO",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "arbeidsgiver",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   },
   {
-    "COLUMN_NAME": "LIVSLOPSSTATUS",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "bestillingsid",
+    "data_type": "character varying",
+    "character_maximum_length": 255
   }
 ]

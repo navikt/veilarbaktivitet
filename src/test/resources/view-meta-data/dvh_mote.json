@@ -1,37 +1,37 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_ID",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "versjon",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "VERSJON",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "aktivitet_id",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ADRESSE",
-    "CHARACTER_MAXIMUM_LENGTH": 255,
-    "DATA_TYPE": "CHARACTER VARYING"
+    "column_name": "referat_publisert",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "FORBEREDELSER",
-    "CHARACTER_MAXIMUM_LENGTH": 9223372036854775807,
-    "DATA_TYPE": "CHARACTER LARGE OBJECT"
+    "column_name": "referat",
+    "data_type": "text",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "KANAL",
-    "CHARACTER_MAXIMUM_LENGTH": 255,
-    "DATA_TYPE": "CHARACTER VARYING"
+    "column_name": "forberedelser",
+    "data_type": "text",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "REFERAT",
-    "CHARACTER_MAXIMUM_LENGTH": 9223372036854775807,
-    "DATA_TYPE": "CHARACTER LARGE OBJECT"
+    "column_name": "adresse",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "REFERAT_PUBLISERT",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "kanal",
+    "data_type": "character varying",
+    "character_maximum_length": null
   }
 ]

@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import org.json.JSONArray;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -83,9 +84,14 @@ class ViewTest {
                 "DATA_TYPE, " +
                 "CHARACTER_MAXIMUM_LENGTH " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE TABLE_NAME = '" + view + "';"
+                "WHERE TABLE_NAME = '" + view.toLowerCase() + "';"
         );
     }
+
+    /*
+     select column_name, columns.data_type, columns.character_maximum_length
+ from information_schema.columns;
+     */
 
     @SneakyThrows
     private static String jsonFormatter(String jsonArray) {
