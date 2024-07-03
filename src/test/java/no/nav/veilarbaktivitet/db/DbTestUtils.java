@@ -3,9 +3,10 @@ package no.nav.veilarbaktivitet.db;
 import org.flywaydb.core.Flyway;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -44,6 +45,16 @@ public class DbTestUtils {
 //    }
 //
     public static void initDb(DataSource dataSource) {
+        try(Connection connection = dataSource.getConnection()) {
+            connection.prepareStatement("""
+              CREATE USER veilarbaktivitet NOLOGIN;
+              GRANT CONNECT on DATABASE postgres to veilarbaktivitet;
+              GRANT USAGE ON SCHEMA public to veilarbaktivitet;
+            """.trim()).executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         Properties properties = new Properties();
         properties.put("flyway.cleanDisabled", false);
         FluentConfiguration config = Flyway

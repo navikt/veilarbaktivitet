@@ -2,7 +2,7 @@
 package no.nav.veilarbaktivitet.config;
 
 import io.getunleash.Unleash;
-import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.axsys.AxsysClient;
@@ -11,6 +11,7 @@ import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
+import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
 import okhttp3.EventListener;
 import org.mockito.Mockito;
@@ -18,8 +19,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
+import java.io.IOException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -71,8 +74,15 @@ public class ApplicationTestConfig {
     }
 
     @Bean
-    public DataSource dataSource() {
-        return EmbeddedPostgresRules.singleInstance().getEmbeddedPostgres().getPostgresDatabase();
+    public DataSource dataSource() throws IOException {
+        var db = EmbeddedPostgres.start().getPostgresDatabase();
+        DbTestUtils.initDb(db);
+        return db;
+    }
+
+    @Bean
+    public JdbcTemplate jdbcTemplate(DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
     }
 
     @Bean
