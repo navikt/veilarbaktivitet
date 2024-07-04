@@ -25,14 +25,10 @@ open class OppfolgingsperiodeDAO(val jdbc: NamedParameterJdbcTemplate) {
 
         jdbc.update(
             """
-                merge into OPPFOLGINGSPERIODE
-                using (SELECT TO_CHAR(:id) AS id from DUAL) INPUTID 
-                on (INPUTID.id = OPPFOLGINGSPERIODE.id)
-                when matched then 
-                update set til = :til, updated = current_timestamp
-                when not matched then
-                insert (aktorId, id, fra, til) 
-                values (:aktorId, :id, :fra, :til)
+                INSERT INTO OPPFOLGINGSPERIODE (aktorId, id, fra, til)
+                VALUES (:aktorId, :id, :fra, :til)
+                ON CONFLICT (id) 
+                DO UPDATE SET til = :til, updated = current_timestamp;
                 """.trimIndent(), params
         )
 
