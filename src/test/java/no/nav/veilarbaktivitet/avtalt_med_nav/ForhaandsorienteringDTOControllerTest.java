@@ -3,10 +3,9 @@ package no.nav.veilarbaktivitet.avtalt_med_nav;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
-import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.MetricService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
@@ -15,7 +14,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
@@ -27,10 +25,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -51,9 +49,8 @@ class ForhaandsorienteringDTOControllerTest {
 
 
 
-    public SingleInstancePostgresRule postgres = EmbeddedPostgresRules.singleInstance();
-
-    NamedParameterJdbcTemplate jdbc = new NamedParameterJdbcTemplate(postgres.getEmbeddedPostgres().getPostgresDatabase());
+    public DataSource db = LocalDatabaseSingleton.INSTANCE.getPostgres();
+    NamedParameterJdbcTemplate jdbc = new NamedParameterJdbcTemplate(db);
 
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(jdbc);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(jdbc);

@@ -1,7 +1,6 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
-import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
-import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule;
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
@@ -9,13 +8,13 @@ import no.nav.veilarbaktivitet.arena.model.ArenaId;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
-import org.junit.Rule;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -26,10 +25,8 @@ class ForhaandsorienteringDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 
-    @Rule
-    public SingleInstancePostgresRule db = EmbeddedPostgresRules.singleInstance();
-
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db.getEmbeddedPostgres().getPostgresDatabase());
+    private final DataSource db = LocalDatabaseSingleton.INSTANCE.getPostgres();
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
     private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(namedParameterJdbcTemplate);
     private final AktivitetDAO aktivitetDAO = new AktivitetDAO(namedParameterJdbcTemplate);
 
