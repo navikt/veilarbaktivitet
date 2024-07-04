@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.periode
 
-import no.nav.veilarbaktivitet.VeilarbAktivitetSqlParameterSource
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource
 import no.nav.veilarbaktivitet.person.Person.AktorId
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource

@@ -2,7 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.periode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.VeilarbAktivitetSqlParameterSource;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.dao.DuplicateKeyException;

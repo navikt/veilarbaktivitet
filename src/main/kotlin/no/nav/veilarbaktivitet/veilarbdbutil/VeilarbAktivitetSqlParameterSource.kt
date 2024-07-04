@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet
+package no.nav.veilarbaktivitet.veilarbdbutil
 
 import org.springframework.jdbc.core.namedparam.AbstractSqlParameterSource
 import java.time.ZonedDateTime

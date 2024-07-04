@@ -6,7 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.VeilarbAktivitetSqlParameterSource;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
@@ -26,7 +26,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -414,7 +413,7 @@ public class AktivitetDAO {
                 .ifPresent(stilling -> {
                             var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
                             var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
-                            SqlParameterSource parms = new MapSqlParameterSource()
+                            SqlParameterSource parms = new VeilarbAktivitetSqlParameterSource()
                                     .addValue(AKTIVITETID, aktivitetId)
                                     .addValue(VERSJON, versjon)
                                     .addValue("cv_kan_deles", cvKanDelesData.map(CvKanDelesData::getKanDeles).orElse(null))
