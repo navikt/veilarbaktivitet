@@ -220,9 +220,8 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
                 FROM EKSTERNAKTIVITET
                 WHERE AKTIVITET_ID = ?
                 ORDER BY VERSJON desc
-                FETCH NEXT 1 ROW ONLY 
-                
-                """.trimIndent(), Boolean::class.javaPrimitiveType!!, aktivitetFoer.id
+                LIMIT 1
+                """.trimIndent(), Boolean::class.javaPrimitiveType!!, aktivitetFoer.id.toLong()
         )
         assertThat(aktivitetFoerOpprettetSomHistorisk).isTrue()
         tiltakMigreringCronService!!.settTiltakOpprettetSomHistoriskTilHistorisk()
@@ -901,7 +900,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         assertThat(aktivitet.eksternAktivitet.etiketter).isEmpty()
         assertThat(aktivitet.eksternAktivitet.handlinger).isEmpty()
         assertThat(aktivitet.eksternAktivitet.oppgave).isNull()
-        val params = MapSqlParameterSource().addValue("aktivitetId", aktivitet.id)
+        val params = MapSqlParameterSource().addValue("aktivitetId", aktivitet.id.toLong())
         val count = namedParameterJdbcTemplate.queryForObject(
             """
                 SELECT count(*)

@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.aktivitetskort
 import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules
 import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule
 import lombok.SneakyThrows
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
@@ -13,11 +14,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 
 internal class EksternaktivitetDAOTest {
 
-    @JvmField
-    @Rule
-    var postgres: SingleInstancePostgresRule = EmbeddedPostgresRules.singleInstance()
+    private val dataSource = LocalDatabaseSingleton.postgres
 
-    var jdbc = NamedParameterJdbcTemplate(postgres.embeddedPostgres.postgresDatabase)
+    var jdbc = NamedParameterJdbcTemplate(dataSource)
 
     @Test
     @SneakyThrows

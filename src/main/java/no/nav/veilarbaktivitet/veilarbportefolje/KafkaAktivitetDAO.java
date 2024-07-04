@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetResultSet;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
 import org.springframework.stereotype.Repository;
 
@@ -56,7 +57,8 @@ public class KafkaAktivitetDAO {
                 kafkaOffset, versjon);
     }
 
-    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet rs, int i) throws SQLException {
+    public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet resultSet, int i) throws SQLException {
+        var rs = new VeilarbAktivitetResultSet(resultSet);
         AktivitetTypeDTO domainAktivitetType = Helpers.Type.getDTO(AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode")));
         var aktivitetTypeDto = no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.fromDomainAktivitetType(domainAktivitetType);
         var aktivitetsId = String.valueOf(rs.getLong("aktivitet_id"));
@@ -80,7 +82,7 @@ public class KafkaAktivitetDAO {
         StillingFraNavPortefoljeData stillingFraNavData =
                 StillingFraNavPortefoljeData.hvisStillingFraNavDataFinnes(
                         rs.getObject("sfn_key"),
-                        rs.getObject("CV_KAN_DELES", Boolean.class),
+                        rs.getBooleanOrNull("CV_KAN_DELES"),
                         rs.getDate("SVARFRIST")
                 );
 
