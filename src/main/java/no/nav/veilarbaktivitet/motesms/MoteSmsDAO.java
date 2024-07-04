@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -24,7 +25,9 @@ public class MoteSmsDAO {
     private final NamedParameterJdbcTemplate jdbc;
 
     List<Long> hentMoteSmsSomFantStedForMerEnd(Duration duration) {
-        SqlParameterSource params = new MapSqlParameterSource("eldreEnd", ZonedDateTime.now().minus(duration));
+
+        SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
+                .addValue("eldreEnd", ZonedDateTime.now().minus(duration));
         return jdbc.queryForList("""
                         select AKTIVITET_ID from GJELDENDE_MOTE_SMS
                         where BRUKERNOTIFIKASJON = 1
@@ -43,20 +46,19 @@ public class MoteSmsDAO {
                         inner join GJELDENDE_MOTE_SMS SMS on AKTIVITET.AKTIVITET_ID = SMS.AKTIVITET_ID
                         where GJELDENDE = 1
                         and (SMS.MOTETID != AKTIVITET.FRA_DATO or SMS.KANAL != MOTE.KANAL)
-                        FETCH NEXT :limit ROWS ONLY
+                        limit :limit
                         """
                 , params, long.class);
     }
 
     List<MoteNotifikasjon> hentMoterUtenVarsel(Duration fra, Duration til, int max) {
-        SqlParameterSource params = new MapSqlParameterSource()
+        SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("fra", ZonedDateTime.now().plus(fra))
                 .addValue("til", ZonedDateTime.now().plus(til))
-                .addValue("avslutteteAktiviteter", List.of(AktivitetStatus.AVBRUTT.name(), AktivitetStatus.FULLFORT.name()))
-                .addValue("limit", max);
-
+                .addValue("avslutteteAktiviteter", List.of(AktivitetStatus.AVBRUTT.name(), AktivitetStatus.FULLFORT.name()));
         return jdbc.query("""
-                select a.AKTIVITET_ID as id, a.VERSJON as aktivitet_version, a.AKTOR_ID as aktor_id, a.FRA_DATO as startdato, m.KANAL as kanal from AKTIVITET a
+                select a.AKTIVITET_ID as id, a.VERSJON as aktivitet_version, a.AKTOR_ID as aktor_id, a.FRA_DATO as startdato, m.KANAL as kanal 
+                from AKTIVITET a
                 inner join MOTE m on a.AKTIVITET_ID = m.AKTIVITET_ID and a.VERSJON = m.VERSJON
                 where GJELDENDE = 1
                 and FRA_DATO between :fra and :til
@@ -84,7 +86,7 @@ public class MoteSmsDAO {
     }
 
     void insertGjeldendeSms(MoteNotifikasjon moteNotifikasjon) {
-        SqlParameterSource params = new MapSqlParameterSource()
+        SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("aktivit_id", moteNotifikasjon.aktivitetId())
                 .addValue("kanal", moteNotifikasjon.kanalDTO().name())
                 .addValue("moteTid", moteNotifikasjon.startTid());
