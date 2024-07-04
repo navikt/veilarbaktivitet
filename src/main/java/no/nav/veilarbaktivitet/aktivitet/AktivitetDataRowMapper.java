@@ -133,9 +133,11 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .build();
     }
 
-    private static StillingFraNavData mapStillingFraNav(ResultSet rs) throws SQLException {
+    private static StillingFraNavData mapStillingFraNav(ResultSet resultSet) throws SQLException {
+        VeilarbAktivitetResultSet rs = new VeilarbAktivitetResultSet(resultSet);
+
         var cvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
+                .kanDeles(rs.getBooleanOrNull("cv_kan_deles"))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
                 .avtaltDato(Database.hentDatoDato(rs, "cv_kan_deles_avtalt_dato"))

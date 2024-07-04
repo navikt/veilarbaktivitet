@@ -11,4 +11,9 @@ class VeilarbAktivitetResultSet(private val resultSet: ResultSet): ResultSet by 
             else -> throw RuntimeException("Leser tall som boolean, fant et annet tall enn 0 og 1")
         }
     }
+
+    fun getBooleanOrNull(columnLabel: String?): Boolean? {
+        if (resultSet.getObject(columnLabel) == null) return null
+        return resultSet.getBoolean(columnLabel)
+    }
 }

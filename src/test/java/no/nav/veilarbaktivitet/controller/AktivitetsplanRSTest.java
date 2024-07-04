@@ -127,7 +127,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         assertEquals(1, resultat.getAktiviteter().size());
         assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
-
     }
 
     @Test
