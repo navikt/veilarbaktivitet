@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
@@ -247,7 +248,7 @@ public class AktivitetDAO {
                     :referat_publisert)
                     """;
         ofNullable(moteData).ifPresent(m -> {
-            SqlParameterSource params = new MapSqlParameterSource()
+            SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                     .addValue(AKTIVITETID, aktivitetId)
                     .addValue(VERSJON, versjon)
                     .addValue("adresse", moteData.getAdresse())
@@ -445,7 +446,7 @@ public class AktivitetDAO {
     private void insertEksternAktivitet(long aktivitetId, long versjon, EksternAktivitetData eksternAktivitetData) {
         Optional.ofNullable(eksternAktivitetData)
                 .ifPresent(tiltak -> {
-                    SqlParameterSource params = new MapSqlParameterSource()
+                    SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                             .addValue(AKTIVITETID, aktivitetId)
                             .addValue(VERSJON, versjon)
                             .addValue("source", eksternAktivitetData.getSource())

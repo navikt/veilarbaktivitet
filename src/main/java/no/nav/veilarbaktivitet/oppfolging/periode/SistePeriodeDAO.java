@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.oppfolging.periode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import no.nav.veilarbaktivitet.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.dao.DuplicateKeyException;
@@ -41,11 +42,11 @@ public class SistePeriodeDAO {
 
 
     void uppsertOppfolingsperide(Oppfolgingsperiode oppfolgingsperiode) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
+        VeilarbAktivitetSqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                 .addValue("aktorId", oppfolgingsperiode.aktorid())
                 .addValue("periode", oppfolgingsperiode.oppfolgingsperiodeId().toString())
-                .addValue("startTid", oppfolgingsperiode.startTid().toOffsetDateTime())
-                .addValue("sluttTid", Optional.ofNullable(oppfolgingsperiode.sluttTid()).map(sluttTid -> sluttTid.toOffsetDateTime()).orElse(null));
+                .addValue("startTid", oppfolgingsperiode.startTid())
+                .addValue("sluttTid", oppfolgingsperiode.sluttTid());
 
         int antallOppdatert = jdbc.update("""
                 update SISTE_OPPFOLGINGSPERIODE
