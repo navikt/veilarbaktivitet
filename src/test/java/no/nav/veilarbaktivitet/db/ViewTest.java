@@ -1,17 +1,15 @@
 package no.nav.veilarbaktivitet.db;
 
-import io.zonky.test.db.postgres.junit5.PreparedDbExtension;
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import org.json.JSONArray;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +38,13 @@ class ViewTest {
                 "DVH_STILLING_FRA_NAV_AKTIVITET");
     }
 
-    @RegisterExtension
-    static public PreparedDbExtension localdataBase = LocalDatabaseSingleton.INSTANCE.getPostgres();
+    static public DataSource dataSource = LocalDatabaseSingleton.INSTANCE.getPostgres();
 
     private static final long antallViews = views().count();
 
     @Test
     void database_skal_ha_riktig_antall_views() {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         var count = jdbcTemplate.queryForList(
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
@@ -61,7 +58,7 @@ class ViewTest {
     @ParameterizedTest
     @MethodSource("views")
     void view_eksisterer(String viewName) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
@@ -77,7 +74,7 @@ class ViewTest {
     }
 
     private List<Map<String, Object>> hentKolonneDataForView(String view) {
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(localdataBase.getTestDatabase());
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return jdbcTemplate.queryForList(
                 "SELECT " +
                 "COLUMN_NAME, " +

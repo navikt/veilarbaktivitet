@@ -3,11 +3,12 @@ package no.nav.veilarbaktivitet.arena;
 import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
+import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitetskort.AktivitetskortMetrikker;
 import no.nav.veilarbaktivitet.aktivitetskort.MigreringService;
@@ -39,6 +40,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -58,7 +60,7 @@ class ArenaControllerTest {
     private final VeilarbarenaClient veilarbarenaClient = mock(VeilarbarenaClient.class);
     private final String aktivitetsplanBasepath = "http://localhost:3000";
 
-    private final JdbcTemplate jdbc = new JdbcTemplate(EmbeddedPostgresRules.singleInstance().getEmbeddedPostgres().getPostgresDatabase());
+    private final JdbcTemplate jdbc = new JdbcTemplate(LocalDatabaseSingleton.INSTANCE.getPostgres());
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
     private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
@@ -82,6 +84,17 @@ class ArenaControllerTest {
     private final NavIdent veilederIdent = NavIdent.of("Z123456");
 
     private final ForhaandsorienteringDTO forhaandsorientering = ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
+
+    ArenaControllerTest() throws IOException {
+    }
+
+    static EmbeddedPostgres setUpDatabase()  {
+        try {
+            return EmbeddedPostgres.start();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @BeforeEach
     void cleanup() {
