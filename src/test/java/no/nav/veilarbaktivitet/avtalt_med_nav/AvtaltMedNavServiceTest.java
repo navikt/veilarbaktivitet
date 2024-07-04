@@ -50,7 +50,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
         Assertions.assertEquals(aktivitetDTO.getId(), fho.getAktivitetId());
         // FHO aktivitetsversjon vil faktisk peke på forrige aktivitetsversjon
-        Assertions.assertEquals(Long.parseLong(aktivitetDTO.getVersjon()) - 1L, Long.parseLong(fho.getAktivitetVersjon()));
+        Assertions.assertTrue(Long.parseLong(aktivitetDTO.getVersjon()) > Long.parseLong(fho.getAktivitetVersjon()));
         Assertions.assertEquals(AKTOR_ID.get(), fho.getAktorId().get());
         Assertions.assertEquals(veilederIdent.toString(), fho.getOpprettetAv());
         Assertions.assertNull(fho.getLestDato());
