@@ -26,11 +26,11 @@ spec:
         tier: db-custom-1-3840
         diskType: SSD
         diskAutoresize: true
-        flags: # Nødvendig for datastreams
-          - name: cloudsql.logical_decoding
-            value: "off" # Switch til on for datastream
+#        flags: # Nødvendig for datastreams
+#          - name: cloudsql.logical_decoding
+#            value: "on"
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
-            users:
-              - name: datastream
+#            users:
+#              - name: datastream
