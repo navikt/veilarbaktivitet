@@ -28,7 +28,7 @@ spec:
         diskAutoresize: true
         flags: # Nødvendig for datastreams
           - name: cloudsql.logical_decoding
-            value: "on"
+            value: "off" # Switch til on for datastream
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
