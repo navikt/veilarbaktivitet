@@ -6,6 +6,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Date;
 import java.util.Locale;
 
@@ -23,8 +24,13 @@ public class DateUtils {
         return Date.from(instant);
     }
 
-    public static String iso8601Fromdate(Date date, ZoneId zoneId) {
-        return OffsetDateTime.ofInstant(date.toInstant(), zoneId).toString();
+    public static String zuluDateTimeFromDate(Date date) {
+        DateTimeFormatter format = new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                .appendOffset("+HH:MM", "+00:00")
+                .toFormatter();
+
+        return date.toInstant().atOffset(ZoneOffset.UTC).format(format);
     }
 
     public static String iso8601DateFromZonedDateTime(ZonedDateTime date, ZoneId zoneId) {

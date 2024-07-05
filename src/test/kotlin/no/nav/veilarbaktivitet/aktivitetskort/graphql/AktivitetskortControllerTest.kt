@@ -177,7 +177,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
     }
 
     @Test
-    fun `skal serilisere datoer riktig (aktivitet)`() {
+    fun `skal serialisere datoer riktig (aktivitet)`() {
         val nyPeriode = UUID.randomUUID()
         // riktig:  "2024-04-30T22:00:00.000+00:00"
         // feil:    "2024-05-01T00:00+02:00"
@@ -195,12 +195,12 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
             }
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id.toLong())
-        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"]
+        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asText()
         assertThat(fraDatoString).isEqualTo(fraDatoIso)
     }
 
     @Test
-    fun `skal serilisere datoer riktig (perioder)`() {
+    fun `skal serialisere datoer riktig (perioder)`() {
         val nyPeriode = UUID.randomUUID()
         // riktig:  "2024-04-30T22:00:00.000+00:00"
         // feil:    "2024-05-01T00:00+02:00"
@@ -224,11 +224,11 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryAllRaw(mockBruker, mockBruker, query, aktivitet.id.toLong())
         val jsonTree = JsonMapper.defaultObjectMapper().readTree(result)
-        val fraDatoStringAktivitet = jsonTree["data"]["aktivitet"]["fraDato"]
-        val fraDatoStringPerider = jsonTree["data"]["perioder"][0]["aktiviteter"][0]["fraDato"]
-        assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoStringPerider)
+        val fraDatoStringAktivitet = jsonTree["data"]["aktivitet"]["fraDato"].asText()
+        val fraDatoStringPerioder = jsonTree["data"]["perioder"][0]["aktiviteter"][0]["fraDato"].asText()
+        assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoStringPerioder)
         assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoIso)
-        assertThat(fraDatoStringPerider).isEqualTo(fraDatoIso)
+        assertThat(fraDatoStringPerioder).isEqualTo(fraDatoIso)
     }
 
 }
