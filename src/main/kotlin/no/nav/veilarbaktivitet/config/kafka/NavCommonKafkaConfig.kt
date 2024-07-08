@@ -19,9 +19,10 @@ import org.springframework.context.annotation.Profile
 import java.util.*
 
 @Configuration
-open class NavCommonKafkaConfig {
-
-    private val kafkaEnabled = System.getenv("KAFKA_ENABLED")?.toBoolean() ?: false
+open class NavCommonKafkaConfig(
+    @Value("\${app.kafka.enabled}")
+    val kafkaEnabled: String
+) {
 
     init {
         val logger = LoggerFactory.getLogger(this::class.java)
@@ -29,7 +30,7 @@ open class NavCommonKafkaConfig {
     }
 
     private fun isKafkaDisabled(unleash: Unleash, topicDisabledToggleName: String): Boolean {
-        return if(!kafkaEnabled) true
+        return if(kafkaEnabled != "true") true
         else unleash.isEnabled(topicDisabledToggleName)
     }
 
