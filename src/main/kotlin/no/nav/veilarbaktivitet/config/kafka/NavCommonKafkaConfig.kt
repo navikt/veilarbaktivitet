@@ -19,6 +19,9 @@ import java.util.*
 
 @Configuration
 open class NavCommonKafkaConfig {
+
+    private val kafkaEnabled = System.getenv("KAFKA_ENABLED")?.toBoolean() ?: false
+
     @Bean
     open fun aktivitetskortConsumerClient(
         topicConfig: AktivitetsKortConsumerConfig,
@@ -28,7 +31,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(aktivitetskortConsumerProperties)
-            .withToggle { unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
+            .withToggle { if(kafkaEnabled) unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) else false }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -46,7 +49,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
+            .withToggle { if(kafkaEnabled) unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) else false }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -64,7 +67,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
+            .withToggle { if(kafkaEnabled) unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) else false }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, KvpAvsluttetKafkaDTO>()
                     .withConsumerConfig(topicConfig)

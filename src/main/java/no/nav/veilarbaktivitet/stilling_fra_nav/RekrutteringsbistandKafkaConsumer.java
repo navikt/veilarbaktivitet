@@ -27,7 +27,7 @@ public class RekrutteringsbistandKafkaConsumer {
 
     private final Logger secureLogs = LoggerFactory.getLogger("SecureLog");
 
-    @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${topic.inn.rekrutteringsbistandStatusoppdatering}", containerFactory = "stringStringKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")
     @Transactional(noRollbackFor = {IngenGjeldendeIdentException.class})
     @Timed("kafka_consume_rekrutteringsbistand_statusoppdatering")
     public void consumeRekrutteringsbistandStatusoppdatering(ConsumerRecord<String, String> consumerRecord) {
