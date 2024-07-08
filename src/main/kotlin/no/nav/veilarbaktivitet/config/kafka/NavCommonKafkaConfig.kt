@@ -28,9 +28,9 @@ open class NavCommonKafkaConfig {
         logger.info("Kafka enabled: $kafkaEnabled")
     }
 
-    private fun isKafkaDisabled(unleash: Unleash, topic: String): Boolean {
+    private fun isKafkaDisabled(unleash: Unleash, topicDisabledToggleName: String): Boolean {
         return if(!kafkaEnabled) true
-        else unleash.isEnabled(topic)
+        else unleash.isEnabled(topicDisabledToggleName)
     }
 
     @Bean
