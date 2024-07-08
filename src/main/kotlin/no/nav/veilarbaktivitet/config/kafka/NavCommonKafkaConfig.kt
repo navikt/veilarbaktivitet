@@ -37,7 +37,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(aktivitetskortConsumerProperties)
-            .withToggle { if(kafkaEnabled) unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) else false }
+            .withToggle { if (kafkaEnabled) false else unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -55,7 +55,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { if(kafkaEnabled) unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) else false }
+            .withToggle { if(kafkaEnabled) false else unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -73,7 +73,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { if(kafkaEnabled) unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) else false }
+            .withToggle { if(kafkaEnabled) false else unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, KvpAvsluttetKafkaDTO>()
                     .withConsumerConfig(topicConfig)
