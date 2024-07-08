@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -19,6 +20,19 @@ import java.util.*
 
 @Configuration
 open class NavCommonKafkaConfig {
+
+    private val kafkaEnabled = System.getenv("KAFKA_ENABLED")?.toBoolean() ?: false
+
+    init {
+        val logger = LoggerFactory.getLogger(this::class.java)
+        logger.info("Kafka enabled: $kafkaEnabled")
+    }
+
+    private fun isKafkaDisabled(unleash: Unleash, topicDisabledToggleName: String): Boolean {
+        return if(!kafkaEnabled) true
+        else unleash.isEnabled(topicDisabledToggleName)
+    }
+
     @Bean
     open fun aktivitetskortConsumerClient(
         topicConfig: AktivitetsKortConsumerConfig,
@@ -28,7 +42,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(aktivitetskortConsumerProperties)
-            .withToggle { unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -46,7 +60,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -64,7 +78,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, KvpAvsluttetKafkaDTO>()
                     .withConsumerConfig(topicConfig)

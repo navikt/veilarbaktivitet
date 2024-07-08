@@ -48,7 +48,7 @@ public class OpprettForesporselOmDelingAvCv {
     private static final String BRUKERNOTIFIKASJON_TEKST = "Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.";
 
     @Transactional
-    @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory")
+    @KafkaListener(topics = "${topic.inn.stillingFraNav}", containerFactory = "stringAvroKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")
     public void createAktivitet(ConsumerRecord<String, ForesporselOmDelingAvCv> consumerRecord) {
         ForesporselOmDelingAvCv melding = consumerRecord.value();
 
