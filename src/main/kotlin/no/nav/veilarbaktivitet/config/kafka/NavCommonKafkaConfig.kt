@@ -28,6 +28,11 @@ open class NavCommonKafkaConfig {
         logger.info("Kafka enabled: $kafkaEnabled")
     }
 
+    private fun isKafkaDisabled(unleash: Unleash, topic: String): Boolean {
+        return if(!kafkaEnabled) true
+        else unleash.isEnabled(topic)
+    }
+
     @Bean
     open fun aktivitetskortConsumerClient(
         topicConfig: AktivitetsKortConsumerConfig,
@@ -37,7 +42,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(aktivitetskortConsumerProperties)
-            .withToggle { if (kafkaEnabled) false else unleash.isEnabled(AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, AKTIVITETSKORT_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -55,7 +60,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { if(kafkaEnabled) false else unleash.isEnabled(OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, OPPFOLGINGSPERIODE_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, String>()
                     .withConsumerConfig(topicConfig)
@@ -73,7 +78,7 @@ open class NavCommonKafkaConfig {
     ): KafkaConsumerClient {
         return KafkaConsumerClientBuilder.builder()
             .withProperties(consumerProperties)
-            .withToggle { if(kafkaEnabled) false else unleash.isEnabled(KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
+            .withToggle { isKafkaDisabled(unleash, KVPAVSLUTTET_KAFKACONSUMER_DISABLED) }
             .withTopicConfig(
                 KafkaConsumerClientBuilder.TopicConfig<String, KvpAvsluttetKafkaDTO>()
                     .withConsumerConfig(topicConfig)
