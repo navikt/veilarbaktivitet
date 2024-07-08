@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitetskort.AktivitetsKortConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetConsumerConfig
 import no.nav.veilarbaktivitet.kvp.KvpAvsluttetKafkaDTO
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeConsumerConfig
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -21,6 +22,11 @@ import java.util.*
 open class NavCommonKafkaConfig {
 
     private val kafkaEnabled = System.getenv("KAFKA_ENABLED")?.toBoolean() ?: false
+
+    init {
+        val logger = LoggerFactory.getLogger(this::class.java)
+        logger.info("Kafka enabled: $kafkaEnabled")
+    }
 
     @Bean
     open fun aktivitetskortConsumerClient(
