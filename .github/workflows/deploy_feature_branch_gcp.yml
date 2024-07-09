@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: deploy_feture_branch_gcp
+  group: deploy_feature_branch_gcp
   cancel-in-progress: true
 
 env:
