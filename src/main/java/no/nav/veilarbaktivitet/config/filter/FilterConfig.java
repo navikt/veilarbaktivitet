@@ -59,15 +59,6 @@ public class FilterConfig {
                 .withUserRole(UserRole.EKSTERN);
     }
 
-
-    private OidcAuthenticatorConfig loginserviceIdportenConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getLoginserviceIdportenDiscoveryUrl())
-                .withClientId(properties.getLoginserviceIdportenAudience())
-                .withIdTokenCookieName(AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME)
-                .withUserRole(UserRole.EKSTERN);
-    }
-
     @Bean
     public FilterRegistrationBean<PingFilter> pingFilter() {
         // Veilarbproxy trenger dette endepunktet for å sjekke at tjenesten lever
@@ -107,8 +98,7 @@ public class FilterConfig {
                         azureAdAuthConfig(properties),
                         naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties),
-                        tokenxConfig(),
-                        loginserviceIdportenConfig(properties)
+                        tokenxConfig()
                 )
         );
 

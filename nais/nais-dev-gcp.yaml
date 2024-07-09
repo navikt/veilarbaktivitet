@@ -35,8 +35,6 @@ spec:
       cpu: 200m
       memory: 768Mi
   envFrom:
-    - configmap: pto-config
-    - configmap: loginservice-idporten
     - secret: veilarbaktivitet-unleash-api-token
   leaderElection: true
   secureLogs:
