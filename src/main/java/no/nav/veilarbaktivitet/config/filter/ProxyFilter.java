@@ -14,6 +14,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -36,10 +37,11 @@ public class ProxyFilter implements Filter {
     @Autowired
     private final IAuthService authService;
 
+    @Qualifier(value = "veilarbproxyclient")
     @Autowired
     private final OkHttpClient proxyHttpClient;
 
-    @Bean
+    @Bean(name = "veilarbproxyclient")
     OkHttpClient proxyHttpClient(MeterRegistry meterRegistry, Interceptor tokenInterceptor) {
 
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(getHost(), 80));
