@@ -109,7 +109,9 @@ public class FilterConfig {
         FilterRegistrationBean<ProxyEverythingToOnPremFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(filter);
         registration.setOrder(6);
-        registration.addUrlPatterns("/*");
+        registration.addUrlPatterns("/api/*");
+        registration.addUrlPatterns("/internal/api/*");
+        registration.addUrlPatterns("/graphql");
         return registration;
     }
 

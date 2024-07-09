@@ -22,7 +22,7 @@ public class ProxyEverythingToOnPremFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         Request request = new Request.Builder()
-                .url(servletRequest.getRemoteHost())
+                .url("https://example.com")
                 .build();
         try (var response = proxyHttpClient.newCall(request).execute()) {
             log.info("Proxy ok");
