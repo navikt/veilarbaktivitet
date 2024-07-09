@@ -73,6 +73,7 @@ spec:
           cluster: prod-fss # Dette er med vilje
     outbound:
       external:
+        - host: veilarbarena.dev-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.dev.nav.no
   gcp:
