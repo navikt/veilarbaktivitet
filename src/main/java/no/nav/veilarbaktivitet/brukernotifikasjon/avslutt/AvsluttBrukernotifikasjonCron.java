@@ -21,11 +21,11 @@ public class AvsluttBrukernotifikasjonCron {
     private final AvsluttSender internalService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-    )
-    @SchedulerLock(name = "avslutt_brukernotifikasjoner", lockAtMostFor = "PT20M")
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+//    )
+//    @SchedulerLock(name = "avslutt_brukernotifikasjoner", lockAtMostFor = "PT20M")
     public void avsluttBrukernotifikasjoner() {
             sendAvsluttAlle(500);
     }

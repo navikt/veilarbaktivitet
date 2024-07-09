@@ -16,10 +16,10 @@ public class KafkaHelsesjekOppdaterer {
     @Value("${topic.ut.portefolje}")
     private String portefolgeTopic;
 
-    @Scheduled(
-            initialDelay = 1000,
-            fixedRate = 1000
-    )
+//    @Scheduled(
+//            initialDelay = 1000,
+//            fixedRate = 1000
+//    )
     public void uppdateKafkaHelsesjek() {
         try {
             kafkaTemplate.partitionsFor(portefolgeTopic);

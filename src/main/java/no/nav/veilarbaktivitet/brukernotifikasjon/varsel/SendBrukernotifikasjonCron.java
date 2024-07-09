@@ -22,11 +22,11 @@ public class SendBrukernotifikasjonCron {
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-    )
-    @SchedulerLock(name = "send_brukernotifikasjoner", lockAtMostFor = "PT20M")
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+//    )
+//    @SchedulerLock(name = "send_brukernotifikasjoner", lockAtMostFor = "PT20M")
     public void sendBrukernotifikasjoner() {
             sendAlle(500);
     }
@@ -42,10 +42,10 @@ public class SendBrukernotifikasjonCron {
         return skalSendes.size();
     }
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-    )
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+//    )
     public void countForsinkedeVarslerSisteDognet() {
         int antall = varselDao.hentAntallUkvitterteVarslerForsoktSendt(20);
         varselMetrikk.countForsinkedeVarslerSisteDognet(antall);

@@ -26,12 +26,12 @@ public class AktiviteterTilKafkaService {
 
 
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
-    )
-    @SchedulerLock(name = "aktiviteter_kafka_scheduledTask", lockAtMostFor = "PT2M")
-    @Timed
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.portefolje.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.portefolje.fixedDelay}"
+//    )
+//    @SchedulerLock(name = "aktiviteter_kafka_scheduledTask", lockAtMostFor = "PT2M")
+//    @Timed
     public void sendOppTil5000AktiviterTilPortefolje() {
         MDC.put("running.job", "aktiviteter_kafka");
         List<KafkaAktivitetMeldingV4> meldinger = dao.hentOppTil5000MeldingerSomIkkeErSendtPaAiven();

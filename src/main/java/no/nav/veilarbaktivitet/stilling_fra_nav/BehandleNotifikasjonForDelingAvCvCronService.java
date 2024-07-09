@@ -23,20 +23,20 @@ public class BehandleNotifikasjonForDelingAvCvCronService {
     private final BehandleNotifikasjonForDelingAvCvService behandleNotifikasjonForDelingAvCvService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-    )
-    @SchedulerLock(name = "deling_av_cv_behandleFerdigstilteNotifikasjoner", lockAtMostFor = "PT20M")
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+//    )
+//    @SchedulerLock(name = "deling_av_cv_behandleFerdigstilteNotifikasjoner", lockAtMostFor = "PT20M")
     public void behandleFerdigstilteNotifikasjoner() {
         while (behandleFerdigstilteNotifikasjoner(500) == 500) ;
     }
 
-    @Scheduled(
-            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-    )
-    @SchedulerLock(name = "deling_av_cv_behandleFeiledeNotifikasjoner", lockAtMostFor = "PT20M")
+//    @Scheduled(
+//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+//    )
+//    @SchedulerLock(name = "deling_av_cv_behandleFeiledeNotifikasjoner", lockAtMostFor = "PT20M")
     public void behandleFeiledeNotifikasjoner() {
         while (behandleFeiledeNotifikasjoner(500) == 500) ;
     }
