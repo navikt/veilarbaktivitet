@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - main
+      - gcp-main
     paths:
       - '.github/workflows/unleash-apitoken.yaml'
       - 'nais/unleash-apitoken-dev.yaml'
       - 'nais/unleash-apitoken.yaml'
+      - 'nais/unleash-apitoken-dev-gcp.yaml'
+      - 'nais/unleash-apitoken-gcp.yaml'
 
 jobs:
   apply-apitoken-unleash:
