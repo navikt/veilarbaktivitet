@@ -70,6 +70,9 @@ spec:
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: dev-gcp
+        - application: ida
+          namespace: traktor
+          cluster: prod-fss # Dette er med vilje
     outbound:
       external:
         - host: dab-unleash-api.nav.cloud.nais.io
