@@ -173,7 +173,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
-    implementation("com.oracle.database.jdbc:ojdbc11")
+    implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
