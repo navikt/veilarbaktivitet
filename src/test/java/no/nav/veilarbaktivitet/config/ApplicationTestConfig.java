@@ -7,7 +7,6 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.client.axsys.AxsysClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.sts.SystemUserTokenProvider;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
@@ -30,14 +29,6 @@ import static org.mockito.Mockito.mock;
 @Configuration
 @EnableConfigurationProperties({EnvironmentProperties.class})
 public class ApplicationTestConfig {
-
-
-    @Bean
-    public SystemUserTokenProvider systemUserTokenProvider() {
-        SystemUserTokenProvider systemUserTokenProvider = mock(SystemUserTokenProvider.class);
-        Mockito.when(systemUserTokenProvider.getSystemUserToken()).thenReturn("mockSystemUserToken");
-        return systemUserTokenProvider;
-    }
 
     @Bean
     public AzureAdMachineToMachineTokenClient tokenClient() {

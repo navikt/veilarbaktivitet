@@ -10,7 +10,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class EnvironmentProperties {
     private String azureAdDiscoveryUrl;
     private String azureAdClientId;
-    private String naisStsDiscoveryUrl;
     private String abacUrl;
     private String kafkaBrokersUrl;
     private String environmentName;

@@ -25,18 +25,6 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Configuration
 public class FilterConfig {
 
-    private final List<String> ALLOWED_SERVICE_USERS = List.of(
-            "srvveilarbportefolje", "srvveilarbdirigent", "srvveilarboppfolging"
-    );
-
-    private OidcAuthenticatorConfig naisStsAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getNaisStsDiscoveryUrl())
-                .withClientIds(ALLOWED_SERVICE_USERS)
-                .withUserRole(UserRole.SYSTEM);
-    }
-
-
     private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
                 .withDiscoveryUrl(properties.getAzureAdDiscoveryUrl())
@@ -96,7 +84,6 @@ public class FilterConfig {
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
                         azureAdAuthConfig(properties),
-                        naisStsAuthConfig(properties),
                         naisAzureAdConfig(properties),
                         tokenxConfig()
                 )
