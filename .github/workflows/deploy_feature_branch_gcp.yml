@@ -7,8 +7,8 @@ on:
       - gcp-main
 
 permissions:
-  contents: read
-  id-token: write
+  packages: write
+  contents: write
 
 concurrency:
   group: deploy_feture_branch_gcp
