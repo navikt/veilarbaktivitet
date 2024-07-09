@@ -1,0 +1,120 @@
+kind: Application
+apiVersion: nais.io/v1alpha1
+metadata:
+  name: veilarbaktivitet
+  namespace: pto
+  labels:
+    team: pto
+spec:
+  image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  ingresses:
+    - https://veilarbaktivitet.dev.nav.cloud.nais.io
+  port: 8080
+  prometheus:
+    enabled: true
+    path: veilarbaktivitet/internal/prometheus
+  liveness:
+    path: veilarbaktivitet/internal/isAlive
+    port: 8080
+    initialDelay: 60
+    timeout: 10
+  readiness:
+    path: veilarbaktivitet/internal/isReady
+    port: 8080
+    initialDelay: 60
+    timeout: 10
+  replicas:
+    min: 1
+    max: 2
+    cpuThresholdPercentage: 50
+  resources:
+    limits:
+      cpu: "2"
+      memory: 1024Mi
+    requests:
+      cpu: 200m
+      memory: 768Mi
+  envFrom:
+    - configmap: pto-config
+    - configmap: loginservice-idporten
+    - secret: veilarbaktivitet-unleash-api-token
+  vault:
+    enabled: true
+    paths:
+      - kvPath: /oracle/data/dev/creds/veilarbaktivitet_q1-user
+        mountPath: /var/run/secrets/nais.io/oracle_creds
+      - kvPath: /serviceuser/data/dev/srvveilarbaktivitet
+        mountPath: /var/run/secrets/nais.io/service_user
+      - kvPath: /kv/preprod/fss/veilarbaktivitet/q1
+        mountPath: /var/run/secrets/nais.io/vault
+      - kvPath: /oracle/data/dev/config/veilarbaktivitet_q1
+        mountPath: /var/run/secrets/nais.io/oracle_config
+  webproxy: true
+  leaderElection: true
+  secureLogs:
+    enabled: true
+  kafka:
+    pool: nav-dev
+  tokenx:
+    enabled: true
+  azure:
+    application:
+      allowAllUsers: true
+      enabled: true
+      claims:
+        extra:
+          - "NAVident"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: veilarbapi
+          namespace: pto
+          cluster: dev-gcp
+        - application: veilarbpersonflate
+          namespace: poao
+          cluster: dev-gcp
+        - application: veilarbdirigent
+          namespace: pto
+          cluster: dev-fss
+        - application: aktivitetsplan
+          namespace: pto
+          cluster: dev-gcp
+        - application: arbeidsrettet-dialog
+          namespace: pto
+          cluster: dev-gcp
+    outbound:
+      external:
+        - host: dab-unleash-api.nav.cloud.nais.io
+        - host: orkivar.intern.dev.nav.no
+  gcp:
+    sqlInstances:
+      - name: veilarbaktivitet
+        type: POSTGRES_14
+        tier: db-custom-1-3840
+        diskType: SSD
+        diskAutoresize: true
+        #        flags: # Nødvendig for datastreams
+        #          - name: cloudsql.logical_decoding
+        #            value: "on"
+        databases:
+          - name: veilarbaktivitet
+            envVarPrefix: DB
+  #            users:
+  #              - name: datastream
+  env:
+    - name: APP_ENVIRONMENT_NAME
+      value: q1
+    - name: APPD_ENABLED
+      value: "false"
+    - name: POAO_TILGANG_SCOPE
+      value: api://dev-fss.poao.poao-tilgang/.default
+    - name: ADMIN_GROUPS
+      value: 554a66fb-fbec-4b92-90c1-0d9c085c362c
+    - name: ARENA_AKTIVITET_DATOFILTER
+      value: "2017-12-04"
+    - name: ORKIVAR_URL
+      value: "https://orkivar.intern.dev.nav.no"
+    - name: VEILARBDIALOG_URL
+      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog
+    - name: KAFKA_ENABLED
+      value: "false"
