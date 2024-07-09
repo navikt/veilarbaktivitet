@@ -6,15 +6,12 @@ import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
 import no.nav.common.metrics.InfluxClient;
 import no.nav.common.metrics.MetricsClient;
-import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.unleash.UnleashConfig;
 import no.nav.veilarbaktivitet.unleash.strategies.ByEnhetStrategy;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
-import static no.nav.common.utils.NaisUtils.getCredentials;
 
 @Configuration
 @Profile("!test")
@@ -31,11 +28,6 @@ public class ApplicationContext {
     @Bean
     public AuthContextHolder authContextHolder() {
         return AuthContextHolderThreadLocal.instance();
-    }
-
-    @Bean
-    public Credentials serviceUserCredentials() {
-        return getCredentials("service_user");
     }
 
     @Bean

@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav;
 
-import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
@@ -33,10 +32,6 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
     @Autowired
     BehandleNotifikasjonForDelingAvCvCronService behandleNotifikasjonForDelingAvCvCronService;
-
-    @Autowired
-    Credentials credentials;
-
 
     @Autowired
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
