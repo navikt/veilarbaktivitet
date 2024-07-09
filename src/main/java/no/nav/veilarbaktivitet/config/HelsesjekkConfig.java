@@ -27,7 +27,7 @@ public class HelsesjekkConfig {
     ) {  //TODO legg til poao tilgang.
         List<SelfTestCheck> selfTestChecks = Arrays.asList(
                 new SelfTestCheck("Veilarbarena", false, veilarbarenaHelsesjekk),
-                new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
+//                new SelfTestCheck("Aktorregister", true, aktorOppslagClient),
                 new SelfTestCheck("DatabaseHelsesjekk", true, databaseHelsesjekk),
                 new SelfTestCheck("Kafka", false, kafkaHelsesjekk)
         );
