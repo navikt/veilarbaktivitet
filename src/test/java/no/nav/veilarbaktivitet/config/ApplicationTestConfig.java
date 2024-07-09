@@ -9,6 +9,7 @@ import no.nav.common.client.axsys.AxsysClient;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient;
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient;
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient;
 import no.nav.common.utils.Credentials;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock.MetricsClientMock;
@@ -40,6 +41,13 @@ public class ApplicationTestConfig {
     @Bean
     public AzureAdOnBehalfOfTokenClient oboTokenClient() {
         AzureAdOnBehalfOfTokenClient tokenClient = mock(AzureAdOnBehalfOfTokenClient.class);
+        Mockito.when(tokenClient.exchangeOnBehalfOfToken(any(), any())).thenReturn("mockOnBehalfOfToken");
+        return tokenClient;
+    }
+
+    @Bean
+    public TokenXOnBehalfOfTokenClient tokenXOnBehalfOfTokenClient() {
+        TokenXOnBehalfOfTokenClient tokenClient = mock(TokenXOnBehalfOfTokenClient.class);
         Mockito.when(tokenClient.exchangeOnBehalfOfToken(any(), any())).thenReturn("mockOnBehalfOfToken");
         return tokenClient;
     }

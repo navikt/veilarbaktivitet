@@ -6,16 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Profile("!test")
-@Configuration
+@Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProxyFilter implements Filter {
+public class ProxyEverythingToOnPremFilter implements Filter {
     @Autowired
     private final OkHttpClient proxyHttpClient;
 

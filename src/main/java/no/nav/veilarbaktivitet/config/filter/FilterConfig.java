@@ -13,9 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import java.util.List;
-
-import static no.nav.common.auth.Constants.AZURE_AD_B2C_ID_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.Constants.AZURE_AD_ID_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
@@ -108,10 +105,19 @@ public class FilterConfig {
     }
 
     @Bean
+    public FilterRegistrationBean<ProxyEverythingToOnPremFilter> proxyFilterRegistrationBean(ProxyEverythingToOnPremFilter filter) {
+        FilterRegistrationBean<ProxyEverythingToOnPremFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(filter);
+        registration.setOrder(6);
+        registration.addUrlPatterns("/*");
+        return registration;
+    }
+
+    @Bean
     public FilterRegistrationBean<SetStandardHttpHeadersFilter> setStandardHeadersFilterRegistrationBean() {
         FilterRegistrationBean<SetStandardHttpHeadersFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new SetStandardHttpHeadersFilter());
-        registration.setOrder(6);
+        registration.setOrder(7);
         registration.addUrlPatterns("/*");
         return registration;
     }
