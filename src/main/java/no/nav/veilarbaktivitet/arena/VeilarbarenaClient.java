@@ -28,7 +28,7 @@ public class VeilarbarenaClient {
     private String veilarbarenaServiceUrl;
 
     public HealthStatus  ping() {
-        String uri = String.format("%s/internal/selftest", veilarbarenaServiceUrl);
+        String uri = String.format("%s/veilarbarena/internal/selftest", veilarbarenaServiceUrl);
         // This endpoint this not need auth and therfore uses baseClient
         var basicHttpClient = RestClient.baseClientBuilder().build();
         Request request = new Request.Builder()
