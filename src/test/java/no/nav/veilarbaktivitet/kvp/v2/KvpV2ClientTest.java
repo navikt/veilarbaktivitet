@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.kvp.v2;
 
-import de.mkammerer.wiremock.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import no.nav.veilarbaktivitet.person.Person;
 import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
@@ -12,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -23,7 +24,8 @@ class KvpV2ClientTest {
     private KvpV2Client kvpV2Client;
 
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(0);
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
     void setup() {

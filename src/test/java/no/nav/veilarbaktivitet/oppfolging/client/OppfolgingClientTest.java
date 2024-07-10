@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
-import com.github.tomakehurst.wiremock.junit5.WireMockTest;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -8,6 +8,7 @@ import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,18 +16,22 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
-@WireMockTest
 class OppfolgingClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("10108000398");
     private static final String OPPFOLGING_RESPONS = "oppfolging/v2/oppfolgingRespons.json";
 
     private OppfolgingClientImpl oppfolgingClient;
+
+    @RegisterExtension
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
     void setup() {
@@ -35,7 +40,6 @@ class OppfolgingClientTest {
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingClient = new OppfolgingClientImpl(okHttpClient, okHttpClient, personService, gjeldendePeriodeMetrikk);
-        wireMock.getBaseUri();
         oppfolgingClient.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
     }
 

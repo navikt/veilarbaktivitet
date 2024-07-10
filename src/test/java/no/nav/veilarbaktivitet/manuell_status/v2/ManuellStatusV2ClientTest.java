@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.manuell_status.v2;
 
-import de.mkammerer.wiremock.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
 import okhttp3.OkHttpClient;
@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -27,8 +28,8 @@ class ManuellStatusV2ClientTest {
     private ManuellStatusV2Client manuellStatusV2Client;
 
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(0);
-
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
     public void setup() {
