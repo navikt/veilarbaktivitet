@@ -32,12 +32,6 @@ import static org.springframework.util.backoff.FixedBackOff.UNLIMITED_ATTEMPTS;
 public class KafkaAivenConfig {
 
     @Bean
-    void kafkaListenerContainerFactory() {
-        // org.springframework.boot.autoconfigure.kafka.KafkaAnnotationDrivenConfiguration.kafkaListenerContainerFactory
-        // For aa override spring default config
-    }
-
-    @Bean
     <V extends SpecificRecordBase> ProducerFactory<String, V> stringAvroProducerFactory(KafkaProperties kafkaProperties) {
         Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());

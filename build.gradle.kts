@@ -178,7 +178,7 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-core:10.15.2")
+    implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
     implementation("org.postgresql:postgresql:42.7.3")
 //    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
