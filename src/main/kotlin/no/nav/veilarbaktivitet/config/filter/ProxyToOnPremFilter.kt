@@ -1,10 +1,11 @@
 package no.nav.veilarbaktivitet.config.filter
 
-import com.netflix.zuul.ZuulFilter
-import com.netflix.zuul.context.RequestContext
 import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
-import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants.ROUTE_TYPE
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.cloud.gateway.route.RouteLocator
+import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -12,23 +13,21 @@ import org.springframework.stereotype.Service
 @Service
 @RequiredArgsConstructor
 @Slf4j
-class ProxyToOnPremFilter(private val proxyToOnPremTokenProvider: ProxyToOnPremTokenProvider): ZuulFilter() {
+class ProxyToOnPremGateway(
+    @Value("\${veilarbaktivitet-fss.url}")
+    private val veilaraktivitetFssUrl: String,
+    private val proxyToOnPremTokenProvider: ProxyToOnPremTokenProvider) {
 
-    override fun shouldFilter(): Boolean {
-        return true
+    @Bean
+    fun myRoutes(builder: RouteLocatorBuilder): RouteLocator {
+        return builder.routes()
+            .route { config ->
+                config
+                    .path("/api/*", "/internal/api/*", "/graphql")
+                    .filters { filterSpec -> filterSpec.addRequestHeader("Authorization", "Bearer ${proxyToOnPremTokenProvider.getProxyToken()}") }
+                    .uri(veilaraktivitetFssUrl)
+            }
+            .build()
     }
 
-    override fun run() {
-        val token = proxyToOnPremTokenProvider.getProxyToken()
-        val context = RequestContext.getCurrentContext()
-        context.addZuulRequestHeader("Authorization", "Bearer $token")
-    }
-
-    override fun filterType(): String {
-        return ROUTE_TYPE
-    }
-
-    override fun filterOrder(): Int {
-        return 6 // Tatt hensyn til de andre filtrene som er wiret up i FilterConfig
-    }
 }

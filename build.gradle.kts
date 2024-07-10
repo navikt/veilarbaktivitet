@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.0.2"
+val spring_boot_version = "3.2.7"
 val common_version = "3.2024.02.21_11.18-8f9b43befae1"
 val dab_common_version = "2024.04.05-15.01.4a82af932963"
 val poao_tilgang_version = "2023.10.09_13.45-b5ace74e861a"
@@ -175,7 +175,10 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
-    implementation("org.springframework.cloud:spring-cloud-starter-netflix-zuul:2.2.0.RELEASE")
+    implementation("org.springframework.cloud:spring-cloud-gateway:4.1.4")
+    implementation("org.springframework.cloud:spring-cloud-gateway-server:4.1.4")
+    implementation("org.springframework.cloud:spring-cloud-commons:4.1.3")
+
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
