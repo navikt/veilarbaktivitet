@@ -180,6 +180,7 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-database-postgresql:10.15.2")
     implementation("org.postgresql:postgresql:42.7.3")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.1")
 //    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
@@ -196,7 +197,7 @@ dependencies {
 
     testImplementation("org.awaitility:awaitility:4.1.0")
 //    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
-    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
+//    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
