@@ -10,29 +10,38 @@ plugins {
     id("java")
     id("application")
     id("maven-publish")
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "2.0.0"
     id("org.openapi.generator") version "6.4.0"
     id("com.github.davidmc24.gradle.plugin.avro") version "1.3.0"
     id("project-report")
     id("jacoco")
     id("org.sonarqube") version "4.4.1.3373"
     id("org.springframework.boot") version "3.0.2"
-    kotlin("plugin.lombok") version "1.9.0"
+    kotlin("plugin.lombok") version "2.0.0"
     id("io.freefair.lombok") version "8.1.0"
 }
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
+    // Kan mest sannsynlig fjernes når vi oppgrader poao-tilgang og springboot
+    resolutionStrategy {
+        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-core:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
+        force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
+        force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
+    }
 }
 
 tasks.test {
@@ -93,19 +102,20 @@ tasks.compileTestKotlin {
 
 openApiGenerate {
     inputSpec.set("$projectDir/src/main/resources/openapi/AktivitetsplanV1.yaml")
-    generatorName.set("spring")
+    generatorName.set("kotlin-spring")
+    library.set("spring-boot")
     packageName.set("no.nav.veilarbaktivitet.internapi")
     apiPackage.set("no.nav.veilarbaktivitet.internapi.api")
     modelPackage.set("no.nav.veilarbaktivitet.internapi.model")
-    configOptions.put("useSpringBoot3", "true")
-    configOptions.put("openApiNullable", "false")
     configOptions.put("interfaceOnly", "true")
-    configOptions.put("skipDefaultInterface", "true")
-    configOptions.put("additionalModelTypeAnnotations", "@lombok.experimental.SuperBuilder @lombok.NoArgsConstructor")
+    configOptions.put("useSpringBoot3", "true")
+    configOptions.put("annotationLibrary", "none")
+    configOptions.put("documentationProvider", "none")
+    configOptions.put("enumPropertyNaming", "UPPERCASE")
     outputDir.set("$buildDir/generated")
 }
 
-java.sourceSets["main"].java.srcDir("$buildDir/generated/src/main/java")
+kotlin.sourceSets["main"].kotlin.srcDir("$buildDir/generated/src/main/kotlin")
 
 group = "no.nav"
 description = "veilarbaktivitet"
@@ -129,11 +139,8 @@ if (hasProperty("buildScan")) {
 }
 
 dependencies {
-    // Lombok stuff
-//    compileOnly("org.projectlombok:lombok:1.18.28")
-//    annotationProcessor("org.projectlombok:lombok:1.18.28")
-//    testCompileOnly("org.projectlombok:lombok:1.18.28")
-//    testAnnotationProcessor("org.projectlombok:lombok:1.18.28")
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
 
     implementation(enforcedPlatform("org.springframework.boot:spring-boot-dependencies:$spring_boot_version"))
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version")
@@ -149,7 +156,6 @@ dependencies {
     implementation("no.nav.common:feature-toggle:$common_version")
     implementation("no.nav.common:metrics:$common_version")
     implementation("no.nav.common:job:$common_version")
-    implementation("no.nav.common:rest:$common_version")
     implementation("no.nav.common:client:$common_version")
     implementation("no.nav.common:util:$common_version")
     implementation("no.nav.common:types:$common_version")
@@ -158,7 +164,7 @@ dependencies {
     implementation("no.nav.poao.dab:spring-auth:$dab_common_version")
     implementation("no.nav.poao.dab:spring-a2-annotations:$dab_common_version")
 
-    //spring managed runtime/compile dependencies
+//spring managed runtime/compile dependencies
     implementation("org.springframework.boot:spring-boot-starter-cache")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -174,13 +180,9 @@ dependencies {
     implementation("io.micrometer:micrometer-registry-prometheus")
     implementation("org.flywaydb:flyway-core")
     implementation("org.postgresql:postgresql:42.7.3")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
-//    implementation("org.springframework.cloud:spring-cloud-gateway:4.1.4")
-//    implementation("org.springframework.cloud:spring-cloud-gateway-server-mvc:4.1.4")
-//    implementation("org.springframework.cloud:spring-cloud-commons:4.1.3")
-
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
     implementation("io.swagger.core.v3:swagger-annotations:2.2.8")
@@ -189,7 +191,7 @@ dependencies {
 
     runtimeOnly("org.springframework.boot:spring-boot-devtools")
 
-    //test dependencys
+//test dependencies
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
@@ -199,7 +201,7 @@ dependencies {
     testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
-    //spring managed test dependencies
+//spring managed test dependencies
     testImplementation("io.rest-assured:rest-assured")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
