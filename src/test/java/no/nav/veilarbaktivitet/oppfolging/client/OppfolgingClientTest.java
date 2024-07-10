@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
-import de.mkammerer.wiremock.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -8,7 +8,6 @@ import okhttp3.OkHttpClient;
 import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -21,16 +20,13 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
+@WireMockTest
 class OppfolgingClientTest {
     private static final Person.AktorId AKTORID = Person.aktorId("1234");
     private static final Person.Fnr FNR = Person.fnr("10108000398");
     private static final String OPPFOLGING_RESPONS = "oppfolging/v2/oppfolgingRespons.json";
 
     private OppfolgingClientImpl oppfolgingClient;
-
-
-    @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(0);
 
     @BeforeEach
     void setup() {

@@ -1,5 +1,5 @@
 
-val spring_boot_version = "3.2.7"
+val spring_boot_version = "3.3.1"
 val common_version = "3.2024.02.21_11.18-8f9b43befae1"
 val dab_common_version = "2024.04.05-15.01.4a82af932963"
 val poao_tilgang_version = "2024.06.20_04.57-261f6c070c00"
@@ -34,14 +34,14 @@ kotlin {
 configurations.all {
     resolutionStrategy.failOnNonReproducibleResolution()
     // Kan mest sannsynlig fjernes når vi oppgrader poao-tilgang og springboot
-    resolutionStrategy {
-        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
-        force("com.fasterxml.jackson.core:jackson-core:2.16.0")
-        force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
-        force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
-        force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
-        force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
-    }
+//    resolutionStrategy {
+//        force("com.fasterxml.jackson.core:jackson-databind:2.16.0")
+//        force("com.fasterxml.jackson.core:jackson-core:2.16.0")
+//        force("com.fasterxml.jackson.core:jackson-annotations:2.16.0")
+//        force("com.fasterxml.jackson.core:jackson-datatype-jdk8:2.16.0")
+//        force("com.fasterxml.jackson.module:jackson-module-scala:2.16.0")
+//        force("com.fasterxml.jackson.module:jackson-module-scala_2.13:2.16.0")
+//    }
 }
 
 tasks.test {
@@ -178,9 +178,9 @@ dependencies {
     implementation("org.springframework.kafka:spring-kafka")
     implementation("com.squareup.okhttp3:okhttp")
     implementation("io.micrometer:micrometer-registry-prometheus")
-    implementation("org.flywaydb:flyway-core")
+    implementation("org.flywaydb:flyway-core:10.15.2")
     implementation("org.postgresql:postgresql:42.7.3")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.16.0")
+//    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.0")
 
     implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
 
@@ -195,10 +195,13 @@ dependencies {
     testImplementation("no.nav.poao-tilgang:poao-tilgang-test-wiremock:$poao_tilgang_version")
 
     testImplementation("org.awaitility:awaitility:4.1.0")
-    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
+//    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
     testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
     testImplementation("com.networknt:json-schema-validator:1.0.73")
-    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
+
+//    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
+    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
+
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.2.0")
 
 //spring managed test dependencies
