@@ -115,3 +115,5 @@ spec:
       value: "https://veilarbveileder.dev.intern.nav.no"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.dev-fss-pub.nais.io"
+    - name: VEILARBAKTIVITET_FSS_URL
+      value: "https://veilarbaktivitet.dev-fss-pub.nais.io"

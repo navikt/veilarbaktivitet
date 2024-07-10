@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.config.filter;
 
 import jakarta.servlet.*;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.OkHttpClient;
@@ -22,13 +23,37 @@ public class ProxyEverythingToOnPremFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         Request request = new Request.Builder()
-                .url("https://example.com")
+                .url(servletRequest.getServletContext().getContextPath())
                 .build();
         try (var response = proxyHttpClient.newCall(request).execute()) {
             log.info("Proxy ok");
         } catch (Exception e) {
             log.error(e.getMessage(), e);
         }
+    }
+
+    public String getFullURL(ServletRequest request) {
+        StringBuilder fullURL = new StringBuilder();
+
+        fullURL.append(request.getScheme())
+                .append("://");
+
+        fullURL.append(request.getServerName());
+
+        int port = request.getServerPort();
+        if ((request.getScheme().equals("http") && port != 80) ||
+                (request.getScheme().equals("https") && port != 443)) {
+            fullURL.append(":").append(port);
+        }
+
+        fullURL.append(request.getRequestURI());
+
+        String queryString = request.getQueryString();
+        if (queryString != null) {
+            fullURL.append("?").append(queryString);
+        }
+
+        return fullURL.toString();
     }
 }
 
