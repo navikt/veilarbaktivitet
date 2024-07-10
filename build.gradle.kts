@@ -175,9 +175,11 @@ dependencies {
     implementation("org.flywaydb:flyway-core")
     implementation("org.postgresql:postgresql:42.7.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
-    implementation("org.springframework.cloud:spring-cloud-gateway:4.1.4")
-    implementation("org.springframework.cloud:spring-cloud-gateway-server:4.1.4")
-    implementation("org.springframework.cloud:spring-cloud-commons:4.1.3")
+
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-mvc:4.1.4")
+//    implementation("org.springframework.cloud:spring-cloud-gateway:4.1.4")
+//    implementation("org.springframework.cloud:spring-cloud-gateway-server-mvc:4.1.4")
+//    implementation("org.springframework.cloud:spring-cloud-commons:4.1.3")
 
 
     // Hvis det ønskes swagger doc, foreslås å bruke springdoc (springdoc-openapi-starter-webmvc-ui - se no.nav.fo.veilarbdialog.rest.SwaggerConfig for eksempelconfig)
