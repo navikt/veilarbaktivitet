@@ -105,17 +105,6 @@ public class FilterConfig {
     }
 
     @Bean
-    public FilterRegistrationBean<ProxyEverythingToOnPremFilter> proxyFilterRegistrationBean(ProxyEverythingToOnPremFilter filter) {
-        FilterRegistrationBean<ProxyEverythingToOnPremFilter> registration = new FilterRegistrationBean<>();
-        registration.setFilter(filter);
-        registration.setOrder(6);
-        registration.addUrlPatterns("/api/*");
-        registration.addUrlPatterns("/internal/api/*");
-        registration.addUrlPatterns("/graphql");
-        return registration;
-    }
-
-    @Bean
     public FilterRegistrationBean<SetStandardHttpHeadersFilter> setStandardHeadersFilterRegistrationBean() {
         FilterRegistrationBean<SetStandardHttpHeadersFilter> registration = new FilterRegistrationBean<>();
         registration.setFilter(new SetStandardHttpHeadersFilter());
