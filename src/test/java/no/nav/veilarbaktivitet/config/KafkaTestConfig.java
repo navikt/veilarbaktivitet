@@ -23,6 +23,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -32,6 +33,7 @@ import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
 
@@ -67,12 +69,12 @@ public class KafkaTestConfig {
                 aktivitetskortTopic);
     }
 
-//    @Bean
-//    @Primary
-//    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafkaBroker) {
-//        kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokerAddresses()).map(BrokerAddress::toString).collect(Collectors.toList()));
-//        return kafkaProperties;
-//    }
+    @Bean
+    @Primary
+    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaKraftBroker embeddedKafkaBroker) {
+        kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokersAsString().split(",")).toList());
+        return kafkaProperties;
+    }
 
     @Qualifier("stringJsonConsumerFactory")
     @Bean
