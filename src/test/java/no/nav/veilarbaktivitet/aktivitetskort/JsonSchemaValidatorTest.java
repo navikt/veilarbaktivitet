@@ -47,7 +47,7 @@ class JsonSchemaValidatorTest {
         var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
         var invalidValidationMessages = jsonSchema.validate(invalid);
         assertEquals(1, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
-        assertEquals("$.aktivitetskortType: is missing but it is required", errorMessage(invalidValidationMessages));
+        assertEquals("$: required property 'aktivitetskortType' not found", errorMessage(invalidValidationMessages));
     }
 
     @Test

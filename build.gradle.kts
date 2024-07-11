@@ -201,7 +201,7 @@ dependencies {
     
 //    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
 
-    testImplementation("com.networknt:json-schema-validator:1.0.73")
+    testImplementation("com.networknt:json-schema-validator:1.5.0")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")
 //    testImplementation("io.github.ricall.junit5-wiremock:junit5-wiremock:2.0.0")
