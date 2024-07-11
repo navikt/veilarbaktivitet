@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.util;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
@@ -11,6 +10,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import static org.awaitility.Awaitility.await;
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 @Slf4j
 public class KafkaTestService {
 
@@ -31,12 +31,27 @@ public class KafkaTestService {
     public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
 
 
+    public KafkaTestService(
+            @Qualifier("stringAvroConsumerFactory")
+            ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory,
+            @Qualifier("stringJsonConsumerFactory")
+            ConsumerFactory<String, Object> stringJsonConsumerFactory,
+            @Qualifier("avroAvroConsumerFactory")
+            ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory,
+            @Qualifier("stringStringConsumerFactory")
+            ConsumerFactory<String, String> stringStringConsumerFactory,
+            Admin kafkaAdminClient
+    ) {
+        this.stringAvroConsumerFactory = stringAvroConsumerFactory;
+        this.stringJsonConsumerFactory = stringJsonConsumerFactory;
+        this.avroAvroConsumerFactory = avroAvroConsumerFactory;
+        this.stringStringConsumerFactory = stringStringConsumerFactory;
+        this.kafkaAdminClient = kafkaAdminClient;
+    }
+
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
-
     private final ConsumerFactory<String, Object> stringJsonConsumerFactory;
-
     private final ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
-
     private final ConsumerFactory<String, String> stringStringConsumerFactory;
 
     private final Admin kafkaAdminClient;

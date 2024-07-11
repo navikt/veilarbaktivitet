@@ -198,6 +198,9 @@ dependencies {
     testImplementation("org.awaitility:awaitility:4.1.0")
 //    testImplementation("com.github.tomakehurst:wiremock:3.0.0-beta-2")
 //    testImplementation("org.springframework.cloud:spring-cloud-starter-contract-stub-runner:4.0.1")
+    
+//    testImplementation("org.springframework.cloud:spring-cloud-contract-wiremock:4.1.3")
+
     testImplementation("com.networknt:json-schema-validator:1.0.73")
 
 //    testImplementation("de.mkammerer.wiremock-junit5:wiremock-junit5:1.1.0")

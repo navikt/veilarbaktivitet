@@ -15,6 +15,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.ssl.DefaultSslBundleRegistry;
@@ -22,7 +23,6 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -30,13 +30,10 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
-import org.springframework.kafka.test.core.BrokerAddress;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 @Configuration
 @SpyBeans({
@@ -77,6 +74,7 @@ public class KafkaTestConfig {
 //        return kafkaProperties;
 //    }
 
+    @Qualifier("stringJsonConsumerFactory")
     @Bean
     <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
         Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(kafkaProperties.getConsumer().getGroupId(), "enable.auto.commit", embeddedKafka);
