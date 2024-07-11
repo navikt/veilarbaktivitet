@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - gcp-main
+      - gcp-main-2
 
 permissions:
   packages: write
