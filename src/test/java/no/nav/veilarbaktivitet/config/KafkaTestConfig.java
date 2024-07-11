@@ -79,7 +79,7 @@ public class KafkaTestConfig {
     @Qualifier("stringJsonConsumerFactory")
     @Bean
     <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(kafkaProperties.getConsumer().getGroupId(), "enable.auto.commit", embeddedKafka);
+        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(kafkaProperties.getConsumer().getGroupId(), "true", embeddedKafka);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);

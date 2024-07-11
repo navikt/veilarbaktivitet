@@ -194,7 +194,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 }
             }
         """.trimIndent().replace("\n", "")
-        val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id.toLong())
+        val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
         val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asText()
         assertThat(fraDatoString).isEqualTo(fraDatoIso)
     }

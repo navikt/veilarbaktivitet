@@ -32,8 +32,9 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil
 import no.nav.veilarbaktivitet.person.Innsender
+import no.nav.veilarbaktivitet.util.AktivitetskortFeilListener
+import no.nav.veilarbaktivitet.util.AktivitetskortIdMappingListener
 import no.nav.veilarbaktivitet.util.DateUtils
-import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.clients.producer.RecordMetadata
@@ -49,52 +50,42 @@ import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource
-import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 
-open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
-
+open class AktivitetskortConsumerIntegrationTest(
     @Autowired
-    var producerClient: KafkaProducerClient<String, String>? = null
-
+    val aktivitetskortFeilListener: AktivitetskortFeilListener,
     @Autowired
-    var aktivitetskortConsumer: AktivitetskortConsumer? = null
-
+    val aktivitetskortIdMappingListener: AktivitetskortIdMappingListener,
+    @Value("\${topic.inn.aktivitetskort}")
+    var topic: String,
     @Autowired
-    var messageDAO: AktivitetsMessageDAO? = null
-
+    var producerClient: KafkaProducerClient<String, String>,
+    @Autowired
+    var aktivitetskortConsumer: AktivitetskortConsumer,
+    @Autowired
+    var messageDAO: AktivitetsMessageDAO,
+    @Autowired
+    var tiltakMigreringCronService: TiltakMigreringCronService,
+    @Autowired
+    var meterRegistry: MeterRegistry
+) : SpringBootTestBase() {
     @Autowired
     lateinit var aktivitetskortService: AktivitetskortService
 
     @Autowired
-    var tiltakMigreringCronService: TiltakMigreringCronService? = null
-
-    @Autowired
-    var meterRegistry: MeterRegistry? = null
-
-    @Value("\${topic.inn.aktivitetskort}")
-    var topic: String? = null
-
-    @Value("\${topic.ut.aktivitetskort-feil}")
-    var aktivitetskortFeilTopic: String? = null
-
-    @Value("\${topic.ut.aktivitetskort-idmapping}")
-    var aktivitetskortIdMappingTopic: String? = null
-
-    @Autowired
     var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
-    var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
-    var aktivitetskortFeilConsumer: org.apache.kafka.clients.consumer.Consumer<String, String>? = null
-    var aktivitetskortIdMappingConsumer: org.apache.kafka.clients.consumer.Consumer<String, String>? = null
+
+    private lateinit var brukernotifikasjonAsserts: BrukernotifikasjonAsserts
+
     @BeforeEach
     fun cleanupBetweenTests() {
         Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true)
-        aktivitetskortFeilConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortFeilTopic)
-        aktivitetskortIdMappingConsumer = kafkaTestService.createStringStringConsumer(aktivitetskortIdMappingTopic)
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
+        aktivitetskortFeilListener.clearQueue()
     }
 
     fun aktivitetskort(funksjonellId: UUID, aktivitetStatus: AktivitetskortStatus, bruker: MockBruker = mockBruker): Aktivitetskort {
@@ -111,11 +102,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         errorType: ErrorType,
         source: MessageSource
     ) {
-        val singleRecord = KafkaTestUtils.getSingleRecord(
-            aktivitetskortFeilConsumer,
-            aktivitetskortFeilTopic,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
-        )
+        val singleRecord = aktivitetskortFeilListener.getSingleRecord()!!
         val payload = JsonUtils.fromJson(singleRecord.value(), AktivitetskortFeilMelding::class.java)
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
         assertThat(payload.errorType).isEqualTo(errorType)
@@ -123,11 +110,13 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     }
 
     private fun assertIdMappingPublished(funksjonellId: UUID, arenaId: ArenaId) {
-        val singleRecord = KafkaTestUtils.getSingleRecord(
-            aktivitetskortIdMappingConsumer,
-            aktivitetskortIdMappingTopic,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
-        )
+//        val singleRecord = KafkaTestUtils.getSingleRecord(
+//            aktivitetskortIdMappingConsumer,
+//            aktivitetskortIdMappingTopic,
+//            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
+//        )
+
+        val singleRecord = aktivitetskortIdMappingListener.getSingleRecord()!!
         val payload = JsonUtils.fromJson(singleRecord.value(), IdMappingDto::class.java)
         assertThat(singleRecord.key()).isEqualTo(funksjonellId.toString())
         assertThat(payload.arenaId).isEqualTo(arenaId)
@@ -137,12 +126,12 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
     fun happy_case_upsert_ny_arenatiltaksaktivitet() {
         //trenges for og teste med count hvis ikke må man også matche på tags for å få testet counten
         //burde man endre på metrikkene her? kan man vite en fulstendig liste av aktiviteskort og skilde?
-        meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).meters()
-            .forEach(java.util.function.Consumer { it: Meter -> meterRegistry!!.remove(it) })
+        meterRegistry.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).meters()
+            .forEach(java.util.function.Consumer { it: Meter -> meterRegistry.remove(it) })
         val actual = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
         val arenaHeaders = arenaMeldingHeaders(mockBruker, ArenaId("ARENATA123"), "MIDL")
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(actual, arenaHeaders))
-        val count = meterRegistry!!.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter()?.count()
+        val count = meterRegistry.find(AktivitetskortMetrikker.AKTIVITETSKORT_UPSERT).counter()?.count()
         assertThat(count).isEqualTo(1.0)
         val aktivitet = hentAktivitet(actual.id)
         assertThat(aktivitet.type).isEqualTo(AktivitetTypeDTO.EKSTERNAKTIVITET)
@@ -559,7 +548,7 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             ),
             RecordHeader(AktivitetsbestillingCreator.HEADER_EKSTERN_ARENA_TILTAKSKODE, "MIDLONS".toByteArray())
         )
-        val lastRecordMetadata = messages.stream()
+        val lastRecordMetadata = messages
             .map { (json, messageId) ->
                 ProducerRecord(
                     topic,
@@ -571,13 +560,8 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
             }
             .map { record: ProducerRecord<String, String>? -> producerClient!!.sendSync(record) }
             .reduce { first: RecordMetadata?, second: RecordMetadata -> second }
-            .get()
         kafkaTestService.assertErKonsumert(topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, lastRecordMetadata.offset())
-        val records = KafkaTestUtils.getRecords(
-            aktivitetskortFeilConsumer,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION,
-            messages.size
-        )
+        val records = aktivitetskortFeilListener.take(messages.size)
         assertThat(records.count()).isEqualTo(messages.size)
     }
 
@@ -704,14 +688,13 @@ open class AktivitetskortConsumerIntegrationTest : SpringBootTestBase() {
         /* Simulate technical error after DETALJER_ENDRET processing */
 
         Mockito.doThrow(IllegalStateException("Ikke lov"))
-            .`when`(aktivitetskortService)!!.oppdaterStatus(any(), any())
-//            .`when`(aktivitetskortService?.oppdaterStatus(any<AktivitetData>(), any<AktivitetData>()))
+            .`when`(aktivitetskortService).oppdaterStatus(any(), any())
         assertThrows(IllegalStateException::class.java) {
-            aktivitetskortConsumer!!.consume(recordOppdatert)
+            aktivitetskortConsumer.consume(recordOppdatert)
         }
 
         /* Assert successful rollback */
-        assertThat(messageDAO!!.exist(aktivitetskortOppdatert.messageId!!))
+        assertThat(messageDAO.exist(aktivitetskortOppdatert.messageId!!))
             .isFalse()
         val aktivitet = hentAktivitet(funksjonellId)
         assertThat(aktivitet.eksternAktivitet.detaljer[0].verdi).isEqualTo(
