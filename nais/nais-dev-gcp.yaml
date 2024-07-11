@@ -84,14 +84,14 @@ spec:
         tier: db-custom-1-3840
         diskType: SSD
         diskAutoresize: true
-        #        flags: # Nødvendig for datastreams
-        #          - name: cloudsql.logical_decoding
-        #            value: "on"
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
-  #            users:
-  #              - name: datastream
+            users:
+              - name: datastream
   env:
     - name: POAO_TILGANG_SCOPE
       value: api://dev-fss.poao.poao-tilgang/.default
