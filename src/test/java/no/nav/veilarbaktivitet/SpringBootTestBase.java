@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet;
 
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import io.getunleash.Unleash;
 import io.restassured.RestAssured;
@@ -26,14 +27,22 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @WireMockTest
 public abstract class SpringBootTestBase {
     @Autowired
     protected KafkaTestService kafkaTestService;
 
-    private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", MockNavService.NAV_CONTEXT);
+    private static WireMockServer getWireMockServer() {
+        var wiremockServer = new WireMockServer(wireMockConfig().dynamicPort().dynamicHttpsPort());
+        wiremockServer.start();
+        return wiremockServer;
+    }
 
+    private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", MockNavService.NAV_CONTEXT);
+    public static final WireMockServer wireMock = getWireMockServer();
 
     @Autowired
     private StillingFraNavTestService stillingFraNavTestService;
@@ -79,7 +88,8 @@ public abstract class SpringBootTestBase {
     }
 
     @DynamicPropertySource
-    public static void tilgangskotroll(DynamicPropertyRegistry registry) {
+    public static void setWiremockPorts(DynamicPropertyRegistry registry) {
         registry.add("app.env.poao_tilgang.url", () -> poaoTilgangWiremock.getWireMockServer().baseUrl());
+        registry.add("wiremock.server.port", () -> wireMock.port());
     }
 }
