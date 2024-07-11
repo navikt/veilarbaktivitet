@@ -53,7 +53,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static no.nav.veilarbaktivitet.SpringBootTestBase.wireMock;
 import static no.nav.veilarbaktivitet.aktivitetskort.AktivitetsbestillingCreator.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static org.junit.jupiter.api.Assertions.*;
@@ -109,7 +111,7 @@ public class AktivitetTestService {
     public String queryAllRaw(MockBruker mockBruker, RestassuredUser user, String query, Long aktivitetId) {
         var validatableResponse = user
                 .createRequest()
-                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\", \"aktivitetId\": " + aktivitetId + " } }")
+                .body("{ \"query\": \""+ query  +"\", \"variables\": { \"fnr\": \"" + mockBruker.getFnr() + "\", \"aktivitetId\": \"" + aktivitetId.toString() + "\" } }")
                 .post("http://localhost:" + port + "/veilarbaktivitet/graphql")
                 .then();
         return validatableResponse
@@ -392,7 +394,7 @@ public class AktivitetTestService {
     }
 
     private void stub_hent_arenaaktiviteter_fra_veilarbarena(Person.Fnr fnr, String arenaaktivitetId) {
-        stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
+        wireMock.stubFor(get("/veilarbarena/api/arena/aktiviteter?fnr=" + fnr.get())
                 .willReturn(aResponse().withStatus(200)
                         .withBody("""
                                 {
