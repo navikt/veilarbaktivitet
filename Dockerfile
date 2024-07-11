@@ -9,7 +9,7 @@ COPY --from=busybox /bin/chown /bin/chown
 
 ENV TZ="Europe/Oslo"
 WORKDIR /app
-COPY nais/init.sh /init-scripts/init.sh
+#COPY nais/init.sh /init-scripts/init.sh
 COPY build/libs/veilarbaktivitet.jar ./
 RUN /bin/mkdir /secure-logs
 RUN chown nonroot /secure-logs
