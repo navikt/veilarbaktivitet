@@ -60,7 +60,7 @@ public class InternalController {
 
     public static HealthCheckResult checkDbHealth(JdbcTemplate db) {
         try {
-            db.query("SELECT 1 FROM DUAL", resultSet -> {});
+            db.query("SELECT 1", resultSet -> {});
             return HealthCheckResult.healthy();
         } catch (Exception e) {
             log.error("Could not connect to database", e);
