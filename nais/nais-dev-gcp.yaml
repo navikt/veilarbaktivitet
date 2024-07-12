@@ -79,6 +79,9 @@ spec:
         - host: veilarbdialog.dev-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.dev.nav.no
+      rules:
+        - application: poao-tilgang
+          namespace: poao
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
