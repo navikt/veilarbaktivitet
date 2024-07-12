@@ -10,10 +10,13 @@ import no.nav.common.auth.utils.CookieUtils
 import no.nav.common.types.identer.NavIdent
 import no.nav.poao.dab.spring_auth.IAuthService
 import okhttp3.internal.toHexString
+import org.slf4j.LoggerFactory
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 @RestController
@@ -26,6 +29,8 @@ class FeatureController(
     private val response: HttpServletResponse,
 ) {
     private val UNLEASH_SESSION_ID_COOKIE_NAME = "UNLEASH_SESSION_ID"
+    private val log = LoggerFactory.getLogger(javaClass)
+
 
     @GetMapping
     fun hentFeatures(@RequestParam("feature") features: List<String>): Map<String, Boolean> {
@@ -41,7 +46,13 @@ class FeatureController(
             request.remoteAddr,
             emptyMap()
         )
-        return features.associateWith { unleash.isEnabled(it, unleashContext) }
+
+        try {
+            return features.associateWith { unleash.isEnabled(it, unleashContext) }
+        } catch (e: Exception) {
+            log.error("Feil under henting av features for unleash", e);
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Feil under henting av features for unleash");
+        }
     }
 
     private fun generateSessionId(httpServletResponse: HttpServletResponse): String {
