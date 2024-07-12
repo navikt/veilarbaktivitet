@@ -42,7 +42,6 @@ public class InternalController {
     @GetMapping("/isAlive")
     public void isAlive() {
         if(checkDbHealth(db).isUnhealthy()) {
-            log.error("Could not connect to database");
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -64,6 +63,7 @@ public class InternalController {
             db.query("SELECT 1 FROM DUAL", resultSet -> {});
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.error("Could not connect to database", e);
             return HealthCheckResult.unhealthy("Fikk ikke kontakt med databasen", e);
         }
     }
