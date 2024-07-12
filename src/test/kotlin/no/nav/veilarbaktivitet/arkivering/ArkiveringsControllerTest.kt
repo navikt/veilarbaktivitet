@@ -10,7 +10,8 @@ import no.nav.veilarbaktivitet.aktivitetskort.ArenaKort
 import no.nav.veilarbaktivitet.aktivitetskort.arenaMeldingHeaders
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortStatus
 import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType
-import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.*
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.ARENA_TILTAK
+import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
@@ -505,7 +506,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest = wireMock.allServeEvents.first { it.request.url.contains("orkivar/arkiver") }
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(1)
