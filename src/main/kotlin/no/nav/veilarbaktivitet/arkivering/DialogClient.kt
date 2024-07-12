@@ -22,7 +22,7 @@ class DialogClient(private val dialogHttpClient: OkHttpClient) {
     lateinit var dialogUrl: String;
 
     fun hentDialogerUtenKontorsperre(fnr: Fnr): List<DialogTråd> {
-        val uri = "$dialogUrl/api/dialog?fnr=${fnr.get()}&ekskluderDialogerMedKontorsperre=true"
+        val uri = "$dialogUrl/veilarbdialog/api/dialog?fnr=${fnr.get()}&ekskluderDialogerMedKontorsperre=true"
 
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")

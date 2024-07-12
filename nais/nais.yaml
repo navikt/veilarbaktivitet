@@ -100,6 +100,6 @@ spec:
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.nav.no"
     - name: VEILARBDIALOG_URL
-      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog
+      value: http://veilarbdialog.pto.svc.nais.local
     - name: KAFKA_ENABLED
       value: "false"

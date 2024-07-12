@@ -73,8 +73,10 @@ spec:
           cluster: prod-fss # Dette er med vilje
     outbound:
       external:
+        - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbaktivitet.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
+        - host: veilarbdialog.dev-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.dev.nav.no
   gcp:
@@ -104,15 +106,13 @@ spec:
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.dev.nav.no"
     - name: VEILARBDIALOG_URL
-      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog
+      value: "https://veilarbdialog.dev-fss-pub.nais.io"
     - name: KAFKA_ENABLED
       value: "false"
     - name: AKTIVITETSPLAN_URL
       value: "https://aktivitetsplan.ekstern.dev.nav.no"
     - name: VEILARBOPPFOLGINGAPI_URL
       value: "https://veilarboppfolging.dev-fss-pub.nais.io"
-    - name: VEILARBDIALOGAPI_URL
-      value: "https://veilarbdialog.dev-fss-pub.nais.io"
     - name: VEILARBVEILEDERAPI_URL
       value: "https://veilarbveileder.dev.intern.nav.no"
     - name: VEILARBARENA_URL
