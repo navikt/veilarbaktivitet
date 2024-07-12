@@ -46,7 +46,7 @@ public class VeilarbarenaClient {
 
     @Timed
     public Optional<AktiviteterDTO> hentAktiviteter(Person.Fnr fnr) {
-        String uri = String.format("%s/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, fnr.get());
+        String uri = String.format("%s/veilarbarena/api/arena/aktiviteter?fnr=%s", veilarbarenaServiceUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
