@@ -97,6 +97,8 @@ spec:
       value: "false"
     - name: POAO_TILGANG_SCOPE
       value: api://dev-fss.poao.poao-tilgang/.default
+    - name: POAO_TILGANG_URL
+      value: http://poao-tilgang.poao.svc.nais.local
     - name: ADMIN_GROUPS
       value: 554a66fb-fbec-4b92-90c1-0d9c085c362c
     - name: ARENA_AKTIVITET_DATOFILTER
