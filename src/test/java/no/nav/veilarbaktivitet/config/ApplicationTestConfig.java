@@ -18,7 +18,6 @@ import org.mockito.Mockito;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
@@ -92,16 +91,6 @@ public class ApplicationTestConfig {
     @Bean
     public AxsysClient axsysClient() {
         return mock(AxsysClient.class);
-    }
-
-    @Bean(name = "pdlUrl")
-    public String pdlUrl(Environment environment) {
-        return environment.getProperty("app.env.pdl-url");
-    }
-
-    @Bean(name = "pdlTokenscope")
-    String pdlTokenscope() {
-        return "api://dev-fss.pdl.pdl-api/.default";
     }
 
 }

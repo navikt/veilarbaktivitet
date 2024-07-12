@@ -122,3 +122,7 @@ spec:
       value: "https://veilarbarena.dev-fss-pub.nais.io"
     - name: VEILARBAKTIVITET_FSS_URL
       value: "https://veilarbaktivitet.dev-fss-pub.nais.io"
+    - name: PDL_URL
+      value: "https://pdl-api.dev-fss-pub.nais.io"
+    - name: PDL_SCOPE
+      value: "api://dev-fss.pdl.pdl-api/.default"
