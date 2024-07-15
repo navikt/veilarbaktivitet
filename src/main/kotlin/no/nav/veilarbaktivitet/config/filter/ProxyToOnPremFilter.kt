@@ -5,12 +5,12 @@ import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.oppfolging.periode.log
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route
-import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.https
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.servlet.function.RequestPredicates.path
 import org.springframework.web.servlet.function.RouterFunction
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
@@ -44,6 +44,29 @@ class ProxyToOnPremGateway(
                 log.info(request.toString());
                 request
             }
+
+
+            .route(
+                path("/veilarbaktivitet/internal/isAlive")
+                    .or(
+                        path("/veilarbaktivitet/internal/isReady")
+                            .or(path("/veilarbaktivitet/internal/selftest"))
+                            .negate()
+                    ), sendToOnPrem
+            )
+            .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
+            .onError({ error ->
+                log.error("Proxy error", error)
+                true
+            }, { error, request ->
+                ServerResponse
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(error.stackTraceToString())
+            })
+            .build()
+    }
+}
+            /*
             .GET("/internal/api/**", sendToOnPrem)
             .POST("/internal/api/**", sendToOnPrem)
             .PUT("/internal/api/**", sendToOnPrem)
@@ -55,6 +78,4 @@ class ProxyToOnPremGateway(
             .POST("/graphql", sendToOnPrem)
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
             .build()
-    }
-
-}
+             */
