@@ -6,12 +6,15 @@ import no.nav.veilarbaktivitet.oppfolging.periode.log
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.http
+import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.https
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.function.RouterFunction
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
+import java.net.URI
 
 
 @Profile("!test")
@@ -35,7 +38,7 @@ class ProxyToOnPremGateway(
 
     @Bean
     fun getRoute(): RouterFunction<ServerResponse> {
-        val sendToOnPrem = http(veilaraktivitetFssUrl)
+        val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
         return route()
             .before { request ->
                 log.info(request.toString());
