@@ -21,7 +21,8 @@ import org.springframework.web.servlet.function.ServerResponse
 class ProxyToOnPremGateway(
     @Value("\${veilarbaktivitet-fss.url}")
     private val veilaraktivitetFssUrl: String,
-    private val proxyToOnPremTokenProvider: ProxyToOnPremTokenProvider) {
+    private val proxyToOnPremTokenProvider: ProxyToOnPremTokenProvider
+) {
 
     private fun oboExchange(getToken: () -> String): (ServerRequest) -> ServerRequest {
         return { request ->
@@ -36,6 +37,10 @@ class ProxyToOnPremGateway(
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = http(veilaraktivitetFssUrl)
         return route()
+            .before { request ->
+                log.info(request.toString());
+                request
+            }
             .GET("/internal/api/**", sendToOnPrem)
             .POST("/internal/api/**", sendToOnPrem)
             .PUT("/internal/api/**", sendToOnPrem)
