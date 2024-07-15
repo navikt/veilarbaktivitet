@@ -8,6 +8,7 @@ import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctio
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.https
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.servlet.function.RouterFunction
@@ -28,9 +29,12 @@ class ProxyToOnPremGateway(
 
     private fun oboExchange(getToken: () -> String): (ServerRequest) -> ServerRequest {
         return { request ->
-            log.info("Gateway obo")
+            log.info("Gateway obo $request")
             ServerRequest.from(request)
-                .header("Authorization", "Bearer ${getToken()}")
+                .headers {
+                    val oldAuthHeader = it[HttpHeaders.AUTHORIZATION]
+                    it.replace(HttpHeaders.AUTHORIZATION, oldAuthHeader, listOf("Bearer ${getToken()}"))
+                }
                 .build()
         }
     }
@@ -39,11 +43,6 @@ class ProxyToOnPremGateway(
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
         return route()
-            .before { request ->
-                log.info(request.toString());
-                request
-            }
-
             .GET("/internal/api/**", sendToOnPrem)
             .POST("/internal/api/**", sendToOnPrem)
             .PUT("/internal/api/**", sendToOnPrem)
