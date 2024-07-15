@@ -22,7 +22,7 @@ class KvpV2ClientImpl implements KvpV2Client {
     private final OkHttpClient veilarboppfolgingHttpClient;
 
     public Optional<KvpV2DTO> get(Person.AktorId aktorId) {
-        String uri = String.format("%s/v2/kvp?aktorId=%s", baseUrl, aktorId.get());
+        String uri = String.format("%s/veilarboppfolging/api/v2/kvp?aktorId=%s", baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();

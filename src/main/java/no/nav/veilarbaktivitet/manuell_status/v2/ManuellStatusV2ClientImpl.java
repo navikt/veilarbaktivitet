@@ -28,7 +28,7 @@ public class ManuellStatusV2ClientImpl implements ManuellStatusV2Client {
     public Optional<ManuellStatusV2DTO> get(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/veilarboppfolging/api/v2/manuell/status?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();

@@ -32,7 +32,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     public Optional<OppfolgingV2UnderOppfolgingDTO> fetchUnderoppfolging(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -49,7 +49,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     public Optional<OppfolgingPeriodeMinimalDTO> fetchGjeldendePeriode(Person.AktorId aktorId) {
         Person.Fnr fnr = personService.getFnrForAktorId(aktorId);
 
-        String uri = String.format("%s/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging/periode/gjeldende?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -70,7 +70,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
     @Override
     public List<OppfolgingPeriodeMinimalDTO> hentOppfolgingsperioder(Person.AktorId aktorId) {
 
-        String uri = String.format("%s/v2/oppfolging/perioder?aktorId=%s", baseUrl, aktorId.get());
+        String uri = String.format("%s/veilarboppfolging/api/v2/oppfolging/perioder?aktorId=%s", baseUrl, aktorId.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .build();
@@ -84,7 +84,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     @Override
     public Optional<SakDTO> hentSak(UUID oppfolgingsperiodeId) {
-        String uri = String.format("%s/v3/sak/%s", baseUrl, oppfolgingsperiodeId );
+        String uri = String.format("%s/veilarboppfolging/api/v3/sak/%s", baseUrl, oppfolgingsperiodeId );
         Request request = new Request.Builder()
                 .url(uri)
                 .post(RequestBody.create("", null))
@@ -102,7 +102,7 @@ public class OppfolgingClientImpl implements OppfolgingClient {
 
     @Override
     public Optional<MålDTO> hentMål(Person.Fnr fnr) {
-        String uri = String.format("%s/oppfolging/mal?fnr=%s", baseUrl, fnr.get());
+        String uri = String.format("%s/veilarboppfolging/api/oppfolging/mal?fnr=%s", baseUrl, fnr.get());
         Request request = new Request.Builder()
                 .url(uri)
                 .get()

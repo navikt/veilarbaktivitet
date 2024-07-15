@@ -37,7 +37,7 @@ class ManuellStatusV2ClientTest {
         PersonService authService = Mockito.mock(PersonService.class);
         when(authService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         manuellStatusV2Client = new ManuellStatusV2ClientImpl(okHttpClient, authService);
-        manuellStatusV2Client.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
+        manuellStatusV2Client.setBaseUrl(wireMock.baseUrl());
     }
 
     @Test

@@ -31,7 +31,7 @@ class KvpV2ClientTest {
     void setup() {
         OkHttpClient okHttpClient = new OkHttpClient();
         kvpV2Client = new KvpV2ClientImpl(okHttpClient);
-        kvpV2Client.setBaseUrl( wireMock.baseUrl() + "/veilarboppfolging/api");
+        kvpV2Client.setBaseUrl( wireMock.baseUrl());
     }
 
     @Test
