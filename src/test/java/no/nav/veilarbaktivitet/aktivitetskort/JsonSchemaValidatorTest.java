@@ -2,16 +2,14 @@ package no.nav.veilarbaktivitet.aktivitetskort;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.networknt.schema.JsonSchema;
-import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
+import com.networknt.schema.*;
 import lombok.SneakyThrows;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -37,7 +35,7 @@ class JsonSchemaValidatorTest {
         InputStream aktitivitetskortYml = JsonSchemaValidatorTest.class.getResourceAsStream("/schemas/akaas/Aktivitetskort.V1.aktivitetskort.schema.yml");
         String aktiviteskortSchemaJsonString = convertYamlToJson(aktitivitetskortYml);
 
-        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes()));
+        JsonSchema jsonSchema = factory.getSchema(new ByteArrayInputStream(aktiviteskortSchemaJsonString.getBytes())).withConfig(SchemaValidatorsConfig.builder().locale(Locale.ENGLISH).build());
 
         var valid = AktivitetskortProducerUtil.validExampleAktivitetskortRecord(Person.fnr("1234567890"));
         var validValidationMessages = jsonSchema.validate(valid);
@@ -47,7 +45,7 @@ class JsonSchemaValidatorTest {
         var invalid = AktivitetskortProducerUtil.invalidExampleRecord(Person.fnr("1234567890"));
         var invalidValidationMessages = jsonSchema.validate(invalid);
         assertEquals(1, invalidValidationMessages.size(), errorMessage(invalidValidationMessages));
-        assertEquals("$: required property 'aktivitetskortType' not found", errorMessage(invalidValidationMessages));
+        assertEquals(": required property 'aktivitetskortType' not found", errorMessage(invalidValidationMessages));
     }
 
     @Test
