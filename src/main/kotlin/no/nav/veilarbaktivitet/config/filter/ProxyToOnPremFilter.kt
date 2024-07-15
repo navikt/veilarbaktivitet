@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor
 import lombok.extern.slf4j.Slf4j
 import no.nav.veilarbaktivitet.oppfolging.periode.log
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.https
 import org.springframework.context.annotation.Bean
@@ -39,6 +40,7 @@ class ProxyToOnPremGateway(
         }
     }
 
+    @ConditionalOnProperty(name = ["spring.cloud.gateway.mvc.enabled"], havingValue = "true")
     @Bean
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
