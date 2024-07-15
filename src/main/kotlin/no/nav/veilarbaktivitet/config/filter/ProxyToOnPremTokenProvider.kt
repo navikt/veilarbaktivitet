@@ -18,7 +18,7 @@ open class ProxyToOnPremTokenProvider(
 ) {
 
     private val scope = String.format(
-        "api://%s-gcp.dab.veilarbaktivitet/.default",
+        "api://%s-fss.pto.veilarbaktivitet/.default",
         if (EnvironmentUtils.isProduction().orElse(false)) "prod" else "dev"
     )
 
