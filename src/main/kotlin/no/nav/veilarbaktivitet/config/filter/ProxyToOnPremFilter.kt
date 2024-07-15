@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.web.servlet.function.RequestPredicates.path
 import org.springframework.web.servlet.function.RouterFunction
 import org.springframework.web.servlet.function.ServerRequest
 import org.springframework.web.servlet.function.ServerResponse
@@ -45,15 +44,24 @@ class ProxyToOnPremGateway(
                 request
             }
 
-
-            .route(
-                path("/veilarbaktivitet/internal/isAlive")
-                    .or(
-                        path("/veilarbaktivitet/internal/isReady")
-                            .or(path("/veilarbaktivitet/internal/selftest"))
-                            .negate()
-                    ), sendToOnPrem
-            )
+            .GET("/internal/api/**", sendToOnPrem)
+            .POST("/internal/api/**", sendToOnPrem)
+            .PUT("/internal/api/**", sendToOnPrem)
+            .DELETE("/internal/api/**", sendToOnPrem)
+            .GET("/api/**", sendToOnPrem)
+            .POST("/api/**", sendToOnPrem)
+            .PUT("/api/**", sendToOnPrem)
+            .DELETE("/api/**", sendToOnPrem)
+            .POST("/graphql", sendToOnPrem)
+            .POST("/veilarbaktivitet/graphql", sendToOnPrem)
+//            .route(
+//                path("/veilarbaktivitet/internal/isAlive")
+//                    .or(
+//                        path("/veilarbaktivitet/internal/isReady")
+//                            .or(path("/veilarbaktivitet/internal/selftest"))
+//                            .negate()
+//                    ), sendToOnPrem
+//            )
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
             .onError({ error ->
                 log.error("Proxy error", error)
@@ -66,16 +74,3 @@ class ProxyToOnPremGateway(
             .build()
     }
 }
-            /*
-            .GET("/internal/api/**", sendToOnPrem)
-            .POST("/internal/api/**", sendToOnPrem)
-            .PUT("/internal/api/**", sendToOnPrem)
-            .DELETE("/internal/api/**", sendToOnPrem)
-            .GET("/api/**", sendToOnPrem)
-            .POST("/api/**", sendToOnPrem)
-            .PUT("/api/**", sendToOnPrem)
-            .DELETE("/api/**", sendToOnPrem)
-            .POST("/graphql", sendToOnPrem)
-            .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
-            .build()
-             */
