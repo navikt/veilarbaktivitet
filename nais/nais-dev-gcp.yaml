@@ -50,6 +50,10 @@ spec:
       claims:
         extra:
           - "NAVident"
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   accessPolicy:
     inbound:
       rules:
