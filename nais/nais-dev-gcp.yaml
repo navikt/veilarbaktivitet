@@ -132,4 +132,4 @@ spec:
     - name: PDL_SCOPE
       value: "api://dev-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
-      value: true
+      value: "true"
