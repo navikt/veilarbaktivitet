@@ -7,8 +7,6 @@ metadata:
     team: dab
 spec:
   image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
-  ingresses:
-    - https://veilarbaktivitet.dev.nav.cloud.nais.io
   port: 8080
   prometheus:
     enabled: true
@@ -24,23 +22,23 @@ spec:
     initialDelay: 60
     timeout: 10
   replicas:
-    min: 1
-    max: 2
+    min: 2
+    max: 8
     cpuThresholdPercentage: 50
   resources:
     limits:
       cpu: "2"
-      memory: 1024Mi
+      memory: 4048Mi
     requests:
       cpu: 200m
-      memory: 768Mi
+      memory: 1536Mi
   envFrom:
     - secret: veilarbaktivitet-unleash-api-token
   leaderElection: true
   secureLogs:
     enabled: true
   kafka:
-    pool: nav-dev
+    pool: nav-prod
   tokenx:
     enabled: true
   azure:
@@ -59,30 +57,27 @@ spec:
       rules:
         - application: veilarbapi
           namespace: pto
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbpersonflate
           namespace: poao
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: veilarbdirigent
           namespace: pto
-          cluster: dev-fss
+          cluster: prod-fss
         - application: aktivitetsplan
           namespace: pto
-          cluster: dev-gcp
+          cluster: prod-gcp
         - application: arbeidsrettet-dialog
           namespace: pto
-          cluster: dev-gcp
-        - application: ida
-          namespace: traktor
-          cluster: prod-fss # Dette er med vilje
+          cluster: prod-gcp
     outbound:
       external:
-        - host: veilarboppfolging.dev-fss-pub.nais.io
-        - host: veilarbaktivitet.dev-fss-pub.nais.io
-        - host: veilarbarena.dev-fss-pub.nais.io
-        - host: veilarbdialog.dev-fss-pub.nais.io
+        - host: veilarboppfolging.prod-fss-pub.nais.io
+        - host: veilarbaktivitet.prod-fss-pub.nais.io
+        - host: veilarbarena.prod-fss-pub.nais.io
+        - host: veilarbdialog.prod-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
-        - host: orkivar.intern.dev.nav.no
+        - host: orkivar.intern.nav.no
       rules:
         - application: poao-tilgang
           namespace: poao
@@ -90,9 +85,11 @@ spec:
     sqlInstances:
       - name: veilarbaktivitet
         type: POSTGRES_14
-        tier: db-custom-1-3840
+        tier: db-custom-4-16384
         diskType: SSD
         diskAutoresize: true
+        highAvailability: true
+        pointInTimeRecovery: true
         flags: # Nødvendig for datastreams
           - name: cloudsql.logical_decoding
             value: "on"
@@ -103,28 +100,28 @@ spec:
               - name: datastream
   env:
     - name: POAO_TILGANG_SCOPE
-      value: api://dev-gcp.poao.poao-tilgang/.default
+      value: api://prod-gcp.poao.poao-tilgang/.default
     - name: POAO_TILGANG_URL
       value: http://poao-tilgang.poao
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
     - name: ORKIVAR_URL
-      value: "https://orkivar.intern.dev.nav.no"
+      value: "https://orkivar.intern.nav.no"
     - name: VEILARBDIALOG_URL
-      value: "https://veilarbdialog.dev-fss-pub.nais.io"
+      value: "https://veilarbdialog.prod-fss-pub.nais.io"
     - name: KAFKA_ENABLED
       value: "false"
     - name: AKTIVITETSPLAN_URL
-      value: "https://aktivitetsplan.ekstern.dev.nav.no"
+      value: "https://aktivitetsplan.nav.no"
     - name: VEILARBOPPFOLGINGAPI_URL
-      value: "https://veilarboppfolging.dev-fss-pub.nais.io"
+      value: "https://veilarboppfolging.prod-fss-pub.nais.io"
     - name: VEILARBARENA_URL
-      value: "https://veilarbarena.dev-fss-pub.nais.io"
+      value: "https://veilarbarena.prod-fss-pub.nais.io"
     - name: VEILARBAKTIVITET_FSS_URL
-      value: "https://veilarbaktivitet.dev-fss-pub.nais.io"
+      value: "https://veilarbaktivitet.prod-fss-pub.nais.io"
     - name: PDL_URL
-      value: "https://pdl-api.dev-fss-pub.nais.io"
+      value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
-      value: "api://dev-fss.pdl.pdl-api/.default"
+      value: "api://prod-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
       value: "true"
