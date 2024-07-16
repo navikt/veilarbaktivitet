@@ -1,6 +1,9 @@
-name: Deploy til gcp dev og prod
+name: Deploy gcp dev og prod
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - gcp-main-2
 
 permissions:
   packages: write
