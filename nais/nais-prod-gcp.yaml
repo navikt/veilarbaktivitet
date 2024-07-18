@@ -83,16 +83,16 @@ spec:
           namespace: poao
   gcp:
     sqlInstances:
-      - name: veilarbaktivitet
+      - name: veilarbaktivitet-gcp
         type: POSTGRES_14
-        tier: db-custom-4-26624
+        tier: db-custom-8-53248 #TODO reduser etter migrering?
         diskType: SSD
         diskAutoresize: true
-        highAvailability: true
-        pointInTimeRecovery: true
-        flags: # Nødvendig for datastreams
-          - name: cloudsql.logical_decoding
-            value: "on"
+        highAvailability: false #TODO sett på før prodsetting
+        pointInTimeRecovery: false #TODO sett på før prodsetting
+#        flags: # Nødvendig for datastreams
+#          - name: cloudsql.logical_decoding
+#            value: "on"
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
