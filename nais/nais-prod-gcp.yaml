@@ -90,9 +90,9 @@ spec:
         diskAutoresize: true
         highAvailability: false #TODO sett på før prodsetting
         pointInTimeRecovery: false #TODO sett på før prodsetting
-#        flags: # Nødvendig for datastreams
-#          - name: cloudsql.logical_decoding
-#            value: "on"
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
         databases:
           - name: veilarbaktivitet
             envVarPrefix: DB
