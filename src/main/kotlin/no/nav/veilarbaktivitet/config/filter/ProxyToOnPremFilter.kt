@@ -57,11 +57,9 @@ class ProxyToOnPremGateway(
 //            .POST("/graphql", sendToOnPrem)
             .route(
                 path("/internal/isAlive")
-                    .or(
-                        path("/internal/isReady")
+                    .or(path("/internal/isReady")
                             .or(path("/internal/selftest"))
-                            .negate()
-                    ), sendToOnPrem
+                    ).negate(), sendToOnPrem
             )
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
             .onError({ error ->
