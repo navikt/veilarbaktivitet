@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.cloud.gateway.server.mvc.handler.GatewayRouterFunctions.route
 import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.https
+import org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.path
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
@@ -45,23 +46,23 @@ class ProxyToOnPremGateway(
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
         return route()
-            .GET("/internal/api/**", sendToOnPrem)
-            .POST("/internal/api/**", sendToOnPrem)
-            .PUT("/internal/api/**", sendToOnPrem)
-            .DELETE("/internal/api/**", sendToOnPrem)
-            .GET("/api/**", sendToOnPrem)
-            .POST("/api/**", sendToOnPrem)
-            .PUT("/api/**", sendToOnPrem)
-            .DELETE("/api/**", sendToOnPrem)
-            .POST("/graphql", sendToOnPrem)
-//            .route(
-//                path("/veilarbaktivitet/internal/isAlive")
-//                    .or(
-//                        path("/veilarbaktivitet/internal/isReady")
-//                            .or(path("/veilarbaktivitet/internal/selftest"))
-//                            .negate()
-//                    ), sendToOnPrem
-//            )
+//            .GET("/internal/api/**", sendToOnPrem)
+//            .POST("/internal/api/**", sendToOnPrem)
+//            .PUT("/internal/api/**", sendToOnPrem)
+//            .DELETE("/internal/api/**", sendToOnPrem)
+//            .GET("/api/**", sendToOnPrem)
+//            .POST("/api/**", sendToOnPrem)
+//            .PUT("/api/**", sendToOnPrem)
+//            .DELETE("/api/**", sendToOnPrem)
+//            .POST("/graphql", sendToOnPrem)
+            .route(
+                path("/internal/isAlive")
+                    .or(
+                        path("/internal/isReady")
+                            .or(path("/internal/selftest"))
+                            .negate()
+                    ), sendToOnPrem
+            )
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
             .onError({ error ->
                 log.error("Proxy error", error)
