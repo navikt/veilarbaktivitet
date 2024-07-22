@@ -9,6 +9,7 @@ spec:
   image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
   ingresses:
     - https://veilarbaktivitet.dev.nav.cloud.nais.io
+    - https://veilarbaktivitet.intern.dev.nav.no
   port: 8080
   prometheus:
     enabled: true

@@ -7,6 +7,8 @@ metadata:
     team: dab
 spec:
   image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  ingresses:
+    - https://veilarbaktivitet.intern.nav.no
   port: 8080
   prometheus:
     enabled: true
