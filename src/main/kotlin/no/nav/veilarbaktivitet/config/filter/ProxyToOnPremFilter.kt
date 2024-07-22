@@ -43,7 +43,7 @@ class ProxyToOnPremGateway(
     }
 
     @ConditionalOnProperty(name = ["spring.cloud.gateway.mvc.enabled"], havingValue = "true")
-    @Order
+    @Order(-1)
     @Bean
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
