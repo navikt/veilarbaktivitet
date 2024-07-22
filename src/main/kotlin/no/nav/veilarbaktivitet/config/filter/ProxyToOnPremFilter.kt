@@ -54,8 +54,6 @@ class ProxyToOnPremGateway(
             .PUT("/api/**", sendToOnPrem)
             .DELETE("/api/**", sendToOnPrem)
             .POST("/graphql", sendToOnPrem)
-            .POST("/veilarbaktivitet/graphql", sendToOnPrem)
-            .POST("/veilarbaktivitet/api/**", sendToOnPrem)
 //            .route(
 //                path("/veilarbaktivitet/internal/isAlive")
 //                    .or(

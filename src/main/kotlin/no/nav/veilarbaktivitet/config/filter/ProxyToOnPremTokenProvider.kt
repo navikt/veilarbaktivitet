@@ -16,16 +16,13 @@ open class ProxyToOnPremTokenProvider(
     private val machineToMachineTokenClient: MachineToMachineTokenClient,
     private val tokenXOnBehalfOfTokenClient: TokenXOnBehalfOfTokenClient
 ) {
-
-    private val scope = String.format(
-        "api://%s-fss.pto.veilarbaktivitet/.default",
-        if (EnvironmentUtils.isProduction().orElse(false)) "prod" else "dev"
-    )
-
+    val isProd = EnvironmentUtils.isProduction().orElse(false)
+    private val scope = "api://${if (isProd) "prod" else "dev"}-fss.pto.veilarbaktivitet/.default"
+    private val audience = "${if (isProd) "prod" else "dev"}:pto:veilarbaktivitet"
     open fun getProxyToken(): String =
         when {
             authService.erInternBruker() -> azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(scope, authService.getInnloggetBrukerToken())
-            authService.erEksternBruker() -> tokenXOnBehalfOfTokenClient.exchangeOnBehalfOfToken(scope, authService.getInnloggetBrukerToken())
+            authService.erEksternBruker() -> tokenXOnBehalfOfTokenClient.exchangeOnBehalfOfToken(audience, authService.getInnloggetBrukerToken())
             authService.erSystemBruker() -> machineToMachineTokenClient.createMachineToMachineToken(scope)
             else -> throw RuntimeException("Klarte ikke å identifisere brukertype")
         }
