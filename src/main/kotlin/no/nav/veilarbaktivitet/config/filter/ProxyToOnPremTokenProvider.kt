@@ -18,7 +18,7 @@ open class ProxyToOnPremTokenProvider(
 ) {
     val isProd = EnvironmentUtils.isProduction().orElse(false)
     private val scope = "api://${if (isProd) "prod" else "dev"}-fss.pto.veilarbaktivitet/.default"
-    private val audience = "${if (isProd) "prod" else "dev"}:pto:veilarbaktivitet"
+    private val audience = "${if (isProd) "prod" else "dev"}-fss:pto:veilarbaktivitet"
     open fun getProxyToken(): String =
         when {
             authService.erInternBruker() -> azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(scope, authService.getInnloggetBrukerToken())
