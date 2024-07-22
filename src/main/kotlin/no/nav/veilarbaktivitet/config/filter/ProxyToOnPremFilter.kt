@@ -10,6 +10,7 @@ import org.springframework.cloud.gateway.server.mvc.handler.HandlerFunctions.htt
 import org.springframework.cloud.gateway.server.mvc.predicate.GatewayRequestPredicates.path
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Profile
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -42,6 +43,7 @@ class ProxyToOnPremGateway(
     }
 
     @ConditionalOnProperty(name = ["spring.cloud.gateway.mvc.enabled"], havingValue = "true")
+    @Order
     @Bean
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
