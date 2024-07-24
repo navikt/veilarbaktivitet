@@ -72,7 +72,7 @@ class AktivitetsplanController(
     }
 
     @PostMapping("/{oppfolgingsperiodeId}/ny")
-    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent"], resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
+    @AuthorizeFnr(auditlogMessage = "opprett aktivitet", allowlist = ["pto:veilarbdirigent","dab:veilarbaktivitet"], resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
     fun opprettNyAktivitetPaOppfolgingsPeriode(
         @RequestBody aktivitet: AktivitetDTO,
         @RequestParam(required = false, defaultValue = "false") automatisk: Boolean
