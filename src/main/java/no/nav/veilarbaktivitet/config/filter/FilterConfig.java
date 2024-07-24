@@ -13,7 +13,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import static no.nav.common.auth.Constants.AZURE_AD_ID_TOKEN_COOKIE_NAME;
 import static no.nav.common.auth.oidc.filter.OidcAuthenticator.fromConfigs;
 import static no.nav.common.utils.EnvironmentUtils.isDevelopment;
 import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
@@ -21,14 +20,6 @@ import static no.nav.common.utils.EnvironmentUtils.requireApplicationName;
 @Profile("!test")
 @Configuration
 public class FilterConfig {
-
-    private OidcAuthenticatorConfig azureAdAuthConfig(EnvironmentProperties properties) {
-        return new OidcAuthenticatorConfig()
-                .withDiscoveryUrl(properties.getAzureAdDiscoveryUrl())
-                .withClientId(properties.getAzureAdClientId())
-                .withIdTokenCookieName(AZURE_AD_ID_TOKEN_COOKIE_NAME)
-                .withUserRole(UserRole.INTERN);
-    }
 
     private OidcAuthenticatorConfig naisAzureAdConfig(EnvironmentProperties properties) {
         return new OidcAuthenticatorConfig()
@@ -80,7 +71,6 @@ public class FilterConfig {
         FilterRegistrationBean<OidcAuthenticationFilter> registration = new FilterRegistrationBean<>();
         OidcAuthenticationFilter authenticationFilter = new OidcAuthenticationFilter(
                 fromConfigs(
-                        azureAdAuthConfig(properties),
                         naisAzureAdConfig(properties),
                         tokenxConfig()
                 )

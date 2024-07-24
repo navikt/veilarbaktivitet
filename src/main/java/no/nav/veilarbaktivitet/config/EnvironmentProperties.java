@@ -8,8 +8,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @Setter
 @ConfigurationProperties(prefix = "app.env")
 public class EnvironmentProperties {
-    private String azureAdDiscoveryUrl;
-    private String azureAdClientId;
     private String abacUrl;
     private String kafkaBrokersUrl;
     private String environmentName;
