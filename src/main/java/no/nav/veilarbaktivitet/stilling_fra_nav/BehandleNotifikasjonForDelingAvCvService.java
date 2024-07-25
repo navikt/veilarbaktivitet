@@ -10,6 +10,8 @@ import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
+
 @Service
 @RequiredArgsConstructor
 public class BehandleNotifikasjonForDelingAvCvService {
@@ -34,6 +36,7 @@ public class BehandleNotifikasjonForDelingAvCvService {
         AktivitetData nyAktivitet = aktivitetData.toBuilder()
                 .endretAv(endretAv.get())
                 .endretAvType(endretAv.tilInnsenderType())
+                .endretDato(new Date())
                 .stillingFraNavData(aktivitetData.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.HAR_VARSLET)).build();
         aktivitetService.oppdaterAktivitet(aktivitetData, nyAktivitet);
         kvitteringDAO.setFerdigBehandlet(brukernotifikasjon.getId());

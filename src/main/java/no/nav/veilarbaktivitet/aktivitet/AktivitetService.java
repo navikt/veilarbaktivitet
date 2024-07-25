@@ -202,6 +202,7 @@ public class AktivitetService {
         aktivitetDAO.oppdaterAktivitet(originalAktivitet
                 .withEndretAv(aktivitet.getEndretAv())
                 .withEndretAvType(aktivitet.getEndretAvType())
+                .withEndretDato(new Date())
                 .withTransaksjonsType(AktivitetTransaksjonsType.DEL_CV_SVART)
                 .withStillingFraNavData(aktivitet.getStillingFraNavData()));
     }
