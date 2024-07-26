@@ -90,7 +90,7 @@ spec:
         tier: db-custom-8-53248 #TODO reduser etter migrering?
         diskType: SSD
         diskAutoresize: true
-        highAvailability: false #TODO sett på før prodsetting
+        highAvailability: true
         pointInTimeRecovery: false #TODO sett på før prodsetting
         flags: # Nødvendig for datastreams
           - name: cloudsql.logical_decoding
