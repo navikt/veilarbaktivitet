@@ -37,6 +37,7 @@ spec:
       memory: 768Mi
   envFrom:
     - secret: veilarbaktivitet-unleash-api-token
+    - secret: veilarbaktivitet-kassering-identer
   leaderElection: true
   secureLogs:
     enabled: true
