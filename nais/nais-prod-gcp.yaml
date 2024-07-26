@@ -91,7 +91,7 @@ spec:
         diskType: SSD
         diskAutoresize: true
         highAvailability: true
-        pointInTimeRecovery: false #TODO sett på før prodsetting
+        pointInTimeRecovery: true
         flags: # Nødvendig for datastreams
           - name: cloudsql.logical_decoding
             value: "on"
