@@ -1,7 +1,7 @@
 name: Deploy gcp dev og prod
 on:
   workflow_dispatch:
-  push:
+#  push:
 #    branches:
 #      - gcp-main-2
 
