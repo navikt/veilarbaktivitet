@@ -53,7 +53,9 @@ class ProxyToOnPremGateway(
                     .or(path("/internal/isReady")
                     .or(path("/internal/selftest"))
                     .or(path("/internal/kassering"))
+                    .or(path("/internal/kassering/"))
                     .or(path("/internal/kassering/dialog"))
+                    .or(path("/internal/kassering/dialog/"))
                 ).negate(), sendToOnPrem
             )
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
