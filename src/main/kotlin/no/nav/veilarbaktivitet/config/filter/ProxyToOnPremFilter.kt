@@ -48,20 +48,13 @@ class ProxyToOnPremGateway(
     fun getRoute(): RouterFunction<ServerResponse> {
         val sendToOnPrem = https(URI.create(veilaraktivitetFssUrl))
         return route()
-//            .GET("/internal/api/**", sendToOnPrem)
-//            .POST("/internal/api/**", sendToOnPrem)
-//            .PUT("/internal/api/**", sendToOnPrem)
-//            .DELETE("/internal/api/**", sendToOnPrem)
-//            .GET("/api/**", sendToOnPrem)
-//            .POST("/api/**", sendToOnPrem)
-//            .PUT("/api/**", sendToOnPrem)
-//            .DELETE("/api/**", sendToOnPrem)
-//            .POST("/graphql", sendToOnPrem)
             .route(
                 path("/internal/isAlive")
                     .or(path("/internal/isReady")
-                            .or(path("/internal/selftest"))
-                    ).negate(), sendToOnPrem
+                    .or(path("/internal/selftest"))
+                    .or(path("/internal/kassering"))
+                    .or(path("/internal/kassering/dialog"))
+                ).negate(), sendToOnPrem
             )
             .before(oboExchange { proxyToOnPremTokenProvider.getProxyToken() })
             .onError({ error ->
