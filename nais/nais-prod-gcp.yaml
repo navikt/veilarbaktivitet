@@ -113,7 +113,7 @@ spec:
     - name: VEILARBDIALOG_URL
       value: "https://veilarbdialog.prod-fss-pub.nais.io"
     - name: KAFKA_ENABLED
-      value: "false"
+      value: "true"
     - name: AKTIVITETSPLAN_URL
       value: "https://aktivitetsplan.nav.no"
     - name: VEILARBOPPFOLGINGAPI_URL
@@ -127,4 +127,4 @@ spec:
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
-      value: "true"
+      value: "false"
