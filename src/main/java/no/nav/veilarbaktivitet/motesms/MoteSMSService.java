@@ -26,12 +26,12 @@ public class MoteSMSService {
     private final BrukernotifikasjonService brukernotifikasjonService;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
 
-//    @Scheduled(
-//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-//    )
-//    @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
-//    @Timed(value = "moteservicemelding", histogram = true)
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
+    @Timed(value = "moteservicemelding", histogram = true)
     public void sendMoteSms() {
         MDC.put("running.job", "moteSmsService");
         sendServicemeldinger(ofHours(1), ofHours(24));
@@ -59,12 +59,12 @@ public class MoteSMSService {
                 });
     }
 
-//    @Scheduled(
-//            initialDelayString = "${app.env.scheduled.default.initialDelay}",
-//            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
-//    )
-//    @SchedulerLock(name = "stopp_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
-//    @Timed(value = "stopmoteservicemelding", histogram = true)
+    @Scheduled(
+            initialDelayString = "${app.env.scheduled.default.initialDelay}",
+            fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
+    )
+    @SchedulerLock(name = "stopp_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
+    @Timed(value = "stopmoteservicemelding", histogram = true)
     public void stopMoteSms() {
         MDC.put("running.job", "moteSmsServiceStopper");
 

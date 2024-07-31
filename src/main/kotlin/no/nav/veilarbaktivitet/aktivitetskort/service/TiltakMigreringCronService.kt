@@ -18,11 +18,11 @@ open class TiltakMigreringCronService(
     val aktivitetDAO: AktivitetDAO,
 ) {
 
-//    @Scheduled(
-//        initialDelayString = "\${app.env.scheduled.default.initialDelay}",
-//        fixedDelayString = "\${app.env.scheduled.default.fixedDelay}"
-//    )
-//    @SchedulerLock(name = "historiske_tiltak_migrering_cron", lockAtMostFor = "PT20M")
+    @Scheduled(
+        initialDelayString = "\${app.env.scheduled.default.initialDelay}",
+        fixedDelayString = "\${app.env.scheduled.default.fixedDelay}"
+    )
+    @SchedulerLock(name = "historiske_tiltak_migrering_cron", lockAtMostFor = "PT20M")
     open fun settTiltakOpprettetSomHistoriskTilHistorisk() {
         if (unleash.isEnabled(TILTAK_HISTORISK_MIGRERING_CRON_TOGGLE)) return
         tiltakMigreringDAO.hentTiltakOpprettetSomHistoriskSomIkkeErHistorisk(500)
