@@ -84,6 +84,9 @@ spec:
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: prod-gcp
+        - application: veilarbaktivitet
+          namespace: dab
+          cluster: prod-gcp
     outbound:
       external:
         - host: dab-unleash-api.nav.cloud.nais.io
