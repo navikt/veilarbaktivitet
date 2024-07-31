@@ -69,27 +69,27 @@ jobs:
           RESOURCE: nais/nais-dev-gcp.yaml
           VAR: version=${{ env.IMAGE_TAG }}
 
-#  deploy-prod:
-#    name: Deploy application to prod
-#    needs: deploy-dev
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#      - name: Deploy application
-#        uses: nais/deploy/actions/deploy@v2
-#        env:
-#          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
-#          CLUSTER: prod-gcp
-#          RESOURCE: nais/nais-prod-gcp.yaml
-#          VAR: version=${{ env.IMAGE_TAG }}
-#      - name: Slack Notification (deploy failure)
-#        if: failure()
-#        uses: rtCamp/action-slack-notify@v2
-#        env:
-#          SLACK_COLOR: danger
-#          SLACK_USERNAME: Github Actions
-#          SLACK_ICON: https://github.com/github.png?size=48
-#          SLACK_TITLE: 'Veilarbaktivitet: deploy til prod feilet'
-#          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-#          SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
+  deploy-prod:
+    name: Deploy application to prod
+    needs: deploy-dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Deploy application
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: nais/nais-prod-gcp.yaml
+          VAR: version=${{ env.IMAGE_TAG }}
+      - name: Slack Notification (deploy failure)
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_COLOR: danger
+          SLACK_USERNAME: Github Actions
+          SLACK_ICON: https://github.com/github.png?size=48
+          SLACK_TITLE: 'Veilarbaktivitet: deploy til prod feilet'
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
