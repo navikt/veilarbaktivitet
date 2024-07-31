@@ -24,7 +24,7 @@ spec:
       access: read
     - team: dab
       application: veilarbaktivitet
-      access: readwrite
+      access: read
     - team: pto
       application: pto-kafka-manager
       access: read
