@@ -6,6 +6,27 @@ servers:
   - url: https://veilarbaktivitet
 components:
   schemas:
+    aktivitet_type:
+      type: string
+      enum:
+        - egenaktivitet
+        - jobbsoeking
+        - sokeavtale
+        - ijobb
+        - behandling
+        - mote
+        - samtalereferat
+        - stilling_fra_nav
+      example: samtalereferat
+    status:
+      type: string
+      enum:
+        - PLANLAGT
+        - GJENNOMFORES
+        - FULLFORT
+        - BRUKER_ER_INTERESSERT
+        - AVBRUTT
+      example: FULLFORT
     aktivitet:
       type: object
       discriminator:
@@ -14,17 +35,7 @@ components:
         - aktivitet_type
       properties:
         aktivitet_type:
-          type: string
-          enum:
-            - egenaktivitet
-            - jobbsoeking
-            - sokeavtale
-            - ijobb
-            - behandling
-            - mote
-            - samtalereferat
-            - stilling_fra_nav
-          example: samtalereferat
+          $ref: '#/components/schemas/aktivitet_type'
         kontorsperre_enhet_id:
           type: string
         avtalt_med_nav:
@@ -32,14 +43,7 @@ components:
           description: Definer om den definerte aktiviteten er avtalt med NAV
           example: true
         status:
-          type: string
-          enum:
-            - PLANLAGT
-            - GJENNOMFORES
-            - FULLFORT
-            - BRUKER_ER_INTERESSERT
-            - AVBRUTT
-          example: FULLFORT
+          $ref: '#/components/schemas/status'
         beskrivelse:
           type: string
           description: Beskrivelse av aktiviteten som er planlagt/gjennomført

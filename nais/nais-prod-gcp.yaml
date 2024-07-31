@@ -2,15 +2,13 @@ kind: Application
 apiVersion: nais.io/v1alpha1
 metadata:
   name: veilarbaktivitet
-  namespace: pto
+  namespace: dab
   labels:
-    team: pto
+    team: dab
 spec:
   image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
   ingresses:
-    - https://veilarbaktivitet.nais.adeo.no
-    - https://app.adeo.no/veilarbaktivitet
-    - https://veilarbaktivitet.prod-fss-pub.nais.io
+    - https://veilarbaktivitet.intern.nav.no
   port: 8080
   prometheus:
     enabled: true
@@ -26,7 +24,7 @@ spec:
     initialDelay: 60
     timeout: 10
   replicas:
-    min: 4
+    min: 2
     max: 8
     cpuThresholdPercentage: 50
   resources:
@@ -37,21 +35,8 @@ spec:
       cpu: 200m
       memory: 1536Mi
   envFrom:
-    - configmap: pto-config
-    - configmap: loginservice-idporten
     - secret: veilarbaktivitet-unleash-api-token
-  vault:
-    enabled: true
-    paths:
-      - kvPath: /oracle/data/prod/creds/veilarbaktivitet-user
-        mountPath: /var/run/secrets/nais.io/oracle_creds
-      - kvPath: /serviceuser/data/prod/srvveilarbaktivitet
-        mountPath: /var/run/secrets/nais.io/service_user
-      - kvPath: /kv/prod/fss/veilarbaktivitet/default
-        mountPath: /var/run/secrets/nais.io/vault
-      - kvPath: /oracle/data/prod/config/veilarbaktivitet
-        mountPath: /var/run/secrets/nais.io/oracle_config
-  webproxy: true
+    - secret: veilarbaktivitet-kassering-identer
   leaderElection: true
   secureLogs:
     enabled: true
@@ -66,6 +51,10 @@ spec:
       claims:
         extra:
           - "NAVident"
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   accessPolicy:
     inbound:
       rules:
@@ -84,25 +73,58 @@ spec:
         - application: arbeidsrettet-dialog
           namespace: pto
           cluster: prod-gcp
-        - application: veilarbaktivitet
-          namespace: dab
-          cluster: prod-gcp
     outbound:
       external:
+        - host: veilarboppfolging.prod-fss-pub.nais.io
+        - host: veilarbaktivitet.prod-fss-pub.nais.io
+        - host: veilarbarena.prod-fss-pub.nais.io
+        - host: veilarbdialog.prod-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.nav.no
+      rules:
+        - application: poao-tilgang
+          namespace: poao
+  gcp:
+    sqlInstances:
+      - name: veilarbaktivitet-gcp
+        type: POSTGRES_14
+        tier: db-custom-8-53248 #TODO reduser etter migrering?
+        diskType: SSD
+        diskAutoresize: true
+        highAvailability: true
+        pointInTimeRecovery: true
+        flags: # Nødvendig for datastreams
+          - name: cloudsql.logical_decoding
+            value: "on"
+        databases:
+          - name: veilarbaktivitet
+            envVarPrefix: DB
+            users:
+              - name: datastream
   env:
-    - name: APP_ENVIRONMENT_NAME
-      value: p
     - name: POAO_TILGANG_SCOPE
-      value: api://prod-fss.poao.poao-tilgang/.default
-    - name: ADMIN_GROUPS
-      value: dfc550d0-c5bf-4208-8b2b-3542bb8b5b15
+      value: api://prod-gcp.poao.poao-tilgang/.default
+    - name: POAO_TILGANG_URL
+      value: http://poao-tilgang.poao
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.nav.no"
     - name: VEILARBDIALOG_URL
-      value: http://veilarbdialog.pto.svc.nais.local/veilarbdialog
+      value: "https://veilarbdialog.prod-fss-pub.nais.io"
     - name: KAFKA_ENABLED
       value: "true"
+    - name: AKTIVITETSPLAN_URL
+      value: "https://aktivitetsplan.nav.no"
+    - name: VEILARBOPPFOLGINGAPI_URL
+      value: "https://veilarboppfolging.prod-fss-pub.nais.io"
+    - name: VEILARBARENA_URL
+      value: "https://veilarbarena.prod-fss-pub.nais.io"
+    - name: VEILARBAKTIVITET_FSS_URL
+      value: "https://veilarbaktivitet.prod-fss-pub.nais.io"
+    - name: PDL_URL
+      value: "https://pdl-api.prod-fss-pub.nais.io"
+    - name: PDL_SCOPE
+      value: "api://prod-fss.pdl.pdl-api/.default"
+    - name: FSS_PROXY_ENABLED
+      value: "false"

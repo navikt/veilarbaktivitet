@@ -33,6 +33,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder.*;
@@ -105,16 +106,14 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @Test
     void hentAktivitetsplan_henterAktiviteterMedForhaandsorientering() {
-        AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
-        aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
+        AktivitetData aktivitetDataMedForhaandsorientering = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
+        AktivitetData aktivitetDataUtenForhaandsorientering = aktivitetDAO.opprettNyAktivitet(nyttStillingssok().withAktorId(mockBruker.getAktorId()));
 
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
-        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetData.getVersjon()).setForhaandsorientering(fho), aktivitetData.getId(), mockBruker.getAktorId(), NavIdent.of("V123"));
+        avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetDataMedForhaandsorientering.getVersjon()).setForhaandsorientering(fho), aktivitetDataMedForhaandsorientering.getId(), mockBruker.getAktorId(), NavIdent.of("V123"));
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        assertNull(resultat.getAktiviteter().get(0).getForhaandsorientering());
-        assertNotNull(resultat.getAktiviteter().get(1).getForhaandsorientering());
-
-
+        assertNotNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataMedForhaandsorientering.getId().toString())).toList().get(0).getForhaandsorientering());
+        assertNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataUtenForhaandsorientering.getId().toString())).toList().get(0).getForhaandsorientering());
     }
 
     @Test
@@ -127,7 +126,6 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         assertEquals(1, resultat.getAktiviteter().size());
         assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
-
     }
 
     @Test

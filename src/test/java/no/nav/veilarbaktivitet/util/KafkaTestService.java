@@ -1,6 +1,5 @@
 package no.nav.veilarbaktivitet.util;
 
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
@@ -11,7 +10,9 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,6 @@ import java.util.stream.Collectors;
 import static org.awaitility.Awaitility.await;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class KafkaTestService {
 
@@ -31,14 +31,31 @@ public class KafkaTestService {
     public static Duration DEFAULT_WAIT_TIMEOUT_DURATION = Duration.of(DEFAULT_WAIT_TIMEOUT_SEC, ChronoUnit.SECONDS);
 
 
+    public KafkaTestService(
+            @Qualifier("stringAvroConsumerFactory")
+            ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory,
+            @Qualifier("stringJsonConsumerFactory")
+            ConsumerFactory<String, Object> stringJsonConsumerFactory,
+            @Qualifier("avroAvroConsumerFactory")
+            ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory,
+            @Qualifier("stringStringConsumerFactory")
+            ConsumerFactory<String, String> stringStringConsumerFactory,
+            ConcurrentKafkaListenerContainerFactory<String, String> stringStringKafkaListenerContainerFactory,
+            Admin kafkaAdminClient
+    ) {
+        this.stringAvroConsumerFactory = stringAvroConsumerFactory;
+        this.stringJsonConsumerFactory = stringJsonConsumerFactory;
+        this.avroAvroConsumerFactory = avroAvroConsumerFactory;
+        this.stringStringConsumerFactory = stringStringConsumerFactory;
+        this.stringStringKafkaListenerContainerFactory = stringStringKafkaListenerContainerFactory;
+        this.kafkaAdminClient = kafkaAdminClient;
+    }
+
     private final ConsumerFactory<String, SpecificRecordBase> stringAvroConsumerFactory;
-
     private final ConsumerFactory<String, Object> stringJsonConsumerFactory;
-
     private final ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
-
     private final ConsumerFactory<String, String> stringStringConsumerFactory;
-
+    private final ConcurrentKafkaListenerContainerFactory<String, String> stringStringKafkaListenerContainerFactory;
     private final Admin kafkaAdminClient;
 
     @Value("${app.kafka.consumer-group-id}")
@@ -101,12 +118,12 @@ public class KafkaTestService {
 
     public void seekToEnd(String topic, Consumer newConsumer) {
         List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
-        List<TopicPartition> collect = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
+        List<TopicPartition> topics = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
 
-        newConsumer.assign(collect);
-        newConsumer.seekToEnd(collect);
+        newConsumer.assign(topics);
+        newConsumer.seekToEnd(topics);
 
-        collect.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
+        topics.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));
 
         newConsumer.commitSync(DEFAULT_WAIT_TIMEOUT_DURATION);
     }

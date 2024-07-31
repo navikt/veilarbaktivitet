@@ -1,21 +1,20 @@
 package no.nav.veilarbaktivitet.avtalt_med_nav;
 
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetTypeDTO;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
-import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.sql.DataSource;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
@@ -26,14 +25,14 @@ class ForhaandsorienteringDAOTest {
 
     private static final Person.AktorId AKTOR_ID = Person.aktorId("1234");
 
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
-    private final Database database = new Database(jdbcTemplate);
-    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(database.getNamedJdbcTemplate());
-    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(new NamedParameterJdbcTemplate(jdbcTemplate));
+    private final DataSource db = LocalDatabaseSingleton.INSTANCE.getPostgres();
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(db);
+    private final ForhaandsorienteringDAO fhoDAO = new ForhaandsorienteringDAO(namedParameterJdbcTemplate);
+    private final AktivitetDAO aktivitetDAO = new AktivitetDAO(namedParameterJdbcTemplate);
 
     @AfterEach
     void cleanup() {
-        DbTestUtils.cleanupTestDb(jdbcTemplate);
+        DbTestUtils.cleanupTestDb(namedParameterJdbcTemplate.getJdbcTemplate());
     }
 
     @Test

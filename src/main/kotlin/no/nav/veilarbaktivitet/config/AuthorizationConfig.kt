@@ -2,8 +2,10 @@ package no.nav.veilarbaktivitet.config
 
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.token_client.builder.AzureAdTokenClientBuilder
+import no.nav.common.token_client.builder.TokenXTokenClientBuilder
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.common.token_client.client.AzureAdOnBehalfOfTokenClient
+import no.nav.common.token_client.client.TokenXOnBehalfOfTokenClient
 import no.nav.poao.dab.spring_a2_annotations.EnableAuthorization
 import no.nav.poao.dab.spring_auth.AuthService
 import no.nav.poao.dab.spring_auth.IAuthService
@@ -20,8 +22,12 @@ import org.springframework.context.annotation.Profile
 @EnableAuthorization
 open class AuthorizationConfig {
     @Bean
-    open fun poaoTilgangClient(@Value("\${app.env.poao_tilgang.url}") baseUrl: String, tokenProvider: AzureAdMachineToMachineTokenClient, @Value("\${app.env.poao_tilgang.scope}") scope: String): PoaoTilgangClient {
-        val poaoTilgangHttpClient = PoaoTilgangHttpClient(baseUrl, { tokenProvider.createMachineToMachineToken(scope) } )
+    open fun poaoTilgangClient(
+        @Value("\${app.env.poao_tilgang.url}") baseUrl: String,
+        tokenProvider: AzureAdMachineToMachineTokenClient,
+        @Value("\${app.env.poao_tilgang.scope}") scope: String
+    ): PoaoTilgangClient {
+        val poaoTilgangHttpClient = PoaoTilgangHttpClient(baseUrl, { tokenProvider.createMachineToMachineToken(scope) })
         return PoaoTilgangCachedClient(poaoTilgangHttpClient)
     }
 
@@ -31,7 +37,7 @@ open class AuthorizationConfig {
         poaoTilgangClient: PoaoTilgangClient,
         personService: PersonService
     ): IAuthService {
-        return AuthService(authContextHolder, poaoTilgangClient, personService,  "veilarbaktivitet")
+        return AuthService(authContextHolder, poaoTilgangClient, personService, "veilarbaktivitet")
     }
 
     @Bean
@@ -46,6 +52,14 @@ open class AuthorizationConfig {
     @Profile("!test")
     open fun onBehalfOfTokenClient(): AzureAdOnBehalfOfTokenClient {
         return AzureAdTokenClientBuilder.builder()
+            .withNaisDefaults()
+            .buildOnBehalfOfTokenClient()
+    }
+
+    @Bean
+    @Profile("!test")
+    open fun tokenXOnBehalfOfTokenClient(): TokenXOnBehalfOfTokenClient {
+        return TokenXTokenClientBuilder.builder()
             .withNaisDefaults()
             .buildOnBehalfOfTokenClient()
     }

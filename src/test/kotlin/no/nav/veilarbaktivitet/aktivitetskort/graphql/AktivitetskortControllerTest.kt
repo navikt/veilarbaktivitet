@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.aktivitetskort.graphql
 
+import no.nav.common.json.JsonMapper
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
@@ -7,6 +8,7 @@ import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
+import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.util.*
@@ -153,7 +155,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
         val aktivitetIdParam = "\$aktivitetId"
         val query = """
-            query($aktivitetIdParam: String) {
+            query($aktivitetIdParam: String!) {
                 aktivitet(aktivitetId: $aktivitetIdParam) {
                     historikk {
                         endringer {
@@ -168,10 +170,65 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
                 }
             }
         """.trimIndent().replace("\n", "")
-        val result = aktivitetTestService.queryHistorikk(mockBruker, mockBruker, query, aktivitet.id.toLong())
+        val result = aktivitetTestService.queryHistorikk(mockBruker, mockBruker, query, aktivitet.id)
         assertThat(result.errors).isNull()
         assertThat(result.data?.aktivitet?.historikk).isNotNull()
         assertThat(result.data?.aktivitet?.historikk?.endringer).hasSize(2)
+    }
+
+    @Test
+    fun `skal serialisere datoer riktig (aktivitet)`() {
+        val nyPeriode = UUID.randomUUID()
+        // riktig:  "2024-04-30T22:00:00.000+00:00"
+        // feil:    "2024-05-01T00:00+02:00"
+        val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
+        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($aktivitetIdParam: String) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                    fraDato
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
+        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["fraDato"].asText()
+        assertThat(fraDatoString).isEqualTo(fraDatoIso)
+    }
+
+    @Test
+    fun `skal serialisere datoer riktig (perioder)`() {
+        val nyPeriode = UUID.randomUUID()
+        // riktig:  "2024-04-30T22:00:00.000+00:00"
+        // feil:    "2024-05-01T00:00+02:00"
+        val fraDatoIso = "2024-04-30T22:00:00.000+00:00"
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
+        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
+        val fnrParam = "\$fnr"
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($fnrParam: String!, $aktivitetIdParam: String!) {
+                perioder(fnr: $fnrParam) { 
+                    id,
+                    aktiviteter { fraDato }
+                }
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                    fraDato
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryAllRaw(mockBruker, mockBruker, query, aktivitet.id.toLong())
+        val jsonTree = JsonMapper.defaultObjectMapper().readTree(result)
+        val fraDatoStringAktivitet = jsonTree["data"]["aktivitet"]["fraDato"].asText()
+        val fraDatoStringPerioder = jsonTree["data"]["perioder"][0]["aktiviteter"][0]["fraDato"].asText()
+        assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoStringPerioder)
+        assertThat(fraDatoStringAktivitet).isEqualTo(fraDatoIso)
+        assertThat(fraDatoStringPerioder).isEqualTo(fraDatoIso)
     }
 
 }

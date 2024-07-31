@@ -2,13 +2,14 @@ package no.nav.veilarbaktivitet.db;
 
 import lombok.SneakyThrows;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.mock.LocalH2Database;
+import no.nav.veilarbaktivitet.LocalDatabaseSingleton;
 import org.json.JSONArray;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -37,18 +38,18 @@ class ViewTest {
                 "DVH_STILLING_FRA_NAV_AKTIVITET");
     }
 
-
-    private final JdbcTemplate jdbcTemplate = LocalH2Database.getDb();
+    static public DataSource dataSource = LocalDatabaseSingleton.INSTANCE.getPostgres();
 
     private static final long antallViews = views().count();
 
     @Test
     void database_skal_ha_riktig_antall_views() {
-        long count = (long) jdbcTemplate.queryForList("" +
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        var count = jdbcTemplate.queryForList(
                 "SELECT " +
                 "COUNT(*) AS VIEW_COUNT " +
                 "FROM INFORMATION_SCHEMA.VIEWS " +
-                "where TABLE_SCHEMA = 'PUBLIC';"
+                "where TABLE_SCHEMA = 'public';"
         ).get(0).get("VIEW_COUNT");
 
         assertThat(count).isEqualTo(antallViews);
@@ -57,6 +58,7 @@ class ViewTest {
     @ParameterizedTest
     @MethodSource("views")
     void view_eksisterer(String viewName) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         List<Map<String, Object>> viewData = jdbcTemplate.queryForList("SELECT * FROM " + viewName + ";");
 
         assertThat(viewData).isNotNull();
@@ -72,15 +74,21 @@ class ViewTest {
     }
 
     private List<Map<String, Object>> hentKolonneDataForView(String view) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         return jdbcTemplate.queryForList(
                 "SELECT " +
                 "COLUMN_NAME, " +
                 "DATA_TYPE, " +
                 "CHARACTER_MAXIMUM_LENGTH " +
                 "FROM INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE TABLE_NAME = '" + view + "';"
+                "WHERE TABLE_NAME = '" + view.toLowerCase() + "';"
         );
     }
+
+    /*
+     select column_name, columns.data_type, columns.character_maximum_length
+ from information_schema.columns;
+     */
 
     @SneakyThrows
     private static String jsonFormatter(String jsonArray) {

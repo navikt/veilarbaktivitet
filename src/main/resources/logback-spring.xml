@@ -2,5 +2,5 @@
 <configuration>
     <include resource="no/nav/common/log/logback-default.xml"/>
     <logger name="no.nav.veilarbaktivitet" level="DEBUG"/>
-
+    <logger name="org.springframework.cloud.gateway" level="DEBUG"/>
 </configuration>

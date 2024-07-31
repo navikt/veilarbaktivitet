@@ -1,27 +1,27 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_ID",
-    "DATA_TYPE": "NUMERIC",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "aktivitet_id",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "VERSJON",
-    "DATA_TYPE": "NUMERIC",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "versjon",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "HENSIKT",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "endret_dato",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "OPPFOLGING",
-    "DATA_TYPE": "CHARACTER VARYING",
-    "CHARACTER_MAXIMUM_LENGTH": 255
+    "column_name": "hensikt",
+    "data_type": "character varying",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "ENDRET_DATO",
-    "DATA_TYPE": "TIMESTAMP",
-    "CHARACTER_MAXIMUM_LENGTH": null
+    "column_name": "oppfolging",
+    "data_type": "character varying",
+    "character_maximum_length": null
   }
 ]

@@ -15,8 +15,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
+import org.springframework.boot.ssl.DefaultSslBundleRegistry;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.test.mock.mockito.SpyBeans;
 import org.springframework.context.annotation.Bean;
@@ -28,12 +30,12 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
-import org.springframework.kafka.test.core.BrokerAddress;
+import org.springframework.kafka.test.EmbeddedKafkaKraftBroker;
+import org.springframework.kafka.test.utils.KafkaTestUtils;
 
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 @Configuration
 @SpyBeans({
@@ -44,7 +46,7 @@ import java.util.stream.Collectors;
 })
 public class KafkaTestConfig {
     @Bean
-    public EmbeddedKafkaBroker embeddedKafka(
+    public EmbeddedKafkaKraftBroker embeddedKafka(
             @Value("${topic.inn.stillingFraNav}") String innStillingFraNav,
             @Value("${topic.ut.stillingFraNav}") String utStillingFraNav,
             @Value("${topic.inn.kvpAvsluttet}") String kvpAvsluttetTopic,
@@ -54,9 +56,8 @@ public class KafkaTestConfig {
             @Value("${topic.inn.oppfolgingsperiode}") String oppfolgingsperiode,
             @Value("${topic.inn.aktivitetskort}") String aktivitetskortTopic) {
         // TODO config
-        return new EmbeddedKafkaBroker(
+        return new EmbeddedKafkaKraftBroker(
                 1,
-                false,
                 1,
                 innStillingFraNav,
                 utStillingFraNav,
@@ -70,14 +71,15 @@ public class KafkaTestConfig {
 
     @Bean
     @Primary
-    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafkaBroker) {
-        kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokerAddresses()).map(BrokerAddress::toString).collect(Collectors.toList()));
+    KafkaProperties kafkaProperties(KafkaProperties kafkaProperties, EmbeddedKafkaKraftBroker embeddedKafkaBroker) {
+        kafkaProperties.setBootstrapServers(Arrays.stream(embeddedKafkaBroker.getBrokersAsString().split(",")).toList());
         return kafkaProperties;
     }
 
+    @Qualifier("stringJsonConsumerFactory")
     @Bean
     <V> ConsumerFactory<String, V> stringJsonConsumerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafka) {
-        Map<String, Object> consumerProperties = kafkaProperties.buildConsumerProperties();
+        Map<String, Object> consumerProperties = KafkaTestUtils.consumerProps(kafkaProperties.getConsumer().getGroupId(), "true", embeddedKafka);
         consumerProperties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafka.getBrokersAsString());
         consumerProperties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringDeserializer.class);
         consumerProperties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, org.springframework.kafka.support.serializer.JsonDeserializer.class);
@@ -87,8 +89,8 @@ public class KafkaTestConfig {
 
  // Denne er opprettet spesifikt for å støtte JsonSerialiseren fra nav.common.kafka
     @Bean
-    <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties) {
-        Map<String, Object> producerProperties = kafkaProperties.buildProducerProperties();
+    <V> ProducerFactory<String, V> navCommonJsonProducerFactory(KafkaProperties kafkaProperties, EmbeddedKafkaBroker embeddedKafkaBroker) {
+        Map<String, Object> producerProperties = KafkaTestUtils.producerProps(embeddedKafkaBroker);
         producerProperties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaProperties.getBootstrapServers());
         producerProperties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, org.apache.kafka.common.serialization.StringSerializer.class);
         producerProperties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, no.nav.common.kafka.producer.serializer.JsonSerializer.class);
@@ -106,7 +108,7 @@ public class KafkaTestConfig {
 
     @Bean
     public Admin kafkaAdminClient(KafkaProperties properties, EmbeddedKafkaBroker embeddedKafkaBroker) {
-        Map<String, Object> config = properties.buildAdminProperties();
+        Map<String, Object> config = properties.buildAdminProperties(new DefaultSslBundleRegistry());
         config.put("bootstrap.servers", embeddedKafkaBroker.getBrokersAsString());
         return Admin.create(config);
     }

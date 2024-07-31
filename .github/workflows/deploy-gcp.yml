@@ -1,5 +1,6 @@
-name: deploy dev og prod
+name: Deploy gcp dev og prod
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -13,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_TAG: ${{ github.sha }}
+  IMAGE_TAG: ${{ github.sha }}-gcp
   IMAGE: ghcr.io/${{ github.repository }}/veilarbaktivitet
   PRINT_PAYLOAD: true
 jobs:
@@ -23,10 +24,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: 17
+          java-version: 21
           distribution: 'temurin'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
@@ -61,12 +62,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy application
-        uses: nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: dev-fss
-          RESOURCE: nais/nais-dev.yaml
-          VAR: version=${{ env.IMAGE_TAG }},namespace=q1
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          CLUSTER: dev-gcp
+          RESOURCE: nais/nais-dev-gcp.yaml
+          VAR: version=${{ env.IMAGE_TAG }}
 
   deploy-prod:
     name: Deploy application to prod
@@ -76,11 +77,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Deploy application
-        uses: nais/deploy/actions/deploy@v1
+        uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY }}
-          CLUSTER: prod-fss
-          RESOURCE: nais/nais.yaml
+          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
+          CLUSTER: prod-gcp
+          RESOURCE: nais/nais-prod-gcp.yaml
           VAR: version=${{ env.IMAGE_TAG }}
       - name: Slack Notification (deploy failure)
         if: failure()

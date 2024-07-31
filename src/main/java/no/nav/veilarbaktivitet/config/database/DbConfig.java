@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.MigrationVersion;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -29,6 +30,7 @@ public class DbConfig {
     @Bean
     public DataSource dataSource() {
         var config = new HikariConfig();
+        config.setSchema("veilarbaktivitet");
         config.setJdbcUrl(datasourceProperties.url);
         config.setUsername(datasourceProperties.username);
         config.setPassword(datasourceProperties.password);

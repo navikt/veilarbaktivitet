@@ -5,6 +5,8 @@ import no.nav.common.health.selftest.SelfTestChecks;
 import no.nav.common.health.selftest.SelfTestUtils;
 import no.nav.common.health.selftest.SelftTestCheckResult;
 import no.nav.common.health.selftest.SelftestHtmlGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import static no.nav.common.health.selftest.SelfTestUtils.checkAllParallel;
 @RequestMapping("/internal")
 public class InternalController {
 
+    private static final Logger log = LoggerFactory.getLogger(InternalController.class);
     private final JdbcTemplate db;
     private final SelfTestChecks selftestChecks;
 
@@ -57,9 +60,10 @@ public class InternalController {
 
     public static HealthCheckResult checkDbHealth(JdbcTemplate db) {
         try {
-            db.query("SELECT 1 FROM DUAL", resultSet -> {});
+            db.query("SELECT 1", resultSet -> {});
             return HealthCheckResult.healthy();
         } catch (Exception e) {
+            log.error("Could not connect to database", e);
             return HealthCheckResult.unhealthy("Fikk ikke kontakt med databasen", e);
         }
     }

@@ -15,7 +15,7 @@ class AktivitetsMessageDAO (
         val params = MapSqlParameterSource()
             .addValue("messageId", messageId.toString())
             .addValue("funksjonellId", funksjonellId.toString())
-        template!!.update(
+        template.update(
             """
                 INSERT INTO AKTIVITETSKORT_MSG_ID(MESSAGE_ID, FUNKSJONELL_ID) 
                 VALUES (:messageId, :funksjonellId)
@@ -27,10 +27,10 @@ class AktivitetsMessageDAO (
     fun exist(messageId: UUID): Boolean {
         val params = MapSqlParameterSource()
             .addValue("messageId", messageId.toString())
-        val antall = template!!.queryForObject(
+        val antall = template.queryForObject(
             "SELECT COUNT(*) FROM AKTIVITETSKORT_MSG_ID WHERE MESSAGE_ID = :messageId",
             params,
-            Int::class.javaPrimitiveType
+            Int::class.java
         )
         return antall != null && antall > 0
     }

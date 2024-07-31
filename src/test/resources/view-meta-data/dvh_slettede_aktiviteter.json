@@ -1,12 +1,12 @@
 [
   {
-    "COLUMN_NAME": "AKTIVITET_ID",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "NUMERIC"
+    "column_name": "aktivitet_id",
+    "data_type": "numeric",
+    "character_maximum_length": null
   },
   {
-    "COLUMN_NAME": "TIDSPUNKT",
-    "CHARACTER_MAXIMUM_LENGTH": null,
-    "DATA_TYPE": "TIMESTAMP"
+    "column_name": "tidspunkt",
+    "data_type": "timestamp without time zone",
+    "character_maximum_length": null
   }
 ]

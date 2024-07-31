@@ -11,17 +11,16 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
 @Service
-class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
+class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orkivar.url}") val orkivarBaseUrl: String) {
 
-    @Value("\${orkivar.url}")
-    lateinit var orkivarUrl: String
+    private val orkivarUrl = "$orkivarBaseUrl/orkivar"
 
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
         val request: Request = Request.Builder()
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .post(JsonUtils.toJson(forhåndsvisningPayload).toRequestBody("application/json".toMediaTypeOrNull()))
-            .url(String.format("%s/forhaandsvisning", orkivarUrl))
+            .url("$orkivarUrl/forhaandsvisning")
             .build()
 
         val response = orkivarHttpClient.newCall(request).execute()
@@ -35,7 +34,7 @@ class OrkivarClient(private val orkivarHttpClient: OkHttpClient) {
             .addHeader("Content-Type", "application/json")
             .addHeader("Accept", "application/json")
             .post(JsonUtils.toJson(arkivPayload).toRequestBody("application/json".toMediaTypeOrNull()))
-            .url(String.format("%s/arkiver", orkivarUrl))
+            .url("$orkivarUrl/arkiver")
             .build()
 
         val response = orkivarHttpClient.newCall(request).execute()

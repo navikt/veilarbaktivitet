@@ -22,6 +22,9 @@ spec:
     - team: pto
       application: veilarbaktivitet
       access: read
+    - team: dab
+      application: veilarbaktivitet
+      access: read
     - team: pto
       application: pto-kafka-manager
       access: read

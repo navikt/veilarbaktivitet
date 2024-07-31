@@ -6,6 +6,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
@@ -25,7 +26,6 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Optional.empty;
@@ -128,11 +128,11 @@ public class AktivitetDAO {
     }
 
     public Long nesteAktivitetId() {
-        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_ID_SEQ.nextval from dual", Long.class)).orElseThrow();
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select nextval('AKTIVITET_ID_SEQ')", Long.class)).orElseThrow();
     }
 
     public Long nesteVersjon() {
-        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select AKTIVITET_VERSJON_SEQ.nextval from dual", Long.class)).orElseThrow();
+        return Optional.ofNullable(namedParameterJdbcTemplate.getJdbcTemplate().queryForObject("select nextval('AKTIVITET_VERSJON_SEQ')", Long.class)).orElseThrow();
     }
 
 
@@ -193,7 +193,6 @@ public class AktivitetDAO {
                 .addValue("funksjonell_id", Optional.ofNullable(aktivitet.getFunksjonellId()).map(UUID::toString).orElse(null))
                 .addValue("oppfolgingsperiode_uuid", aktivitet.getOppfolgingsperiodeId() != null
                         ? aktivitet.getOppfolgingsperiodeId().toString() : null);
-        //language=SQL
         namedParameterJdbcTemplate.update(
                 """
                         INSERT INTO AKTIVITET(aktivitet_id, versjon, aktor_id, aktivitet_type_kode,
@@ -203,9 +202,9 @@ public class AktivitetDAO {
                         automatisk_opprettet, mal_id, fho_id, oppfolgingsperiode_uuid, FUNKSJONELL_ID)
                         VALUES (:aktivitet_id, :versjon, :aktor_id, :aktivitet_type_kode, :fra_dato,
                         :til_dato, :tittel, :beskrivelse, :livslopstatus_kode, :avsluttet_kommentar,
-                        :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt,
-                        :gjeldende, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
-                        :automatisk_opprettet, :mal_id, :fho_id, :oppfolgingsperiode_uuid, :funksjonell_id)
+                        :opprettet_dato, :endret_dato, :endret_av, :lagt_inn_av, :lenke, :avtalt::int,
+                        :gjeldende::int, :transaksjons_type, :historisk_dato, :kontorsperre_enhet_id,
+                        :automatisk_opprettet::int, :mal_id, :fho_id, :oppfolgingsperiode_uuid, :funksjonell_id)
                         """, params);
 
 
@@ -248,7 +247,7 @@ public class AktivitetDAO {
                     :referat_publisert)
                     """;
         ofNullable(moteData).ifPresent(m -> {
-            SqlParameterSource params = new MapSqlParameterSource()
+            SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                     .addValue(AKTIVITETID, aktivitetId)
                     .addValue(VERSJON, versjon)
                     .addValue("adresse", moteData.getAdresse())
@@ -414,7 +413,7 @@ public class AktivitetDAO {
                 .ifPresent(stilling -> {
                             var cvKanDelesData = Optional.ofNullable(stilling.getCvKanDelesData());
                             var kontaktpersonData = Optional.ofNullable(stilling.getKontaktpersonData());
-                            SqlParameterSource parms = new MapSqlParameterSource()
+                            SqlParameterSource parms = new VeilarbAktivitetSqlParameterSource()
                                     .addValue(AKTIVITETID, aktivitetId)
                                     .addValue(VERSJON, versjon)
                                     .addValue("cv_kan_deles", cvKanDelesData.map(CvKanDelesData::getKanDeles).orElse(null))
@@ -446,7 +445,7 @@ public class AktivitetDAO {
     private void insertEksternAktivitet(long aktivitetId, long versjon, EksternAktivitetData eksternAktivitetData) {
         Optional.ofNullable(eksternAktivitetData)
                 .ifPresent(tiltak -> {
-                    SqlParameterSource params = new MapSqlParameterSource()
+                    SqlParameterSource params = new VeilarbAktivitetSqlParameterSource()
                             .addValue(AKTIVITETID, aktivitetId)
                             .addValue(VERSJON, versjon)
                             .addValue("source", eksternAktivitetData.getSource())

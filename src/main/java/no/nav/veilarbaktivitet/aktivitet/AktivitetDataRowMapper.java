@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.*;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetResultSet;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -27,7 +28,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
         return mapAktivitet(rs);
     }
 
-    public static AktivitetData mapAktivitet(ResultSet rs) throws SQLException {
+    public static AktivitetData mapAktivitet(ResultSet resultSet) throws SQLException {
+        val rs = new VeilarbAktivitetResultSet(resultSet);
         val type = AktivitetTypeData.valueOf(rs.getString("aktivitet_type_kode"));
 
         val aktivitet = AktivitetData
@@ -76,7 +78,9 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
         return aktivitet.build();
     }
 
-    private static MoteData mapMoteData(ResultSet rs) throws SQLException {
+    private static MoteData mapMoteData(ResultSet resultSet) throws SQLException {
+        val rs = new VeilarbAktivitetResultSet(resultSet);
+
         return MoteData.builder()
                 .adresse(rs.getString("adresse"))
                 .forberedelser(rs.getString("forberedelser"))
@@ -129,9 +133,11 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .build();
     }
 
-    private static StillingFraNavData mapStillingFraNav(ResultSet rs) throws SQLException {
+    private static StillingFraNavData mapStillingFraNav(ResultSet resultSet) throws SQLException {
+        VeilarbAktivitetResultSet rs = new VeilarbAktivitetResultSet(resultSet);
+
         var cvKanDelesData = CvKanDelesData.builder()
-                .kanDeles(rs.getObject("cv_kan_deles", Boolean.class))
+                .kanDeles(rs.getBooleanOrNull("cv_kan_deles"))
                 .endretAv(rs.getString("cv_kan_deles_av"))
                 .endretTidspunkt(Database.hentDato(rs, "cv_kan_deles_tidspunkt"))
                 .avtaltDato(Database.hentDatoDato(rs, "cv_kan_deles_avtalt_dato"))
@@ -160,7 +166,8 @@ public class AktivitetDataRowMapper implements RowMapper<AktivitetData> {
                 .build();
     }
 
-    private static EksternAktivitetData mapEksternAktivitetData(ResultSet rs) throws SQLException {
+    private static EksternAktivitetData mapEksternAktivitetData(ResultSet resultSet) throws SQLException {
+        val rs = new VeilarbAktivitetResultSet(resultSet);
         var arenaId = rs.getString("ARENA_ID");
         return new EksternAktivitetData(
             rs.getString("SOURCE"),

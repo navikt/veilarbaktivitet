@@ -1,6 +1,6 @@
 package no.nav.veilarbaktivitet.oppfolging.client;
 
-import de.mkammerer.wiremock.WireMockExtension;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import no.nav.veilarbaktivitet.oppfolging.periode.GjeldendePeriodeMetrikk;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,9 +29,9 @@ class OppfolgingClientTest {
 
     private OppfolgingClientImpl oppfolgingClient;
 
-
     @RegisterExtension
-    WireMockExtension wireMock = new WireMockExtension(0);
+    static WireMockExtension wireMock = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort()).build();
 
     @BeforeEach
     void setup() {
@@ -39,8 +40,7 @@ class OppfolgingClientTest {
         GjeldendePeriodeMetrikk gjeldendePeriodeMetrikk = Mockito.mock(GjeldendePeriodeMetrikk.class);
         when(personService.getFnrForAktorId(AKTORID)).thenReturn(FNR);
         oppfolgingClient = new OppfolgingClientImpl(okHttpClient, okHttpClient, personService, gjeldendePeriodeMetrikk);
-        wireMock.getBaseUri();
-        oppfolgingClient.setBaseUrl(wireMock.baseUrl() + "/veilarboppfolging/api");
+        oppfolgingClient.setBaseUrl(wireMock.baseUrl());
     }
 
     @Test
