@@ -26,7 +26,7 @@ open class BatchTrackingDAO(
         val results = template.query("""
             SELECT last_offset FROM batch_tracking where batch_name = :batchName
         """.trimIndent(), mapOf("batchName" to batch.name)
-        ) { row, i -> row.getLong("last_offset") }
+        ) { row, _ -> row.getLong("last_offset") }
         if (results.isEmpty()) {
             log.warn("Could not find last_offset for batch: ${batch.name} ")
             return 0
