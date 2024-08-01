@@ -57,7 +57,7 @@ public class DelingAvCvDAO {
                             AND HISTORISK_DATO is null
                             AND SFN.LIVSLOPSSTATUS NOT IN('AVBRUTT_AV_BRUKER', 'AVBRUTT_AV_SYSTEM', 'HAR_SVART')
                             AND SFN.CV_KAN_DELES IS NULL
-                            AND A.versjon >= :sisteProsesserteVersjon
+                            AND A.versjon > :sisteProsesserteVersjon
                             order by A.versjon
                             limit :maxAntall
                         """,

@@ -53,6 +53,9 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
     @Autowired
     DelingAvCvCronService delingAvCvCronService;
 
+    @Autowired
+    DelingAvCvManueltAvbruttService delingAvCvManueltAvbruttService;
+
     @AfterEach
     void verify_no_unmatched() {
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());

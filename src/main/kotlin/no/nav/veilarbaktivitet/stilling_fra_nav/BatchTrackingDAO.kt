@@ -33,6 +33,13 @@ open class BatchTrackingDAO(
         }
         return results.first()
     }
+
+    public fun withOffset(batch: BatchJob, processBatch: (sisteProsesserteVersjon: Long) -> List<BatchResult>): List<BatchResult> {
+        val siste = hentSisteProsseserteVersjon(batch)
+        val batchResults = processBatch(siste)
+        setSisteProsesserteVersjon(batch, batchResults.sisteProsesserteVersjon(siste))
+        return batchResults
+    }
 }
 
 sealed class BatchResult(val versjon: Long) {

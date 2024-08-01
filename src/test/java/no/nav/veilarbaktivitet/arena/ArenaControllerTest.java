@@ -3,7 +3,6 @@ package no.nav.veilarbaktivitet.arena;
 import io.getunleash.Unleash;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import no.nav.common.client.aktoroppslag.AktorOppslagClient;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
@@ -40,7 +39,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -84,17 +82,6 @@ class ArenaControllerTest {
     private final NavIdent veilederIdent = NavIdent.of("Z123456");
 
     private final ForhaandsorienteringDTO forhaandsorientering = ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("kake").build();
-
-    ArenaControllerTest() throws IOException {
-    }
-
-    static EmbeddedPostgres setUpDatabase()  {
-        try {
-            return EmbeddedPostgres.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @BeforeEach
     void cleanup() {
