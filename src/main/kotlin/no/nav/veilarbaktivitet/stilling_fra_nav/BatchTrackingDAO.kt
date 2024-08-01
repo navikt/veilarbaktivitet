@@ -15,17 +15,16 @@ open class BatchTrackingDAO(
     private val log = LoggerFactory.getLogger(javaClass)
 
    open fun setSisteProsesserteVersjon(batch: BatchJob, sisteProsesserteVersjon: Long) {
-        val updated = template.update("""
-            UPDATE last_offset SET last_offset = :sisteProsesserteVersjon where batch_name = :batchName
-        """.trimIndent(), mapOf("sisteProsesserteVersjon" to sisteProsesserteVersjon))
-       if (updated == 0) {
-
-       }
+        template.update("""
+            INSERT INTO batch_tracking (batch_name, last_offset) VALUES (:batchName, :sisteProsesserteVersjon)
+            ON CONFLICT(batch_name)
+            DO UPDATE SET last_offset = :sisteProsesserteVersjon
+        """.trimIndent(), mapOf("sisteProsesserteVersjon" to sisteProsesserteVersjon, "batchName" to batch.name))
    }
 
     open fun hentSisteProsseserteVersjon(batch: BatchJob): Long {
         val results = template.query("""
-            SELECT last_offset FROM where batch_name = :batchName
+            SELECT last_offset FROM batch_tracking where batch_name = :batchName
         """.trimIndent(), mapOf("batchName" to batch.name)
         ) { row, i -> row.getLong("last_offset") }
         if (results.isEmpty()) {
