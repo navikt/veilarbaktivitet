@@ -33,6 +33,29 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
     }
 
     @Test
+    void skalHandtereFlereLikePerioder() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+        Oppfolgingsperiode oppfolgingsperiode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), null);
+        sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode);
+        sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode);
+        UUID fraBasen = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(mockBruker.getAktorIdAsAktorId());
+        assertThat(fraBasen).isEqualTo(oppfolgingsperiodeId);
+    }
+
+    @Test
+    void skalHoppeOverGammelPeriode() {
+        MockBruker mockBruker = MockNavService.createHappyBruker();
+        UUID oppfolgingsperiodeId = UUID.randomUUID();
+        Oppfolgingsperiode oppfolgingsperiode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), null);
+        Oppfolgingsperiode gammelPeriode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), UUID.randomUUID(), ZonedDateTime.now().minusDays(10), null);
+        sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode);
+        sistePeriodeDAO.uppsertOppfolingsperide(gammelPeriode);
+        UUID fraBasen = sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(mockBruker.getAktorIdAsAktorId());
+        assertThat(fraBasen).isEqualTo(oppfolgingsperiodeId);
+    }
+
+    @Test
     void fallBackHvisPeriodeAvsluttet() {
         MockBruker mockBruker = MockNavService.createHappyBruker();
         UUID oppfolgingsperiodeId = UUID.randomUUID();

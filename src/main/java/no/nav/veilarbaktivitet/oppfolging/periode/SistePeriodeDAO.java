@@ -2,10 +2,9 @@ package no.nav.veilarbaktivitet.oppfolging.periode;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.person.Person;
-import org.springframework.dao.DuplicateKeyException;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -48,29 +47,24 @@ public class SistePeriodeDAO {
                 .addValue("startTid", oppfolgingsperiode.startTid())
                 .addValue("sluttTid", oppfolgingsperiode.sluttTid());
 
-        int antallOppdatert = jdbc.update("""
-                update SISTE_OPPFOLGINGSPERIODE
-                set PERIODE_UUID = :periode,
-                STARTDATO = :startTid,
-                SLUTTDATO = :sluttTid
+        int harNyerePeriode = jdbc.queryForObject("""
+                select count(*) FROM SISTE_OPPFOLGINGSPERIODE
                 where AKTORID = :aktorId
-                and (STARTDATO < :startTid or PERIODE_UUID = :periode)
-                """, params);
-        if (antallOppdatert == 1) {
-            log.info("oppdatert oppfolgignsperiode {}", oppfolgingsperiode);
+                and (STARTDATO > :startTid)
+                """, params, Integer.class);
+        if (harNyerePeriode == 1) {
+            log.info("Fant nyere siste periode enn:{} start:{} slutt:{}", oppfolgingsperiode.oppfolgingsperiodeId(), oppfolgingsperiode.startTid(), oppfolgingsperiode.sluttTid());
             return;
         }
 
-        try {
-            jdbc.update("""
-                insert into SISTE_OPPFOLGINGSPERIODE
-                (PERIODE_UUID, AKTORID, STARTDATO, SLUTTDATO)
-                VALUES (:periode, :aktorId, :startTid, :sluttTid)
-                """, params);
-        } catch (DuplicateKeyException e) {
-            log.warn("Insert på duplikat oppfolgingsperiode, ignorerer {}", oppfolgingsperiode.oppfolgingsperiodeId());
-        }
+        jdbc.update("""
+            insert into SISTE_OPPFOLGINGSPERIODE
+            (PERIODE_UUID, AKTORID, STARTDATO, SLUTTDATO)
+            VALUES (:periode, :aktorId, :startTid, :sluttTid) 
+            ON CONFLICT (aktorid)
+            DO UPDATE SET PERIODE_UUID = :periode, STARTDATO = :startTid, SLUTTDATO = :sluttTid
+            """, params);
 
-        log.info("opprettet oppfolgingsperiode {}", oppfolgingsperiode);
+        log.info("opprettet oppfolgingsperiode: {} start: {} slutt: {}", oppfolgingsperiode.oppfolgingsperiodeId(), oppfolgingsperiode.startTid(), oppfolgingsperiode.sluttTid());
     }
 }
