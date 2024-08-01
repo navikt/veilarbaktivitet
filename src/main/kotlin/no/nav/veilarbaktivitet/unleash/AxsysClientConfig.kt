@@ -6,6 +6,7 @@ import no.nav.common.client.axsys.CachedAxsysClient
 import no.nav.common.token_client.client.AzureAdMachineToMachineTokenClient
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.veilarbaktivitet.config.EnvironmentProperties
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -18,7 +19,8 @@ open class AxsysClientConfig {
         if (EnvironmentUtils.isProduction().orElse(false)) "prod" else "dev"
     )
 
-    private val axsysUrl = "http://axsys.org.svc.nais.local"
+    @Value("\${axsys.url}")
+    private lateinit var axsysUrl: String;
 
     @Bean
     open fun axsysClient(

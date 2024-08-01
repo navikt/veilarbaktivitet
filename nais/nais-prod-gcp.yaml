@@ -81,6 +81,7 @@ spec:
         - host: veilarbdialog.prod-fss-pub.nais.io
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.nav.no
+        - host: axsys.prod-fss-pub.nais.io
       rules:
         - application: poao-tilgang
           namespace: poao
@@ -128,3 +129,5 @@ spec:
       value: "api://prod-fss.pdl.pdl-api/.default"
     - name: FSS_PROXY_ENABLED
       value: "false"
+    - name: AXSYS_URL
+      value: "https://axsys.prod-fss-pub.nais.io"
