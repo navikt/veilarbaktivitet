@@ -4,7 +4,7 @@ import io.getunleash.DefaultUnleash;
 import io.getunleash.Unleash;
 import no.nav.common.auth.context.AuthContextHolder;
 import no.nav.common.auth.context.AuthContextHolderThreadLocal;
-import no.nav.common.metrics.InfluxClient;
+import no.nav.common.metrics.Event;
 import no.nav.common.metrics.MetricsClient;
 import no.nav.veilarbaktivitet.unleash.UnleashConfig;
 import no.nav.veilarbaktivitet.unleash.strategies.ByEnhetStrategy;
@@ -12,6 +12,8 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+
+import java.util.Map;
 
 @Configuration
 @Profile("!test")
@@ -32,6 +34,16 @@ public class ApplicationContext {
 
     @Bean
     public MetricsClient metricsClient() {
-        return new InfluxClient();
+        return new MetricsClient() {
+            @Override
+            public void report(Event event) {
+                // TODO: Fix metrikker
+            }
+
+            @Override
+            public void report(String s, Map<String, Object> map, Map<String, String> map1, long l) {
+                // TODO: Fix metrikker
+            }
+        };
     }
 }
