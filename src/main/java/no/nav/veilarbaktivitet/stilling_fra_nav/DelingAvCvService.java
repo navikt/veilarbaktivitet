@@ -69,6 +69,7 @@ public class DelingAvCvService {
         var endretAv = Person.systemUser();
         AktivitetData nyAktivitet = aktivitet.toBuilder()
                 .endretAv(endretAv.get())
+                .endretDato(new Date())
                 .endretAvType(endretAv.tilInnsenderType())
                 .stillingFraNavData(aktivitet.getStillingFraNavData().withLivslopsStatus(LivslopsStatus.AVBRUTT_AV_BRUKER))
                 .build();

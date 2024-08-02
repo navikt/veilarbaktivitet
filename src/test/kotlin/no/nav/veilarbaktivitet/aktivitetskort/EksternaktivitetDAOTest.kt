@@ -1,13 +1,10 @@
 package no.nav.veilarbaktivitet.aktivitetskort
 
-import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules
-import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule
 import lombok.SneakyThrows
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Rule
 import org.junit.jupiter.api.Test
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 

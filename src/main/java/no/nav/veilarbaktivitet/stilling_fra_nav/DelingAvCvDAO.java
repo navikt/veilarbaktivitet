@@ -42,8 +42,9 @@ public class DelingAvCvDAO {
                 new AktivitetDataRowMapper());
     }
 
-    public List<AktivitetData> hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(long maxAntall) {
-        SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall);
+    public List<AktivitetData> hentStillingFraNavSomErFullfortEllerAvbruttUtenSvar(long maxAntall, long sisteProsesserteVersjon) {
+        SqlParameterSource parameter = new MapSqlParameterSource("maxAntall", maxAntall)
+                .addValue("sisteProsesserteVersjon", sisteProsesserteVersjon);
         return jdbcTemplate.query("""
                             SELECT SFN.ARBEIDSGIVER as "STILLING_FRA_NAV.ARBEIDSGIVER", SFN.ARBEIDSSTED as "STILLING_FRA_NAV.ARBEIDSSTED",
                             SFN.DETALJER AS "STILLING_FRA_NAV.DETALJER",
@@ -56,8 +57,9 @@ public class DelingAvCvDAO {
                             AND HISTORISK_DATO is null
                             AND SFN.LIVSLOPSSTATUS NOT IN('AVBRUTT_AV_BRUKER', 'AVBRUTT_AV_SYSTEM', 'HAR_SVART')
                             AND SFN.CV_KAN_DELES IS NULL
-                            order by A.AKTIVITET_ID
-                            fetch first :maxAntall rows only 
+                            AND A.versjon > :sisteProsesserteVersjon
+                            order by A.versjon
+                            limit :maxAntall
                         """,
                 parameter,
                 new AktivitetDataRowMapper());
