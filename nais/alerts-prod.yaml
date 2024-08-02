@@ -14,7 +14,7 @@ spec:
     - alert: Høy feilrate veilarbaktivitet
       expr: |
         (((
-        sum(rate(traefik_backend_requests_total{backend=~"veilarbaktivitet.intern.nav.no",protocol="http",code!~'(^[23].*)|(^502)'}[5m] ) ) /
+        sum(rate(traefik_backend_requests_total{backend=~"^veilarbaktivitet.intern.nav.no",protocol="http",code!~'(^[23].*)|(^502)'}[5m] ) ) /
         sum(rate(traefik_backend_requests_total{backend=~"^veilarbaktivitet.intern.nav.no",protocol="http"}[5m]) ) )  > (14.4*0.001))
         and ( (
         sum(rate(traefik_backend_requests_total{backend=~"^veilarbaktivitet.intern.nav.no",protocol="http",code!~'(^[23].*)|(^502)'}[1h] ) ) /
