@@ -23,9 +23,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate5m{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate5m{service="veilarbaktivitet", namespace="dab"}) > (14.40 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate1h{service="veilarbaktivitet"}) > (14.40 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate1h{service="veilarbaktivitet", namespace="dab"}) > (14.40 * (1-0.99900))
             and
             mellom_kl_06_og_23
           for: 2m
@@ -37,9 +37,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate30m{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate30m{service="veilarbaktivitet", namespace="dab"}) > (6.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (6.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet", namespace="dab"}) > (6.00 * (1-0.99900))
             and
             mellom_kl_06_og_23
           for: 15m
@@ -51,9 +51,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate2h{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate2h{service="veilarbaktivitet", namespace="dab"}) > (3.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate1d{service="veilarbaktivitet"}) > (3.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate1d{service="veilarbaktivitet", namespace="dab"}) > (3.00 * (1-0.99900))
           for: 1h
           labels:
             namespace: dab
@@ -63,9 +63,9 @@ spec:
           annotations:
             message: 'High error budget burn for service=veilarbaktivitet (current value: {{ $value }})'
           expr: |
-            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate6h{service="veilarbaktivitet", namespace="dab"}) > (1.00 * (1-0.99900))
             and
-            sum(nginx_ingress_controller_requests:burnrate3d{service="veilarbaktivitet"}) > (1.00 * (1-0.99900))
+            sum(nginx_ingress_controller_requests:burnrate3d{service="veilarbaktivitet", namespace="dab"}) > (1.00 * (1-0.99900))
           for: 3h
           labels:
             service: veilarbaktivitet
@@ -75,51 +75,51 @@ spec:
             (hour() >= 6 and hour() <= 23)
 
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[1d]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[1d]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1d]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[1d]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate1d
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[1h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[1h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[1h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[1h]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate1h
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[2h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[2h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[2h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[2h]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate2h
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[30m]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[30m]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[30m]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[30m]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate30m
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[3d]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet" , namespace="dab", status=~"5.."}[3d]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[3d]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[3d]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate3d
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[5m]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[5m]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[5m]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[5m]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate5m
         - expr: |
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet",status=~"5.."}[6h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab", status=~"5.."}[6h]))
             /
-            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet"}[6h]))
+            sum(rate(nginx_ingress_controller_requests{service="veilarbaktivitet", namespace="dab"}[6h]))
           labels:
             service: veilarbaktivitet
           record: nginx_ingress_controller_requests:burnrate6h
