@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1"
 kind: "Alert"
 metadata:
   name: veilarbaktivitet-alarm
-  namespace: pto
+  namespace: dab
   labels:
-    team: pto
+    team: dab
 spec:
   receivers:
     slack:
