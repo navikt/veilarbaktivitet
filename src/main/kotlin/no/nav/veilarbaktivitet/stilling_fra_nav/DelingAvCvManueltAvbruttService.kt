@@ -29,6 +29,6 @@ open class DelingAvCvManueltAvbruttService(
                     return@map BatchResult.Failure(aktivitet.versjon)
                 }
             }
-        }.size
+        }.size.also { log.info("Avsluttet $it brukernotifikasjoner for stilling-fra-nav aktiviteter som ble manuelt avbrutt/fullført") }
     }
 }

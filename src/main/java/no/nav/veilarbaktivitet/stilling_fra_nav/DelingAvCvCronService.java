@@ -4,6 +4,7 @@ import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import no.nav.common.job.JobRunner;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,9 @@ public class DelingAvCvCronService {
     )
     @SchedulerLock(name = "deling_av_cv_avbrutt_eller_fuulfort_uten_svar", lockAtMostFor = "PT1H")
     void notifiserAvbruttEllerFullfortUtenSvar() {
-        while (delingAvCvManueltAvbruttService.notifiserFullfortEllerAvbruttUtenSvar(500) == 500) ;
+        JobRunner.run("deling_av_cv_avbrutt_eller_fuulfort_uten_svar", () -> {
+            while (delingAvCvManueltAvbruttService.notifiserFullfortEllerAvbruttUtenSvar(500) == 500) ;
+        });
     }
     @PreDestroy
     @ExcludeFromCoverageGenerated
