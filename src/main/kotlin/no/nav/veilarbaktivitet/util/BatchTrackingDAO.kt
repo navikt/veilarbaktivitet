@@ -1,11 +1,12 @@
-package no.nav.veilarbaktivitet.stilling_fra_nav
+package no.nav.veilarbaktivitet.util
 
 import org.slf4j.LoggerFactory
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate
 import org.springframework.stereotype.Repository
 
 enum class BatchJob {
-    Deling_av_cv_avbrutt_eller_fuulfort_uten_svar
+    Deling_av_cv_avbrutt_eller_fuulfort_uten_svar,
+    Aktiviteter_til_portefolje
 }
 
 @Repository

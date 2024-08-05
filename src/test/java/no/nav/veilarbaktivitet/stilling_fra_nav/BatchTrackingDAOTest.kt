@@ -1,6 +1,9 @@
 package no.nav.veilarbaktivitet.stilling_fra_nav
 
 import no.nav.veilarbaktivitet.LocalDatabaseSingleton.postgres
+import no.nav.veilarbaktivitet.util.BatchJob
+import no.nav.veilarbaktivitet.util.BatchResult
+import no.nav.veilarbaktivitet.util.BatchTrackingDAO
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
