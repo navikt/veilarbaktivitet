@@ -40,7 +40,7 @@ public class KafkaAktivitetDAO {
                 WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
                 AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
                 AND (EA.AKTIVITETKORT_TYPE IS NULL OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
-                AND A.VERJON > :sistBehandletVersjon
+                AND A.VERSJON > :sistBehandletVersjon
                 ORDER BY A.VERSJON
                 LIMIT :maksAntall
                 """;
