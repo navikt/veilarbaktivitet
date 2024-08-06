@@ -260,7 +260,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         """.trimIndent().replace("\n", "")
         val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
         val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["historikk"]["endringer"][0]["tidspunkt"].asText()
-        assertThat(fraDatoString).matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[+|-][0-9]{2}:[0-9]{2}$")
+        assertThat(fraDatoString).matches("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[Z]?[+|-][0-9]{2}:[0-9]{2}$")
     }
 
 }
