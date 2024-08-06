@@ -158,7 +158,7 @@ public class AktivitetDAO {
         }
         long versjon = nesteVersjon();
         if (versjon < aktivitet.getVersjon()) {
-            log.warn("Forsøkte å oppdatere aktivitet id: {} med versjon: {} med ny versjon {} lavere enn forrige versjon ", aktivitet.getId(), aktivitet.getVersjon(), versjon);
+            log.warn("Forsøkte å oppdatere aktivitet id: {} type: {} med versjon: {} med ny versjon {} lavere enn forrige versjon ", aktivitet.getId(), aktivitet.getAktivitetType(), aktivitet.getVersjon(), versjon);
             throw new AktivitetVersjonOutOfOrderException("Kan ikke oppdatere en aktivitet med en lavere versjon enn forrige");
         }
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
