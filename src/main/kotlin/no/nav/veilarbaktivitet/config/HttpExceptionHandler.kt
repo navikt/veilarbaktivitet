@@ -1,10 +1,7 @@
 package no.nav.veilarbaktivitet.config
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvAktivitetException
-import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvFerdigAktivitetException
-import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvHistoriskAktivitetException
-import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException
+import no.nav.veilarbaktivitet.aktivitet.feil.*
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ControllerAdvice
@@ -21,7 +18,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
     fun handleException(e: EndringAvAktivitetException, request: WebRequest): ResponseEntity<Response> {
         val statusKode = when (e) {
             is EndringAvFerdigAktivitetException, is EndringAvHistoriskAktivitetException -> HttpStatus.BAD_REQUEST.value()
-            is EndringAvUtdatertVersjonException -> HttpStatus.CONFLICT.value()
+            is EndringAvUtdatertVersjonException, is AktivitetVersjonOutOfOrderException -> HttpStatus.CONFLICT.value()
         }
         return ResponseEntity
             .status(statusKode)
