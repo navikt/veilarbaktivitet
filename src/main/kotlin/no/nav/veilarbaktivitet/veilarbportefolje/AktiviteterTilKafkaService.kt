@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 @Slf4j
 @RequiredArgsConstructor
-class AktiviteterTilKafkaService(
+open class AktiviteterTilKafkaService(
     private val dao: KafkaAktivitetDAO,
     private val producerService: AktivitetKafkaProducerService,
     private val batchTrackingDAO: BatchTrackingDAO
@@ -27,7 +27,7 @@ class AktiviteterTilKafkaService(
     )
     @SchedulerLock(name = "aktiviteter_kafka_scheduledTask", lockAtMostFor = "PT2M")
     @Timed
-    fun sendOppTil5000AktiviterTilPortefolje() {
+    open fun sendOppTil5000AktiviterTilPortefolje() {
         val maksAntall = 5000L
         JobRunner.run("aktiviteter_til_portefolje_paa_kafka") {
             batchTrackingDAO.withOffset(BatchJob.Aktiviteter_til_portefolje) { sisteProsesserteVersjon ->
