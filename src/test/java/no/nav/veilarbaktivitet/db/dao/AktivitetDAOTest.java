@@ -24,7 +24,9 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -182,16 +184,22 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     @Test
     void versjonering_skal_vaere_traadsikker() throws InterruptedException {
         // Opprett initiell versjon
+
+        // Alle tråder forsøker å oppdatere samme aktivitetsversjon, så kun en kan vinne
         transactionTemplate.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         final AktivitetData aktivitet = transactionTemplate.execute(transactionStatus -> gitt_at_det_finnes_en_egen_aktivitet());
         int antallOppdateringer = 10;
         ExecutorService bakgrunnService = Executors.newFixedThreadPool(3);
         CountDownLatch latch = new CountDownLatch(antallOppdateringer);
+        List<AktivitetData> oppdaterteVersjoner = Collections.synchronizedList(new ArrayList<>());
         for (int i = 0; i < antallOppdateringer; i++) {
+            final int counter = i;
             bakgrunnService.submit(() -> {
                 transactionTemplate.executeWithoutResult(action -> {
                     try {
-                        aktivitetDAO.oppdaterAktivitet(aktivitet.withBeskrivelse("nyBeskrivelse "));
+                        oppdaterteVersjoner.add(
+                        aktivitetDAO.oppdaterAktivitet(aktivitet.withBeskrivelse("Oppdatering nr " + counter))
+                        );
                     } catch (Exception e) {
                         log.warn("Feil i tråd.", e);
                     } finally {
@@ -201,9 +209,12 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
             });
         }
         latch.await();
+        // order by versjon desc
         List<AktivitetData> aktivitetData = aktivitetDAO.hentAktivitetVersjoner(aktivitet.getId());
         // Kun originalversjonen pluss første oppdatering. Resten feiler
         assertThat(aktivitetData).hasSize(2);
+        assertThat(aktivitetData.get(1).getBeskrivelse()).isEqualTo("beskrivelse");
+        assertThat(aktivitetData.get(0).getBeskrivelse()).startsWith("Oppdatering nr");
         // Denne vil feile hvis det er mer enn én gjeldende
         AktivitetData nyesteAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(nyesteAktivitet).isNotNull();
