@@ -40,7 +40,7 @@ object DateScalar {
     fun serializeDate(dataFetcherResult: Any): String {
         return when (dataFetcherResult) {
             is Date -> DateUtils.zuluDateTimeFromDate(dataFetcherResult)
-            is ZonedDateTime -> dataFetcherResult.toString()
+            is ZonedDateTime -> dataFetcherResult.toOffsetDateTime().toString()
             else -> throw CoercingParseValueException("Failed to parse input in serializeDate")
         }
     }
