@@ -2,24 +2,23 @@ package no.nav.veilarbaktivitet.veilarbportefolje
 
 import io.micrometer.core.annotation.Timed
 import lombok.RequiredArgsConstructor
-import lombok.extern.slf4j.Slf4j
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock
 import no.nav.common.job.JobRunner
 import no.nav.veilarbaktivitet.util.BatchJob
 import no.nav.veilarbaktivitet.util.BatchResult
 import no.nav.veilarbaktivitet.util.BatchTrackingDAO
+import org.slf4j.LoggerFactory
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 open class AktiviteterTilKafkaService(
     private val dao: KafkaAktivitetDAO,
     private val producerService: AktivitetKafkaProducerService,
     private val batchTrackingDAO: BatchTrackingDAO
 ) {
-
+    val log = LoggerFactory.getLogger(javaClass)
 
     @Scheduled(
         initialDelayString = "\${app.env.scheduled.portefolje.initialDelay}",
@@ -37,6 +36,7 @@ open class AktiviteterTilKafkaService(
                         producerService.sendAktivitetMelding(it)
                         return@map BatchResult.Success(it.version)
                     } catch (e: Exception) {
+                        log.warn("Feil under publisering av melding til portefølje", e)
                         return@map BatchResult.Failure(it.version)
                     }
                 }
