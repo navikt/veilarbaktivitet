@@ -3,6 +3,9 @@ package no.nav.veilarbaktivitet.stilling_fra_nav
 import io.micrometer.core.annotation.Timed
 import lombok.RequiredArgsConstructor
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
+import no.nav.veilarbaktivitet.util.BatchJob
+import no.nav.veilarbaktivitet.util.BatchResult
+import no.nav.veilarbaktivitet.util.BatchTrackingDAO
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 
