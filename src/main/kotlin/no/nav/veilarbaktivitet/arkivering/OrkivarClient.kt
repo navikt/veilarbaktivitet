@@ -13,7 +13,7 @@ import java.time.LocalDateTime
 @Service
 class OrkivarClient(private val orkivarHttpClient: OkHttpClient, @Value("\${orkivar.url}") val orkivarBaseUrl: String) {
 
-    private val orkivarUrl = "$orkivarBaseUrl/orkivar"
+    private val orkivarUrl = "$orkivarBaseUrl"
 
     fun hentPdfForForhaandsvisning(forhåndsvisningPayload: ForhåndsvisningPayload): ForhaandsvisningResult {
         val request: Request = Request.Builder()
