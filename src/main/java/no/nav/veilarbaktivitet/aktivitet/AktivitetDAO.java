@@ -6,8 +6,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.common.json.JsonUtils;
-import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import no.nav.veilarbaktivitet.aktivitet.domain.*;
+import no.nav.veilarbaktivitet.aktivitet.feil.AktivitetVersjonOutOfOrderException;
 import no.nav.veilarbaktivitet.aktivitet.feil.EndringAvUtdatertVersjonException;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.CvKanDelesData;
@@ -15,6 +15,7 @@ import no.nav.veilarbaktivitet.stilling_fra_nav.KontaktpersonData;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavData;
 import no.nav.veilarbaktivitet.util.DateUtils;
 import no.nav.veilarbaktivitet.util.EnumUtils;
+import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetSqlParameterSource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -156,6 +157,10 @@ public class AktivitetDAO {
             throw new EndringAvUtdatertVersjonException("Forsøker å oppdatere en utdatert aktivitetsversjon.");
         }
         long versjon = nesteVersjon();
+        if (versjon < aktivitet.getVersjon()) {
+            log.warn("Forsøkte å oppdatere aktivitet id: {} type: {} med versjon: {} med ny versjon {} lavere enn forrige versjon ", aktivitet.getId(), aktivitet.getAktivitetType(), aktivitet.getVersjon(), versjon);
+            throw new AktivitetVersjonOutOfOrderException("Kan ikke oppdatere en aktivitet med en lavere versjon enn forrige");
+        }
         AktivitetData nyAktivitetVersjon = insertAktivitetVersjon(aktivitet, aktivitetId, versjon);
         settTilIkkeGjeldendeVersjon(aktivitetId, gjeldendeVersjon);
         return nyAktivitetVersjon;

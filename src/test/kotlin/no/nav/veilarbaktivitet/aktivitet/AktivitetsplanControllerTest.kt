@@ -11,7 +11,7 @@ import org.springframework.http.HttpStatus
 
 internal class AktivitetsplanControllerTest : SpringBootTestBase() {
     @Test
-    fun veileder_skal_kunne_opprete_aktivitet() {
+    fun veileder_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createHappyBruker()
         val veileder = MockNavService.createVeileder(happyBruker)
         aktivitetTestService.opprettAktivitet(
@@ -22,13 +22,13 @@ internal class AktivitetsplanControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun bruker_skal_kunne_opprete_aktivitet() {
+    fun bruker_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createHappyBruker()
         aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
     }
 
     @Test
-    fun bruker_skal_ikke_kunne_opprete_aktivitet_på_annen_bruker() {
+    fun bruker_skal_ikke_kunne_oprette_aktivitet_på_annen_bruker() {
         val happyBruker = navMockService.createHappyBruker()
         val evilUser = MockNavService.createHappyBruker()
         val aktivitetPayloadJson = JsonUtils.toJson(AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN))
@@ -43,8 +43,8 @@ internal class AktivitetsplanControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.OK.value())
             .extract()
             .response()
-        val skalVereTomm = aktivitetTestService.hentAktiviteterForFnr(happyBruker)
-        Assertions.assertTrue(skalVereTomm.aktiviteter.isEmpty())
+        val skalVæreTom = aktivitetTestService.hentAktiviteterForFnr(happyBruker)
+        Assertions.assertTrue(skalVæreTom.aktiviteter.isEmpty())
         val skalHaEnAktivitet = aktivitetTestService.hentAktiviteterForFnr(evilUser)
         Assertions.assertFalse(skalHaEnAktivitet.aktiviteter.isEmpty())
     }
