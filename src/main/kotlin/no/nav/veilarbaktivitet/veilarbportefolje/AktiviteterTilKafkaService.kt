@@ -38,7 +38,7 @@ open class AktiviteterTilKafkaService(
                             producerService.sendAktivitetMelding(it)
                             return@map BatchResult.Success(it.version)
                         } catch (e: Exception) {
-                            log.warn("Feil under publisering av melding til portefølje", e)
+                            log.warn("Error during message publishing to veilarbportefolje", e)
                             return@map BatchResult.Failure(it.version)
                         }
                     }
@@ -50,7 +50,7 @@ open class AktiviteterTilKafkaService(
                 batchResults.filter { it is BatchResult.Failure }.size)
                 }
             if (!batchResults.filter { it is BatchResult.Failure }.isEmpty()) {
-                log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investig")
+                log.warn("Errors in aktiviteter_til_portefolje_paa_kafka batch. Investigate")
             }
         }
     }
