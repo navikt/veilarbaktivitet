@@ -13,6 +13,8 @@ import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.util.EnumUtils;
 import no.nav.veilarbaktivitet.veilarbdbutil.VeilarbAktivitetResultSet;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.KafkaAktivitetMeldingV4;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.ResultSet;
@@ -25,36 +27,41 @@ import static no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO.akt
 @AllArgsConstructor
 public class KafkaAktivitetDAO {
 
-    private final Database database;
+    private final NamedParameterJdbcTemplate template;
 
     @Timed
-    public List<KafkaAktivitetMeldingV4> hentOppTil5000MeldingerSomIkkeErSendtPaAiven() {
-        return database.getJdbcTemplate().query(
-                """ 
-                        SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
-                        EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE,
-                        A.* FROM AKTIVITET A
-                        LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
-                        LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
-                        WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
-                        AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
-                        AND (EA.AKTIVITETKORT_TYPE IS NULL OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
-                        ORDER BY A.VERSJON
-                        FETCH NEXT 5000 ROWS ONLY
-                        """,
-                KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4
-        );
+    public List<KafkaAktivitetMeldingV4> hentAktiviteterSomIkkeErSendtTilPortefoljePaAiven(long sistBehandletVersjon, long maksAntall) {
+        String sql = """ 
+                SELECT SFN.AKTIVITET_ID AS SFN_KEY, SFN.SVARFRIST, SFN.CV_KAN_DELES,
+                EA.AKTIVITET_ID AS EA_KEY, EA.TILTAK_KODE, EA.ARENA_ID, EA.AKTIVITETKORT_TYPE,
+                A.* FROM AKTIVITET A
+                LEFT JOIN STILLING_FRA_NAV SFN ON A.AKTIVITET_ID = SFN.AKTIVITET_ID AND A.VERSJON = SFN.VERSJON
+                LEFT JOIN EKSTERNAKTIVITET EA on A.AKTIVITET_ID = EA.AKTIVITET_ID and A.VERSJON = EA.VERSJON 
+                WHERE A.PORTEFOLJE_KAFKA_OFFSET_AIVEN IS NULL
+                AND (EA.OPPRETTET_SOM_HISTORISK != 1 OR EA.OPPRETTET_SOM_HISTORISK IS NULL)
+                AND (EA.AKTIVITETKORT_TYPE IS NULL OR EA.AKTIVITETKORT_TYPE != 'ARENA_TILTAK')
+                AND A.VERSJON > :sistBehandletVersjon
+                ORDER BY A.VERSJON
+                LIMIT :maksAntall
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("sistBehandletVersjon", sistBehandletVersjon)
+                .addValue("maksAntall", maksAntall);
+        return template.query(sql, params, KafkaAktivitetDAO::mapKafkaAktivitetMeldingV4);
     }
 
     @Timed
     public void updateSendtPaKafkaAven(Long versjon, Long kafkaOffset) {
         // language=sql
-        database.update("""
-                 update AKTIVITET
-                 set PORTEFOLJE_KAFKA_OFFSET_AIVEN = ?
-                 where VERSJON = ?
-                 """,
-                kafkaOffset, versjon);
+        String sql = """
+                update AKTIVITET
+                set PORTEFOLJE_KAFKA_OFFSET_AIVEN = :kafkaOffset
+                where VERSJON = :versjon
+                """;
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("kafkaOffset", kafkaOffset)
+                .addValue("versjon", versjon);
+        template.update(sql, params);
     }
 
     public static KafkaAktivitetMeldingV4 mapKafkaAktivitetMeldingV4(ResultSet resultSet, int i) throws SQLException {
