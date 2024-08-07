@@ -231,4 +231,39 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
         assertThat(fraDatoStringPerioder).isEqualTo(fraDatoIso)
     }
 
+    @Test
+    fun `skal serialisere som zonedatetime uten EuropeOslo som suffix (historikk)`() {
+        // riktig: 2024-04-30T23:00:00.000+02:00
+        // feil: 2024-04-30T23:00:00.000+02:00[Europe/Oslo]
+        val nyPeriode = UUID.randomUUID()
+        val fraDatoIso = "2024-04-30T21:00:00.000+00:00"
+        val jobbAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
+            .toBuilder().oppfolgingsperiodeId(nyPeriode).fraDato(DateUtils.dateFromISO8601(fraDatoIso)).build()
+        val aktivitet = aktivitetTestService.opprettAktivitet(mockBruker, mockBruker, jobbAktivitet)
+        aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockVeileder, aktivitet, AktivitetStatus.GJENNOMFORES)
+        val aktivitetIdParam = "\$aktivitetId"
+        val query = """
+            query($aktivitetIdParam: String!) {
+                aktivitet(aktivitetId: $aktivitetIdParam) {
+                    historikk {
+                        endringer {
+                            endretAvType,
+                            endretAv,
+                            tidspunkt,
+                            beskrivelseForVeileder,
+                            beskrivelseForBruker,
+                            beskrivelseForArkiv,
+                        }
+                    }
+                }
+            }
+        """.trimIndent().replace("\n", "")
+        val result = aktivitetTestService.queryHistorikkRaw(mockBruker, mockBruker, query, aktivitet.id)
+        val fraDatoString = JsonMapper.defaultObjectMapper().readTree(result)["data"]["aktivitet"]["historikk"]["endringer"][0]["tidspunkt"].asText()
+
+        val matchMedTidssone = fraDatoString.matches(Regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[+|-][0-9]{2}:[0-9]{2}$"))
+        val matchZulu = fraDatoString.matches(Regex("^[0-9]{4}-[0-9]{2}-[0-9]{2}T([0-9]{2}:){2}[0-9]{2}\\.[0-9]{3}[Z]$"))
+        assertThat(matchMedTidssone || matchZulu).isTrue()
+    }
+
 }
