@@ -89,6 +89,8 @@ spec:
       rules:
         - application: poao-tilgang
           namespace: poao
+        - application: veilarbdialog
+          namespace: dab
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
