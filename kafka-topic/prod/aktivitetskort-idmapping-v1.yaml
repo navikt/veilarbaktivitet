@@ -19,6 +19,9 @@ spec:
     - team: pto
       application: veilarbdialog
       access: read
+    - team: dab
+      application: veilarbdialog
+      access: read
     - team: pto
       application: veilarbaktivitet
       access: readwrite
