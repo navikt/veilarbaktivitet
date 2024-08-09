@@ -127,11 +127,11 @@ public class BrukerNotifikasjonDAO {
         return jdbcTemplate.update("""
             update BRUKERNOTIFIKASJON b
             set STATUS = case when STATUS = 'PENDING' then 'AVBRUTT' else 'SKAL_AVSLUTTES' end
-            where exists(select * from AKTIVITET_BRUKERNOTIFIKASJON ab
-                            where b.id = ab.BRUKERNOTIFIKASJON_ID
-                            and ab.AKTIVITET_ID = :aktivitetId)
-            and TYPE = :type
-            and STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
+            from aktivitet_brukernotifikasjon ab
+            where ab.aktivitet_id = :aktivitetId
+                and ab.brukernotifikasjon_id = b.id
+                and b.TYPE = :type
+                and b.STATUS not in ('AVBRUTT', 'SKAL_AVSLUTTES', 'AVSLUTTET')
             """, params);
     }
 
