@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.stilling_fra_nav;
 import lombok.RequiredArgsConstructor;
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
@@ -55,7 +56,7 @@ public class StillingFraNavController {
     public AktivitetDTO oppdaterSoknadstatus(@RequestParam("aktivitetId") String aktivitetId, @RequestBody SoknadsstatusDTO soknadsstatusDTO) {
         boolean erEksternBruker = authService.erEksternBruker();
         var aktivitet = aktivitetAppService.hentAktivitet(Long.parseLong(aktivitetId));
-        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId());
+        authService.sjekkTilgangTilPerson(aktivitet.getAktorId().eksternBrukerId(), TilgangsType.SKRIVE);
         kanEndreAktivitetSoknadsstatusGuard(aktivitet, soknadsstatusDTO.getAktivitetVersjon());
         return Optional.of(aktivitet)
                 .map(a -> service.oppdaterSoknadsstatus(a, soknadsstatusDTO.getSoknadsstatus(), Person.of(authService.getLoggedInnUser())))

@@ -8,6 +8,7 @@ import no.nav.common.types.identer.AktorId;
 import no.nav.common.types.identer.NavIdent;
 import no.nav.poao.dab.spring_auth.AuthService;
 import no.nav.poao.dab.spring_auth.IPersonService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.poao_tilgang.client.PoaoTilgangClient;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.person.PersonService;
@@ -92,7 +93,7 @@ class AuthServiceTest {
                         .build()
         );
         assertDoesNotThrow(() -> {
-            authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId());
+            authService.sjekkTilgangTilPerson(eksternBruker.eksternBrukerId(), TilgangsType.LESE);
         });
     }
 
@@ -108,7 +109,7 @@ class AuthServiceTest {
 
         var ident =  Person.fnr("12121212121").eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(ident);
+            authService.sjekkTilgangTilPerson(ident, TilgangsType.LESE);
         });
     }
 
@@ -123,7 +124,7 @@ class AuthServiceTest {
         );
         var ident = Person.fnr(FNR).eksternBrukerId();
         Assertions.assertThrows(ResponseStatusException.class, () -> {
-            authService.sjekkTilgangTilPerson(ident);
+            authService.sjekkTilgangTilPerson(ident, TilgangsType.LESE);
         });
     }
 

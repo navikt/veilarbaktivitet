@@ -3,10 +3,10 @@ package no.nav.veilarbaktivitet.internapi;
 import lombok.RequiredArgsConstructor;
 import no.nav.common.types.identer.EnhetId;
 import no.nav.poao.dab.spring_auth.IAuthService;
+import no.nav.poao.dab.spring_auth.TilgangsType;
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
-
 import no.nav.veilarbaktivitet.person.Person;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -29,7 +29,7 @@ public class InternApiService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
 
-        authService.sjekkTilgangTilPerson(Person.aktorId(aktorId).eksternBrukerId());
+        authService.sjekkTilgangTilPerson(Person.aktorId(aktorId).eksternBrukerId(), TilgangsType.LESE);
         return aktivitetDAO.hentAktiviteterForAktorId(Person.aktorId(aktorId))
                 .stream()
                 .filter(this::erIkkeKontorsperret)

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j
 import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.poao.dab.spring_auth.TilgangsType
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
@@ -62,7 +63,7 @@ open class ArenaController(
             if (fnrDto.fnr == null) throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Fnr kan ikke være null")
             Fnr.of(fnrDto.fnr)
         }
-        authService.sjekkTilgangTilPerson(fnr)
+        authService.sjekkTilgangTilPerson(fnr, TilgangsType.LESE)
         return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()))
     }
 

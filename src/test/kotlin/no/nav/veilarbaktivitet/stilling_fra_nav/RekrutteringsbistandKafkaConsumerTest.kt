@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
@@ -48,9 +47,6 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Autowired
     var kafkaStringTemplate: KafkaStringTemplate? = null
 
-    @Autowired
-    var sendBrukernotifikasjonCron: SendBrukernotifikasjonCron? = null
-
     @Value("\${topic.inn.rekrutteringsbistandStatusoppdatering}")
     private val innRekrutteringsbistandStatusoppdatering: String? = null
 
@@ -70,7 +66,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 )
             })
         aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker)
-        bestillingsId = aktivitetDTO?.getStillingFraNavData()?.bestillingsId ?: fail("aktivitetDto var null")
+        bestillingsId = aktivitetDTO?.stillingFraNavData?.bestillingsId ?: fail("aktivitetDto var null")
     }
 
     @AfterEach //må kjøres etter hver test for å ikke være static
