@@ -116,7 +116,7 @@ spec:
     - name: ORKIVAR_URL
       value: "https://orkivar.intern.dev.nav.no"
     - name: VEILARBDIALOG_URL
-      value: "https://veilarbdialog.dev-fss-pub.nais.io"
+      value: "https://veilarbdialog.intern.dev.nav.no"
     - name: KAFKA_ENABLED
       value: "true"
     - name: AKTIVITETSPLAN_URL
