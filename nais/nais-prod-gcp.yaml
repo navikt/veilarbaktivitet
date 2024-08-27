@@ -78,7 +78,7 @@ spec:
         - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbaktivitet.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
-        - host: veilarbdialog.prod-fss-pub.nais.io
+        - host: veilarbdialog.intern.nav.no
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.nav.no
         - host: axsys.prod-fss-pub.nais.io

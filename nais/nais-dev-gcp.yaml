@@ -82,7 +82,7 @@ spec:
         - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbaktivitet.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
-        - host: veilarbdialog.dev-fss-pub.nais.io
+        - host: veilarbdialog.intern.dev.nav.no
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.dev.nav.no
         - host: axsys.dev-fss-pub.nais.io
