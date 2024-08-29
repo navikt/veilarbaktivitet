@@ -18,6 +18,7 @@ fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktiv
         dialogtråd = dialogtråd,
         etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
+        avtaltMedNav = this.isAvtalt,
         historikk = AktivitetHistorikk(emptyList())
     )
 

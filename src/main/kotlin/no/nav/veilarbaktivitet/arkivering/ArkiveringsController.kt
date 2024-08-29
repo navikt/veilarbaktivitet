@@ -42,8 +42,8 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(userInContext.fnr.get(), oppfølgingsperiodeId)
-        val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
+        val innsamletData: InnsamletDataTilArkiv = samleInnDataTilArkiv(userInContext.fnr.get(), oppfølgingsperiodeId)
+        val forhåndsvisningPayload: ForhåndsvisningPayload = mapTilForhåndsvisningsPayload(innsamletData)
 
         val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
 
@@ -57,13 +57,13 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val arkiveringsdata = hentArkiveringsData(userInContext.fnr.get(), oppfølgingsperiodeId)
+        val innsamletData: InnsamletDataTilArkiv = samleInnDataTilArkiv(userInContext.fnr.get(), oppfølgingsperiodeId)
 
-        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, arkiveringsdata.aktiviteter, arkiveringsdata.dialoger)
+        val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, innsamletData.aktiviteter, innsamletData.dialoger)
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
 
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
-        val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalforendeEnhet)
+        val arkivPayload: ArkivPayload = mapTilArkivPayload(innsamletData, sak, arkiverInboundDTO.journalforendeEnhet)
 
         val journalførtResult = orkivarClient.journalfor(arkivPayload)
         return JournalførtOutboundDTO(
@@ -71,7 +71,7 @@ class ArkiveringsController(
         )
     }
 
-    private fun hentArkiveringsData(fnr: Fnr, oppfølgingsperiodeId: UUID): ArkiveringsData {
+    private fun samleInnDataTilArkiv(fnr: Fnr, oppfølgingsperiodeId: UUID): InnsamletDataTilArkiv {
         val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
             .asSequence()
             .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -80,7 +80,7 @@ class ArkiveringsController(
         val dialogerIPerioden = dialogClient.hentDialogerUtenKontorsperre(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
         val arenaAktiviteter = arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
 
-        return ArkiveringsData(
+        return InnsamletDataTilArkiv(
             fnr = fnr,
             navn = navnService.hentNavn(fnr),
             oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId"),
@@ -104,7 +104,7 @@ class ArkiveringsController(
         return sistOppdatert > tidspunkt
     }
 
-    data class ArkiveringsData(
+    data class InnsamletDataTilArkiv(
         val fnr: Fnr,
         val navn: Navn,
         val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
