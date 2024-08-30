@@ -14,44 +14,44 @@ object ArkiveringspayloadMapper {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     fun mapTilArkivPayload(
-        innsamletDataTilArkiv: ArkiveringsController.InnsamletDataTilArkiv,
+        arkiveringsData: ArkiveringsController.ArkiveringsData,
         sakDTO: SakDTO,
         journalførendeEnhet: String,
     ): ArkivPayload {
-        val (arkivaktiviteter, arkivdialoger) = mapDataTilOrkivar(innsamletDataTilArkiv.aktiviteter, innsamletDataTilArkiv.dialoger, innsamletDataTilArkiv.historikkForAktiviteter, innsamletDataTilArkiv.arenaAktiviteter)
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
         return ArkivPayload(
-            navn = innsamletDataTilArkiv.navn.tilFornavnMellomnavnEtternavn(),
-            fnr = innsamletDataTilArkiv.fnr.get(),
-            oppfølgingsperiodeStart = norskDato(innsamletDataTilArkiv.oppfølgingsperiode.startDato),
-            oppfølgingsperiodeSlutt = innsamletDataTilArkiv.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
+            navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
+            fnr = arkiveringsData.fnr.get(),
+            oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
             sakId = sakDTO.sakId,
             fagsaksystem = sakDTO.fagsaksystem,
             tema = sakDTO.tema,
-            oppfølgingsperiodeId = innsamletDataTilArkiv.oppfølgingsperiode.uuid,
+            oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
             journalførendeEnhet = journalførendeEnhet,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
-            mål = innsamletDataTilArkiv.mål.mal
+            mål = arkiveringsData.mål.mal
         )
     }
 
-    fun mapTilForhåndsvisningsPayload(innsamletDataTilArkiv: ArkiveringsController.InnsamletDataTilArkiv
+    fun mapTilForhåndsvisningsPayload(arkiveringsData: ArkiveringsController.ArkiveringsData
     ): ForhåndsvisningPayload {
-        val (arkivaktiviteter, arkivdialoger) = mapDataTilOrkivar(innsamletDataTilArkiv.aktiviteter, innsamletDataTilArkiv.dialoger, innsamletDataTilArkiv.historikkForAktiviteter, innsamletDataTilArkiv.arenaAktiviteter)
+        val (arkivaktiviteter, arkivdialoger) = lagDataTilOrkivar(arkiveringsData.aktiviteter, arkiveringsData.dialoger, arkiveringsData.historikkForAktiviteter, arkiveringsData.arenaAktiviteter)
 
         return ForhåndsvisningPayload(
-            navn = innsamletDataTilArkiv.navn.tilFornavnMellomnavnEtternavn(),
-            fnr = innsamletDataTilArkiv.fnr.get(),
-            oppfølgingsperiodeStart = norskDato(innsamletDataTilArkiv.oppfølgingsperiode.startDato),
-            oppfølgingsperiodeSlutt = innsamletDataTilArkiv.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
-            oppfølgingsperiodeId = innsamletDataTilArkiv.oppfølgingsperiode.uuid,
+            navn = arkiveringsData.navn.tilFornavnMellomnavnEtternavn(),
+            fnr = arkiveringsData.fnr.get(),
+            oppfølgingsperiodeStart = norskDato(arkiveringsData.oppfølgingsperiode.startDato),
+            oppfølgingsperiodeSlutt = arkiveringsData.oppfølgingsperiode.sluttDato?.let { norskDato(it) },
+            oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
-            mål = innsamletDataTilArkiv.mål.mal
+            mål = arkiveringsData.mål.mal
         )
     }
 
-    private fun mapDataTilOrkivar(
+    private fun lagDataTilOrkivar(
         aktiviteter: List<AktivitetData>,
         dialoger: List<DialogClient.DialogTråd>,
         historikkForAktiviteter: Map<AktivitetId, Historikk>,

@@ -39,7 +39,6 @@ data class ArkivAktivitet(
     val dialogtråd: ArkivDialogtråd?,
     val etiketter: List<ArkivEtikett>,
     val eksterneHandlinger: List<EksternHandling>,
-    val avtaltMedNav: Boolean,
     val historikk: AktivitetHistorikk
 )
 

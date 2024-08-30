@@ -25,7 +25,6 @@ fun AktivitetData.toArkivPayload(dialogtråd: ArkivDialogtråd?, historikk: Hist
         dialogtråd = dialogtråd,
         etiketter = this.getArkivEtiketter(),
         eksterneHandlinger = this.getEksterneHandlinger(),
-        avtaltMedNav = this.isAvtalt,
         historikk = historikk.tilAktivitetHistorikk()
     )
 }

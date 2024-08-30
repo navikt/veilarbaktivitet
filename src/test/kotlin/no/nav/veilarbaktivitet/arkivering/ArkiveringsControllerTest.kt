@@ -143,14 +143,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
                           },
                           "etiketter": [],
-                          "eksterneHandlinger" : [ ],
-                          "avtaltMedNav" : false,
-                           "historikk" : {
+                            "eksterneHandlinger" : [ ],
+                            "historikk" : {
                               "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                               } ]  
-                           }
+                            }
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -184,7 +183,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "dialogtråd" : null,
                           "etiketter": [],
                           "eksterneHandlinger" : [],
-                          "avtaltMedNav" : false,
                           "historikk" : {
                             "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
@@ -314,7 +312,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         },
                           "etiketter": [],
                           "eksterneHandlinger" : [ ],
-                          "avtaltMedNav" : false,
                           "historikk" : {
                             "endringer" : [ {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
@@ -694,7 +691,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "tekst" : "Avtalt med NAV"
                                   } ],
                                   "eksterneHandlinger" : [ ],
-                                  "avtaltMedNav" : true,
                                   "historikk" : {
                                     "endringer" : [ ]
                                   }
