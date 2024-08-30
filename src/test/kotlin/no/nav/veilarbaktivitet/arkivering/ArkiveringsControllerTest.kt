@@ -149,7 +149,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                               } ]  
-                            }
+                            },
+                            "forhaandsorientering" : null
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -188,7 +189,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                             } ]
-                          }
+                          },
+                          "forhaandsorientering" : null
                         } ]
                       },
                       "dialogtråder" : [ {

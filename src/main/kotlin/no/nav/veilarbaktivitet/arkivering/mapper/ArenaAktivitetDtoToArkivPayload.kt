@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.arkivering.*
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikettStil
 import no.nav.veilarbaktivitet.util.DateUtils.norskDato
-import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
 import no.nav.veilarbaktivitet.util.toStringWithoutNullDecimals
 
 fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktivitet =
@@ -20,7 +19,7 @@ fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktiv
         etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
         historikk = AktivitetHistorikk(emptyList()),
-        forhaandsorientering = this.toForhaandsorientering()
+        forhaandsorientering = this.forhaandsorientering?.toArkivForhaandsorientering()
     )
 
 fun ArenaAktivitetDTO.toArkivTypeTekst() =
@@ -41,10 +40,6 @@ fun ArenaAktivitetDTO.toDetaljer(): List<Detalj> {
         ArenaAktivitetTypeDTO.GRUPPEAKTIVITET -> fellesDetaljer + toGruppeaktivitetDetaljer()
         ArenaAktivitetTypeDTO.UTDANNINGSAKTIVITET -> fellesDetaljer
     }
-}
-
-fun ArenaAktivitetDTO.toForhaandsorientering(): ArkivFHO? {
-    return this.forhaandsorientering?.let { ArkivFHO(it.tekst, it.lestDato?.let { tidspunkt -> norskDatoOgKlokkeslett(tidspunkt) }) }
 }
 
 fun ArenaAktivitetDTO.toTiltaksaktivitetDetaljer(): List<Detalj> {

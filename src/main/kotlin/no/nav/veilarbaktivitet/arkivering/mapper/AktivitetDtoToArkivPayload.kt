@@ -25,8 +25,13 @@ fun AktivitetData.toArkivPayload(dialogtråd: ArkivDialogtråd?, historikk: Hist
         dialogtråd = dialogtråd,
         etiketter = this.getArkivEtiketter(),
         eksterneHandlinger = this.getEksterneHandlinger(),
-        historikk = historikk.tilAktivitetHistorikk()
+        historikk = historikk.tilAktivitetHistorikk(),
+        forhaandsorientering = this.forhaandsorientering?.toArkivForhaandsorientering()
     )
+}
+
+fun AktivitetData.toForhaandsorientering(): ArkivFHO? {
+    return this.forhaandsorientering?.let { ArkivFHO(it.tekst, it.lestDato?.let { tidspunkt -> norskDatoOgKlokkeslett(tidspunkt) }) }
 }
 
 fun AktivitetStatus.toArkivTekst(): String {
