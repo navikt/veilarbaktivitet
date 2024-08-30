@@ -30,10 +30,6 @@ fun AktivitetData.toArkivPayload(dialogtråd: ArkivDialogtråd?, historikk: Hist
     )
 }
 
-fun AktivitetData.toForhaandsorientering(): ArkivFHO? {
-    return this.forhaandsorientering?.let { ArkivFHO(it.tekst, it.lestDato?.let { tidspunkt -> norskDatoOgKlokkeslett(tidspunkt) }) }
-}
-
 fun AktivitetStatus.toArkivTekst(): String {
     return when (this) {
         AktivitetStatus.AVBRUTT -> "Avbrutt"
