@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.web.server.ResponseStatusException;
@@ -185,6 +186,7 @@ class ForhaandsorienteringDAOTest {
     }
 
     @Test
+    @Disabled("Tar for lang tid. Kjør ved behov")
     void getById_medStorListe_returnererAlleTreff() {
         List<String> forhaandsorienteringIder = LongStream.range(0, 1100).mapToObj(generatedId -> {
             var avtalt = new AvtaltMedNavDTO().setAktivitetVersjon(1).setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("test").build());

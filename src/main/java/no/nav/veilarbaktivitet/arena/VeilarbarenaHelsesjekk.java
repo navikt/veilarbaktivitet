@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class VeilarbarenaHelsesjekk implements HealthCheck {
 
-    enum HealthStatus {
+    public enum HealthStatus {
        OK,
        ERROR,
        UNAVAILABLE
