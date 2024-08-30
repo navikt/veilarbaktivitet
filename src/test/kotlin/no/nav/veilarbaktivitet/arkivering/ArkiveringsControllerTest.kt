@@ -15,6 +15,9 @@ import no.nav.veilarbaktivitet.aktivitetskort.dto.AktivitetskortType.MIDLERTIDIG
 import no.nav.veilarbaktivitet.aktivitetskort.dto.KafkaAktivitetskortWrapperDTO
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeSeksjon
 import no.nav.veilarbaktivitet.aktivitetskort.dto.aktivitetskort.LenkeType
+import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO
+import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO
+import no.nav.veilarbaktivitet.avtalt_med_nav.Type
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
@@ -26,12 +29,13 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 import java.net.URL
+import java.time.Instant
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
 
-internal class ArkiveringsControllerTest : SpringBootTestBase() {
+internal class xArkiveringsControllerTest : SpringBootTestBase() {
 
     @Test
     fun `Når man ber om forhåndsvist pdf skal man sende data til orkivar og returnere resultat`() {
@@ -43,7 +47,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val jobbAktivitetPlanlegger = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
-        val opprettetJobbAktivitetPlanlegger = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
+        val opprettetJobbAktivitetPlanlegger =
+            aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
 
         val jobbAktivitetAvbrutt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.IJOBB)
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
@@ -146,10 +151,15 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                             "eksterneHandlinger" : [ ],
                             "historikk" : {
                               "endringer" : [ {
-                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetPlanlegger.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetPlanlegger.endretDato)} kl. ${
+                            klokkeslett(
+                                opprettetJobbAktivitetPlanlegger.endretDato
+                            )
+                        }",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                               } ]  
-                            }
+                            },
+                            "forhaandsorientering" : null
                         } ],
                         "Avbrutt" : [ {
                           "tittel" : "tittel",
@@ -185,10 +195,15 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "eksterneHandlinger" : [],
                           "historikk" : {
                             "endringer" : [ {
-                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitetAvbrutt.endretDato)}",
+                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitetAvbrutt.endretDato)} kl. ${
+                            klokkeslett(
+                                opprettetJobbAktivitetAvbrutt.endretDato
+                            )
+                        }",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                             } ]
-                          }
+                          },
+                          "forhaandsorientering" : null
                         } ]
                       },
                       "dialogtråder" : [ {
@@ -212,6 +227,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         )
     }
 
+//    ForhaandsorienteringDTO("123",  Type.SEND_FORHAANDSORIENTERING, "Forhåndsorientering", Date.from(Instant.parse("2024-02-05T13:31:22.238+00:00")))
+
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
@@ -222,7 +239,16 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .toBuilder().oppfolgingsperiodeId(sisteOppfølgingsperiode.oppfolgingsperiodeId).build()
         jobbAktivitetPlanlegger.status = AktivitetStatus.PLANLAGT
         val opprettetJobbAktivitet = aktivitetTestService.opprettAktivitet(bruker, bruker, jobbAktivitetPlanlegger)
-
+        val opprettetJobbAktivitetMedFHO = aktivitetTestService.opprettFHOForInternAktivitet(
+            bruker,
+            veileder,
+            AvtaltMedNavDTO().apply {
+                this.setForhaandsorientering(ForhaandsorienteringDTO.builder().type(Type.SEND_FORHAANDSORIENTERING).tekst("fho tekst").lestDato(Date.from(Instant.parse("2024-02-05T13:31:22.238+00:00"))).build())
+                this.aktivitetVersjon = opprettetJobbAktivitet.versjon.toLong()
+            },
+            opprettetJobbAktivitet.id.toLong()
+        )
+        val lestFHO = aktivitetTestService.lesFHO(bruker, opprettetJobbAktivitetMedFHO.id.toLong(), opprettetJobbAktivitetMedFHO.versjon.toLong()).forhaandsorientering
         val oppfølgingsperiodeId = sisteOppfølgingsperiode.oppfolgingsperiodeId.toString()
 
         val meldingerSendtTidspunktUtc = "2024-02-05T13:31:22.238+00:00"
@@ -310,13 +336,27 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           "indexSisteMeldingLestAvBruker" : 0,
                           "tidspunktSistLestAvBruker" : "$expectedDialogSistLestTidspunkt"
                         },
-                          "etiketter": [],
+                          "etiketter" : [ {
+                            "stil" : "AVTALT",
+                            "tekst" : "Avtalt med NAV"
+                          } ],
                           "eksterneHandlinger" : [ ],
                           "historikk" : {
                             "endringer" : [ {
-                              "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)}",
+                                "formattertTidspunkt" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}",
+                                  "beskrivelse" : "Bruker bekreftet å ha lest informasjon om ansvaret sitt"
+                                }, {
+                                  "formattertTidspunkt" : "${norskDatoOgKlokkeslett(opprettetJobbAktivitetMedFHO.endretDato)}",
+                                  "beskrivelse" : "NAV merket aktiviteten som \"Avtalt med NAV\""
+                                }, {
+                                  "formattertTidspunkt" : "${norskDato(opprettetJobbAktivitet.endretDato)} kl. ${klokkeslett(opprettetJobbAktivitet.endretDato)
+                        }",
                               "beskrivelse" : "Bruker opprettet aktiviteten"
                             } ]
+                          },
+                          "forhaandsorientering" : {
+                            "tekst" : "fho tekst",
+                            "tidspunktLest" : "${norskDatoOgKlokkeslett(lestFHO.lestDato)}"
                           }
                         } ]
                       },
@@ -364,7 +404,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
 
         val journalforingsrequest =
             wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/forhaandsvisning") }.first()
-        val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
+        val arkivPayload =
+            JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ForhåndsvisningPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
     }
@@ -391,7 +432,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
         assertThat(arkivPayload.dialogtråder).isEmpty()
@@ -406,16 +448,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(kvpBruker, veileder, kvpAktivitet)
 
-        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(kvpBruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(kvpBruker.fnr)
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
 
         veileder
             .createRequest(kvpBruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).isEmpty()
     }
@@ -433,15 +477,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).tittel(ikkeKvpAktivitetTittel).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, ikkeKvpAktivitet)
         stubIngenArenaAktiviteter(bruker.fnr)
-       stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         assertThat(arkivPayload.aktiviteter).hasSize(1)
         assertThat(arkivPayload.aktiviteter.values.flatten().first().tittel).isEqualTo(ikkeKvpAktivitetTittel)
@@ -463,19 +509,22 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                         bruker
                     ),
                     source = "source",
-                    messageId = UUID.randomUUID())
+                    messageId = UUID.randomUUID()
+                )
             }
         )
-        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktiviteterSendtTilArkiv = arkivPayload.aktiviteter.values.flatten()
         assertThat(aktiviteterSendtTilArkiv).hasSize(eksternaAktiviteterTyper.size)
@@ -485,22 +534,26 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man journalfører skal migrerte Arena-aktiviteter inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        aktivitetTestService.opprettEksterntArenaKort(ArenaKort(
-            KafkaAktivitetskortWrapperDTO(
-                aktivitetskortType = ARENA_TILTAK,
-                aktivitetskort = AktivitetskortUtil.ny(
-                    UUID.randomUUID(),
-                    AktivitetskortStatus.PLANLAGT,
-                    ZonedDateTime.now(),
-                    bruker
-                ),
-                source = "source",
-                messageId = UUID.randomUUID()), arenaMeldingHeaders(bruker)
-        ))
-        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        aktivitetTestService.opprettEksterntArenaKort(
+            ArenaKort(
+                KafkaAktivitetskortWrapperDTO(
+                    aktivitetskortType = ARENA_TILTAK,
+                    aktivitetskort = AktivitetskortUtil.ny(
+                        UUID.randomUUID(),
+                        AktivitetskortStatus.PLANLAGT,
+                        ZonedDateTime.now(),
+                        bruker
+                    ),
+                    source = "source",
+                    messageId = UUID.randomUUID()
+                ), arenaMeldingHeaders(bruker)
+            )
+        )
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
@@ -516,9 +569,24 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Når man journalfører eksterne aktiviteter skal kun handlinger med INTERN og FELLES lenketype inkluderes`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
-        val eksternHandling = LenkeSeksjon("EksternHandlingTekst", "EksternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.EKSTERN)
-        val internHandling = LenkeSeksjon("InternHandlingTekst", "InternHandlingSubTekst", URL("http://localhost:8080"), LenkeType.INTERN)
-        val fellesHandling = LenkeSeksjon("FellesHandlingTekst", "FellesHandlingSubTekst", URL("http://localhost:8080"), LenkeType.FELLES)
+        val eksternHandling = LenkeSeksjon(
+            "EksternHandlingTekst",
+            "EksternHandlingSubTekst",
+            URL("http://localhost:8080"),
+            LenkeType.EKSTERN
+        )
+        val internHandling = LenkeSeksjon(
+            "InternHandlingTekst",
+            "InternHandlingSubTekst",
+            URL("http://localhost:8080"),
+            LenkeType.INTERN
+        )
+        val fellesHandling = LenkeSeksjon(
+            "FellesHandlingTekst",
+            "FellesHandlingSubTekst",
+            URL("http://localhost:8080"),
+            LenkeType.FELLES
+        )
 
         val eksternAktivitetskort = KafkaAktivitetskortWrapperDTO(
             aktivitetskortType = MIDLERTIDIG_LONNSTILSKUDD,
@@ -532,16 +600,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             messageId = UUID.randomUUID(),
         )
         aktivitetTestService.opprettEksterntAktivitetsKort(listOf(eksternAktivitetskort))
-        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(),"dummy")
+        stubDialogTråder(bruker.fnr, UUID.randomUUID().toString(), "dummy")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktivitetSendtTilArkiv = arkivPayload.aktiviteter.values.flatten().first()
         assertThat(aktivitetSendtTilArkiv.eksterneHandlinger).hasSize(2)
@@ -556,23 +626,27 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }.oppfolgingsperiodeId
         val referatPublisertTittel = "Referat er publisert"
-        val samtalereferatIkkeDelt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false)
-            .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        val samtalereferatIkkeDelt =
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(false)
+                .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, samtalereferatIkkeDelt)
-        val samtaleReferatDelt = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true)
-            .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
+        val samtaleReferatDelt =
+            AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.SAMTALEREFERAT).setErReferatPublisert(true)
+                .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, samtaleReferatDelt)
             .setTittel(referatPublisertTittel).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val aktiviteter = arkivPayload.aktiviteter.flatMap { it.value }
         assertThat(aktiviteter).hasSize(1)
@@ -586,16 +660,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(false)
             .toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEmpty()
@@ -609,16 +685,18 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val møteAktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE).setErReferatPublisert(true)
             .setReferat(referat).toBuilder().oppfolgingsperiodeId(oppfølgingsperiode).build()
         aktivitetTestService.opprettAktivitet(bruker, veileder, møteAktivitet)
-        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(),"dummyAktivitetId")
+        stubDialogTråder(bruker.fnr, oppfølgingsperiode.toString(), "dummyAktivitetId")
         stubIngenArenaAktiviteter(bruker.fnr)
 
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=$oppfølgingsperiode"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
             .post(arkiveringsUrl)
 
-        val journalforingsrequest = wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
+        val journalforingsrequest =
+            wireMock.getAllServeEvents().filter { it.request.url.contains("orkivar/arkiver") }.first()
         val arkivPayload = JsonUtils.fromJson(journalforingsrequest.request.bodyAsString, ArkivPayload::class.java)
         val journalførtAktivitet = arkivPayload.aktiviteter.flatMap { it.value }.first()
         assertThat(journalførtAktivitet.detaljer.find { it.tittel == "Samtalereferat" }?.tekst).isEqualTo(referat)
@@ -628,12 +706,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     fun `Ikke-migrerte Arena-aktiviteter skal bli journalført`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
-        val arenaAktivitetEndretDato = iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1),  ZoneId.systemDefault())
+        val arenaAktivitetEndretDato =
+            iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1), ZoneId.systemDefault())
         val arenaAktivitetId = "ARENATA123"
         val tiltaksnavn = "Et tiltaksnavn fra Arena!"
         stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
         stubIngenDialogTråder(bruker.fnr)
-        val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
+        val arkiveringsUrl =
+            "http://localhost:$port/veilarbaktivitet/api/arkivering/journalfor?oppfolgingsperiodeId=${oppfølgingsperiode.oppfolgingsperiodeId}"
         veileder
             .createRequest(bruker)
             .body(ArkiveringsController.ArkiverInboundDTO(ZonedDateTime.now(), "dummyEnhet"))
@@ -693,7 +773,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                   "eksterneHandlinger" : [ ],
                                   "historikk" : {
                                     "endringer" : [ ]
-                                  }
+                                  },
+                                   "forhaandsorientering" : null
                                 } ]
                               },
                               "dialogtråder" : [],
@@ -745,7 +826,13 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
             .statusCode(HttpStatus.FORBIDDEN.value())
     }
 
-    private fun stubDialogTråder(fnr: String, oppfølgingsperiodeId: String, aktivitetId: String, meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00", sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00") {
+    private fun stubDialogTråder(
+        fnr: String,
+        oppfølgingsperiodeId: String,
+        aktivitetId: String,
+        meldingerSendtTidspunkt: String = "2024-02-05T13:31:22.238+00:00",
+        sistLestTidspunkt: String = "2024-03-05T13:31:22.238+00:00"
+    ) {
         wireMock.stubFor(
             get(
                 urlEqualTo(
@@ -820,33 +907,46 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
     }
 
     private fun stubIngenDialogTråder(fnr: String) {
-        wireMock.stubFor(get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
-                .willReturn(aResponse().withBody(
+        wireMock.stubFor(
+            get(urlEqualTo("/veilarbdialog/api/dialog?fnr=$fnr&ekskluderDialogerMedKontorsperre=true"))
+                .willReturn(
+                    aResponse().withBody(
                         """
                             []
                         """.trimIndent()
+                    )
                 )
-            )
         )
     }
 
     private fun stubIngenArenaAktiviteter(fnr: String) {
-        wireMock.stubFor(get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
-            aResponse().withStatus(200)
-                .withBody("""
+        wireMock.stubFor(
+            get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
+                aResponse().withStatus(200)
+                    .withBody(
+                        """
                     {
                       "tiltaksaktiviteter": [],
                       "gruppeaktiviteter": [],
                       "utdanningsaktiviteter": []
                     }
-                """.trimIndent())
-        ))
+                """.trimIndent()
+                    )
+            )
+        )
     }
 
-    private fun stubHentArenaAktiviteter(fnr: String, arenaAktivitetId: String, sistEndret: String, tiltaksnavn: String) {
-        wireMock.stubFor(get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
-            aResponse().withStatus(200)
-                .withBody("""
+    private fun stubHentArenaAktiviteter(
+        fnr: String,
+        arenaAktivitetId: String,
+        sistEndret: String,
+        tiltaksnavn: String
+    ) {
+        wireMock.stubFor(
+            get(urlEqualTo("/veilarbarena/api/arena/aktiviteter?fnr=$fnr")).willReturn(
+                aResponse().withStatus(200)
+                    .withBody(
+                        """
                     {
                       "tiltaksaktiviteter": [
                           {
@@ -869,8 +969,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "gruppeaktiviteter": [],
                       "utdanningsaktiviteter": []
                     }
-                """.trimIndent())
-        ))
+                """.trimIndent()
+                    )
+            )
+        )
     }
 
     private fun hentBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
@@ -881,7 +983,10 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         return Pair(bruker, veileder)
     }
 
-    private fun hentKvpBrukerOgVeileder(brukerFornavn: String, brukerEtternavn: String): Pair<MockBruker, MockVeileder> {
+    private fun hentKvpBrukerOgVeileder(
+        brukerFornavn: String,
+        brukerEtternavn: String
+    ): Pair<MockBruker, MockVeileder> {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)

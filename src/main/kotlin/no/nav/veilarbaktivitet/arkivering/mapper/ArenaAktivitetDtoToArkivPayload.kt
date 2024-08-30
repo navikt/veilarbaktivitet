@@ -18,7 +18,8 @@ fun ArenaAktivitetDTO.toArkivPayload(dialogtråd: ArkivDialogtråd?): ArkivAktiv
         dialogtråd = dialogtråd,
         etiketter = this.toArkivEtikett(),
         eksterneHandlinger = emptyList(),
-        historikk = AktivitetHistorikk(emptyList())
+        historikk = AktivitetHistorikk(emptyList()),
+        forhaandsorientering = this.forhaandsorientering?.toArkivForhaandsorientering()
     )
 
 fun ArenaAktivitetDTO.toArkivTypeTekst() =
