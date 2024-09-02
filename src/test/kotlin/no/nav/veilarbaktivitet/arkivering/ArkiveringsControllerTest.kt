@@ -227,8 +227,6 @@ internal class xArkiveringsControllerTest : SpringBootTestBase() {
         )
     }
 
-//    ForhaandsorienteringDTO("123",  Type.SEND_FORHAANDSORIENTERING, "Forhåndsorientering", Date.from(Instant.parse("2024-02-05T13:31:22.238+00:00")))
-
     @Test
     fun `Når man skal journalføre sender man data til orkivar`() {
         val (bruker, veileder) = hentBrukerOgVeileder("Sølvi", "Normalbakke")
