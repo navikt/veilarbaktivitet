@@ -10,5 +10,7 @@ import no.nav.veilarbaktivitet.util.DateUtils.norskDatoOgKlokkeslett
 fun Forhaandsorientering.toArkivForhaandsorientering() =
     this.toDTO().toArkivForhaandsorientering()
 
-fun ForhaandsorienteringDTO.toArkivForhaandsorientering(): ArkivFHO =
-    ArkivFHO(this.tekst, this.lestDato?.let { tidspunkt -> norskDatoOgKlokkeslett(tidspunkt) })
+fun ForhaandsorienteringDTO.toArkivForhaandsorientering(): ArkivFHO? {
+    if (this.tekst == null) return null
+    return ArkivFHO(this.tekst, this.lestDato?.let { tidspunkt -> norskDatoOgKlokkeslett(tidspunkt) })
+}
