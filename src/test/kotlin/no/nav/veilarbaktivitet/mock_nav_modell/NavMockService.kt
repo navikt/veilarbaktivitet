@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.mock_nav_modell
 
+import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt
+import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import org.springframework.stereotype.Service
@@ -28,11 +30,18 @@ class NavMockService(
         WireMockUtil.stubBruker(mockBruker)
     }
 
-    fun createVeileder(vararg mockBruker: MockBruker): MockVeileder {
-        val veileder = MockNavService.createVeileder()
-        for (bruker in mockBruker) {
-            veileder.addBruker(bruker)
+    fun createVeileder(ident: String? = null, mockBruker: MockBruker): MockVeileder {
+        val navAnsatt = if(ident != null) {
+            NavAnsatt(ident)
+        } else {
+            NavAnsatt()
         }
+        MockNavService.NAV_CONTEXT.navAnsatt.add(navAnsatt)
+        navAnsatt.adGrupper.add(tilgjengligeAdGrupper.modiaOppfolging)
+
+        val veileder = MockVeileder(navAnsatt)
+        veileder.addBruker(mockBruker)
+
         return veileder
     }
 }
