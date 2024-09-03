@@ -3,13 +3,17 @@ package no.nav.veilarbaktivitet.admin
 import no.nav.common.utils.EnvironmentUtils
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.config.ApplicationContext
+import no.nav.veilarbaktivitet.internapi.model.Status
+import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
+import java.util.Date
 import java.util.function.BooleanSupplier
 
 @RestController
@@ -28,12 +32,16 @@ class KasserController(
     fun kasserAktivitet(@PathVariable("aktivitetId") aktivitetId: String) {
         val id = aktivitetId.toLong()
         val aktivitetData = aktivitetDAO.hentAktivitet(id)
-        kjorHvisTilgang(
-            aktivitetData.aktorId, aktivitetId
-        ) {
+        val veilederIdent = Person.navIdent(authService.getInnloggetVeilederIdent().get())
+        kjorHvisTilgang(aktivitetData.aktorId, aktivitetId) {
+            aktivitetData.withEndretAv(veilederIdent.get())
+            aktivitetData.withEndretDato(Date())
+            aktivitetData.withEndretAvType(Innsender.NAV)
+            aktivitetData.withStatus(AktivitetStatus.AVBRUTT)
+            aktivitetDAO.oppdaterAktivitet(aktivitetData)
             kasseringDAO.kasserAktivitet(
                 id,
-                Person.navIdent(authService.getInnloggetVeilederIdent().get())
+                veilederIdent
             )
         }
     }
