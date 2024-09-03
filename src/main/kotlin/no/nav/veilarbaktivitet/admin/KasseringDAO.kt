@@ -30,7 +30,7 @@ open class KasseringDAO (
             "UPDATE MOTE SET ADRESSE = 'Kassert av NAV', FORBEREDELSER = 'Kassert av NAV' WHERE",
             "UPDATE MOTE SET REFERAT = 'Kassert av NAV' WHERE REFERAT IS NOT NULL AND",  // Hvis referat er satt og ikke delt, kommer det en 'ikke delt' label i aktivitetsplan
             "UPDATE STILLING_FRA_NAV SET KONTAKTPERSON_NAVN = 'Kassert av NAV', KONTAKTPERSON_TITTEL = 'Kassert av NAV', KONTAKTPERSON_MOBIL = 'Kassert av NAV', ARBEIDSGIVER = 'Kassert av NAV', ARBEIDSSTED = 'Kassert av NAV', STILLINGSID = 'kassertAvNav', SOKNADSSTATUS = null WHERE",
-            "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV', ENDRET_AV = :navIdent, LAGT_INN_AV = 'NAV' WHERE",
+            "UPDATE AKTIVITET SET TITTEL = 'Det var skrevet noe feil, og det er nå slettet', AVSLUTTET_KOMMENTAR = 'Kassert av NAV', LENKE = 'Kassert av NAV', BESKRIVELSE = 'Kassert av NAV' WHERE",
             "UPDATE EKSTERNAKTIVITET SET OPPGAVE = null, HANDLINGER = null, DETALJER = null, ETIKETTER = null WHERE"
         )
             .map { sql: String -> "$sql $whereClause" }
