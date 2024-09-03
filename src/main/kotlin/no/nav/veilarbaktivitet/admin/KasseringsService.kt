@@ -20,11 +20,8 @@ class KasseringsService(
 ) {
 
     fun kasserAktivitet(aktivitet: AktivitetData, ident: Person.NavIdent, begrunnelse: String? = null) {
-        aktivitet.withEndretAv(ident.get())
-        aktivitet.withEndretDato(Date())
-        aktivitet.withEndretAvType(Innsender.NAV)
-        aktivitet.withStatus(AktivitetStatus.AVBRUTT)
-        aktivitetDAO.oppdaterAktivitet(aktivitet)
+        val oppdatertAktivitet = aktivitet.toBuilder().endretAv(ident.get()).endretDato(Date()).endretAvType(Innsender.NAV).status(AktivitetStatus.AVBRUTT).build()
+        aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet)
 
         return kasseringDAO.kasserAktivitetMedBegrunnelse(
             aktivitet.id,
