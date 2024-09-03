@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.admin
 
 import lombok.RequiredArgsConstructor
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
-import no.nav.veilarbaktivitet.aktivitet.AktivitetService
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
@@ -17,7 +16,6 @@ import java.util.*
 @RequiredArgsConstructor
 class KasseringsService(
     private val aktivitetDAO: AktivitetDAO,
-    private val aktivitetService: AktivitetService,
     private val kasseringDAO: KasseringDAO,
 ) {
 
