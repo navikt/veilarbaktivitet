@@ -517,7 +517,7 @@ public class AktivitetTestService {
         kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.getRecordMetadata().offset());
     }
 
-    public AktivitetDTO kasserAktivitetskort(MockVeileder veileder, String aktivitetId) {
+    public void kasserAktivitetskort(MockVeileder veileder, String aktivitetId) {
         Response response = veileder
                 .createRequest()
                 .and()
@@ -527,8 +527,6 @@ public class AktivitetTestService {
                 .then()
                 .assertThat().statusCode(HttpStatus.OK.value())
                 .extract().response();
-
-        return response.as(AktivitetDTO.class);
     }
 
     @SuppressWarnings("unchecked")

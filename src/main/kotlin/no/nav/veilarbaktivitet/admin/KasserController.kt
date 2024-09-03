@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.config.ApplicationContext
 import no.nav.veilarbaktivitet.person.Person
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -16,11 +17,11 @@ import java.util.function.BooleanSupplier
 class KasserController(
     private val authService: IAuthService,
     private val aktivitetDAO: AktivitetDAO,
-    private val kasseringDAO: KasseringDAO
+    private val kasseringDAO: KasseringDAO,
+    @Value("\${app.env.kassering.godkjenteIdenter}")
+    private val godkjenteIdenter: String
 ) {
     private val log = LoggerFactory.getLogger(javaClass)
-    private val godkjenteIdenter =
-        EnvironmentUtils.getOptionalProperty(ApplicationContext.VEILARB_KASSERING_IDENTER_PROPERTY).orElse("")
 
     @PutMapping("/{aktivitetId}")
     @ResponseStatus(value = HttpStatus.OK)
