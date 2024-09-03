@@ -58,7 +58,7 @@ fun AktivitetData.toArkivTypeTekst(): String {
                 AktivitetskortType.INDOPPFAG -> "Oppfølging"
                 AktivitetskortType.ARBFORB -> "Arbeidsforberedende trening"
                 AktivitetskortType.AVKLARAG -> "Avklaring"
-                AktivitetskortType.VASV -> "Tilrettelagt arbeid"
+                AktivitetskortType.VASV -> "Varig tilrettelagt arbeid i skjermet virksomhet"
                 AktivitetskortType.ARBRRHDAG -> "Arbeidsrettet rehabilitering"
                 AktivitetskortType.DIGIOPPARB -> "Digitalt oppfølgingstiltak"
                 AktivitetskortType.JOBBK -> "Jobbklubb"
