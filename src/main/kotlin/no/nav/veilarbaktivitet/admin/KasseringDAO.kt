@@ -15,13 +15,13 @@ open class KasseringDAO (
 ) {
 
     @Transactional
-    open fun kasserAktivitet(aktivitetId: Long, navIdent: Person.NavIdent ): Boolean {
+    open fun kasserAktivitet(aktivitetId: Long, navIdent: Person.NavIdent) {
         val params = MapSqlParameterSource().addValue("aktivitetId", aktivitetId).addValue("navIdent", navIdent.get())
         // language=sql
         val whereClause = "aktivitet_id = :aktivitetId"
         // language=sql
 
-        return listOf(
+        listOf(
             "UPDATE EGENAKTIVITET SET HENSIKT = 'Kassert av NAV', OPPFOLGING = 'Kassert av NAV' WHERE",
             "UPDATE STILLINGSSOK SET ARBEIDSGIVER = 'Kassert av NAV', STILLINGSTITTEL = 'Kassert av NAV', KONTAKTPERSON = 'Kassert av NAV', ETIKETT = null, ARBEIDSSTED = 'Kassert av NAV' WHERE",
             "UPDATE SOKEAVTALE SET ANTALL_STILLINGER_SOKES = 0, ANTALL_STILLINGER_I_UKEN = 0, AVTALE_OPPFOLGING = 'Kassert av NAV' WHERE",
@@ -39,23 +39,26 @@ open class KasseringDAO (
     }
 
     @Transactional
-    open fun kasserAktivitetMedBegrunnelse(aktivitetId: Long, begrunnelse: String?, navIdent : Person.NavIdent ) {
+    open fun kasserAktivitetMedBegrunnelse(aktivitetId: Long, navIdent : Person.NavIdent, begrunnelse: String?) {
         kasserAktivitet(aktivitetId, navIdent)
-        kotlin.runCatching {
-            namedParameterJdbcTemplate.update(
-                """
+
+        if (begrunnelse != null) {
+            kotlin.runCatching {
+                namedParameterJdbcTemplate.update(
+                    """
                 INSERT INTO KASSERT_AKTIVITET (AKTIVITET_ID, BEGRUNNELSE) 
                 VALUES (:aktivitetId, :begrunnelse)
             """.trimIndent(),
-                mapOf(
-                    "aktivitetId" to aktivitetId,
-                    "begrunnelse" to begrunnelse
+                    mapOf(
+                        "aktivitetId" to aktivitetId,
+                        "begrunnelse" to begrunnelse
+                    )
                 )
-            )
-        }.onFailure {
-            when (it) {
-                is DuplicateKeyException -> return@onFailure
-                else -> throw it
+            }.onFailure {
+                when (it) {
+                    is DuplicateKeyException -> return@onFailure
+                    else -> throw it
+                }
             }
         }
     }

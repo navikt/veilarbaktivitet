@@ -223,8 +223,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     @Test
     void kassering_skal_overskrive_mange_felter() {
         var aktivitet = gitt_at_det_finnes_et_mote();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
-        assertThat(kassert).isTrue();
+        kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
 
         assertThat(kassertAktivitet.getTittel()).isEqualTo("Det var skrevet noe feil, og det er nå slettet");
@@ -241,8 +240,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     void referat_skal_kasseres_dersom_utfylt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat();
         assertThat(aktivitet.getMoteData().getReferat()).isNotNull();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
-        assertTrue(kassert);
+        kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isEqualTo(KASSERT_AV_NAV);
     }
@@ -250,8 +248,7 @@ class AktivitetDAOTest extends SpringBootTestBase { //TODO burde denne skrives o
     @Test
     void referat_skal_ikke_kasseres_dersom_tomt() {
         var aktivitet = gitt_at_det_finnes_et_samtalereferat_uten_innhold();
-        var kassert = kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
-        assertTrue(kassert);
+        kasseringDAO.kasserAktivitet(aktivitet.getId(), TestData.KJENT_SAKSBEHANDLER);
         var kassertAktivitet = aktivitetDAO.hentAktivitet(aktivitet.getId());
         assertThat(kassertAktivitet.getMoteData().getReferat()).isNull();
     }

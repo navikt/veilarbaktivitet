@@ -32,6 +32,7 @@ class NavMockService(
 
     fun createVeileder(ident: String? = null, mockBruker: MockBruker): MockVeileder {
         val navAnsatt = if(ident != null) {
+            MockNavService.NAV_CONTEXT.navAnsatt.get(ident)?.let { return MockVeileder(it) }
             NavAnsatt(ident)
         } else {
             NavAnsatt()

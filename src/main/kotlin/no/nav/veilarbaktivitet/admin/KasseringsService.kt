@@ -8,8 +8,10 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
+import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import org.springframework.stereotype.Service
+import java.util.*
 
 @Service
 @RequiredArgsConstructor
@@ -19,25 +21,29 @@ class KasseringsService(
     private val kasseringDAO: KasseringDAO,
 ) {
 
+    fun kasserAktivitet(aktivitet: AktivitetData, ident: Person.NavIdent, begrunnelse: String? = null) {
+        aktivitet.withEndretAv(ident.get())
+        aktivitet.withEndretDato(Date())
+        aktivitet.withEndretAvType(Innsender.NAV)
+        aktivitet.withStatus(AktivitetStatus.AVBRUTT)
+        aktivitetDAO.oppdaterAktivitet(aktivitet)
+
+        return kasseringDAO.kasserAktivitetMedBegrunnelse(
+            aktivitet.id,
+            ident,
+            begrunnelse
+        )
+    }
+
     @Throws(AktivitetIkkeFunnetFeil::class)
-    fun kassertAktivitet(kasseringsBestilling: KasseringsBestilling) {
+    fun kasserAktivitet(kasseringsBestilling: KasseringsBestilling) {
         val aktivitet = aktivitetDAO.hentAktivitetByFunksjonellId(kasseringsBestilling.aktivitetsId)
         if (aktivitet.isEmpty) throw AktivitetIkkeFunnetFeil(
             ErrorMessage("Kan ikke kassere aktivitet som ikke finnes"),
             null
         ) else {
             val navIdent = Person.navIdent(kasseringsBestilling.navIdent.get())
-            kasserAktivitetMedTekniskId(aktivitet.get(), navIdent, kasseringsBestilling.begrunnelse)
+            kasserAktivitet(aktivitet.get(), navIdent, kasseringsBestilling.begrunnelse)
         }
-    }
-
-    private fun kasserAktivitetMedTekniskId(aktivitet: AktivitetData, navIdent: Person.NavIdent, begrunnelse: String?) {
-        if (aktivitet.getStatus() != AktivitetStatus.AVBRUTT && aktivitet.getStatus() != AktivitetStatus.FULLFORT) {
-            aktivitetService.oppdaterStatus(
-                aktivitet,
-                aktivitet.withStatus(AktivitetStatus.AVBRUTT)
-            )
-        }
-        kasseringDAO.kasserAktivitetMedBegrunnelse(aktivitet.getId(), begrunnelse, navIdent)
     }
 }
