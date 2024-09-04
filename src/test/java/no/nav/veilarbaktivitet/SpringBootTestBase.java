@@ -68,9 +68,6 @@ public abstract class SpringBootTestBase {
     private KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering> navCommonKafkaJsonTemplate;
 
     @Autowired
-    protected HistorikkService historikkService;
-
-    @Autowired
     protected NavMockService navMockService;
 
     @Value("${topic.inn.aktivitetskort}")
