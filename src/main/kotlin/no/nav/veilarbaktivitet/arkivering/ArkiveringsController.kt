@@ -93,7 +93,7 @@ class ArkiveringsController(
                 .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
                 .toList()
         }
-        val historikk = aktiviteter.thenCompose { it ->
+        val historikk = aktiviteter.thenComposeAsync { it ->
             hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
         }
         val dialogerIPerioden = hentDataAsync {
