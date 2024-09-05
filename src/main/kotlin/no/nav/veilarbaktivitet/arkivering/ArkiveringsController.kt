@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
+import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
 import no.nav.veilarbaktivitet.aktivitet.Historikk
 import no.nav.veilarbaktivitet.aktivitet.HistorikkService
@@ -10,6 +11,7 @@ import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
+import no.nav.veilarbaktivitet.config.ApplicationContext
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -20,11 +22,15 @@ import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.springframework.http.HttpStatus
+import org.springframework.scheduling.annotation.Async
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @RestController
 @RequestMapping("/api/arkivering")
@@ -72,24 +78,45 @@ class ArkiveringsController(
     }
 
     private fun hentArkiveringsData(fnr: Fnr, oppfølgingsperiodeId: UUID): ArkiveringsData {
-        val aktiviteter = appService.hentAktiviteterUtenKontorsperre(fnr)
-            .asSequence()
-            .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-            .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
-            .toList()
-        val dialogerIPerioden = dialogClient.hentDialogerUtenKontorsperre(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-        val arenaAktiviteter = arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        val aktiviteter = hentDataAsync {
+            appService.hentAktiviteterUtenKontorsperre(fnr)
+                .asSequence()
+                .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
+                .toList()
+        }
+        val historikk = aktiviteter.thenCompose { it ->
+            hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
+        }
+        val dialogerIPerioden = hentDataAsync {
+            dialogClient.hentDialogerUtenKontorsperre(fnr)
+                .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        }
+        val arenaAktiviteter = hentDataAsync {
+            arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+        }
+        val oppfølgingsperiode = hentDataAsync {
+            oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?:
+            throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+        }
+        val navn = hentDataAsync { navnService.hentNavn(fnr) }
+        val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
 
         return ArkiveringsData(
             fnr = fnr,
-            navn = navnService.hentNavn(fnr),
-            oppfølgingsperiode = oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?: throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId"),
-            aktiviteter = aktiviteter,
-            dialoger = dialogerIPerioden,
-            mål = oppfølgingsperiodeService.hentMål(fnr),
-            historikkForAktiviteter = historikkService.hentHistorikk(aktiviteter.map { it.id }),
-            arenaAktiviteter = arenaAktiviteter
+            navn = navn.get(),
+            oppfølgingsperiode = oppfølgingsperiode.get(),
+            aktiviteter = aktiviteter.get(),
+            dialoger = dialogerIPerioden.get(),
+            mål = mål.get(),
+            historikkForAktiviteter = historikk.get(),
+            arenaAktiviteter = arenaAktiviteter.get()
         )
+    }
+
+    @Async
+    private inline fun <reified T: Any> hentDataAsync(hentData: Supplier<T>): CompletableFuture<T> {
+        return CompletableFuture.supplyAsync(hentData)
     }
 
     private fun aktiviteterOgDialogerOppdatertEtter(
