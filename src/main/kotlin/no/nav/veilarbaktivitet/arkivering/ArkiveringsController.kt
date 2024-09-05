@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import lombok.extern.slf4j.Slf4j
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
@@ -21,6 +22,7 @@ import no.nav.veilarbaktivitet.person.Navn
 import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
@@ -30,6 +32,7 @@ import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
+import kotlin.time.measureTimedValue
 
 @RestController
 @RequestMapping("/api/arkivering")
@@ -45,6 +48,7 @@ class ArkiveringsController(
     private val authContextHolder: AuthContextHolder,
 ) {
     private val executor: Executor = Executors.newFixedThreadPool(10)
+    private val logger = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
@@ -53,7 +57,11 @@ class ArkiveringsController(
         val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
 
-        val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
+        val timedForhaandsvisningResultat = measureTimedValue {
+            orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
+        }
+        logger.info("Henting av PDF tok ${timedForhaandsvisningResultat.duration.inWholeMilliseconds} ms")
+        val forhaandsvisningResultat = timedForhaandsvisningResultat.value
 
         return ForhaandsvisningOutboundDTO(
             forhaandsvisningResultat.pdf,
@@ -73,50 +81,59 @@ class ArkiveringsController(
         val sak = oppfølgingsperiodeService.hentSak(oppfølgingsperiodeId) ?: throw RuntimeException("Kunne ikke hente sak for oppfølgingsperiode: $oppfølgingsperiodeId")
         val arkivPayload = mapTilArkivPayload(arkiveringsdata, sak, arkiverInboundDTO.journalforendeEnhet)
 
-        val journalførtResult = orkivarClient.journalfor(arkivPayload)
+        val timedJournalførtResultat = measureTimedValue {
+            orkivarClient.journalfor(arkivPayload)
+        }
+        logger.info("Journalføring av PDF tok ${timedJournalførtResultat.duration.inWholeMilliseconds} ms")
+        val journalførtResult = timedJournalførtResultat.value
+
         return JournalførtOutboundDTO(
             sistJournalført = journalførtResult.sistJournalført
         )
     }
 
     private fun hentArkiveringsData(oppfølgingsperiodeId: UUID): ArkiveringsData {
-        val fnr = userInContext.fnr.get()
-        val aktorId = userInContext.aktorId
+        val timedArkiveringsdata = measureTimedValue {
+            val fnr = userInContext.fnr.get()
+            val aktorId = userInContext.aktorId
 
-        val aktiviteter = hentDataAsync {
-            appService.hentAktiviteterUtenKontorsperre(fnr)
-                .asSequence()
-                .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
-                .toList()
-        }
-        val dialogerIPerioden = hentDataAsync {
-            dialogClient.hentDialogerUtenKontorsperre(fnr)
-                .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-        }
-        val arenaAktiviteter = hentDataAsync {
-            arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-        }
-        val oppfølgingsperiode = hentDataAsync {
-            oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
-            throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
-        }
-        val navn = hentDataAsync { navnService.hentNavn(fnr) }
-        val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
-        val historikk = aktiviteter.thenCompose { it ->
-            hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
-        }
+            val aktiviteter = hentDataAsync {
+                appService.hentAktiviteterUtenKontorsperre(fnr)
+                    .asSequence()
+                    .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                    .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
+                    .toList()
+            }
+            val dialogerIPerioden = hentDataAsync {
+                dialogClient.hentDialogerUtenKontorsperre(fnr)
+                    .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+            }
+            val arenaAktiviteter = hentDataAsync {
+                arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+            }
+            val oppfølgingsperiode = hentDataAsync {
+                oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
+                throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+            }
+            val navn = hentDataAsync { navnService.hentNavn(fnr) }
+            val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
+            val historikk = aktiviteter.thenCompose { it ->
+                hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
+            }
 
-        return ArkiveringsData(
-            fnr = fnr,
-            navn = navn.get(),
-            oppfølgingsperiode = oppfølgingsperiode.get(),
-            aktiviteter = aktiviteter.get(),
-            dialoger = dialogerIPerioden.get(),
-            mål = mål.get(),
-            historikkForAktiviteter = historikk.get(),
-            arenaAktiviteter = arenaAktiviteter.get()
-        )
+            ArkiveringsData(
+                fnr = fnr,
+                navn = navn.get(),
+                oppfølgingsperiode = oppfølgingsperiode.get(),
+                aktiviteter = aktiviteter.get(),
+                dialoger = dialogerIPerioden.get(),
+                mål = mål.get(),
+                historikkForAktiviteter = historikk.get(),
+                arenaAktiviteter = arenaAktiviteter.get()
+            )
+        }
+        logger.info("Henting av data tok ${timedArkiveringsdata.duration.inWholeMilliseconds} ms")
+        return timedArkiveringsdata.value
     }
 
     private fun <T> hentDataAsync(hentData: () -> T): CompletableFuture<T> {
