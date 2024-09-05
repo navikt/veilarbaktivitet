@@ -53,7 +53,7 @@ class ArkiveringsController(
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
         val dataHentet = ZonedDateTime.now()
-        val arkiveringsdata = hentArkiveringsData(userInContext.fnr.get(), oppfølgingsperiodeId)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
         val forhåndsvisningPayload = mapTilForhåndsvisningsPayload(arkiveringsdata)
 
         val forhaandsvisningResultat = orkivarClient.hentPdfForForhaandsvisning(forhåndsvisningPayload)
@@ -68,7 +68,7 @@ class ArkiveringsController(
     @PostMapping("/journalfor")
     @AuthorizeFnr(auditlogMessage = "journalføre aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun arkiverAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID, @RequestBody arkiverInboundDTO: ArkiverInboundDTO): JournalførtOutboundDTO {
-        val arkiveringsdata = hentArkiveringsData(userInContext.fnr.get(), oppfølgingsperiodeId)
+        val arkiveringsdata = hentArkiveringsData(oppfølgingsperiodeId)
 
         val oppdatertEtterForhaandsvisning = aktiviteterOgDialogerOppdatertEtter(arkiverInboundDTO.forhaandsvisningOpprettet, arkiveringsdata.aktiviteter, arkiveringsdata.dialoger)
         if (oppdatertEtterForhaandsvisning) throw ResponseStatusException(HttpStatus.CONFLICT)
@@ -82,7 +82,10 @@ class ArkiveringsController(
         )
     }
 
-    private fun hentArkiveringsData(fnr: Fnr, oppfølgingsperiodeId: UUID): ArkiveringsData {
+    private fun hentArkiveringsData(oppfølgingsperiodeId: UUID): ArkiveringsData {
+        val fnr = userInContext.fnr.get()
+        val aktorId = userInContext.aktorId
+
         val aktiviteter = hentDataAsync {
             appService.hentAktiviteterUtenKontorsperre(fnr)
                 .asSequence()
@@ -101,7 +104,7 @@ class ArkiveringsController(
             arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
         }
         val oppfølgingsperiode = hentDataAsync {
-            oppfølgingsperiodeService.hentOppfolgingsperiode(userInContext.aktorId, oppfølgingsperiodeId) ?:
+            oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
             throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
         }
         val navn = hentDataAsync { navnService.hentNavn(fnr) }
@@ -119,13 +122,13 @@ class ArkiveringsController(
         )
     }
 
-    private inline fun <reified T: Any> hentDataAsync(hentData: Supplier<T>): CompletableFuture<T> {
+    private fun <T> hentDataAsync(hentData: () -> T): CompletableFuture<T> {
         val authContext = authContextHolder.context.get()
 
         return CompletableFuture.supplyAsync({
             val threadAuthContext = AuthContextHolderThreadLocal.instance()
             threadAuthContext.setContext(authContext)
-            hentData.get()
+            hentData.invoke()
         }, executor)
     }
 
