@@ -93,9 +93,6 @@ class ArkiveringsController(
                 .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
                 .toList()
         }
-        val historikk = aktiviteter.thenComposeAsync { it ->
-            hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
-        }
         val dialogerIPerioden = hentDataAsync {
             dialogClient.hentDialogerUtenKontorsperre(fnr)
                 .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
@@ -109,6 +106,9 @@ class ArkiveringsController(
         }
         val navn = hentDataAsync { navnService.hentNavn(fnr) }
         val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
+        val historikk = aktiviteter.thenCompose { it ->
+            hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
+        }
 
         return ArkiveringsData(
             fnr = fnr,
