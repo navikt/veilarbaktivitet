@@ -1,5 +1,8 @@
 package no.nav.veilarbaktivitet.arkivering
 
+import no.nav.common.auth.context.AuthContext
+import no.nav.common.auth.context.AuthContextHolder
+import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.aktivitet.AktivitetAppService
@@ -11,7 +14,6 @@ import no.nav.veilarbaktivitet.arena.ArenaService
 import no.nav.veilarbaktivitet.arena.model.ArenaAktivitetDTO
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilArkivPayload
 import no.nav.veilarbaktivitet.arkivering.mapper.ArkiveringspayloadMapper.mapTilForhåndsvisningsPayload
-import no.nav.veilarbaktivitet.config.ApplicationContext
 import no.nav.veilarbaktivitet.config.OppfolgingsperiodeResource
 import no.nav.veilarbaktivitet.oppfolging.client.MålDTO
 import no.nav.veilarbaktivitet.oppfolging.client.OppfolgingPeriodeMinimalDTO
@@ -22,14 +24,14 @@ import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.person.UserInContext
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.springframework.http.HttpStatus
-import org.springframework.scheduling.annotation.Async
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 import java.util.function.Supplier
 
 @RestController
@@ -42,8 +44,11 @@ class ArkiveringsController(
     private val appService: AktivitetAppService,
     private val oppfølgingsperiodeService: OppfolgingsperiodeService,
     private val historikkService: HistorikkService,
-    private val arenaService: ArenaService
+    private val arenaService: ArenaService,
+    private val authContextHolder: AuthContextHolder,
 ) {
+    private val executor: Executor = Executors.newFixedThreadPool(10)
+
     @GetMapping("/forhaandsvisning")
     @AuthorizeFnr(auditlogMessage = "lag forhåndsvisning av aktivitetsplan og dialog", resourceType = OppfolgingsperiodeResource::class, resourceIdParamName = "oppfolgingsperiodeId")
     fun forhaandsvisAktivitetsplanOgDialog(@RequestParam("oppfolgingsperiodeId") oppfølgingsperiodeId: UUID): ForhaandsvisningOutboundDTO {
@@ -114,9 +119,14 @@ class ArkiveringsController(
         )
     }
 
-    @Async
     private inline fun <reified T: Any> hentDataAsync(hentData: Supplier<T>): CompletableFuture<T> {
-        return CompletableFuture.supplyAsync(hentData)
+        val authContext = authContextHolder.context.get()
+
+        return CompletableFuture.supplyAsync({
+            val threadAuthContext = AuthContextHolderThreadLocal.instance()
+            threadAuthContext.setContext(authContext)
+            hentData.get()
+        }, executor)
     }
 
     private fun aktiviteterOgDialogerOppdatertEtter(
