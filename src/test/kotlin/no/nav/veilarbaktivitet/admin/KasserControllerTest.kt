@@ -2,16 +2,21 @@ package no.nav.veilarbaktivitet.admin
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType.KASSERT
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
+import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.springframework.http.HttpStatus
+import java.util.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class KasserControllerTest : SpringBootTestBase() {
@@ -57,6 +62,10 @@ internal class KasserControllerTest : SpringBootTestBase() {
 
         val versjonerEtterKassering = aktivitetTestService.hentVersjoner(aktivitetId.toString(), mockBruker, veilederSomKanKassere)
         assertThat(versjonerEtterKassering.size).isEqualTo(2)
+        val kassertVersjon = versjonerEtterKassering.find { it.transaksjonsType == KASSERT }!!
+        assertThat(kassertVersjon.endretAv).isEqualTo(veilederSomKanKassere.navIdent)
+        assertThat(kassertVersjon.endretAvType).isEqualTo(Innsender.NAV.toString())
+        assertThat(kassertVersjon.endretDato).isCloseTo(Date(), 200)
     }
 
     @Test

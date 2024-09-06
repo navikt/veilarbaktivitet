@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
+import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType.KASSERT
 import no.nav.veilarbaktivitet.aktivitetskort.bestilling.KasseringsBestilling
 import no.nav.veilarbaktivitet.aktivitetskort.feil.AktivitetIkkeFunnetFeil
 import no.nav.veilarbaktivitet.aktivitetskort.feil.ErrorMessage
@@ -20,7 +22,12 @@ class KasseringsService(
 ) {
 
     fun kasserAktivitet(aktivitet: AktivitetData, ident: Person.NavIdent, begrunnelse: String? = null) {
-        val oppdatertAktivitet = aktivitet.toBuilder().endretAv(ident.get()).endretDato(Date()).endretAvType(Innsender.NAV).status(AktivitetStatus.AVBRUTT).build()
+        val oppdatertAktivitet = aktivitet.toBuilder()
+            .endretAv(ident.get())
+            .endretDato(Date())
+            .endretAvType(Innsender.NAV)
+            .transaksjonsType(KASSERT)
+            .status(AktivitetStatus.AVBRUTT).build()
         aktivitetDAO.oppdaterAktivitet(oppdatertAktivitet)
 
         return kasseringDAO.kasserAktivitetMedBegrunnelse(
