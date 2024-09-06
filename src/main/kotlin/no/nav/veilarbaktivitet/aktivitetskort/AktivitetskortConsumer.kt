@@ -108,7 +108,7 @@ open class AktivitetskortConsumer (
                 aktivitetskortMetrikker.countAktivitetskortUpsert(bestilling, upsertActionResult)
             }
             is KasseringsBestilling -> {
-                kasseringsService.kassertAktivitet(bestilling)
+                kasseringsService.kasserAktivitet(bestilling)
                 aktivitetskortService.oppdaterMeldingResultat(bestilling.messageId!!, UpsertActionResult.KASSER, null)
             }
             else -> throw NotImplementedException("Unknown kafka message")

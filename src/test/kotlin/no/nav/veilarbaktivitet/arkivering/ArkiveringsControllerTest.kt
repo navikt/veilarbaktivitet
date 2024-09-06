@@ -812,7 +812,7 @@ internal class xArkiveringsControllerTest : SpringBootTestBase() {
     @Test
     fun `Kall mot arkiveringsendepunkt kaster 403 når oppfølgingsperiodeId mangler`() {
         val bruker = navMockService.createHappyBruker()
-        val veileder = navMockService.createVeileder(bruker)
+        val veileder = navMockService.createVeileder(mockBruker = bruker)
 
         val arkiveringsUrl = "http://localhost:$port/veilarbaktivitet/api/arkivering/forhaandsvisning"
 
@@ -977,7 +977,7 @@ internal class xArkiveringsControllerTest : SpringBootTestBase() {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
-        val veileder = navMockService.createVeileder(bruker)
+        val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }
 
@@ -988,7 +988,7 @@ internal class xArkiveringsControllerTest : SpringBootTestBase() {
         val navn = Navn(brukerFornavn, null, brukerEtternavn)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().erUnderKvp(true).navn(navn).build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
-        val veileder = navMockService.createVeileder(bruker)
+        val veileder = navMockService.createVeileder(mockBruker = bruker)
         return Pair(bruker, veileder)
     }
 }

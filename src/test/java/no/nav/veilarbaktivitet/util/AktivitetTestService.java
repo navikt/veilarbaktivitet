@@ -517,6 +517,18 @@ public class AktivitetTestService {
         kafkaTestService.assertErKonsumert(aktivitetsKortV1Topic, NavCommonKafkaConfig.CONSUMER_GROUP_ID, recordMetadata.getRecordMetadata().offset());
     }
 
+    public void kasserAktivitetskort(MockVeileder veileder, String aktivitetId) {
+        Response response = veileder
+                .createRequest()
+                .and()
+                .when()
+                .pathParam("aktivitetId", aktivitetId)
+                .put("http://localhost:" + port + "/veilarbaktivitet/api/kassering/{aktivitetId}")
+                .then()
+                .assertThat().statusCode(HttpStatus.OK.value())
+                .extract().response();
+    }
+
     @SuppressWarnings("unchecked")
     @SneakyThrows
     public void opprettEksterntAktivitetsKort(List<KafkaAktivitetskortWrapperDTO> meldinger) {

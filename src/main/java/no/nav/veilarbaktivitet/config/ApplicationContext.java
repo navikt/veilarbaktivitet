@@ -20,7 +20,6 @@ import java.util.Map;
 @EnableConfigurationProperties({EnvironmentProperties.class, no.nav.veilarbaktivitet.unleash.UnleashConfig.class})
 public class ApplicationContext {
     public static final String ARENA_AKTIVITET_DATOFILTER_PROPERTY = "ARENA_AKTIVITET_DATOFILTER";
-    public static final String VEILARB_KASSERING_IDENTER_PROPERTY = "VEILARB_KASSERING_IDENTER";
 
     @Bean
     public Unleash unleash(UnleashConfig config, ByEnhetStrategy byEnhetStrategy) {

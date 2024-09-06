@@ -16,5 +16,6 @@ public enum AktivitetTransaksjonsType {
     DEL_CV_SVART,
     SOKNADSSTATUS_ENDRET,
     IKKE_FATT_JOBBEN,
-    FATT_JOBBEN
+    FATT_JOBBEN,
+    KASSERT
 }

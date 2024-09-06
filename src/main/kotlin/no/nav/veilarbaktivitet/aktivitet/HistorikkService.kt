@@ -85,6 +85,7 @@ private fun hentEndringstekst(forrigeVersjon: AktivitetData?, oppdatertVersjon: 
             "$endretAvTekst endret tilstand til $status"
         }
         AktivitetTransaksjonsType.IKKE_FATT_JOBBEN, AktivitetTransaksjonsType.FATT_JOBBEN -> "$endretAvTekst avsluttet aktiviteten fordi kandidaten har ${oppdatertVersjon.stillingFraNavData.soknadsstatus.text}"
+        AktivitetTransaksjonsType.KASSERT -> "$endretAvTekst kasserte aktiviteten"
     }
 }
 
