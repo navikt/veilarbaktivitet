@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
-import lombok.extern.slf4j.Slf4j
+import kotlinx.coroutines.*
+import no.nav.common.auth.context.AuthContext
 import no.nav.common.auth.context.AuthContextHolder
 import no.nav.common.auth.context.AuthContextHolderThreadLocal
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
@@ -29,9 +30,6 @@ import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.util.*
-import java.util.concurrent.CompletableFuture
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 import kotlin.time.measureTimedValue
 
 @RestController
@@ -47,7 +45,6 @@ class ArkiveringsController(
     private val arenaService: ArenaService,
     private val authContextHolder: AuthContextHolder,
 ) {
-    private val executor: Executor = Executors.newFixedThreadPool(10)
     private val logger = LoggerFactory.getLogger(this::class.java)
 
     @GetMapping("/forhaandsvisning")
@@ -96,54 +93,58 @@ class ArkiveringsController(
         val timedArkiveringsdata = measureTimedValue {
             val fnr = userInContext.fnr.get()
             val aktorId = userInContext.aktorId
+            val authContext = authContextHolder.context.get()
 
-            val aktiviteter = hentDataAsync {
-                appService.hentAktiviteterUtenKontorsperre(fnr)
-                    .asSequence()
-                    .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-                    .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
-                    .toList()
-            }
-            val dialogerIPerioden = hentDataAsync {
-                dialogClient.hentDialogerUtenKontorsperre(fnr)
-                    .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-            }
-            val arenaAktiviteter = hentDataAsync {
-                arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
-            }
-            val oppfølgingsperiode = hentDataAsync {
-                oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
-                throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
-            }
-            val navn = hentDataAsync { navnService.hentNavn(fnr) }
-            val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
-            val historikk = aktiviteter.thenCompose { it ->
-                hentDataAsync { historikkService.hentHistorikk(it.map { it.id }) }
-            }
+            fun <T> CoroutineScope.hentDataAsync(hentData: () -> T): Deferred<T> =
+                hentDataAsyncMedAuthContext(authContext, hentData)
 
-            ArkiveringsData(
-                fnr = fnr,
-                navn = navn.get(),
-                oppfølgingsperiode = oppfølgingsperiode.get(),
-                aktiviteter = aktiviteter.get(),
-                dialoger = dialogerIPerioden.get(),
-                mål = mål.get(),
-                historikkForAktiviteter = historikk.get(),
-                arenaAktiviteter = arenaAktiviteter.get()
-            )
+            runBlocking(Dispatchers.IO) {
+                val aktiviteterDeferred = hentDataAsync {
+                    appService.hentAktiviteterUtenKontorsperre(fnr)
+                        .asSequence()
+                        .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                        .filterNot { it.aktivitetType == SAMTALEREFERAT && it.moteData?.isReferatPublisert == false }
+                        .toList()
+                }
+                val dialogerIPerioden = hentDataAsync {
+                    dialogClient.hentDialogerUtenKontorsperre(fnr)
+                        .filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                }
+                val arenaAktiviteter = hentDataAsync {
+                    arenaService.hentArenaAktiviteter(fnr).filter { it.oppfolgingsperiodeId == oppfølgingsperiodeId }
+                }
+                val oppfølgingsperiode = hentDataAsync {
+                    oppfølgingsperiodeService.hentOppfolgingsperiode(aktorId, oppfølgingsperiodeId) ?:
+                    throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
+                }
+                val navn = hentDataAsync { navnService.hentNavn(fnr) }
+                val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
+
+                val aktiviteter = aktiviteterDeferred.await()
+                val historikk = hentDataAsync { historikkService.hentHistorikk(aktiviteter.map { it.id }) }
+
+                ArkiveringsData(
+                    fnr = fnr,
+                    navn = navn.await(),
+                    oppfølgingsperiode = oppfølgingsperiode.await(),
+                    aktiviteter = aktiviteter,
+                    dialoger = dialogerIPerioden.await(),
+                    mål = mål.await(),
+                    historikkForAktiviteter = historikk.await(),
+                    arenaAktiviteter = arenaAktiviteter.await()
+                )
+            }
         }
         logger.info("Henting av data tok ${timedArkiveringsdata.duration.inWholeMilliseconds} ms")
         return timedArkiveringsdata.value
     }
 
-    private fun <T> hentDataAsync(hentData: () -> T): CompletableFuture<T> {
-        val authContext = authContextHolder.context.get()
-
-        return CompletableFuture.supplyAsync({
+    private fun <T> CoroutineScope.hentDataAsyncMedAuthContext(authContext: AuthContext, hentData: () -> T): Deferred<T> {
+        return async {
             val threadAuthContext = AuthContextHolderThreadLocal.instance()
             threadAuthContext.setContext(authContext)
             hentData.invoke()
-        }, executor)
+        }
     }
 
     private fun aktiviteterOgDialogerOppdatertEtter(
