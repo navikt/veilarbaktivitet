@@ -143,7 +143,7 @@ class ArkiveringsController(
         return async {
             val threadAuthContext = AuthContextHolderThreadLocal.instance()
             threadAuthContext.setContext(authContext)
-            hentData.invoke()
+            hentData()
         }
     }
 
