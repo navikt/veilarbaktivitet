@@ -67,7 +67,7 @@ public class OkHttpClientConfig {
                 .build();
     }
 
-    private final String veilarboppfolgingScope = String.format("api://%s-fss.pto.veilarboppfolging/.default", isProduction().orElse(false) ? "prod" : "dev");
+    private final String veilarboppfolgingScope = String.format("api://%s-gcp.poao.veilarboppfolging/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String veilarbpersonScope = String.format("api://%s-fss.pto.veilarbperson/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String veilarbarenaScope = String.format("api://%s-fss.pto.veilarbarena/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String orkivarScope = String.format("api://%s-gcp.dab.orkivar/.default", isProduction().orElse(false) ? "prod" : "dev");
