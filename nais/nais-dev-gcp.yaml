@@ -79,6 +79,7 @@ spec:
           cluster: prod-fss # Dette er med vilje
     outbound:
       external:
+        - host: veilarboppfolging.dev-fss-pub.nais.io
         - host: veilarbaktivitet.dev-fss-pub.nais.io
         - host: veilarbarena.dev-fss-pub.nais.io
         - host: veilarbdialog.intern.dev.nav.no
@@ -86,8 +87,6 @@ spec:
         - host: orkivar.intern.dev.nav.no
         - host: axsys.dev-fss-pub.nais.io
       rules:
-        - application: veilarboppfolging
-          namespace: poao
         - application: poao-tilgang
           namespace: poao
         - application: veilarbdialog
@@ -123,7 +122,7 @@ spec:
     - name: AKTIVITETSPLAN_URL
       value: "https://aktivitetsplan.ekstern.dev.nav.no"
     - name: VEILARBOPPFOLGINGAPI_URL
-      value: "http://veilarboppfolging.poao"
+      value: "https://veilarboppfolging.dev-fss-pub.nais.io"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.dev-fss-pub.nais.io"
     - name: VEILARBAKTIVITET_FSS_URL
