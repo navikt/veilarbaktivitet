@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
 
 internal class AktivitetsplanControllerTest : SpringBootTestBase() {
+
     @Test
     fun veileder_skal_kunne_oprette_aktivitet() {
         val happyBruker = navMockService.createHappyBruker()
