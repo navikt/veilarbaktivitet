@@ -26,6 +26,10 @@ open class AktiviteterTilKafkaService(
     )
     @SchedulerLock(name = "aktiviteter_kafka_scheduledTask", lockAtMostFor = "PT2M")
     @Timed
+    open fun sendOppTil5000AktiviterTilPortefoljeCron() {
+        sendOppTil5000AktiviterTilPortefolje()
+    }
+
     open fun sendOppTil5000AktiviterTilPortefolje() {
         val maksAntall = 5000L
         JobRunner.run("aktiviteter_til_portefolje_paa_kafka") {

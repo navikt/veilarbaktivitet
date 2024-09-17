@@ -32,10 +32,14 @@ public class MoteSMSService {
     )
     @SchedulerLock(name = "send_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
     @Timed(value = "moteservicemelding", histogram = true)
-    public void sendMoteSms() {
+    public void sendMoteSmsCron() {
         MDC.put("running.job", "moteSmsService");
-        sendServicemeldinger(ofHours(1), ofHours(24));
+        sendMoteSms();
         MDC.clear();
+    }
+
+    public void sendMoteSms() {
+        sendServicemeldinger(ofHours(1), ofHours(24));
     }
 
     protected void sendServicemeldinger(Duration fra, Duration til) {
@@ -65,6 +69,10 @@ public class MoteSMSService {
     )
     @SchedulerLock(name = "stopp_mote_sms_scheduledTask", lockAtMostFor = "PT20M")
     @Timed(value = "stopmoteservicemelding", histogram = true)
+    public void stopMoteSmsCron() {
+        stopMoteSms();
+    }
+
     public void stopMoteSms() {
         MDC.put("running.job", "moteSmsServiceStopper");
 

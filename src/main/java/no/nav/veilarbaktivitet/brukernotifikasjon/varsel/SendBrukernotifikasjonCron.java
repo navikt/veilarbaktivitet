@@ -27,8 +27,12 @@ public class SendBrukernotifikasjonCron {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     @SchedulerLock(name = "send_brukernotifikasjoner", lockAtMostFor = "PT20M")
+    public void sendBrukernotifikasjonerCron() {
+        sendBrukernotifikasjoner();
+    }
+
     public void sendBrukernotifikasjoner() {
-            sendAlle(500);
+        sendAlle(500);
     }
 
     void sendAlle(int maxBatchSize) {
