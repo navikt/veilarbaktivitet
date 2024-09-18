@@ -75,7 +75,6 @@ spec:
           cluster: prod-gcp
     outbound:
       external:
-        - host: veilarboppfolging.prod-fss-pub.nais.io
         - host: veilarbaktivitet.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: veilarbdialog.intern.nav.no
@@ -87,6 +86,7 @@ spec:
           namespace: poao
         - application: veilarbdialog
           namespace: dab
+        - host: veilarboppfolging.prod-gcp-pub.nais.io
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp
@@ -120,7 +120,7 @@ spec:
     - name: AKTIVITETSPLAN_URL
       value: "https://aktivitetsplan.nav.no"
     - name: VEILARBOPPFOLGINGAPI_URL
-      value: "https://veilarboppfolging.prod-fss-pub.nais.io"
+      value: "http://veilarboppfolging.poao"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.prod-fss-pub.nais.io"
     - name: VEILARBAKTIVITET_FSS_URL
