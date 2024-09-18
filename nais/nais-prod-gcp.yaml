@@ -86,7 +86,8 @@ spec:
           namespace: poao
         - application: veilarbdialog
           namespace: dab
-        - host: veilarboppfolging.prod-gcp-pub.nais.io
+        - application: veilarboppfolging
+          namespace: poao
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp
