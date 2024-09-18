@@ -8,7 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@EnableSchedulerLock(defaultLockAtLeastFor = "PT1M", defaultLockAtMostFor = "PT10M")
+@EnableSchedulerLock(defaultLockAtLeastFor = "${shedlock.lockAtLeastFor}", defaultLockAtMostFor = "PT10M")
 public class VeilarbaktivitetApp {
     public static void main(String... args) {
         SslUtils.setupTruststore();
