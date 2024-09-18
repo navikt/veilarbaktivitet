@@ -37,13 +37,6 @@ public class OkHttpClientConfig {
                 .build();
     }
 
-    @Bean OkHttpClient veilarbpersonHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
-        return RestClient.baseClientBuilder()
-                .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbpersonScope)))
-            .eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
-            .build();
-    }
-
     @Bean OkHttpClient veilarbarenaHttpClient(MeterRegistry meterRegistry, AzureAdMachineToMachineTokenClient azureAdMachineToMachineTokenClient) {
         return RestClient.baseClientBuilder()
             .addInterceptor(azureAdInterceptor(() -> azureAdMachineToMachineTokenClient.createMachineToMachineToken(veilarbarenaScope)))
@@ -68,7 +61,6 @@ public class OkHttpClientConfig {
     }
 
     private final String veilarboppfolgingScope = String.format("api://%s-gcp.poao.veilarboppfolging/.default", isProduction().orElse(false) ? "prod" : "dev");
-    private final String veilarbpersonScope = String.format("api://%s-fss.pto.veilarbperson/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String veilarbarenaScope = String.format("api://%s-fss.pto.veilarbarena/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String orkivarScope = String.format("api://%s-gcp.dab.orkivar/.default", isProduction().orElse(false) ? "prod" : "dev");
     private final String dialogScope = String.format("api://%s-gcp.dab.veilarbdialog/.default", isProduction().orElse(false) ? "prod" : "dev");
