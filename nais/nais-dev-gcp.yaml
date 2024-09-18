@@ -86,12 +86,12 @@ spec:
         - host: orkivar.intern.dev.nav.no
         - host: axsys.dev-fss-pub.nais.io
       rules:
-        - application: veilarboppfolging
-          namespace: poao
         - application: poao-tilgang
           namespace: poao
         - application: veilarbdialog
           namespace: dab
+        - application: veilarboppfolging
+          namespace: poao
   gcp:
     sqlInstances:
       - name: veilarbaktivitet
