@@ -217,7 +217,7 @@ class ArenaControllerTest {
                 .thenReturn(Optional.of(new AktiviteterDTO()
                         .setGruppeaktiviteter(List.of(medFho, utenFho))));
         controller.opprettFHO(forhaandsorientering, medFho.getAktivitetId(), fnr.otherFnr());
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()), false);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS)
                 .hasSize(2)
                 .anyMatch(a -> a.getType().equals(ArenaAktivitetTypeDTO.GRUPPEAKTIVITET) && a.getId().equals(medFho.getAktivitetId().id()) && a.getForhaandsorientering().getTekst().equals(forhaandsorientering.getTekst()))
@@ -234,7 +234,7 @@ class ArenaControllerTest {
                                 createGruppeaktivitet(startDatoOppfolging.toLocalDate())
                         ))));
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()), false);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
 
         Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
     }
@@ -248,7 +248,7 @@ class ArenaControllerTest {
                                 createGruppeaktivitet(startDatoOppfolging.toLocalDate())
                         ))));
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()), false);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
     }
 
@@ -265,7 +265,7 @@ class ArenaControllerTest {
                                 createTiltaksaktivitet(startDatoOppfolging.toLocalDate())
                         ))));
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()), true);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
         Assertions.assertThat(arenaAktivitetDTOS).hasSize(2);
     }
 
@@ -273,7 +273,7 @@ class ArenaControllerTest {
     void hentArenaAktiviteterSkalReturnereTomListeNarArenaGirTomListe() {
         when(veilarbarenaClient.hentAktiviteter(fnr)).thenReturn(Optional.empty());
 
-        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()), false);
+        List<ArenaAktivitetDTO> arenaAktivitetDTOS = controller.postHentArenaAktiviteter(new ArenaController.FnrDto(fnr.get()));
 
         Assertions.assertThat(arenaAktivitetDTOS).isEmpty();
     }

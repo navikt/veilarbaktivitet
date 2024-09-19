@@ -53,7 +53,7 @@ open class ArenaController(
     data class FnrDto (val fnr: String?)
 
     @PostMapping("/tiltak")
-    open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto, @RequestParam filterArbeidsmarkedsTiltak: Boolean? = true) : List<ArenaAktivitetDTO> {
+    open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
         val fnr: Fnr = if (authService.erEksternBruker()) {
             authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Klarte ikke å hente ut fnr fra token")
         } else {
@@ -61,7 +61,7 @@ open class ArenaController(
             Fnr.of(fnrDto.fnr)
         }
         authService.sjekkTilgangTilPerson(fnr)
-        return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()), filterArbeidsmarkedsTiltak?: true)
+        return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()))
     }
 
     @PutMapping("/forhaandsorientering/lest")

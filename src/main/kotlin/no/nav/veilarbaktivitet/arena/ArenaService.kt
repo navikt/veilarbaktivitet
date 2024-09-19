@@ -155,7 +155,7 @@ open class ArenaService(
         return arenaAktivitetDTO.setForhaandsorientering(nyForhaandsorientering.toDTO())
     }
 
-    open fun hentArenaAktiviteter(fnr: Person.Fnr, filterArbeidsmarkedsTiltak: Boolean = true): List<ArenaAktivitetDTO> {
+    open fun hentArenaAktiviteter(fnr: Person.Fnr): List<ArenaAktivitetDTO> {
 
         val arenaAktiviteter = hentAktiviteterRaw(fnr)
 
@@ -188,7 +188,7 @@ open class ArenaService(
         logUmigrerteIder(filtrerteArenaAktiviteter)
         loggArenaTiltakUtenOppfolging(arenaAktiviteter)
         val filtrerteArenaAktiviteterUtenTiltaksaktivitet = filtrerteArenaAktiviteter.filter { it.type != ArenaAktivitetTypeDTO.TILTAKSAKTIVITET }
-        return if (filterArbeidsmarkedsTiltak) filtrerteArenaAktiviteterUtenTiltaksaktivitet else filtrerteArenaAktiviteter
+        return filtrerteArenaAktiviteterUtenTiltaksaktivitet
     }
 
     open fun logUmigrerteIder(arenaAktiviteter: List<ArenaAktivitetDTO>) {
