@@ -438,7 +438,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var aktivitetskortMelding = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(aktivitetskortMelding));
         // Opprett FHO
-        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, serie.getArenaId()).get(0);
+        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteterInkludertAMTiltak(mockBruker, serie.getArenaId()).getFirst();
         var avtaltMedNavDTO = new AvtaltMedNavDTO()
                 .setAktivitetVersjon(arenaAktivitet.getVersjon())
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder()

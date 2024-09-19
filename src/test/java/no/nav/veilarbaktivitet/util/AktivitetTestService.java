@@ -456,6 +456,21 @@ public class AktivitetTestService {
                 .jsonPath().getList(".", ArenaAktivitetDTO.class);
     }
 
+    public List<ArenaAktivitetDTO> hentArenaAktiviteterInkludertAMTiltak(MockBruker bruker, ArenaId arenaId) {
+        stub_hent_arenaaktiviteter_fra_veilarbarena(bruker.getFnrAsFnr(), arenaId.id());
+        return bruker
+                .createRequest()
+                .body(new ArenaController.FnrDto(bruker.getFnr()))
+                .post("/veilarbaktivitet/api/arena/tiltak?filterArbeidsmarkedsTiltak=false")
+                .then()
+                .assertThat()
+                .statusCode(HttpStatus.OK.value())
+                .extract()
+                .response()
+                .jsonPath().getList(".", ArenaAktivitetDTO.class);
+    }
+
+
     public List<Aktivitet> hentAktiviteterInternApi(MockVeileder veileder, Person.AktorId aktorId) {
         return veileder
                 .createRequest()

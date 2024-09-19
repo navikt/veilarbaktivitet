@@ -99,7 +99,17 @@ public class VeilarbarenaMapper {
     static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
         val sistEndret = tiltaksaktivitet.getStatusSistEndret();
         val tilDato = mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom);
-        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, sistEndret);
+        LocalDate oppslagsDato;
+        if (tilDato != null) {
+            if (tilDato.before(DateUtils.toDate(sistEndret))) {
+                oppslagsDato = DateUtils.dateToLocalDate(tilDato);
+            } else {
+                oppslagsDato = sistEndret;
+            }
+        } else {
+            oppslagsDato = sistEndret;
+        }
+        val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, oppslagsDato);
 
         val arenaAktivitetDTO = new ArenaAktivitetDTO()
                 .setId(tiltaksaktivitet.getAktivitetId().id())
@@ -152,8 +162,8 @@ public class VeilarbarenaMapper {
                         .forEach(motePlan::add)
                 );
 
-        Date startDato = motePlan.get(0).getStartDato();
-        Date sluttDato = motePlan.get(motePlan.size() - 1).getSluttDato();
+        Date startDato = motePlan.getFirst().getStartDato();
+        Date sluttDato = motePlan.getLast().getSluttDato();
         AktivitetStatus status = "AVBR".equals(gruppeaktivitet.getStatus()) ?
                 AVBRUTT : mapTilAktivitetsStatus(startDato, sluttDato);
 

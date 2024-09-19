@@ -28,6 +28,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Test
 import org.springframework.http.HttpStatus
+import java.net.URI
 import java.net.URL
 import java.time.Instant
 import java.time.ZoneId
@@ -102,7 +103,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                       "navn": "${bruker.navn.tilFornavnMellomnavnEtternavn()}",
                       "fnr": "${bruker.fnr}",
                       "oppfølgingsperiodeStart": "${norskDato(sisteOppfølgingsperiode.startTid)}",
-                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) } ?: null},
+                      "oppfølgingsperiodeSlutt": ${sisteOppfølgingsperiode.sluttTid?.let { norskDato(it) }},
                       "oppfølgingsperiodeId": "${sisteOppfølgingsperiode.oppfolgingsperiodeId}",
                       "aktiviteter" : {
                         "Planlagt" : [ {
@@ -570,19 +571,19 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val eksternHandling = LenkeSeksjon(
             "EksternHandlingTekst",
             "EksternHandlingSubTekst",
-            URL("http://localhost:8080"),
+            URI.create("http://localhost:8080").toURL(),
             LenkeType.EKSTERN
         )
         val internHandling = LenkeSeksjon(
             "InternHandlingTekst",
             "InternHandlingSubTekst",
-            URL("http://localhost:8080"),
+            URI.create("http://localhost:8080").toURL(),
             LenkeType.INTERN
         )
         val fellesHandling = LenkeSeksjon(
             "FellesHandlingTekst",
             "FellesHandlingSubTekst",
-            URL("http://localhost:8080"),
+            URI.create("http://localhost:8080").toURL(),
             LenkeType.FELLES
         )
 
@@ -706,7 +707,7 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
         val oppfølgingsperiode = bruker.oppfolgingsperioder.maxBy { it.startTid }
         val arenaAktivitetEndretDato =
             iso8601DateFromZonedDateTime(oppfølgingsperiode.startTid.plusDays(1), ZoneId.systemDefault())
-        val arenaAktivitetId = "ARENATA123"
+        val arenaAktivitetId = "ARENAUA123"
         val tiltaksnavn = "Et tiltaksnavn fra Arena!"
         stubHentArenaAktiviteter(bruker.fnr, arenaAktivitetId, arenaAktivitetEndretDato, tiltaksnavn)
         stubIngenDialogTråder(bruker.fnr)
@@ -734,14 +735,14 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                               "oppfølgingsperiodeId" : "${oppfølgingsperiode.oppfolgingsperiodeId}",
                               "journalførendeEnhet" : "dummyEnhet",
                               "aktiviteter" : {
-                                "Gjennomføres" : [ {
-                                  "tittel" : "Et tiltaksnavn fra Arena!",
-                                  "type" : "Tiltak gjennom NAV",
-                                  "status" : "Gjennomføres",
+                                "Fullført" : [ {
+                                  "tittel" : "Ordinær utdanning for enslige forsørgere mv",
+                                  "type" : "Utdanning",
+                                  "status" : "Fullført",
                                   "detaljer" : [ {
                                     "stil" : "PARAGRAF",
                                     "tittel" : "Fullført / Tiltak gjennom NAV",
-                                    "tekst" : null
+                                    "tekst" : "Et tiltaksnavn fra Arena!"
                                   }, {
                                     "stil" : "HALV_LINJE",
                                     "tittel" : "Fra dato",
@@ -750,18 +751,6 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                                     "stil" : "HALV_LINJE",
                                     "tittel" : "Til dato",
                                     "tekst" : "25. november 2021"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Deltakelsesprosent",
-                                    "tekst" : "60%"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Arrangør",
-                                    "tekst" : "arrangor"
-                                  }, {
-                                    "stil" : "HALV_LINJE",
-                                    "tittel" : "Dager per uke",
-                                    "tekst" : "3"
                                   } ],
                                   "dialogtråd" : null,
                                   "etiketter" : [ {
@@ -948,8 +937,8 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                     {
                       "tiltaksaktiviteter": [
                           {
-                            "tiltaksnavn": "$tiltaksnavn",
-                            "aktivitetId": "$arenaAktivitetId",
+                            "tiltaksnavn": "Gruppe AMO hos Bettan",
+                            "aktivitetId": "ARENATA123456",
                             "tiltakLokaltNavn": "lokaltnavn",
                             "arrangor": "arrangor",
                             "bedriftsnummer": "asd",
@@ -965,7 +954,17 @@ internal class ArkiveringsControllerTest : SpringBootTestBase() {
                           }
                       ],
                       "gruppeaktiviteter": [],
-                      "utdanningsaktiviteter": []
+                      "utdanningsaktiviteter": [
+                        {
+                            "aktivitetstype": "Ordinær utdanning for enslige forsørgere mv",
+                            "beskrivelse": "$tiltaksnavn",
+                            "aktivitetId": "$arenaAktivitetId",
+                            "aktivitetPeriode": {
+                                "fom": "2021-11-18",
+                                "tom": "2021-11-25"
+                            }
+                        }
+                      ]
                     }
                 """.trimIndent()
                     )

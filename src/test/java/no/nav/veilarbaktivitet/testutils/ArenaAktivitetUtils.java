@@ -13,28 +13,26 @@ import java.util.Random;
 
 public class ArenaAktivitetUtils {
 
-    public static AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet() {
+    public static AktiviteterDTO.Tiltaksaktivitet createTiltaksaktivitet(LocalDate startDatoOppfølging) {
         return new AktiviteterDTO.Tiltaksaktivitet()
                 .setDeltakerStatus(VeilarbarenaMapper.ArenaStatus.GJENN.name())
                 .setTiltaksnavn(VeilarbarenaMapper.VANLIG_AMO_NAVN)
-                .setStatusSistEndret(LocalDate.now().minusYears(7))
+                .setStatusSistEndret(startDatoOppfølging.plusDays(1))
                 .setDeltakelsePeriode(
                         new AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode()
-                                // Dette er vanlig på VASV tiltakene, starter før aktivitetplanen, slutter
-                                // mange år frem i tid
-                                .setFom(LocalDate.now().minusYears(7))
-                                .setTom(LocalDate.now().plusYears(7))
+                                .setFom(startDatoOppfølging.plusDays(1))
+                                .setTom(startDatoOppfølging.plusYears(25))
                 )
                 .setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
     }
 
-    public static AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet() {
+    public static AktiviteterDTO.Gruppeaktivitet createGruppeaktivitet(LocalDate startDatoOppfølging) {
         return new AktiviteterDTO.Gruppeaktivitet()
                 .setMoteplanListe(List.of(
                                 new AktiviteterDTO.Gruppeaktivitet.Moteplan()
-                                        .setStartDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setStartDato(startDatoOppfølging)
                                         .setStartKlokkeslett("10:00:00")
-                                        .setSluttDato(LocalDate.ofInstant(Instant.now().minus(7, ChronoUnit.DAYS), ZoneId.systemDefault()))
+                                        .setSluttDato(startDatoOppfølging)
                                         .setSluttKlokkeslett("12:00:00")
                                 ,
                                 new AktiviteterDTO.Gruppeaktivitet.Moteplan()
@@ -45,13 +43,13 @@ public class ArenaAktivitetUtils {
                         )
 
                 )
-                .setAktivitetId(new ArenaId("ARENATA" + getRandomString()));
+                .setAktivitetId(new ArenaId("ARENAGA" + getRandomString()));
     }
 
-    public static AktiviteterDTO.Utdanningsaktivitet createUtdanningsaktivitet() {
+    public static AktiviteterDTO.Utdanningsaktivitet createUtdanningsaktivitet(LocalDate startDatoOppfølging) {
         AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode periode = new AktiviteterDTO.Utdanningsaktivitet.AktivitetPeriode()
-                .setFom(LocalDate.ofInstant(Instant.now().plus(2, ChronoUnit.DAYS), ZoneId.systemDefault()))
-                .setTom(LocalDate.ofInstant(Instant.now().plus(4, ChronoUnit.DAYS), ZoneId.systemDefault()));
+                .setFom(startDatoOppfølging.plusDays(2))
+                .setTom(startDatoOppfølging.plusDays(4));
 
         return new AktiviteterDTO.Utdanningsaktivitet()
                 .setAktivitetId(new ArenaId("ARENAUA" + getRandomString()))

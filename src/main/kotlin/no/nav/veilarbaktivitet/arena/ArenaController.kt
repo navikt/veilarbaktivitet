@@ -28,8 +28,6 @@ open class ArenaController(
     private val arenaService: ArenaService,
 ) {
 
-    private val log = LoggerFactory.getLogger(javaClass)
-
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
     @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
     open fun opprettFHO(
@@ -55,7 +53,7 @@ open class ArenaController(
     data class FnrDto (val fnr: String?)
 
     @PostMapping("/tiltak")
-    open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto) : List<ArenaAktivitetDTO> {
+    open fun postHentArenaAktiviteter(@RequestBody fnrDto: FnrDto, @RequestParam filterArbeidsmarkedsTiltak: Boolean? = true) : List<ArenaAktivitetDTO> {
         val fnr: Fnr = if (authService.erEksternBruker()) {
             authService.getLoggedInnUser() as? Fnr ?: throw ResponseStatusException(HttpStatus.FORBIDDEN, "Klarte ikke å hente ut fnr fra token")
         } else {
@@ -63,7 +61,7 @@ open class ArenaController(
             Fnr.of(fnrDto.fnr)
         }
         authService.sjekkTilgangTilPerson(fnr)
-        return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()))
+        return arenaService.hentArenaAktiviteter(Person.fnr(fnr.get()), filterArbeidsmarkedsTiltak?: true)
     }
 
     @PutMapping("/forhaandsorientering/lest")
