@@ -456,6 +456,7 @@ public class AktivitetTestService {
                 .jsonPath().getList(".", ArenaAktivitetDTO.class);
     }
 
+
     public List<Aktivitet> hentAktiviteterInternApi(MockVeileder veileder, Person.AktorId aktorId) {
         return veileder
                 .createRequest()

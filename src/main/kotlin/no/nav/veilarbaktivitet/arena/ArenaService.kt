@@ -50,7 +50,7 @@ open class ArenaService(
 
     open fun hentAktiviteterRaw(fnr: Person.Fnr?): List<ArenaAktivitetDTO> {
         val aktiviteterFraArena = veilarbarenaClient.hentAktiviteter(fnr)
-        if (aktiviteterFraArena.isEmpty) return listOf()
+        if (aktiviteterFraArena.isEmpty) return emptyList()
 
         val aktorId = personService.getAktorIdForPersonBruker(fnr)
             .orElseThrow {
@@ -187,7 +187,8 @@ open class ArenaService(
             }
         logUmigrerteIder(filtrerteArenaAktiviteter)
         loggArenaTiltakUtenOppfolging(arenaAktiviteter)
-        return filtrerteArenaAktiviteter
+        val filtrerteArenaAktiviteterUtenTiltaksaktivitet = filtrerteArenaAktiviteter.filter { it.type != ArenaAktivitetTypeDTO.TILTAKSAKTIVITET }
+        return filtrerteArenaAktiviteterUtenTiltaksaktivitet
     }
 
     open fun logUmigrerteIder(arenaAktiviteter: List<ArenaAktivitetDTO>) {
@@ -203,7 +204,9 @@ open class ArenaService(
         val tiltakIdErUtenOppfolgingsperiode = aktiviteter
             .filter { it.oppfolgingsperiodeId == null }
             .joinToString(",") { it.id }
-        log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
+        if (tiltakIdErUtenOppfolgingsperiode.isNotEmpty()) {
+            log.info("Arenaaktiviteter uten oppfolgingsperiode: $tiltakIdErUtenOppfolgingsperiode")
+        }
     }
 
     @Transactional

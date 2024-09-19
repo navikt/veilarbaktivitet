@@ -44,6 +44,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.mockito.kotlin.any
@@ -740,6 +741,7 @@ open class AktivitetskortConsumerIntegrationTest(
     }
 
     @Test
+    @Disabled("TODO Re-introduser når vi begynner på gruppe/utdanningstiltak")
     fun tiltak_endepunkt_skal_legge_pa_aktivitet_id_og_versjon_pa_migrerte_arena_aktiviteteter() {
         val arenaaktivitetId = ArenaId("ARENATA123")
         val tiltaksaktivitet = aktivitetskort(UUID.randomUUID(), AktivitetskortStatus.PLANLAGT)
@@ -772,7 +774,7 @@ open class AktivitetskortConsumerIntegrationTest(
         Mockito.`when`(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE))
             .thenReturn(false)
         val preMigreringArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        assertThat(preMigreringArenaAktiviteter).hasSize(1)
+        assertThat(preMigreringArenaAktiviteter).hasSize(0) // ikke 1, fordi alle tiltak er filtrert bort
         val preMigreringVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
         assertThat(preMigreringVeilarbAktiviteter).isEmpty()
 
@@ -780,7 +782,7 @@ open class AktivitetskortConsumerIntegrationTest(
         aktivitetTestService.opprettEksterntArenaKort(ArenaKort(tiltaksaktivitet, arenaMeldingHeaders(mockBruker, arenaaktivitetId)))
         // Toggle av, skal ikke vise migrerte aktiviteter
         val toggleAvArenaAktiviteter = aktivitetTestService.hentArenaAktiviteter(mockBruker, arenaaktivitetId)
-        assertThat(toggleAvArenaAktiviteter).hasSize(1)
+        assertThat(toggleAvArenaAktiviteter).hasSize(0) // Ikke 1, fordi alle tiltak er filtrert bort
         val toggleAvVeilarbAktiviteter = aktivitetTestService.hentAktiviteterForFnr(mockBruker).aktiviteter
         assertThat(toggleAvVeilarbAktiviteter).isEmpty()
         // Toggle på, skal vise migrerte aktiviteter

@@ -28,8 +28,6 @@ open class ArenaController(
     private val arenaService: ArenaService,
 ) {
 
-    private val log = LoggerFactory.getLogger(javaClass)
-
     @PutMapping("/{oppfolgingsperiodeId}/forhaandsorientering")
     @AuthorizeFnr(auditlogMessage = "Opprett forhåndsorientering", resourceIdParamName = "oppfolgingsperiodeId", resourceType = OppfolgingsperiodeResource::class)
     open fun opprettFHO(

@@ -112,7 +112,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         oppgaveConsumer = kafkaTestService.createAvroAvroConsumer(oppgaveTopic);
         beskjedConsumer = kafkaTestService.createAvroAvroConsumer(beskjedTopic);
         doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
-        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(false);
+        when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 
     @AfterEach
@@ -437,14 +437,14 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
         var aktivitetskortMelding = serie.ny(AktivitetskortStatus.GJENNOMFORES, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(aktivitetskortMelding));
+        AktivitetDTO opprettetAktivitet = aktivitetTestService.hentAktivitetByFunksjonellId(mockBruker, mockVeileder, serie.getFunksjonellId());
         // Opprett FHO
-        var arenaAktivitet = aktivitetTestService.hentArenaAktiviteter(mockBruker, serie.getArenaId()).get(0);
         var avtaltMedNavDTO = new AvtaltMedNavDTO()
-                .setAktivitetVersjon(arenaAktivitet.getVersjon())
+                .setAktivitetVersjon(Long.parseLong(opprettetAktivitet.getVersjon()))
                 .setForhaandsorientering(ForhaandsorienteringDTO.builder()
                         .type(Type.SEND_FORHAANDSORIENTERING)
                         .tekst("lol").lestDato(null).build());
-        aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(arenaAktivitet.getId()));
+        aktivitetTestService.opprettFHOForInternAktivitet(mockBruker, mockVeileder, avtaltMedNavDTO, Long.parseLong(opprettetAktivitet.getId()));
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
         // Avbryt aktivitet
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
