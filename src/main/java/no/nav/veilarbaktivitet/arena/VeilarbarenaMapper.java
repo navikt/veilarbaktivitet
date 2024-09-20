@@ -26,7 +26,8 @@ import static no.nav.common.utils.EnvironmentUtils.getOptionalProperty;
 import static no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus.*;
 import static no.nav.veilarbaktivitet.config.ApplicationContext.ARENA_AKTIVITET_DATOFILTER_PROPERTY;
 import static no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeUtilKt.finnOppfolgingsperiodeForArenaAktivitet;
-import static no.nav.veilarbaktivitet.util.DateUtils.*;
+import static no.nav.veilarbaktivitet.util.DateUtils.toDate;
+import static no.nav.veilarbaktivitet.util.DateUtils.toLocalDate;
 
 @Slf4j
 public class VeilarbarenaMapper {
@@ -97,17 +98,22 @@ public class VeilarbarenaMapper {
     }
 
     static ArenaAktivitetDTO mapTilAktivitet(AktiviteterDTO.Tiltaksaktivitet tiltaksaktivitet, List<Oppfolgingsperiode> oppfolgingsperioder) {
-        val sistEndret = tiltaksaktivitet.getStatusSistEndret();
-        val tilDato = mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom);
+        val sistEndret = Optional.ofNullable(tiltaksaktivitet.getStatusSistEndret());
+        val tilDatoDate = mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getTom);
+        val tilDato = tilDatoDate != null ? DateUtils.dateToLocalDate(tilDatoDate) : null;
         LocalDate oppslagsDato;
-        if (tilDato != null) {
-            if (tilDato.before(DateUtils.toDate(sistEndret))) {
-                oppslagsDato = DateUtils.dateToLocalDate(tilDato);
+        if (sistEndret.isEmpty() && tilDato == null) {
+            oppslagsDato = null;
+        } else if (sistEndret.isPresent() && tilDato != null) {
+            if (tilDato.isBefore(sistEndret.get())) {
+                oppslagsDato = tilDato;
             } else {
-                oppslagsDato = sistEndret;
+                oppslagsDato = sistEndret.get();
             }
+        } else if (sistEndret.isEmpty()) {
+            oppslagsDato = tilDato;
         } else {
-            oppslagsDato = sistEndret;
+            oppslagsDato = sistEndret.get();
         }
         val oppfolgingsperiode = finnOppfolgingsperiodeForArenaAktivitet(oppfolgingsperioder, oppslagsDato);
 
