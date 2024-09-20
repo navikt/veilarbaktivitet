@@ -122,7 +122,7 @@ public class VeilarbarenaMapper {
                 .setStatus(EnumUtils.valueOf(ArenaStatus.class, tiltaksaktivitet.getDeltakerStatus()).getStatus())
                 .setType(ArenaAktivitetTypeDTO.TILTAKSAKTIVITET)
                 .setFraDato(mapPeriodeToDate(tiltaksaktivitet.getDeltakelsePeriode(), AktiviteterDTO.Tiltaksaktivitet.DeltakelsesPeriode::getFom))
-                .setTilDato(tilDato)
+                .setTilDato(tilDatoDate)
                 .setAvtalt(true)
                 .setDeltakelseProsent(tiltaksaktivitet.getDeltakelseProsent() != null ? tiltaksaktivitet.getDeltakelseProsent().floatValue() : null)
                 .setTiltaksnavn(tiltaksaktivitet.getTiltaksnavn())
@@ -130,7 +130,7 @@ public class VeilarbarenaMapper {
                 .setArrangoer(tiltaksaktivitet.getArrangor())
                 .setBedriftsnummer(tiltaksaktivitet.getBedriftsnummer())
                 .setAntallDagerPerUke(tiltaksaktivitet.getAntallDagerPerUke())
-                .setStatusSistEndret(mapToDate(sistEndret))
+                .setStatusSistEndret(mapToDate(sistEndret.orElse(null)))
                 .setOpprettetDato(mapToDate(tiltaksaktivitet.getStatusSistEndret()))
                 .setOppfolgingsperiodeId(oppfolgingsperiode != null ? oppfolgingsperiode.oppfolgingsperiodeId() : null);
 
