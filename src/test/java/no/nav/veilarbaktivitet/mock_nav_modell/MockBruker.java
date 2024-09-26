@@ -25,7 +25,7 @@ public class MockBruker extends RestassuredUser {
     private List<Oppfolgingsperiode> oppfolgingsperioder = new ArrayList<>();
 
     MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
-        super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
+        super(brukerOptions.getFnr(),UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
         if (brukerOptions.isUnderOppfolging()) {
             oppfolgingsperiodeId = UUID.randomUUID();

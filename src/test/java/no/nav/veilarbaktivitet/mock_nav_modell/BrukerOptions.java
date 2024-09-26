@@ -17,6 +17,7 @@ public class BrukerOptions {
     private Navn navn;
     private Long sakId;
     private String mål;
+    private String fnr;
 
     /*
     @TODO
@@ -39,6 +40,8 @@ public class BrukerOptions {
                 .erUnderKvp(false)
                 .navn(new Navn("Navn", null, "Navnesen"))
                 .sakId(1000L)
-                .mål("Å få meg jobb");
+                .mål("Å få meg jobb")
+                .fnr("01015450300");
+
     }
 }
