@@ -67,6 +67,19 @@ internal class InnsynrettControlerKtTest: SpringBootTestBase() {
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
 
+//    @Test
+    fun `veilleder skal også kunne sjekke om foresatte har innsyns rett`() {
+        val bruker = navMockService.createHappyBruker()
+        val veileder = navMockService.createVeileder("Z123456" ,bruker)
+
+        veileder
+            .createRequest()
+            .get( "http://localhost:$port/veilarbaktivitet/api/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)
+    }
+
     fun LocalDate.tilFødselsDato(): String {
         val dag = this.dayOfMonth.toString().padStart(2, '0')
         val måned = this.monthValue.toString().padStart(2, '0')
