@@ -2,6 +2,8 @@ package no.nav.veilarbaktivitet.mock_nav_modell;
 
 import lombok.Builder;
 import lombok.Getter;
+import no.nav.poao_tilgang.poao_tilgang_test_core.fnr_generator.FoedselsnummerGenerator;
+import no.nav.poao_tilgang.poao_tilgang_test_core.fnr_generator.Kjoenn;
 import no.nav.veilarbaktivitet.person.Navn;
 
 @Builder(toBuilder = true)
@@ -18,6 +20,8 @@ public class BrukerOptions {
     private Long sakId;
     private String mål;
     private String fnr;
+
+    private static FoedselsnummerGenerator foedselsnummerGenerator = new FoedselsnummerGenerator();
 
     /*
     @TODO
@@ -41,7 +45,7 @@ public class BrukerOptions {
                 .navn(new Navn("Navn", null, "Navnesen"))
                 .sakId(1000L)
                 .mål("Å få meg jobb")
-                .fnr("01015450300");
+                .fnr(foedselsnummerGenerator.foedselsnummer(null, Kjoenn.MANN,false).getAsString());
 
     }
 }
