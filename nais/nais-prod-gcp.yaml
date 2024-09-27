@@ -75,7 +75,6 @@ spec:
           cluster: prod-gcp
     outbound:
       external:
-        - host: veilarbaktivitet.prod-fss-pub.nais.io
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: veilarbdialog.intern.nav.no
         - host: dab-unleash-api.nav.cloud.nais.io
@@ -124,13 +123,9 @@ spec:
       value: "http://veilarboppfolging.poao"
     - name: VEILARBARENA_URL
       value: "https://veilarbarena.prod-fss-pub.nais.io"
-    - name: VEILARBAKTIVITET_FSS_URL
-      value: "https://veilarbaktivitet.prod-fss-pub.nais.io"
     - name: PDL_URL
       value: "https://pdl-api.prod-fss-pub.nais.io"
     - name: PDL_SCOPE
       value: "api://prod-fss.pdl.pdl-api/.default"
-    - name: FSS_PROXY_ENABLED
-      value: "false"
     - name: AXSYS_URL
       value: "https://axsys.prod-fss-pub.nais.io"
