@@ -133,7 +133,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     fun LocalDate.tilSyntetiskFødselsdato(type: FødselsnummerType): String {
         val datoString = this.tilFødselsDato()
         val førsteMånedSiffer =
-            Integer.parseInt(datoString.get(2).toString()) + type.førsteMånedssifferISyntetiskFnrPlussetMed
+            Integer.parseInt(datoString.get(2).toString()) + type.førsteMånedssifferIFnrPlussetMed
         return datoString.replaceRange(2, 3, førsteMånedSiffer.toString())
     }
 }
