@@ -39,8 +39,10 @@ class InnsynrettController(private val authService: IAuthService) {
         val måned = fnr.substring(2, 4).toInt()
         val år = fnr.substring(4, 6).toInt()
 
-        val indexTilSifferSomBestemerÅrHundre = 6
-        val århundre = if (Integer.parseInt(fnr[indexTilSifferSomBestemerÅrHundre].toString()) < 4) 1900 else 2000
+        // Dette vil fungere så lenge vi ikke har brukere på over 100 år
+        val inneværendeÅr = LocalDate.now().year.minus(2000)
+        val århundre = if (år > inneværendeÅr) 1900 else 2000
+
         val fødselsår = århundre + år
 
         val fødselsdato = LocalDate.of(fødselsår, måned, dag)

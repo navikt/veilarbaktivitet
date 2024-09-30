@@ -51,8 +51,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
     @Test
     fun `for bruker som er født på 1900 tallet har foresatte aldri innsynsrett`() {
-
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("01012320000").build()
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("01017120000").build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
 
         val response = bruker
@@ -121,6 +120,26 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .`as`(InnsynrettController.InnsynsrettDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
+    }
+
+    @Test
+    fun `skal kunne se at en person er født på 1900-tallet selv om personnummeret starter på 9`() {
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
+            .fnr("16917197656")
+            .build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+
+        val response = bruker
+            .createRequest()
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
 
     fun LocalDate.tilFødselsDato(): String {
