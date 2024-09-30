@@ -86,12 +86,17 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
         val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdato.tilSyntetiskFødselsdato()}60000").build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
 
-        bruker
+        val response = bruker
             .createRequest()
             .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
-            .statusCode(403)
+            .statusCode(200)
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
 
     fun LocalDate.tilFødselsDato(): String {
