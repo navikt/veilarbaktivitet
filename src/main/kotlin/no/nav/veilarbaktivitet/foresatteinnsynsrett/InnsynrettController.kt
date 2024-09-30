@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
+import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,9 +33,7 @@ class InnsynrettController(private val authService: IAuthService) {
     )
 
     private fun isUnder18(fødselsnummer: String): Boolean {
-        val fnr = if (erSyntetiskFødselsnummer(fødselsnummer)) {
-            tilOrdinærtFødselsnummerFormat(fødselsnummer)
-        } else fødselsnummer
+        val fnr = tilOrdinærtFødselsnummerFormat(fødselsnummer)
 
         val dag = fnr.substring(0, 2).toInt()
         val måned = fnr.substring(2, 4).toInt()
@@ -49,15 +48,5 @@ class InnsynrettController(private val authService: IAuthService) {
         val alder = Period.between(fødselsdato, dagensdato).years
 
         return alder < 18
-    }
-
-    private val førsteMånedssifferISyntetiskFnrPlussetMed = 8
-
-    fun erSyntetiskFødselsnummer(fnr: String) =
-        Integer.parseInt(fnr.get(2).toString()) >= førsteMånedssifferISyntetiskFnrPlussetMed
-
-    fun tilOrdinærtFødselsnummerFormat(fnr: String): String {
-        val korrigertFørsteMånedssiffer = Integer.parseInt(fnr.get(2).toString()) - førsteMånedssifferISyntetiskFnrPlussetMed
-        return fnr.replaceRange(2,3, korrigertFørsteMånedssiffer.toString())
     }
 }
