@@ -31,7 +31,11 @@ class InnsynrettController(private val authService: IAuthService) {
         val foresatteHarInnsynsrett: Boolean
     )
 
-    fun isUnder18(fnr: String): Boolean {
+    private fun isUnder18(fødselsnummer: String): Boolean {
+        val fnr = if (erSyntetiskFødselsnummer(fødselsnummer)) {
+            tilOrdinærtFødselsnummerFormat(fødselsnummer)
+        } else fødselsnummer
+
         val dag = fnr.substring(0, 2).toInt()
         val måned = fnr.substring(2, 4).toInt()
         val år = fnr.substring(4, 6).toInt()
@@ -45,5 +49,15 @@ class InnsynrettController(private val authService: IAuthService) {
         val alder = Period.between(fødselsdato, dagensdato).years
 
         return alder < 18
+    }
+
+    private val førsteMånedssifferISyntetiskFnrPlussetMed = 8
+
+    fun erSyntetiskFødselsnummer(fnr: String) =
+        Integer.parseInt(fnr.get(2).toString()) >= førsteMånedssifferISyntetiskFnrPlussetMed
+
+    fun tilOrdinærtFødselsnummerFormat(fnr: String): String {
+        val korrigertFørsteMånedssiffer = Integer.parseInt(fnr.get(2).toString()) - førsteMånedssifferISyntetiskFnrPlussetMed
+        return fnr.replaceRange(2,3, korrigertFørsteMånedssiffer.toString())
     }
 }

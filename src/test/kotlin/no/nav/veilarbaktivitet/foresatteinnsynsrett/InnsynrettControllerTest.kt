@@ -80,10 +80,36 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
             .statusCode(403)
     }
 
+    @Test
+    fun `skal støtte syntetiske føldselsnummere`() {
+        val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdato.tilSyntetiskFødselsdato()}60000").build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+
+        val response = bruker
+            .createRequest()
+            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isTrue()
+    }
+
     fun LocalDate.tilFødselsDato(): String {
         val dag = this.dayOfMonth.toString().padStart(2, '0')
         val måned = this.monthValue.toString().padStart(2, '0')
         val år = this.year.toString().substring(2)
         return "$dag$måned$år"
     }
+
+    fun LocalDate.tilSyntetiskFødselsdato(): String {
+        val datoString = this.tilFødselsDato()
+        val førsteMånedSiffer = Integer.parseInt(datoString.get(2).toString()) + 8
+        return datoString.replaceRange(2,3, førsteMånedSiffer.toString())
+    }
+
 }
