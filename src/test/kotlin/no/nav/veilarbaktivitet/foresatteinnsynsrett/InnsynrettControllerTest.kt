@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
+import no.nav.veilarbaktivitet.person.FødselsnummerType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -9,7 +10,7 @@ import org.junit.jupiter.api.Test
 import java.time.LocalDate
 
 
-internal class InnsynrettControllerTest: SpringBootTestBase() {
+internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `for bruker som er over 18 har ikke foresatte innsynsrett`() {
         val fødselsdato = LocalDate.now().minusYears(18)
@@ -18,7 +19,7 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -37,7 +38,7 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -56,7 +57,7 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -70,25 +71,48 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
     @Test
     fun `veilleder skal ikke kunne sjekke om foresatte har innsynsrett`() {
         val bruker = navMockService.createHappyBruker()
-        val veileder = navMockService.createVeileder("Z123456" ,bruker)
+        val veileder = navMockService.createVeileder("Z123456", bruker)
 
         veileder
             .createRequest()
-            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
             .statusCode(403)
     }
 
     @Test
-    fun `skal støtte syntetiske føldselsnummere`() {
+    fun `skal støtte syntetiske føldselsnumre fra TestNorge`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdato.tilSyntetiskFødselsdato()}60000").build()
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
+            .fnr("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.TEST_NORGE)}60000")
+            .build()
         val bruker = navMockService.createHappyBruker(brukerOptions)
 
         val response = bruker
             .createRequest()
-            .get( "http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isTrue()
+    }
+
+    @Test
+    fun `skal støtte syntetiske føldselsnumre fra Dolly`() {
+        val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
+            .fnr("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.DOLLY)}60000")
+            .build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+
+        val response = bruker
+            .createRequest()
+            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -106,10 +130,10 @@ internal class InnsynrettControllerTest: SpringBootTestBase() {
         return "$dag$måned$år"
     }
 
-    fun LocalDate.tilSyntetiskFødselsdato(): String {
+    fun LocalDate.tilSyntetiskFødselsdato(type: FødselsnummerType): String {
         val datoString = this.tilFødselsDato()
-        val førsteMånedSiffer = Integer.parseInt(datoString.get(2).toString()) + 8
-        return datoString.replaceRange(2,3, førsteMånedSiffer.toString())
+        val førsteMånedSiffer =
+            Integer.parseInt(datoString.get(2).toString()) + type.førsteMånedssifferISyntetiskFnrPlussetMed
+        return datoString.replaceRange(2, 3, førsteMånedSiffer.toString())
     }
-
 }
