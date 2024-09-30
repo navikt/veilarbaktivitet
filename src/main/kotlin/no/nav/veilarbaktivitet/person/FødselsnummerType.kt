@@ -1,5 +1,7 @@
 package no.nav.veilarbaktivitet.person
 
+import java.lang.Integer.parseInt
+
 enum class FødselsnummerType(val førsteMånedssifferIFnrPlussetMed: Int) {
     ORDINÆRT(0),
     DOLLY(4),
@@ -7,7 +9,7 @@ enum class FødselsnummerType(val førsteMånedssifferIFnrPlussetMed: Int) {
 
     companion object {
         fun fødselsnummerType(fnr: String): FødselsnummerType {
-            val førsteMånedssiffer = Integer.parseInt(fnr.get(2).toString())
+            val førsteMånedssiffer = parseInt(fnr.get(2).toString())
             return when {
                 førsteMånedssiffer >= TEST_NORGE.førsteMånedssifferIFnrPlussetMed -> TEST_NORGE
                 førsteMånedssiffer >= DOLLY.førsteMånedssifferIFnrPlussetMed -> DOLLY
@@ -19,7 +21,8 @@ enum class FødselsnummerType(val førsteMånedssifferIFnrPlussetMed: Int) {
 
 fun tilOrdinærtFødselsnummerFormat(fnr: String): String {
     val fødselsnummerType = FødselsnummerType.fødselsnummerType(fnr)
-    val førsteMånedssifferIFnrMåReduseresMed = fødselsnummerType.førsteMånedssifferIFnrPlussetMed
-    val korrigertFørsteMånedssiffer = Integer.parseInt(fnr.get(2).toString()) - førsteMånedssifferIFnrMåReduseresMed
-    return fnr.replaceRange(2,3, korrigertFørsteMånedssiffer.toString())
+    val indexFørsteMånedssiffer = 2
+    val korrigertFørsteMånedssiffer = parseInt(fnr.get(indexFørsteMånedssiffer).toString()) -
+            fødselsnummerType.førsteMånedssifferIFnrPlussetMed
+    return fnr.replaceRange(indexFørsteMånedssiffer, indexFørsteMånedssiffer + 1, korrigertFørsteMånedssiffer.toString())
 }
