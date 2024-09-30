@@ -84,6 +84,7 @@ spec:
         - host: dab-unleash-api.nav.cloud.nais.io
         - host: orkivar.intern.dev.nav.no
         - host: axsys.dev-fss-pub.nais.io
+        - host: pdl-api.dev-fss-pub.nais.io
       rules:
         - application: poao-tilgang
           namespace: poao
