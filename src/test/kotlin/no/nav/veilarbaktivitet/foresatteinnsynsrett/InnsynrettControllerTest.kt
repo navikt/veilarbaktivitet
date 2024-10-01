@@ -19,7 +19,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -38,7 +38,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -56,7 +56,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -74,7 +74,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         veileder
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(403)
@@ -90,7 +90,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -111,7 +111,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -131,7 +131,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
@@ -140,6 +140,26 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .`as`(InnsynrettController.InnsynsrettDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
+    }
+    
+    @Test
+    fun `Veileder skal også kunne sjekke om foresatte har innsynsrett`() {
+        val fødselsdatoBruker = LocalDate.now().minusYears(18)
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdatoBruker.tilFødselsDato()}60000").build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val veileder = navMockService.createVeileder(mockBruker = bruker)
+        
+        val response = veileder
+            .createRequest()
+            .get("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
 
     fun LocalDate.tilFødselsDato(): String {

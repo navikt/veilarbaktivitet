@@ -13,7 +13,7 @@ import java.time.Period
 
 
 @RestController
-@RequestMapping("/api/ekstern/innsynsrett")
+@RequestMapping("/api/innsynsrett")
 class InnsynrettController(private val authService: IAuthService) {
     
     @GetMapping()
