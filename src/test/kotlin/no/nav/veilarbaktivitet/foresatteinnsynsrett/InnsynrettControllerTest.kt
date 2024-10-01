@@ -25,7 +25,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
@@ -44,7 +44,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -62,7 +62,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
@@ -96,7 +96,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -117,7 +117,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -137,7 +137,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
@@ -157,7 +157,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
