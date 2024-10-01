@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
 import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
+
 import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
@@ -17,13 +18,14 @@ class InnsynrettController(private val authService: IAuthService) {
     @PostMapping()
     @AuthorizeFnr(auditlogMessage = "sjekker foresatte innsynsrett")
     fun foresatteHarInnsynsrett(@RequestBody input: InnsynsrettInboundDTO): InnsynsrettOutboundDTO {
-        val fnr = if (authService.erEksternBruker()) {
-            authService.getLoggedInnUser()
-        } else  {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+        val fnr: String = if (authService.erEksternBruker()) {
+            authService.getLoggedInnUser().get()
+        } else {
+            input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
-        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr.get())) // Adjust return value as needed
+
+        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr)) // Adjust return value as needed
     }
 
     data class InnsynsrettOutboundDTO(
