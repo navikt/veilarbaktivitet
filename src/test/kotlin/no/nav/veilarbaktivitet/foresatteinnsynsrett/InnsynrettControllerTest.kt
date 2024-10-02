@@ -166,7 +166,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
             .response()
             .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
-        assertThat(response.foresatteHarInnsynsrett).isTrue()
+        assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
 
     fun LocalDate.tilFødselsDato(): String {
