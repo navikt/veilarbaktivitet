@@ -21,7 +21,7 @@ class InnsynrettController(private val authService: IAuthService) {
             input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
-        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr)) // Adjust return value as needed
+        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr))
     }
 
     data class InnsynsrettOutboundDTO(
