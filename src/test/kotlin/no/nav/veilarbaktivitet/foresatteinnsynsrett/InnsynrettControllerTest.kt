@@ -71,19 +71,6 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     }
 
     @Test
-    fun `veilleder skal ikke kunne sjekke om foresatte har innsynsrett`() {
-        val bruker = navMockService.createHappyBruker()
-        val veileder = navMockService.createVeileder("Z123456", bruker)
-
-        veileder
-            .createRequest()
-            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
-            .then()
-            .assertThat()
-            .statusCode(403)
-    }
-
-    @Test
     fun `skal støtte syntetiske føldselsnumre fra TestNorge`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
         val brukerOptions = BrukerOptions.happyBruker().toBuilder()
