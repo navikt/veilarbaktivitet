@@ -1,35 +1,35 @@
 package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
-import no.nav.poao.dab.spring_a2_annotations.auth.AuthorizeFnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import java.time.LocalDate
 import java.time.Period
 
 
 @RestController
-@RequestMapping("/api/ekstern/innsynsrett")
+@RequestMapping("/api/innsynsrett")
 class InnsynrettController(private val authService: IAuthService) {
     
-    @GetMapping()
-    @AuthorizeFnr(auditlogMessage = "sjekker foresatte innsynsrett")
-    fun foresatteHarInnsynsrett(): InnsynsrettDTO {
-        val fnr = if (authService.erEksternBruker()) {
-            authService.getLoggedInnUser()
-        } else  {
-            throw ResponseStatusException(HttpStatus.FORBIDDEN)
+    @PostMapping()
+    fun foresatteHarInnsynsrett(@RequestBody input: InnsynsrettInboundDTO): InnsynsrettOutboundDTO {
+        val fnr: String = if (authService.erEksternBruker()) {
+            authService.getLoggedInnUser().get()
+        } else {
+            input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
         }
 
-        return InnsynsrettDTO(foresatteHarInnsynsrett = isUnder18(fnr.get())) // Adjust return value as needed
+        return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr))
     }
 
-    data class InnsynsrettDTO(
+    data class InnsynsrettOutboundDTO(
         val foresatteHarInnsynsrett: Boolean
+    )
+
+    data class InnsynsrettInboundDTO(
+        val fnr: String?
     )
 
     private fun isUnder18(fødselsnummer: String): Boolean {

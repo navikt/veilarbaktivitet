@@ -19,13 +19,14 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
@@ -38,13 +39,14 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -56,28 +58,16 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
-    }
-
-    @Test
-    fun `veilleder skal ikke kunne sjekke om foresatte har innsynsrett`() {
-        val bruker = navMockService.createHappyBruker()
-        val veileder = navMockService.createVeileder("Z123456", bruker)
-
-        veileder
-            .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
-            .then()
-            .assertThat()
-            .statusCode(403)
     }
 
     @Test
@@ -90,13 +80,14 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -111,13 +102,14 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isTrue()
     }
@@ -131,13 +123,35 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
         val response = bruker
             .createRequest()
-            .get("http://localhost:$port/veilarbaktivitet/api/ekstern/innsynsrett")
+            .body(InnsynrettController.InnsynsrettInboundDTO(null))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
             .then()
             .assertThat()
             .statusCode(200)
             .extract()
             .response()
-            .`as`(InnsynrettController.InnsynsrettDTO::class.java)
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
+
+        assertThat(response.foresatteHarInnsynsrett).isFalse()
+    }
+    
+    @Test
+    fun `Veileder skal også kunne sjekke om foresatte har innsynsrett`() {
+        val fødselsdatoBruker = LocalDate.now().minusYears(18)
+        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdatoBruker.tilFødselsDato()}60000").build()
+        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val veileder = navMockService.createVeileder(mockBruker = bruker)
+        
+        val response = veileder
+            .createRequest()
+            .body(InnsynrettController.InnsynsrettInboundDTO(bruker.fnr))
+            .post("http://localhost:$port/veilarbaktivitet/api/innsynsrett")
+            .then()
+            .assertThat()
+            .statusCode(200)//her i teste ble det feil
+            .extract()
+            .response()
+            .`as`(InnsynrettController.InnsynsrettOutboundDTO::class.java)
 
         assertThat(response.foresatteHarInnsynsrett).isFalse()
     }
