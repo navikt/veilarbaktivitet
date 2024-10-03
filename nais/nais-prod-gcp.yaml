@@ -78,7 +78,6 @@ spec:
         - host: veilarbarena.prod-fss-pub.nais.io
         - host: veilarbdialog.intern.nav.no
         - host: dab-unleash-api.nav.cloud.nais.io
-        - host: orkivar.intern.nav.no
         - host: axsys.prod-fss-pub.nais.io
         - host: pdl-api.prod-fss-pub.nais.io
       rules:
@@ -88,6 +87,7 @@ spec:
           namespace: dab
         - application: veilarboppfolging
           namespace: poao
+        - application: orkivar
   gcp:
     sqlInstances:
       - name: veilarbaktivitet-gcp
@@ -113,7 +113,7 @@ spec:
     - name: ARENA_AKTIVITET_DATOFILTER
       value: "2017-12-04"
     - name: ORKIVAR_URL
-      value: "https://orkivar.intern.nav.no"
+      value: "http://orkivar"
     - name: VEILARBDIALOG_URL
       value: "https://veilarbdialog.intern.nav.no"
     - name: KAFKA_ENABLED
