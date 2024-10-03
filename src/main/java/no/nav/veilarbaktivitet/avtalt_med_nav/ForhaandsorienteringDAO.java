@@ -66,7 +66,7 @@ public class ForhaandsorienteringDAO {
                 """;
         template.update(sql, params);
 
-        LOG.info("opprettet forhåndsorientering: {} med id: {} og aktivitetId: {}", fhoData, id, aktivitetId);
+        LOG.info("opprettet forhåndsorientering med id: {} og aktivitetId: {}", id, aktivitetId);
 
         return getById(id.toString());
     }
