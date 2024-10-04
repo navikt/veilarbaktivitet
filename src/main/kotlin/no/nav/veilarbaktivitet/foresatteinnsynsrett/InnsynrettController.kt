@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
+import no.nav.common.types.identer.Fnr
 import no.nav.poao.dab.spring_auth.IAuthService
 import no.nav.veilarbaktivitet.person.tilOrdinærtFødselsnummerFormat
 import org.springframework.http.HttpStatus
@@ -18,7 +19,9 @@ class InnsynrettController(private val authService: IAuthService) {
         val fnr: String = if (authService.erEksternBruker()) {
             authService.getLoggedInnUser().get()
         } else {
-            input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
+            val fnr = input.fnr ?: throw ResponseStatusException(HttpStatus.BAD_REQUEST)
+            authService.sjekkTilgangTilPerson(Fnr(fnr))
+            fnr
         }
 
         return InnsynsrettOutboundDTO(foresatteHarInnsynsrett = isUnder18(fnr))
