@@ -1,8 +1,8 @@
 package no.nav.veilarbaktivitet.foresatteinnsynsrett
 
+import no.nav.common.types.identer.Fnr
 import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.person.FødselsnummerType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -15,8 +15,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `for bruker som er over 18 har ikke foresatte innsynsrett`() {
         val fødselsdato = LocalDate.now().minusYears(18)
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdato.tilFødselsDato()}60000").build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
 
         val response = bruker
             .createRequest()
@@ -35,8 +34,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `for bruker som er under 18 har foresatte innsynsrett`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("${fødselsdato.tilFødselsDato()}60000").build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
 
         val response = bruker
             .createRequest()
@@ -54,8 +52,8 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
     @Test
     fun `for bruker som er født på 1900 tallet har foresatte aldri innsynsrett`() {
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder().fnr("01017120000").build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("01017120000"))
+
 
         val response = bruker
             .createRequest()
@@ -74,10 +72,8 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `skal støtte syntetiske føldselsnumre fra TestNorge`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
-            .fnr("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.TEST_NORGE)}60000")
-            .build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.TEST_NORGE)}50000"))
+
 
         val response = bruker
             .createRequest()
@@ -96,10 +92,8 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `skal støtte syntetiske føldselsnumre fra Dolly`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
-            .fnr("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.DOLLY)}60000")
-            .build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.DOLLY)}40000"))
+
 
         val response = bruker
             .createRequest()
@@ -117,10 +111,8 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
     @Test
     fun `skal kunne se at en person er født på 1900-tallet selv om personnummeret starter på 9`() {
-        val brukerOptions = BrukerOptions.happyBruker().toBuilder()
-            .fnr("16917197656")
-            .build()
-        val bruker = navMockService.createHappyBruker(brukerOptions)
+        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("16917197656"))
+
 
         val response = bruker
             .createRequest()

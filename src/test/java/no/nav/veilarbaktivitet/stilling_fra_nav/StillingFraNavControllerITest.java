@@ -11,9 +11,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -60,12 +57,6 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Autowired
     JdbcTemplate jdbc;
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
-    @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
-    @Autowired
-    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
     @LocalServerPort
     private int port;
     @Value("${topic.ut.stillingFraNav}")
@@ -169,7 +160,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void historikk_del_cv_transaksjoner() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
@@ -193,7 +184,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
         if (typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET))
             return;
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 

@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void hentAktiviteterTest() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
@@ -71,7 +71,7 @@ class InternApiControllerTest extends SpringBootTestBase {
 
     @Test
     void skalFunkeForAlleAktivitettyper() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {

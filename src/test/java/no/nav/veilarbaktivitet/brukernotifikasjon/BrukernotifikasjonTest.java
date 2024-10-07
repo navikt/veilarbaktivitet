@@ -91,9 +91,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @Autowired
     NamedParameterJdbcTemplate jdbc;
 
-    @Autowired
-    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
-
     @LocalServerPort
     private int port;
 
@@ -347,7 +344,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_kunne_opprette_brukernotifikasjon_pa_fho_pa_arena_aktiviteter_som_ikke_er_migrert_og_ha_lenke_med_riktig_id() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
         aktivitetTestService.opprettFHOForArenaAktivitet(mockBruker, arenaId, mockVeileder);
@@ -361,7 +358,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     @Test
     void skal_kunne_opprette_brukernotifications_pa_fho_pa_arena_aktiviteter_som_ER_migrert_og_ha_lenke_med_riktig_id() {
         when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var arenaId = new ArenaId("ARENATA123");
         // Opprett ekstern aktivitet
@@ -391,7 +388,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_lonnstilskudd_blir_avbrutt() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet
         var serie = new AktivitetskortSerie(mockBruker, AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD);
@@ -414,7 +411,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");
         // Opprett FHO
@@ -431,7 +428,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Test
     void skal_lukke_brukernotifikasjonsOppgave_nar_eksterne_arena_tiltak_blir_avbrutt_men_fho_opprettet_etter_migrering() {
-        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        var mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         var mockVeileder = MockNavService.createVeileder(mockBruker);
         // Opprett ekstern aktivitet og avbryter den
         var serie = ArenaAktivitetskortSerie.of(mockBruker, "MIDL");

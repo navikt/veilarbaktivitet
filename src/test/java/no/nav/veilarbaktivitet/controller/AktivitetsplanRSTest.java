@@ -74,7 +74,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @BeforeEach
     void moreSettup() {
-        mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         mockBrukersVeileder = MockNavService.createVeileder(mockBruker);
         annenMockVeilederMedNasjonalTilgang = MockNavService.createVeilederMedNasjonalTilgang();
         aktivVeileder = mockBrukersVeileder;
@@ -112,8 +112,8 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         var fho = ForhaandsorienteringDTO.builder().tekst("fho tekst").type(Type.SEND_FORHAANDSORIENTERING).build();
         avtaltMedNavService.opprettFHO(new AvtaltMedNavDTO().setAktivitetVersjon(aktivitetDataMedForhaandsorientering.getVersjon()).setForhaandsorientering(fho), aktivitetDataMedForhaandsorientering.getId(), mockBruker.getAktorId(), NavIdent.of("V123"));
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        assertNotNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataMedForhaandsorientering.getId().toString())).toList().get(0).getForhaandsorientering());
-        assertNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataUtenForhaandsorientering.getId().toString())).toList().get(0).getForhaandsorientering());
+        assertNotNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataMedForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
+        assertNull(resultat.getAktiviteter().stream().filter(aktivitet -> Objects.equals(aktivitet.getId(), aktivitetDataUtenForhaandsorientering.getId().toString())).toList().getFirst().getForhaandsorientering());
     }
 
     @Test
@@ -122,7 +122,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        var resultatAktivitet = resultat.getAktiviteter().getFirst();
         assertEquals(1, resultat.getAktiviteter().size());
         assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         assertNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
@@ -134,7 +134,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        var resultatAktivitet = resultat.getAktiviteter().getFirst();
         assertEquals(1, resultat.getAktiviteter().size());
         assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         assertNotNull(resultatAktivitet.getStillingFraNavData().getCvKanDelesData());
@@ -147,7 +147,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
         AktivitetData aktivitetData = aktivitetDAO.opprettNyAktivitet(aktivitet);
 
         var resultat = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder);
-        var resultatAktivitet = resultat.getAktiviteter().get(0);
+        var resultatAktivitet = resultat.getAktiviteter().getFirst();
         assertEquals(1, resultat.getAktiviteter().size());
         assertEquals(String.valueOf(aktivitetData.getId()), resultatAktivitet.getId());
         assertTrue(resultatAktivitet.getStillingFraNavData().getCvKanDelesData().getKanDeles());
@@ -301,12 +301,12 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void nar_jeg_flytter_en_aktivitet_til_en_annen_status() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().get(0);
+        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
         this.aktivitet = aktivitetTestService.oppdaterAktivitetStatus(mockBruker, mockBrukersVeileder,aktivitet, nyAktivitetStatus);
     }
 
     private void nar_jeg_oppdaterer_etiketten_pa_en_aktivitet() {
-        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().get(0);
+        val aktivitet = aktivitetTestService.hentAktiviteterForFnr(mockBruker, mockBrukersVeileder).getAktiviteter().getFirst();
         this.aktivitet = aktivitetTestService.oppdaterAktivitetEtikett(mockBruker, mockBrukersVeileder,aktivitet, nyAktivitetEtikett);
     }
 
@@ -321,7 +321,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     private Date oldOpprettetDato;
 
     private void nar_jeg_oppdaterer_en_av_aktiviten() {
-        val originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.get(0));
+        val originalAktivitet = aktivitetService.hentAktivitetMedForhaandsorientering(lagredeAktivitetsIder.getFirst());
         oldOpprettetDato = originalAktivitet.getOpprettetDato();
         nyLenke = "itsOver9000.com";
         nyAvsluttetKommentar = "The more I talk, the more i understand why i'm single";
@@ -353,8 +353,8 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void da_skal_jeg_kunne_hente_en_aktivitet() {
-        assertThat(lagredeAktivitetsIder.get(0).toString(),
-                equalTo((aktivitetTestService.hentAktivitet(mockBruker, mockBrukersVeileder, lagredeAktivitetsIder.get(0).toString())).getId()));
+        assertThat(lagredeAktivitetsIder.getFirst().toString(),
+                equalTo((aktivitetTestService.hentAktivitet(mockBruker, mockBrukersVeileder, lagredeAktivitetsIder.getFirst().toString())).getId()));
     }
 
     private void da_skal_jeg_denne_aktiviteten_ligge_i_min_aktivitetsplan() {
@@ -375,7 +375,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
     }
 
     private void da_skal_jeg_aktiviten_vare_endret() {
-        var lagretAktivitet = aktivitetTestService.hentAktivitet(mockBruker, mockBrukersVeileder, lagredeAktivitetsIder.get(0).toString());
+        var lagretAktivitet = aktivitetTestService.hentAktivitet(mockBruker, mockBrukersVeileder, lagredeAktivitetsIder.getFirst().toString());
 
         assertThat(lagretAktivitet.getLenke(), equalTo(nyLenke));
         assertThat(lagretAktivitet.getAvsluttetKommentar(), equalTo(nyAvsluttetKommentar));

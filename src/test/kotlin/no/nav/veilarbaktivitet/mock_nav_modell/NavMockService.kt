@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.mock_nav_modell
 
+import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt
 import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
@@ -12,8 +13,8 @@ class NavMockService(
     val oppfolgingsperiodeService: OppfolgingsperiodeService,
 ) {
 
-    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
-        val bruker = MockNavService.createBruker(brukerOptions)
+    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
+        val bruker = MockNavService.createBruker(brukerOptions, fnr)
         val oppfolgingsperiode = bruker.oppfolgingsperioder.first()
         oppfolgingsperiodeService.upsertOppfolgingsperiode(
             SisteOppfolgingsperiodeV1.builder()

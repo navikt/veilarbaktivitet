@@ -29,20 +29,11 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
-    @Autowired
-    StillingFraNavTestService stillingFraNavTestService;
-
     @LocalServerPort
     private int port;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    String groupId;
-
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 
@@ -68,7 +59,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Test
     void happy_case() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
