@@ -19,6 +19,11 @@ jobs:
   test-build-and-push:
     name: Test, build and push
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,9 +55,6 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
         env:
           TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
-    outputs:
-      image: ${{ steps.docker-build-push.outputs.image }}
-      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
   deploy-dev:
     name: Deploy application to dev
     needs: test-build-and-push
@@ -70,9 +72,7 @@ jobs:
 
   deploy-prod:
     name: Deploy application to prod
-    needs:
-      - deploy-dev
-      - test-build-and-push
+    needs: [test-build-and-push, deploy-dev]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
