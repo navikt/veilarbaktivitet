@@ -50,9 +50,9 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
         env:
           TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
-        outputs:
-          image: ${{ steps.docker-build-push.outputs.image }}
-          telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
   deploy-dev:
     name: Deploy application to dev
     needs: test-build-and-push
