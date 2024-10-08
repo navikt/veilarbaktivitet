@@ -5,10 +5,6 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
-  id-token: write
-
 concurrency:
   group: deploy_prod
   cancel-in-progress: true
@@ -17,13 +13,14 @@ env:
   PRINT_PAYLOAD: true
 jobs:
   test-build-and-push:
+    permissions:
+      contents: read
+      id-token: write
     name: Test, build and push
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
       telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
-    permissions:
-      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -59,6 +56,8 @@ jobs:
     name: Deploy application to dev
     needs: test-build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -73,6 +72,8 @@ jobs:
     name: Deploy application to prod
     needs: [test-build-and-push, deploy-dev]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4

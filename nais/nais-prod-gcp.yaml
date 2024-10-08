@@ -6,7 +6,7 @@ metadata:
   labels:
     team: dab
 spec:
-  image: europe-north1-docker.pkg.dev/nais-management-233d/dab/veilarbaktivitet:{{version}}
+  image: {{image}}
   ingresses:
     - https://veilarbaktivitet.intern.nav.no
   port: 8080
