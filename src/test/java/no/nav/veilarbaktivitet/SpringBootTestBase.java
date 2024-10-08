@@ -77,7 +77,6 @@ public abstract class SpringBootTestBase {
     @LocalServerPort
     protected int port;
 
-
     @BeforeEach
     public void setup() {
         RestAssured.port = port;
