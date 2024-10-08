@@ -65,12 +65,14 @@ jobs:
         env:
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev-gcp.yaml
-          VAR: image=${{ needs.build.outputs.image }}
-          TELEMETRY: ${{ needs.build.outputs.telemetry }}
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
 
   deploy-prod:
     name: Deploy application to prod
-    needs: deploy-dev
+    needs:
+      - deploy-dev
+      - test-build-and-push
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -80,8 +82,8 @@ jobs:
         env:
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod-gcp.yaml
-          VAR: image=${{ needs.build.outputs.image }}
-          TELEMETRY: ${{ needs.build.outputs.telemetry }}
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
       - name: Slack Notification (deploy failure)
         if: failure()
         uses: rtCamp/action-slack-notify@v2
