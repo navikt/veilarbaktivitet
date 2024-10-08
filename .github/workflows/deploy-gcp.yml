@@ -21,7 +21,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
-      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
     permissions:
       id-token: write
     steps:
@@ -68,8 +67,6 @@ jobs:
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}
-          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
-
   deploy-prod:
     name: Deploy application to prod
     needs: [test-build-and-push, deploy-dev]
@@ -83,7 +80,6 @@ jobs:
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod-gcp.yaml
           VAR: image=${{ needs.test-build-and-push.outputs.image }}
-          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
       - name: Slack Notification (deploy failure)
         if: failure()
         uses: rtCamp/action-slack-notify@v2

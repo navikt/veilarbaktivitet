@@ -19,7 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
-      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
     permissions:
       id-token: write
     steps:
@@ -57,5 +56,3 @@ jobs:
             CLUSTER: dev-gcp
             RESOURCE: nais/nais-dev-gcp.yaml
             VAR: image=${{ needs.build.outputs.image }}
-            TELEMETRY: ${{ needs.build.outputs.telemetry }}
-
