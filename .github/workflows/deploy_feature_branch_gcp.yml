@@ -49,8 +49,10 @@ jobs:
         contents: read
         id-token: write
       steps:
-        - uses: actions/checkout@v4
-        - uses: nais/deploy/actions/deploy@v2
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Deploy
+          uses: nais/deploy/actions/deploy@v2
           env:
             CLUSTER: dev-gcp
             RESOURCE: nais/nais-dev-gcp.yaml
