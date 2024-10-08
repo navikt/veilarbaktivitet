@@ -9,10 +9,10 @@ import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class FeatureControllerTest : SpringBootTestBase() {
-    private val mockVeileder =  navMockService.createVeileder()
 
     @Test
     fun `skal returnere feature`() {
+        val mockVeileder =  navMockService.createVeileder()
         val enabledToggle = "t1"; val disabledToggle = "t2"; val unusedToggle = "t3"
 
         whenever(unleash.isEnabled(eq(enabledToggle), ArgumentMatchers.any(UnleashContext::class.java))).thenReturn(true)

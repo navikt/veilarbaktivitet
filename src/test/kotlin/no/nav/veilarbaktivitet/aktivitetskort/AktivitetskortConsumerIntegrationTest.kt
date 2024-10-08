@@ -29,6 +29,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfi
 import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil
 import no.nav.veilarbaktivitet.person.Innsender
@@ -43,9 +44,12 @@ import org.apache.kafka.common.header.internals.RecordHeader
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
+import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -56,6 +60,7 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 import kotlin.random.Random
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 open class AktivitetskortConsumerIntegrationTest(
     @Autowired
     val aktivitetskortFeilListener: AktivitetskortFeilListener,
@@ -81,6 +86,18 @@ open class AktivitetskortConsumerIntegrationTest(
     var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
 
     private lateinit var brukernotifikasjonAsserts: BrukernotifikasjonAsserts
+
+    private lateinit var brukerUtenOppfolging: MockBruker
+    private lateinit var mockBruker: MockBruker
+    private lateinit var veileder: MockVeileder
+    private val endretDato = ZonedDateTime.now()
+
+    @BeforeAll
+    fun beforeAll() {
+        brukerUtenOppfolging = navMockService.createbruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
+        mockBruker = navMockService.createBruker()
+        veileder = navMockService.createVeileder(mockBruker)
+    }
 
     @BeforeEach
     fun cleanupBetweenTests() {
@@ -1053,11 +1070,6 @@ open class AktivitetskortConsumerIntegrationTest(
         assertThat(eksternAktivitetData.tiltaksKode).isNull()
         assertThat(eksternAktivitetData.arenaId).isNull()
     }
-
-    private val brukerUtenOppfolging = navMockService.createbruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-    private val mockBruker by lazy { navMockService.createBruker() }
-    private val veileder by lazy {  navMockService.createVeileder(mockBruker) }
-    private val endretDato = ZonedDateTime.now()
 }
 
 fun arenaMeldingHeaders(mockBruker: MockBruker): ArenaMeldingHeaders {

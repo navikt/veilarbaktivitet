@@ -12,6 +12,8 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfi
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
+import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
+import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -20,8 +22,10 @@ import org.assertj.core.api.Assertions.fail
 import org.assertj.core.api.SoftAssertions
 import org.assertj.core.api.ThrowingConsumer
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import java.lang.Boolean
@@ -41,6 +45,7 @@ import kotlin.Exception
 import kotlin.String
 import kotlin.Throws
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Autowired
     var navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>? = null
@@ -60,6 +65,13 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     @Autowired
     var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
     var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
+
+    @BeforeAll
+    fun beforeAll() {
+        mockBruker = navMockService.createHappyBruker()
+        veileder =  navMockService.createVeileder(mockBruker)
+    }
+
     @BeforeEach
     fun setUp() {
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
@@ -702,8 +714,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     private val NEI = Boolean.FALSE
     private val tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault())
     private val navIdent = "E271828"
-    private val mockBruker = navMockService.createHappyBruker()
-    private val veileder =  navMockService.createVeileder(mockBruker)
+    private lateinit var mockBruker: MockBruker
+    private lateinit var veileder: MockVeileder
     private val date = Date.from(Instant.ofEpochSecond(1))
     private val SUKSESS = ""
     private val INGEN_DETALJER = ""
