@@ -13,6 +13,7 @@ import okhttp3.Request;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 import static no.nav.common.utils.EnvironmentUtils.isProduction;
@@ -46,6 +47,9 @@ public class OkHttpClientConfig {
 
     @Bean OkHttpClient orkivarHttpClient(MeterRegistry meterRegistry, AzureAdOnBehalfOfTokenClient azureAdOnBehalfOfTokenClient) {
         return RestClient.baseClientBuilder()
+            .connectTimeout(10, TimeUnit.SECONDS) // Dokark and pdf-gen is very slow
+            .writeTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(azureAdInterceptor(() ->
                     azureAdOnBehalfOfTokenClient.exchangeOnBehalfOfToken(orkivarScope, authService.getInnloggetBrukerToken())
             )).eventListener(OkHttpMetricsEventListener.builder(meterRegistry, "okhttp.requests").build())
