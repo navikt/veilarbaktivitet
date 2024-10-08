@@ -15,7 +15,6 @@ import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.assertj.core.api.Assertions;
@@ -48,8 +47,8 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @BeforeEach
     public void before() {
         var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).build();
-        mockBruker = MockNavService.createBruker(medKvp);
-        mockVeileder = MockNavService.createVeileder(mockBruker);
+        mockBruker = navMockService.createbruker(medKvp);
+        mockVeileder =  navMockService.createVeileder(mockBruker);
         when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }
 

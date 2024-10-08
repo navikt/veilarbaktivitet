@@ -8,7 +8,6 @@ import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
@@ -29,7 +28,7 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
     private final MockBruker mockBruker = navMockService.createHappyBruker();
-    private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+    private final MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
     @Value("${topic.ut.portefolje}")
     private String portefoljetopic;
 

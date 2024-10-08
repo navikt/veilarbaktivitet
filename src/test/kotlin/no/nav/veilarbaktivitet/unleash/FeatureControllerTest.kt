@@ -2,7 +2,6 @@ package no.nav.veilarbaktivitet.unleash
 
 import io.getunleash.UnleashContext
 import no.nav.veilarbaktivitet.SpringBootTestBase
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import org.junit.jupiter.api.Test
 import org.mockito.ArgumentMatchers
 import org.mockito.kotlin.eq
@@ -10,7 +9,7 @@ import org.mockito.kotlin.whenever
 import org.junit.jupiter.api.Assertions.assertEquals
 
 class FeatureControllerTest : SpringBootTestBase() {
-    private val mockVeileder = MockNavService.createVeileder()
+    private val mockVeileder =  navMockService.createVeileder()
 
     @Test
     fun `skal returnere feature`() {

@@ -5,8 +5,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.createHappyBruker
+
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils
@@ -62,7 +61,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_opprette_siste_oppfolgingsperiode() {
-        val mockBruker = createHappyBruker()
+        val mockBruker = navMockService.createHappyBruker()
         val startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
             .uuid(mockBruker.getOppfolgingsperiodeId())
             .aktorId(mockBruker.aktorId.get())
@@ -104,11 +103,11 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
     @Test
     @Throws(ExecutionException::class, InterruptedException::class)
     fun skal_sette_aktiviteteter_til_hitorisk_naar_oppfolging_avsluttes() {
-        val brukerUteAvOppfolging = createHappyBruker()
+        val brukerUteAvOppfolging = navMockService.createHappyBruker()
         val aktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(AktivitetDataTestBuilder.nyEgenaktivitet(), false)
         val skalBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
         val oppfolgingsperiodeSkalAvsluttes = brukerUteAvOppfolging.getOppfolgingsperiodeId()
-        MockNavService.newOppfolingsperiode(brukerUteAvOppfolging)
+        navMockService.newOppfolingsperiode(brukerUteAvOppfolging)
         val skalIkkeBliHistorisk = aktivitetTestService.opprettAktivitet(brukerUteAvOppfolging, aktivitet)
 
         // Avslutt oppfølging

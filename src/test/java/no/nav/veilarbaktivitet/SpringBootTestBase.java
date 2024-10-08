@@ -10,7 +10,6 @@ import net.javacrumbs.shedlock.provider.jdbctemplate.JdbcTemplateLockProvider;
 import no.nav.poao_tilgang.poao_tilgang_test_wiremock.PoaoTilgangWiremock;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.RekrutteringsbistandStatusoppdatering;
 import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
@@ -41,7 +40,7 @@ public abstract class SpringBootTestBase {
         return wiremockServer;
     }
 
-    private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", MockNavService.NAV_CONTEXT);
+    private static final PoaoTilgangWiremock poaoTilgangWiremock = new PoaoTilgangWiremock(0, "", NavMockService.Companion.getNAV_CONTEXT());
     public static final WireMockServer wireMock = getWireMockServer();
 
     @Autowired
@@ -77,6 +76,7 @@ public abstract class SpringBootTestBase {
 
     @LocalServerPort
     protected int port;
+
 
     @BeforeEach
     public void setup() {

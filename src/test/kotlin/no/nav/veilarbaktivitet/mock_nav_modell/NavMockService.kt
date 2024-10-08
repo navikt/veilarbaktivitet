@@ -7,6 +7,7 @@ import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import org.springframework.stereotype.Service
+import java.util.*
 
 
 @Service
@@ -22,19 +23,27 @@ class NavMockService(
         return createBruker()
     }
 
+    fun createbruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
+        return createBruker(brukerOptions)
+    }
+
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
         val ny = if (fnr != null) NAV_CONTEXT.privatBrukere.ny(fnr.get()) else NAV_CONTEXT.privatBrukere.ny()
         val mockBruker = MockBruker(brukerOptions, ny)
         WireMockUtil.stubBruker(mockBruker)
 
-        val oppfolgingsperiode = mockBruker.oppfolgingsperioder.first()
-        oppfolgingsperiodeService.upsertOppfolgingsperiode(
-            SisteOppfolgingsperiodeV1.builder()
-                .aktorId(mockBruker.aktorId.get())
-                .uuid(oppfolgingsperiode.oppfolgingsperiodeId)
-                .startDato(oppfolgingsperiode.startTid)
-                .sluttDato(oppfolgingsperiode.sluttTid).build()
-        )
+        val leggTilOppfølgingsperiode = brukerOptions.isUnderOppfolging && !brukerOptions.isOppfolgingFeiler
+
+        if (leggTilOppfølgingsperiode) {
+            val oppfolgingsperiode = mockBruker.oppfolgingsperioder.first()
+            oppfolgingsperiodeService.upsertOppfolgingsperiode(
+                SisteOppfolgingsperiodeV1.builder()
+                    .aktorId(mockBruker.aktorId.get())
+                    .uuid(oppfolgingsperiode.oppfolgingsperiodeId)
+                    .startDato(oppfolgingsperiode.startTid)
+                    .sluttDato(oppfolgingsperiode.sluttTid).build()
+            )
+        }
         return mockBruker
     }
 
@@ -43,19 +52,39 @@ class NavMockService(
         WireMockUtil.stubBruker(mockBruker)
     }
 
-    fun createVeileder(ident: String? = null, mockBruker: MockBruker): MockVeileder {
+    fun createVeileder(): MockVeileder {
+        return createVeileder(mockBruker = null, ident = null)
+    }
+
+    fun createVeileder(mockBruker: MockBruker): MockVeileder {
+        return createVeileder(mockBruker = mockBruker, ident = null)
+    }
+
+    fun createVeileder(mockBruker: MockBruker?, ident: String? = null): MockVeileder {
         val navAnsatt = if(ident != null) {
-            MockNavService.NAV_CONTEXT.navAnsatt.get(ident)?.let {  MockVeileder(it) }
+            NAV_CONTEXT.navAnsatt.get(ident)?.let {  MockVeileder(it) }
             NavAnsatt(ident)
         } else {
             NavAnsatt()
         }
-        MockNavService.NAV_CONTEXT.navAnsatt.add(navAnsatt)
+        NAV_CONTEXT.navAnsatt.add(navAnsatt)
         navAnsatt.adGrupper.add(tilgjengligeAdGrupper.modiaOppfolging)
 
         val veileder = MockVeileder(navAnsatt)
-        veileder.addBruker(mockBruker)
+        if (mockBruker != null) {
+            veileder.addBruker(mockBruker)
+        }
 
         return veileder
+    }
+
+    fun createVeilederMedNasjonalTilgang(): MockVeileder {
+        val navAnsatt = NAV_CONTEXT.navAnsatt.nyNksAnsatt()
+        return MockVeileder(navAnsatt)
+    }
+
+    fun newOppfolingsperiode(mockBruker: MockBruker) {
+        mockBruker.setOppfolgingsperiodeId(UUID.randomUUID())
+        WireMockUtil.stubBruker(mockBruker)
     }
 }

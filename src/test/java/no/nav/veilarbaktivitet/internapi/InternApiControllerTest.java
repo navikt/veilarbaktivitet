@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.internapi.model.Aktivitet;
 import no.nav.veilarbaktivitet.internapi.model.Egenaktivitet;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
@@ -25,7 +24,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void hentAktiviteterTest() {
         MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+        MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
         AktivitetDTO moteAktivitet = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
@@ -37,7 +36,7 @@ class InternApiControllerTest extends SpringBootTestBase {
 
         // Sett bruker under KVP
         BrukerOptions kvpOptions = mockBruker.getBrukerOptions().toBuilder().erUnderKvp(true).build();
-        MockNavService.updateBruker(mockBruker, kvpOptions);
+         navMockService.updateBruker(mockBruker, kvpOptions);
         aktivitetTestService.opprettAktivitetSomVeileder(mockVeileder, mockBruker, moteAktivitet);
 
         // Test "/internal/api/v1/aktivitet"
@@ -54,7 +53,7 @@ class InternApiControllerTest extends SpringBootTestBase {
         assertThat(aktiviteter.get(2).getKontorsperreEnhetId()).isNotNull();
 
         // Lag veileder uten tilgang til mockbrukers enhet
-        MockVeileder mockVeileder2 = MockNavService.createVeileder();
+        MockVeileder mockVeileder2 =  navMockService.createVeileder();
         mockVeileder2.setNasjonalTilgang(true);
 
         List<Aktivitet> aktiviteter2 = mockVeileder2.createRequest()
@@ -73,7 +72,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void skalFunkeForAlleAktivitettyper() {
         MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+        MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
 
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
             if (type.equals(AktivitetTypeDTO.STILLING_FRA_NAV)) {
@@ -101,7 +100,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     void skalFeileNaarManglerTilgang() {
         // Forbidden (403)
         MockBruker mockBruker = navMockService.createHappyBruker();
-        MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
+        MockVeileder mockVeilederUtenBruker =  navMockService.createVeileder();
         mockVeilederUtenBruker.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()
@@ -112,7 +111,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     void skalFeilNaarManglerParameter() {
         // Bad request (400) - ingen query parameter
         MockBruker mockBruker = navMockService.createHappyBruker();
-        MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
+        MockVeileder mockVeileder =  navMockService.createVeileder(mockBruker);
         mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet")
                 .then()

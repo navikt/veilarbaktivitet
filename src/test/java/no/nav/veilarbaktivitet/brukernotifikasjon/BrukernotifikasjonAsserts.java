@@ -9,7 +9,8 @@ import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
+import no.nav.veilarbaktivitet.mock_nav_modell.NavMockService;
+import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService;
 import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import org.apache.avro.specific.SpecificRecord;
@@ -23,6 +24,7 @@ import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarsl
 import static no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer.FERDIGSTILT;
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 public class BrukernotifikasjonAsserts {
@@ -33,9 +35,11 @@ public class BrukernotifikasjonAsserts {
 
     BrukernotifikasjonAssertsConfig config;
     KafkaTestService kafkaTestService;
+    private final static OppfolgingsperiodeService oppfolgingsperiodeService = mock(OppfolgingsperiodeService.class);
+    private final static NavMockService mockNavService = new NavMockService(oppfolgingsperiodeService);
 
     public static MockBruker getBrukerSomIkkeKanVarsles() {
-        return MockNavService.createBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
+        return mockNavService.createbruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
     }
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {

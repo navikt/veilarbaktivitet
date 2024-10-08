@@ -12,8 +12,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfi
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaJsonTemplate
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringTemplate
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.createHappyBruker
+
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.DateUtils
 import org.assertj.core.api.Assertions
@@ -703,8 +702,8 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
     private val NEI = Boolean.FALSE
     private val tidspunkt = ZonedDateTime.of(2020, 4, 5, 16, 17, 0, 0, ZoneId.systemDefault())
     private val navIdent = "E271828"
-    private val mockBruker = createHappyBruker()
-    private val veileder = MockNavService.createVeileder(mockBruker)
+    private val mockBruker = navMockService.createHappyBruker()
+    private val veileder =  navMockService.createVeileder(mockBruker)
     private val date = Date.from(Instant.ofEpochSecond(1))
     private val SUKSESS = ""
     private val INGEN_DETALJER = ""

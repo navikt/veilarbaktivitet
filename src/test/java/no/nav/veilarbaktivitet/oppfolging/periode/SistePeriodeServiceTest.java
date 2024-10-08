@@ -4,7 +4,6 @@ package no.nav.veilarbaktivitet.oppfolging.periode;
 import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.person.Person;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,7 +69,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
     @Test
     void oppfolgingFeiler() {
         BrukerOptions oppfolgingFeiler = BrukerOptions.happyBrukerBuilder().oppfolgingFeiler(true).build();
-        MockBruker bruker = MockNavService.createBruker(oppfolgingFeiler);
+        MockBruker bruker = navMockService.createbruker(oppfolgingFeiler);
         Person.AktorId aktorId = bruker.getAktorIdAsAktorId();
         assertThrows(ResponseStatusException.class, () -> sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId));
     }
@@ -78,7 +77,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
     @Test
     void ikkeUnderOppfolging() {
         BrukerOptions ikkeUnderOppfolging = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
-        MockBruker bruker = MockNavService.createBruker(ikkeUnderOppfolging);
+        MockBruker bruker = navMockService.createbruker(ikkeUnderOppfolging);
         Person.AktorId aktorId = bruker.getAktorIdAsAktorId();
         assertThrows(IngenGjeldendePeriodeException.class, () -> sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId));
     }
