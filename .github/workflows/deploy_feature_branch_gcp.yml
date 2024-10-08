@@ -3,10 +3,6 @@ run-name: Deploy feature branch ${{ github.ref_name }} by @${{ github.actor }}
 on:
   workflow_dispatch:
 
-permissions:
-  id-token: write
-  packages: write
-
 concurrency:
   group: deploy_feature_branch_gcp
   cancel-in-progress: true
@@ -21,6 +17,7 @@ jobs:
       image: ${{ steps.docker-build-push.outputs.image }}
       telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
     permissions:
+      contents: write
       id-token: write
     steps:
       - uses: actions/checkout@v4
@@ -45,6 +42,8 @@ jobs:
       name: Deploy to gcp dev
       needs: build
       runs-on: ubuntu-latest
+      permissions:
+        id-token: write
       steps:
         - name: Checkout
           uses: actions/checkout@v4
@@ -54,4 +53,4 @@ jobs:
             CLUSTER: dev-gcp
             RESOURCE: nais/nais-dev-gcp.yaml
             VAR: "image=${{ needs.build.outputs.image }}"
-            TELEMETRY: ${{ needs.build.outputs.telemetry }}
+            TELEMETRY: "${{ needs.build.outputs.telemetry }}"
