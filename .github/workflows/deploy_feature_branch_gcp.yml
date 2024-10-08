@@ -49,7 +49,6 @@ jobs:
         contents: read
         id-token: write
       steps:
-        - name: Deploy application to dev
         - uses: nais/deploy/actions/deploy@v2
         - uses: actions/checkout@v4
           env:
