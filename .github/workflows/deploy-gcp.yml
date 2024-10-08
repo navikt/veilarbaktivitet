@@ -41,7 +41,7 @@ jobs:
           SLACK_TITLE: 'Veilarbaktivitet: tester feilet under deploy til prod'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
-      - name: Push docker image to GHCR
+      - name: Push docker image to GAR
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:

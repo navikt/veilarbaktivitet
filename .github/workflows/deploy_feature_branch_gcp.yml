@@ -12,8 +12,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_TAG: ${{ github.sha }}-dev-only
-  IMAGE: ghcr.io/${{ github.repository }}/veilarbaktivitet
   PRINT_PAYLOAD: true
 jobs:
   build_and_deploy:
@@ -32,7 +30,7 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
 
-      - name: Push docker image to GHCR
+      - name: Push docker image to GAR
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
