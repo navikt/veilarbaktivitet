@@ -14,8 +14,8 @@ concurrency:
 env:
   PRINT_PAYLOAD: true
 jobs:
-  build_and_deploy:
-    name: Build, push and deploy
+  build:
+    name: Build, push
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,10 +41,20 @@ jobs:
     outputs:
       image: ${{ steps.docker-build-push.outputs.image }}
       telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
-      - name: Deploy application to dev
-        uses: nais/deploy/actions/deploy@v2
-        env:
-          CLUSTER: dev-gcp
-          RESOURCE: nais/nais-dev-gcp.yaml
-          VAR: image=${{ steps.docker-build-push.outputs.image }}
-          TELEMETRY: ${{ steps.docker-build-push.outputs.telemetry }}
+  deploy:
+    - name: Deploy to gcp dev
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        id-token: write
+      steps:
+        - name: Deploy application to dev
+        - uses: nais/deploy/actions/deploy@v2
+        - uses: actions/checkout@v4
+          env:
+            CLUSTER: dev-gcp
+            RESOURCE: nais/nais-dev-gcp.yaml
+            VAR: image=${{ steps.docker-build-push.outputs.image }}
+            TELEMETRY: ${{ steps.docker-build-push.outputs.telemetry }}
+
