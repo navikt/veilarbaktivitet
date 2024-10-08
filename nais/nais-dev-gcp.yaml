@@ -6,7 +6,7 @@ metadata:
   labels:
     team: dab
 spec:
-  image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  image: europe-north1-docker.pkg.dev/nais-management-233d/dab/veilarbaktivitet:{{version}}
   ingresses:
     - https://veilarbaktivitet.dev.nav.cloud.nais.io
     - https://veilarbaktivitet.intern.dev.nav.no
