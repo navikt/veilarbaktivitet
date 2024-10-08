@@ -6,7 +6,7 @@ metadata:
   labels:
     team: dab
 spec:
-  image: ghcr.io/navikt/veilarbaktivitet/veilarbaktivitet:{{version}}
+  image: {{image}}
   ingresses:
     - https://veilarbaktivitet.intern.nav.no
   port: 8080
