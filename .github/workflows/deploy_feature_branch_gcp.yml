@@ -42,7 +42,7 @@ jobs:
       image: ${{ steps.docker-build-push.outputs.image }}
       telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
   deploy:
-    - name: Deploy to gcp dev
+      name: Deploy to gcp dev
       needs: build
       runs-on: ubuntu-latest
       permissions:
