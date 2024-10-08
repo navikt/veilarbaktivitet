@@ -29,7 +29,6 @@ jobs:
 
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
-
       - name: Push docker image to GAR
         uses: nais/docker-build-push@v0
         id: docker-build-push
@@ -39,6 +38,9 @@ jobs:
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
         env:
           TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1" # avoid rate limiting on javadb download
+        outputs:
+          image: ${{ steps.docker-build-push.outputs.image }}
+          telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
       - name: Deploy application to dev
         uses: nais/deploy/actions/deploy@v2
         env:
