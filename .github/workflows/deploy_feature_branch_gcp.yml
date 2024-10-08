@@ -32,13 +32,15 @@ jobs:
       - name: Execute Gradle build
         run: ./gradlew assemble --scan
 
-      - name: Push docker image to GAR
+      - name: Push docker image to GHCR
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
           team: dab
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+        env:
+          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1" # avoid rate limiting on javadb download
       - name: Deploy application to dev
         uses: nais/deploy/actions/deploy@v2
         env:

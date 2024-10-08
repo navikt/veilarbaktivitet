@@ -41,13 +41,15 @@ jobs:
           SLACK_TITLE: 'Veilarbaktivitet: tester feilet under deploy til prod'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
-      - name: Push docker image to GAR
+      - name: Push docker image to GHCR
         uses: nais/docker-build-push@v0
         id: docker-build-push
         with:
           team: dab
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
           project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+        env:
+          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
   deploy-dev:
     name: Deploy application to dev
     needs: test-build-and-push
