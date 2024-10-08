@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -24,7 +25,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
 
     @Test
     void skalHenteOgBrukeSistePeriodeFraDao() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         UUID oppfolgingsperiodeId = UUID.randomUUID();
         Oppfolgingsperiode oppfolgingsperiode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), null);
         sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode);
@@ -34,7 +35,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
 
     @Test
     void skalHandtereFlereLikePerioder() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         UUID oppfolgingsperiodeId = UUID.randomUUID();
         Oppfolgingsperiode oppfolgingsperiode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), null);
         sistePeriodeDAO.uppsertOppfolingsperide(oppfolgingsperiode);
@@ -45,7 +46,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
 
     @Test
     void skalHoppeOverGammelPeriode() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         UUID oppfolgingsperiodeId = UUID.randomUUID();
         Oppfolgingsperiode oppfolgingsperiode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), null);
         Oppfolgingsperiode gammelPeriode = new Oppfolgingsperiode(mockBruker.getAktorId().get(), UUID.randomUUID(), ZonedDateTime.now().minusDays(10), null);
@@ -57,7 +58,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
 
     @Test
     void fallBackHvisPeriodeAvsluttet() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         UUID oppfolgingsperiodeId = UUID.randomUUID();
         Oppfolgingsperiode avsluttet = new Oppfolgingsperiode(mockBruker.getAktorId().get(), oppfolgingsperiodeId, ZonedDateTime.now().minusDays(5), ZonedDateTime.now());
         sistePeriodeDAO.uppsertOppfolingsperide(avsluttet);

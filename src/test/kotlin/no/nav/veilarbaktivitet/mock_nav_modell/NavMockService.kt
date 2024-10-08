@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.mock_nav_modell
 
 import no.nav.common.types.identer.Fnr
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt
+import no.nav.poao_tilgang.poao_tilgang_test_core.NavContext
 import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
@@ -13,17 +14,28 @@ class NavMockService(
     val oppfolgingsperiodeService: OppfolgingsperiodeService,
 ) {
 
-    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
-        val bruker = MockNavService.createBruker(brukerOptions, fnr)
-        val oppfolgingsperiode = bruker.oppfolgingsperioder.first()
+    companion object {
+        val NAV_CONTEXT: NavContext = NavContext()
+    }
+
+    fun createHappyBruker(): MockBruker {
+        return createBruker()
+    }
+
+    fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
+        val ny = if (fnr != null) NAV_CONTEXT.privatBrukere.ny(fnr.get()) else NAV_CONTEXT.privatBrukere.ny()
+        val mockBruker = MockBruker(brukerOptions, ny)
+        WireMockUtil.stubBruker(mockBruker)
+
+        val oppfolgingsperiode = mockBruker.oppfolgingsperioder.first()
         oppfolgingsperiodeService.upsertOppfolgingsperiode(
             SisteOppfolgingsperiodeV1.builder()
-                .aktorId(bruker.aktorId.get())
+                .aktorId(mockBruker.aktorId.get())
                 .uuid(oppfolgingsperiode.oppfolgingsperiodeId)
                 .startDato(oppfolgingsperiode.startTid)
                 .sluttDato(oppfolgingsperiode.sluttTid).build()
         )
-        return bruker
+        return mockBruker
     }
 
     fun updateBruker(mockBruker: MockBruker, brukerOptions: BrukerOptions) {

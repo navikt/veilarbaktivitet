@@ -54,7 +54,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOUtenAktivitet() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
@@ -82,7 +82,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOFEilAktivitetVersion() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
         AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
 
@@ -127,7 +127,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorentering() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
@@ -143,7 +143,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorenteringFor11_9() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
@@ -159,7 +159,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeSendeVarselForIkkeSend() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
+        MockBruker happyBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO

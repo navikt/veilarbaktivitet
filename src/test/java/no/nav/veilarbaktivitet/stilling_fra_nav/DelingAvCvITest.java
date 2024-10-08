@@ -80,7 +80,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     void når_motatt_stilling_fra_nav_skal_det_sendes_ut_en_brukernotifikasjons_oppgave() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         var brukernotifikajonOppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
@@ -99,7 +99,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     void happy_case_tomme_strenger() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         KontaktInfo kontaktinfo = KontaktInfo.newBuilder().setMobil("").setNavn("").setTittel("").build();
         melding.setKontaktInfo(kontaktinfo);
@@ -119,7 +119,7 @@ class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     void happy_case_ingen_kontaktInfo_ingen_soknadsfrist() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setKontaktInfo(null);
         melding.setSoknadsfrist(null);
@@ -142,7 +142,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("SecureLog");
 
         //TODO se på om vi burde unngå bruker her
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
 
         WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
 
@@ -287,7 +287,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     @Test
     @SneakyThrows
     void duplikat_bestillingsId_ignoreres() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);

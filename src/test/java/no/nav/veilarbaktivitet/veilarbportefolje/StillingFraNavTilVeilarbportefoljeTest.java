@@ -23,11 +23,12 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.Calendar;
 
+
 import static no.nav.veilarbaktivitet.util.KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION;
 import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecord;
 
 class StillingFraNavTilVeilarbportefoljeTest extends SpringBootTestBase {
-    private final MockBruker mockBruker = MockNavService.createHappyBruker();
+    private final MockBruker mockBruker = navMockService.createHappyBruker();
     private final MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
     @Value("${topic.ut.portefolje}")
     private String portefoljetopic;

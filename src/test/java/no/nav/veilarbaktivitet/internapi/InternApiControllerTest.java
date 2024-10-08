@@ -18,12 +18,13 @@ import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void hentAktiviteterTest() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyMoteAktivitet();
@@ -71,7 +72,7 @@ class InternApiControllerTest extends SpringBootTestBase {
 
     @Test
     void skalFunkeForAlleAktivitettyper() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
 
         for (AktivitetTypeDTO type : AktivitetTypeDTO.values()) {
@@ -99,7 +100,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void skalFeileNaarManglerTilgang() {
         // Forbidden (403)
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         MockVeileder mockVeilederUtenBruker = MockNavService.createVeileder();
         mockVeilederUtenBruker.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
@@ -110,7 +111,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void skalFeilNaarManglerParameter() {
         // Bad request (400) - ingen query parameter
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         MockVeileder mockVeileder = MockNavService.createVeileder(mockBruker);
         mockVeileder.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet")
@@ -121,7 +122,7 @@ class InternApiControllerTest extends SpringBootTestBase {
     @Test
     void skalFeilNaarEksternBruker() {
         // Forbidden (403)
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         mockBruker.createRequest()
                 .get("http://localhost:" + port + "/veilarbaktivitet/internal/api/v1/aktivitet?aktorId=" + mockBruker.getAktorId().get())
                 .then()

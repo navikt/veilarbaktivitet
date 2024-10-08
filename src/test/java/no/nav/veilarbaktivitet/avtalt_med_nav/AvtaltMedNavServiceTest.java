@@ -15,7 +15,9 @@ import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -23,13 +25,13 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import static org.hamcrest.Matchers.equalTo;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
-    private static final MockBruker bruker = MockNavService.createHappyBruker();
-    private static final MockVeileder veileder = MockNavService.createVeileder(bruker);
-
-    private static final Person.AktorId AKTOR_ID = bruker.getAktorIdAsAktorId();
-    private static final NavIdent veilederIdent = veileder.getNavIdentAsNavident();
+    private MockBruker bruker;
+    private MockVeileder veileder;
+    private Person.AktorId aktorId;
+    private NavIdent veilederIdent;
 
     @Autowired
     private TransactionTemplate transactionTemplate;
@@ -42,24 +44,31 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
     final String defaultTekst = "tekst";
     final Type defaultType = Type.SEND_FORHAANDSORIENTERING;
 
+    @BeforeAll
+    public void beforeAll() {
+        bruker = navMockService.createHappyBruker();
+        veileder = MockNavService.createVeileder(bruker);
+        aktorId = bruker.getAktorIdAsAktorId();
+        veilederIdent = veileder.getNavIdentAsNavident();
+    }
+
     @Test
     void opprettFHO_oppdatererInterneFHOVerdier() {
 
-        AktivitetDTO aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID));
+        AktivitetDTO aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId));
         var fho = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
         Assertions.assertEquals(aktivitetDTO.getId(), fho.getAktivitetId());
         // FHO aktivitetsversjon vil faktisk peke på forrige aktivitetsversjon
         Assertions.assertTrue(Long.parseLong(aktivitetDTO.getVersjon()) > Long.parseLong(fho.getAktivitetVersjon()));
-        Assertions.assertEquals(AKTOR_ID.get(), fho.getAktorId().get());
+        Assertions.assertEquals(aktorId.get(), fho.getAktorId().get());
         Assertions.assertEquals(veilederIdent.toString(), fho.getOpprettetAv());
         Assertions.assertNull(fho.getLestDato());
-
     }
 
     @Test
     void opprettFHO_oppdatererAktivitetDTO() {
-        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID));
+        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId));
         var aktivitetDTOFHO = aktivitetDTO.getForhaandsorientering();
         var nyAktivitetMedFHO = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
@@ -73,7 +82,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     @Test
     void opprettFHO_medTomTekst_setterTekstenTilNull() {
-        var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID);
+        var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId);
 
         var fhoDTO = ForhaandsorienteringDTO.builder()
                 .type(defaultType)
@@ -96,13 +105,13 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
                 .setForhaandsorientering(fhoDTO)
                 .setAktivitetVersjon(5L);
         Assertions.assertThrows(DataIntegrityViolationException.class, () ->
-                avtaltMedNavService.opprettFHO(avtaltDTO, 999999, AKTOR_ID, veilederIdent));
+                avtaltMedNavService.opprettFHO(avtaltDTO, 999999, aktorId, veilederIdent));
 
     }
 
     @Test
     void hentFhoForAktivitet_henterRiktigFho() {
-        var aktivitetData = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID));
+        var aktivitetData = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId));
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetData.getId()));
 
@@ -113,11 +122,11 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     @Test
     void markerSomLest_oppdatererAktivitetDTO() {
-        var aktivitetDto = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID));
+        var aktivitetDto = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId));
 
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDto.getId()));
 
-        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID, Long.valueOf(aktivitetDto.getVersjon()));
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, aktorId, Long.valueOf(aktivitetDto.getVersjon()));
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(Long.parseLong(aktivitetDto.getId()));
 
@@ -127,10 +136,10 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     @Test
     void markerSomLest_setterVarselFerdig() {
-        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID));
+        var aktivitetDTO = opprettAktivitetMedDefaultFHO(AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId));
         var aktivitetDTOFHO = avtaltMedNavService.hentFhoForAktivitet(Long.parseLong(aktivitetDTO.getId()));
 
-        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, AKTOR_ID, Long.valueOf(aktivitetDTO.getVersjon()));
+        avtaltMedNavService.markerSomLest(aktivitetDTOFHO, aktorId, Long.valueOf(aktivitetDTO.getVersjon()));
         var nyFHO = avtaltMedNavService.hentFHO(aktivitetDTO.getForhaandsorientering().getId());
 
         Assertions.assertNotNull(nyFHO.getLestDato());
@@ -140,7 +149,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
 
     @Test
     void settVarselFerdig_stopperAktivtVarsel() {
-        var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(AKTOR_ID);
+        var aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet().withAktorId(aktorId);
         var opprettetAktivitetMedFHO = opprettAktivitetMedDefaultFHO(aktivitetData);
         boolean varselStoppet = avtaltMedNavService.settVarselFerdig(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
         var nyFHO = avtaltMedNavService.hentFHO(opprettetAktivitetMedFHO.getForhaandsorientering().getId());
@@ -229,7 +238,7 @@ class AvtaltMedNavServiceTest extends SpringBootTestBase {
                 .setForhaandsorientering(forhaandsorienteringDTO)
                 .setAktivitetVersjon(nyAktivitet.getVersjon());
 
-        return avtaltMedNavService.opprettFHO(avtaltDTO, nyAktivitet.getId(), AKTOR_ID, veilederIdent);
+        return avtaltMedNavService.opprettFHO(avtaltDTO, nyAktivitet.getId(), aktorId, veilederIdent);
     }
 
 }

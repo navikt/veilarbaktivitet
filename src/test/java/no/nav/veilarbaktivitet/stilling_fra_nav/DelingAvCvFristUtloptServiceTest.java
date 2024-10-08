@@ -80,7 +80,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void utlopte_aktiviteter_skal_avsluttes_automatisk() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
@@ -106,7 +106,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));

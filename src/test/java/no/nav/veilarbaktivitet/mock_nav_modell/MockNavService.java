@@ -13,10 +13,6 @@ import java.util.UUID;
 public class MockNavService {
     public static final NavContext NAV_CONTEXT = new NavContext();
 
-    public static MockBruker createHappyBruker() {
-        return createBruker(BrukerOptions.happyBruker());
-    }
-
     public static MockBruker createBruker(BrukerOptions brukerOptions) {
         return createBruker(brukerOptions, null);
     }

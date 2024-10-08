@@ -30,6 +30,7 @@ import no.nav.veilarbaktivitet.config.kafka.NavCommonKafkaConfig
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.createHappyBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.util.AktivitetskortFeilListener
@@ -311,7 +312,7 @@ open class AktivitetskortConsumerIntegrationTest(
         val melding1 = KafkaAktivitetskortWrapperDTO(
             lonnstilskuddAktivitet, UUID.randomUUID(), AktivitetskortType.MIDLERTIDIG_LONNSTILSKUDD, MessageSource.TEAM_TILTAK
         )
-        val mockBruker2 = MockNavService.createHappyBruker()
+        val mockBruker2 = createHappyBruker()
         val lonnstilskuddAktivitetUpdate: Aktivitetskort = aktivitetskort(funksjonellId, AktivitetskortStatus.GJENNOMFORES)
             .copy(personIdent = mockBruker2.fnr)
         val melding2 = KafkaAktivitetskortWrapperDTO(
@@ -1055,7 +1056,7 @@ open class AktivitetskortConsumerIntegrationTest(
     }
 
     private val brukerUtenOppfolging = MockNavService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
-    private val mockBruker by lazy { navMockService.createHappyBruker() }
+    private val mockBruker by lazy { navMockService.createBruker() }
     private val veileder by lazy { MockNavService.createVeileder(mockBruker) }
     private val endretDato = ZonedDateTime.now()
 }

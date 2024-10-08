@@ -65,7 +65,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
 
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav og send varsel
@@ -109,7 +109,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         //TODO rydd denne testen
     void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         MockVeileder veileder = MockNavService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav

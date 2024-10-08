@@ -6,6 +6,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService.createHappyBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder
 import no.nav.veilarbaktivitet.util.DateUtils
@@ -15,7 +16,7 @@ import java.util.*
 
 class AktivitetskortControllerTest: SpringBootTestBase() {
 
-    private val mockBruker by lazy { navMockService.createHappyBruker() }
+    private val mockBruker by lazy { navMockService.createBruker() }
     private val mockVeileder: MockVeileder by lazy { MockNavService.createVeileder(mockBruker) }
 
     @Test
@@ -70,7 +71,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `veileder skal ikke ha tilgang til aktiviteter hvis ikke tilgang på bruker`() {
-        val bruker = MockNavService.createHappyBruker()
+        val bruker = createHappyBruker()
         // Escaping $ does not work in multiline strings so use variable instead
         val fnrParam = "\$fnr"
         val query = """
