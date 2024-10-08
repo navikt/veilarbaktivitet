@@ -49,7 +49,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
@@ -94,7 +93,7 @@ open class AktivitetskortConsumerIntegrationTest(
 
     @BeforeAll
     fun beforeAll() {
-        brukerUtenOppfolging = navMockService.createbruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
+        brukerUtenOppfolging = navMockService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
         mockBruker = navMockService.createBruker()
         veileder = navMockService.createVeileder(mockBruker)
     }

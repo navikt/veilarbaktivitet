@@ -56,7 +56,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalSendeServiceMelding() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -92,7 +92,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalSendeForAlleMoteTyper() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime fraDato = ZonedDateTime.now().plusHours(4);
@@ -110,7 +110,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void bareSendeForMote() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         for (AktivitetTypeDTO type :
                 AktivitetTypeDTO.values()) {
@@ -132,7 +132,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalFjereneGamleMoter() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitet = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().minusDays(10);
@@ -151,7 +151,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleHistorisk() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -170,7 +170,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleFulfort() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
@@ -187,7 +187,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeOppreteVarsleAvbrutt() {
-        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker happyBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.MOTE);
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);

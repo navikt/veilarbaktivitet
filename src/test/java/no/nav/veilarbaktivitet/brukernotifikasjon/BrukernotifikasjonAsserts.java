@@ -39,7 +39,7 @@ public class BrukernotifikasjonAsserts {
     private final static NavMockService mockNavService = new NavMockService(oppfolgingsperiodeService);
 
     public static MockBruker getBrukerSomIkkeKanVarsles() {
-        return mockNavService.createbruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
+        return mockNavService.createBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build());
     }
 
     public BrukernotifikasjonAsserts(BrukernotifikasjonAssertsConfig config) {

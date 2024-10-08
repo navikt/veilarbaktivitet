@@ -73,7 +73,7 @@ class AktivitetsplanRSTest extends SpringBootTestBase {
 
     @BeforeEach
     void moreSettup() {
-        mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         mockBrukersVeileder =  navMockService.createVeileder(mockBruker);
         annenMockVeilederMedNasjonalTilgang =  navMockService.createVeilederMedNasjonalTilgang();
         aktivVeileder = mockBrukersVeileder;

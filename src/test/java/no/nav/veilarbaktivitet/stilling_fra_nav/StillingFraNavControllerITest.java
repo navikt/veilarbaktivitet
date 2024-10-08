@@ -159,7 +159,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void historikk_del_cv_transaksjoner() {
-        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
@@ -183,7 +183,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
         if (typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET))
             return;
-        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBruker());
         MockVeileder veileder =  navMockService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 

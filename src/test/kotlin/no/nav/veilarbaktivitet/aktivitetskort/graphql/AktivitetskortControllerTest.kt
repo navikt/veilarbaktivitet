@@ -90,7 +90,7 @@ class AktivitetskortControllerTest: SpringBootTestBase() {
 
     @Test
     fun `veileder skal ikke ha tilgang på kvp aktiviteter hvis ikke tilgang på enhet`() {
-        val kvpBruker = navMockService.createbruker(
+        val kvpBruker = navMockService.createBruker(
             BrukerOptions.happyBruker().toBuilder()
                 .erUnderKvp(true)
                 .build()

@@ -23,8 +23,8 @@ class NavMockService(
         return createBruker()
     }
 
-    fun createbruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
-        return createBruker(brukerOptions)
+    fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
+        return createBruker(brukerOptions, fnr = null)
     }
 
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {

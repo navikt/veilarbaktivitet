@@ -47,7 +47,7 @@ class KvpAvsluttetKafkaConsumerTest extends SpringBootTestBase {
     @BeforeEach
     public void before() {
         var medKvp = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).build();
-        mockBruker = navMockService.createbruker(medKvp);
+        mockBruker = navMockService.createBruker(medKvp);
         mockVeileder =  navMockService.createVeileder(mockBruker);
         when(unleash.isEnabled(MigreringService.VIS_MIGRERTE_ARENA_AKTIVITETER_TOGGLE)).thenReturn(true);
     }

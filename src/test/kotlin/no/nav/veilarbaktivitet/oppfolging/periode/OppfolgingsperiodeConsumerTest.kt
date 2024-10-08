@@ -5,7 +5,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper
-
+import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.person.Innsender
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils
@@ -61,7 +61,7 @@ internal class OppfolgingsperiodeConsumerTest : SpringBootTestBase() {
         TimeoutException::class
     )
     fun skal_opprette_siste_oppfolgingsperiode() {
-        val mockBruker = navMockService.createHappyBruker()
+        val mockBruker = navMockService.createBruker(BrukerOptions.happyBruker().toBuilder().underOppfolging(false).build())
         val startOppfolgiong = SisteOppfolgingsperiodeV1.builder()
             .uuid(mockBruker.getOppfolgingsperiodeId())
             .aktorId(mockBruker.aktorId.get())

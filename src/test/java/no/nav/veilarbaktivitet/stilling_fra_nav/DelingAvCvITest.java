@@ -168,7 +168,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     void ikke_under_oppfolging() {
 
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
-        MockBruker mockBruker = navMockService.createbruker(options);
+        MockBruker mockBruker = navMockService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
@@ -191,7 +191,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     @Test
     void under_oppfolging_kvp() {
         BrukerOptions brukerOptions = BrukerOptions.happyBrukerBuilder().erUnderKvp(true).underOppfolging(true).build();
-        MockBruker mockBruker = navMockService.createbruker(brukerOptions);
+        MockBruker mockBruker = navMockService.createBruker(brukerOptions);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
@@ -215,7 +215,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     @Test
     void under_manuell_oppfolging() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
-        MockBruker mockBruker = navMockService.createbruker(options);
+        MockBruker mockBruker = navMockService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
@@ -239,7 +239,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     @Test
     void reservert_i_krr() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erReservertKrr(true).build();
-        MockBruker mockBruker = navMockService.createbruker(options);
+        MockBruker mockBruker = navMockService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);
@@ -264,7 +264,7 @@ class DelingAvCvITest extends SpringBootTestBase {
     @Test
     void bruker_som_ikke_kan_varsles_skal_fa_tilstand_kan_ikke_varsle() {
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().erManuell(true).build();
-        MockBruker mockBruker = navMockService.createbruker(options);
+        MockBruker mockBruker = navMockService.createBruker(options);
 
         String bestillingsId = UUID.randomUUID().toString();
         ForesporselOmDelingAvCv melding = createForesporselOmDelingAvCv(bestillingsId, mockBruker);

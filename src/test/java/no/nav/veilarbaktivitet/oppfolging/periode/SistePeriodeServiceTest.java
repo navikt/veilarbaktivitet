@@ -69,7 +69,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
     @Test
     void oppfolgingFeiler() {
         BrukerOptions oppfolgingFeiler = BrukerOptions.happyBrukerBuilder().oppfolgingFeiler(true).build();
-        MockBruker bruker = navMockService.createbruker(oppfolgingFeiler);
+        MockBruker bruker = navMockService.createBruker(oppfolgingFeiler);
         Person.AktorId aktorId = bruker.getAktorIdAsAktorId();
         assertThrows(ResponseStatusException.class, () -> sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId));
     }
@@ -77,7 +77,7 @@ class SistePeriodeServiceTest extends SpringBootTestBase {
     @Test
     void ikkeUnderOppfolging() {
         BrukerOptions ikkeUnderOppfolging = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
-        MockBruker bruker = navMockService.createbruker(ikkeUnderOppfolging);
+        MockBruker bruker = navMockService.createBruker(ikkeUnderOppfolging);
         Person.AktorId aktorId = bruker.getAktorIdAsAktorId();
         assertThrows(IngenGjeldendePeriodeException.class, () -> sistePeriodeService.hentGjeldendeOppfolgingsperiodeMedFallback(aktorId));
     }
