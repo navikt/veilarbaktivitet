@@ -21,7 +21,6 @@ import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
-import no.nav.veilarbaktivitet.stilling_fra_nav.StillingFraNavTestService;
 import no.nav.veilarbaktivitet.testutils.AktivitetDataTestBuilder;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
 import no.nav.veilarbaktivitet.veilarbportefolje.dto.AktivitetTypeDTO;
@@ -85,7 +84,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_sende_meldinger_til_portefolje() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData, false);
 
@@ -154,7 +153,7 @@ class AktiviteterTilKafkaAivenServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_committe_hver_melding() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         AktivitetData aktivitetData1 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetData aktivitetData2 = AktivitetDataTestBuilder.nyEgenaktivitet();
         AktivitetDTO skalSendes1 = AktivitetDTOMapper.mapTilAktivitetDTO(aktivitetData1, false);

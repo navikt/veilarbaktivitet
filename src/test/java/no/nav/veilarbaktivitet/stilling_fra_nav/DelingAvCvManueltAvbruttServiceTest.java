@@ -6,10 +6,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.SoftAssertions;
@@ -59,7 +57,7 @@ class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
     @Test
     void happy_case() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), null);
+        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
         AktivitetDTO skalBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO skalIkkeBehandles = aktivitetTestService.opprettStillingFraNav(mockBruker);
 

@@ -26,6 +26,10 @@ class NavMockService(
         return bruker
     }
 
+    fun createHappyBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker()): MockBruker {
+        return createHappyBruker(brukerOptions, null)
+    }
+
     fun updateBruker(mockBruker: MockBruker, brukerOptions: BrukerOptions) {
         mockBruker.brukerOptions = brukerOptions
         WireMockUtil.stubBruker(mockBruker)
