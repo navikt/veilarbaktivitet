@@ -23,7 +23,6 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.AvtaltMedNavDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -90,9 +89,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
-
-    @Autowired
-    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
 
     @LocalServerPort
     private int port;

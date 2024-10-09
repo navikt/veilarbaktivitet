@@ -11,7 +11,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -19,14 +18,11 @@ import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
-import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.kafka.core.ConsumerFactory;
 
 import java.time.Duration;
 import java.time.ZonedDateTime;
@@ -45,20 +41,7 @@ class MoteSmsTest extends SpringBootTestBase {
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
 
     @Autowired
-    ConsumerFactory<SpecificRecordBase, SpecificRecordBase> avroAvroConsumerFactory;
-
-    @Value("${topic.ut.brukernotifikasjon.beskjed}")
-    String beskjedTopic;
-
-    @Value("${topic.ut.brukernotifikasjon.done}")
-    String doneTopic;
-
-
-    @Autowired
     SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
-
-    @Autowired
-    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
 
     @Autowired
     AktivitetService aktivitetService;
@@ -175,7 +158,7 @@ class MoteSmsTest extends SpringBootTestBase {
         ZonedDateTime startTid = ZonedDateTime.now().plusHours(2);
         aktivitetDTO.setFraDato(new Date(startTid.toInstant().toEpochMilli()));
         aktivitetDTO.setKanal(KanalDTO.OPPMOTE);
-        AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
+        aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
         aktivitetService.settAktiviteterTilHistoriske(happyBruker.getOppfolgingsperiodeId(), ZonedDateTime.now());
 
 
