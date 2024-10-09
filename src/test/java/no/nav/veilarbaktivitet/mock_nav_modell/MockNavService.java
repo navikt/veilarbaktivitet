@@ -1,5 +1,6 @@
 package no.nav.veilarbaktivitet.mock_nav_modell;
 
+import no.nav.common.types.identer.Fnr;
 import no.nav.poao_tilgang.poao_tilgang_test_core.DomainKt;
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavAnsatt;
 import no.nav.poao_tilgang.poao_tilgang_test_core.NavContext;
@@ -17,7 +18,11 @@ public class MockNavService {
     }
 
     public static MockBruker createBruker(BrukerOptions brukerOptions) {
-        PrivatBruker ny = NAV_CONTEXT.getPrivatBrukere().ny();
+        return createBruker(brukerOptions, null);
+    }
+
+    public static MockBruker createBruker(BrukerOptions brukerOptions, Fnr fnr) {
+        PrivatBruker ny = fnr != null ? NAV_CONTEXT.getPrivatBrukere().ny(fnr.get()) : NAV_CONTEXT.getPrivatBrukere().ny();
         MockBruker mockBruker = new MockBruker(brukerOptions, ny);
         WireMockUtil.stubBruker(mockBruker);
         return mockBruker;

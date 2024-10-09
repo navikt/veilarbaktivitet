@@ -6,10 +6,8 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.assertj.core.api.SoftAssertions;
@@ -29,20 +27,11 @@ import static org.springframework.kafka.test.utils.KafkaTestUtils.getSingleRecor
 
 class DelingAvCvManueltAvbruttServiceTest extends SpringBootTestBase {
 
-    @Autowired
-    StillingFraNavTestService stillingFraNavTestService;
-
     @LocalServerPort
     private int port;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
-
-    @Value("${spring.kafka.consumer.group-id}")
-    String groupId;
-
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
 
     Consumer<String, DelingAvCvRespons> consumer;
 

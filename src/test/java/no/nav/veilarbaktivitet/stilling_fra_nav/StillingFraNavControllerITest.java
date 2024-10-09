@@ -11,9 +11,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
@@ -60,12 +57,6 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Autowired
     JdbcTemplate jdbc;
-    @Autowired
-    KafkaStringAvroTemplate<ForesporselOmDelingAvCv> producer;
-    @Autowired
-    SendBrukernotifikasjonCron sendBrukernotifikasjonCron;
-    @Autowired
-    AvsluttBrukernotifikasjonCron avsluttBrukernotifikasjonCron;
     @LocalServerPort
     private int port;
     @Value("${topic.ut.stillingFraNav}")
