@@ -21,7 +21,7 @@ fun StillingsoekEtikettData?.toArkivEtikettStil(): ArkivEtikettStil {
         StillingsoekEtikettData.SOKNAD_SENDT -> ArkivEtikettStil.NEUTRAL
         StillingsoekEtikettData.INNKALT_TIL_INTERVJU -> ArkivEtikettStil.NEUTRAL
         StillingsoekEtikettData.AVSLAG -> ArkivEtikettStil.NEGATIVE
-        StillingsoekEtikettData.JOBBTILBUD -> ArkivEtikettStil.NEGATIVE
+        StillingsoekEtikettData.JOBBTILBUD -> ArkivEtikettStil.POSITIVE
         else -> ArkivEtikettStil.NEUTRAL
     }
 }
