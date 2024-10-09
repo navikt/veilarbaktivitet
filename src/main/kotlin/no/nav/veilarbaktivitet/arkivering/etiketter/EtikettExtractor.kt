@@ -19,12 +19,16 @@ fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
         "TAKKET_NEI" -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud")
         "FATT_PLASS" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket")
         "VENTELISTE" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste")
+        "SOKNAD_SENDT" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søknaden er sendt")
+        "INNKALT_TIL_INTERVJU" -> ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Skal på intervju")
+        "JOBBTILBUD" -> ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått jobbtilbud")
         else -> {
             logger.error("Fant ukjent arena-etikettkode")
             return null
         }
     }
 }
+
 private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
     return when (this.aktivitetType) {
         AktivitetTypeData.JOBBSOEKING -> this.stillingsSoekAktivitetData?.stillingsoekEtikett

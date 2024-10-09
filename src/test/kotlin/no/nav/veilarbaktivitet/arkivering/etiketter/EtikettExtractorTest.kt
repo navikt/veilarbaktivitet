@@ -17,7 +17,9 @@ class EtikettExtractorTest {
         assertThat(Etikett("Dummy", null, "TAKKET_NEI").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Takket nei til tilbud"))
         assertThat(Etikett("Dummy", null, "FATT_PLASS").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket"))
         assertThat(Etikett("Dummy", null, "VENTELISTE").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste"))
+        assertThat(Etikett("Dummy", null, "SOKNAD_SENDT").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Søknaden er sendt"))
+        assertThat(Etikett("Dummy", null, "INNKALT_TIL_INTERVJU").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.NEUTRAL, "Skal på intervju"))
+        assertThat(Etikett("Dummy", null, "JOBBTILBUD").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått jobbtilbud"))
     }
-
 }
 
