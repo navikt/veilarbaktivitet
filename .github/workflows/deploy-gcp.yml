@@ -5,22 +5,22 @@ on:
     branches:
       - main
 
-permissions:
-  packages: write
-  contents: write
-
 concurrency:
   group: deploy_prod
   cancel-in-progress: true
 
 env:
-  IMAGE_TAG: ${{ github.sha }}-gcp
-  IMAGE: ghcr.io/${{ github.repository }}/veilarbaktivitet
   PRINT_PAYLOAD: true
 jobs:
   test-build-and-push:
+    permissions:
+      contents: read
+      id-token: write
     name: Test, build and push
     runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.docker-build-push.outputs.image }}
+      telemetry: ${{ steps.docker-build-push.outputs.telemetry }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -43,46 +43,47 @@ jobs:
           SLACK_TITLE: 'Veilarbaktivitet: tester feilet under deploy til prod'
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_MESSAGE: 'Commit-message til feilende deploy: ${{ github.event.head_commit.message }}'
-      - uses: docker/login-action@v2
+      - name: Push docker image to GAR
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: docker/build-push-action@v3
-        with:
-          context: .
-          push: true
-          tags: ${{ env.IMAGE }}:${{ env.IMAGE_TAG }}
-
+          team: dab
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }} # Provided as Organization Secret
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }} # Provided as Organization Variable
+        env:
+          TRIVY_JAVA_DB_REPOSITORY: "public.ecr.aws/aquasecurity/trivy-java-db:1"
   deploy-dev:
     name: Deploy application to dev
     needs: test-build-and-push
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Deploy application
+      - name: Deploy application to dev
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
           CLUSTER: dev-gcp
           RESOURCE: nais/nais-dev-gcp.yaml
-          VAR: version=${{ env.IMAGE_TAG }}
-
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
   deploy-prod:
     name: Deploy application to prod
-    needs: deploy-dev
+    needs: [test-build-and-push, deploy-dev]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Deploy application
+      - name: Deploy application to prod
         uses: nais/deploy/actions/deploy@v2
         env:
-          APIKEY: ${{ secrets.DAB_NAIS_DEPLOY_APIKEY }}
           CLUSTER: prod-gcp
           RESOURCE: nais/nais-prod-gcp.yaml
-          VAR: version=${{ env.IMAGE_TAG }}
+          VAR: image=${{ needs.test-build-and-push.outputs.image }}
+          TELEMETRY: ${{ needs.test-build-and-push.outputs.telemetry }}
       - name: Slack Notification (deploy failure)
         if: failure()
         uses: rtCamp/action-slack-notify@v2
