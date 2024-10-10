@@ -25,10 +25,11 @@ fun Etikett.mapTilArenaEtikett(): ArkivEtikett? {
         }
     }
 }
+
 private fun AktivitetData.getTypeEtiketter(): List<ArkivEtikett> {
     return when (this.aktivitetType) {
         AktivitetTypeData.JOBBSOEKING -> this.stillingsSoekAktivitetData?.stillingsoekEtikett
-            ?.text?.let { ArkivEtikett(ArkivEtikettStil.POSITIVE, it) }.wrapInList()
+            ?.let { ArkivEtikett(it.toArkivEtikettStil(), it.text) }.wrapInList()
 
         AktivitetTypeData.STILLING_FRA_NAV -> this.stillingFraNavData.soknadsstatus
             ?.text?.let { ArkivEtikett(ArkivEtikettStil.POSITIVE, it) }.wrapInList()
