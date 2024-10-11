@@ -15,7 +15,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `for bruker som er over 18 har ikke foresatte innsynsrett`() {
         val fødselsdato = LocalDate.now().minusYears(18)
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
 
         val response = bruker
             .createRequest()
@@ -34,7 +34,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `for bruker som er under 18 har foresatte innsynsrett`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilFødselsDato()}60000"))
 
         val response = bruker
             .createRequest()
@@ -52,7 +52,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
     @Test
     fun `for bruker som er født på 1900 tallet har foresatte aldri innsynsrett`() {
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("01017120000"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("01017120000"))
 
 
         val response = bruker
@@ -72,7 +72,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `skal støtte syntetiske føldselsnumre fra TestNorge`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.TEST_NORGE)}50000"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.TEST_NORGE)}50000"))
 
 
         val response = bruker
@@ -92,7 +92,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     @Test
     fun `skal støtte syntetiske føldselsnumre fra Dolly`() {
         val fødselsdato = LocalDate.now().minusYears(18).plusDays(1)
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.DOLLY)}40000"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("${fødselsdato.tilSyntetiskFødselsdato(FødselsnummerType.DOLLY)}40000"))
 
 
         val response = bruker
@@ -111,7 +111,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
 
     @Test
     fun `skal kunne se at en person er født på 1900-tallet selv om personnummeret starter på 9`() {
-        val bruker = navMockService.createHappyBruker(BrukerOptions.happyBruker(), Fnr.of("16917197656"))
+        val bruker = navMockService.createBruker(BrukerOptions.happyBruker(), Fnr.of("16917197656"))
 
 
         val response = bruker
@@ -130,7 +130,7 @@ internal class InnsynrettControllerTest : SpringBootTestBase() {
     
     @Test
     fun `Veileder skal også kunne sjekke om foresatte har innsynsrett`() {
-        val bruker = navMockService.createHappyBruker()
+        val bruker = navMockService.createBruker()
         val veileder = navMockService.createVeileder(mockBruker = bruker)
         
         veileder

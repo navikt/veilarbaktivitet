@@ -6,7 +6,6 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.testutils.AktivitetDtoTestBuilder;
@@ -28,7 +27,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Test
     void IkkeSendeFhoForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = BrukernotifikasjonAsserts.getBrukerSomIkkeKanVarsles();
-        MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
+        MockVeileder veileder =  navMockService.createVeileder(brukerSomIkkeKanVarsles);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()
@@ -54,8 +53,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOUtenAktivitet() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()
@@ -82,8 +81,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void IkkeOppretteFHOFEilAktivitetVersion() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(happyBruker);
         AktivitetDTO utenFHO = aktivitetTestService.opprettAktivitet(happyBruker, AktivitetDtoTestBuilder.nyAktivitet(AktivitetTypeDTO.EGEN));
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
@@ -112,7 +111,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Test
     void setteAvtaltUtenFHOForBrukerSomIkkeKanVarsles() {
         MockBruker brukerSomIkkeKanVarsles = BrukernotifikasjonAsserts.getBrukerSomIkkeKanVarsles();
-        MockVeileder veileder = MockNavService.createVeileder(brukerSomIkkeKanVarsles);
+        MockVeileder veileder =  navMockService.createVeileder(brukerSomIkkeKanVarsles);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()
@@ -127,8 +126,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorentering() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()
@@ -143,8 +142,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void sendeForhondsorenteringFor11_9() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()
@@ -159,8 +158,8 @@ class AvtaltMedNavTest extends SpringBootTestBase {
 
     @Test
     void skalIkkeSendeVarselForIkkeSend() {
-        MockBruker happyBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(happyBruker);
+        MockBruker happyBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(happyBruker);
 
         ForhaandsorienteringDTO fho = ForhaandsorienteringDTO
                 .builder()

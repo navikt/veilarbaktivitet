@@ -25,18 +25,14 @@ public class MockBruker extends RestassuredUser {
     private List<Oppfolgingsperiode> oppfolgingsperioder = new ArrayList<>();
 
     MockBruker(BrukerOptions brukerOptions, PrivatBruker privatBruker) {
-        super(privatBruker.getNorskIdent(),UserRole.EKSTERN);
+        super(privatBruker.getNorskIdent(), UserRole.EKSTERN);
         this.brukerOptions = brukerOptions;
         if (brukerOptions.isUnderOppfolging()) {
             oppfolgingsperiodeId = UUID.randomUUID();
-            var oppfolgingsperiodeObject = new Oppfolgingsperiode(
-                    getAktorId().get(),
-                    oppfolgingsperiodeId,
+            var oppfolgingsperiodeObject = new Oppfolgingsperiode(getAktorId().get(), oppfolgingsperiodeId,
                     // Aktiviteter fra arena-endepunkt er hardkodet til å ha start-dato 2021-11-18
                     // For at disse skal komme med må oppfolgingsperiode start før
-                    ZonedDateTime.now().withYear(2021).withMonth(10),
-                    null
-            );
+                    ZonedDateTime.now().withYear(2021).withMonth(10), null);
             oppfolgingsperioder.add(oppfolgingsperiodeObject);
         }
         this.privatbruker = privatBruker;
@@ -63,22 +59,6 @@ public class MockBruker extends RestassuredUser {
         return getAktorId();
     }
 
-    public void setOppfolgingsperiodeId(UUID oppfolgingsperiodeId) {
-        this.oppfolgingsperiodeId = oppfolgingsperiodeId;
-
-        var sisteEksisterendeOppfølgingsperiode = getNyesteOppfølgingsperiode();
-        var startDatoNestePeriode = sisteEksisterendeOppfølgingsperiode != null ? sisteEksisterendeOppfølgingsperiode.startTid().plusDays(1) : ZonedDateTime.now().minusDays(1);
-
-        var nyOppfølgingsperiode = new Oppfolgingsperiode(
-                getAktorId().get(),
-                oppfolgingsperiodeId,
-                startDatoNestePeriode,
-                null
-        );
-
-        oppfolgingsperioder.add(nyOppfølgingsperiode);
-    }
-
     public String getOppfolgingsenhet() {
         return privatbruker.getOppfolgingsenhet();
     }
@@ -87,9 +67,7 @@ public class MockBruker extends RestassuredUser {
         if (oppfolgingsperioder == null || oppfolgingsperioder.isEmpty()) {
             return null;
         } else {
-            return Collections.max(oppfolgingsperioder, ((o1, o2) ->
-                    Math.toIntExact(o1.startTid().toEpochSecond() - o2.startTid().toEpochSecond())
-            ));
+            return Collections.max(oppfolgingsperioder, ((o1, o2) -> Math.toIntExact(o1.startTid().toEpochSecond() - o2.startTid().toEpochSecond())));
         }
     }
 

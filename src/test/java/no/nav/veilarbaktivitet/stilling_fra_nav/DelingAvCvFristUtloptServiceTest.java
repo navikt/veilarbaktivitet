@@ -9,7 +9,6 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.util.AktivitetTestService;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -80,7 +79,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void utlopte_aktiviteter_skal_avsluttes_automatisk() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
         String uuid = UUID.randomUUID().toString();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(uuid, mockBruker);
@@ -106,7 +105,7 @@ class DelingAvCvFristUtloptServiceTest extends SpringBootTestBase {
 
     @Test
     void skal_ikke_oppdare_aktivitet_naar_producer_feiler() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
+        MockBruker mockBruker = navMockService.createHappyBruker();
 
         ForesporselOmDelingAvCv melding = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         melding.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));

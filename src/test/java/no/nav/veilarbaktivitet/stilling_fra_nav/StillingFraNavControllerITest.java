@@ -12,9 +12,7 @@ import no.nav.veilarbaktivitet.avro.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
@@ -77,8 +75,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void happy_case_svar_ja() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
@@ -98,8 +96,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void happy_case_svar_nei() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
         // Kafka consumer for svarmelding til rekrutteringsbistand.
@@ -135,8 +133,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void svar_naar_frist_utlopt_feiler() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
         ForesporselOmDelingAvCv foresporselFristUtlopt = AktivitetTestService.createForesporselOmDelingAvCv(UUID.randomUUID().toString(), mockBruker);
         foresporselFristUtlopt.setSvarfrist(Instant.now().minus(2, ChronoUnit.DAYS));
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker, foresporselFristUtlopt);
@@ -160,8 +158,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void historikk_del_cv_transaksjoner() {
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         AktivitetDTO aktivitetDTO = aktivitetTestService.opprettStillingFraNav(mockBruker);
 
@@ -184,8 +182,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
     private void oppdaterKanCvDeles_feilAktivitetstype_feiler(AktivitetTypeDTO typeDTO) {
         if (typeDTO.equals(AktivitetTypeDTO.STILLING_FRA_NAV) || typeDTO.equals(AktivitetTypeDTO.EKSTERNAKTIVITET))
             return;
-        MockBruker mockBruker = navMockService.createHappyBruker(BrukerOptions.happyBruker());
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
         AktivitetDTO aktivitetDTO = AktivitetDtoTestBuilder.nyAktivitet(typeDTO);
 
         AktivitetDTO oppretetDto = aktivitetTestService.opprettAktivitet(mockBruker, veileder, aktivitetDTO);
@@ -213,8 +211,8 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
     @Test
     void oppdaterKanCvDeles_feilVersjon_feiler() {
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         AktivitetDTO orginal = aktivitetTestService.opprettStillingFraNav(mockBruker);
         AktivitetDTO oppdatert = aktivitetTestService.oppdaterAktivitetStatus(mockBruker, veileder, orginal, AktivitetStatus.PLANLAGT);

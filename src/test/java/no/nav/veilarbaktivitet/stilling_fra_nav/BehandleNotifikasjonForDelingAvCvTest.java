@@ -10,7 +10,6 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvit
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockVeileder;
 import no.nav.veilarbaktivitet.testutils.AktivitetAssertUtils;
 import no.nav.veilarbaktivitet.util.KafkaTestService;
@@ -65,8 +64,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     void skalSendeHarVarsletForFerdigstiltNotifikasjonIkkeSvart() {
 
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav og send varsel
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
@@ -109,8 +108,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         //TODO rydd denne testen
     void skalSendeKanIkkeVarsleForFeiledeNotifikasjonIkkeSvart() {
         // sett opp testdata
-        MockBruker mockBruker = MockNavService.createHappyBruker();
-        MockVeileder veileder = MockNavService.createVeileder(mockBruker);
+        MockBruker mockBruker = navMockService.createHappyBruker();
+        MockVeileder veileder =  navMockService.createVeileder(mockBruker);
 
         // Opprett stilling fra nav
         AktivitetDTO utenSvar = aktivitetTestService.opprettStillingFraNav(mockBruker);
