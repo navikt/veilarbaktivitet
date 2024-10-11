@@ -26,8 +26,12 @@ public class AvsluttBrukernotifikasjonCron {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     @SchedulerLock(name = "avslutt_brukernotifikasjoner", lockAtMostFor = "PT20M")
+    public void avsluttBrukernotifikasjonerMedLock() {
+        avsluttBrukernotifikasjoner();
+    }
+
     public void avsluttBrukernotifikasjoner() {
-            sendAvsluttAlle(500);
+        sendAvsluttAlle(500);
     }
 
     void sendAvsluttAlle(int maxBatchSize) {
