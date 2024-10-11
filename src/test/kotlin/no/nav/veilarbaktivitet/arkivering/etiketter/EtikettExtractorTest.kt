@@ -18,6 +18,4 @@ class EtikettExtractorTest {
         assertThat(Etikett("Dummy", null, "FATT_PLASS").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "Fått plass på tiltaket"))
         assertThat(Etikett("Dummy", null, "VENTELISTE").mapTilArenaEtikett()).isEqualTo(ArkivEtikett(ArkivEtikettStil.POSITIVE, "På venteliste"))
     }
-
 }
-
