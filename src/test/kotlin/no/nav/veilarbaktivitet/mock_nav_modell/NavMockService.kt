@@ -30,7 +30,6 @@ class NavMockService(
     fun createBruker(brukerOptions: BrukerOptions = BrukerOptions.happyBruker(), fnr: Fnr? = null): MockBruker {
         val ny = if (fnr != null) NAV_CONTEXT.privatBrukere.ny(fnr.get()) else NAV_CONTEXT.privatBrukere.ny()
         val mockBruker = MockBruker(brukerOptions, ny)
-        WireMockUtil.stubBruker(mockBruker)
 
         val leggTilOppfølgingsperiode = brukerOptions.isUnderOppfolging && !brukerOptions.isOppfolgingFeiler
 
@@ -44,6 +43,8 @@ class NavMockService(
                     .sluttDato(oppfolgingsperiode.sluttTid).build()
             )
         }
+
+        WireMockUtil.stubBruker(mockBruker)
         return mockBruker
     }
 
