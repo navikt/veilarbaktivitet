@@ -7,6 +7,7 @@ import no.nav.poao_tilgang.poao_tilgang_test_core.tilgjengligeAdGrupper
 import no.nav.veilarbaktivitet.oppfolging.periode.OppfolgingsperiodeService
 import no.nav.veilarbaktivitet.oppfolging.periode.SisteOppfolgingsperiodeV1
 import org.springframework.stereotype.Service
+import java.time.ZonedDateTime
 import java.util.*
 
 
@@ -82,10 +83,5 @@ class NavMockService(
     fun createVeilederMedNasjonalTilgang(): MockVeileder {
         val navAnsatt = NAV_CONTEXT.navAnsatt.nyNksAnsatt()
         return MockVeileder(navAnsatt)
-    }
-
-    fun newOppfolingsperiode(mockBruker: MockBruker) {
-        mockBruker.setOppfolgingsperiodeId(UUID.randomUUID())
-        WireMockUtil.stubBruker(mockBruker)
     }
 }
