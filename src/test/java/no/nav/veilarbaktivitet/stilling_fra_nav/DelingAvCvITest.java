@@ -14,6 +14,7 @@ import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTempla
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.WireMockUtil;
+import no.nav.veilarbaktivitet.person.Person;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.ForesporselOmDelingAvCv;
 import no.nav.veilarbaktivitet.stilling_fra_nav.deling_av_cv.KontaktInfo;
 import no.nav.veilarbaktivitet.util.MemoryLoggerAppender;
@@ -23,6 +24,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -141,8 +143,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         MemoryLoggerAppender memoryLoggerAppender = MemoryLoggerAppender.getMemoryAppenderForLogger("SecureLog");
 
         //TODO se på om vi burde unngå bruker her
-        MockBruker mockBruker = navMockService.createHappyBruker();
-
+        MockBruker mockBruker = navMockService.createBruker(BrukerOptions.happyBrukerBuilder().underOppfolging(false).build());
         WireMockUtil.aktorUtenGjeldende(mockBruker.getFnr(), mockBruker.getAktorId());
 
 
@@ -166,7 +167,6 @@ class DelingAvCvITest extends SpringBootTestBase {
 
     @Test
     void ikke_under_oppfolging() {
-
         BrukerOptions options = BrukerOptions.happyBrukerBuilder().underOppfolging(false).build();
         MockBruker mockBruker = navMockService.createBruker(options);
 
