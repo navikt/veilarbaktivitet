@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.domain
+package no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel
 
 import no.nav.veilarbaktivitet.arena.model.ArenaId
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus

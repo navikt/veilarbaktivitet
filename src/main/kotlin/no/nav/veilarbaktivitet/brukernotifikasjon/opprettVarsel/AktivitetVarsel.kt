@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.domain
+package no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel
 
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType

@@ -1,4 +1,4 @@
-package no.nav.veilarbaktivitet.brukernotifikasjon.domain
+package no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel
 
 import java.util.*
 

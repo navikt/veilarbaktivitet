@@ -3,7 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.UtgåendeVarsel;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;

@@ -18,7 +18,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.VarselDto;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO;
 import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate;

@@ -6,24 +6,22 @@ import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.common.json.JsonUtils
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus
 import no.nav.tms.varsel.action.Varseltype
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.MinSideBrukernotifikasjonsId
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer
-import no.nav.veilarbaktivitet.config.kafka.kafkatemplates.KafkaStringAvroTemplate
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.util.KafkaTestService
-import org.apache.kafka.clients.consumer.Consumer
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.junit.jupiter.api.Assertions
 import org.springframework.kafka.test.utils.KafkaTestUtils
 import java.util.*
 
 class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
-    var brukervarselConsumer: Consumer<String, String> = config.createBrukerVarselConsumer()
-    var doneInputConsumer: Consumer<NokkelInput, DoneInput> = config.createDoneConsumer()
-    private val kviteringsProducer: KafkaStringAvroTemplate<DoknotifikasjonStatus> = config.kviteringsProducer
+    var brukervarselConsumer = config.createBrukerVarselConsumer()
+    var doneInputConsumer = config.createBrukernotifikasjonVarselHendelseConsumer()
+    private val kviteringsProducer = config.kviteringsProducer
 
     var kafkaTestService: KafkaTestService = config.testService
 
@@ -72,7 +70,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
         val singleRecord = KafkaTestUtils.getSingleRecord(
             doneInputConsumer,
-            config.brukernotifkasjonFerdigTopic,
+            config.brukernotifikasjonVarselHendelseTopic,
             KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
         )
         val key = singleRecord.key()

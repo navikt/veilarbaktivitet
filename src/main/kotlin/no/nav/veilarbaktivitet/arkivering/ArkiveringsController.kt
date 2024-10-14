@@ -118,7 +118,7 @@ class ArkiveringsController(
                     throw RuntimeException("Fant ingen oppfølgingsperiode for $oppfølgingsperiodeId")
                 }
                 val navn = hentDataAsync { navnService.hentNavn(fnr) }
-                val mål = hentDataAsync { oppfølgingsperiodeService.hentMål(fnr) }
+                val målMedHistorikk = hentDataAsync { oppfølgingsperiodeService.hentMålListe(fnr) }
 
                 val aktiviteter = aktiviteterDeferred.await()
                 val historikk = hentDataAsync { historikkService.hentHistorikk(aktiviteter.map { it.id }) }
@@ -129,7 +129,7 @@ class ArkiveringsController(
                     oppfølgingsperiode = oppfølgingsperiode.await(),
                     aktiviteter = aktiviteter,
                     dialoger = dialogerIPerioden.await(),
-                    mål = mål.await(),
+                    målMedHistorikk = målMedHistorikk.await(),
                     historikkForAktiviteter = historikk.await(),
                     arenaAktiviteter = arenaAktiviteter.await()
                 )
@@ -165,7 +165,7 @@ class ArkiveringsController(
         val oppfølgingsperiode: OppfolgingPeriodeMinimalDTO,
         val aktiviteter: List<AktivitetData>,
         val dialoger: List<DialogClient.DialogTråd>,
-        val mål: MålDTO,
+        val målMedHistorikk: List<Maal>,
         val historikkForAktiviteter: Map<Long, Historikk>,
         val arenaAktiviteter: List<ArenaAktivitetDTO>
     )

@@ -1,6 +1,7 @@
 package no.nav.veilarbaktivitet.arkivering
 
 import no.nav.veilarbaktivitet.arkivering.etiketter.ArkivEtikett
+import java.time.ZonedDateTime
 import java.util.*
 
 typealias ArkivAktivitetStatus = String
@@ -17,7 +18,7 @@ data class ArkivPayload(
     val journalførendeEnhet: String,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
     val dialogtråder: List<ArkivDialogtråd>,
-    val mål: String?,
+    val målMedHistorikk: List<Maal>?,
 )
 
 data class ForhåndsvisningPayload(
@@ -28,7 +29,7 @@ data class ForhåndsvisningPayload(
     val oppfølgingsperiodeId: UUID,
     val aktiviteter: Map<ArkivAktivitetStatus, List<ArkivAktivitet>>,
     val dialogtråder: List<ArkivDialogtråd>,
-    val mål: String?,
+    val målMedHistorikk: List<Maal>?,
 )
 
 data class ArkivAktivitet(
@@ -52,6 +53,11 @@ data class AktivitetEndring(
     val beskrivelse: String
 )
 
+data class Maal(
+    val mal: String,
+    val endretAv: String,
+    val dato: ZonedDateTime
+)
 
 data class ArkivDialogtråd(
     val overskrift: String,

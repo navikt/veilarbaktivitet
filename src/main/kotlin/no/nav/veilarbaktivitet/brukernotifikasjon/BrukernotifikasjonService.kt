@@ -3,8 +3,8 @@ package no.nav.veilarbaktivitet.brukernotifikasjon
 import io.micrometer.core.annotation.Timed
 import no.nav.veilarbaktivitet.aktivitet.AktivitetDAO
 import no.nav.veilarbaktivitet.arena.model.ArenaId
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.ArenaAktivitetVarsel
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.ArenaAktivitetVarsel
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SkalSendes
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client

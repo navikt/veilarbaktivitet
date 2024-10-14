@@ -11,7 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
-import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;

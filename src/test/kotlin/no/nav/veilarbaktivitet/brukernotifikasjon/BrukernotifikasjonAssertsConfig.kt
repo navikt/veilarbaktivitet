@@ -1,8 +1,6 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon
 
 import lombok.Getter
-import no.nav.brukernotifikasjon.schemas.input.DoneInput
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
 import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron
@@ -16,31 +14,27 @@ import org.springframework.stereotype.Service
 @Service
 @Getter
 class BrukernotifikasjonAssertsConfig(
+    @Autowired val testService: KafkaTestService,
+    @Value("\${topic.ut.brukernotifikasjon.brukervarsel}") val brukernotifikasjonBrukervarselTopic: String,
+    @Value("\${topic.inn.brukernotifikasjon.brukervarselHendelse}")
+    val brukernotifikasjonVarselHendelseTopic: String,
     @Autowired
-    private val testService: KafkaTestService,
-    @Value("\${topic.ut.brukernotifikasjon.brukervarsel}")
-    private val brukernotifikasjonBrukervarselTopic: String,
-    @Value("\${topic.ut.brukernotifikasjon.done}")
-    private val brukernotifkasjonFerdigTopic: String,
-    @Value("\${topic.inn.eksternVarselKvittering}")
-    private val kviteringsToppic: String,
-    @Autowired
-    private val kviteringsProducer: KafkaStringAvroTemplate<DoknotifikasjonStatus>,
+    val kviteringsProducer: KafkaStringAvroTemplate<DoknotifikasjonStatus>,
     @Value("\${app.env.appname}")
-    private val appname: String,
+    val appname: String,
     @Value("\${app.env.namespace}")
-    private val namespace: String,
+    val namespace: String,
     @Autowired
-    private val avsluttBrukernotifikasjonCron: AvsluttBrukernotifikasjonCron,
+    val avsluttBrukernotifikasjonCron: AvsluttBrukernotifikasjonCron,
     @Autowired
-    private val sendBrukernotifikasjonCron: SendBrukernotifikasjonCron
+    val sendBrukernotifikasjonCron: SendBrukernotifikasjonCron
 ) {
 
     fun createBrukerVarselConsumer(): Consumer<String, String> {
         return testService.createStringStringConsumer(brukernotifikasjonBrukervarselTopic)
     }
 
-    fun createDoneConsumer(): Consumer<NokkelInput, DoneInput> {
-        return testService.createAvroAvroConsumer(brukernotifkasjonFerdigTopic)
+    fun createBrukernotifikasjonVarselHendelseConsumer(): Consumer<String, String> {
+        return testService.createStringStringConsumer(brukernotifikasjonVarselHendelseTopic)
     }
 }
