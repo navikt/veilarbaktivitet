@@ -20,7 +20,9 @@ import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDAO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.ForhaandsorienteringDTO;
 import no.nav.veilarbaktivitet.avtalt_med_nav.Type;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonProducer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.VarselDAO;
 import no.nav.veilarbaktivitet.config.database.Database;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.manuell_status.v2.ManuellStatusV2Client;
@@ -61,7 +63,10 @@ class ArenaControllerTest {
     private final JdbcTemplate jdbc = new JdbcTemplate(LocalDatabaseSingleton.INSTANCE.getPostgres());
     private final Database db = new Database(jdbc);
     private final BrukerNotifikasjonDAO notifikasjonArenaDAO = new BrukerNotifikasjonDAO(new NamedParameterJdbcTemplate(jdbc));
-    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(personService, sistePeriodeService, notifikasjonArenaDAO, manuellStatusClient, aktivitetsplanBasepath, aktivitetDAO);
+    private final BrukernotifikasjonProducer brukernotifikasjonProducer = mock(BrukernotifikasjonProducer.class);
+    private final VarselDAO varselDAO = mock(VarselDAO.class);
+    private final BrukernotifikasjonService brukernotifikasjonArenaAktivitetService = new BrukernotifikasjonService(brukernotifikasjonProducer,
+            varselDAO, notifikasjonArenaDAO, aktivitetDAO, manuellStatusClient, personService, aktivitetsplanBasepath, sistePeriodeService);
     private final ForhaandsorienteringDAO fhoDao = new ForhaandsorienteringDAO(db.getNamedJdbcTemplate());
     private final IdMappingDAO idMappingDAO = new IdMappingDAO(new NamedParameterJdbcTemplate(jdbc));
     private final Unleash unleash = mock(Unleash.class);

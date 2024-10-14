@@ -3,6 +3,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varsel;
 import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,7 +17,7 @@ import java.util.concurrent.ScheduledExecutorService;
 @EnableScheduling
 @RequiredArgsConstructor
 public class SendBrukernotifikasjonCron {
-    private final BrukerNotifkasjonProducerService internalService;
+    private final BrukernotifikasjonService brukernotifikasjonService;
     private final VarselDAO varselDao;
     private final VarselMetrikk varselMetrikk;
     private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
@@ -32,13 +33,13 @@ public class SendBrukernotifikasjonCron {
     }
 
     void sendAlle(int maxBatchSize) {
-        internalService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
+        brukernotifikasjonService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
         while (sendOpptil(maxBatchSize) == maxBatchSize);
     }
 
     private int sendOpptil(int maxAntall) {
-        List<SkalSendes> skalSendes = internalService.hentVarselSomSkalSendes(maxAntall);
-        skalSendes.forEach(internalService::send);
+        List<SkalSendes> skalSendes = brukernotifikasjonService.hentVarselSomSkalSendes(maxAntall);
+        skalSendes.forEach(brukernotifikasjonService::send);
         return skalSendes.size();
     }
 

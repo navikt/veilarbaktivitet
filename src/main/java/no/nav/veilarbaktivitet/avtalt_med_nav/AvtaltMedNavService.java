@@ -12,6 +12,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
 import no.nav.veilarbaktivitet.person.Innsender;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.http.HttpStatus;
@@ -75,7 +76,8 @@ public class AvtaltMedNavService {
             if(!brukernotifikasjonService.kanVarsles(aktorId)){
                 throw new IllegalStateException("bruker kan ikke varsles");
             }
-            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING);
+            brukernotifikasjonService.opprettVarselPaaAktivitet(
+                    new AktivitetVarsel(aktivitetId, avtaltDTO.getAktivitetVersjon(), aktorId, FORHAANDSORIENTERING_DITT_NAV_TEKST, VarselType.FORHAANDSORENTERING, null, null, null));
         }
 
         var nyAktivitet = aktivitetDAO.hentAktivitet(aktivitetId)

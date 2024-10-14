@@ -10,6 +10,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetStatus;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
 import no.nav.veilarbaktivitet.person.Person;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +32,7 @@ public class RekrutteringsbistandStatusoppdateringService {
             return;
         }
         try {
-            brukernotifikasjonService.opprettVarselPaaAktivitet(
+            brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
                     aktivitetData.getId(),
                     aktivitetData.getVersjon(),
                     aktivitetData.getAktorId(),
@@ -40,7 +41,10 @@ public class RekrutteringsbistandStatusoppdateringService {
                         case IKKE_FATT_JOBBEN -> IKKE_FATT_JOBBEN_TEKST;
                         default -> "";
                     },
-                    varselType);
+                    varselType,
+                    null,null,null
+                )
+            );
         } catch (IngenGjeldendeIdentException e) {
             log.warn("Fikk ikke opprettet brukernotifikasjon pga ugyldig aktørId={}. Fortsetter behandling", aktivitetData.getAktorId());
         }

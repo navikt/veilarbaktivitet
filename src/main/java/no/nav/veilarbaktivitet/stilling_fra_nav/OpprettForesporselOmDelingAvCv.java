@@ -11,6 +11,7 @@ import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTransaksjonsType;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetTypeData;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
 import no.nav.veilarbaktivitet.kvp.KvpService;
 import no.nav.veilarbaktivitet.oppfolging.periode.IngenGjeldendePeriodeException;
 import no.nav.veilarbaktivitet.oppfolging.periode.SistePeriodeService;
@@ -87,7 +88,9 @@ public class OpprettForesporselOmDelingAvCv {
         AktivitetData aktivitet = aktivitetService.opprettAktivitet(aktivitetData);
         MDC.clear();
         if (kanVarsle) {
-            brukernotifikasjonService.opprettVarselPaaAktivitet(aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV);
+            brukernotifikasjonService.opprettVarselPaaAktivitet(new AktivitetVarsel(
+                aktivitet.getId(), aktivitet.getVersjon(), aktorId, BRUKERNOTIFIKASJON_TEKST, VarselType.STILLING_FRA_NAV, null, null, null
+            ));
             producerClient.sendOpprettet(aktivitet);
         } else {
             producerClient.sendOpprettetIkkeVarslet(aktivitet);

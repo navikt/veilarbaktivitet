@@ -91,7 +91,7 @@ class StillingFraNavControllerITest extends SpringBootTestBase {
 
         assertAktivitetSvartJa(veileder, aktivitetDTO, svartJaPaaDelingAvCv);
         assertSentSvarTilRekruteringsbistand(mockBruker, veileder, aktivitetDTO, consumer, true);
-        brukernotifikasjonAsserts.assertDone(brukernotifikajonOppgave.key());
+        brukernotifikasjonAsserts.assertDone(brukernotifikajonOppgave.getVarselId());
 
         skalKunneOppdatereSoknadStatus(mockBruker, veileder, svartJaPaaDelingAvCv);
     }

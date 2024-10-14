@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.domain.AktivitetVarsel;
 import no.nav.veilarbaktivitet.util.ExcludeFromCoverageGenerated;
 import org.slf4j.MDC;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -44,6 +45,7 @@ public class MoteSMSService {
                     moteSmsDAO.insertGjeldendeSms(it);
                     if (brukernotifikasjonService.kanVarsles(it.aktorId())) {
                         brukernotifikasjonService.opprettVarselPaaAktivitet(
+                            new AktivitetVarsel(
                                 it.aktivitetId(),
                                 it.aktitetVersion(),
                                 it.aktorId(),
@@ -52,6 +54,7 @@ public class MoteSMSService {
                                 it.getEpostTitel(),
                                 it.getEpostBody(),
                                 it.getSmsTekst()
+                            )
                         );
                     } else {
                         log.info("bruker kan ikke varsles {}", it.aktorId());
