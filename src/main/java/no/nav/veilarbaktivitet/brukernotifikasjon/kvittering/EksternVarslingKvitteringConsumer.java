@@ -38,7 +38,7 @@ public class EksternVarslingKvitteringConsumer {
 
 
     @Transactional
-    @KafkaListener(topics = "${topic.inn.eksternVarselKvittering}", containerFactory = "stringAvroKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")
+    @KafkaListener(topics = "${topic.inn.brukernotifikasjon.brukervarselHendelse}", containerFactory = "stringStringKafkaListenerContainerFactory", autoStartup = "${app.kafka.enabled:false}")
     public void consume(ConsumerRecord<String, DoknotifikasjonStatus> kafkaRecord) {
         DoknotifikasjonStatus melding = kafkaRecord.value();
         if (!appname.equals(melding.getBestillerId())) {

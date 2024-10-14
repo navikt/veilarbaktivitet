@@ -15,11 +15,11 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-class AvsluttDao {
+public class AvsluttDao {
     private final NamedParameterJdbcTemplate jdbc;
     private final RowMapper<SkalAvluttes> skalAvsluttesMapper = (rs, rowNum) -> new SkalAvluttes(rs.getString("BRUKERNOTIFIKASJON_ID"), Person.fnr(rs.getString("FOEDSELSNUMMER")), UUID.fromString(rs.getString("OPPFOLGINGSPERIODE")));
 
-    List<SkalAvluttes> getOppgaverSomSkalAvsluttes(int maksAntall) {
+    public List<SkalAvluttes> getOppgaverSomSkalAvsluttes(int maksAntall) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("status", VarselStatus.SKAL_AVSLUTTES.name())
                 .addValue("limit", maksAntall);
@@ -33,7 +33,7 @@ class AvsluttDao {
     }
 
     // TODO: Skriv om til å bruke aktivitet-kafka-topic for å avslutte
-    int markerAvslutteterAktiviteterSomSkalAvsluttes() {
+    public int markerAvslutteterAktiviteterSomSkalAvsluttes() {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("skalAvsluttes", VarselStatus.SKAL_AVSLUTTES.name())
                 .addValue("avsluttedeStatuser", List.of(VarselStatus.SKAL_AVSLUTTES.name(), VarselStatus.AVSLUTTET.name(), VarselStatus.AVBRUTT.name(), VarselStatus.PENDING.name()))
@@ -63,7 +63,7 @@ class AvsluttDao {
                 param);
     }
 
-    boolean markerOppgaveSomAvsluttet(String brukernotifikasjonsId) {
+    public boolean markerOppgaveSomAvsluttet(String brukernotifikasjonsId) {
         MapSqlParameterSource param = new MapSqlParameterSource("notifikasjonsId", brukernotifikasjonsId)
                 .addValue("status", VarselStatus.AVSLUTTET.name());
         int update = jdbc.update("update BRUKERNOTIFIKASJON set AVSLUTTET = CURRENT_TIMESTAMP, STATUS = :status where BRUKERNOTIFIKASJON_ID = :notifikasjonsId", param);

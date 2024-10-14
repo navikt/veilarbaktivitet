@@ -9,7 +9,7 @@ import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetTypeDTO;
 import no.nav.veilarbaktivitet.aktivitet.dto.KanalDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselDto;
+import no.nav.veilarbaktivitet.brukernotifikasjon.OpprettVarselDto;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions;
@@ -64,7 +64,7 @@ class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO mote = aktivitetTestService.opprettAktivitet(happyBruker, veileder, aktivitetDTO);
 
         moteSmsCronjobber();
-        VarselDto orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
+        OpprettVarselDto orginalMelding = assertForventetMeldingSendt("Varsel skal ha innhold", happyBruker, KanalDTO.OPPMOTE, startTid, mote);
         brukernotifikasjonAsserts.assertSkalIkkeHaProdusertFlereMeldinger();
 
         moteSmsCronjobber();
@@ -73,7 +73,7 @@ class MoteSmsTest extends SpringBootTestBase {
         AktivitetDTO nyKanal = aktivitetTestService.oppdaterAktivitetOk(happyBruker, veileder, mote.setKanal(KanalDTO.TELEFON));
         moteSmsCronjobber();
         harAvsluttetVarsel(orginalMelding);
-        VarselDto ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
+        OpprettVarselDto ny_kanal_varsel = assertForventetMeldingSendt("Varsel skal ha nyKanal", happyBruker, KanalDTO.TELEFON, startTid, mote);
 
 
         ZonedDateTime ny_startTid = startTid.plusHours(2);
@@ -140,7 +140,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
         moteSMSService.sendServicemeldinger(Duration.ofDays(-15), Duration.ofDays(0));
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
-        VarselDto varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
+        OpprettVarselDto varsel = assertForventetMeldingSendt("skall ha opprettet gamelt varsel", happyBruker, KanalDTO.OPPMOTE, startTid, response);
 
         moteSmsCronjobber();
 
@@ -201,8 +201,8 @@ class MoteSmsTest extends SpringBootTestBase {
     }
 
 
-    private void harAvsluttetVarsel(VarselDto varsel) {
-        brukernotifikasjonAsserts.assertDone(varsel.getVarselId());
+    private void harAvsluttetVarsel(OpprettVarselDto varsel) {
+        brukernotifikasjonAsserts.assertInaktivert(varsel.getVarselId());
     }
 
     private void moteSmsCronjobber() {
@@ -210,7 +210,7 @@ class MoteSmsTest extends SpringBootTestBase {
         moteSMSService.sendMoteSms();
     }
 
-    private VarselDto assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
+    private OpprettVarselDto assertForventetMeldingSendt(String melding, MockBruker happyBruker, KanalDTO oppmote, ZonedDateTime startTid, AktivitetDTO mote) {
         var oppgave = brukernotifikasjonAsserts.assertBeskjedSendt(happyBruker.getFnrAsFnr());
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);

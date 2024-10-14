@@ -41,25 +41,22 @@ import kotlin.Exception
 import kotlin.String
 import kotlin.Throws
 
-internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
+internal class RekrutteringsbistandKafkaConsumerTest(
     @Autowired
-    var navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>? = null
-
+    var navCommonKafkaJsonTemplate: KafkaJsonTemplate<RekrutteringsbistandStatusoppdatering?>,
     @Autowired
-    var kafkaStringTemplate: KafkaStringTemplate? = null
-
+    var kafkaStringTemplate: KafkaStringTemplate,
     @Autowired
-    var sendBrukernotifikasjonCron: SendBrukernotifikasjonCron? = null
-
+    var sendBrukernotifikasjonCron: SendBrukernotifikasjonCron,
     @Value("\${topic.inn.rekrutteringsbistandStatusoppdatering}")
-    private val innRekrutteringsbistandStatusoppdatering: String? = null
-
+    private val innRekrutteringsbistandStatusoppdatering: String,
     @Autowired
-    var meterRegistry: MeterRegistry? = null
-
+    var meterRegistry: MeterRegistry,
     @Autowired
-    var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig? = null
-    var brukernotifikasjonAsserts: BrukernotifikasjonAsserts? = null
+    var brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig,
+    var brukernotifikasjonAsserts: BrukernotifikasjonAsserts
+) : SpringBootTestBase() {
+
     @BeforeEach
     fun setUp() {
         brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
@@ -110,7 +107,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             )
         )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        Assertions.assertThat(etterCvDelt.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -287,7 +284,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 "Aktivitet AVBRUTT", 1.0
             )
         )
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        Assertions.assertThat(etterCvDelt.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -346,9 +343,9 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 SUKSESS, 2.0
             )
         )
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        Assertions.assertThat(etterCvDelt.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
-        Assertions.assertThat(etterIkkeFattJobben.value().tekst)
+        Assertions.assertThat(etterIkkeFattJobben.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST)
     }
 
@@ -474,7 +471,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
             )
         )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        Assertions.assertThat(etterCvDelt.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -644,7 +641,7 @@ internal class RekrutteringsbistandKafkaConsumerTest : SpringBootTestBase() {
                 )
             )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.value().tekst)
+        Assertions.assertThat(etterCvDelt.tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 

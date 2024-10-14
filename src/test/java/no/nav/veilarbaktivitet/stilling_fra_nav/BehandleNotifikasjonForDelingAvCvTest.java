@@ -77,8 +77,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         AktivitetDTO medSvar = aktivitetTestService.svarPaaDelingAvCv(true, mockBruker, veileder, skalFaaSvar, new Date());
 
         //kviteringer på varsel
-        brukernotifikasjonAsserts.sendEksternVarseltOk(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseltOk(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselSendt(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselSendt(medSvarOppgave);
 
 
         //Send meldinger til rekruteringsbistand
@@ -126,8 +126,8 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
         // simuler kvittering fra brukernotifikasjoner
 
         // les oppgave-notifikasjon
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(utenSvarOppgave);
-        brukernotifikasjonAsserts.sendEksternVarseletFeilet(medSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselFeilet(utenSvarOppgave);
+        brukernotifikasjonAsserts.simulerEksternVarselFeilet(medSvarOppgave);
 
         rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFeiledeNotifikasjoner(500);

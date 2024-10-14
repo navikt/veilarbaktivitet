@@ -1,147 +1,108 @@
 package no.nav.veilarbaktivitet.brukernotifikasjon
 
+import junit.framework.TestCase.assertEquals
 import lombok.SneakyThrows
-import no.nav.brukernotifikasjon.schemas.input.DoneInput
-import no.nav.brukernotifikasjon.schemas.input.NokkelInput
-import no.nav.common.json.JsonUtils
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus
 import no.nav.tms.varsel.action.Varseltype
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselDto
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer
-import no.nav.veilarbaktivitet.mock_nav_modell.BrukerOptions
-import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker
-import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
 import no.nav.veilarbaktivitet.person.Person
 import no.nav.veilarbaktivitet.util.KafkaTestService
-import org.apache.kafka.clients.consumer.ConsumerRecord
-import org.junit.jupiter.api.Assertions
-import org.springframework.kafka.test.utils.KafkaTestUtils
+import org.assertj.core.api.Assertions.assertThat
 import java.util.*
 
 class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     var brukervarselConsumer = config.createBrukerVarselConsumer()
-    var doneInputConsumer = config.createBrukernotifikasjonVarselHendelseConsumer()
-    private val kviteringsProducer = config.kviteringsProducer
+    private val brukernotifikasjonVarselHendelseProducer = config.brukernotifikasjonVarselProducer()
 
     var kafkaTestService: KafkaTestService = config.testService
 
-    fun assertOppgaveSendt(fnr: Person.Fnr): VarselDto {
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        val singleRecord = KafkaTestUtils.getSingleRecord(
-            brukervarselConsumer,
-            config.brukernotifikasjonBrukervarselTopic,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
-        )
-        val value = JsonUtils.fromJson(singleRecord.value(), VarselDto::class.java)
-        Assertions.assertEquals(fnr.get(), value.getIdent())
-        Assertions.assertEquals(config.appname, value.getProdusent().getAppnavn())
-        Assertions.assertEquals(config.namespace, value.getProdusent().getNamespace())
-        return value
+    fun assertProdusentErRiktig(varsel: OpprettVarselDto) {
+        assertEquals(config.appname, varsel.getProdusent().getAppnavn())
+        assertEquals(config.namespace, varsel.getProdusent().getNamespace())
     }
 
-    fun assertBeskjedSendt(fnr: Person.Fnr): VarselDto {
+    fun assertOppgaveSendt(fnr: Person.Fnr): OpprettVarselDto {
         config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        val singleRecord = KafkaTestUtils.getSingleRecord(
-            brukervarselConsumer,
-            config.brukernotifikasjonBrukervarselTopic,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
-        )
-        val varsel = JsonUtils.fromJson(singleRecord.value(), VarselDto::class.java)
-        Assertions.assertEquals(fnr.get(), varsel.getIdent())
-        Assertions.assertEquals(config.appname, varsel.getProdusent().getAppnavn())
-        Assertions.assertEquals(config.namespace, varsel.getProdusent().getNamespace())
+        val varsel = brukervarselConsumer.waitForOpprettVarsel()
+        assertEquals(fnr.get(), varsel.getIdent())
+        assertEquals(Varseltype.Oppgave, varsel.type)
+        assertProdusentErRiktig(varsel)
+        return varsel
+    }
+
+    fun assertBeskjedSendt(fnr: Person.Fnr): OpprettVarselDto {
+        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
+        val varsel = brukervarselConsumer.waitForOpprettVarsel()
+        assertEquals(fnr.get(), varsel.getIdent())
+        assertEquals(Varseltype.Beskjed, varsel.type)
+        assertProdusentErRiktig(varsel)
         return varsel
     }
 
     fun assertIngenNyeBeskjeder() {
         config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        org.assertj.core.api.Assertions.assertThat(
+        assertThat(
             kafkaTestService.harKonsumertAlleMeldinger(
                 config.brukernotifikasjonBrukervarselTopic,
-                brukervarselConsumer
+                brukervarselConsumer.consumer
             )
         )
             .`as`("Skal ikke sendes melding")
             .isTrue()
     }
 
-    fun assertDone(varselId: String?): ConsumerRecord<NokkelInput, DoneInput> {
+    fun assertInaktivert(varselId: String?): InaktiverVarselDto {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
-        val singleRecord = KafkaTestUtils.getSingleRecord(
-            doneInputConsumer,
-            config.brukernotifikasjonVarselHendelseTopic,
-            KafkaTestService.DEFAULT_WAIT_TIMEOUT_DURATION
-        )
-        val key = singleRecord.key()
-        //        assertEquals(eventNokkel.getFodselsnummer(), key.getFodselsnummer());
-        Assertions.assertEquals(varselId, key.eventId)
-        Assertions.assertEquals(config.appname, key.appnavn)
-        Assertions.assertEquals(config.namespace, key.namespace)
-
-        return singleRecord
+        val inaktivering = brukervarselConsumer.waitForInaktiverVarsel()
+        assertEquals(varselId, inaktivering.varselId)
+        assertEquals(config.appname, inaktivering.produsent.appnavn)
+        assertEquals(config.namespace, inaktivering.produsent.namespace)
+        return inaktivering
     }
 
 
-    fun sendEksternVarseltOk(varsel: VarselDto) {
-        sendVarsel(
+    fun simulerEksternVarselSendt(varsel: OpprettVarselDto) {
+        simulerEksternVarselStatusHendelse(
             MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
-            EksternVarslingKvitteringConsumer.FERDIGSTILT,
+            EksternVarselStatus.sendt,
             varsel.type
         )
     }
 
-    fun sendEksternVarseletFeilet(varsel: VarselDto) {
-        sendVarsel(
+    fun simulerEksternVarselFeilet(varsel: OpprettVarselDto) {
+        simulerEksternVarselStatusHendelse(
             MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
-            EksternVarslingKvitteringConsumer.FEILET,
+            EksternVarselStatus.feilet,
             varsel.type
         )
     }
 
     @SneakyThrows
-    fun sendVarsel(varselId: MinSideBrukernotifikasjonsId, status: String, varselType: Varseltype) {
-        val kviteringsId = getKviteringsId(varselId, varselType)
-        val doknot = doknotifikasjonStatus(kviteringsId, status)
-        val result = kviteringsProducer.send(
-            config.kviteringsToppic, kviteringsId, doknot
-        ).get()
-        kafkaTestService.assertErKonsumert(config.kviteringsToppic, result.recordMetadata.offset())
+    fun simulerEksternVarselStatusHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype) {
+        val eksternVarsel = eksternVarselHendelse(varselId, status, varselType)
+        val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
+            varselId, eksternVarsel
+        )
+        kafkaTestService.assertErKonsumert(brukernotifikasjonVarselHendelseProducer.topic, result.recordMetadata.offset())
     }
 
     fun assertSkalIkkeHaProdusertFlereMeldinger() {
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
         config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-
-        kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifikasjonBrukervarselTopic, brukervarselConsumer)
-        kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifkasjonFerdigTopic, doneInputConsumer)
+        kafkaTestService.harKonsumertAlleMeldinger(config.brukernotifikasjonBrukervarselTopic, brukervarselConsumer.consumer)
     }
 
-
-    private fun doknotifikasjonStatus(bestillingsId: String, status: String): DoknotifikasjonStatus {
-        return DoknotifikasjonStatus
-            .newBuilder()
-            .setStatus(status)
-            .setBestillingsId(bestillingsId)
-            .setBestillerId("veilarbaktivitet")
-            .setMelding("her er en melding")
-            .setDistribusjonId(1L)
-            .build()
-    }
-
-    private fun getKviteringsId(varselId: MinSideBrukernotifikasjonsId, varselType: Varseltype): String {
-        if (Varseltype.Beskjed == varselType) {
-            return "B-" + config.appname + "-" + varselId.value.toString()
-        }
-        if (Varseltype.Oppgave == varselType) {
-            return "O-" + config.appname + "-" + varselId.value.toString()
-        }
-        throw IllegalArgumentException("Kommer denne klassen fra brukernotifikasjoner?")
-    }
-
-    companion object {
-        @JvmStatic
-        val brukerSomIkkeKanVarsles: MockBruker
-            get() = MockNavService.createBruker(BrukerOptions.happyBrukerBuilder().erManuell(true).build())
+    private fun eksternVarselHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype): EksternVarselHendelseDTO {
+        return EksternVarselHendelseDTO(
+            namespace = config.namespace,
+            appnavn = config.appname,
+            eventName = "eksternStatusOppdatert",
+            status = status,
+            varselId = varselId.value,
+            varseltype = varselType.name
+        )
     }
 }

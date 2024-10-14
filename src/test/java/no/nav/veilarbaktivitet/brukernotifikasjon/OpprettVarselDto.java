@@ -5,7 +5,7 @@ import no.nav.tms.varsel.action.EksternVarslingBestilling;
 import no.nav.tms.varsel.action.Varseltype;
 
 @Data
-public class VarselDto {
+public class OpprettVarselDto {
     public String varselId;
     public String ident;
     public String tekst;
@@ -16,9 +16,3 @@ public class VarselDto {
     public Produsent produsent;
 }
 
-@Data
-class Produsent {
-    String namespace;
-    String appnavn;
-    String cluster;
-}
