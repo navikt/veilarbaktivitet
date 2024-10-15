@@ -108,7 +108,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @AfterEach
     void assertNoUnkowns() {
-        brukerVarselConsumer.unsubscribe();
+//        brukerVarselConsumer.unsubscribe();
         brukerVarselHendelseConsumer.unsubscribe();
 
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
