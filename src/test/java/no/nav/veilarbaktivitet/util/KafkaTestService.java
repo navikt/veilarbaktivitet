@@ -154,7 +154,9 @@ public class KafkaTestService {
     public boolean harKonsumertAlleMeldinger(String topic, Consumer consumer) {
         consumer.commitSync();
         String groupId = consumer.groupMetadata().groupId();
-        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient.listConsumerGroupOffsets(groupId).partitionsToOffsetAndMetadata().get();
+        Map<TopicPartition, OffsetAndMetadata> topicPartitionOffsetAndMetadataMap = kafkaAdminClient
+                .listConsumerGroupOffsets(groupId)
+                .partitionsToOffsetAndMetadata().get();
         OffsetAndMetadata offsetAndMetadata = topicPartitionOffsetAndMetadataMap.get(new TopicPartition(topic, 0));
 
         if (offsetAndMetadata == null) {
