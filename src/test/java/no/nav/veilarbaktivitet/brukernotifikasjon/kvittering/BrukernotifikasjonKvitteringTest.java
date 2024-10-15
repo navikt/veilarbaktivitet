@@ -13,10 +13,7 @@ import no.nav.veilarbaktivitet.SpringBootTestBase;
 import no.nav.veilarbaktivitet.aktivitet.domain.AktivitetData;
 import no.nav.veilarbaktivitet.aktivitet.dto.AktivitetDTO;
 import no.nav.veilarbaktivitet.aktivitet.mappers.AktivitetDTOMapper;
-import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonService;
-import no.nav.veilarbaktivitet.brukernotifikasjon.OpprettVarselDto;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
-import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.*;
 import no.nav.veilarbaktivitet.brukernotifikasjon.avslutt.AvsluttBrukernotifikasjonCron;
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.AktivitetVarsel;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
@@ -57,26 +54,24 @@ class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
     KafkaTestService kafkaTestService;
 
     @Autowired
+    BrukernotifikasjonAssertsConfig brukernotifikasjonAssertsConfig;
+
+    @Autowired
     VarselDAO varselDao;
 
     @Value("${topic.ut.brukernotifikasjon.brukervarsel}")
     String brukervarselTopic;
 
-    @Value("${topic.ut.brukernotifikasjon.done}")
-    String doneTopic;
-
-    Consumer<NokkelInput, DoneInput> doneConsumer;
-
     Consumer<String, String> brukerVarselConsumer;
 
     @Autowired
     NamedParameterJdbcTemplate jdbc;
-
-    @Value("${topic.inn.eksternVarselKvittering}")
-    String kviteringsToppic;
-
-    @Autowired
-    KafkaStringAvroTemplate<DoknotifikasjonStatus> kvitteringsTopic;
+//
+//    @Value("${topic.inn.eksternVarselKvittering}")
+//    String kviteringsToppic;
+//
+//    @Autowired
+//    KafkaStringAvroTemplate<DoknotifikasjonStatus> kvitteringsTopic;
 
     @Autowired
     EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
@@ -89,17 +84,18 @@ class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
     private final static String OPPGAVE_KVITERINGS_PREFIX = "O-veilarbaktivitet-";
 
+    BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+
     @BeforeEach
     public void setUp() {
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
-        brukerVarselConsumer = kafkaTestService.createAvroAvroConsumer(brukervarselTopic);
-        doneConsumer = kafkaTestService.createAvroAvroConsumer(doneTopic);
+        brukerVarselConsumer = kafkaTestService.createStringStringConsumer(brukervarselTopic);
+        brukernotifikasjonAsserts = new BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig);
     }
 
     @AfterEach
     public void assertNoUnkowns() {
         brukerVarselConsumer.unsubscribe();
-        doneConsumer.unsubscribe();
 
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
     }
@@ -181,7 +177,8 @@ class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
 
         val message = statusUtenDistribusjonsId(eventId, FERDIGSTILT);
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
-        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, eventId, message));
+//        eksternVarslingKvitteringConsumer.consume(new ConsumerRecord<>("VarselKviteringToppic", 1, 1, eventId, message));
+        brukernotifikasjonAsserts.simulerEksternVarselSendt(oppgave);
 
         assertVarselStatusErAvsluttet(eventId);
         assertEksternVarselStatus(eventId, VarselKvitteringStatus.IKKE_SATT);
@@ -280,7 +277,7 @@ class BrukernotifikasjonKvitteringTest extends SpringBootTestBase {
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
+//        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(doneTopic, doneConsumer), "Skal ikke produsert done meldinger");
         final ConsumerRecord<String, String> oppgaveRecord = getSingleRecord(brukerVarselConsumer, brukervarselTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         OpprettVarselDto oppgave = JsonUtils.fromJson(oppgaveRecord.value(), OpprettVarselDto.class) ;
 
