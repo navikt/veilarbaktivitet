@@ -42,8 +42,8 @@ data class AktivitetVarsel(
             varseltype,
             VarselStatus.PENDING,
             createAktivitetLink(aktivitetBasePath, aktivitetId.toString()),
-            null,
-            null,
-            null)
+            epostTitel,
+            epostBody,
+            smsTekst)
     }
 }
