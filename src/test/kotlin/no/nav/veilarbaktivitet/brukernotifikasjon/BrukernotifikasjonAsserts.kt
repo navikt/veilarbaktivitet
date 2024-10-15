@@ -42,7 +42,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
             .isTrue()
     }
 
-    fun assertInaktivert(varselId: String?): InaktiverVarselDto {
+    fun assertInaktivertMeldingErSendt(varselId: String?): InaktiverVarselDto {
         //Trigger scheduld jobb manuelt da schedule er disabled i test.
         config.avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner()
         val inaktivering = brukervarselConsumer.waitForInaktiverVarsel()
@@ -69,7 +69,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     }
 
     @SneakyThrows
-    fun simulerEksternVarselStatusHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype) {
+    private fun simulerEksternVarselStatusHendelse(varselId: MinSideBrukernotifikasjonsId, status: EksternVarselStatus, varselType: Varseltype) {
         val eksternVarsel = eksternVarselHendelse(varselId, status, varselType)
         val result = brukernotifikasjonVarselHendelseProducer.publiserBrukernotifikasjonVarselHendelse(
             varselId, eksternVarsel

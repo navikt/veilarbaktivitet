@@ -736,7 +736,7 @@ open class AktivitetskortConsumerIntegrationTest(
         val aktivitet = hentAktivitet(funksjonellId)
         aktivitetTestService.lesFHO(mockBruker, aktivitet.id.toLong(), aktivitet.versjon.toLong())
         // Skal dukke opp Done melding på brukernotifikasjons-topic
-        brukernotifikasjonAsserts!!.assertInaktivert(varsel.varselId)
+        brukernotifikasjonAsserts!!.assertInaktivertMeldingErSendt(varsel.varselId)
     }
 
     @Test

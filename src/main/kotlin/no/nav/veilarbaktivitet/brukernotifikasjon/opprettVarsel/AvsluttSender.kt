@@ -44,9 +44,9 @@ internal open class AvsluttSender(
             val melding = VarselActionBuilder.inaktiver {
                 this.varselId = brukernotifikasjonId
                 this.produsent = Produsent(
-                    cluster,
-                    appname,
-                    namespace,
+                    cluster = cluster,
+                    namespace = namespace,
+                    appnavn = appname,
                 )
             }
             val kafkaMelding = ProducerRecord(brukervarselTopic, skalAvluttes.brukernotifikasjonId, melding)
@@ -58,15 +58,15 @@ internal open class AvsluttSender(
         }
     }
 
-    fun getOppgaverSomSkalAvbrytes(maxAntall: Int): List<SkalAvluttes> {
+    open fun getOppgaverSomSkalAvbrytes(maxAntall: Int): List<SkalAvluttes> {
         return avsluttDao.getOppgaverSomSkalAvsluttes(maxAntall)
     }
 
-    fun avsluttIkkeSendteOppgaver(): Int {
+    open fun avsluttIkkeSendteOppgaver(): Int {
         return avsluttDao.avsluttIkkeSendteOppgaver()
     }
 
-    fun markerAvslutteterAktiviteterSomSkalAvsluttes(): Int {
+    open fun markerAvslutteterAktiviteterSomSkalAvsluttes(): Int {
         return avsluttDao.markerAvslutteterAktiviteterSomSkalAvsluttes()
     }
 }

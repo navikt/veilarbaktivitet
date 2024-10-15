@@ -202,7 +202,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
 
     private void harAvsluttetVarsel(OpprettVarselDto varsel) {
-        brukernotifikasjonAsserts.assertInaktivert(varsel.getVarselId());
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(varsel.getVarselId());
     }
 
     private void moteSmsCronjobber() {

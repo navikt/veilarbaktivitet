@@ -23,7 +23,7 @@ class BrukernotifikasjonAssertsConfig(
     @Value("\${topic.ut.brukernotifikasjon.brukervarsel}")
     val brukernotifikasjonBrukervarselTopic: String,
     @Value("\${topic.inn.brukernotifikasjon.brukervarselHendelse}")
-    private val brukernotifikasjonVarselHendelseTopic: String,
+    val brukernotifikasjonVarselHendelseTopic: String,
     @Autowired
     private val brukernotifikasjonVarselHendelseProducer: KafkaStringTemplate,
     @Value("\${app.env.appname}")

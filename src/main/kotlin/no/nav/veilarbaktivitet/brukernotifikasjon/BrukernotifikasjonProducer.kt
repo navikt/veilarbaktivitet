@@ -11,8 +11,8 @@ import java.time.ZonedDateTime
 
 @Service
 class BrukernotifikasjonProducer(
-    @Value("\${topic.ut.brukernotifikasjon.beskjed}")
-    private var beskjedToppic: String,
+    @Value("\${topic.ut.brukernotifikasjon.brukervarsel}")
+    private var brukervarselTopic: String,
     @Value("\${app.env.appname}")
     private var appname: String,
     @Value("\${app.env.namespace}")
@@ -51,7 +51,7 @@ class BrukernotifikasjonProducer(
 
     private fun publiserPåBrukernotifikasjonTopic(skalSendes: SkalSendes, varselType: Varseltype): Long {
         val opprettVarsel = toBrukerVarsel(skalSendes, varselType)
-        val record = ProducerRecord(beskjedToppic, skalSendes.brukernotifikasjonId.toString(), opprettVarsel)
+        val record = ProducerRecord(brukervarselTopic, skalSendes.brukernotifikasjonId.toString(), opprettVarsel)
         return producer.send(record).get().recordMetadata.offset()
     }
 

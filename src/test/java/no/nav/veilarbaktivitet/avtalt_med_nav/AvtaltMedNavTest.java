@@ -17,6 +17,7 @@ class AvtaltMedNavTest extends SpringBootTestBase {
     @Autowired
     BrukernotifikasjonAssertsConfig config;
     BrukernotifikasjonAsserts brukernotifikasjonAsserts;
+    @Autowired
     NavMockService navMockService;
 
     @BeforeEach
