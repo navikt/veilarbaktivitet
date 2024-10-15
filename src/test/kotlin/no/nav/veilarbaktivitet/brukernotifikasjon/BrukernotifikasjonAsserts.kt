@@ -7,7 +7,7 @@ import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.InaktiverVarselD
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus
-import no.nav.veilarbaktivitet.person.Person
+import no.nav.veilarbaktivitet.person.Person.Fnr
 import no.nav.veilarbaktivitet.util.KafkaTestService
 import org.assertj.core.api.Assertions.assertThat
 import java.util.*
@@ -18,28 +18,17 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
 
     var kafkaTestService: KafkaTestService = config.testService
 
-    fun assertProdusentErRiktig(varsel: OpprettVarselDto) {
+    private fun assertVarselSendt(fnr: Fnr, varselType: Varseltype): OpprettVarselDto {
+        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
+        val varsel = brukervarselConsumer.waitForOpprettVarsel()
+        assertEquals(fnr.get(), varsel.getIdent())
+        assertEquals(varselType, varsel.type)
         assertEquals(config.appname, varsel.getProdusent().getAppnavn())
         assertEquals(config.namespace, varsel.getProdusent().getNamespace())
-    }
-
-    fun assertOppgaveSendt(fnr: Person.Fnr): OpprettVarselDto {
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        val varsel = brukervarselConsumer.waitForOpprettVarsel()
-        assertEquals(fnr.get(), varsel.getIdent())
-        assertEquals(Varseltype.Oppgave, varsel.type)
-        assertProdusentErRiktig(varsel)
         return varsel
     }
-
-    fun assertBeskjedSendt(fnr: Person.Fnr): OpprettVarselDto {
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        val varsel = brukervarselConsumer.waitForOpprettVarsel()
-        assertEquals(fnr.get(), varsel.getIdent())
-        assertEquals(Varseltype.Beskjed, varsel.type)
-        assertProdusentErRiktig(varsel)
-        return varsel
-    }
+    fun assertOppgaveSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Oppgave)
+    fun assertBeskjedSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Beskjed)
 
     fun assertIngenNyeBeskjeder() {
         config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
@@ -62,7 +51,6 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         assertEquals(config.namespace, inaktivering.produsent.namespace)
         return inaktivering
     }
-
 
     fun simulerEksternVarselSendt(varsel: OpprettVarselDto) {
         simulerEksternVarselStatusHendelse(
