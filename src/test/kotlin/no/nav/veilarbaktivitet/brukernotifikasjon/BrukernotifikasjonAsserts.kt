@@ -90,7 +90,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
             eventName = "eksternStatusOppdatert",
             status = status,
             varselId = varselId.value,
-            varseltype = varselType.name
+            varseltype = varselType
         )
     }
 }

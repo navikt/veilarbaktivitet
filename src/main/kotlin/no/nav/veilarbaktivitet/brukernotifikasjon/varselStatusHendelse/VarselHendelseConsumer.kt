@@ -29,8 +29,9 @@ open class VarselHendelseConsumer(
     open fun consume(kafkaRecord: ConsumerRecord<String?, String>) {
         val melding = kafkaRecord.value().deserialiserVarselHendelse()
         when (melding) {
-            is EksternVarsling -> behandleEskternVarselHendelse(melding)
+            is EksternVarsling -> behandleEksternVarselHendelse(melding)
             is InternVarselHendelseDTO -> behandleInternVarselHendelse(melding)
+            is VarselFraAnnenApp -> {}
         }
     }
 
@@ -38,7 +39,7 @@ open class VarselHendelseConsumer(
 
     }
 
-    open fun behandleEskternVarselHendelse(hendelse: EksternVarsling) {
+    open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
         val varselId = hendelse.varselId.toString()
         log.info(
             "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",

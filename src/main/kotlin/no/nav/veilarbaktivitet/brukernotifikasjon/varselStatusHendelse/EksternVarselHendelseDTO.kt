@@ -19,7 +19,7 @@ data class EksternVarselHendelseDTO(
     val feilmelding: String? = null,
     val kanal: EksternVarselKanal? = null
 )
-
+object VarselFraAnnenApp: VarselHendelse()
 sealed class EksternVarsling(
     val varselId: UUID,
     val hendelseType: VarselHendelseEventType,
@@ -46,7 +46,7 @@ class Feilet(
 fun JsonNode.deserialiserEksternVarselHendelse(): EksternVarsling {
     val eksternStatus = EksternVarselStatus.valueOf(this["status"].asText())
     val varselId = UUID.fromString(this["varselId"].asText())
-    val varseltype = Varseltype.valueOf(this["varseltype"].asText())
+    val varseltype = Varseltype.valueOf(this["varseltype"].asText().replaceFirstChar { it.titlecase()})
     return when (eksternStatus) {
         EksternVarselStatus.sendt -> {
             when (this["renotifikasjon"].asBoolean()) {

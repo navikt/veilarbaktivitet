@@ -23,6 +23,8 @@ enum class VarselHendelseEventType {
 fun String.deserialiserVarselHendelse(): VarselHendelse {
     val jsonTree = JsonUtils.getMapper().readTree(this)
     val eventName = jsonTree["@event_name"].asText()
+    val appNavn = jsonTree["appnavn"].asText()
+    if (appNavn != "veilarbaktivitet") return VarselFraAnnenApp
     return when (eventName == VarselEventTypeDto.eksternStatusOppdatert.name) {
         true -> jsonTree.deserialiserEksternVarselHendelse()
         else -> JsonUtils.fromJson(this, InternVarselHendelseDTO::class.java)
