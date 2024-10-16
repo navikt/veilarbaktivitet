@@ -21,10 +21,10 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     private fun assertVarselSendt(fnr: Fnr, varselType: Varseltype): OpprettVarselDto {
         config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
         val varsel = brukervarselConsumer.waitForOpprettVarsel()
-        assertEquals(fnr.get(), varsel.getIdent())
+        assertEquals(fnr.get(), varsel.ident)
         assertEquals(varselType, varsel.type)
-        assertEquals(config.appname, varsel.getProdusent().getAppnavn())
-        assertEquals(config.namespace, varsel.getProdusent().getNamespace())
+        assertEquals(config.appname, varsel.produsent.getAppnavn())
+        assertEquals(config.namespace, varsel.produsent.getNamespace())
         return varsel
     }
     fun assertOppgaveSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Oppgave)

@@ -94,7 +94,7 @@ public class KafkaTestService {
 
     public Consumer<String, String> createStringStringConsumer(String topic) {
         var randomGroup = UUID.randomUUID().toString();
-        var newConsumer = stringStringConsumerFactory.createConsumer(randomGroup, null, null, kafkaTestConfig());
+        var newConsumer = stringStringConsumerFactory.createConsumer("testConsumer" + randomGroup, null, null, kafkaTestConfig());
         seekToEnd(topic, newConsumer);
         return newConsumer;
     }
@@ -107,8 +107,8 @@ public class KafkaTestService {
     }
 
     public void seekToEnd(String topic, Consumer newConsumer) {
-        List<PartitionInfo> partitionInfos = newConsumer.partitionsFor(topic);
-        List<TopicPartition> topics = partitionInfos.stream().map(f -> new TopicPartition(topic, f.partition())).collect(Collectors.toList());
+        // In tests there always just 1 partition
+        List<TopicPartition> topics = List.of(new TopicPartition(topic, 0));
         newConsumer.assign(topics);
         newConsumer.seekToEnd(topics);
         topics.forEach(a -> newConsumer.position(a, Duration.ofSeconds(10)));

@@ -86,7 +86,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -107,7 +107,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> {
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());
@@ -126,7 +126,7 @@ class DelingAvCvITest extends SpringBootTestBase {
         var oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(mockBruker.getFnrAsFnr());
 
         SoftAssertions.assertSoftly(assertions -> { //todo tenkpå cpy paste fra testen over
-            assertions.assertThat(oppgave.getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
+            assertions.assertThat(oppgave.getTekster().getFirst().getTekst()).isEqualTo("Kan denne stillingen passe for deg? Vi leter etter jobbsøkere for en arbeidsgiver.");
             assertions.assertThat(oppgave.getEksternVarsling()).isEqualTo(true);
             assertions.assertThat(oppgave.getIdent()).isEqualTo(mockBruker.getFnr());
             assertions.assertThat(oppgave.getLink()).isEqualTo(aktivitetsplanBasepath + "/aktivitet/vis/" + aktivitetDTO.getId());

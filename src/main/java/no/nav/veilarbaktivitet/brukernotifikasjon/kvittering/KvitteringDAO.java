@@ -2,10 +2,11 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import no.nav.doknotifikasjon.schemas.DoknotifikasjonStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Kvittering;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -99,13 +100,13 @@ public class KvitteringDAO {
                 """, parameterSource, rowmapper);
     }
 
-    public void lagreKvitering(String bestillingsId, DoknotifikasjonStatus melding) {
+    public void lagreKvitering(String bestillingsId, Kvittering melding, EksternVarselHendelseDTO heleMeldingen) {
         SqlParameterSource parameterSource = new MapSqlParameterSource()
                 .addValue("BRUKERNOTIFIKASJON_ID", bestillingsId)
                 .addValue("STATUS", melding.getStatus())
                 .addValue("MELDING", melding.getMelding())
-                .addValue("distribusjonId", melding.getDistribusjonId())
-                .addValue("BESKJED",melding.toString());
+                .addValue("distribusjonId", null)
+                .addValue("BESKJED", heleMeldingen.toString());
         jdbc.update("""
                 insert into  BRUKERNOTIFIKAJSON_KVITERING_TABELL
                         (  BRUKERNOTIFIKASJON_ID,  STATUS,  MELDING,  distribusjonId,  BESKJED )

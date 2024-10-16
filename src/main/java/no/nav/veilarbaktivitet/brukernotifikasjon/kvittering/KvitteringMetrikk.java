@@ -2,6 +2,7 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.kvittering;
 
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -12,10 +13,9 @@ public class KvitteringMetrikk {
     private static final String BRUKERNOTIFIKASJON_KVITTERING_MOTTATT = "brukernotifikasjon_kvittering_mottatt";
     private static final String STATUS = "status";
     private static final List<String> statuser = List.of(
-            EksternVarslingKvitteringConsumer.FEILET,
-            EksternVarslingKvitteringConsumer.FERDIGSTILT,
-            EksternVarslingKvitteringConsumer.INFO,
-            EksternVarslingKvitteringConsumer.OVERSENDT
+            EksternVarselStatus.bestilt.name(),
+            EksternVarselStatus.feilet.name(),
+            EksternVarselStatus.sendt.name()
     );
 
     public KvitteringMetrikk(MeterRegistry meterRegistry) {

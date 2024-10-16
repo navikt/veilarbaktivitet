@@ -302,7 +302,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         // Then
 //        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsert oppgave meldinger");
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.varselId);
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
 
@@ -378,7 +378,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Sett til avbrutt
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntAktivitetsKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.varselId);
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
     @Test
@@ -395,7 +395,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Avbryt aktivitet
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.varselId);
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
     @Test
@@ -418,7 +418,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         // Avbryt aktivitet
         var avbruttAktivitet = serie.ny(AktivitetskortStatus.AVBRUTT, ZonedDateTime.now());
         aktivitetTestService.opprettEksterntArenaKort(List.of(avbruttAktivitet));
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.varselId);
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
     private OpprettVarselDto opprettOppgave(MockBruker mockBruker, AktivitetDTO aktivitetDTO) {
@@ -449,7 +449,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
         // TODO: Verifiser at dette er riktig
 //        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsere oppgave");
-        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.varselId);
+        brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 
 }

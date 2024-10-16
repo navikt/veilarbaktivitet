@@ -6,8 +6,8 @@ import no.nav.veilarbaktivitet.avro.DelingAvCvRespons;
 import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.EksternVarslingKvitteringConsumer;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
+import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselHendelseConsumer;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -43,7 +43,7 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
     JdbcTemplate jdbc;
 
     @Autowired
-    EksternVarslingKvitteringConsumer eksternVarslingKvitteringConsumer;
+    VarselHendelseConsumer eksternVarslingKvitteringConsumer;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;

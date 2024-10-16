@@ -217,7 +217,7 @@ class MoteSmsTest extends SpringBootTestBase {
         assertEquals(happyBruker.getFnr(), oppgave.getIdent(), melding + " fnr");
         assertTrue(oppgave.getEksternVarsling() != null, melding + " eksternvarsling");
         assertEquals(expected.getSmsTekst(), oppgave.getEksternVarsling().getSmsVarslingstekst(), melding + " sms tekst");
-        assertEquals(expected.getDitNavTekst(), oppgave.getTekst(), melding + " ditnav tekst");
+        assertEquals(expected.getDitNavTekst(), oppgave.getTekster().getFirst().getTekst(), melding + " ditnav tekst");
         assertEquals(expected.getEpostTitel(), oppgave.getEksternVarsling().getEpostVarslingstittel(), melding + " epost tittel tekst");
         assertEquals(expected.getEpostBody(), oppgave.getEksternVarsling().getEpostVarslingstekst(), melding + " epost body tekst");
         assertTrue(oppgave.getLink().contains(mote.getId()), melding + " mote link tekst"); //TODO burde lage en test metode for aktivitets linker

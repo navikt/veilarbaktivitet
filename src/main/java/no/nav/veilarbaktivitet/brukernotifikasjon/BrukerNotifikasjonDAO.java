@@ -3,8 +3,9 @@ package no.nav.veilarbaktivitet.brukernotifikasjon;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.arena.model.ArenaId;
-import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel;
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselKvitteringStatus;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.UtgåendeVarsel;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
@@ -40,9 +41,9 @@ public class BrukerNotifikasjonDAO {
                 """, params);
     }
 
-    public boolean finnesBrukernotifikasjon(String bestillingsId) {
+    public boolean finnesBrukernotifikasjon(MinSideBrukernotifikasjonsId bestillingsId) {
         SqlParameterSource params = new MapSqlParameterSource()
-                .addValue("brukernotifikasjon_id", bestillingsId);
+                .addValue("brukernotifikasjon_id", bestillingsId.getValue().toString());
         String sql = """
             SELECT COUNT(*) FROM BRUKERNOTIFIKASJON
             WHERE BRUKERNOTIFIKASJON_ID=:brukernotifikasjon_id

@@ -107,7 +107,7 @@ internal class RekrutteringsbistandKafkaConsumerTest(
             )
         )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.tekst)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -284,7 +284,7 @@ internal class RekrutteringsbistandKafkaConsumerTest(
                 "Aktivitet AVBRUTT", 1.0
             )
         )
-        Assertions.assertThat(etterCvDelt.tekst)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -343,9 +343,9 @@ internal class RekrutteringsbistandKafkaConsumerTest(
                 SUKSESS, 2.0
             )
         )
-        Assertions.assertThat(etterCvDelt.tekst)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
-        Assertions.assertThat(etterIkkeFattJobben.tekst)
+        Assertions.assertThat(etterIkkeFattJobben.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.IKKE_FATT_JOBBEN_TEKST)
     }
 
@@ -471,7 +471,7 @@ internal class RekrutteringsbistandKafkaConsumerTest(
             )
         )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.tekst)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
@@ -641,7 +641,7 @@ internal class RekrutteringsbistandKafkaConsumerTest(
                 )
             )
         val etterCvDelt = brukernotifikasjonAsserts!!.assertBeskjedSendt(mockBruker.fnrAsFnr)
-        Assertions.assertThat(etterCvDelt.tekst)
+        Assertions.assertThat(etterCvDelt.tekster.first().tekst)
             .isEqualTo(RekrutteringsbistandStatusoppdateringService.CV_DELT_DITT_NAV_TEKST)
     }
 
