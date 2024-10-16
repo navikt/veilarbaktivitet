@@ -229,7 +229,7 @@ internal class BrukerVarselHendelseTest(
             namespace = "dab",
             appnavn = "veilarbaktivitet",
             varseltype = Varseltype.Oppgave.name,
-            eventName = EksternVarselEventType.eksternStatusOppdatert.name,
+            eventName = VarselEventTypeDto.eksternStatusOppdatert.name,
             varselId = varselId,
             status = status,
             renotifikasjon = false,

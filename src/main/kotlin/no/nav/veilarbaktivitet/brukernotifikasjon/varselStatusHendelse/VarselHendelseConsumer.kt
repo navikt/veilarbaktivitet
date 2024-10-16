@@ -2,11 +2,10 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse
 
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukerNotifikasjonDAO
 import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringDAO
-import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.KvitteringMetrikk
+import no.nav.veilarbaktivitet.brukernotifikasjon.kvittering.VarselHendelseMetrikk
 import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId
 import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,9 +15,7 @@ import java.util.*
 open class VarselHendelseConsumer(
     val kvitteringDAO: KvitteringDAO,
     val brukerNotifikasjonDAO: BrukerNotifikasjonDAO,
-    val kvitteringMetrikk: KvitteringMetrikk,
-    @Value("\${app.env.appname}")
-    val appname: String,
+    val varselHendelseMetrikk: VarselHendelseMetrikk,
 ) {
 
     val log = LoggerFactory.getLogger(javaClass)
@@ -32,7 +29,7 @@ open class VarselHendelseConsumer(
     open fun consume(kafkaRecord: ConsumerRecord<String?, String>) {
         val melding = kafkaRecord.value().deserialiserVarselHendelse()
         when (melding) {
-            is EksternVarselHendelseDTO -> behandleEskternVarselHendelse(melding)
+            is EksternVarsling -> behandleEskternVarselHendelse(melding)
             is InternVarselHendelseDTO -> behandleInternVarselHendelse(melding)
         }
     }
@@ -41,32 +38,30 @@ open class VarselHendelseConsumer(
 
     }
 
-    open fun behandleEskternVarselHendelse(hendelse: EksternVarselHendelseDTO) {
+    open fun behandleEskternVarselHendelse(hendelse: EksternVarsling) {
         val varselId = hendelse.varselId.toString()
         log.info(
-            "Konsumerer Ekstern-varsel-hendelse varselId={}, status={}",
+            "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",
             varselId,
-            hendelse.status
+            EksternVarsling::class.simpleName
         )
 
         if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(MinSideBrukernotifikasjonsId(UUID.fromString(varselId)))) {
             log.warn(
-                "Mottok kvittering for brukernotifikasjon bestillingsid={} som ikke finnes i våre systemer",
+                "Mottok kvittering for brukernotifikasjon varselId={} som ikke finnes i våre systemer",
                 varselId
             )
-            throw IllegalArgumentException("Ugyldig bestillingsid.")
+            throw IllegalArgumentException("Ugyldig varselId.")
         }
 
-        kvitteringDAO.lagreKvitering(varselId, Kvittering(
-            status = hendelse.status.name,
-            melding = hendelse.feilmelding,
-        ), hendelse)
+//        kvitteringDAO.lagreKvitering(varselId, Kvittering(
+//            status = hendelse.status.name,
+//            melding = hendelse.feilmelding,
+//        ), hendelse)
 
 
-        when (hendelse.status) {
-            EksternVarselStatus.bestilt -> {}
-            EksternVarselStatus.sendt -> {
-                // Kan komme første gang og på resendinger
+        when (hendelse) {
+            is Sendt -> {
                 kvitteringDAO.setFullfortForGyldige(varselId)
                 log.info(
                     "Brukernotifikasjon fullført for bestillingsId={}",
@@ -79,7 +74,8 @@ open class VarselHendelseConsumer(
                  */
                 kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(varselId)
             }
-            EksternVarselStatus.feilet -> {
+            is Renotifikasjon -> {}
+            is Feilet -> {
                 log.warn(
                     "varsel feilet for notifikasjon bestillingsId={} med melding {}",
                     varselId,
@@ -87,14 +83,10 @@ open class VarselHendelseConsumer(
                 )
                 kvitteringDAO.setFeilet(varselId)
             }
-            // Disse statusene finnes ikke lenger
-//            EksternVarslingKvitteringConsumer.INFO, EksternVarslingKvitteringConsumer.OVERSENDT -> {}
-//            EksternVarslingKvitteringConsumer.FERDIGSTILT -> if (melding.getDistribusjonId() != null) {}
+            else -> {}
         }
 
-//        if (melding.getDistribusjonId() == null) {
-            kvitteringMetrikk.incrementBrukernotifikasjonKvitteringMottatt(hendelse.status.name)
-//        }
+        varselHendelseMetrikk.incrementBrukernotifikasjonKvitteringMottatt(hendelse.hendelseType)
     }
 
 }

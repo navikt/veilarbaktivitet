@@ -2,24 +2,29 @@ package no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse
 
 import no.nav.common.json.JsonUtils
 
-enum class EksternVarselEventType {
+enum class VarselEventTypeDto {
     opprettet,
     inaktivert,
     slettet,
-    eksternStatusOppdatert
+    eksternStatusOppdatert // Denne inneholder feltet status som har flere forskjellig statuser
 }
 
-class VarselHendelseUtils {
-    companion object {
-
-    }
+/* Alle typer hendelser, inkl ekstern  */
+enum class VarselHendelseEventType {
+    opprettet,
+    inaktivert,
+    slettet,
+    sendt_ekstern,
+    renotifikasjon_ekstern,
+    bestilt_ekstern,
+    feilet_ekstern
 }
 
 fun String.deserialiserVarselHendelse(): VarselHendelse {
     val jsonTree = JsonUtils.getMapper().readTree(this)
     val eventName = jsonTree["@event_name"].asText()
-    return when (eventName == EksternVarselEventType.eksternStatusOppdatert.name) {
-        true -> JsonUtils.fromJson(this, EksternVarselHendelseDTO::class.java)
+    return when (eventName == VarselEventTypeDto.eksternStatusOppdatert.name) {
+        true -> jsonTree.deserialiserEksternVarselHendelse()
         else -> JsonUtils.fromJson(this, InternVarselHendelseDTO::class.java)
     }
 }
