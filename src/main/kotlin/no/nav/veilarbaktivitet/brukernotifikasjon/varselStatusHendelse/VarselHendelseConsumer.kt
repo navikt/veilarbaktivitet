@@ -86,7 +86,7 @@ open class VarselHendelseConsumer(
             else -> {}
         }
 
-        varselHendelseMetrikk.incrementBrukernotifikasjonKvitteringMottatt(hendelse.hendelseType)
+        varselHendelseMetrikk.incrementBrukernotifikasjonKvitteringMottatt(hendelse)
     }
 
 }
