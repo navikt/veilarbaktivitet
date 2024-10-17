@@ -31,7 +31,7 @@ object ArkiveringspayloadMapper {
             journalførendeEnhet = journalførendeEnhet,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
-            målMedHistorikk = arkiveringsData.målMedHistorikk
+            mål = arkiveringsData.mål.mal
         )
     }
 
@@ -47,7 +47,7 @@ object ArkiveringspayloadMapper {
             oppfølgingsperiodeId = arkiveringsData.oppfølgingsperiode.uuid,
             aktiviteter = arkivaktiviteter.groupBy { it.status },
             dialogtråder = arkivdialoger,
-            målMedHistorikk = arkiveringsData.målMedHistorikk
+            mål = arkiveringsData.mål.mal
         )
     }
 
