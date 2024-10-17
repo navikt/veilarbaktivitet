@@ -69,9 +69,9 @@ open class VarselHendelseConsumer(
                  * før eksternt varsel er sendt ut
                  */
 //                kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(varselId)
-                kvitteringDAO.setFullfortForGyldige(varselId)
+                kvitteringDAO.setEksternVarselStatusOK(varselId)
                 log.info(
-                    "Brukernotifikasjon fullført for bestillingsId={}",
+                    "Ekstern varsel sendt for bestillingsId={}",
                     varselId
                 )
 

@@ -39,7 +39,7 @@ public class KvitteringDAO {
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
-    public void setFullfortForGyldige(String bestillingsId) {
+    public void setEksternVarselStatusOK(String bestillingsId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
                 .addValue("brukernotifikasjonId", bestillingsId)
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.OK.toString());
