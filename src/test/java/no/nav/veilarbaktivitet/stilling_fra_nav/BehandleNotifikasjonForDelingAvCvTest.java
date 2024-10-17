@@ -7,7 +7,6 @@ import no.nav.veilarbaktivitet.avro.TilstandEnum;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAsserts;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAssertsConfig;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varsel.SendBrukernotifikasjonCron;
-import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.VarselHendelseConsumer;
 import no.nav.veilarbaktivitet.db.DbTestUtils;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockBruker;
 import no.nav.veilarbaktivitet.mock_nav_modell.MockNavService;
@@ -41,9 +40,6 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
     @Autowired
     JdbcTemplate jdbc;
-
-    @Autowired
-    VarselHendelseConsumer eksternVarslingKvitteringConsumer;
 
     @Value("${topic.ut.stillingFraNav}")
     private String utTopic;
@@ -82,11 +78,11 @@ class BehandleNotifikasjonForDelingAvCvTest extends SpringBootTestBase {
 
 
         //Send meldinger til rekruteringsbistand
+        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         int behandlede = behandleNotifikasjonForDelingAvCvCronService.behandleFerdigstilteNotifikasjoner(500);
         assertThat(behandlede).isEqualTo(2);
 
         // sjekk at vi har sendt melding til rekrutteringsbistand
-        rekrutteringsbistandConsumer = kafkaTestService.createStringAvroConsumer(utTopic);
         ConsumerRecord<String, DelingAvCvRespons> delingAvCvResponsRecord = getSingleRecord(rekrutteringsbistandConsumer, utTopic, DEFAULT_WAIT_TIMEOUT_DURATION);
         assertThat(delingAvCvResponsRecord.value().getBestillingsId()).isEqualTo(utenSvar.getStillingFraNavData().getBestillingsId());
         assertThat(delingAvCvResponsRecord.value().getTilstand()).isEqualTo(TilstandEnum.HAR_VARSLET);

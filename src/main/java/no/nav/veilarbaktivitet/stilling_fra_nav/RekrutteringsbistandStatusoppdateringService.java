@@ -98,7 +98,7 @@ public class RekrutteringsbistandStatusoppdateringService {
         stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(true, "", RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN);
     }
 
-    private boolean sjekkCVKanDeles(AktivitetData aktivitetData, RekrutteringsbistandStatusoppdateringEventType type) {
+    private boolean sjekkCVBurdeEgentligIkkeVærtDelt(AktivitetData aktivitetData, RekrutteringsbistandStatusoppdateringEventType type) {
         if (aktivitetData.getStillingFraNavData().cvKanDelesData == null) {
             log.warn("Stilling fra NAV med bestillingsid: {} har ikke svart", aktivitetData.getStillingFraNavData().bestillingsId);
             this.stillingFraNavMetrikker.countRekrutteringsbistandStatusoppdatering(false, "Ikke svart", type);
@@ -121,7 +121,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     boolean sjekkCvIkkeAlleredeDelt(AktivitetData aktivitetData) {
-        if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.CV_DELT)) return false;
+        if (!sjekkCVBurdeEgentligIkkeVærtDelt(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.CV_DELT)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.CV_DELT) {
             log.info("Stilling fra NAV med bestillingsid: {} har allerede status CV_DELT", aktivitetData.getStillingFraNavData().bestillingsId);
@@ -133,7 +133,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     boolean sjekkKanSettesTilIkkeFattJobben(AktivitetData aktivitetData) {
-        if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN)) return false;
+        if (!sjekkCVBurdeEgentligIkkeVærtDelt(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.IKKE_FATT_JOBBEN)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.IKKE_FATT_JOBBEN) {
             log.info("Stilling fra NAV med bestillingsid: {} har allerede status IKKE_FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);
@@ -145,7 +145,7 @@ public class RekrutteringsbistandStatusoppdateringService {
     }
 
     boolean sjekkKanSettesTilFattJobben(AktivitetData aktivitetData) {
-        if (!sjekkCVKanDeles(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN)) return false;
+        if (!sjekkCVBurdeEgentligIkkeVærtDelt(aktivitetData, RekrutteringsbistandStatusoppdateringEventType.FATT_JOBBEN)) return false;
 
         if (aktivitetData.getStillingFraNavData().getSoknadsstatus() == Soknadsstatus.FATT_JOBBEN) {
             log.info("Stilling fra NAV med bestillingsid: {} har allerede status FATT_JOBBEN", aktivitetData.getStillingFraNavData().bestillingsId);

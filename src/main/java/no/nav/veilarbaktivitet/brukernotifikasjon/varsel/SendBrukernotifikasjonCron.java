@@ -28,13 +28,19 @@ public class SendBrukernotifikasjonCron {
             fixedDelayString = "${app.env.scheduled.default.fixedDelay}"
     )
     @SchedulerLock(name = "send_brukernotifikasjoner", lockAtMostFor = "PT20M")
-    public void sendBrukernotifikasjoner() {
-            sendAlle(500);
+    public Integer sendBrukernotifikasjoner() {
+            return sendAlle(500);
     }
 
-    void sendAlle(int maxBatchSize) {
+    int sendAlle(int maxBatchSize) {
         brukernotifikasjonService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
-        while (sendOpptil(maxBatchSize) == maxBatchSize);
+        var total = 0;
+        var currentBatch = 0;
+        do {
+            currentBatch = sendOpptil(maxBatchSize);
+            total += currentBatch;
+        } while (currentBatch == maxBatchSize);
+        return total;
     }
 
     private int sendOpptil(int maxAntall) {

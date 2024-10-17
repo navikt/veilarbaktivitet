@@ -31,15 +31,16 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     fun assertBeskjedSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Beskjed)
 
     fun assertIngenNyeBeskjeder() {
-        config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner()
-        assertThat(
-            kafkaTestService.harKonsumertAlleMeldinger(
-                config.brukernotifikasjonBrukervarselTopic,
-                brukervarselConsumer.consumer
-            )
-        )
-            .`as`("Skal ikke sendes melding")
-            .isTrue()
+        assertThat(config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner())
+            .isEqualTo(0);
+//        assertThat(
+//            kafkaTestService.harKonsumertAlleMeldinger(
+//                config.brukernotifikasjonBrukervarselTopic,
+//                brukervarselConsumer.consumer
+//            )
+//        )
+//            .`as`("Skal ikke sendes melding")
+//            .isTrue()
     }
 
     fun assertInaktivertMeldingErSendt(varselId: String?): InaktiverVarselDto {
