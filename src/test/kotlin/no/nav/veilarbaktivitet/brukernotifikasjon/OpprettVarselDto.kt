@@ -11,7 +11,6 @@ data class OpprettVarselDto (
     var link: String,
     var type: Varseltype,
     var eksternVarsling: EksternVarslingBestilling,
-    var tidspunkt: Long,
     var produsent: Produsent
 )
 
