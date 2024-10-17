@@ -32,7 +32,8 @@ public class SendBrukernotifikasjonCron {
             return sendAlle(500);
     }
 
-    int sendAlle(int maxBatchSize) {
+    /* Public fordi den er brukt direkte i noen tester for å hoppe over scheduler lock  */
+    public int sendAlle(int maxBatchSize) {
         brukernotifikasjonService.avbrytIkkeSendteOppgaverForAvslutteteAktiviteter();
         var total = 0;
         var currentBatch = 0;

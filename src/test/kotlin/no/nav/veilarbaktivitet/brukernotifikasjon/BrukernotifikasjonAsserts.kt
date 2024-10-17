@@ -13,7 +13,7 @@ import org.assertj.core.api.Assertions.assertThat
 import java.util.*
 
 class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
-    var brukervarselConsumer = config.createBrukerVarselConsumer()
+    var brukervarselConsumer = config.createBrukerVarselConsumer(config.testService)
     private val brukernotifikasjonVarselHendelseProducer = config.brukernotifikasjonVarselProducer()
 
     var kafkaTestService: KafkaTestService = config.testService
@@ -30,17 +30,9 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
     fun assertOppgaveSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Oppgave)
     fun assertBeskjedSendt(fnr: Fnr) = assertVarselSendt(fnr, Varseltype.Beskjed)
 
-    fun assertIngenNyeBeskjeder() {
-        assertThat(config.sendBrukernotifikasjonCron.sendBrukernotifikasjoner())
+    fun assertIngenNyeVarslerErIOutbox() {
+        assertThat(config.sendBrukernotifikasjonCron.sendAlle(500))
             .isEqualTo(0);
-//        assertThat(
-//            kafkaTestService.harKonsumertAlleMeldinger(
-//                config.brukernotifikasjonBrukervarselTopic,
-//                brukervarselConsumer.consumer
-//            )
-//        )
-//            .`as`("Skal ikke sendes melding")
-//            .isTrue()
     }
 
     fun assertInaktivertMeldingErSendt(varselId: String?): InaktiverVarselDto {

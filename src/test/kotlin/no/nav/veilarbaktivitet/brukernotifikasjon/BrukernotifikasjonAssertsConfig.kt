@@ -36,10 +36,11 @@ class BrukernotifikasjonAssertsConfig(
     val sendBrukernotifikasjonCron: SendBrukernotifikasjonCron
 ) {
 
-    fun createBrukerVarselConsumer(): TestConsumer {
+    fun createBrukerVarselConsumer(kafkaTestService: KafkaTestService): TestConsumer {
         return TestConsumer(
             testService.createStringStringConsumer(brukernotifikasjonBrukervarselTopic),
-            brukernotifikasjonBrukervarselTopic
+            brukernotifikasjonBrukervarselTopic,
+            kafkaTestService
         )
     }
 
@@ -53,7 +54,8 @@ class BrukernotifikasjonAssertsConfig(
 
 class TestConsumer(
     val consumer: Consumer<String, String>,
-    val topic: String
+    val topic: String,
+    val kafkaTestService: KafkaTestService
 ) {
     private fun getSingleRecord (): String {
         return KafkaTestUtils.getSingleRecord(
@@ -67,6 +69,12 @@ class TestConsumer(
     }
     fun waitForInaktiverVarsel(): InaktiverVarselDto {
         return JsonUtils.fromJson(getSingleRecord(), InaktiverVarselDto::class.java)
+    }
+    fun harKonsumertAlleMeldinger(): Boolean {
+        return kafkaTestService.harKonsumertAlleMeldinger(
+            topic,
+            consumer,
+        )
     }
 }
 
