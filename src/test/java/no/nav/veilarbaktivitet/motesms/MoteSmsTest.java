@@ -26,8 +26,7 @@ import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class MoteSmsTest extends SpringBootTestBase {
 
@@ -218,7 +217,7 @@ class MoteSmsTest extends SpringBootTestBase {
 
         MoteNotifikasjon expected = new MoteNotifikasjon(0L, 0L, happyBruker.getAktorIdAsAktorId(), oppmote, startTid);
         assertEquals(happyBruker.getFnr(), oppgave.getIdent(), melding + " fnr");
-        assertTrue(oppgave.getEksternVarsling() != null, melding + " eksternvarsling");
+        assertNotNull(oppgave.getEksternVarsling(), melding + " eksternvarsling");
         assertEquals(expected.getSmsTekst(), oppgave.getEksternVarsling().getSmsVarslingstekst(), melding + " sms tekst");
         assertEquals(expected.getDitNavTekst(), oppgave.getTekster().getFirst().getTekst(), melding + " ditnav tekst");
         assertEquals(expected.getEpostTitel(), oppgave.getEksternVarsling().getEpostVarslingstittel(), melding + " epost tittel tekst");

@@ -99,7 +99,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
     void setUp() {
         brukernotifikasjonAsserts = getOrCreateBrukernotifikasjonAsserts();
         brukerVarselConsumer = brukernotifikasjonAsserts.getBrukervarselConsumer().getConsumer();
-//        kafkaTestService.createStringStringConsumer(brukervarselTopic);
         brukerVarselHendelseConsumer = kafkaTestService.createStringStringConsumer(brukervarselHendelseTopic);
         DbTestUtils.cleanupTestDb(jdbc.getJdbcTemplate());
 
@@ -108,7 +107,7 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
 
     @AfterEach
     void assertNoUnkowns() {
-//        brukerVarselConsumer.unsubscribe();
+        brukerVarselConsumer.unsubscribe();
         brukerVarselHendelseConsumer.unsubscribe();
 
         assertTrue(WireMock.findUnmatchedRequests().isEmpty());
@@ -433,9 +432,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        // TODO: Verifiser at dette er riktig
-//        var varselHendelseTopic = brukernotifikasjonAssertsConfig.getBrukernotifikasjonBrukervarselTopic();
-//        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(varselHendelseTopic, brukerVarselConsumer), "Skal ikke produsert done meldinger");
         OpprettVarselDto oppgave = brukernotifikasjonAsserts.assertOppgaveSendt(Person.fnr(mockBruker.getFnr()));
 
         assertEquals(basepath + "/aktivitet/vis/" + aktivitetDTO.getId(), oppgave.getLink());
@@ -447,8 +443,6 @@ class BrukernotifikasjonTest extends SpringBootTestBase {
         sendBrukernotifikasjonCron.sendBrukernotifikasjoner();
         avsluttBrukernotifikasjonCron.avsluttBrukernotifikasjoner();
 
-        // TODO: Verifiser at dette er riktig
-//        assertTrue(kafkaTestService.harKonsumertAlleMeldinger(brukervarselTopic, brukerVarselConsumer), "Skal ikke produsere oppgave");
         brukernotifikasjonAsserts.assertInaktivertMeldingErSendt(oppgave.getVarselId());
     }
 

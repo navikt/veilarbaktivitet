@@ -39,6 +39,8 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.Throws
 import kotlin.assert
+import kotlin.getValue
+import kotlin.lazy
 import kotlin.to
 
 internal class RekrutteringsbistandKafkaConsumerTest(
@@ -54,11 +56,12 @@ internal class RekrutteringsbistandKafkaConsumerTest(
     val brukernotifikasjonAssertsConfig: BrukernotifikasjonAssertsConfig
 ) : SpringBootTestBase() {
 
-    lateinit var brukernotifikasjonAsserts: BrukernotifikasjonAsserts
+    val brukernotifikasjonAsserts: BrukernotifikasjonAsserts by lazy {
+        BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
+    }
 
     @BeforeEach
     fun setUp() {
-        brukernotifikasjonAsserts = BrukernotifikasjonAsserts(brukernotifikasjonAssertsConfig)
         meterRegistry.find(StillingFraNavMetrikker.REKRUTTERINGSBISTANDSTATUSOPPDATERING).meters()
             .forEach { it: Meter? ->
                 meterRegistry.remove(it)
