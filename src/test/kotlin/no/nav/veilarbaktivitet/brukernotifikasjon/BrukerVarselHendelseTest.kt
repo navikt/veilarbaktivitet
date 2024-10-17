@@ -127,17 +127,18 @@ internal class BrukerVarselHendelseTest(
         val aktivitetDTO = aktivitetTestService.opprettAktivitet(mockBruker, skalOpprettes)
         Assertions.assertEquals(0, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1))
 
-
-        val oppgave = opprettOppgave(mockBruker, aktivitetDTO)
-        val varselId = UUID.fromString(oppgave.varselId)
+        val oppgaveVarsel = opprettOppgave(mockBruker, aktivitetDTO)
+        val varselId = UUID.fromString(oppgaveVarsel.varselId)
 
         assertVarselStatusErSendt(varselId)
         Assertions.assertEquals(1, varselDao.hentAntallUkvitterteVarslerForsoktSendt(-1))
 
         assertEksternVarselStatus(varselId, VarselKvitteringStatus.IKKE_SATT)
-        brukernotifikasjonAsserts.simulerEksternVarselSendt(oppgave)
+        brukernotifikasjonAsserts.simulerEksternVarselStatusSendt(oppgaveVarsel)
 
+        // STATUS == "AVSLUTTET
         assertVarselStatusErAvsluttet(varselId)
+        // VARSEL_KVITTERING_STATUS == IKKE_SATT
         assertEksternVarselStatus(varselId, VarselKvitteringStatus.IKKE_SATT)
     }
 

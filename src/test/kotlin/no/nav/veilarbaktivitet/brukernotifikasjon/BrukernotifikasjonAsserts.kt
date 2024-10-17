@@ -52,7 +52,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         return inaktivering
     }
 
-    fun simulerEksternVarselSendt(varsel: OpprettVarselDto) {
+    fun simulerEksternVarselStatusSendt(varsel: OpprettVarselDto) {
         simulerEksternVarselStatusHendelse(
             MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.sendt,
@@ -60,7 +60,7 @@ class BrukernotifikasjonAsserts(var config: BrukernotifikasjonAssertsConfig) {
         )
     }
 
-    fun simulerEksternVarselFeilet(varsel: OpprettVarselDto) {
+    fun simulerEksternVarselStatusFeilet(varsel: OpprettVarselDto) {
         simulerEksternVarselStatusHendelse(
             MinSideBrukernotifikasjonsId(UUID.fromString(varsel.varselId)),
             EksternVarselStatus.feilet,
