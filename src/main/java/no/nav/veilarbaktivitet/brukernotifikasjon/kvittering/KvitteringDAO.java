@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import no.nav.veilarbaktivitet.brukernotifikasjon.BrukernotifikasjonAktivitetIder;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselStatus;
 import no.nav.veilarbaktivitet.brukernotifikasjon.VarselType;
+import no.nav.veilarbaktivitet.brukernotifikasjon.opprettVarsel.MinSideBrukernotifikasjonsId;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.EksternVarselHendelseDTO;
 import no.nav.veilarbaktivitet.brukernotifikasjon.varselStatusHendelse.Kvittering;
 import org.springframework.jdbc.core.RowMapper;
@@ -29,9 +30,9 @@ public class KvitteringDAO {
                     .aktivitetId(rs.getLong("AKTIVITET_ID"))
                     .build();
 
-    public void setFeilet(String bestillingsId) {
+    public void setFeilet(MinSideBrukernotifikasjonsId varselId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("brukernotifikasjonId", bestillingsId)
+                .addValue("brukernotifikasjonId", varselId.getValue().toString())
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.FEILET.toString());
         jdbc.update("" +
                 " update BRUKERNOTIFIKASJON " +
@@ -39,9 +40,9 @@ public class KvitteringDAO {
                 " where BRUKERNOTIFIKASJON_ID = :brukernotifikasjonId ", param);
     }
 
-    public void setEksternVarselStatusOK(String bestillingsId) {
+    public void setEksternVarselStatusOK(MinSideBrukernotifikasjonsId varselId) {
         MapSqlParameterSource param = new MapSqlParameterSource()
-                .addValue("brukernotifikasjonId", bestillingsId)
+                .addValue("brukernotifikasjonId", varselId.getValue().toString())
                 .addValue("varselKvitteringStatus", VarselKvitteringStatus.OK.toString());
 
         jdbc.update("" +

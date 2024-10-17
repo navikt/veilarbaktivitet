@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
 open class VarselHendelseConsumer(
@@ -40,14 +39,14 @@ open class VarselHendelseConsumer(
     }
 
     open fun behandleEksternVarselHendelse(hendelse: EksternVarsling) {
-        val varselId = hendelse.varselId.toString()
+        val varselId = MinSideBrukernotifikasjonsId(hendelse.varselId)
         log.info(
             "Konsumerer Ekstern-varsel-hendelse varselId={}, varselType={}",
             varselId,
             EksternVarsling::class.simpleName
         )
 
-        if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(MinSideBrukernotifikasjonsId(UUID.fromString(varselId)))) {
+        if (!brukerNotifikasjonDAO.finnesBrukernotifikasjon(varselId)) {
             log.warn(
                 "Mottok kvittering for brukernotifikasjon varselId={} som ikke finnes i våre systemer",
                 varselId
@@ -60,26 +59,15 @@ open class VarselHendelseConsumer(
 //            melding = hendelse.feilmelding,
 //        ), hendelse)
 
-
         when (hendelse) {
             is Sendt -> {
-                /**
-                 * Håndterer race condition der brukernotifikasjon blir satt til done fra andre systemer
-                 * (typisk ved at bruker er inne og leser på ditt nav)
-                 * før eksternt varsel er sendt ut
-                 */
-//                kvitteringDAO.setAvsluttetHvisVarselKvitteringStatusErIkkeSatt(varselId)
                 kvitteringDAO.setEksternVarselStatusOK(varselId)
-                log.info(
-                    "Ekstern varsel sendt for bestillingsId={}",
-                    varselId
-                )
-
+                log.info("Ekstern varsel sendt for varselId={}", varselId)
             }
             is Renotifikasjon -> {}
             is Feilet -> {
                 log.warn(
-                    "varsel feilet for notifikasjon bestillingsId={} med melding {}",
+                    "varsel feilet for notifikasjon varselId={} med melding {}",
                     varselId,
                     hendelse.feilmelding
                 )
